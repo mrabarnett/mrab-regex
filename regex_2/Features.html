@@ -337,6 +337,10 @@ ul.auto-toc {
 <p>The same group name can be used on different branches of an alternation because they are mutually exclusive, eg. <tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;first)|(?P&lt;foo&gt;second)</span></tt>. They will, of course, have the same group number.</p>
 <p>Group numbers will be reused, where possible, across different branches of a branch reset, eg. <tt class="docutils literal"><span class="pre">(?|(first)|(second))</span></tt> has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. <tt class="docutils literal"><span class="pre">(?|(?P&lt;foo&gt;first)|(?P&lt;bar&gt;second))</span></tt> has group 1 (&quot;foo&quot;) and group 2 (&quot;bar&quot;).</p>
 </div>
+<div class="section" id="unicode">
+<h1>Unicode</h1>
+<p>This module supports Unicode 6.0.0.</p>
+</div>
 <div class="section" id="additional-features">
 <h1>Additional features</h1>
 <ul>

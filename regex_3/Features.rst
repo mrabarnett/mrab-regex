@@ -38,6 +38,12 @@ The same group name can be used on different branches of an alternation because 
 Group numbers will be reused, where possible, across different branches of a branch reset, eg. ``(?|(first)|(second))`` has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. ``(?|(?P<foo>first)|(?P<bar>second))`` has group 1 ("foo") and group 2 ("bar").
 
 
+Unicode
+-------
+
+This module supports Unicode 6.0.0.
+
+
 Additional features
 -------------------
 
