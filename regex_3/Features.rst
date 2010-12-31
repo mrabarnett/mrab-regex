@@ -3,6 +3,8 @@ Note
 
 For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
 
+Please note that certain aspects of this module have changed from those of previous versions to make it conform better to the 're' module.
+
 
 Flags
 -----
@@ -11,7 +13,11 @@ There are 2 kinds of flag: scoped and global. Scoped flags can apply to only par
 
 The scoped flags are: ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
 
-The global flags are: ``ASCII``, ``LOCALE``, ``REVERSE``, ``UNICODE``, ``ZEROWIDTH``.
+The global flags are: ``ASCII``, ``LOCALE``, ``NEW``, ``REVERSE``, ``UNICODE``.
+
+The ``NEW`` flag turns on the new behaviour of this module, which can differ from that of the 're' module, such as splitting on zero-width matches, inline flags affecting only what follows, and being able to turn inline flags off.
+
+Note: The ``ZEROWIDTH`` flag which was in previous versions of this module has been removed. The ``NEW`` flag should be used instead.
 
 
 Notes on named capture groups
@@ -21,9 +27,9 @@ All capture groups have a group number, starting from 1.
 
 Groups with the same group name will have the same group number, and groups with a different group name will have a different group number.
 
-The same group name can be used on different branches of an alternation because they are mutually exclusive, eg. ``(?<foo>first)|(?<foo>second)``. They will, of course, have the same group number.
+The same group name can be used on different branches of an alternation because they are mutually exclusive, eg. ``(?P<foo>first)|(?P<foo>second)``. They will, of course, have the same group number.
 
-Group numbers will be reused, where possible, across different branches of a branch reset, eg. ``(?|(first)|(second))`` has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. ``(?|(?<foo>first)|(?<bar>second))`` has group 1 ("foo") and group 2 ("bar").
+Group numbers will be reused, where possible, across different branches of a branch reset, eg. ``(?|(first)|(second))`` has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. ``(?|(?P<foo>first)|(?P<bar>second))`` has group 1 ("foo") and group 2 ("bar").
 
 
 Additional features
@@ -50,7 +56,7 @@ Additional features
 
     ``(?flags-flags)``
 
-    The flags will apply to the end of the group or pattern. Flags can be turned on or off.
+    If the ``NEW`` flag is turned on then the flags will apply to the end of the group or pattern and can be turned on or off. If the ``NEW`` flag isn't turned on then the flags will be global and can't be turned off.
 
 * Repeated repeats (#2537)
 
@@ -102,7 +108,7 @@ Additional features
 
 * Zero-width split with regex.split (#3262)
 
-    ``regex.split`` can split at a zero-width match if the zero-width flag is turned on. When the flag is turned off the current behaviour is unchanged because the BDFL thinks that some existing software might depend on it.
+    ``regex.split`` can split at a zero-width match if the ``NEW`` flag is turned on. When the flag is turned off the current behaviour is unchanged because the BDFL thinks that some existing software might depend on it.
 
 * Splititer
 
@@ -112,7 +118,7 @@ Additional features
 
     A match object accepts access to the captured groups via subscripting and slicing:
 
-    >>> m = regex.search(r"(?<before>.*?)(?<num>\d+)(?<after>.*)", "pqr123stu")
+    >>> m = regex.search(r"(?P<before>.*?)(?P<num>\d+)(?P<after>.*)", "pqr123stu")
     >>> print m["before"]
     pqr
     >>> print m["num"]
@@ -126,7 +132,7 @@ Additional features
 
 * Named groups
 
-    Named groups can be named with ``(?<name>...)`` as well as the current ``(?P<name>...)``.
+    Groups can be named with ``(?<name>...)`` as well as the current ``(?P<name>...)``.
 
 * Group references
 

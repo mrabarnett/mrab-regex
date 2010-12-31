@@ -51,8 +51,8 @@ The special characters are:
     (...)              Matches the RE inside the parentheses. The contents are
                        captured and can be retrieved or matched later in the
                        string.
-    (?flags-flags)     Sets/clears the flags for the remainder of the RE (see
-                       below).
+    (?flags-flags)     Sets/clears the flags for the entire RE, or the remainder
+                       of the RE if the 'NEW' flag is set.
     (?:...)            Non-capturing version of regular parentheses.
     (?flags-flags:...) Non-capturing version of regular parentheses with local
                        flags.
@@ -125,20 +125,21 @@ these flags can also be set within an RE:
     A  a  ASCII      Make \w, \W, \b, \B, \d, and \D match the corresponding
                      ASCII character categories when matching a Unicode string.
                      Default when matching a bytestring.
-    D     DEBUG      Prints the parsed pattern.
+    D     DEBUG      Print the parsed pattern.
     I  i  IGNORECASE Perform case-insensitive matching.
     L  L  LOCALE     Make \w, \W, \b, \B, \d, and \D dependent on the current
                      locale.
     M  m  MULTILINE  "^" matches the beginning of lines (after a newline) as
                      well as the string. "$" matches the end of lines (before a
                      newline) as well as the end of the string.
+    N  n  NEW        Turn on scoped flags and correct handling of zero-width
+                     matches.
     R  r  REVERSE    Searches backwards.
     S  s  DOTALL     "." matches any character at all, including the newline.
-    W  w  WORD       Default Unicode word breaks.
-    X  x  VERBOSE    Ignore whitespace and comments for nicer looking RE's.
     U  u  UNICODE    Make \w, \W, \b, \B, \d, and \D dependent on the Unicode
                      locale. Default when matching a Unicode string.
-    Z  z  ZEROWIDTH  Correct handling of zero-width matches.
+    W  w  WORD       Default Unicode word breaks.
+    X  x  VERBOSE    Ignore whitespace and comments for nicer looking RE's.
 
 This module also defines an exception 'error'.
 
@@ -147,9 +148,9 @@ This module also defines an exception 'error'.
 # Public symbols.
 __all__ = ["match", "search", "sub", "subn", "split", "splititer", "findall",
     "finditer", "compile", "purge", "template", "escape", "A", "D", "I", "L",
-    "M", "R", "S", "T", "U", "X", "Z", "ASCII", "DEBUG", "IGNORECASE", "LOCALE",
-    "MULTILINE", "REVERSE", "DOTALL", "TEMPLATE", "UNICODE", "VERBOSE",
-    "ZEROWIDTH", "error"]
+    "M", "N", "R", "S", "T", "U", "W", "X", "ASCII", "DEBUG", "IGNORECASE",
+    "LOCALE", "MULTILINE", "NEW", "REVERSE", "DOTALL", "TEMPLATE", "UNICODE",
+    "WORD", "VERBOSE", "error"]
 
 __version__ = "2.3.0"
 
@@ -278,19 +279,29 @@ def _compile(pattern, flags=0):
     if p:
         return p
 
-    # Parse the regular expression.
-    source = _rc._Source(pattern)
-    info = _rc._Info(flags, source.char_type)
-    source.ignore_space = bool(info.local_flags & VERBOSE)
-    parsed = _rc._parse_pattern(source, info)
+    # Parse the pattern. If the 'NEW' flag isn't turned on then the positional
+    # inline flags will be global and the pattern will need to be reparsed if a
+    # positional flag becomes turned on.
+    global_flags = flags
+    while True:
+        try:
+            source = _rc._Source(pattern)
+            info = _rc._Info(global_flags, source.char_type)
+            source.ignore_space = bool(info.all_flags & VERBOSE)
+            parsed = _rc._parse_pattern(source, info)
+            break
+        except _rc._UnscopedFlagSet:
+            # Remember the global flags for the next attempt.
+            global_flags = info.global_flags
+
     if not source.at_end():
         raise error("trailing characters in pattern")
 
-    # Global flags could be passed in 'flags' or in the pattern, so we're
-    # checking after parsing.
+    # Check the global flags for conflicts.
     all_flags = ASCII | LOCALE | UNICODE
     if _rc._count_ones(info.global_flags & all_flags) > 1:
         raise ValueError("ASCII, LOCALE and UNICODE flags are mutually incompatible")
+
 
     # Fix the group references.
     parsed.fix_groups()
@@ -326,7 +337,7 @@ def _compile(pattern, flags=0):
     # Local flags like IGNORECASE affect the code generation, but aren't needed
     # by the PatternObject itself. Conversely, global flags like LOCALE _don't_
     # affect the code generation but _are_ needed by the PatternObject.
-    p = _regex.compile(pattern, info.global_flags | info.local_flags, code,
+    p = _regex.compile(pattern, info.global_flags | info.scoped_flags, code,
       info.group_index, index_group)
 
     # Store the compiled pattern.

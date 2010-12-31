@@ -777,6 +777,11 @@ class Test:
         p = regex.compile('(?iu)' + lower_char)
         self.expect(lambda: type(p.match(upper_char)), self.MATCH_CLASS)
 
+        self.expect(lambda: type(regex.match(r"(?i)a", "A")), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(r"a(?i)", "A")), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(r"(?in)a", "A")), self.MATCH_CLASS)
+        self.expect(lambda: regex.match(r"a(?in)", "A"), "None")
+
     def test_dollar_matches_twice(self):
         # $ matches the end of string, and just before the terminating \n.
         pattern = regex.compile('$')
@@ -918,10 +923,10 @@ class Test:
         self.expect(lambda: regex.findall(r"\W+",
           " \u0939\u093f\u0928\u094d\u0926\u0940,"),
           "[' ', ',']")
-        self.expect(lambda: regex.split(r"(?z)\b",
+        self.expect(lambda: regex.split(r"(?n)\b",
           " \u0939\u093f\u0928\u094d\u0926\u0940,"),
           "[' ', '\\u0939\\u093f\\u0928\\u094d\\u0926\\u0940', ',']")
-        self.expect(lambda: regex.split(r"(?z)\B",
+        self.expect(lambda: regex.split(r"(?n)\B",
           " \u0939\u093f\u0928\u094d\u0926\u0940,"),
           "['', ' \\u0939', '\\u093f', '\\u0928', '\\u094d', '\\u0926', '\\u0940,', '']")
 
@@ -948,20 +953,20 @@ class Test:
 
         self.expect(lambda: regex.findall(r"^|\w+", "foo bar"),
           "['', 'foo', 'bar']")
-        self.expect(lambda: regex.findall(r"(?z)^|\w+", "foo bar"),
+        self.expect(lambda: regex.findall(r"(?n)^|\w+", "foo bar"),
           "['', 'foo', 'bar']")
         self.expect(lambda: regex.findall(r"(?r)^|\w+", "foo bar"),
           "['bar', 'foo', '']")
-        self.expect(lambda: regex.findall(r"(?rz)^|\w+", "foo bar"),
+        self.expect(lambda: regex.findall(r"(?nr)^|\w+", "foo bar"),
           "['bar', 'foo', '']")
 
         self.expect(lambda: [m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
           "['', 'foo', 'bar']")
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?z)^|\w+",
+        self.expect(lambda: [m[0] for m in regex.finditer(r"(?n)^|\w+",
           "foo bar")], "['', 'foo', 'bar']")
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)^|\w+",
           "foo bar")], "['bar', 'foo', '']")
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?rz)^|\w+",
+        self.expect(lambda: [m[0] for m in regex.finditer(r"(?nr)^|\w+",
           "foo bar")], "['bar', 'foo', '']")
 
         self.expect(lambda: regex.findall(r"\G\w{2}", "abcd ef"),
@@ -975,11 +980,11 @@ class Test:
 
         self.expect(lambda: regex.findall(r"q*", "qqwe"),
           "['qq', '', '', '']")
-        self.expect(lambda: regex.findall(r"(?z)q*", "qqwe"),
+        self.expect(lambda: regex.findall(r"(?n)q*", "qqwe"),
           "['qq', '', '', '']")
         self.expect(lambda: regex.findall(r"(?r)q*", "qqwe"),
           "['', '', 'qq', '']")
-        self.expect(lambda: regex.findall(r"(?rz)q*", "qqwe"),
+        self.expect(lambda: regex.findall(r"(?nr)q*", "qqwe"),
           "['', '', 'qq', '']")
 
         self.expect(lambda: regex.findall(".", "abcd", pos=1, endpos=3),
@@ -1071,7 +1076,7 @@ class Test:
     def test_zerowidth(self):
         # Issue 3262.
         self.expect(lambda: regex.split(r"\b", "a b"), "['a b']")
-        self.expect(lambda: regex.split(r"(?z)\b", "a b"),
+        self.expect(lambda: regex.split(r"(?n)\b", "a b"),
           "['', 'a', ' ', 'b', '']")
 
         # Issue 1647489.
@@ -1083,14 +1088,14 @@ class Test:
           "['bar', 'foo', '']")
         self.expect(lambda: [m[0] for m in
           regex.finditer(r"(?r)^|\w+", "foo bar")], "['bar', 'foo', '']")
-        self.expect(lambda: regex.findall(r"(?z)^|\w+", "foo bar"),
+        self.expect(lambda: regex.findall(r"(?n)^|\w+", "foo bar"),
           "['', 'foo', 'bar']")
         self.expect(lambda: [m[0] for m in
-          regex.finditer(r"(?z)^|\w+", "foo bar")], "['', 'foo', 'bar']")
-        self.expect(lambda: regex.findall(r"(?rz)^|\w+", "foo bar"),
+          regex.finditer(r"(?n)^|\w+", "foo bar")], "['', 'foo', 'bar']")
+        self.expect(lambda: regex.findall(r"(?nr)^|\w+", "foo bar"),
           "['bar', 'foo', '']")
         self.expect(lambda: [m[0] for m in
-          regex.finditer(r"(?rz)^|\w+", "foo bar")], "['bar', 'foo', '']")
+          regex.finditer(r"(?nr)^|\w+", "foo bar")], "['bar', 'foo', '']")
 
         self.expect(lambda: regex.split("", "xaxbxc"), "['xaxbxc']")
         self.expect(lambda: [m for m in regex.splititer("", "xaxbxc")],
@@ -1100,23 +1105,26 @@ class Test:
         self.expect(lambda: [m for m in regex.splititer("(?r)", "xaxbxc")],
           "['xaxbxc']")
 
-        self.expect(lambda: regex.split("(?z)", "xaxbxc"),
+        self.expect(lambda: regex.split("(?n)", "xaxbxc"),
           "['', 'x', 'a', 'x', 'b', 'x', 'c', '']")
-        self.expect(lambda: [m for m in regex.splititer("(?z)", "xaxbxc")],
+        self.expect(lambda: [m for m in regex.splititer("(?n)", "xaxbxc")],
           "['', 'x', 'a', 'x', 'b', 'x', 'c', '']")
 
-        self.expect(lambda: regex.split("(?rz)", "xaxbxc"),
+        self.expect(lambda: regex.split("(?nr)", "xaxbxc"),
           "['', 'c', 'x', 'b', 'x', 'a', 'x', '']")
-        self.expect(lambda: [m for m in regex.splititer("(?rz)", "xaxbxc")],
+        self.expect(lambda: [m for m in regex.splititer("(?nr)", "xaxbxc")],
           "['', 'c', 'x', 'b', 'x', 'a', 'x', '']")
 
     def test_scoped_and_inline_flags(self):
         # Issues 433028, #433024, #433027.
         self.expect(lambda: regex.search(r"(?i)Ab", "ab").span(), "(0, 2)")
         self.expect(lambda: regex.search(r"(?i:A)b", "ab").span(), "(0, 2)")
-        self.expect(lambda: regex.search(r"A(?i)b", "ab"), "None")
+        self.expect(lambda: regex.search(r"A(?i)b", "ab").span(), "(0, 2)")
+        self.expect(lambda: regex.search(r"A(?in)b", "ab"), "None")
 
-        self.expect(lambda: regex.search(r"(?-i)Ab", "ab", flags=regex.I),
+        self.expect(lambda: regex.search(r"(?-i)Ab", "ab",
+          flags=regex.I).span(), "(0, 2)")
+        self.expect(lambda: regex.search(r"(?n-i)Ab", "ab", flags=regex.I),
           "None")
         self.expect(lambda: regex.search(r"(?-i:A)b", "ab", flags=regex.I),
           "None")
@@ -1223,26 +1231,26 @@ class Test:
 
     def test_word_boundary(self):
         text = 'The quick ("brown") fox can\'t jump 32.3 feet, right?'
-        self.expect(lambda: regex.split(r'(?z)\b', text), ascii(['', 'The',
+        self.expect(lambda: regex.split(r'(?n)\b', text), ascii(['', 'The',
           ' ', 'quick', ' ("', 'brown', '") ', 'fox', ' ', 'can', "'",
           't', ' ', 'jump', ' ', '32', '.', '3', ' ', 'feet', ', ',
           'right', '?']))
-        self.expect(lambda: regex.split(r'(?wz)\b', text), ascii(['', 'The',
+        self.expect(lambda: regex.split(r'(?wn)\b', text), ascii(['', 'The',
           ' ', 'quick', ' ', '(', '"', 'brown', '"', ')', ' ', 'fox',
           ' ', "can't", ' ', 'jump', ' ', '32.3', ' ', 'feet', ',',
           ' ', 'right', '?', '']))
 
         text = "The  fox"
-        self.expect(lambda: regex.split(r'(?z)\b', text), ascii(['', 'The',
+        self.expect(lambda: regex.split(r'(?n)\b', text), ascii(['', 'The',
           '  ', 'fox', '']))
-        self.expect(lambda: regex.split(r'(?wz)\b', text), ascii(['', 'The',
+        self.expect(lambda: regex.split(r'(?wn)\b', text), ascii(['', 'The',
           ' ', ' ', 'fox', '']))
 
         text = "can't aujourd'hui l'objectif"
-        self.expect(lambda: regex.split(r'(?z)\b', text), ascii(['', 'can',
+        self.expect(lambda: regex.split(r'(?n)\b', text), ascii(['', 'can',
           "'", 't', ' ', 'aujourd', "'", 'hui', ' ', 'l', "'",
           'objectif', '']))
-        self.expect(lambda: regex.split(r'(?wz)\b', text), ascii(['',
+        self.expect(lambda: regex.split(r'(?wn)\b', text), ascii(['',
           "can't", ' ', "aujourd'hui", ' ', "l'", 'objectif', '']))
 
     def test_branch_reset(self):
@@ -1334,6 +1342,16 @@ class Test:
         self.expect(lambda: regex.findall(r"[^\P{Alpha}]", "a0"), 
           ascii(["a"]))
 
+        self.expect(lambda: "".join(regex.findall(r"[^\d-h]", "a^b12c-h")),
+          "'a^bc'")
+        self.expect(lambda: "".join(regex.findall(r"[^\dh]", "a^b12c-h")),
+          "'a^bc-'")
+        self.expect(lambda: "".join(regex.findall(r"[^h\s\db]", "a^b 12c-h")),
+          "'a^c-'")
+        self.expect(lambda: "".join(regex.findall(r"[^b\w]", "a b")), "' '")
+        self.expect(lambda: "".join(regex.findall(r"[^b\S]", "a b")), "' '")
+        self.expect(lambda: "".join(regex.findall(r"[^8\d]", "a 1b2")), "'a b'")
+
     def test_various(self):
         tests = [
             # Test ?P< and ?P= extensions.
@@ -1406,9 +1424,11 @@ class Test:
             ('a.{4,5}b', 'acc\nccb', '', "None"),
             ('a.b', 'a\rb', '0', ascii('a\rb')),
             # The new behaviour is that the inline flag affects only what follows.
-            ('a.b(?s)', 'a\nb', '', "None"),
+            ('a.b(?s)', 'a\nb', '0', ascii('a\nb')),
+            ('a.b(?ns)', 'a\nb', '', "None"),
             ('(?s)a.b', 'a\nb', '0', ascii('a\nb')),
-            ('a.*(?s)b', 'acc\nccb', '', "None"),
+            ('a.*(?s)b', 'acc\nccb', '0', ascii('acc\nccb')),
+            ('a.*(?ns)b', 'acc\nccb', '', "None"),
             ('(?s)a.*b', 'acc\nccb', '0', ascii('acc\nccb')),
             ('(?s)a.{4,5}b', 'acc\nccb', '0', ascii('acc\nccb')),
 
@@ -1874,10 +1894,14 @@ class Test:
             # Check odd placement of embedded pattern modifiers.
 
             # Not an error under PCRE/PRE:
-            # New behaviour is that inline flags affect only what follows.
-            ('w(?i)', 'W', '0', "None"),
+            # When the new behaviour is turned on positional inline flags affect
+            # only what follows.
+            ('w(?i)', 'W', '0', "'W'"),
+            ('w(?in)', 'W', '0', "None"),
             ('w(?i)', 'w', '0', "'w'"),
+            ('w(?in)', 'w', '0', "'w'"),
             ('(?i)w', 'W', '0', "'W'"),
+            ('(?in)w', 'W', '0', "'W'"),
 
             # Comments using the x embedded pattern modifier.
 
@@ -1933,10 +1957,14 @@ xyzabc
             # Bug 114033: nothing to repeat.
             (r'(x?)?', 'x', '0', "'x'"),
             # Bug 115040: rescan if flags are modified inside pattern.
-            # New behaviour is that inline flags affect only what follows.
-            (r' (?x)foo ', 'foo', '0', "None"),
+            # If the new behaviour is turned on then positional inline flags
+            # affect only what follows.
+            (r' (?x)foo ', 'foo', '0', "'foo'"),
+            (r' (?nx)foo ', 'foo', '0', "None"),
             (r'(?x) foo ', 'foo', '0', "'foo'"),
+            (r'(?nx) foo ', 'foo', '0', "'foo'"),
             (r'(?x)foo ', 'foo', '0', "'foo'"),
+            (r'(?nx)foo ', 'foo', '0', "'foo'"),
             # Bug 115618: negative lookahead.
             (r'(?<!abc)(d.f)', 'abcdefdof', '0', "'dof'"),
             # Bug 116251: character class bug.

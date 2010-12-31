@@ -19,20 +19,25 @@ D = DEBUG = 0x200     # Print parsed pattern.
 I = IGNORECASE = 0x2  # Ignore case.
 L = LOCALE = 0x4      # Assume current 8-bit locale.
 M = MULTILINE = 0x8   # Make anchors look for newline.
+N = NEW = 0x100       # Scoped inline flags and correct handling of zero-width matches.
 R = REVERSE = 0x400   # Search backwards.
 S = DOTALL = 0x10     # Make dot match newline.
 U = UNICODE = 0x20    # Assume Unicode locale.
 W = WORD = 0x800      # Default Unicode word breaks.
 X = VERBOSE = 0x40    # Ignore whitespace and comments.
-Z = ZEROWIDTH = 0x100 # Correct handling of zero-width matches.
 T = TEMPLATE = 0x1    # Template.
 
 # The mask for the flags.
-_GLOBAL_FLAGS = ASCII | DEBUG | LOCALE | REVERSE | UNICODE | ZEROWIDTH
-_LOCAL_FLAGS = IGNORECASE | MULTILINE | DOTALL | WORD | VERBOSE
+_GLOBAL_FLAGS = ASCII | DEBUG | LOCALE | NEW | REVERSE | UNICODE
+_SCOPED_FLAGS = IGNORECASE | MULTILINE | DOTALL | WORD | VERBOSE
 
-# regex exception.
+# The regex exception.
 class error(Exception):
+   pass
+
+# The exception for when a positional flag has been turned on in the old
+# behaviour.
+class _UnscopedFlagSet(Exception):
    pass
 
 _ALPHA = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
@@ -157,8 +162,8 @@ def _define_opcodes(opcodes):
 _OP = _define_opcodes(_OPCODES)
 
 # The regular expression flags.
-_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "r":
-  REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE, "z": ZEROWIDTH}
+_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE,
+  "n": NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE}
 
 # Unicode properties.
 _PROPERTIES = """\
@@ -711,7 +716,7 @@ def _parse_element(source, info):
                     return element
             elif ch == ".":
                 # Any character.
-                if info.local_flags & DOTALL:
+                if info.all_flags & DOTALL:
                     return _AnyAll()
                 else:
                     return _Any()
@@ -720,13 +725,13 @@ def _parse_element(source, info):
                 return _parse_set(source, info)
             elif ch == "^":
                 # The start of a line or the string.
-                if info.local_flags & MULTILINE:
+                if info.all_flags & MULTILINE:
                     return _StartOfLine()
                 else:
                     return _StartOfString()
             elif ch == "$":
                 # The end of a line or the string.
-                if info.local_flags & MULTILINE:
+                if info.all_flags & MULTILINE:
                     return _EndOfLine()
                 else:
                     return _EndOfStringLine()
@@ -744,7 +749,7 @@ def _parse_element(source, info):
             elif ch in "?*+":
                 # A quantifier where we expected an element.
                 raise error("nothing to repeat")
-            elif info.local_flags & VERBOSE:
+            elif info.all_flags & VERBOSE:
                 if ch == "#":
                     # A comment.
                     source.ignore_space = False
@@ -754,17 +759,17 @@ def _parse_element(source, info):
                     source.ignore_space = True
                 else:
                     # A literal.
-                    if info.local_flags & IGNORECASE:
+                    if info.all_flags & IGNORECASE:
                         return _CharacterIgn(ord(ch))
                     return _Character(ord(ch))
             else:
                 # A literal.
-                if info.local_flags & IGNORECASE:
+                if info.all_flags & IGNORECASE:
                     return _CharacterIgn(ord(ch))
                 return _Character(ord(ch))
         else:
             # A literal.
-            if info.local_flags & IGNORECASE:
+            if info.all_flags & IGNORECASE:
                 return _CharacterIgn(ord(ch))
             return _Character(ord(ch))
 
@@ -789,12 +794,12 @@ def _parse_paren(source, info):
             name = _parse_name(source)
             group = info.new_group(name)
             source.expect(">")
-            saved_local_flags = info.local_flags
+            saved_scoped_flags = info.scoped_flags
             saved_ignore = source.ignore_space
             try:
                 subpattern = _parse_pattern(source, info)
             finally:
-                info.local_flags = saved_local_flags
+                info.scoped_flags = saved_scoped_flags
                 source.ignore_space = saved_ignore
             source.expect(")")
             info.close_group(group)
@@ -826,12 +831,13 @@ def _parse_paren(source, info):
     # An unnamed capture group.
     source.pos = here
     group = info.new_group()
-    saved_local_flags = info.local_flags
+    saved_scoped_flags = info.scoped_flags
     saved_ignore = source.ignore_space
     try:
         subpattern = _parse_pattern(source, info)
     finally:
-        info.local_flags = saved_local_flags
+        info.scoped_flags = saved_scoped_flags
+        info.all_flags = info.global_flags | info.scoped_flags
         source.ignore_space = saved_ignore
     source.expect(")")
     info.close_group(group)
@@ -846,12 +852,12 @@ def _parse_extension(source, info):
         name = _parse_name(source)
         group = info.new_group(name)
         source.expect(">")
-        saved_local_flags = info.local_flags
+        saved_scoped_flags = info.scoped_flags
         saved_ignore = source.ignore_space
         try:
             subpattern = _parse_pattern(source, info)
         finally:
-            info.local_flags = saved_local_flags
+            info.scoped_flags = saved_scoped_flags
             source.ignore_space = saved_ignore
         source.expect(")")
         info.close_group(group)
@@ -862,7 +868,7 @@ def _parse_extension(source, info):
         source.expect(")")
         if info.is_open_group(name):
             raise error("can't refer to an open group")
-        if info.local_flags & IGNORECASE:
+        if info.all_flags & IGNORECASE:
             return _RefGroupIgn(info, name)
         return _RefGroup(info, name)
     source.pos = here
@@ -879,19 +885,19 @@ def _parse_comment(source):
 
 def _parse_lookaround(source, info, behind, positive):
     "Parses a lookaround."
-    saved_local_flags = info.local_flags
+    saved_scoped_flags = info.scoped_flags
     saved_ignore = source.ignore_space
     try:
         subpattern = _parse_pattern(source, info)
     finally:
-        info.local_flags = saved_local_flags
+        info.scoped_flags = saved_scoped_flags
         source.ignore_space = saved_ignore
     source.expect(")")
     return _LookAround(behind, positive, subpattern)
 
 def _parse_conditional(source, info):
     "Parses a conditional subpattern."
-    saved_local_flags = info.local_flags
+    saved_scoped_flags = info.scoped_flags
     saved_ignore = source.ignore_space
     try:
         group = _parse_name(source, True)
@@ -906,19 +912,19 @@ def _parse_conditional(source, info):
         else:
             no_branch = None
     finally:
-        info.local_flags = saved_local_flags
+        info.scoped_flags = saved_scoped_flags
         source.ignore_space = saved_ignore
     source.expect(")")
     return _Conditional(info, group, yes_branch, no_branch)
 
 def _parse_atomic(source, info):
     "Parses an atomic subpattern."
-    saved_local_flags = info.local_flags
+    saved_scoped_flags = info.scoped_flags
     saved_ignore = source.ignore_space
     try:
         subpattern = _parse_pattern(source, info)
     finally:
-        info.local_flags = saved_local_flags
+        info.scoped_flags = saved_scoped_flags
         source.ignore_space = saved_ignore
     source.expect(")")
     return _Atomic(subpattern)
@@ -966,28 +972,49 @@ def _parse_flags_subpattern(source, info):
             pass
         if not flags_off or (flags_off & _GLOBAL_FLAGS):
             error("bad inline flags")
-    # Separate the global and local flags.
+
+    # Separate the global and scoped flags.
     source.pos = here
+    old_global_flags = info.global_flags
     info.global_flags |= flags_on & _GLOBAL_FLAGS
-    flags_on &= _LOCAL_FLAGS
-    new_local_flags = (info.local_flags | flags_on) & ~flags_off
-    saved_local_flags = info.local_flags
+    flags_on &= _SCOPED_FLAGS
+    flags_off &= _SCOPED_FLAGS
+    new_scoped_flags = (info.scoped_flags | flags_on) & ~flags_off
+    saved_scoped_flags = info.scoped_flags
     saved_ignore = source.ignore_space
-    info.local_flags = new_local_flags
-    source.ignore_space = bool(info.local_flags & VERBOSE)
+    info.scoped_flags = new_scoped_flags
+    info.all_flags = info.global_flags | info.scoped_flags
+    source.ignore_space = bool(info.all_flags & VERBOSE)
     if source.match(":"):
         # A subpattern with local flags.
+        saved_global_flags = info.global_flags
+        info.global_flags &= ~flags_off
+        info.all_flags = info.global_flags | info.scoped_flags
         try:
             subpattern = _parse_pattern(source, info)
         finally:
-            info.local_flags = saved_local_flags
+            info.global_flags = saved_global_flags
+            info.scoped_flags = saved_scoped_flags
+            info.all_flags = info.global_flags | info.scoped_flags
             source.ignore_space = saved_ignore
         source.expect(")")
         return subpattern
     else:
-        # Inline flags.
+        # Positional flags.
         if not source.match(")"):
             raise error("bad inline flags")
+        new_behaviour = bool(info.global_flags & NEW)
+        if not new_behaviour:
+            # Old behaviour: positional flags are global and can only be turned
+            # on.
+            info.global_flags |= flags_on
+        if info.global_flags & ~old_global_flags:
+            # A global has been turned on, so reparse the pattern.
+            if new_behaviour:
+                # New behaviour: positional flags are scoped.
+                info.global_flags &= _GLOBAL_FLAGS
+            raise _UnscopedFlagSet()
+        info.all_flags = info.global_flags | info.scoped_flags
         return None
 
 def _parse_name(source, allow_numeric=False):
@@ -1065,7 +1092,7 @@ def _parse_escape(source, info, in_set):
         # An alphabetic escape sequence.
         # Positional escapes aren't allowed inside a character set.
         if not in_set:
-            if info.local_flags & WORD:
+            if info.all_flags & WORD:
                 value = _WORD_POSITION_ESCAPES.get(ch)
             else:
                 value = _POSITION_ESCAPES.get(ch)
@@ -1087,7 +1114,7 @@ def _parse_escape(source, info, in_set):
 
 def _char_literal(info, in_set, ch):
     "Creates a character literal, which might be in a set."
-    if (info.local_flags & IGNORECASE) and not in_set:
+    if (info.all_flags & IGNORECASE) and not in_set:
         return _CharacterIgn(ord(ch))
     return _Character(ord(ch))
 
@@ -1108,7 +1135,7 @@ def _parse_numeric_escape(source, info, ch, in_set):
         if _is_octal(digits) and ch in _OCT_DIGITS:
             # 3 octal digits, so octal escape sequence.
             value = int(digits + ch, 8) & 0xFF
-            if info.local_flags & IGNORECASE:
+            if info.all_flags & IGNORECASE:
                 return _CharacterIgn(value)
             return _Character(value)
         else:
@@ -1134,7 +1161,7 @@ def _parse_octal_escape(source, info, digits, in_set):
     source.pos = here
     try:
         value = int("".join(digits), 8) & 0xFF
-        if (info.local_flags & IGNORECASE) and not in_set:
+        if (info.all_flags & IGNORECASE) and not in_set:
             return _CharacterIgn(value)
         return _Character(value)
     except ValueError:
@@ -1153,7 +1180,7 @@ def _parse_hex_escape(source, info, max_len, in_set):
         raise error("bad hex escape")
     source.pos = here
     value = int("".join(digits), 16)
-    if (info.local_flags & IGNORECASE) and not in_set:
+    if (info.all_flags & IGNORECASE) and not in_set:
         return _CharacterIgn(value)
     return _Character(value)
 
@@ -1164,7 +1191,7 @@ def _parse_group_ref(source, info):
     source.expect(">")
     if info.is_open_group(name):
         raise error("can't refer to an open group")
-    if info.local_flags & IGNORECASE:
+    if info.all_flags & IGNORECASE:
         return _RefGroupIgn(info, name)
     return _RefGroup(info, name)
 
@@ -1181,7 +1208,7 @@ def _parse_named_char(source, info, in_set):
         if ch == "}":
             try:
                 value = unicodedata.lookup("".join(name))
-                if (info.local_flags & IGNORECASE) and not in_set:
+                if (info.all_flags & IGNORECASE) and not in_set:
                     return _CharacterIgn(ord(value))
                 return _Character(ord(value))
             except KeyError:
@@ -1237,7 +1264,7 @@ def _parse_set(source, info):
             others.extend(o)
     finally:
         source.ignore_space = saved_ignore
-    if info.local_flags & IGNORECASE:
+    if info.all_flags & IGNORECASE:
         # Expand the list of characters to include all their case-forms.
         all_characters = []
         char_type = info.char_type
@@ -2118,8 +2145,9 @@ class _Set(_RegexBase):
         # If there are only characters then compile to a character or bitset.
         if not self.others:
             if len(self.characters) == 1:
-                return _Character(self.characters[0]).compile(reverse)
-            return self._make_bitset(self.characters, reverse)
+                return _Character(self.characters[0],
+                  positive=self.positive).compile(reverse)
+            return self._make_bitset(self.characters, self.positive, reverse)
 
         # If there's one property and no characters then compile to that.
         if not self.characters and len(self.others) == 1:
@@ -2132,7 +2160,7 @@ class _Set(_RegexBase):
         flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
         code = [(self._opcode[reverse], flags)]
         if self.characters:
-            code.extend(self._make_bitset(self.characters, False))
+            code.extend(self._make_bitset(self.characters, True, False))
         for o in self.others:
             code.extend(o.compile())
         code.append((_OP.END, ))
@@ -2167,7 +2195,7 @@ class _Set(_RegexBase):
     CODE_MASK = (1 << _BITS_PER_CODE) - 1
     CODES_PER_SUBSET = 256 // _BITS_PER_CODE
     SUBSET_MASK = (1 << 256) - 1
-    def _make_bitset(self, characters, reverse):
+    def _make_bitset(self, characters, positive, reverse):
         code = []
         # values for big bitset are: max_char indexes... subsets...
         # values for small bitset are: top_bits bitset
@@ -2194,12 +2222,12 @@ class _Set(_RegexBase):
             for subset, ind in sorted(subset_index.items(), key=lambda pair:
               pair[1]):
                 data.extend(_Set._bitset_to_codes(subset))
-            flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
+            flags = int(positive) + _ZEROWIDTH_OP * int(self.zerowidth)
             code.append((self._big_bitset_opcode[reverse], flags,
               max(characters)) + tuple(data))
         else:
             # Build a small bitset.
-            flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
+            flags = int(positive) + _ZEROWIDTH_OP * int(self.zerowidth)
             top_bits, bitset = list(bitset_dict.items())[0]
             code.append((self._small_bitset_opcode[reverse], flags, top_bits) +
               tuple(_Set._bitset_to_codes(bitset)))
@@ -2342,7 +2370,10 @@ class _Info:
     CLOSED = "CLOSED"
     def __init__(self, flags=0, char_type=None):
         self.global_flags = flags & _GLOBAL_FLAGS
-        self.local_flags = flags & _LOCAL_FLAGS
+        self.scoped_flags = flags & _SCOPED_FLAGS
+        self.all_flags = self.global_flags | self.scoped_flags
+        if not (self.global_flags & NEW):
+            self.global_flags = self.all_flags
         self.group_count = 0
         self.group_index = {}
         self.group_name = {}
@@ -2388,7 +2419,7 @@ class Scanner:
             # Parse the regular expression.
             source = _Source(phrase)
             info = _Info(flags, source.char_type)
-            source.ignore_space = bool(info.local_flags & VERBOSE)
+            source.ignore_space = bool(info.all_flags & VERBOSE)
             parsed = _parse_pattern(source, info)
             if not source.at_end():
                 raise error("trailing characters")

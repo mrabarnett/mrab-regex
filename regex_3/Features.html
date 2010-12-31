@@ -14,19 +14,22 @@
 <div class="section" id="note">
 <h1>Note</h1>
 <p>For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.</p>
+<p>Please note that certain aspects of this module have changed from those of previous versions to make it conform better to the 're' module.</p>
 </div>
 <div class="section" id="flags">
 <h1>Flags</h1>
 <p>There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.</p>
 <p>The scoped flags are: <tt class="docutils literal">IGNORECASE</tt>, <tt class="docutils literal">MULTILINE</tt>, <tt class="docutils literal">DOTALL</tt>, <tt class="docutils literal">VERBOSE</tt>, <tt class="docutils literal">WORD</tt>.</p>
-<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">ZEROWIDTH</tt>.</p>
+<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">NEW</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>.</p>
+<p>The <tt class="docutils literal">NEW</tt> flag turns on the new behaviour of this module, which can differ from that of the 're' module, such as splitting on zero-width matches, inline flags affecting only what follows, and being able to turn inline flags off.</p>
+<p>Note: The <tt class="docutils literal">ZEROWIDTH</tt> flag which was in previous versions of this module has been removed. The <tt class="docutils literal">NEW</tt> flag should be used instead.</p>
 </div>
 <div class="section" id="notes-on-named-capture-groups">
 <h1>Notes on named capture groups</h1>
 <p>All capture groups have a group number, starting from 1.</p>
 <p>Groups with the same group name will have the same group number, and groups with a different group name will have a different group number.</p>
-<p>The same group name can be used on different branches of an alternation because they are mutually exclusive, eg. <tt class="docutils literal"><span class="pre">(?&lt;foo&gt;first)|(?&lt;foo&gt;second)</span></tt>. They will, of course, have the same group number.</p>
-<p>Group numbers will be reused, where possible, across different branches of a branch reset, eg. <tt class="docutils literal"><span class="pre">(?|(first)|(second))</span></tt> has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. <tt class="docutils literal"><span class="pre">(?|(?&lt;foo&gt;first)|(?&lt;bar&gt;second))</span></tt> has group 1 (&quot;foo&quot;) and group 2 (&quot;bar&quot;).</p>
+<p>The same group name can be used on different branches of an alternation because they are mutually exclusive, eg. <tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;first)|(?P&lt;foo&gt;second)</span></tt>. They will, of course, have the same group number.</p>
+<p>Group numbers will be reused, where possible, across different branches of a branch reset, eg. <tt class="docutils literal"><span class="pre">(?|(first)|(second))</span></tt> has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. <tt class="docutils literal"><span class="pre">(?|(?P&lt;foo&gt;first)|(?P&lt;bar&gt;second))</span></tt> has group 1 (&quot;foo&quot;) and group 2 (&quot;bar&quot;).</p>
 </div>
 <div class="section" id="additional-features">
 <h1>Additional features</h1>
@@ -53,7 +56,7 @@
 <li><p class="first">Inline flags (#433024, #433027)</p>
 <blockquote>
 <p><tt class="docutils literal"><span class="pre">(?flags-flags)</span></tt></p>
-<p>The flags will apply to the end of the group or pattern. Flags can be turned on or off.</p>
+<p>If the <tt class="docutils literal">NEW</tt> flag is turned on then the flags will apply to the end of the group or pattern and can be turned on or off. If the <tt class="docutils literal">NEW</tt> flag isn't turned on then the flags will be global and can't be turned off.</p>
 </blockquote>
 </li>
 <li><p class="first">Repeated repeats (#2537)</p>
@@ -118,7 +121,7 @@
 </li>
 <li><p class="first">Zero-width split with regex.split (#3262)</p>
 <blockquote>
-<p><tt class="docutils literal">regex.split</tt> can split at a zero-width match if the zero-width flag is turned on. When the flag is turned off the current behaviour is unchanged because the BDFL thinks that some existing software might depend on it.</p>
+<p><tt class="docutils literal">regex.split</tt> can split at a zero-width match if the <tt class="docutils literal">NEW</tt> flag is turned on. When the flag is turned off the current behaviour is unchanged because the BDFL thinks that some existing software might depend on it.</p>
 </blockquote>
 </li>
 <li><p class="first">Splititer</p>
@@ -130,7 +133,7 @@
 <blockquote>
 <p>A match object accepts access to the captured groups via subscripting and slicing:</p>
 <pre class="doctest-block">
-&gt;&gt;&gt; m = regex.search(r&quot;(?&lt;before&gt;.*?)(?&lt;num&gt;\d+)(?&lt;after&gt;.*)&quot;, &quot;pqr123stu&quot;)
+&gt;&gt;&gt; m = regex.search(r&quot;(?P&lt;before&gt;.*?)(?P&lt;num&gt;\d+)(?P&lt;after&gt;.*)&quot;, &quot;pqr123stu&quot;)
 &gt;&gt;&gt; print m[&quot;before&quot;]
 pqr
 &gt;&gt;&gt; print m[&quot;num&quot;]
@@ -146,7 +149,7 @@ stu
 </li>
 <li><p class="first">Named groups</p>
 <blockquote>
-<p>Named groups can be named with <tt class="docutils literal"><span class="pre">(?&lt;name&gt;...)</span></tt> as well as the current <tt class="docutils literal"><span class="pre">(?P&lt;name&gt;...)</span></tt>.</p>
+<p>Groups can be named with <tt class="docutils literal"><span class="pre">(?&lt;name&gt;...)</span></tt> as well as the current <tt class="docutils literal"><span class="pre">(?P&lt;name&gt;...)</span></tt>.</p>
 </blockquote>
 </li>
 <li><p class="first">Group references</p>
@@ -244,7 +247,7 @@ stu
 <div class="footer">
 <hr class="footer" />
 <a class="reference external" href="Features.rst">View document source</a>.
-Generated on: 2010-08-26 17:05 UTC.
+Generated on: 2010-09-13 04:14 UTC.
 Generated by <a class="reference external" href="http://docutils.sourceforge.net/">Docutils</a> from <a class="reference external" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 
 </div>

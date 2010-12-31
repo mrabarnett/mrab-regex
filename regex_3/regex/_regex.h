@@ -1886,9 +1886,9 @@ unsigned char re_ascii_property[128] = {
 #define RE_FLAG_IGNORECASE 0x2
 #define RE_FLAG_LOCALE 0x4
 #define RE_FLAG_MULTILINE 0x8
+#define RE_FLAG_NEW 0x100
 #define RE_FLAG_REVERSE 0x400
 #define RE_FLAG_TEMPLATE 0x1
 #define RE_FLAG_UNICODE 0x20
 #define RE_FLAG_VERBOSE 0x40
 #define RE_FLAG_WORD 0x800
-#define RE_FLAG_ZEROWIDTH 0x100

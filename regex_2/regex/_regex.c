@@ -6213,7 +6213,7 @@ Py_LOCAL(BOOL) state_init_2(RE_State* state, PatternObject* pattern, PyObject*
             state->final_newline = final_pos;
     }
 
-    state->zero_width = (pattern->flags & RE_FLAG_ZEROWIDTH) != 0;
+    state->zero_width = (pattern->flags & RE_FLAG_NEW) != 0;
     state->must_advance = FALSE;
     state->do_check = pattern->do_check;
 
