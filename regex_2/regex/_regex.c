@@ -391,10 +391,6 @@ typedef PyObject* (*RE_GetByIndexFunc)(MatchObject* self, Py_ssize_t index);
 #define UCHAR_AT(text, pos) *((RE_UCHAR*)(text) + (pos))
 #define BCHAR_AT(text, pos) *((RE_BCHAR*)(text) + (pos))
 
-#define RE_MAX2(A, B) max(A, B)
-#define RE_MAX3(A, B, C) max(max(A, B), C)
-#define RE_MAX4(A, B, C, D) max(max(max(A, B), C), D)
-
 /* The problem of case-insensitive matches.
  *
  * The current re module performs case-insensitive matches by forcing the
@@ -460,6 +456,18 @@ typedef PyObject* (*RE_GetByIndexFunc)(MatchObject* self, Py_ssize_t index);
  * What seems to work is never to compare 2 converted characters with each
  * other, but only a converted character with an unconverted character.
  */
+
+Py_LOCAL_INLINE(int) max2(int a, int b) {
+    return a >= b ? a : b;
+}
+
+Py_LOCAL_INLINE(int) max3(int a, int b, int c) {
+    return max2(max2(a, b), c);
+}
+
+Py_LOCAL_INLINE(int) max4(int a, int b, int c, int d) {
+    return max2(max3(a, b, c), d);
+}
 
 /* Gets a byte character at the given position. */
 static RE_CODE bytes_char_at(void* text, Py_ssize_t pos) {
@@ -4168,6 +4176,24 @@ Py_LOCAL_INLINE(BOOL) is_guarded(RE_State* state, size_t index, Py_ssize_t
     return in_guard_list(guard_list, text_pos);
 }
 
+/* Resets the guards inside atomic subpatterns and lookarounds. */
+Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values)
+  {
+    size_t i;
+
+    for (i = 1; i <= values[0]; i++) {
+        RE_GuardList* guard_list;
+
+        guard_list = &state->repeats[values[i]].body_guard_list;
+        guard_list->count = 0;
+        guard_list->sorted = 0;
+
+        guard_list = &state->repeats[values[i]].tail_guard_list;
+        guard_list->count = 0;
+        guard_list->sorted = 0;
+    }
+}
+
 /* Performs a depth-first match or search from the context. */
 Py_LOCAL_INLINE(int) basic_match(RE_State* state, RE_Node* start_node, BOOL
   search) {
@@ -4333,6 +4359,8 @@ advance:
 
             if (status < 0)
                 return status;
+
+            reset_guards(state, node->values);
 
             restore_info(state, &info);
 
@@ -4795,6 +4823,7 @@ advance:
         case RE_OP_GREEDY_REPEAT_ONE: /* Greedy repeat for one character. */
         {
             size_t count;
+            size_t index;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Count how many times the character repeats, up to the maximum.
@@ -4806,18 +4835,17 @@ advance:
             if (count < node->values[1])
                 goto backtrack;
 
+            index = node->values[0];
             if (count > node->values[1]) {
                 /* The match is longer than the minimum, so we might need to
                  * backtrack the repeat to consume less.
                  */
-                size_t index;
                 RE_RepeatData* rp_data;
                 RE_BacktrackData* bt_data;
 
                 /* Get the offset to the repeat values in the context. Repeat
                  * indexes are 0-based.
                  */
-                index = node->values[0];
                 rp_data = &state->repeats[index];
                 if (!add_backtrack(state, RE_OP_GREEDY_REPEAT_ONE) ||
                   !push_groups(state))
@@ -4834,6 +4862,8 @@ advance:
 
             text_pos += (Py_ssize_t)count * node->step;
             node = node->next_1.node;
+            if (!guard(state, index, text_pos, RE_TAIL))
+                return RE_ERROR_MEMORY;
             break;
         }
         case RE_OP_GROUP_EXISTS: /* Capture group exists. */
@@ -4914,6 +4944,7 @@ advance:
         case RE_OP_LAZY_REPEAT_ONE: /* Lazy repeat for one character. */
         {
             size_t count;
+            size_t index;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Count how many times the character repeats, up to the minimum.
@@ -4925,18 +4956,17 @@ advance:
             if (count < node->values[1])
                 goto backtrack;
 
+            index = node->values[0];
             if (count < node->values[2]) {
                 /* The match is shorter than the maximum, so we might need to
                  * backtrack the repeat to consume more.
                  */
-                Py_ssize_t index;
                 RE_RepeatData* rp_data;
                 RE_BacktrackData* bt_data;
 
                 /* Get the offset to the repeat values in the context. Repeat
                  * indexes are 0-based.
                  */
-                index = node->values[0];
                 rp_data = &state->repeats[index];
                 if (!add_backtrack(state, RE_OP_LAZY_REPEAT_ONE) ||
                   !push_groups(state))
@@ -4953,6 +4983,8 @@ advance:
 
             text_pos += (Py_ssize_t)count * step;
             node = node->next_1.node;
+            if (!guard(state, index, text_pos, RE_TAIL))
+                return RE_ERROR_MEMORY;
             break;
         }
         case RE_OP_LOOKAROUND: /* Lookaround. */
@@ -4981,6 +5013,8 @@ advance:
 
             if (status < 0)
                 return status;
+
+            reset_guards(state, node->values + 1);
 
             state->slice_end = slice_end;
             state->slice_start = slice_start;
@@ -5502,6 +5536,7 @@ backtrack:
             BOOL match;
             RE_CODE ch;
             BOOL m;
+            size_t index;
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             node = bt_data->repeat.position.node;
@@ -5520,44 +5555,37 @@ backtrack:
 
             ch = node->next_1.test->values[0];
             m = node->next_1.test->match;
+            index = node->values[0];
 
             switch (node->next_1.test->op) {
             case RE_OP_CHARACTER:
             {
                 if (state->wide) {
-                    RE_UCHAR* ptr;
-                    RE_UCHAR* limit_ptr;
+                    RE_UCHAR* text_ptr;
 
-                    ptr = (RE_UCHAR*)text + pos;
-                    limit_ptr = (RE_UCHAR*)text + limit;
+                    text_ptr = (RE_UCHAR*)text;
 
                     for (;;) {
-                        ptr -= step;
-                        match = (ptr[0] == ch) == m;
-                        if (match)
+                        pos -= step;
+                        match = (text_ptr[pos] == ch) == m;
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_UCHAR*)text;
                 } else {
-                    RE_BCHAR* ptr;
-                    RE_BCHAR* limit_ptr;
+                    RE_BCHAR* text_ptr;
 
-                    ptr = (RE_BCHAR*)text + pos;
-                    limit_ptr = (RE_BCHAR*)text + limit;
+                    text_ptr = (RE_BCHAR*)text;
 
                     for (;;) {
-                        ptr -= step;
-                        match = (ptr[0] == ch) == m;
-                        if (match)
+                        pos -= step;
+                        match = (text_ptr[pos] == ch) == m;
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_BCHAR*)text;
                 }
                 break;
             }
@@ -5573,41 +5601,33 @@ backtrack:
                     ch_title = encoding->title(ch);
 
                 if (state->wide) {
-                    RE_UCHAR* ptr;
-                    RE_UCHAR* limit_ptr;
+                    RE_UCHAR* text_ptr;
 
-                    ptr = (RE_UCHAR*)text + pos;
-                    limit_ptr = (RE_UCHAR*)text + limit;
+                    text_ptr = (RE_UCHAR*)text;
 
                     for (;;) {
-                        ptr -= step;
-                        match = same_char_ign_3(ptr[0], ch, ch_lower, ch_upper,
-                          ch_title) == m;
-                        if (match)
+                        pos -= step;
+                        match = same_char_ign_3(text_ptr[pos], ch, ch_lower,
+                          ch_upper, ch_title) == m;
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_UCHAR*)text;
                 } else {
-                    RE_BCHAR* ptr;
-                    RE_BCHAR* limit_ptr;
+                    RE_BCHAR* text_ptr;
 
-                    ptr = (RE_BCHAR*)text + pos;
-                    limit_ptr = (RE_BCHAR*)text + limit;
+                    text_ptr = (RE_BCHAR*)text;
 
                     for (;;) {
-                        ptr -= step;
-                        match = same_char_ign_3(ptr[0], ch, ch_lower, ch_upper,
-                          ch_title) == m;
-                        if (match)
+                        pos -= step;
+                        match = same_char_ign_3(text_ptr[pos], ch, ch_lower,
+                          ch_upper, ch_title) == m;
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_BCHAR*)text;
                 }
                 break;
             }
@@ -5624,125 +5644,101 @@ backtrack:
                     ch_title = encoding->title(ch);
 
                 if (state->wide) {
-                    RE_UCHAR* ptr;
-                    RE_UCHAR* limit_ptr;
+                    RE_UCHAR* text_ptr;
 
-                    ptr = (RE_UCHAR*)text + pos;
-                    limit_ptr = (RE_UCHAR*)text + limit;
+                    text_ptr = (RE_UCHAR*)text;
 
                     for (;;) {
-                        ptr -= step;
-                        match = same_char_ign_3(ptr[-1], ch, ch_lower,
+                        pos -= step;
+                        match = same_char_ign_3(text_ptr[pos - 1], ch, ch_lower,
                           ch_upper, ch_title) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_UCHAR*)text;
                 } else {
-                    RE_BCHAR* ptr;
-                    RE_BCHAR* limit_ptr;
+                    RE_BCHAR* text_ptr;
 
-                    ptr = (RE_BCHAR*)text + pos;
-                    limit_ptr = (RE_BCHAR*)text + limit;
+                    text_ptr = (RE_BCHAR*)text;
 
                     for (;;) {
-                        ptr -= step;
-                        match = same_char_ign_3(ptr[-1], ch, ch_lower,
+                        pos -= step;
+                        match = same_char_ign_3(text_ptr[pos - 1], ch, ch_lower,
                           ch_upper, ch_title) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_BCHAR*)text;
                 }
                 break;
             }
             case RE_OP_CHARACTER_REV:
             {
                 if (state->wide) {
-                    RE_UCHAR* ptr;
-                    RE_UCHAR* limit_ptr;
+                    RE_UCHAR* text_ptr;
 
-                    ptr = (RE_UCHAR*)text + pos;
-                    limit_ptr = (RE_UCHAR*)text + limit;
+                    text_ptr = (RE_UCHAR*)text;
 
                     for (;;) {
-                        ptr -= step;
-                        match = (ptr[-1] == ch) == m;
-                        if (match)
+                        pos -= step;
+                        match = (text_ptr[pos - 1] == ch) == m;
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_UCHAR*)text;
                 } else {
-                    RE_BCHAR* ptr;
-                    RE_BCHAR* limit_ptr;
+                    RE_BCHAR* text_ptr;
 
-                    ptr = (RE_BCHAR*)text + pos;
-                    limit_ptr = (RE_BCHAR*)text + limit;
+                    text_ptr = (RE_BCHAR*)text;
 
                     for (;;) {
-                        ptr -= step;
-                        match = (ptr[-1] == ch) == m;
-                        if (match)
+                        pos -= step;
+                        match = (text_ptr[pos - 1] == ch) == m;
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_BCHAR*)text;
                 }
                 break;
             }
             case RE_OP_STRING:
             {
                 if (state->wide) {
-                    RE_UCHAR* ptr;
-                    RE_UCHAR* limit_ptr;
+                    RE_UCHAR* text_ptr;
 
-                    ptr = (RE_UCHAR*)text + pos;
-                    limit_ptr = (RE_UCHAR*)text + limit;
+                    text_ptr = (RE_UCHAR*)text;
 
                     for (;;) {
                         RE_Position next_position;
 
-                        ptr -= step;
-                        match = ptr[0] == ch && try_match(state, &node->next_1,
-                          ptr - (RE_UCHAR*)text, &next_position);
-                        if (match)
+                        pos -= step;
+                        match = text_ptr[pos] == ch && try_match(state,
+                          &node->next_1, pos, &next_position);
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_UCHAR*)text;
                 } else {
-                    RE_BCHAR* ptr;
-                    RE_BCHAR* limit_ptr;
+                    RE_BCHAR* text_ptr;
 
-                    ptr = (RE_BCHAR*)text + pos;
-                    limit_ptr = (RE_BCHAR*)text + limit;
+                    text_ptr = (RE_BCHAR*)text;
 
                     for (;;) {
                         RE_Position next_position;
 
-                        ptr -= step;
-                        match = ptr[0] == ch && try_match(state, &node->next_1,
-                          ptr - (RE_BCHAR*)text, &next_position);
-                        if (match)
+                        pos -= step;
+                        match = text_ptr[pos] == ch && try_match(state,
+                          &node->next_1, pos, &next_position);
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_BCHAR*)text;
                 }
                 break;
             }
@@ -5759,47 +5755,39 @@ backtrack:
                     ch_title = encoding->title(ch);
 
                 if (state->wide) {
-                    RE_UCHAR* ptr;
-                    RE_UCHAR* limit_ptr;
+                    RE_UCHAR* text_ptr;
 
-                    ptr = (RE_UCHAR*)text + pos;
-                    limit_ptr = (RE_UCHAR*)text + limit;
+                    text_ptr = (RE_UCHAR*)text;
 
                     for (;;) {
                         RE_Position next_position;
 
-                        ptr -= step;
-                        match = same_char_ign_3(ptr[0], ch, ch_lower, ch_upper,
-                          ch_title) && try_match(state, &node->next_1, ptr -
-                          (RE_UCHAR*)text, &next_position);
-                        if (match)
+                        pos -= step;
+                        match = same_char_ign_3(text_ptr[pos], ch, ch_lower,
+                          ch_upper, ch_title) && try_match(state, &node->next_1,
+                          pos, &next_position);
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_UCHAR*)text;
                 } else {
-                    RE_BCHAR* ptr;
-                    RE_BCHAR* limit_ptr;
+                    RE_BCHAR* text_ptr;
 
-                    ptr = (RE_BCHAR*)text + pos;
-                    limit_ptr = (RE_BCHAR*)text + limit;
+                    text_ptr = (RE_BCHAR*)text;
 
                     for (;;) {
                         RE_Position next_position;
 
-                        ptr -= step;
-                        match = same_char_ign_3(ptr[0], ch, ch_lower, ch_upper,
-                          ch_title) && try_match(state, &node->next_1, ptr -
-                          (RE_BCHAR*)text, &next_position);
-                        if (match)
+                        pos -= step;
+                        match = same_char_ign_3(text_ptr[pos], ch, ch_lower,
+                          ch_upper, ch_title) && try_match(state, &node->next_1,
+                          pos, &next_position);
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_BCHAR*)text;
                 }
                 break;
             }
@@ -5818,47 +5806,39 @@ backtrack:
                     ch_title = encoding->title(ch);
 
                 if (state->wide) {
-                    RE_UCHAR* ptr;
-                    RE_UCHAR* limit_ptr;
+                    RE_UCHAR* text_ptr;
 
-                    ptr = (RE_UCHAR*)text + pos;
-                    limit_ptr = (RE_UCHAR*)text + limit;
+                    text_ptr = (RE_UCHAR*)text;
 
                     for (;;) {
                         RE_Position next_position;
 
-                        ptr -= step;
-                        match = same_char_ign_3(ptr[-1], ch, ch_lower,
+                        pos -= step;
+                        match = same_char_ign_3(text_ptr[pos - 1], ch, ch_lower,
                           ch_upper, ch_title) && try_match(state,
-                          &node->next_1, ptr - (RE_UCHAR*)text, &next_position);
-                        if (match)
+                          &node->next_1, pos, &next_position);
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_UCHAR*)text;
                 } else {
-                    RE_BCHAR* ptr;
-                    RE_BCHAR* limit_ptr;
+                    RE_BCHAR* text_ptr;
 
-                    ptr = (RE_BCHAR*)text + pos;
-                    limit_ptr = (RE_BCHAR*)text + limit;
+                    text_ptr = (RE_BCHAR*)text;
 
                     for (;;) {
                         RE_Position next_position;
 
-                        ptr -= step;
-                        match = same_char_ign_3(ptr[-1], ch, ch_lower,
+                        pos -= step;
+                        match = same_char_ign_3(text_ptr[pos - 1], ch, ch_lower,
                           ch_upper, ch_title) && try_match(state,
-                          &node->next_1, ptr - (RE_BCHAR*)text, &next_position);
-                        if (match)
+                          &node->next_1, pos, &next_position);
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_BCHAR*)text;
                 }
                 break;
             }
@@ -5868,45 +5848,37 @@ backtrack:
                   1];
 
                 if (state->wide) {
-                    RE_UCHAR* ptr;
-                    RE_UCHAR* limit_ptr;
+                    RE_UCHAR* text_ptr;
 
-                    ptr = (RE_UCHAR*)text + pos;
-                    limit_ptr = (RE_UCHAR*)text + limit;
+                    text_ptr = (RE_UCHAR*)text;
 
                     for (;;) {
                         RE_Position next_position;
 
-                        ptr -= step;
-                        match = ptr[-1] == ch && try_match(state,
-                          &node->next_1, ptr - (RE_UCHAR*)text, &next_position);
-                        if (match)
+                        pos -= step;
+                        match = text_ptr[pos - 1] == ch && try_match(state,
+                          &node->next_1, pos, &next_position);
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_UCHAR*)text;
                 } else {
-                    RE_BCHAR* ptr;
-                    RE_BCHAR* limit_ptr;
+                    RE_BCHAR* text_ptr;
 
-                    ptr = (RE_BCHAR*)text + pos;
-                    limit_ptr = (RE_BCHAR*)text + limit;
+                    text_ptr = (RE_BCHAR*)text;
 
                     for (;;) {
                         RE_Position next_position;
 
-                        ptr -= step;
-                        match = ptr[-1] == ch && try_match(state,
-                          &node->next_1, ptr - (RE_BCHAR*)text, &next_position);
-                        if (match)
+                        pos -= step;
+                        match = text_ptr[pos - 1] == ch && try_match(state,
+                          &node->next_1, pos, &next_position);
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
-                        if (ptr == limit_ptr)
+                        if (pos == limit)
                             break;
                     }
-
-                    pos = ptr - (RE_BCHAR*)text;
                 }
                 break;
             }
@@ -5917,7 +5889,7 @@ backtrack:
                     pos -= step;
                     match = try_match(state, &node->next_1, pos,
                       &next_position);
-                    if (match)
+                    if (match && !is_guarded(state, index, pos, RE_TAIL))
                         break;
                     if (pos == limit)
                         break;
@@ -5947,6 +5919,8 @@ backtrack:
 
                 node = node->next_1.node;
                 text_pos = pos;
+                if (!guard(state, index, text_pos, RE_TAIL))
+                    return RE_ERROR_MEMORY;
                 goto advance;
             } else {
                 /* We've backtracked the repeat as far as we can. */
@@ -5983,6 +5957,7 @@ backtrack:
             BOOL match;
             RE_CODE ch;
             BOOL m;
+            size_t index;
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             node = bt_data->repeat.position.node;
@@ -6009,6 +5984,7 @@ backtrack:
 
             ch = test->values[0];
             m = test->match;
+            index = node->values[0];
 
             switch (test->op) {
             case RE_OP_CHARACTER:
@@ -6026,7 +6002,7 @@ backtrack:
                             break;
                         pos += step;
                         match = (UCHAR_AT(text, pos) == ch) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6038,7 +6014,7 @@ backtrack:
                             break;
                         pos += step;
                         match = (BCHAR_AT(text, pos) == ch) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6071,7 +6047,7 @@ backtrack:
                         pos += step;
                         match = same_char_ign_3(UCHAR_AT(text, pos), ch,
                           ch_lower, ch_upper, ch_title) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6084,7 +6060,7 @@ backtrack:
                         pos += step;
                         match = same_char_ign_3(BCHAR_AT(text, pos), ch,
                           ch_lower, ch_upper, ch_title) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6117,7 +6093,7 @@ backtrack:
                         pos += step;
                         match = same_char_ign_3(UCHAR_AT(text, pos - 1), ch,
                           ch_lower, ch_upper, ch_title) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6130,7 +6106,7 @@ backtrack:
                         pos += step;
                         match = same_char_ign_3(BCHAR_AT(text, pos - 1), ch,
                           ch_lower, ch_upper, ch_title) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6153,7 +6129,7 @@ backtrack:
                             break;
                         pos += step;
                         match = (UCHAR_AT(text, pos - 1) == ch) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6165,7 +6141,7 @@ backtrack:
                             break;
                         pos += step;
                         match = (BCHAR_AT(text, pos - 1) == ch) == m;
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6191,7 +6167,7 @@ backtrack:
                         pos += step;
                         match = UCHAR_AT(text, pos) == ch && try_match(state,
                           &node->next_1, pos, &next_position);
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6206,7 +6182,7 @@ backtrack:
                         pos += step;
                         match = BCHAR_AT(text, pos) == ch && try_match(state,
                           &node->next_1, pos, &next_position);
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6242,7 +6218,7 @@ backtrack:
                         match = same_char_ign_3(UCHAR_AT(text, pos), ch,
                           ch_lower, ch_upper, ch_title) && try_match(state,
                           &node->next_1, pos, &next_position);
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6258,7 +6234,7 @@ backtrack:
                         match = same_char_ign_3(BCHAR_AT(text, pos), ch,
                           ch_lower, ch_upper, ch_title) && try_match(state,
                           &node->next_1, pos, &next_position);
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6295,7 +6271,7 @@ backtrack:
                         match = same_char_ign_3(UCHAR_AT(text, pos - 1), ch,
                           ch_lower, ch_upper, ch_title) && try_match(state,
                           &node->next_1, pos, &next_position);
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6311,7 +6287,7 @@ backtrack:
                         match = same_char_ign_3(BCHAR_AT(text, pos - 1), ch,
                           ch_lower, ch_upper, ch_title) && try_match(state,
                           &node->next_1, pos, &next_position);
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6339,7 +6315,7 @@ backtrack:
                         pos += step;
                         match = UCHAR_AT(text, pos - 1) == ch &&
                           try_match(state, &node->next_1, pos, &next_position);
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6354,7 +6330,7 @@ backtrack:
                         pos += step;
                         match = BCHAR_AT(text, pos - 1) == ch &&
                           try_match(state, &node->next_1, pos, &next_position);
-                        if (match)
+                        if (match && !is_guarded(state, index, pos, RE_TAIL))
                             break;
                         if (pos == limit)
                             break;
@@ -6372,7 +6348,7 @@ backtrack:
                     pos += step;
                     match = try_match(state, &node->next_1, pos,
                       &next_position);
-                    if (match)
+                    if (match && !is_guarded(state, index, pos, RE_TAIL))
                         break;
                     if (pos == limit)
                         break;
@@ -6402,6 +6378,8 @@ backtrack:
                 }
 
                 node = node->next_1.node;
+                if (!guard(state, index, text_pos, RE_TAIL))
+                    return RE_ERROR_MEMORY;
                 goto advance;
             } else {
                 /* The tail couldn't match. */
@@ -7841,17 +7819,16 @@ static PyObject* match_regs(MatchObject* self) {
 }
 
 /* MatchObject's slice method. */
-Py_LOCAL_INLINE(PyObject*) match_get_group_slice(MatchObject* self,
-  PySliceObject* slice) {
+Py_LOCAL_INLINE(PyObject*) match_get_group_slice(MatchObject* self, PyObject*
+  slice) {
     Py_ssize_t start;
     Py_ssize_t end;
     Py_ssize_t step;
     Py_ssize_t slice_length;
 
-    if (PySlice_GetIndicesEx(slice, self->group_count + 1, &start, &end, &step,
-      &slice_length) < 0) {
+    if (PySlice_GetIndicesEx((PySliceObject*)slice, self->group_count + 1,
+      &start, &end, &step, &slice_length) < 0)
         return NULL;
-    }
 
     if (slice_length <= 0)
         return PyTuple_New(0);
@@ -7883,7 +7860,7 @@ static Py_ssize_t match_length(MatchObject* self) {
 /* MatchObject's subscript method. */
 static PyObject* match_subscript(MatchObject* self, PyObject* item) {
     if (PySlice_Check(item))
-        return match_get_group_slice(self, (PySliceObject*)item);
+        return match_get_group_slice(self, item);
 
     return match_get_group(self, item, Py_None, TRUE);
 }
@@ -9869,38 +9846,6 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
 
     for (;;) {
         switch (node->op) {
-        case RE_OP_ANY:
-        case RE_OP_ANY_ALL:
-        case RE_OP_ANY_ALL_REV:
-        case RE_OP_ANY_REV:
-        case RE_OP_BIG_BITSET:
-        case RE_OP_BIG_BITSET_REV:
-        case RE_OP_BOUNDARY:
-        case RE_OP_CHARACTER:
-        case RE_OP_CHARACTER_IGN:
-        case RE_OP_CHARACTER_IGN_REV:
-        case RE_OP_CHARACTER_REV:
-        case RE_OP_DEFAULT_BOUNDARY:
-        case RE_OP_END_GROUP:
-        case RE_OP_END_OF_LINE:
-        case RE_OP_END_OF_STRING:
-        case RE_OP_END_OF_STRING_LINE:
-        case RE_OP_PROPERTY:
-        case RE_OP_PROPERTY_REV:
-        case RE_OP_SEARCH_ANCHOR:
-        case RE_OP_SET:
-        case RE_OP_SET_REV:
-        case RE_OP_SMALL_BITSET:
-        case RE_OP_SMALL_BITSET_REV:
-        case RE_OP_START_GROUP:
-        case RE_OP_START_OF_LINE:
-        case RE_OP_START_OF_STRING:
-        case RE_OP_STRING:
-        case RE_OP_STRING_IGN:
-        case RE_OP_STRING_IGN_REV:
-        case RE_OP_STRING_REV:
-            node = node->next_1.node;
-            break;
         case RE_OP_ATOMIC:
         case RE_OP_LOOKAROUND:
         {
@@ -9909,7 +9854,7 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
 
             body_result = add_guards(pattern, node->next_2.node, index);
             tail_result = add_guards(pattern, node->next_1.node, index);
-            return RE_MAX3(result, body_result, tail_result);
+            return max3(result, body_result, tail_result);
         }
         case RE_OP_BRANCH:
         {
@@ -9918,7 +9863,7 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
 
             branch_1_result = add_guards(pattern, node->next_1.node, index);
             branch_2_result = add_guards(pattern, node->next_2.node, index);
-            return RE_MAX3(result, branch_1_result, branch_2_result);
+            return max3(result, branch_1_result, branch_2_result);
         }
         case RE_OP_END_GREEDY_REPEAT:
         case RE_OP_END_LAZY_REPEAT:
@@ -9934,17 +9879,25 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
             body_result = add_guards(pattern, node->next_1.node, index);
             tail_result = add_guards(pattern, node->next_2.node, index);
             repeat_info = &pattern->repeat_info[index];
-            if (body_result == RE_HAS_REPEAT)
+            if (body_result != RE_HAS_REF)
                 repeat_info->guards |= RE_BODY;
             if (tail_result == RE_HAS_REPEAT)
                 repeat_info->guards |= RE_TAIL;
-            return RE_MAX4(result, RE_HAS_REPEAT, body_result, tail_result);
+            return max4(result, RE_HAS_REPEAT, body_result, tail_result);
         }
         case RE_OP_GREEDY_REPEAT_ONE:
         case RE_OP_LAZY_REPEAT_ONE:
-            result = RE_MAX2(result, RE_HAS_REPEAT);
-            node = node->next_1.node;
-            break;
+        {
+            int tail_result;
+            RE_RepeatInfo* repeat_info;
+
+            index = node->values[0];
+            tail_result = add_guards(pattern, node->next_1.node, index);
+            repeat_info = &pattern->repeat_info[index];
+            if (tail_result == RE_HAS_REPEAT)
+                repeat_info->guards |= RE_TAIL;
+            return max3(result, RE_HAS_REPEAT, tail_result);
+        }
         case RE_OP_GROUP_EXISTS:
         {
             int branch_1_result;
@@ -9952,7 +9905,7 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
 
             branch_1_result = add_guards(pattern, node->next_1.node, index);
             branch_2_result = add_guards(pattern, node->next_2.node, index);
-            return RE_MAX3(result, branch_1_result, branch_2_result);
+            return max3(result, branch_1_result, branch_2_result);
         }
         case RE_OP_REF_GROUP:
         case RE_OP_REF_GROUP_IGN:
@@ -9964,7 +9917,105 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
         case RE_OP_SUCCESS:
             return result;
         default:
-            return result;
+            node = node->next_1.node;
+            break;
+        }
+    }
+}
+
+/* Adds a repeat index to a node's values unless it's already present.
+ *
+ * 'offset' is the offset of the index count within the values.
+ */
+Py_LOCAL_INLINE(BOOL) add_repeat_index(RE_Node* node, size_t offset, size_t
+  index) {
+    size_t index_count;
+    size_t first_index;
+    size_t i;
+    RE_CODE* new_values;
+
+	if (!node)
+		return TRUE;
+
+    index_count = node->values[offset];
+    first_index = offset + 1;
+    /* Is the index already present? */
+    for (i = 0; i < index_count; i++) {
+        if (node->values[first_index + i] == index)
+            return TRUE;
+    }
+
+	/* Allocate more space for the new index. */
+    new_values = re_realloc(node->values, (node->value_count + 1) *
+      sizeof(RE_CODE));
+    if (!new_values)
+        return FALSE;
+    ++node->value_count;
+    node->values = new_values;
+
+    node->values[first_index + node->values[offset]++] = index;
+    return TRUE;
+}
+
+/* Records the index of every repeat within atomic subpatterns and lookarounds.
+*/
+Py_LOCAL_INLINE(BOOL) record_subpattern_repeats(RE_Node* parent_node, size_t
+  offset, RE_Node* node) {
+    for (;;) {
+        switch(node->op) {
+        case RE_OP_ATOMIC:
+			if (!record_subpattern_repeats(node, 0, node->next_2.node))
+				return FALSE;
+            node = node->next_1.node;
+            break;
+        case RE_OP_LOOKAROUND:
+			if (!record_subpattern_repeats(node, 1, node->next_2.node))
+				return FALSE;
+            node = node->next_1.node;
+            break;
+        case RE_OP_BRANCH:
+            if (!record_subpattern_repeats(parent_node, offset,
+              node->next_1.node))
+                return FALSE;
+            node = node->next_2.node;
+            break;
+        case RE_OP_END_GREEDY_REPEAT:
+        case RE_OP_END_LAZY_REPEAT:
+            return TRUE;
+        case RE_OP_GREEDY_REPEAT:
+        case RE_OP_LAZY_REPEAT:
+        	/* Record the index. */
+            if (!add_repeat_index(parent_node, offset, node->values[0]))
+                return FALSE;
+            if (!record_subpattern_repeats(parent_node, offset,
+              node->next_1.node))
+                return FALSE;
+            node = node->next_2.node;
+            break;
+        case RE_OP_GREEDY_REPEAT_ONE:
+        case RE_OP_LAZY_REPEAT_ONE:
+        	/* Record the index. */
+            if (!add_repeat_index(parent_node, offset, node->values[0]))
+                return FALSE;
+            node = node->next_1.node;
+            break;
+        case RE_OP_GROUP_EXISTS:
+            if (!record_subpattern_repeats(parent_node, offset,
+              node->next_1.node))
+                return FALSE;
+            node = node->next_2.node;
+            break;
+        case RE_OP_REF_GROUP:
+        case RE_OP_REF_GROUP_IGN:
+        case RE_OP_REF_GROUP_IGN_REV:
+        case RE_OP_REF_GROUP_REV:
+            node = node->next_1.node;
+            break;
+        case RE_OP_SUCCESS:
+            return TRUE;
+        default:
+            node = node->next_1.node;
+            break;
         }
     }
 }
@@ -10114,6 +10165,22 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
         case RE_OP_ANY_ALL:
         case RE_OP_ANY_ALL_REV:
         case RE_OP_ANY_REV:
+        case RE_OP_BIG_BITSET:
+        case RE_OP_BIG_BITSET_REV:
+        case RE_OP_BOUNDARY:
+        case RE_OP_DEFAULT_BOUNDARY:
+        case RE_OP_END_OF_LINE:
+        case RE_OP_END_OF_STRING:
+        case RE_OP_END_OF_STRING_LINE:
+        case RE_OP_PROPERTY:
+        case RE_OP_PROPERTY_REV:
+        case RE_OP_SET:
+        case RE_OP_SET_REV:
+        case RE_OP_SMALL_BITSET:
+        case RE_OP_SMALL_BITSET_REV:
+        case RE_OP_START_OF_LINE:
+        case RE_OP_START_OF_STRING:
+        case RE_OP_SEARCH_ANCHOR:
             early = FALSE;
             node = node->next_1.node;
             break;
@@ -10125,16 +10192,6 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
             break;
         case RE_OP_END_GROUP:
         case RE_OP_START_GROUP:
-            node = node->next_1.node;
-            break;
-        case RE_OP_BIG_BITSET:
-        case RE_OP_BIG_BITSET_REV:
-            early = FALSE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_BOUNDARY:
-        case RE_OP_DEFAULT_BOUNDARY:
-            early = FALSE;
             node = node->next_1.node;
             break;
         case RE_OP_BRANCH:
@@ -10159,12 +10216,6 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
             early = FALSE;
             node = node->next_2.node;
             break;
-        case RE_OP_END_OF_LINE:
-        case RE_OP_END_OF_STRING:
-        case RE_OP_END_OF_STRING_LINE:
-            early = FALSE;
-            node = node->next_1.node;
-            break;
         case RE_OP_GREEDY_REPEAT:
         case RE_OP_LAZY_REPEAT:
             early = FALSE;
@@ -10188,32 +10239,10 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
             early = FALSE;
             node = node->next_1.node;
             break;
-        case RE_OP_PROPERTY:
-        case RE_OP_PROPERTY_REV:
-            early = FALSE;
-            node = node->next_1.node;
-            break;
         case RE_OP_REF_GROUP:
         case RE_OP_REF_GROUP_IGN:
         case RE_OP_REF_GROUP_IGN_REV:
         case RE_OP_REF_GROUP_REV:
-            early = FALSE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_SEARCH_ANCHOR:
-            early = FALSE;
-            node = node->next_1.node;
-            early = FALSE;
-            break;
-        case RE_OP_SET:
-        case RE_OP_SET_REV:
-        case RE_OP_SMALL_BITSET:
-        case RE_OP_SMALL_BITSET_REV:
-            early = FALSE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_START_OF_LINE:
-        case RE_OP_START_OF_STRING:
             early = FALSE;
             node = node->next_1.node;
             break;
@@ -10242,6 +10271,12 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
      * or repeat tails followed at some point by a reference to a group.
      */
     add_guards(pattern, pattern->start_node, pattern->repeat_count);
+
+	/* Record the index of repeats within the body of atomic and lookaround
+	 * nodes.
+	 */
+    if (!record_subpattern_repeats(NULL, 0, pattern->start_node))
+        return FALSE;
 
     /* Discard any unused nodes. */
     discard_unused_nodes(pattern);
@@ -10479,14 +10514,17 @@ Py_LOCAL_INLINE(BOOL) build_ANY(RE_CompileArgs* args) {
 
 /* Builds ATOMIC. */
 Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
-    RE_Node* node;
+    RE_Node* atomic_node;
     RE_CompileArgs subargs;
     RE_Node* success_node;
 
     /* codes: opcode, sequence, end. */
-    node = create_node(args->pattern, RE_OP_ATOMIC, TRUE, 0, 0);
-    if (!node)
+    atomic_node = create_node(args->pattern, RE_OP_ATOMIC, TRUE, 0, 1);
+    if (!atomic_node)
         return FALSE;
+
+	/* The number of repeat indexes. */
+	atomic_node->values[0] = 0;
 
     ++args->code;
 
@@ -10511,7 +10549,7 @@ Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
     add_node(subargs.end, success_node);
 
     /* Insert the subpattern. */
-    node->next_2.node = subargs.start;
+    atomic_node->next_2.node = subargs.start;
 
     args->code = subargs.code;
     args->min_width = subargs.min_width;
@@ -10520,8 +10558,8 @@ Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
     ++args->code;
 
     /* Append the node. */
-    add_node(args->end, node);
-    args->end = node;
+    add_node(args->end, atomic_node);
+    args->end = atomic_node;
 
     return TRUE;
 }
@@ -10881,9 +10919,12 @@ Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
 
     /* Create a node for the lookaround. */
     lookaround_node = create_node(args->pattern, RE_OP_LOOKAROUND, flags, 0,
-      1);
+      2);
     if (!lookaround_node)
         return FALSE;
+
+	/* The number of repeat indexes. */
+	lookaround_node->values[1] = 0;
 
     args->code += 3;
 
