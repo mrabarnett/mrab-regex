@@ -80,11 +80,6 @@ class Test:
         self.expect(lambda: regex.sub('.', lambda m: r"\n", 'x'), repr("\\n"))
         self.expect(lambda: regex.sub('.', r"\n", 'x'), repr("\n"))
 
-        s = r"\1\1"
-        self.expect(lambda: regex.sub('(.)', s, 'x'), repr('xx'))
-        self.expect(lambda: regex.sub('(.)', regex.escape(s), 'x'), repr(s))
-        self.expect(lambda: regex.sub('(.)', lambda m: s, 'x'), repr(s))
-
         self.expect(lambda: regex.sub('(?P<a>x)', r'\g<a>\g<a>', 'xx'),
           repr('xxxx'))
         self.expect(lambda: regex.sub('(?P<a>x)', r'\g<a>\g<1>', 'xx'),
@@ -2065,13 +2060,26 @@ xyzabc
                     self.record_failure("Expected %s but got %s instead: (%s)" %
                       (expected, actual, fields))
 
+    def test_replacement(self):
+        self.expect(lambda: regex.sub("test\?", "result\?\.\a\q\m\n", "test?"),
+          repr("result\?\.\a\q\m\n"))
+        self.expect(lambda: regex.sub(r"test\?", "result\?\.\a\q\m\n", "test?"),
+          repr("result\?\.\a\q\m\n"))
+
+        self.expect(lambda: regex.sub('(.)', r"\1\1", 'x'), repr('xx'))
+        self.expect(lambda: regex.sub('(.)', regex.escape(r"\1\1"), 'x'),
+          repr(r"\1\1"))
+        self.expect(lambda: regex.sub('(.)', r"\\1\\1", 'x'), repr(r"\1\1"))
+        self.expect(lambda: regex.sub('(.)', lambda m: r"\1\1", 'x'),
+          repr(r"\1\1"))
+
     def test_common_prefix(self):
         # Very long common prefix
         all = string.ascii_lowercase + string.digits + string.ascii_uppercase
         side = all * 4
         regexp = '(' + side + '|' + side + ')'
         self.expect(lambda: type(regex.compile(regexp)), self.PATTERN_CLASS)
-        
+
     def run(self):
         print "Performing tests"
         print "================"

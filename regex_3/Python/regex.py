@@ -368,17 +368,18 @@ def _compile_replacement(pattern, template):
         if not ch:
             break
         if ch == "\\":
-            # '_compile_repl_escape' will return either an int group references
-            # or a string literal.
-            is_group, item = _rc._compile_repl_escape(source, pattern)
+            # '_compile_repl_escape' will return either an int group reference
+            # or a string literal. It returns items (plural) in order to handle
+            # a 2-character literal (an invalid escape sequence).
+            is_group, items = _rc._compile_repl_escape(source, pattern)
             if is_group:
                 # It's a group, so first flush the literal.
                 if literal:
                     compiled.append(make_string(literal))
                     literal = []
-                compiled.append(item)
+                compiled.extend(items)
             else:
-                literal.append(item)
+                literal.extend(items)
         else:
             literal.append(ord(ch))
     # Flush the literal.

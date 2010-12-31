@@ -1332,18 +1332,16 @@ def _parse_character_class(source, positive, info):
 
 def _compile_repl_escape(source, pattern):
     "Compiles a replacement template escape sequence."
-    here = source.pos
     ch = source.get()
     if ch in _ALPHA:
         # An alphabetic escape sequence.
         value = _CHARACTER_ESCAPES.get(ch)
         if value:
-            return False, ord(value)
+            return False, [ord(value)]
         if ch == "g":
             # A group preference.
-            return True, _compile_repl_group(source, pattern)
-        source.pos = here
-        return False, ord("\\")
+            return True, [_compile_repl_group(source, pattern)]
+        return False, [ord("\\"), ord(ch)]
     if ch == "0":
         # An octal escape sequence.
         digits = ch
@@ -1354,7 +1352,7 @@ def _compile_repl_escape(source, pattern):
                 source.pos = here
                 break
             digits += ch
-        return False, int(digits, 8) & 0xFF
+        return False, [int(digits, 8) & 0xFF]
     if ch in _DIGITS:
         # Either an octal escape sequence (3 digits) or a group reference (max
         # 2 digits).
@@ -1367,12 +1365,15 @@ def _compile_repl_escape(source, pattern):
             ch = source.get()
             if ch and _is_octal(digits + ch):
                 # An octal escape sequence.
-                return False, int(digits + ch, 8) & 0xFF
+                return False, [int(digits + ch, 8) & 0xFF]
         # A group reference.
         source.pos = here
-        return True, int(digits)
-    # A literal.
-    return False, ord(ch)
+        return True, [int(digits)]
+    if ch == "\\":
+        # An escaped backslash is a backslash.
+        return False, [ord("\\")]
+    # An escaped non-backslash is a backslash followed by the literal.
+    return False, [ord("\\"), ord(ch)]
 
 def _compile_repl_group(source, pattern):
     "Compiles a replacement template group reference."
