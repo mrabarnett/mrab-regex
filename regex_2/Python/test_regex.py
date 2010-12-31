@@ -2154,6 +2154,17 @@ xyzabc
         self.expect(lambda: regex.search(r"(.)+", "a").captures(1),
           repr(['a']))
 
+    def test_guards(self):
+        m = regex.search(r"(X.*?Y\s*){3}(X\s*)+AB:",
+          "XY\nX Y\nX  Y\nXY\nXX AB:")
+        self.expect(lambda: m.span(0, 1, 2), repr(((3, 21), (12, 15), (16,
+          18))))
+
+        m = regex.search(r"(X.*?Y\s*){3,}(X\s*)+AB:",
+          "XY\nX Y\nX  Y\nXY\nXX AB:")
+        self.expect(lambda: m.span(0, 1, 2), repr(((0, 21), (12, 15), (16,
+          18))))
+
     def run(self):
         print "Performing tests"
         print "================"

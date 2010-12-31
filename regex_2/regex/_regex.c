@@ -98,6 +98,7 @@ typedef enum {FALSE, TRUE} BOOL;
 #define RE_HAS_VISITED 0x4
 #define RE_VISITED_REP 0x8
 #define RE_VISITED_NC 0x10
+#define RE_FAST_INIT 0x20
 
 static char copyright[] =
     " RE 2.3.0 Copyright (c) 1997-2002 by Secret Labs AB ";
@@ -251,6 +252,7 @@ typedef struct RE_GroupInfo {
 typedef struct RE_RepeatInfo {
     int id;
     int guards;
+    BOOL inner;
 } RE_RepeatInfo;
 
 /* The state object used during matching. */
@@ -373,6 +375,7 @@ typedef struct RE_CompileArgs {
     RE_Node* end;
     BOOL save_captures;
     BOOL has_captures;
+    size_t repeat_depth;
 } RE_CompileArgs;
 
 typedef struct JoinInfo {
@@ -2986,11 +2989,278 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
     return -1;
 }
 
+/* Check whether 2 characters are the same. */
+static BOOL same_char(RE_CODE ch1, RE_CODE ch2) {
+    return ch1 == ch2;
+}
+
+/* Build the tables for a Boyer-Moore fast string search. */
+Py_LOCAL_INLINE(BOOL) build_fast_tables(RE_EncodingTable* encoding, RE_Node*
+  node, BOOL ignore) {
+    Py_ssize_t length;
+    RE_CODE* values;
+    Py_ssize_t* bad;
+    Py_ssize_t* good;
+    RE_CODE ch;
+    Py_ssize_t last_pos;
+    Py_ssize_t pos;
+    BOOL (*is_same_char)(RE_CODE ch1, RE_CODE ch2);
+    Py_ssize_t suffix_len;
+    BOOL saved_start;
+    Py_ssize_t s;
+    Py_ssize_t i;
+    Py_ssize_t s_start;
+
+    length = node->value_count;
+
+    if (length < RE_MIN_FAST_LENGTH)
+        return TRUE;
+
+    values = node->values;
+
+    bad = (Py_ssize_t*)re_alloc(256 * sizeof(bad[0]));
+    good = (Py_ssize_t*)re_alloc(length * sizeof(good[0]));
+
+    if (!bad || !good) {
+        re_dealloc(bad);
+        re_dealloc(good);
+
+        return FALSE;
+    }
+
+    for (ch = 0; ch < 0x100; ch++)
+        bad[ch] = length;
+
+    last_pos = length - 1;
+
+    for (pos = 0; pos < last_pos; pos++) {
+        Py_ssize_t offset;
+        RE_CODE ch_lower;
+        RE_CODE ch_upper;
+        RE_CODE ch_title;
+
+        offset = last_pos - pos;
+        ch = values[pos];
+        if (ignore) {
+            ch_lower = encoding->lower(ch);
+            bad[ch_lower & 0xFF] = offset;
+            ch_upper = encoding->upper(ch);
+            bad[ch_upper & 0xFF] = offset;
+            if (ch_lower != ch_upper) {
+                ch_title = encoding->title(ch);
+                bad[ch_title & 0xFF] = offset;
+            }
+        } else
+            bad[ch & 0xFF] = offset;
+    }
+
+    is_same_char = ignore ? encoding->same_char_ign : same_char;
+
+    suffix_len = 2;
+    pos = length - suffix_len;
+    saved_start = FALSE;
+    s = pos - 1;
+    i = suffix_len - 1;
+    while (pos >= 0) {
+        /* Look for another occurrence of the suffix. */
+        while (i > 0) {
+            /* Have we dropped off the end of the string? */
+            if (s + i < 0)
+                break;
+
+            if (is_same_char(values[s + i], values[pos + i]))
+                /* It still matches. */
+                --i;
+            else {
+                /* Start again further along. */
+                --s;
+                i = suffix_len - 1;
+            }
+        }
+
+        if (s >= 0 && is_same_char(values[s], values[pos])) {
+            /* We haven't dropped off the end of the string, and the suffix has
+             * matched this far, so this is a good starting point for the next
+             * iteration.
+             */
+            --s;
+            if (!saved_start) {
+                s_start = s;
+                saved_start = TRUE;
+            }
+        } else {
+            /* Calculate the suffix offset. */
+            good[pos] = pos - s;
+
+            /* Extend the suffix and start searching for _this_ one. */
+            --pos;
+            ++suffix_len;
+
+            /* Where's a good place to start searching? */
+            if (saved_start) {
+                s = s_start;
+                saved_start = FALSE;
+            } else
+                --s;
+
+            /* Can we short-circuit the searching? */
+            if (s < 0)
+                break;
+        }
+
+        i = suffix_len - 1;
+    }
+
+    /* Fill-in any remaining entries. */
+    while (pos >= 0) {
+        good[pos] = pos - s;
+        --pos;
+        --s;
+    }
+
+    node->bad_character_offset = bad;
+    node->good_suffix_offset = good;
+
+    return TRUE;
+}
+
+/* Build the tables for a Boyer-Moore fast string search backwards. */
+Py_LOCAL_INLINE(BOOL) build_fast_tables_rev(RE_EncodingTable* encoding,
+  RE_Node* node, BOOL ignore) {
+    Py_ssize_t length;
+    RE_CODE* values;
+    Py_ssize_t* bad;
+    Py_ssize_t* good;
+    RE_CODE ch;
+    Py_ssize_t pos;
+    BOOL (*is_same_char)(RE_CODE ch1, RE_CODE ch2);
+    Py_ssize_t suffix_len;
+    BOOL saved_start;
+    Py_ssize_t s;
+    Py_ssize_t i;
+    Py_ssize_t s_start;
+
+    length = node->value_count;
+
+    if (length < RE_MIN_FAST_LENGTH)
+        return TRUE;
+
+    values = node->values;
+
+    bad = (Py_ssize_t*)re_alloc(256 * sizeof(bad[0]));
+    good = (Py_ssize_t*)re_alloc(length * sizeof(good[0]));
+
+    if (!bad || !good) {
+        re_dealloc(bad);
+        re_dealloc(good);
+
+        return FALSE;
+    }
+
+    for (ch = 0; ch < 256; ch++)
+        bad[ch] = -length;
+
+    for (pos = length - 1; pos >= 1; pos--) {
+        Py_ssize_t offset;
+        RE_CODE ch_lower;
+        RE_CODE ch_upper;
+        RE_CODE ch_title;
+
+        offset = -pos;
+        ch = values[pos];
+        if (ignore) {
+           ch_lower = encoding->lower(ch);
+           bad[ch_lower & 0xFF] = offset;
+           ch_upper = encoding->upper(ch);
+           bad[ch_upper & 0xFF] = offset;
+           if (ch_lower != ch_upper) {
+               ch_title = encoding->title(ch);
+               bad[ch_title & 0xFF] = offset;
+           }
+        } else
+            bad[ch & 0xFF] = offset;
+    }
+
+    is_same_char = ignore ? encoding->same_char_ign : same_char;
+
+    suffix_len = 2;
+    pos = suffix_len - 1;
+    saved_start = FALSE;
+    s = pos + 1;
+    i = suffix_len - 1;
+    while (pos < length) {
+        /* Look for another occurrence of the suffix. */
+        while (i > 0) {
+            /* Have we dropped off the end of the string? */
+            if (s - i >= length)
+                break;
+
+            if (is_same_char(values[s - i], values[pos - i]))
+                /* It still matches. */
+                --i;
+            else {
+                /* Start again further along. */
+                ++s;
+                i = suffix_len - 1;
+            }
+        }
+
+        if (s < length && is_same_char(values[s], values[pos])) {
+            /* We haven't dropped off the end of the string, and the suffix has
+             * matched this far, so this is a good starting point for the next
+             * iteration.
+             */
+            ++s;
+            if (!saved_start) {
+                s_start = s;
+                saved_start = TRUE;
+            }
+        } else {
+            /* Calculate the suffix offset. */
+            good[pos] = pos - s;
+
+            /* Extend the suffix and start searching for _this_ one. */
+            ++pos;
+            ++suffix_len;
+
+            /* Where's a good place to start searching? */
+            if (saved_start) {
+                s = s_start;
+                saved_start = FALSE;
+            } else
+                ++s;
+
+            /* Can we short-circuit the searching? */
+            if (s >= length)
+                break;
+        }
+
+        i = suffix_len - 1;
+    }
+
+    /* Fill-in any remaining entries. */
+    while (pos < length) {
+        good[pos] = pos - s;
+        ++pos;
+        ++s;
+    }
+
+    node->bad_character_offset = bad;
+    node->good_suffix_offset = good;
+
+    return TRUE;
+}
+
 /* Performs a string search. */
 Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit) {
     if (text_pos > limit)
         return -1;
+
+    if (!(node->status & RE_FAST_INIT)) {
+        node->status |= RE_FAST_INIT;
+        build_fast_tables(state->encoding, node, RE_OP_STRING);
+    }
 
     if (node->bad_character_offset)
         text_pos = fast_string_search(state, node, text_pos, limit);
@@ -3006,6 +3276,11 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
     if (text_pos > limit)
         return -1;
 
+    if (!(node->status & RE_FAST_INIT)) {
+        node->status |= RE_FAST_INIT;
+        build_fast_tables(state->encoding, node, RE_OP_STRING_IGN);
+    }
+
     if (node->bad_character_offset)
         text_pos = fast_string_search_ign(state, node, text_pos, limit);
     else
@@ -3020,6 +3295,11 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
     if (text_pos < limit)
         return -1;
 
+    if (!(node->status & RE_FAST_INIT)) {
+        node->status |= RE_FAST_INIT;
+        build_fast_tables_rev(state->encoding, node, RE_OP_STRING_REV);
+    }
+
     if (node->bad_character_offset)
         text_pos = fast_string_search_ign_rev(state, node, text_pos, limit);
     else
@@ -3033,6 +3313,11 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit) {
     if (text_pos < limit)
         return -1;
+
+    if (!(node->status & RE_FAST_INIT)) {
+        node->status |= RE_FAST_INIT;
+        build_fast_tables_rev(state->encoding, node, RE_OP_STRING_IGN_REV);
+    }
 
     if (node->bad_character_offset)
         text_pos = fast_string_search_rev(state, node, text_pos, limit);
@@ -4165,16 +4450,22 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values)
             guard_list->sorted = 0;
         }
     } else {
-        for (i = 0; i < (size_t)state->pattern->repeat_count; i++) {
+        PatternObject* pattern;
+
+        pattern = state->pattern;
+
+        for (i = 0; i < (size_t)pattern->repeat_count; i++) {
             RE_GuardList* guard_list;
 
-            guard_list = &state->repeats[i].body_guard_list;
-            guard_list->count = 0;
-            guard_list->sorted = 0;
+            if (pattern->repeat_info[i].inner) {
+                guard_list = &state->repeats[i].body_guard_list;
+                guard_list->count = 0;
+                guard_list->sorted = 0;
 
-            guard_list = &state->repeats[i].tail_guard_list;
-            guard_list->count = 0;
-            guard_list->sorted = 0;
+                guard_list = &state->repeats[i].tail_guard_list;
+                guard_list->count = 0;
+                guard_list->sorted = 0;
+            }
         }
     }
 }
@@ -4198,7 +4489,6 @@ Py_LOCAL_INLINE(int) basic_match(RE_State* state, RE_Node* start_node, BOOL
     RE_CODE (*char_at)(void* text, Py_ssize_t pos);
     BOOL (*has_property)(RE_CODE property, RE_CODE ch);
     RE_GroupInfo* group_info;
-    RE_RepeatInfo* repeat_info;
     Py_ssize_t step;
     BOOL has_groups;
     RE_Node* node;
@@ -4247,7 +4537,6 @@ Py_LOCAL_INLINE(int) basic_match(RE_State* state, RE_Node* start_node, BOOL
     char_at = state->char_at;
     has_property = encoding->has_property;
     group_info = pattern->group_info;
-    repeat_info = pattern->repeat_info;
     step = state->reverse ? -1 : 1;
     has_groups = pattern->group_count > 0;
 
@@ -9435,268 +9724,6 @@ static PyTypeObject Pattern_Type = {
     offsetof(PatternObject, weakreflist), /* tp_weaklistoffset */
 };
 
-/* Check whether 2 characters are the same. */
-static BOOL same_char(RE_CODE ch1, RE_CODE ch2) {
-    return ch1 == ch2;
-}
-
-/* Build the tables for a Boyer-Moore fast string search. */
-Py_LOCAL_INLINE(BOOL) build_fast_tables(RE_EncodingTable* encoding, RE_Node*
-  node, BOOL ignore) {
-    Py_ssize_t length;
-    RE_CODE* values;
-    Py_ssize_t* bad;
-    Py_ssize_t* good;
-    RE_CODE ch;
-    Py_ssize_t last_pos;
-    Py_ssize_t pos;
-    BOOL (*is_same_char)(RE_CODE ch1, RE_CODE ch2);
-    Py_ssize_t suffix_len;
-    BOOL saved_start;
-    Py_ssize_t s;
-    Py_ssize_t i;
-    Py_ssize_t s_start;
-
-    length = node->value_count;
-
-    if (length < RE_MIN_FAST_LENGTH)
-        return TRUE;
-
-    values = node->values;
-
-    bad = (Py_ssize_t*)re_alloc(256 * sizeof(bad[0]));
-    good = (Py_ssize_t*)re_alloc(length * sizeof(good[0]));
-
-    if (!bad || !good) {
-        re_dealloc(bad);
-        re_dealloc(good);
-
-        return FALSE;
-    }
-
-    for (ch = 0; ch < 0x100; ch++)
-        bad[ch] = length;
-
-    last_pos = length - 1;
-
-    for (pos = 0; pos < last_pos; pos++) {
-        Py_ssize_t offset;
-        RE_CODE ch_lower;
-        RE_CODE ch_upper;
-        RE_CODE ch_title;
-
-        offset = last_pos - pos;
-        ch = values[pos];
-        if (ignore) {
-            ch_lower = encoding->lower(ch);
-            bad[ch_lower & 0xFF] = offset;
-            ch_upper = encoding->upper(ch);
-            bad[ch_upper & 0xFF] = offset;
-            if (ch_lower != ch_upper) {
-                ch_title = encoding->title(ch);
-                bad[ch_title & 0xFF] = offset;
-            }
-        } else
-            bad[ch & 0xFF] = offset;
-    }
-
-    is_same_char = ignore ? encoding->same_char_ign : same_char;
-
-    suffix_len = 2;
-    pos = length - suffix_len;
-    saved_start = FALSE;
-    s = pos - 1;
-    i = suffix_len - 1;
-    while (pos >= 0) {
-        /* Look for another occurrence of the suffix. */
-        while (i > 0) {
-            /* Have we dropped off the end of the string? */
-            if (s + i < 0)
-                break;
-
-            if (is_same_char(values[s + i], values[pos + i]))
-                /* It still matches. */
-                --i;
-            else {
-                /* Start again further along. */
-                --s;
-                i = suffix_len - 1;
-            }
-        }
-
-        if (s >= 0 && is_same_char(values[s], values[pos])) {
-            /* We haven't dropped off the end of the string, and the suffix has
-             * matched this far, so this is a good starting point for the next
-             * iteration.
-             */
-            --s;
-            if (!saved_start) {
-                s_start = s;
-                saved_start = TRUE;
-            }
-        } else {
-            /* Calculate the suffix offset. */
-            good[pos] = pos - s;
-
-            /* Extend the suffix and start searching for _this_ one. */
-            --pos;
-            ++suffix_len;
-
-            /* Where's a good place to start searching? */
-            if (saved_start) {
-                s = s_start;
-                saved_start = FALSE;
-            } else
-                --s;
-
-            /* Can we short-circuit the searching? */
-            if (s < 0)
-                break;
-        }
-
-        i = suffix_len - 1;
-    }
-
-    /* Fill-in any remaining entries. */
-    while (pos >= 0) {
-        good[pos] = pos - s;
-        --pos;
-        --s;
-    }
-
-    node->bad_character_offset = bad;
-    node->good_suffix_offset = good;
-
-    return TRUE;
-}
-
-/* Build the tables for a Boyer-Moore fast string search backwards. */
-Py_LOCAL_INLINE(BOOL) build_fast_tables_rev(RE_EncodingTable* encoding,
-  RE_Node* node, BOOL ignore) {
-    Py_ssize_t length;
-    RE_CODE* values;
-    Py_ssize_t* bad;
-    Py_ssize_t* good;
-    RE_CODE ch;
-    Py_ssize_t pos;
-    BOOL (*is_same_char)(RE_CODE ch1, RE_CODE ch2);
-    Py_ssize_t suffix_len;
-    BOOL saved_start;
-    Py_ssize_t s;
-    Py_ssize_t i;
-    Py_ssize_t s_start;
-
-    length = node->value_count;
-
-    if (length < RE_MIN_FAST_LENGTH)
-        return TRUE;
-
-    values = node->values;
-
-    bad = (Py_ssize_t*)re_alloc(256 * sizeof(bad[0]));
-    good = (Py_ssize_t*)re_alloc(length * sizeof(good[0]));
-
-    if (!bad || !good) {
-        re_dealloc(bad);
-        re_dealloc(good);
-
-        return FALSE;
-    }
-
-    for (ch = 0; ch < 256; ch++)
-        bad[ch] = -length;
-
-    for (pos = length - 1; pos >= 1; pos--) {
-        Py_ssize_t offset;
-        RE_CODE ch_lower;
-        RE_CODE ch_upper;
-        RE_CODE ch_title;
-
-        offset = -pos;
-        ch = values[pos];
-        if (ignore) {
-           ch_lower = encoding->lower(ch);
-           bad[ch_lower & 0xFF] = offset;
-           ch_upper = encoding->upper(ch);
-           bad[ch_upper & 0xFF] = offset;
-           if (ch_lower != ch_upper) {
-               ch_title = encoding->title(ch);
-               bad[ch_title & 0xFF] = offset;
-           }
-        } else
-            bad[ch & 0xFF] = offset;
-    }
-
-    is_same_char = ignore ? encoding->same_char_ign : same_char;
-
-    suffix_len = 2;
-    pos = suffix_len - 1;
-    saved_start = FALSE;
-    s = pos + 1;
-    i = suffix_len - 1;
-    while (pos < length) {
-        /* Look for another occurrence of the suffix. */
-        while (i > 0) {
-            /* Have we dropped off the end of the string? */
-            if (s - i >= length)
-                break;
-
-            if (is_same_char(values[s - i], values[pos - i]))
-                /* It still matches. */
-                --i;
-            else {
-                /* Start again further along. */
-                ++s;
-                i = suffix_len - 1;
-            }
-        }
-
-        if (s < length && is_same_char(values[s], values[pos])) {
-            /* We haven't dropped off the end of the string, and the suffix has
-             * matched this far, so this is a good starting point for the next
-             * iteration.
-             */
-            ++s;
-            if (!saved_start) {
-                s_start = s;
-                saved_start = TRUE;
-            }
-        } else {
-            /* Calculate the suffix offset. */
-            good[pos] = pos - s;
-
-            /* Extend the suffix and start searching for _this_ one. */
-            ++pos;
-            ++suffix_len;
-
-            /* Where's a good place to start searching? */
-            if (saved_start) {
-                s = s_start;
-                saved_start = FALSE;
-            } else
-                ++s;
-
-            /* Can we short-circuit the searching? */
-            if (s >= length)
-                break;
-        }
-
-        i = suffix_len - 1;
-    }
-
-    /* Fill-in any remaining entries. */
-    while (pos < length) {
-        good[pos] = pos - s;
-        ++pos;
-        ++s;
-    }
-
-    node->bad_character_offset = bad;
-    node->good_suffix_offset = good;
-
-    return TRUE;
-}
-
 /* Building the nodes is made simpler by allowing branches to have a single
  * exit. These need to be removed.
  */
@@ -10393,20 +10420,22 @@ Py_LOCAL_INLINE(BOOL) sequence_matches_one(RE_Node* node) {
 }
 
 /* Records a repeat. */
-Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, int id) {
+Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, int index, size_t
+  repeat_depth) {
     Py_ssize_t old_capacity;
     Py_ssize_t new_capacity;
-    RE_RepeatInfo* new_repeat_info;
 
     /* Increase the storage capacity to include the new entry if it's
      * insufficient.
      */
     old_capacity = pattern->repeat_info_capacity;
     new_capacity = pattern->repeat_info_capacity;
-    while (id >= new_capacity)
+    while (index >= new_capacity)
         new_capacity += 16;
 
     if (new_capacity > old_capacity) {
+        RE_RepeatInfo* new_repeat_info;
+
         new_repeat_info = (RE_RepeatInfo*)re_realloc(pattern->repeat_info,
           new_capacity * sizeof(RE_RepeatInfo));
         if (!new_repeat_info)
@@ -10418,8 +10447,10 @@ Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, int id) {
         pattern->repeat_info_capacity = new_capacity;
     }
 
-    if (id >= pattern->repeat_count)
-        pattern->repeat_count = id + 1;
+    if (index >= pattern->repeat_count)
+        pattern->repeat_count = index + 1;
+
+    pattern->repeat_info[index].inner = repeat_depth > 0;
 
     return TRUE;
 }
@@ -11065,7 +11096,8 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         /* Create the nodes for the repeat. */
         repeat_node = create_node(args->pattern, greedy ? RE_OP_GREEDY_REPEAT :
           RE_OP_LAZY_REPEAT, FALSE, args->forward ? 1 : -1, 4);
-        if (!repeat_node || !record_repeat(args->pattern, index))
+        if (!repeat_node || !record_repeat(args->pattern, index,
+          args->repeat_depth))
             return FALSE;
 
         repeat_node->values[0] = index;
@@ -11078,6 +11110,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         subargs.min_width = 0;
         subargs.save_captures = TRUE;
         subargs.has_captures = FALSE;
+        ++subargs.repeat_depth;
         if (!build_sequence(&subargs))
             return FALSE;
 
@@ -11204,6 +11237,7 @@ Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args) {
 
     args->code += 2 + length;
 
+#if 0
     switch (op) {
     case RE_OP_STRING:
     case RE_OP_STRING_IGN:
@@ -11217,6 +11251,7 @@ Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args) {
         break;
     }
 
+#endif
     /* Append the node. */
     add_node(args->end, node);
     args->end = node;
@@ -11486,6 +11521,7 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     args.min_width = 0;
     args.save_captures = FALSE;
     args.has_captures = FALSE;
+    args.repeat_depth = 0;
     if (!build_sequence(&args))
         return FALSE;
 
