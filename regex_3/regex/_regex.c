@@ -7955,7 +7955,7 @@ static PyObject* scanner_search(ScannerObject* self, PyObject *unused) {
         Py_ssize_t step;
 
         step = state->reverse ? -1 : 1;
-        state->text_pos = state->search_anchor + step;
+        state->text_pos = state->match_pos + step;
         state->must_advance = FALSE;
     } else
         /* Continue from where we left off, but don't allow 2 contiguous
@@ -9050,7 +9050,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
 
         if (state.overlapped) {
             /* Advance one character. */
-            state.text_pos = state.search_anchor + step;
+            state.text_pos = state.match_pos + step;
             state.must_advance = FALSE;
         } else
             /* Continue from where we left off, but don't allow 2 contiguous
