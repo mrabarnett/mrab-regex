@@ -97,6 +97,7 @@ typedef enum {FALSE, TRUE} BOOL;
 #define RE_HAS_REF 0x2
 #define RE_HAS_VISITED 0x4
 #define RE_VISITED_REP 0x8
+#define RE_VISITED_NC 0x10
 
 static char copyright[] =
     " RE 2.3.0 Copyright (c) 1997-2002 by Secret Labs AB ";
@@ -198,6 +199,7 @@ typedef struct RE_Node {
     Py_ssize_t* bad_character_offset;
     Py_ssize_t* good_suffix_offset;
     int status;
+    struct RE_Node* next_check;
 } RE_Node;
 
 /* Data about a group's span. */
@@ -3402,64 +3404,88 @@ Py_LOCAL_INLINE(BOOL) general_check(RE_State* state, RE_Node* node, Py_ssize_t
  */
 Py_LOCAL_INLINE(RE_Node*) next_check(RE_Node* node) {
     for (;;) {
+        if (node->status & RE_VISITED_NC)
+            return node->next_check;
+
         switch (node->op) {
         case RE_OP_BRANCH:
         {
             RE_Node* branch_1;
             RE_Node* branch_2;
+            RE_Node* next;
 
             branch_1 = next_check(node->next_1.node);
             branch_2 = next_check(node->next_2.node);
             if (branch_1 == branch_2)
-                return branch_1;
-            if (!branch_1 || !branch_2)
-                return NULL;
-            node->next_1.check = branch_1;
-            node->next_2.check = branch_2;
-            return node;
+                next = branch_1;
+            else if (!branch_1 || !branch_2)
+                next = NULL;
+            else {
+                node->next_1.check = branch_1;
+                node->next_2.check = branch_2;
+                next = node;
+            }
+            node->next_check = next;
+            node->status |= RE_VISITED_NC;
+            return next;
         }
         case RE_OP_CHARACTER:
         case RE_OP_CHARACTER_IGN:
         case RE_OP_CHARACTER_IGN_REV:
         case RE_OP_CHARACTER_REV:
+            node->next_check = node;
+            node->status |= RE_VISITED_NC;
             return node;
         case RE_OP_END_GREEDY_REPEAT:
         case RE_OP_END_LAZY_REPEAT:
+            node->next_check = NULL;
+            node->status |= RE_VISITED_NC;
             return NULL;
         case RE_OP_GREEDY_REPEAT:
         case RE_OP_LAZY_REPEAT:
         {
-            RE_Node* body;
+            RE_Node* next;
 
+            next = NULL;
             if (node->values[1] >= 1)
-                body = next_check(node->next_1.node);
-            else
-                body = NULL;
-            if (body)
-                return body;
-            return next_check(node->next_2.node);
+                next = next_check(node->next_1.node);
+            if (!next)
+                next = next_check(node->next_2.node);
+            node->next_check = next;
+            node->status |= RE_VISITED_NC;
+            return next;
         }
         case RE_OP_GROUP_EXISTS:
         {
             RE_Node* branch_1;
             RE_Node* branch_2;
+            RE_Node* next;
 
             branch_1 = next_check(node->next_1.node);
             branch_2 = next_check(node->next_2.node);
             if (branch_1 == branch_2)
-                return branch_1;
-            if (!branch_1 || !branch_2)
-                return NULL;
-            node->next_1.check = branch_1;
-            node->next_2.check = branch_2;
-            return node;
+                next = branch_1;
+            else if (!branch_1 || !branch_2)
+                next = NULL;
+            else {
+                node->next_1.check = branch_1;
+                node->next_2.check = branch_2;
+                next = node;
+            }
+            node->next_check = next;
+            node->status |= RE_VISITED_NC;
+            return next;
         }
         case RE_OP_STRING:
         case RE_OP_STRING_IGN:
         case RE_OP_STRING_IGN_REV:
         case RE_OP_STRING_REV:
+            node->next_check = node;
+            node->status |= RE_VISITED_NC;
             return node;
         case RE_OP_SUCCESS:
+            node->next_check = NULL;
+            node->status |= RE_VISITED_NC;
             return NULL;
         default:
             node = node->next_1.node;
@@ -4126,16 +4152,30 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values)
   {
     size_t i;
 
-    for (i = 1; i <= values[0]; i++) {
-        RE_GuardList* guard_list;
+    if (values) {
+        for (i = 1; i <= values[0]; i++) {
+            RE_GuardList* guard_list;
 
-        guard_list = &state->repeats[values[i]].body_guard_list;
-        guard_list->count = 0;
-        guard_list->sorted = 0;
+            guard_list = &state->repeats[values[i]].body_guard_list;
+            guard_list->count = 0;
+            guard_list->sorted = 0;
 
-        guard_list = &state->repeats[values[i]].tail_guard_list;
-        guard_list->count = 0;
-        guard_list->sorted = 0;
+            guard_list = &state->repeats[values[i]].tail_guard_list;
+            guard_list->count = 0;
+            guard_list->sorted = 0;
+        }
+    } else {
+        for (i = 0; i < (size_t)state->pattern->repeat_count; i++) {
+            RE_GuardList* guard_list;
+
+            guard_list = &state->repeats[i].body_guard_list;
+            guard_list->count = 0;
+            guard_list->sorted = 0;
+
+            guard_list = &state->repeats[i].tail_guard_list;
+            guard_list->count = 0;
+            guard_list->sorted = 0;
+        }
     }
 }
 
@@ -5459,6 +5499,8 @@ backtrack:
             state->text_pos = text_pos + step;
             if (has_groups)
                 reload_groups(state);
+
+            reset_guards(state, NULL);
             goto start_match;
         }
         case RE_OP_GREEDY_REPEAT: /* Greedy repeat. */
@@ -10220,6 +10262,7 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_CODE op, BOOL
     node->bad_character_offset = NULL;
     node->good_suffix_offset = NULL;
     node->status = 0;
+    node->next_check = NULL;
 
     /* Ensure that there's enough storage to record the new node. */
     if (pattern->node_count >= pattern->node_capacity) {
