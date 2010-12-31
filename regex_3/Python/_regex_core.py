@@ -144,6 +144,7 @@ STRING
 STRING_IGN
 STRING_IGN_REV
 STRING_REV
+TAIL_GUARD
 """
 
 def _define_opcodes(opcodes):
@@ -163,7 +164,7 @@ def _define_opcodes(opcodes):
 _OP = _define_opcodes(_OPCODES)
 
 # The regular expression flags.
-_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "n":
+_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "n": 
   NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE}
 
 # Unicode properties.

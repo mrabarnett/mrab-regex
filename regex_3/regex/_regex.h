@@ -78,6 +78,7 @@
 #define RE_OP_STRING_IGN 46
 #define RE_OP_STRING_IGN_REV 47
 #define RE_OP_STRING_REV 48
+#define RE_OP_TAIL_GUARD 49
 
 char* re_op_text[] = {
     "RE_OP_FAILURE",
@@ -129,6 +130,7 @@ char* re_op_text[] = {
     "RE_OP_STRING_IGN",
     "RE_OP_STRING_IGN_REV",
     "RE_OP_STRING_REV",
+    "RE_OP_TAIL_GUARD",
 };
 
 /* Character/codepoint properties. */
