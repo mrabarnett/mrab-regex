@@ -92,9 +92,11 @@ typedef enum {FALSE, TRUE} BOOL;
 /* Whether a guard is added depends on whether there's a repeat in the body of a
  * repeat or a group reference in the body or tail of the repeat.
  */
-#define RE_HAS_NEITHER 0
-#define RE_HAS_REPEAT 1
-#define RE_HAS_REF 2
+#define RE_HAS_NEITHER 0x0
+#define RE_HAS_REPEAT 0x1
+#define RE_HAS_REF 0x2
+#define RE_HAS_VISITED 0x4
+#define RE_VISITED_REP 0x8
 
 static char copyright[] =
     " RE 2.3.0 Copyright (c) 1997-2002 by Secret Labs AB ";
@@ -173,6 +175,7 @@ typedef struct RE_Info {
     BOOL must_advance;
 } RE_Info;
 
+/* Storage for the next node. */
 typedef struct RE_NextNode {
     struct RE_Node* node;
     struct RE_Node* test;
@@ -194,6 +197,7 @@ typedef struct RE_Node {
     RE_NextNode next_2;
     Py_ssize_t* bad_character_offset;
     Py_ssize_t* good_suffix_offset;
+    int status;
 } RE_Node;
 
 /* Data about a group's span. */
@@ -9714,28 +9718,38 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
     result = RE_HAS_NEITHER;
 
     for (;;) {
+        if (node->status & RE_HAS_VISITED)
+            return node->status & (RE_HAS_REPEAT | RE_HAS_REF);
+
         switch (node->op) {
         case RE_OP_ATOMIC:
         case RE_OP_LOOKAROUND:
         {
             int body_result;
             int tail_result;
+            int status;
 
             body_result = add_guards(pattern, node->next_2.node, index);
             tail_result = add_guards(pattern, node->next_1.node, index);
-            return max3(result, body_result, tail_result);
+            status = max3(result, body_result, tail_result);
+            node->status = RE_HAS_VISITED | status;
+            return status;
         }
         case RE_OP_BRANCH:
         {
             int branch_1_result;
             int branch_2_result;
+            int status;
 
             branch_1_result = add_guards(pattern, node->next_1.node, index);
             branch_2_result = add_guards(pattern, node->next_2.node, index);
-            return max3(result, branch_1_result, branch_2_result);
+            status = max3(result, branch_1_result, branch_2_result);
+            node->status = RE_HAS_VISITED | status;
+            return status;
         }
         case RE_OP_END_GREEDY_REPEAT:
         case RE_OP_END_LAZY_REPEAT:
+            node->status = RE_HAS_VISITED | result;
             return result;
         case RE_OP_GREEDY_REPEAT:
         case RE_OP_LAZY_REPEAT:
@@ -9743,6 +9757,7 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
             int body_result;
             int tail_result;
             RE_RepeatInfo* repeat_info;
+            int status;
 
             index = node->values[0];
             body_result = add_guards(pattern, node->next_1.node, index);
@@ -9752,29 +9767,37 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
                 repeat_info->guards |= RE_BODY;
             if (tail_result == RE_HAS_REPEAT)
                 repeat_info->guards |= RE_TAIL;
-            return max4(result, RE_HAS_REPEAT, body_result, tail_result);
+            status = max4(result, RE_HAS_REPEAT, body_result, tail_result);
+            node->status = RE_HAS_VISITED | status;
+            return status;
         }
         case RE_OP_GREEDY_REPEAT_ONE:
         case RE_OP_LAZY_REPEAT_ONE:
         {
             int tail_result;
             RE_RepeatInfo* repeat_info;
+            int status;
 
             index = node->values[0];
             tail_result = add_guards(pattern, node->next_1.node, index);
             repeat_info = &pattern->repeat_info[index];
             if (tail_result == RE_HAS_REPEAT)
                 repeat_info->guards |= RE_TAIL;
-            return max3(result, RE_HAS_REPEAT, tail_result);
+            status = max3(result, RE_HAS_REPEAT, tail_result);
+            node->status = RE_HAS_VISITED | status;
+            return status;
         }
         case RE_OP_GROUP_EXISTS:
         {
             int branch_1_result;
             int branch_2_result;
+            int status;
 
             branch_1_result = add_guards(pattern, node->next_1.node, index);
             branch_2_result = add_guards(pattern, node->next_2.node, index);
-            return max3(result, branch_1_result, branch_2_result);
+            status = max3(result, branch_1_result, branch_2_result);
+            node->status = RE_HAS_VISITED | status;
+            return status;
         }
         case RE_OP_REF_GROUP:
         case RE_OP_REF_GROUP_IGN:
@@ -9784,6 +9807,7 @@ Py_LOCAL_INLINE(int) add_guards(PatternObject* pattern, RE_Node* node, size_t
             node = node->next_1.node;
             break;
         case RE_OP_SUCCESS:
+            node->status = RE_HAS_VISITED | result;
             return result;
         default:
             node = node->next_1.node;
@@ -9831,6 +9855,11 @@ Py_LOCAL_INLINE(BOOL) add_repeat_index(RE_Node* node, size_t offset, size_t
 Py_LOCAL_INLINE(BOOL) record_subpattern_repeats(RE_Node* parent_node, size_t
   offset, RE_Node* node) {
     for (;;) {
+        if (node->status & RE_VISITED_REP)
+            return TRUE;
+
+        node->status |= RE_VISITED_REP;
+
         switch (node->op) {
         case RE_OP_ATOMIC:
             if (!record_subpattern_repeats(node, 0, node->next_2.node))
@@ -10198,6 +10227,7 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_CODE op, BOOL
     node->next_2.test = NULL;
     node->bad_character_offset = NULL;
     node->good_suffix_offset = NULL;
+    node->status = 0;
 
     /* Ensure that there's enough storage to record the new node. */
     if (pattern->node_count >= pattern->node_capacity) {
