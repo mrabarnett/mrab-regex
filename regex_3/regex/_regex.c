@@ -42,8 +42,6 @@
 #define TRACE(X)
 #endif
 
-/* #define TRACK_MEM */
-
 #define RE_MULTITHREADED
 
 #include "Python.h"
@@ -51,10 +49,6 @@
 #include <ctype.h>
 #include "_regex.h"
 #include "pyport.h"
-
-#if defined(TRACK_MEM)
-static FILE* mem_log;
-#endif
 
 typedef enum {FALSE, TRUE} BOOL;
 
@@ -79,6 +73,9 @@ typedef enum {FALSE, TRUE} BOOL;
 
 /* Number of backtrack entries per allocated block. */
 #define RE_BACKTRACK_BLOCK_SIZE 64
+
+/* The nominal number of capture counts per allocated block. */
+#define RE_CAPTURES_BLOCK_SIZE 1024
 
 #define RE_BITS_PER_INDEX 16
 #define RE_BITS_PER_CODE 32
@@ -136,6 +133,9 @@ typedef struct RE_BacktrackData {
         struct {
             size_t index;
         } group;
+        struct {
+            size_t* capture_counts;
+        } captures;
     };
 } RE_BacktrackData;
 
@@ -147,6 +147,26 @@ typedef struct RE_BacktrackBlock {
     size_t count;
     RE_BacktrackData items[RE_BACKTRACK_BLOCK_SIZE];
 } RE_BacktrackBlock;
+
+/* Storage for backtrack capture counts is allocated in blocks for speed. */
+typedef struct RE_CaptureCountsBlock {
+    struct RE_CaptureCountsBlock* previous;
+    struct RE_CaptureCountsBlock* next;
+    size_t capacity;
+    size_t count;
+    size_t* items;
+} RE_CaptureCountsBlock;
+
+
+/* Storage for info around a recursive by 'basic'match'. */
+typedef struct RE_Info {
+    RE_BacktrackBlock* current_backtrack_block;
+    size_t backtrack_count;
+    RE_CaptureCountsBlock* current_capture_counts_block;
+    size_t captures_count;
+    size_t saved_groups_count;
+    BOOL must_advance;
+} RE_Info;
 
 typedef struct RE_NextNode {
     struct RE_Node* node;
@@ -220,6 +240,7 @@ typedef struct RE_State {
     RE_GroupData* groups;
     RE_RepeatData* repeats;
     BOOL save_captures;
+    BOOL has_captures;
     Py_ssize_t lastindex;
     Py_ssize_t lastgroup;
     Py_ssize_t search_anchor;
@@ -230,7 +251,8 @@ typedef struct RE_State {
     BOOL must_advance; /* The end of the match must advance past its start. */
     /* Storage for backtrack info. */
     RE_BacktrackBlock backtrack_block;
-    RE_BacktrackBlock* current_block;
+    RE_BacktrackBlock* current_backtrack_block;
+    RE_CaptureCountsBlock* current_capture_counts_block;
     RE_BacktrackData* backtrack;
     Py_ssize_t saved_groups_capacity;
     Py_ssize_t saved_groups_count;
@@ -320,6 +342,7 @@ typedef struct RE_CompileArgs {
     RE_Node* start;
     RE_Node* end;
     BOOL save_captures;
+    BOOL has_captures;
 } RE_CompileArgs;
 
 typedef struct JoinInfo {
@@ -1201,18 +1224,6 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
  *
  * Sets the Python error handler and returns NULL if the allocation fails.
  */
-#if defined(TRACK_MEM)
-Py_LOCAL_INLINE(void*) re_alloc(int line, size_t size) {
-    void* new_ptr;
-
-    new_ptr = PyMem_Malloc(size);
-    fprintf(mem_log, "Line %d: alloc 0x%p\n", line, new_ptr);
-    if (!new_ptr)
-        set_error(RE_ERROR_MEMORY, NULL);
-
-    return new_ptr;
-}
-#else
 Py_LOCAL_INLINE(void*) re_alloc(size_t size) {
     void* new_ptr;
 
@@ -1222,24 +1233,11 @@ Py_LOCAL_INLINE(void*) re_alloc(size_t size) {
 
     return new_ptr;
 }
-#endif
 
 /* Reallocates memory.
  *
  * Sets the Python error handler and returns NULL if the reallocation fails.
  */
-#if defined(TRACK_MEM)
-Py_LOCAL_INLINE(void*) re_realloc(int line, void* ptr, size_t size) {
-    void* new_ptr;
-
-    new_ptr = PyMem_Realloc(ptr, size);
-    fprintf(mem_log, "Line %d: realloc 0x%p to 0x%p\n", line, ptr, new_ptr);
-    if (!new_ptr)
-        set_error(RE_ERROR_MEMORY, NULL);
-
-    return new_ptr;
-}
-#else
 Py_LOCAL_INLINE(void*) re_realloc(void* ptr, size_t size) {
     void* new_ptr;
 
@@ -1249,19 +1247,11 @@ Py_LOCAL_INLINE(void*) re_realloc(void* ptr, size_t size) {
 
     return new_ptr;
 }
-#endif
 
 /* Deallocates memory. */
-#if defined(TRACK_MEM)
-Py_LOCAL_INLINE(void) re_dealloc(int line, void* ptr) {
-    fprintf(mem_log, "Line %d: dealloc 0x%p\n", line, ptr);
-    PyMem_Free(ptr);
-}
-#else
 Py_LOCAL_INLINE(void) re_dealloc(void* ptr) {
     PyMem_Free(ptr);
 }
-#endif
 
 #if defined(RE_MULTITHREADED)
 /* Releases the GIL. */
@@ -1279,25 +1269,6 @@ Py_LOCAL_INLINE(void) acquire_GIL(RE_State* state) {
  *
  * Sets the Python error handler and returns NULL if the allocation fails.
  */
-#if defined(TRACK_MEM)
-Py_LOCAL_INLINE(void*) safe_alloc(int line, RE_State* state, size_t size) {
-    void* new_ptr;
-
-#if defined(RE_MULTITHREADED)
-    if (state->is_multithreaded)
-        acquire_GIL(state);
-
-#endif
-    new_ptr = re_alloc(line, size);
-
-#if defined(RE_MULTITHREADED)
-    if (state->is_multithreaded)
-        release_GIL(state);
-
-#endif
-    return new_ptr;
-}
-#else
 Py_LOCAL_INLINE(void*) safe_alloc(RE_State* state, size_t size) {
     void* new_ptr;
 
@@ -1315,32 +1286,11 @@ Py_LOCAL_INLINE(void*) safe_alloc(RE_State* state, size_t size) {
 #endif
     return new_ptr;
 }
-#endif
 
 /* Reallocates memory, holding the GIL during the reallocation.
  *
  * Sets the Python error handler and returns NULL if the reallocation fails.
  */
-#if defined(TRACK_MEM)
-Py_LOCAL_INLINE(void*) safe_realloc(int line, RE_State* state, void* ptr, size_t
-  size) {
-    void* new_ptr;
-
-#if defined(RE_MULTITHREADED)
-    if (state->is_multithreaded)
-        acquire_GIL(state);
-
-#endif
-    new_ptr = re_realloc(line, ptr, size);
-
-#if defined(RE_MULTITHREADED)
-    if (state->is_multithreaded)
-        release_GIL(state);
-
-#endif
-    return new_ptr;
-}
-#else
 Py_LOCAL_INLINE(void*) safe_realloc(RE_State* state, void* ptr, size_t size) {
     void* new_ptr;
 
@@ -1358,7 +1308,21 @@ Py_LOCAL_INLINE(void*) safe_realloc(RE_State* state, void* ptr, size_t size) {
 #endif
     return new_ptr;
 }
+
+/* Deallocates memory, holding the GIL during the deallocation. */
+Py_LOCAL_INLINE(void) safe_dealloc(RE_State* state, void* ptr) {
+#if defined(RE_MULTITHREADED)
+    if (state->is_multithreaded)
+        acquire_GIL(state);
+
 #endif
+    re_dealloc(ptr);
+
+#if defined(RE_MULTITHREADED)
+    if (state->is_multithreaded)
+        release_GIL(state);
+#endif
+}
 
 /* Checks for KeyboardInterrupt, holding the GIL during the check. */
 Py_LOCAL_INLINE(BOOL) safe_check_signals(RE_State* state) {
@@ -1520,13 +1484,8 @@ Py_LOCAL_INLINE(BOOL) push_groups(RE_State* state) {
     if (new_capacity != state->saved_groups_capacity) {
         RE_GroupData* new_groups;
 
-#if defined(TRACK_MEM)
-        new_groups = (RE_GroupData*)safe_realloc(__LINE__, state,
-          state->saved_groups, new_capacity * sizeof(RE_GroupData));
-#else
         new_groups = (RE_GroupData*)safe_realloc(state, state->saved_groups,
           new_capacity * sizeof(RE_GroupData));
-#endif
         if (!new_groups)
             return FALSE;
         state->saved_groups_capacity = new_capacity;
@@ -1588,9 +1547,14 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     state->saved_groups_count = 0;
 
     /* Reset the backtrack. */
-    state->current_block = &state->backtrack_block;
-    state->current_block->count = 0;
-
+    state->current_backtrack_block = &state->backtrack_block;
+    state->current_backtrack_block->count = 0;
+    if (state->current_capture_counts_block) {
+        while (state->current_capture_counts_block->previous)
+            state->current_capture_counts_block =
+              state->current_capture_counts_block->previous;
+        state->current_capture_counts_block->count = 0;
+    }
     state->backtrack = NULL;
     state->search_anchor = state->text_pos;
     state->match_pos = state->text_pos;
@@ -1610,8 +1574,9 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
 
 /* Adds a new backtrack entry. */
 Py_LOCAL_INLINE(BOOL) add_backtrack(RE_State* state, RE_CODE op) {
-    RE_BacktrackBlock* current = state->current_block;
+    RE_BacktrackBlock* current;
 
+    current = state->current_backtrack_block;
     if (current->count >= current->capacity) {
         if (!current->next) {
             size_t capacity;
@@ -1621,11 +1586,7 @@ Py_LOCAL_INLINE(BOOL) add_backtrack(RE_State* state, RE_CODE op) {
             capacity = current->capacity * 2;
             size = sizeof(RE_BacktrackBlock) + (capacity -
               RE_BACKTRACK_BLOCK_SIZE) * sizeof(RE_BacktrackData);
-#if defined(TRACK_MEM)
-            next = (RE_BacktrackBlock*)safe_alloc(__LINE__, state, size);
-#else
             next = (RE_BacktrackBlock*)safe_alloc(state, size);
-#endif
             if (!next)
                 return FALSE;
 
@@ -1636,7 +1597,7 @@ Py_LOCAL_INLINE(BOOL) add_backtrack(RE_State* state, RE_CODE op) {
         }
         current = current->next;
         current->count = 0;
-        state->current_block = current;
+        state->current_backtrack_block = current;
     }
     state->backtrack = &current->items[current->count++];
     state->backtrack->op = op;
@@ -1649,7 +1610,10 @@ Py_LOCAL_INLINE(BOOL) add_backtrack(RE_State* state, RE_CODE op) {
  * It'll never be called when there are _no_ entries.
  */
 Py_LOCAL_INLINE(RE_BacktrackData*) last_backtrack(RE_State* state) {
-    return &state->current_block->items[state->current_block->count - 1];
+    RE_BacktrackBlock* current;
+
+    current = state->current_backtrack_block;
+    return &current->items[current->count - 1];
 }
 
 /* Discards the last backtrack entry.
@@ -1657,9 +1621,12 @@ Py_LOCAL_INLINE(RE_BacktrackData*) last_backtrack(RE_State* state) {
  * It'll never be called to discard the _only_ entry.
  */
 Py_LOCAL_INLINE(void) discard_backtrack(RE_State* state) {
-    --state->current_block->count;
-    if (state->current_block->count == 0 && state->current_block->previous)
-        state->current_block = state->current_block->previous;
+    RE_BacktrackBlock* current;
+
+    current = state->current_backtrack_block;
+    --current->count;
+    if (current->count == 0 && current->previous)
+        state->current_backtrack_block = current->previous;
 }
 
 /* Locates the start node for testing ahead. */
@@ -3826,13 +3793,8 @@ Py_LOCAL_INLINE(BOOL) save_capture(RE_State* state, size_t index) {
         new_capacity = group->capture_capacity * 2;
         if (new_capacity == 0)
             new_capacity = 16;
-#if defined(TRACK_MEM)
-        new_captures = (RE_GroupSpan*)safe_realloc(__LINE__, state,
-          group->captures, new_capacity * sizeof(RE_GroupSpan));
-#else
         new_captures = (RE_GroupSpan*)safe_realloc(state, group->captures,
           new_capacity * sizeof(RE_GroupSpan));
-#endif
         if (!new_captures)
             return FALSE;
 
@@ -3850,6 +3812,110 @@ Py_LOCAL_INLINE(void) unsave_capture(RE_State* state, size_t index) {
      * entire matched string).
      */
     --state->groups[index - 1].capture_count;
+}
+
+/* Saves all the capture counts to backtrack. */
+Py_LOCAL_INLINE(BOOL) save_all_captures(RE_State* state, RE_BacktrackData*
+  bt_data) {
+    Py_ssize_t group_count;
+    RE_CaptureCountsBlock* current;
+    size_t* capture_counts;
+    Py_ssize_t g;
+
+    group_count = state->pattern->group_count;
+    if (group_count == 0) {
+        bt_data->captures.capture_counts = NULL;
+        return TRUE;
+    }
+
+    current = state->current_capture_counts_block;
+    if (!current || current->count + group_count > current->capacity) {
+        RE_CaptureCountsBlock* new_block;
+        size_t n;
+        size_t new_capacity;
+
+        if (current && current->next)
+            new_block = current->next;
+        else {
+            new_block = (RE_CaptureCountsBlock*)safe_alloc(state,
+              sizeof(RE_CaptureCountsBlock));
+            if (!new_block)
+                return FALSE;
+
+            n = RE_CAPTURES_BLOCK_SIZE / group_count;
+            if (n < 1)
+                n = 1;
+            new_capacity = n * group_count;
+
+            new_block->items = (size_t*)safe_alloc(state, new_capacity
+              * sizeof(size_t));
+            if (!new_block->items) {
+                safe_dealloc(state, new_block);
+                return FALSE;
+            }
+
+            new_block->previous = current;
+            new_block->next = NULL;
+            new_block->capacity = new_capacity;
+        }
+
+        new_block->count = 0;
+        state->current_capture_counts_block = new_block;
+        current = new_block;
+    }
+
+    capture_counts = &current->items[current->count];
+    for (g = 0; g < group_count; g++)
+        capture_counts[g] = state->groups[g].capture_count;
+    current->count += group_count;
+
+    return TRUE;
+}
+
+/* Restores all the capture counts from backtrack. */
+Py_LOCAL_INLINE(void) restore_all_captures(RE_State* state, RE_BacktrackData*
+  bt_data) {
+    Py_ssize_t group_count;
+    RE_CaptureCountsBlock* current;
+    size_t* capture_counts;
+    Py_ssize_t g;
+
+    group_count = state->pattern->group_count;
+    if (group_count == 0)
+        return;
+
+    current = state->current_capture_counts_block;
+    if (current->count == 0)
+        current = current->previous;
+    current->count -= group_count;
+    capture_counts = &current->items[current->count];
+    for (g = 0; g < group_count; g++)
+        state->groups[g].capture_count = capture_counts[g];
+    state->current_capture_counts_block = current;
+}
+
+/* Saves state info before a recusive call by 'basic_match'. */
+Py_LOCAL_INLINE(void) save_info(RE_State* state, RE_Info* info) {
+    info->current_backtrack_block = state->current_backtrack_block;
+    info->backtrack_count = info->current_backtrack_block->count;
+    info->current_capture_counts_block = state->current_capture_counts_block;
+    if (info->current_capture_counts_block)
+        info->captures_count = info->current_capture_counts_block->count;
+    info->saved_groups_count = state->saved_groups_count;
+    info->must_advance = state->must_advance;
+}
+
+/* Restores state info after a recusive call by 'basic_match'. */
+Py_LOCAL_INLINE(void) restore_info(RE_State* state, RE_Info* info) {
+    state->must_advance = info->must_advance;
+    state->saved_groups_count = info->saved_groups_count;
+    if (info->current_capture_counts_block) {
+        info->current_capture_counts_block->count = info->captures_count;
+        state->current_capture_counts_block =
+          info->current_capture_counts_block;
+    }
+    info->current_backtrack_block->count = info->backtrack_count;
+    state->current_backtrack_block = info->current_backtrack_block;
 }
 
 /* Performs a depth-first match or search from the context. */
@@ -3996,18 +4062,20 @@ advance:
             break;
         case RE_OP_ATOMIC: /* Atomic subpattern. */
         {
-            RE_BacktrackBlock* current_block;
-            size_t backtrack_count;
-            size_t saved_groups_count;
-            BOOL must_advance;
+            RE_Info info;
             int status;
             TRACE(("%s\n", re_op_text[node->op]))
 
             /* Try to match the subpattern. */
-            current_block = state->current_block;
-            backtrack_count = current_block->count;
-            saved_groups_count = state->saved_groups_count;
-            must_advance = state->must_advance;
+            if (node->values[0]) {
+                /* The atomic group contains captures, so save them. */
+                if (!add_backtrack(state, RE_OP_ATOMIC))
+                    return RE_ERROR_MEMORY;
+                if (!save_all_captures(state, state->backtrack))
+                    return RE_ERROR_MEMORY;
+            }
+
+            save_info(state, &info);
             state->text_pos = text_pos;
             state->must_advance = FALSE;
 
@@ -4016,10 +4084,7 @@ advance:
             if (status < 0)
                 return status;
 
-            state->must_advance = must_advance;
-            state->saved_groups_count = saved_groups_count;
-            current_block->count = backtrack_count;
-            state->current_block = current_block;
+            restore_info(state, &info);
 
             if (status != RE_ERROR_SUCCESS)
                 goto backtrack;
@@ -4611,19 +4676,21 @@ advance:
         }
         case RE_OP_LOOKAROUND: /* Lookaround. */
         {
-            RE_BacktrackBlock* current_block;
-            size_t backtrack_count;
-            size_t saved_groups_count;
-            BOOL must_advance;
+            RE_Info info;
             int status;
             BOOL matched;
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
             /* Try to match the subpattern. */
-            current_block = state->current_block;
-            backtrack_count = current_block->count;
-            saved_groups_count = state->saved_groups_count;
-            must_advance = state->must_advance;
+            if (node->values[0]) {
+                /* The lookaround contains captures, so save them. */
+                if (!add_backtrack(state, RE_OP_LOOKAROUND))
+                    return RE_ERROR_MEMORY;
+                if (!save_all_captures(state, state->backtrack))
+                    return RE_ERROR_MEMORY;
+            }
+
+            save_info(state, &info);
             state->slice_start = 0;
             state->slice_end = text_length;
             state->text_pos = text_pos;
@@ -4636,10 +4703,7 @@ advance:
 
             state->slice_end = slice_end;
             state->slice_start = slice_start;
-            state->must_advance = must_advance;
-            state->saved_groups_count = saved_groups_count;
-            current_block->count = backtrack_count;
-            state->current_block = current_block;
+            restore_info(state, &info);
 
             matched = status == RE_ERROR_SUCCESS;
             if (matched != node->match)
@@ -5010,13 +5074,12 @@ backtrack:
         bt_data = last_backtrack(state);
 
         switch (bt_data->op) {
-        case RE_OP_END_GROUP: /* End of capture group. */
-        case RE_OP_START_GROUP: /* Start of capture group. */
+        case RE_OP_ATOMIC: /* Atomic subpattern. */
         {
-            TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.index))
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
-            /* Unsave the capture and backtrack. */
-            unsave_capture(state, bt_data->group.index);
+            /* Restore the captures and backtrack. */
+            restore_all_captures(state, bt_data);
             discard_backtrack(state);
             break;
         }
@@ -5028,6 +5091,16 @@ backtrack:
             text_pos = bt_data->branch.position.text_pos;
             discard_backtrack(state);
             goto advance;
+        }
+        case RE_OP_END_GROUP: /* End of capture group. */
+        case RE_OP_START_GROUP: /* Start of capture group. */
+        {
+            TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.index))
+
+            /* Unsave the capture and backtrack. */
+            unsave_capture(state, bt_data->group.index);
+            discard_backtrack(state);
+            break;
         }
         case RE_OP_END_GREEDY_REPEAT: /* End of a greedy repeat. */
         {
@@ -6055,6 +6128,15 @@ backtrack:
             }
             break;
         }
+        case RE_OP_LOOKAROUND: /* Lookaround. */
+        {
+            TRACE(("%s %d\n", re_op_text[node->op], node->match))
+
+            /* Restore the captures and backtrack. */
+            restore_all_captures(state, bt_data);
+            discard_backtrack(state);
+            break;
+        }
         default:
             TRACE(("UNKNOWN OP %d\n", bt_data->op))
             return RE_ERROR_ILLEGAL;
@@ -6223,17 +6305,9 @@ Py_LOCAL_INLINE(void) dealloc_groups(RE_GroupData* groups, size_t group_count)
         return;
 
     for (g = 0; g < group_count; g++)
-#if defined(TRACK_MEM)
-        re_dealloc(__LINE__, groups[g].captures);
-#else
         re_dealloc(groups[g].captures);
-#endif
 
-#if defined(TRACK_MEM)
-    re_dealloc(__LINE__, groups);
-#else
     re_dealloc(groups);
-#endif
 }
 
 /* Initialises a state object. */
@@ -6247,6 +6321,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->backtrack_block.previous = NULL;
     state->backtrack_block.next = NULL;
     state->backtrack_block.capacity = RE_BACKTRACK_BLOCK_SIZE;
+    state->current_capture_counts_block = NULL;
 
     /* The capture groups. */
     if (pattern->group_count) {
@@ -6256,13 +6331,8 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
             state->groups = pattern->groups_storage;
             pattern->groups_storage = NULL;
         } else {
-#if defined(TRACK_MEM)
-            state->groups = (RE_GroupData*)re_alloc(__LINE__,
-              pattern->group_count * sizeof(RE_GroupData));
-#else
             state->groups = (RE_GroupData*)re_alloc(pattern->group_count *
               sizeof(RE_GroupData));
-#endif
             if (!state->groups)
                 goto error;
             memset(state->groups, 0, pattern->group_count *
@@ -6279,15 +6349,9 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
             threshold = pattern->group_count * 16;
             while (state->saved_groups_capacity < threshold)
                 state->saved_groups_capacity *= 2;
-#if defined(TRACK_MEM)
-            state->saved_groups =
-              (RE_GroupData*)re_alloc(__LINE__, state->saved_groups_capacity *
-              sizeof(RE_GroupData));
-#else
             state->saved_groups =
               (RE_GroupData*)re_alloc(state->saved_groups_capacity *
               sizeof(RE_GroupData));
-#endif
             if (!state->saved_groups)
                 goto error;
         }
@@ -6359,13 +6423,8 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
             state->repeats = pattern->repeats_storage;
             pattern->repeats_storage = NULL;
         } else {
-#if defined(TRACK_MEM)
-            state->repeats = (RE_RepeatData*)re_alloc(__LINE__,
-              pattern->repeat_count * sizeof(RE_RepeatData));
-#else
             state->repeats = (RE_RepeatData*)re_alloc(pattern->repeat_count *
               sizeof(RE_RepeatData));
-#endif
             if (!state->repeats)
                 goto error;
         }
@@ -6383,13 +6442,8 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     return TRUE;
 
 error:
-#if defined(TRACK_MEM)
-    re_dealloc(__LINE__, state->saved_groups);
-    re_dealloc(__LINE__, state->repeats);
-#else
     re_dealloc(state->saved_groups);
     re_dealloc(state->repeats);
-#endif
     dealloc_groups(state->groups, pattern->group_count);
     state->saved_groups = NULL;
     state->repeats = NULL;
@@ -6439,10 +6493,11 @@ Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
       start, end, overlapped);
 }
 
-/* Finalises a state objects, discarding its contents. */
+/* Finalises a state object, discarding its contents. */
 Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
     PatternObject* pattern;
     RE_BacktrackBlock* current;
+    RE_CaptureCountsBlock* current2;
 
     /* Deallocate the backtrack blocks. */
     current = state->backtrack_block.next;
@@ -6450,12 +6505,23 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
         RE_BacktrackBlock* next;
 
         next = current->next;
-#if defined(TRACK_MEM)
-        re_dealloc(__LINE__, current);
-#else
         re_dealloc(current);
-#endif
         current = next;
+    }
+
+    current2 = state->current_capture_counts_block;
+    if (current2) {
+        while (current2->next)
+            current2 = current2->next;
+
+        while (current2) {
+            RE_CaptureCountsBlock* previous;
+
+            previous = current2->previous;
+            re_dealloc(current2->items);
+            re_dealloc(current2);
+            current2 = previous;
+        }
     }
 
     pattern = state->pattern;
@@ -6466,20 +6532,12 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
         pattern->groups_storage = state->groups;
 
     if (pattern->repeats_storage)
-#if defined(TRACK_MEM)
-        re_dealloc(__LINE__, state->repeats);
-#else
         re_dealloc(state->repeats);
-#endif
     else
         pattern->repeats_storage = state->repeats;
 
     if (pattern->saved_groups_storage)
-#if defined(TRACK_MEM)
-        re_dealloc(__LINE__, state->saved_groups);
-#else
         re_dealloc(state->saved_groups);
-#endif
     else {
         pattern->saved_groups_capacity_storage = state->saved_groups_capacity;
         pattern->saved_groups_storage = state->saved_groups;
@@ -7745,12 +7803,7 @@ Py_LOCAL_INLINE(RE_GroupData*)copy_groups(RE_GroupData* groups, Py_ssize_t
     RE_GroupData* groups_copy;
     Py_ssize_t g;
 
-#if defined(TRACK_MEM)
-    groups_copy = (RE_GroupData*)re_alloc(__LINE__, group_count *
-      sizeof(RE_GroupData));
-#else
     groups_copy = (RE_GroupData*)re_alloc(group_count * sizeof(RE_GroupData));
-#endif
     if (!groups_copy)
         return NULL;
 
@@ -7764,13 +7817,8 @@ Py_LOCAL_INLINE(RE_GroupData*)copy_groups(RE_GroupData* groups, Py_ssize_t
         copy = &groups_copy[g];
         copy->span = orig->span;
         if (orig->capture_count > 0) {
-#if defined(TRACK_MEM)
-            copy->captures = (RE_GroupSpan*)re_alloc(__LINE__,
-              orig->capture_count * sizeof(RE_GroupSpan));
-#else
             copy->captures = (RE_GroupSpan*)re_alloc(orig->capture_count *
               sizeof(RE_GroupSpan));
-#endif
             if (!copy->captures)
                 goto error;
             Py_MEMCPY(copy->captures, orig->captures, orig->capture_count *
@@ -9129,46 +9177,22 @@ static void pattern_dealloc(PatternObject* self) {
         RE_Node* node;
 
         node = self->node_list[i];
-#if defined(TRACK_MEM)
-        re_dealloc(__LINE__, node->values);
-        re_dealloc(__LINE__, node->bad_character_offset);
-        re_dealloc(__LINE__, node->good_suffix_offset);
-        re_dealloc(__LINE__, node);
-#else
         re_dealloc(node->values);
         re_dealloc(node->bad_character_offset);
         re_dealloc(node->good_suffix_offset);
         re_dealloc(node);
-#endif
     }
-#if defined(TRACK_MEM)
-    re_dealloc(__LINE__, self->node_list);
-#else
     re_dealloc(self->node_list);
-#endif
 
     /* Discard the group info. */
-#if defined(TRACK_MEM)
-    re_dealloc(__LINE__, self->group_info);
-#else
     re_dealloc(self->group_info);
-#endif
 
     /* Discard the repeat info. */
-#if defined(TRACK_MEM)
-    re_dealloc(__LINE__, self->repeat_info);
-#else
     re_dealloc(self->repeat_info);
-#endif
 
     dealloc_groups(self->groups_storage, self->group_count);
-#if defined(TRACK_MEM)
-    re_dealloc(__LINE__, self->repeats_storage);
-    re_dealloc(__LINE__, self->saved_groups_storage);
-#else
     re_dealloc(self->repeats_storage);
     re_dealloc(self->saved_groups_storage);
-#endif
 
     if (self->weakreflist)
         PyObject_ClearWeakRefs((PyObject*)self);
@@ -9246,22 +9270,12 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables(RE_EncodingTable* encoding, RE_Node*
 
     values = node->values;
 
-#if defined(TRACK_MEM)
-    bad = (Py_ssize_t*)re_alloc(__LINE__, 256 * sizeof(bad[0]));
-    good = (Py_ssize_t*)re_alloc(__LINE__, length * sizeof(good[0]));
-#else
     bad = (Py_ssize_t*)re_alloc(256 * sizeof(bad[0]));
     good = (Py_ssize_t*)re_alloc(length * sizeof(good[0]));
-#endif
 
     if (!bad || !good) {
-#if defined(TRACK_MEM)
-        re_dealloc(__LINE__, bad);
-        re_dealloc(__LINE__, good);
-#else
         re_dealloc(bad);
         re_dealloc(good);
-#endif
 
         return FALSE;
     }
@@ -9385,22 +9399,12 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables_rev(RE_EncodingTable* encoding,
 
     values = node->values;
 
-#if defined(TRACK_MEM)
-    bad = (Py_ssize_t*)re_alloc(__LINE__, 256 * sizeof(bad[0]));
-    good = (Py_ssize_t*)re_alloc(__LINE__, length * sizeof(good[0]));
-#else
     bad = (Py_ssize_t*)re_alloc(256 * sizeof(bad[0]));
     good = (Py_ssize_t*)re_alloc(length * sizeof(good[0]));
-#endif
 
     if (!bad || !good) {
-#if defined(TRACK_MEM)
-        re_dealloc(__LINE__, bad);
-        re_dealloc(__LINE__, good);
-#else
         re_dealloc(bad);
         re_dealloc(good);
-#endif
 
         return FALSE;
     }
@@ -9575,17 +9579,10 @@ Py_LOCAL_INLINE(void) discard_unused_nodes(PatternObject* pattern) {
         if (node->used)
             pattern->node_list[new_count++] = node;
         else {
-#if defined(TRACK_MEM)
-            re_dealloc(__LINE__, node->values);
-            re_dealloc(__LINE__, node->bad_character_offset);
-            re_dealloc(__LINE__, node->good_suffix_offset);
-            re_dealloc(__LINE__, node);
-#else
             re_dealloc(node->values);
             re_dealloc(node->bad_character_offset);
             re_dealloc(node->good_suffix_offset);
             re_dealloc(node);
-#endif
         }
     }
 
@@ -9840,22 +9837,13 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_CODE op, BOOL
   match, Py_ssize_t step, Py_ssize_t value_count) {
     RE_Node* node;
 
-#if defined(TRACK_MEM)
-    node = (RE_Node*)re_alloc(__LINE__, sizeof(*node));
-#else
     node = (RE_Node*)re_alloc(sizeof(*node));
-#endif
     if (!node)
         return NULL;
 
     node->value_capacity = value_count;
     node->value_count = value_count;
-#if defined(TRACK_MEM)
-    node->values = (RE_CODE*)re_alloc(__LINE__, node->value_capacity *
-      sizeof(RE_CODE));
-#else
     node->values = (RE_CODE*)re_alloc(node->value_capacity * sizeof(RE_CODE));
-#endif
     if (!node->values)
         goto error;
 
@@ -9875,13 +9863,8 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_CODE op, BOOL
         RE_Node** new_node_list;
 
         pattern->node_capacity += 16;
-#if defined(TRACK_MEM)
-        new_node_list = (RE_Node**)re_realloc(__LINE__, pattern->node_list,
-          pattern->node_capacity * sizeof(RE_Node*));
-#else
         new_node_list = (RE_Node**)re_realloc(pattern->node_list,
           pattern->node_capacity * sizeof(RE_Node*));
-#endif
         if (!new_node_list)
             goto error;
         pattern->node_list = new_node_list;
@@ -9893,13 +9876,8 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_CODE op, BOOL
     return node;
 
 error:
-#if defined(TRACK_MEM)
-    re_dealloc(__LINE__, node->values);
-    re_dealloc(__LINE__, node);
-#else
     re_dealloc(node->values);
     re_dealloc(node);
-#endif
     return NULL;
 }
 
@@ -9930,13 +9908,8 @@ Py_LOCAL_INLINE(BOOL) ensure_group(PatternObject* pattern, Py_ssize_t group) {
         new_capacity += 16;
 
     if (new_capacity > old_capacity) {
-#if defined(TRACK_MEM)
-        new_group_info = (RE_GroupInfo*)re_realloc(__LINE__,
-          pattern->group_info, new_capacity * sizeof(RE_GroupInfo));
-#else
         new_group_info = (RE_GroupInfo*)re_realloc(pattern->group_info,
           new_capacity * sizeof(RE_GroupInfo));
-#endif
         if (!new_group_info)
             return FALSE;
         memset(new_group_info + old_capacity, 0, (new_capacity - old_capacity)
@@ -10028,13 +10001,8 @@ Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, int id) {
         new_capacity += 16;
 
     if (new_capacity > old_capacity) {
-#if defined(TRACK_MEM)
-        new_repeat_info = (RE_RepeatInfo*)re_realloc(__LINE__,
-          pattern->repeat_info, new_capacity * sizeof(RE_RepeatInfo));
-#else
         new_repeat_info = (RE_RepeatInfo*)re_realloc(pattern->repeat_info,
           new_capacity * sizeof(RE_RepeatInfo));
-#endif
         if (!new_repeat_info)
             return FALSE;
         memset(new_repeat_info + old_capacity, 0, (new_capacity - old_capacity)
@@ -10096,6 +10064,7 @@ Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
     ++args->code;
 
     subargs = *args;
+	subargs.has_captures = FALSE;
 
     /* Compile the sequence and check that we've reached the end of the
      * subpattern.
@@ -10119,6 +10088,7 @@ Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
 
     args->code = subargs.code;
     args->min_width = subargs.min_width;
+	args->has_captures |= subargs.has_captures;
 
     ++args->code;
 
@@ -10262,11 +10232,14 @@ Py_LOCAL_INLINE(BOOL) build_BRANCH(RE_CompileArgs* args) {
 
         /* Compile the sequence until the next 'BRANCH' or 'NEXT' opcode. */
         subargs.min_width = 0;
+		subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
         if (subargs.min_width < smallest_min_width)
             smallest_min_width = subargs.min_width;
+
+		args->has_captures |= subargs.has_captures;
 
         /* Append the sequence. */
         add_node(branch_node, subargs.start);
@@ -10369,6 +10342,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
      * group.
      */
     subargs = *args;
+    subargs.has_captures = FALSE;
     if (!build_sequence(&subargs))
         return FALSE;
 
@@ -10377,6 +10351,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
 
     args->code = subargs.code;
     args->min_width = subargs.min_width;
+	args->has_captures |= subargs.has_captures || subargs.save_captures;
 
     ++args->code;
 
@@ -10414,10 +10389,13 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
 
     subargs = *args;
     subargs.min_width = 0;
+    subargs.has_captures = FALSE;
     if (!build_sequence(&subargs))
         return FALSE;
 
     args->code = subargs.code;
+	args->has_captures |= subargs.has_captures;
+
     min_width = subargs.min_width;
 
     /* Append the start node. */
@@ -10430,10 +10408,12 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
 
         subargs.code = args->code;
         subargs.min_width = 0;
+	    subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
         args->code = subargs.code;
+		args->has_captures |= subargs.has_captures;
 
         if (subargs.min_width < min_width)
             min_width = subargs.min_width;
@@ -10474,7 +10454,7 @@ Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
 
     /* Create a node for the lookaround. */
     lookaround_node = create_node(args->pattern, RE_OP_LOOKAROUND, flags, 0,
-      0);
+      1);
     if (!lookaround_node)
         return FALSE;
 
@@ -10485,13 +10465,17 @@ Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
      */
     subargs = *args;
     subargs.forward = forward;
+    subargs.has_captures = FALSE;
     if (!build_sequence(&subargs))
         return FALSE;
+
+    lookaround_node->values[0] = subargs.has_captures;
 
     if (subargs.code[0] != RE_OP_END)
         return FALSE;
 
     args->code = subargs.code;
+	args->has_captures |= subargs.has_captures;
     ++args->code;
 
     /* Create the 'SUCCESS' node and append it to the subpattern. */
@@ -10612,6 +10596,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
 
         /* Compile the sequence and check that we've reached the end of it. */
         subargs = *args;
+    	subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
@@ -10619,6 +10604,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
             return FALSE;
 
         args->code = subargs.code;
+		args->has_captures |= subargs.has_captures;
 
         ++args->code;
 
@@ -10641,6 +10627,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         RE_CompileArgs subargs;
 
         subargs = *args;
+    	subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
@@ -10649,6 +10636,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
 
         args->code = subargs.code;
         args->min_width = subargs.min_width;
+		args->has_captures |= subargs.has_captures;
 
         ++args->code;
 
@@ -10675,6 +10663,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         subargs = *args;
         subargs.min_width = 0;
         subargs.save_captures = TRUE;
+    	subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
@@ -10683,6 +10672,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
 
         args->code = subargs.code;
         args->min_width += min_count * subargs.min_width;
+		args->has_captures |= subargs.has_captures;
 
         ++args->code;
 
@@ -11081,6 +11071,7 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     args.forward = (pattern->flags & RE_FLAG_REVERSE) == 0;
     args.min_width = 0;
     args.save_captures = FALSE;
+    args.has_captures = FALSE;
     if (!build_sequence(&args))
         return FALSE;
 
@@ -11132,11 +11123,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
 
     /* Read the regular expression code. */
     code_len = PyList_GET_SIZE(code_list);
-#if defined(TRACK_MEM)
-    code = (RE_CODE*)re_alloc(__LINE__, code_len * sizeof(RE_CODE));
-#else
     code = (RE_CODE*)re_alloc(code_len * sizeof(RE_CODE));
-#endif
     if (!code)
         return NULL;
 
@@ -11157,11 +11144,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self = PyObject_NEW(PatternObject, &Pattern_Type);
     if (!self) {
         set_error(RE_ERROR_MEMORY, NULL);
-#if defined(TRACK_MEM)
-        re_dealloc(__LINE__, code);
-#else
         re_dealloc(code);
-#endif
         return NULL;
     }
 
@@ -11212,11 +11195,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     ok = compile_to_nodes(code, code + code_len, self);
 
     /* We no longer need the regular expression code. */
-#if defined(TRACK_MEM)
-    re_dealloc(__LINE__, code);
-#else
     re_dealloc(code);
-#endif
 
     if (!ok) {
         if (!PyErr_Occurred())
@@ -11229,11 +11208,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     return (PyObject*)self;
 
 error:
-#if defined(TRACK_MEM)
-    re_dealloc(__LINE__, code);
-#else
     re_dealloc(code);
-#endif
     set_error(RE_ERROR_ILLEGAL, NULL);
     return NULL;
 }
@@ -11282,11 +11257,6 @@ PyMODINIT_FUNC PyInit__regex(void) {
 #if defined(VERBOSE)
     /* Unbuffered in case it crashes! */
     setvbuf(stdout, NULL, _IONBF, 0);
-#endif
-#if defined(TRACK_MEM)
-    mem_log = fopen("M:\\projects\\regex\\memory.txt", "w");
-    /* Unbuffered in case it crashes! */
-    //setvbuf(mem_log, NULL, _IONBF, 0);
 #endif
 
     /* Initialize object types */

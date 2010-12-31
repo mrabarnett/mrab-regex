@@ -2149,6 +2149,13 @@ xyzabc
           "aWbXcXdXeXfY").captures(1, 2, 3), ascii((('aW',), ('bX', 'cX', 'dX',
           'eX'), ('fY',))))
 
+        self.expect(lambda: regex.search(r".*?(?=(.)+)b", "ab").captures(1),
+          ascii(('b',)))
+        self.expect(lambda: regex.search(r".*?(?>(.){0,2})d",
+          "abcd").captures(1), ascii(('b', 'c')))
+        self.expect(lambda: regex.search(r"(.)+", "a").captures(1), 
+          ascii(('a',)))
+
     def run(self):
         print("Performing tests")
         print("================")
