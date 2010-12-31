@@ -313,14 +313,11 @@ ul.auto-toc {
 <div class="document">
 
 
-<div class="section" id="note">
-<h1>Note</h1>
+<div class="section" id="notes">
+<h1>Notes</h1>
 <p>For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.</p>
 <p>Please note that certain aspects of this module have changed from those of previous versions to make it conform better to the 're' module.</p>
-</div>
-<div class="section" id="building-for-64-bits">
-<h1>Building for 64-bits</h1>
-<p>If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The 're' module appears to limit string positions to 32 bits, even on a 64-bit build.)</p>
+<p>Please also note that <tt class="docutils literal">matchobject.captures</tt> and the related methods now return a <strong>list</strong> (or a tuple of lists for the multi-group versions) instead of a tuple as previously.</p>
 </div>
 <div class="section" id="flags">
 <h1>Flags</h1>
@@ -336,6 +333,14 @@ ul.auto-toc {
 <p>Groups with the same group name will have the same group number, and groups with a different group name will have a different group number.</p>
 <p>The same group name can be used on different branches of an alternation because they are mutually exclusive, eg. <tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;first)|(?P&lt;foo&gt;second)</span></tt>. They will, of course, have the same group number.</p>
 <p>Group numbers will be reused, where possible, across different branches of a branch reset, eg. <tt class="docutils literal"><span class="pre">(?|(first)|(second))</span></tt> has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. <tt class="docutils literal"><span class="pre">(?|(?P&lt;foo&gt;first)|(?P&lt;bar&gt;second))</span></tt> has group 1 (&quot;foo&quot;) and group 2 (&quot;bar&quot;).</p>
+</div>
+<div class="section" id="multithreading">
+<h1>Multithreading</h1>
+<p>The regex module releases the GIL during matching on instances of the built-in (immutable) string classes, enabling other Python threads to run concurrently. It is also possible to force the regex module to release the GIL during matching by calling the matching methods with the keyword argument <tt class="docutils literal">concurrent=True</tt>. The behaviour is undefined if the string changes during matching, so use it <em>only</em> when it is guaranteed that that won't happen.</p>
+</div>
+<div class="section" id="building-for-64-bits">
+<h1>Building for 64-bits</h1>
+<p>If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The 're' module appears to limit string positions to 32 bits, even on a 64-bit build.)</p>
 </div>
 <div class="section" id="unicode">
 <h1>Unicode</h1>
@@ -363,19 +368,19 @@ ul.auto-toc {
 <p>A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:</p>
 <p><tt class="docutils literal"><span class="pre">matchobject.captures([group1,</span> <span class="pre">...])</span></tt></p>
 <blockquote>
-<p>Returns a tuple of the strings matched in a group or groups. Compare with <tt class="docutils literal"><span class="pre">matchobject.group([group1,</span> <span class="pre">...])</span></tt>.</p>
+<p>Returns a list of the strings matched in a group or groups. Compare with <tt class="docutils literal"><span class="pre">matchobject.group([group1,</span> <span class="pre">...])</span></tt>.</p>
 </blockquote>
 <p><tt class="docutils literal"><span class="pre">matchobject.starts([group])</span></tt></p>
 <blockquote>
-<p>Returns a tuple of the start positions. Compare with <tt class="docutils literal"><span class="pre">matchobject.start([group])</span></tt>.</p>
+<p>Returns a list of the start positions. Compare with <tt class="docutils literal"><span class="pre">matchobject.start([group])</span></tt>.</p>
 </blockquote>
 <p><tt class="docutils literal"><span class="pre">matchobject.ends([group])</span></tt></p>
 <blockquote>
-<p>Returns a tuple of the end positions. Compare with <tt class="docutils literal"><span class="pre">matchobject.end([group])</span></tt>.</p>
+<p>Returns a list of the end positions. Compare with <tt class="docutils literal"><span class="pre">matchobject.end([group])</span></tt>.</p>
 </blockquote>
 <p><tt class="docutils literal"><span class="pre">matchobject.spans([group])</span></tt></p>
 <blockquote>
-<p>Returns a tuple of the spans. Compare with <tt class="docutils literal"><span class="pre">matchobject.span([group])</span></tt>.</p>
+<p>Returns a list of the spans. Compare with <tt class="docutils literal"><span class="pre">matchobject.span([group])</span></tt>.</p>
 </blockquote>
 <p>Examples:</p>
 <blockquote>
@@ -384,19 +389,19 @@ ul.auto-toc {
 &gt;&gt;&gt; m.group(1)
 '789'
 &gt;&gt;&gt; m.captures(1)
-('123', '456', '789')
+['123', '456', '789']
 &gt;&gt;&gt; m.start(1)
 6
 &gt;&gt;&gt; m.starts(1)
-(0, 3, 6)
+[0, 3, 6]
 &gt;&gt;&gt; m.end(1)
 9
 &gt;&gt;&gt; m.ends(1)
-(3, 6, 9)
+[3, 6, 9]
 &gt;&gt;&gt; m.span(1)
 (6, 9)
 &gt;&gt;&gt; m.spans(1)
-((0, 3), (3, 6), (6, 9))
+[(0, 3), (3, 6), (6, 9)]
 </pre>
 </blockquote>
 </blockquote>
@@ -547,10 +552,10 @@ stu
 </ol>
 </blockquote>
 </li>
-<li><p class="first">Posix character classes</p>
+<li><p class="first">POSIX character classes</p>
 <blockquote>
 <p><tt class="docutils literal"><span class="pre">[[:alpha:]]</span></tt></p>
-<p>Posix character classes are supported.</p>
+<p>POSIX character classes are supported.</p>
 </blockquote>
 </li>
 <li><p class="first">Search anchor</p>
@@ -587,11 +592,6 @@ stu
 &gt;&gt;&gt; regex.findall(r&quot;(?r)..&quot;, &quot;abcde&quot;)
 ['de', 'bc']
 </pre>
-</blockquote>
-</li>
-<li><p class="first">Multithreading</p>
-<blockquote>
-<p>The regex module releases the GIL when matching on instances of the built-in (immutable) string classes, enabling other Python threads to run concurrently.</p>
 </blockquote>
 </li>
 <li><p class="first">Matching a single grapheme</p>

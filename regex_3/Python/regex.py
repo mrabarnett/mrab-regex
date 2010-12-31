@@ -51,14 +51,18 @@ The special characters are:
     (...)              Matches the RE inside the parentheses. The contents are
                        captured and can be retrieved or matched later in the
                        string.
-    (?flags-flags)     Sets/clears the flags for the entire RE, or the remainder
-                       of the RE if the 'NEW' flag is set.
+    (?flags-flags)     Sets/clears the flags for the entire RE, or the
+                       remainder of the RE if the 'NEW' flag is set.
     (?:...)            Non-capturing version of regular parentheses.
+    (?>...)            Atomic non-capturing version of regular parentheses.
     (?flags-flags:...) Non-capturing version of regular parentheses with local
                        flags.
-    (?P<name>...)      The substring matched by the group is accessible by name.
-    (?<name>...)       The substring matched by the group is accessible by name.
-    (?P=name)          Matches the text matched earlier by the group named name.
+    (?P<name>...)      The substring matched by the group is accessible by
+                       name.
+    (?<name>...)       The substring matched by the group is accessible by
+                       name.
+    (?P=name)          Matches the text matched earlier by the group named
+                       name.
     (?#...)            A comment; ignored.
     (?=...)            Matches if ... matches next, but doesn't consume the
                        string.
@@ -67,48 +71,55 @@ The special characters are:
     (?<!...)           Matches if not preceded by ... (must be fixed length).
     (?(id)yes|no)      Matches yes pattern if group id matched, the (optional)
                        no pattern otherwise.
-    (?|...|...)        (?|A|B), creates an RE that will match either A or B, but
-                       reuses capture group numbers across the alternatives.
+    (?|...|...)        (?|A|B), creates an RE that will match either A or B,
+                       but reuses capture group numbers across the
+                       alternatives.
 
 The special sequences consist of "\\" and a character from the list
 below.  If the ordinary character is not on the list, then the
 resulting RE will match the second character.
-    \number  Matches the contents of the group of the same number.
-    \A       Matches only at the start of the string.
-    \b       Matches the empty string, but only at the start or end of a word.
-    \B       Matches the empty string, but not at the start or end of a word.
-    \d       Matches any decimal digit; equivalent to the set [0-9] when
-             matching a bytestring or a Unicode string with the ASCII flag, or
-             the whole range of Unicode digits when matching a Unicode string.
-    \D       Matches any non-digit character; equivalent to [^\d].
-    \f       Matches the formfeed character.
-    \g<name> Matches the text matched by the group named name.
-    \G       Matches the empty string, but only at the position where the search
-             started.
-    \n       Matches the newline character.
-    \N{name} Matches the named character.
-    \p{name} Matches the character if it has the specified property.
-    \P{name} Matches the complement of \p<name>.
-    \r       Matches the carriage-return character.
-    \s       Matches any whitespace character; equivalent to [ \t\n\r\f\v].
-    \S       Matches any non-whitespace character; equivalent to [^\s].
-    \t       Matches the tab character.
-    \uXXXX   Matches the Unicode codepoint with 4-digit hex code XXXX.
-    \v       Matches the vertical tab character.
-    \w       Matches any alphanumeric character; equivalent to [a-zA-Z0-9_] when
-             matching a bytestring or a Unicode string with the ASCII flag, or
-             the whole range of Unicode alphanumeric characters (letters plus
-             digits plus underscore) when matching a Unicode string. With
-             LOCALE, it will match the set [0-9_] plus characters defined as
-             letters for the current locale.
-    \W       Matches the complement of \w; equivalent to [^\w].
-    \xXX     Matches the character with 2-digit hex code XX.
-    \X       Matches a grapheme.
-    \Z       Matches only at the end of the string.
-    \\       Matches a literal backslash.
+    \number    Matches the contents of the group of the same number if number
+               is no more than 2 digits, otherwise the character with the
+               3-digit octal code.
+    \a         Matches the bell character.
+    \A         Matches only at the start of the string.
+    \b         Matches the empty string, but only at the start or end of a
+               word.
+    \B         Matches the empty string, but not at the start or end of a word.
+    \d         Matches any decimal digit; equivalent to the set [0-9] when
+               matching a bytestring or a Unicode string with the ASCII flag,
+               or the whole range of Unicode digits when matching a Unicode
+               string.
+    \D         Matches any non-digit character; equivalent to [^\d].
+    \f         Matches the formfeed character.
+    \g<name>   Matches the text matched by the group named name.
+    \G         Matches the empty string, but only at the position where the
+               search started.
+    \n         Matches the newline character.
+    \N{name}   Matches the named character.
+    \p{name}   Matches the character if it has the specified property.
+    \P{name}   Matches the complement of \p<name>.
+    \r         Matches the carriage-return character.
+    \s         Matches any whitespace character; equivalent to [ \t\n\r\f\v].
+    \S         Matches any non-whitespace character; equivalent to [^\s].
+    \t         Matches the tab character.
+    \uXXXX     Matches the Unicode codepoint with 4-digit hex code XXXX.
+    \UXXXXXXXX Matches the Unicode codepoint with 8-digit hex code XXXXXXXX.
+    \v         Matches the vertical tab character.
+    \w         Matches any alphanumeric character; equivalent to [a-zA-Z0-9_]
+               when matching a bytestring or a Unicode string with the ASCII
+               flag, or the whole range of Unicode alphanumeric characters
+               (letters plus digits plus underscore) when matching a Unicode
+               string. With LOCALE, it will match the set [0-9_] plus
+               characters defined as letters for the current locale.
+    \W         Matches the complement of \w; equivalent to [^\w].
+    \xXX       Matches the character with 2-digit hex code XX.
+    \X         Matches a grapheme; equivalent to \P{M}\p{M}*.
+    \Z         Matches only at the end of the string.
+    \\         Matches a literal backslash.
 
 This module exports the following functions:
-    match     Match a regular expression pattern to the beginning of a string.
+    match     Match a regular expression pattern at the beginning of a string.
     search    Search a string for the presence of a pattern.
     sub       Substitute occurrences of a pattern found in a string.
     subn      Same as sub, but also return the number of substitutions made.
@@ -116,9 +127,15 @@ This module exports the following functions:
     splititer Return an iterator yielding the parts of a split string.
     findall   Find all occurrences of a pattern in a string.
     finditer  Return an iterator yielding a match object for each match.
-    compile   Compile a pattern into a RegexObject.
+    compile   Compile a pattern into a Pattern object.
     purge     Clear the regular expression cache.
-    escape    Backslash all non-alphanumerics or special characters in a string.
+    escape    Backslash all non-alphanumerics or special characters in a
+              string.
+
+Most of the functions support a concurrent parameter: if True, the GIL will be
+released during matching, allowing other Python threads to run concurrently. If
+the string changes during matching, the behaviour is undefined. This parameter
+is not needed when working on the builtin (immutable) string classes.
 
 Some of the functions in this module take flags as optional parameters. Most of
 these flags can also be set within an RE:
@@ -138,7 +155,7 @@ these flags can also be set within an RE:
     S  s  DOTALL     "." matches any character at all, including the newline.
     U  u  UNICODE    Make \w, \W, \b, \B, \d, and \D dependent on the Unicode
                      locale. Default when matching a Unicode string.
-    W  w  WORD       Default Unicode word breaks.
+    W  w  WORD       Make \b and \B work with default Unicode word breaks.
     X  x  VERBOSE    Ignore whitespace and comments for nicer looking RE's.
 
 This module also defines an exception 'error'.
@@ -157,58 +174,64 @@ __version__ = "2.3.0"
 # --------------------------------------------------------------------
 # Public interface.
 
-def match(pattern, string, flags=0, pos=None, endpos=None):
+def match(pattern, string, flags=0, pos=None, endpos=None, concurrent=False):
     """Try to apply the pattern at the start of the string, returning a match
     object, or None if no match was found."""
-    return _compile(pattern, flags).match(string, pos, endpos)
+    return _compile(pattern, flags).match(string, pos, endpos, concurrent)
 
-def search(pattern, string, flags=0, pos=None, endpos=None):
-    """Scan through string looking for a match to the pattern, returning a match
-    object, or None if no match was found."""
-    return _compile(pattern, flags).search(string, pos, endpos)
+def search(pattern, string, flags=0, pos=None, endpos=None, concurrent=False):
+    """Search through string looking for a match to the pattern, returning a
+    match object, or None if no match was found."""
+    return _compile(pattern, flags).search(string, pos, endpos, concurrent)
 
-def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None):
-    """Return the string obtained by replacing the leftmost non-overlapping
-    occurrences of the pattern in string by the replacement repl.  repl can be
-    either a string or a callable; if a string, backslash escapes in it are
-    processed.  If it is a callable, it's passed the match object and must
-    return a replacement string to be used."""
-    return _compile(pattern, flags).sub(repl, string, count, pos, endpos)
+def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
+  concurrent=False):
+    """Return the string obtained by replacing the leftmost (or rightmost with
+    a reverse pattern) non-overlapping occurrences of the pattern in string by
+    the replacement repl.  repl can be either a string or a callable; if a
+    string, backslash escapes in it are processed; if a callable, it's passed
+    the match object and must return a replacement string to be used."""
+    return _compile(pattern, flags).sub(repl, string, count, pos, endpos,
+      concurrent)
 
-def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None):
+def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
+  concurrent=False):
     """Return a 2-tuple containing (new_string, number).  new_string is the
-    string obtained by replacing the leftmost non-overlapping occurrences of the
-    pattern in the source string by the replacement repl.  number is the number
-    of substitutions that were made.  repl can be either a string or a callable;
-    if a string, backslash escapes in it are processed.  If it is a callable,
-    it's passed the match object and must return a replacement string to be
-    used."""
-    return _compile(pattern, flags).subn(repl, string, count, pos, endpos)
+    string obtained by replacing the leftmost (or rightmost with a reverse
+    pattern) non-overlapping occurrences of the pattern in the source string by
+    the replacement repl.  number is the number of substitutions that were
+    made.  repl can be either a string or a callable; if a string, backslash
+    escapes in it are processed; if a callable, it's passed the match object
+    and must return a replacement string to be used."""
+    return _compile(pattern, flags).subn(repl, string, count, pos, endpos,
+      concurrent)
 
-def split(pattern, string, maxsplit=0, flags=0):
+def split(pattern, string, maxsplit=0, flags=0, concurrent=False):
     """Split the source string by the occurrences of the pattern, returning a
     list containing the resulting substrings."""
-    return _compile(pattern, flags).split(string, maxsplit)
+    return _compile(pattern, flags).split(string, maxsplit, concurrent)
 
-def splititer(pattern, string, maxsplit=0, flags=0):
+def splititer(pattern, string, maxsplit=0, flags=0, concurrent=False):
     """Return an iterator yielding the parts of a split string."""
-    return _compile(pattern, flags).splititer(string, maxsplit=maxsplit)
+    return _compile(pattern, flags).splititer(string, maxsplit, concurrent)
 
-def findall(pattern, string, flags=0, pos=None, endpos=None, overlapped=False):
-    """Return a list of all non-overlapping matches in the string if overlapped
-    is False or all matches if overlapped is True .  If one or more groups are
-    present in the pattern, return a list of groups; this will be a list of
-    tuples if the pattern has more than one group.  Empty matches are included
-    in the result."""
-    return _compile(pattern, flags).findall(string, pos, endpos,
-      overlapped=overlapped)
+def findall(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
+  concurrent=False):
+    """Return a list of all matches in the string.  The matches may be
+    overlapped if overlapped is True.  If one or more groups are present in the
+    pattern, return a list of groups; this will be a list of tuples if the
+    pattern has more than one group.  Empty matches are included in the
+    result."""
+    return _compile(pattern, flags).findall(string, pos, endpos, overlapped,
+      concurrent)
 
-def finditer(pattern, string, flags=0, pos=None, endpos=None, overlapped=False):
-    """Return an iterator over all non-overlapping matches in the string.  For
-    each match, the iterator returns a match object.  Empty matches are included
-    in the result."""
-    return _compile(pattern, flags).finditer(string, pos, endpos,
-      overlapped=overlapped)
+def finditer(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
+  concurrent=False):
+    """Return an iterator over all matches in the string.  The matches may be
+    overlapped if overlapped is True.  For each match, the iterator returns a
+    match object.  Empty matches are included in the result."""
+    return _compile(pattern, flags).finditer(string, pos, endpos, overlapped,
+      concurrent)
 
 def compile(pattern, flags=0):
     "Compile a regular expression pattern, returning a pattern object."

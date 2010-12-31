@@ -1,15 +1,11 @@
-Note
-----
+Notes
+-----
 
 For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
 
 Please note that certain aspects of this module have changed from those of previous versions to make it conform better to the 're' module.
 
-
-Building for 64-bits
---------------------
-
-If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The 're' module appears to limit string positions to 32 bits, even on a 64-bit build.)
+Please also note that ``matchobject.captures`` and the related methods now return a **list** (or a tuple of lists for the multi-group versions) instead of a tuple as previously.
 
 
 Flags
@@ -20,6 +16,7 @@ There are 2 kinds of flag: scoped and global. Scoped flags can apply to only par
 The scoped flags are: ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
 
 The global flags are: ``ASCII``, ``LOCALE``, ``NEW``, ``REVERSE``, ``UNICODE``.
+
 
 The ``NEW`` flag turns on the new behaviour of this module, which can differ from that of the 're' module, such as splitting on zero-width matches, inline flags affecting only what follows, and being able to turn inline flags off.
 
@@ -38,10 +35,23 @@ The same group name can be used on different branches of an alternation because 
 Group numbers will be reused, where possible, across different branches of a branch reset, eg. ``(?|(first)|(second))`` has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. ``(?|(?P<foo>first)|(?P<bar>second))`` has group 1 ("foo") and group 2 ("bar").
 
 
+Multithreading
+--------------
+
+The regex module releases the GIL during matching on instances of the built-in (immutable) string classes, enabling other Python threads to run concurrently. It is also possible to force the regex module to release the GIL during matching by calling the matching methods with the keyword argument ``concurrent=True``. The behaviour is undefined if the string changes during matching, so use it *only* when it is guaranteed that that won't happen.
+
+
+Building for 64-bits
+--------------------
+
+If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The 're' module appears to limit string positions to 32 bits, even on a 64-bit build.)
+
+
 Unicode
 -------
 
 This module supports Unicode 6.0.0.
+
 
 
 Additional features
@@ -64,19 +74,19 @@ Additional features
 
     ``matchobject.captures([group1, ...])``
 
-        Returns a tuple of the strings matched in a group or groups. Compare with ``matchobject.group([group1, ...])``.
+        Returns a list of the strings matched in a group or groups. Compare with ``matchobject.group([group1, ...])``.
 
     ``matchobject.starts([group])``
 
-        Returns a tuple of the start positions. Compare with ``matchobject.start([group])``.
+        Returns a list of the start positions. Compare with ``matchobject.start([group])``.
 
     ``matchobject.ends([group])``
 
-        Returns a tuple of the end positions. Compare with ``matchobject.end([group])``.
+        Returns a list of the end positions. Compare with ``matchobject.end([group])``.
 
     ``matchobject.spans([group])``
 
-        Returns a tuple of the spans. Compare with ``matchobject.span([group])``.
+        Returns a list of the spans. Compare with ``matchobject.span([group])``.
 
     Examples:
 
@@ -84,19 +94,19 @@ Additional features
         >>> m.group(1)
         '789'
         >>> m.captures(1)
-        ('123', '456', '789')
+        ['123', '456', '789']
         >>> m.start(1)
         6
         >>> m.starts(1)
-        (0, 3, 6)
+        [0, 3, 6]
         >>> m.end(1)
         9
         >>> m.ends(1)
-        (3, 6, 9)
+        [3, 6, 9]
         >>> m.span(1)
         (6, 9)
         >>> m.spans(1)
-        ((0, 3), (3, 6), (6, 9))
+        [(0, 3), (3, 6), (6, 9)]
 
 * Atomic grouping (issue #433030)
 
@@ -228,11 +238,11 @@ Additional features
 
     4. ``IsCyrillic`` or ``Cyrillic``, the 'Cyrillic' **script**.
 
-* Posix character classes
+* POSIX character classes
 
     ``[[:alpha:]]``
 
-    Posix character classes are supported.
+    POSIX character classes are supported.
 
 * Search anchor
 
@@ -268,10 +278,6 @@ Additional features
     ['ab', 'cd']
     >>> regex.findall(r"(?r)..", "abcde")
     ['de', 'bc']
-
-* Multithreading
-
-    The regex module releases the GIL when matching on instances of the built-in (immutable) string classes, enabling other Python threads to run concurrently.
 
 * Matching a single grapheme
 

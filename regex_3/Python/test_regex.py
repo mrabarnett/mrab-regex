@@ -2154,24 +2154,24 @@ xyzabc
 
     def test_captures(self):
         self.expect(lambda: regex.search(r"(\w)+", "abc").captures(1),
-          ascii(('a', 'b', 'c')))
+          ascii(['a', 'b', 'c']))
         self.expect(lambda: regex.search(r"(\w{3})+", "abcdef").captures(0, 1),
-          ascii((('abcdef',), ('abc', 'def'))))
+          ascii((['abcdef'], ['abc', 'def'])))
         self.expect(lambda: regex.search(r"^(\d{1,3})(?:\.(\d{1,3})){3}$",
-          "192.168.0.1").captures(1, 2), ascii((('192', ), ('168', '0', '1'))))
+          "192.168.0.1").captures(1, 2), ascii((['192', ], ['168', '0', '1'])))
         self.expect(lambda: regex.match(r"^([0-9A-F]{2}){4} ([a-z]\d){5}$",
-          "3FB52A0C a2c4g3k9d3").captures(1, 2), ascii((('3F', 'B5', '2A', '0C'),
-          ('a2', 'c4', 'g3', 'k9', 'd3'))))
+          "3FB52A0C a2c4g3k9d3").captures(1, 2), ascii((['3F', 'B5', '2A', '0C'],
+          ['a2', 'c4', 'g3', 'k9', 'd3'])))
         self.expect(lambda: regex.match("([a-z]W)([a-z]X)+([a-z]Y)",
-          "aWbXcXdXeXfY").captures(1, 2, 3), ascii((('aW',), ('bX', 'cX', 'dX',
-          'eX'), ('fY',))))
+          "aWbXcXdXeXfY").captures(1, 2, 3), ascii((['aW'], ['bX', 'cX', 'dX',
+          'eX'], ['fY'])))
 
         self.expect(lambda: regex.search(r".*?(?=(.)+)b", "ab").captures(1),
-          ascii(('b',)))
+          ascii(['b']))
         self.expect(lambda: regex.search(r".*?(?>(.){0,2})d",
-          "abcd").captures(1), ascii(('b', 'c')))
+          "abcd").captures(1), ascii(['b', 'c']))
         self.expect(lambda: regex.search(r"(.)+", "a").captures(1),
-          ascii(('a',)))
+          ascii(['a']))
 
     def run(self):
         print("Performing tests")

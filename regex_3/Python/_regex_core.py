@@ -14,18 +14,18 @@
 # 2010-01-16 mrab Python front-end re-written and extended
 
 # Flags.
-A = ASCII = 0x80      # Assume ASCII locale.
-D = DEBUG = 0x200     # Print parsed pattern.
-I = IGNORECASE = 0x2  # Ignore case.
-L = LOCALE = 0x4      # Assume current 8-bit locale.
-M = MULTILINE = 0x8   # Make anchors look for newline.
-N = NEW = 0x100       # Scoped inline flags and correct handling of zero-width matches.
-R = REVERSE = 0x400   # Search backwards.
-S = DOTALL = 0x10     # Make dot match newline.
-U = UNICODE = 0x20    # Assume Unicode locale.
-W = WORD = 0x800      # Default Unicode word breaks.
-X = VERBOSE = 0x40    # Ignore whitespace and comments.
-T = TEMPLATE = 0x1    # Template.
+A = ASCII = 0x80         # Assume ASCII locale.
+D = DEBUG = 0x200        # Print parsed pattern.
+I = IGNORECASE = 0x2     # Ignore case.
+L = LOCALE = 0x4         # Assume current 8-bit locale.
+M = MULTILINE = 0x8      # Make anchors look for newline.
+N = NEW = 0x100          # Scoped inline flags and correct handling of zero-width matches.
+R = REVERSE = 0x400      # Search backwards.
+S = DOTALL = 0x10        # Make dot match newline.
+U = UNICODE = 0x20       # Assume Unicode locale.
+W = WORD = 0x800         # Default Unicode word breaks.
+X = VERBOSE = 0x40       # Ignore whitespace and comments.
+T = TEMPLATE = 0x1       # Template.
 
 # The mask for the flags.
 _GLOBAL_FLAGS = ASCII | DEBUG | LOCALE | NEW | REVERSE | UNICODE
@@ -164,7 +164,7 @@ def _define_opcodes(opcodes):
 _OP = _define_opcodes(_OPCODES)
 
 # The regular expression flags.
-_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "n": 
+_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "n":
   NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE}
 
 # Unicode properties.
