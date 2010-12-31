@@ -45,6 +45,8 @@ import sys
 import unicodedata
 from collections import defaultdict
 
+import _regex
+
 def _shrink_cache(cache_dict, max_length, divisor=5):
     """Make room in the given cache.
 
@@ -65,7 +67,7 @@ def _shrink_cache(cache_dict, max_length, divisor=5):
         # but it could due to multithreading.
         return
     number_to_toss = max_length // divisor + overage
-    # The import is done here to avoid a circular depencency.
+    # The import is done here to avoid a circular dependency.
     import random
     if not hasattr(random, 'sample'):
         # Do nothing while resolving the circular dependency:
@@ -78,8 +80,12 @@ def _shrink_cache(cache_dict, max_length, divisor=5):
             # Ignore problems if the cache changed from another thread.
             pass
 
+# The width of the code words inside the regex engine.
+_BYTES_PER_CODE = _regex.get_code_size()
+_BITS_PER_CODE = _BYTES_PER_CODE * 8
+
 # The repeat count which represents infinity.
-_UNLIMITED = 0xFFFFFFFF
+_UNLIMITED = (1 << _BITS_PER_CODE) - 1
 
 # The names of the opcodes.
 _OPCODES = """\
@@ -92,8 +98,6 @@ ANY_REV
 ATOMIC
 BEGIN_GROUP
 BIG_BITSET
-BIG_BITSET_IGN
-BIG_BITSET_IGN_REV
 BIG_BITSET_REV
 BOUNDARY
 BRANCH
@@ -101,8 +105,6 @@ CHARACTER
 CHARACTER_IGN
 CHARACTER_IGN_REV
 CHARACTER_REV
-CHECK
-CHECK_REV
 DEFAULT_BOUNDARY
 END
 END_GREEDY_REPEAT
@@ -121,22 +123,14 @@ LOOKAROUND
 NEXT
 PROPERTY
 PROPERTY_REV
-RANGE
-RANGE_IGN
-RANGE_IGN_REV
-RANGE_REV
 REF_GROUP
 REF_GROUP_IGN
 REF_GROUP_IGN_REV
 REF_GROUP_REV
 SEARCH_ANCHOR
 SET
-SET_IGN
-SET_IGN_REV
 SET_REV
 SMALL_BITSET
-SMALL_BITSET_IGN
-SMALL_BITSET_IGN_REV
 SMALL_BITSET_REV
 START_OF_LINE
 START_OF_STRING
@@ -152,11 +146,9 @@ def _define_opcodes(opcodes):
     class Record(object):
         pass
 
-    op_list = [op for op in opcodes.splitlines() if op]
-
     _OP = Record()
 
-    for i, op in enumerate(op_list):
+    for i, op in enumerate(filter(None, opcodes.splitlines())):
         setattr(_OP, op, i)
 
     return _OP
@@ -165,9 +157,8 @@ def _define_opcodes(opcodes):
 _OP = _define_opcodes(_OPCODES)
 
 # The regular expression flags.
-_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE,
-  "r": REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE,
-  "z": ZEROWIDTH}
+_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "r":
+  REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE, "z": ZEROWIDTH}
 
 # Unicode properties.
 _PROPERTIES = """\
@@ -522,12 +513,11 @@ def _create_properties(definitions):
     definitions = definitions.upper().replace("_", "").replace("-", "")
 
     properties = {}
-    for line in definitions.splitlines():
-        if line:
-            fields = line.split()
-            id, names = int(fields[0]), fields[1 : ]
-            for name in names:
-                properties[name] = id
+    for line in filter(None, definitions.splitlines()):
+        fields = line.split()
+        id, names = int(fields[0]), fields[1 : ]
+        for name in names:
+            properties[name] = id
 
     return properties
 
@@ -535,41 +525,47 @@ def _create_properties(definitions):
 _properties = _create_properties(_PROPERTIES)
 
 def _compile_firstset(info, fs):
+    "Compiles the firstset for the pattern."
     if not fs or _VOID_ITEM in fs or None in fs:
+        # No firstset.
         return []
-    members, members_ign = [], []
-    for i in fs:
-        t = type(i)
+    characters, others = [], []
+    for m in fs:
+        t = type(m)
         if t is _Any:
-            members.append(i)
-        elif t in (_Character, _Property) and i.positive:
-            members.append(i)
-        elif t is _CharacterIgn and i.positive:
-            members_ign.append(i)
-        elif t is _Set and i.positive:
-            members.extend(i.members)
-        elif t is _SetIgn and i.positive:
-            members_ign.extend(i.members)
+            others.append(m)
+        elif t is _Character and m.positive:
+            characters.append(m.value)
+        elif t is _Property:
+            others.append(m)
+        elif t is _CharacterIgn and m.positive:
+            ch = info.char_type(m.value)
+            characters.extend([m.value, ord(ch.lower()), ord(ch.upper()),
+              ord(ch.title())])
+        elif t is _Set and m.positive:
+            characters.extend(m.characters)
+            others.extend(m.others)
         else:
             return []
-    if members_ign:
-        fs = _SetIgn(members + members_ign, zerowidth=True)
-    elif members:
-        fs = _Set(members, zerowidth=True)
+    if characters or others:
+        fs = _Set(characters, others, zerowidth=True)
     else:
+        # No firstset.
         return []
     fs = fs.optimise(info)
     if not fs:
+        # No firstset.
         return []
     rev = bool(info.global_flags & REVERSE)
+    # Compile the firstset.
     return fs.compile(rev)
 
 def _count_ones(n):
     "Counts the number of set bits in an int."
     count = 0
     while n:
-        count += n & 0x1
-        n >>= 1
+        count += 1
+        n &= n - 1
     return count
 
 def _flatten_code(code):
@@ -591,6 +587,8 @@ def _parse_pattern(source, info):
         branches.append(_parse_sequence(source, info))
         all_groups |= info.used_groups
     info.used_groups = all_groups
+    if len(branches) == 1:
+        return branches[0]
     return _Branch(branches)
 
 def _parse_sequence(source, info):
@@ -600,219 +598,250 @@ def _parse_sequence(source, info):
     while item:
         sequence.append(item)
         item = _parse_item(source, info)
+    if len(sequence) == 1:
+        return sequence[0]
     return _Sequence(sequence)
+
+def _PossessiveRepeat(element, min_count, max_count):
+    return _Atomic(_GreedyRepeat(element, min_count, max_count))
 
 def _parse_item(source, info):
     "Parses an item, which might be repeated. Returns None if there's no item."
     element = _parse_element(source, info)
-    if not element:
+    counts = _parse_quantifier(source, info)
+    if not counts:
+        # No quantifier.
         return element
-    here = source.tell()
-    lazy = possessive = False
-    try:
-        min_count, max_count = _parse_quantifier(source, info)
-        if not element.can_repeat():
-            raise error("nothing to repeat")
-        if source.match("?"):
-            lazy = True
-        elif source.match("+"):
-            possessive = True
-        if min_count == max_count == 1:
-            return element
-    except error:
-        # Not a quantifier, so we'll parse it later as a literal.
-        source.seek(here)
-        return element
-    if lazy:
-        return _LazyRepeat(element, min_count, max_count)
-    elif possessive:
-        return _Atomic(_GreedyRepeat(element, min_count, max_count))
+    if not element or not element.can_repeat():
+        raise error("nothing to repeat")
+    min_count, max_count = counts
+    here = source.pos
+    ch = source.get()
+    if ch == "?":
+        # The "?" suffix that means it's a lazy repeat.
+        repeated = _LazyRepeat
+    elif ch == "+":
+        # The "+" suffix that means it's a possessive repeat.
+        repeated = _PossessiveRepeat
     else:
-        return _GreedyRepeat(element, min_count, max_count)
+        # No suffix means that it's a greedy repeat.
+        source.pos = here
+        repeated = _GreedyRepeat
+    if min_count == max_count == 1:
+        # Only ever one repeat.
+        return element
+    return repeated(element, min_count, max_count)
 
 def _parse_quantifier(source, info):
     "Parses a quantifier."
-    if source.match("?"):
+    here = source.pos
+    ch = source.get()
+    if ch == "?":
         # Optional element, eg. 'a?'.
         return 0, 1
-    elif source.match("*"):
+    if ch == "*":
         # Repeated element, eg. 'a*'.
         return 0, None
-    elif source.match("+"):
+    if ch == "+":
         # Repeated element, eg. 'a+'.
         return 1, None
-    elif source.match("{"):
-        # Limited repeated element, eg. 'a{2,3}'.
+    if ch == "{":
+        # Looks like a limited repeated element, eg. 'a{2,3}'.
         min_count = _parse_count(source)
-        if source.match(","):
+        ch = source.get()
+        if ch == ",":
             max_count = _parse_count(source)
-            if source.match("}"):
-                # An empty minimum means 0 and an empty maximum means unlimited.
-                min_count = int(min_count) if min_count else 0
-                max_count = int(max_count) if max_count else None
-                if max_count is not None and min_count > max_count:
-                    raise error("min repeat greater than max repeat")
-                if min_count >= _UNLIMITED or max_count is not None and max_count >= _UNLIMITED:
-                    raise error("repeat count too big")
-                return min_count, max_count
-            else:
-                raise error("missing }")
-        elif source.match("}"):
-            if min_count:
-                min_count = max_count = int(min_count)
-                if min_count >= _UNLIMITED:
-                    raise error("repeat count too big")
-                return min_count, max_count
-            else:
-                raise error("invalid quantifier")
-        else:
-            raise error("invalid quantifier")
-    else:
-        # No quantifier.
-        return 1, 1
+            if not source.match("}"):
+                # Not a quantifier, so parse it later as a literal.
+                source.pos = here
+                return None
+            # No minimum means 0 and no maximum means unlimited.
+            min_count = int(min_count) if min_count else 0
+            max_count = int(max_count) if max_count else None
+            if max_count is not None and min_count > max_count:
+                raise error("min repeat greater than max repeat")
+            if min_count >= _UNLIMITED or max_count is not None and max_count \
+              >= _UNLIMITED:
+                raise error("repeat count too big")
+            return min_count, max_count
+        if ch == "}":
+            if not min_count:
+                # Not a quantifier, so parse it later as a literal.
+                source.pos = here
+                return None
+            min_count = max_count = int(min_count)
+            if min_count >= _UNLIMITED:
+                raise error("repeat count too big")
+            return min_count, max_count
+    # No quantifier.
+    source.pos = here
+    return None
 
 def _parse_count(source):
     "Parses a quantifier's count, which can be empty."
     count = []
-    here = source.tell()
+    here = source.pos
     ch = source.get()
     while ch in _DIGITS:
         count.append(ch)
-        here = source.tell()
+        here = source.pos
         ch = source.get()
-    source.seek(here)
-    return source.sep.join(count)
+    source.pos = here
+    return "".join(count)
+
+_SPECIAL_CHARS = set("()|?*+{^$.[\\#") | set([""])
 
 def _parse_element(source, info):
     "Parses an element. An element might actually be a flag, eg. '(?i)'."
     while True:
-        here = source.tell()
+        here = source.pos
         ch = source.get()
-        if ch in ")|":
-            # The end of a sequence. At the end of the pattern ch is "".
-            source.seek(here)
-            return None
-        elif ch in "?*+{":
-            # Looks like a quantifier.
-            source.seek(here)
-            try:
-                _parse_quantifier(source, info)
-            except error:
+        if ch in _SPECIAL_CHARS:
+            if ch in ")|":
+                # The end of a sequence. At the end of the pattern ch is "".
+                source.pos = here
+                return None
+            elif ch == "\\":
+                # An escape sequence.
+                return _parse_escape(source, info, False)
+            elif ch == "(":
+                # A parenthesised subpattern or a flag.
+                element = _parse_paren(source, info)
+                if element:
+                    return element
+            elif ch == ".":
+                # Any character.
+                if info.local_flags & DOTALL:
+                    return _AnyAll()
+                else:
+                    return _Any()
+            elif ch == "[":
+                # A character set.
+                return _parse_set(source, info)
+            elif ch == "^":
+                # The start of a line or the string.
+                if info.local_flags & MULTILINE:
+                    return _StartOfLine()
+                else:
+                    return _StartOfString()
+            elif ch == "$":
+                # The end of a line or the string.
+                if info.local_flags & MULTILINE:
+                    return _EndOfLine()
+                else:
+                    return _EndOfStringLine()
+            elif ch == "{":
+                # Looks like a limited quantifier.
+                here2 = source.pos
+                source.pos = here
+                counts = _parse_quantifier(source, info)
+                if counts:
+                    # A quantifier where we expected an element.
+                    raise error("nothing to repeat")
                 # Not a quantifier, so it's a literal.
-                # None of these characters are case-dependent.
-                source.seek(here)
-                ch = source.get()
-                return _Character(ch)
-            # A quantifier where we expected an element.
-            raise error("nothing to repeat")
-        elif ch == "(":
-            # A parenthesised subpattern or a flag.
-            element = _parse_paren(source, info)
-            if element:
-                return element
-        elif ch == "^":
-            # The start of a line or the string.
-            if info.local_flags & MULTILINE:
-                return _StartOfLine()
+                source.pos = here2
+                return _Character(ord(ch))
+            elif ch in "?*+":
+                # A quantifier where we expected an element.
+                raise error("nothing to repeat")
+            elif info.local_flags & VERBOSE:
+                if ch == "#":
+                    # A comment.
+                    source.ignore_space = False
+                    # Ignore characters until a newline or the end of the pattern.
+                    while source.get() not in "\n":
+                        pass
+                    source.ignore_space = True
+                else:
+                    # A literal.
+                    if info.local_flags & IGNORECASE:
+                        return _CharacterIgn(ord(ch))
+                    return _Character(ord(ch))
             else:
-                return _StartOfString()
-        elif ch == "$":
-            # The end of a line or the string.
-            if info.local_flags & MULTILINE:
-                return _EndOfLine()
-            else:
-                return _EndOfStringLine()
-        elif ch == ".":
-            # Any character.
-            if info.local_flags & DOTALL:
-                return _AnyAll()
-            else:
-                return _Any()
-        elif ch == "[":
-            # A character set.
-            return _parse_set(source, info)
-        elif ch == "\\":
-            # An escape sequence.
-            return _parse_escape(source, info, False)
-        elif ch == "#" and (info.local_flags & VERBOSE):
-            # A comment.
-            source.ignore_space = False
-            # Ignore characters until a newline or the end of the pattern.
-            while source.get() not in "\n":
-                pass
-            source.ignore_space = True
-        elif ch.isspace() and (info.local_flags & VERBOSE):
-            pass
+                # A literal.
+                if info.local_flags & IGNORECASE:
+                    return _CharacterIgn(ord(ch))
+                return _Character(ord(ch))
         else:
             # A literal.
             if info.local_flags & IGNORECASE:
-                return _CharacterIgn(ch)
-            return _Character(ch)
+                return _CharacterIgn(ord(ch))
+            return _Character(ord(ch))
 
 def _parse_paren(source, info):
     "Parses a parenthesised subpattern or a flag."
-    if source.match("?P"):
-        # A Python extension.
-        return _parse_extension(source, info)
-    elif source.match("?#"):
-        # A comment.
-        return _parse_comment(source)
-    elif source.match("?="):
-        # Positive lookahead.
-        return _parse_lookaround(source, info, False, True)
-    elif source.match("?!"):
-        # Negative lookahead.
-        return _parse_lookaround(source, info, False, False)
-    elif source.match("?<="):
-        # Positive lookbehind.
-        return _parse_lookaround(source, info, True, True)
-    elif source.match("?<!"):
-        # Negative lookbehind.
-        return _parse_lookaround(source, info, True, False)
-    elif source.match("?<"):
-        # A named capture group.
-        name = _parse_name(source)
-        group = info.new_group(name)
-        source.expect(">")
-        saved_local_flags = info.local_flags
-        saved_ignore = source.ignore_space
-        try:
-            subpattern = _parse_pattern(source, info)
-        finally:
-            info.local_flags = saved_local_flags
-            source.ignore_space = saved_ignore
-        source.expect(")")
-        info.close_group(group)
-        return _Group(info, group, subpattern)
-    elif source.match("?("):
-        # A conditonal subpattern.
-        return _parse_conditional(source, info)
-    elif source.match("?>"):
-        # An atomic subpattern.
-        return _parse_atomic(source, info)
-    elif source.match("?|"):
-        # A common groups branch.
-        return _parse_common(source, info)
-    elif source.match("?"):
+    here = source.pos
+    ch = source.get()
+    if ch == "?":
+        here2 = source.pos
+        ch = source.get()
+        if ch == "<":
+            here3 = source.pos
+            ch = source.get()
+            if ch == "=":
+                # Positive lookbehind.
+                return _parse_lookaround(source, info, True, True)
+            if ch == "!":
+                # Negative lookbehind.
+                return _parse_lookaround(source, info, True, False)
+            # A named capture group.
+            source.pos = here3
+            name = _parse_name(source)
+            group = info.new_group(name)
+            source.expect(">")
+            saved_local_flags = info.local_flags
+            saved_ignore = source.ignore_space
+            try:
+                subpattern = _parse_pattern(source, info)
+            finally:
+                info.local_flags = saved_local_flags
+                source.ignore_space = saved_ignore
+            source.expect(")")
+            info.close_group(group)
+            return _Group(info, group, subpattern)
+        if ch == "=":
+            # Positive lookahead.
+            return _parse_lookaround(source, info, False, True)
+        if ch == "!":
+            # Negative lookahead.
+            return _parse_lookaround(source, info, False, False)
+        if ch == "P":
+            # A Python extension.
+            return _parse_extension(source, info)
+        if ch == "#":
+            # A comment.
+            return _parse_comment(source)
+        if ch == "(":
+            # A conditional subpattern.
+            return _parse_conditional(source, info)
+        if ch == ">":
+            # An atomic subpattern.
+            return _parse_atomic(source, info)
+        if ch == "|":
+            # A common groups branch.
+            return _parse_common(source, info)
         # A flags subpattern.
+        source.pos = here2
         return _parse_flags_subpattern(source, info)
-    else:
-        # An unnamed capture group.
-        group = info.new_group()
-        saved_local_flags = info.local_flags
-        saved_ignore = source.ignore_space
-        try:
-            subpattern = _parse_pattern(source, info)
-        finally:
-            info.local_flags = saved_local_flags
-            source.ignore_space = saved_ignore
-        source.expect(")")
-        info.close_group(group)
-        return _Group(info, group, subpattern)
+    # An unnamed capture group.
+    source.pos = here
+    group = info.new_group()
+    saved_local_flags = info.local_flags
+    saved_ignore = source.ignore_space
+    try:
+        subpattern = _parse_pattern(source, info)
+    finally:
+        info.local_flags = saved_local_flags
+        source.ignore_space = saved_ignore
+    source.expect(")")
+    info.close_group(group)
+    return _Group(info, group, subpattern)
 
 def _parse_extension(source, info):
     "Parses a Python extension."
-    if source.match("<"):
+    here = source.pos
+    ch = source.get()
+    if ch == "<":
         # A named capture group.
         name = _parse_name(source)
         group = info.new_group(name)
@@ -827,7 +856,7 @@ def _parse_extension(source, info):
         source.expect(")")
         info.close_group(group)
         return _Group(info, group, subpattern)
-    elif source.match("="):
+    if ch == "=":
         # A named group reference.
         name = _parse_name(source)
         source.expect(")")
@@ -836,8 +865,8 @@ def _parse_extension(source, info):
         if info.local_flags & IGNORECASE:
             return _RefGroupIgn(info, name)
         return _RefGroup(info, name)
-    else:
-        raise error("unknown extension")
+    source.pos = here
+    raise error("unknown extension")
 
 def _parse_comment(source):
     "Parses a comment."
@@ -896,7 +925,7 @@ def _parse_atomic(source, info):
 
 def _parse_common(source, info):
     "Parses a common groups branch."
-    # Capture group numbers in different branches can reuse the group nunmbers.
+    # Capture group numbers in different branches can reuse the group numbers.
     previous_groups = info.used_groups.copy()
     initial_group_count = info.group_count
     branches = [_parse_sequence(source, info)]
@@ -911,6 +940,8 @@ def _parse_common(source, info):
     info.used_groups = all_groups
     info.group_count = final_group_count
     source.expect(")")
+    if len(branches) == 1:
+        return branches[0]
     return _Branch(branches)
 
 def _parse_flags_subpattern(source, info):
@@ -920,7 +951,7 @@ def _parse_flags_subpattern(source, info):
     flags_on, flags_off = 0, 0
     try:
         while True:
-            here = source.tell()
+            here = source.pos
             ch = source.get()
             flags_on |= _REGEX_FLAGS[ch]
     except KeyError:
@@ -928,7 +959,7 @@ def _parse_flags_subpattern(source, info):
     if ch == "-":
         try:
             while True:
-                here = source.tell()
+                here = source.pos
                 ch = source.get()
                 flags_off |= _REGEX_FLAGS[ch]
         except KeyError:
@@ -936,7 +967,7 @@ def _parse_flags_subpattern(source, info):
         if not flags_off or (flags_off & _GLOBAL_FLAGS):
             error("bad inline flags")
     # Separate the global and local flags.
-    source.seek(here)
+    source.pos = here
     info.global_flags |= flags_on & _GLOBAL_FLAGS
     flags_on &= _LOCAL_FLAGS
     new_local_flags = (info.local_flags | flags_on) & ~flags_off
@@ -964,15 +995,15 @@ def _parse_name(source, allow_numeric=False):
     saved_ignore = source.ignore_space
     source.ignore_space = False
     name = []
-    here = source.tell()
+    here = source.pos
     ch = source.get()
     while ch in _ALNUM or ch == "_":
         name.append(ch)
-        here = source.tell()
+        here = source.pos
         ch = source.get()
-    source.seek(here)
+    source.pos = here
     source.ignore_space = saved_ignore
-    name = source.sep.join(name)
+    name = "".join(name)
     if not name:
         raise error("bad group name")
     if name.isdigit():
@@ -1012,12 +1043,12 @@ def _parse_escape(source, info, in_set):
         return _parse_hex_escape(source, info, 8, in_set)
     elif ch == "g" and not in_set:
         # A group reference.
-        here = source.tell()
+        here = source.pos
         try:
             return _parse_group_ref(source, info)
         except error:
             # Invalid as a group reference, so assume it's a literal.
-            source.seek(here)
+            source.pos = here
             return _char_literal(info, in_set, ch)
     elif ch == "G" and not in_set:
         # A search anchor.
@@ -1045,7 +1076,7 @@ def _parse_escape(source, info, in_set):
             return value
         value = _CHARACTER_ESCAPES.get(ch)
         if value:
-            return _Character(value)
+            return _Character(ord(value))
         return _char_literal(info, in_set, ch)
     elif ch in _DIGITS:
         # A numeric escape sequence.
@@ -1057,54 +1088,52 @@ def _parse_escape(source, info, in_set):
 def _char_literal(info, in_set, ch):
     "Creates a character literal, which might be in a set."
     if (info.local_flags & IGNORECASE) and not in_set:
-        return _CharacterIgn(ch)
-    return _Character(ch)
+        return _CharacterIgn(ord(ch))
+    return _Character(ord(ch))
 
 def _parse_numeric_escape(source, info, ch, in_set):
     "Parses a numeric escape sequence."
     if in_set or ch == "0":
         # Octal escape sequence, max 3 digits.
         return _parse_octal_escape(source, info, [ch], in_set)
-    else:
-        # At least 1 digit, so either octal escape or group.
-        digits = ch
-        here = source.tell()
+    # At least 1 digit, so either octal escape or group.
+    digits = ch
+    here = source.pos
+    ch = source.get()
+    if ch in _DIGITS:
+        # At least 2 digits, so either octal escape or group.
+        digits += ch
+        here = source.pos
         ch = source.get()
-        if ch in _DIGITS:
-            # At least 2 digits, so either octal escape or group.
-            digits += ch
-            here = source.tell()
-            ch = source.get()
-            if _is_octal(digits) and ch in _OCT_DIGITS:
-                # 3 octal digits, so octal escape sequence.
-                value = int(digits + ch, 8) & 0xFF
-                if info.local_flags & IGNORECASE:
-                    return _CharacterIgn(value)
-                return _Character(value)
-            else:
-                # 2 digits, so group.
-                source.seek(here)
-                if info.is_open_group(digits):
-                    raise error("can't refer to an open group")
-                return _RefGroup(info, digits)
+        if _is_octal(digits) and ch in _OCT_DIGITS:
+            # 3 octal digits, so octal escape sequence.
+            value = int(digits + ch, 8) & 0xFF
+            if info.local_flags & IGNORECASE:
+                return _CharacterIgn(value)
+            return _Character(value)
         else:
-            # 1 digit, so group.
-            source.seek(here)
+            # 2 digits, so group.
+            source.pos = here
             if info.is_open_group(digits):
                 raise error("can't refer to an open group")
             return _RefGroup(info, digits)
+    # 1 digit, so group.
+    source.pos = here
+    if info.is_open_group(digits):
+        raise error("can't refer to an open group")
+    return _RefGroup(info, digits)
 
 def _parse_octal_escape(source, info, digits, in_set):
     "Parses an octal escape sequence."
-    here = source.tell()
+    here = source.pos
     ch = source.get()
     while len(digits) < 3 and ch in _OCT_DIGITS:
         digits.append(ch)
-        here = source.tell()
+        here = source.pos
         ch = source.get()
-    source.seek(here)
+    source.pos = here
     try:
-        value = int(source.sep.join(digits), 8) & 0xFF
+        value = int("".join(digits), 8) & 0xFF
         if (info.local_flags & IGNORECASE) and not in_set:
             return _CharacterIgn(value)
         return _Character(value)
@@ -1114,16 +1143,16 @@ def _parse_octal_escape(source, info, digits, in_set):
 def _parse_hex_escape(source, info, max_len, in_set):
     "Parses a hex escape sequence."
     digits = []
-    here = source.tell()
+    here = source.pos
     ch = source.get()
     while len(digits) < max_len and ch in _HEX_DIGITS:
         digits.append(ch)
-        here = source.tell()
+        here = source.pos
         ch = source.get()
     if len(digits) != max_len:
         raise error("bad hex escape")
-    source.seek(here)
-    value = int(source.sep.join(digits), 16)
+    source.pos = here
+    value = int("".join(digits), 16)
     if (info.local_flags & IGNORECASE) and not in_set:
         return _CharacterIgn(value)
     return _Character(value)
@@ -1141,7 +1170,7 @@ def _parse_group_ref(source, info):
 
 def _parse_named_char(source, info, in_set):
     "Parses a named character."
-    here = source.tell()
+    here = source.pos
     ch = source.get()
     if ch == "{":
         name = []
@@ -1151,18 +1180,18 @@ def _parse_named_char(source, info, in_set):
             ch = source.get()
         if ch == "}":
             try:
-                value = unicodedata.lookup(source.sep.join(name))
+                value = unicodedata.lookup("".join(name))
                 if (info.local_flags & IGNORECASE) and not in_set:
-                    return _CharacterIgn(value)
-                return _Character(value)
+                    return _CharacterIgn(ord(value))
+                return _Character(ord(value))
             except KeyError:
                 raise error("undefined character name")
-    source.seek(here)
+    source.pos = here
     return _char_literal(info, in_set, "N")
 
 def _parse_property(source, info, in_set, prop_ch):
     "Parses a Unicode property."
-    here = source.tell()
+    here = source.pos
     ch = source.get()
     if ch == "{":
         name = []
@@ -1172,21 +1201,22 @@ def _parse_property(source, info, in_set, prop_ch):
             ch = source.get()
         if ch == "}":
             # The normalised name.
-            norm_name = source.sep.join(ch.upper() for ch in name if ch.isalnum())
+            norm_name = "".join(ch.upper() for ch in name if ch.isalnum())
             # The un-normalised name.
-            name = source.sep.join(name)
+            name = "".join(name)
             value = _properties.get(norm_name)
             if value is not None:
                 return _Property(value, positive=prop_ch == "p")
             raise error("undefined property name")
-    source.seek(here)
+    source.pos = here
     return _char_literal(info, in_set, prop_ch)
 
 def _grapheme():
     "Returns a sequence that matches a grapheme."
     # To match a grapheme use \P{M}\p{M}*
     mod = _properties.get("M")
-    return _Sequence([_Property(mod, positive=False), _GreedyRepeat(_Property(mod), 0, None)])
+    return _Sequence([_Property(mod, positive=False),
+      _GreedyRepeat(_Property(mod), 0, None)])
 
 def _parse_set(source, info):
     "Parses a character set."
@@ -1194,108 +1224,123 @@ def _parse_set(source, info):
     saved_ignore = source.ignore_space
     source.ignore_space = False
     negate = source.match("^")
-    members = []
+    characters, others = [], []
     try:
-        item = _parse_set_member(source, info)
-        members.append(item)
+        # Parse a set member. It might be a character or range of characters,
+        # expanded to a list, or a property or character class.
+        c, o = _parse_set_member(source, info)
+        characters.extend(c)
+        others.extend(o)
         while not source.match("]"):
-            item = _parse_set_member(source, info)
-            members.append(item)
+            c, o = _parse_set_member(source, info)
+            characters.extend(c)
+            others.extend(o)
     finally:
         source.ignore_space = saved_ignore
     if info.local_flags & IGNORECASE:
-        return _SetIgn(members, positive=not negate)
-    return _Set(members, positive=not negate)
+        # Expand the list of characters to include all their case-forms.
+        all_characters = []
+        char_type = info.char_type
+        for c in characters:
+            ch = char_type(c)
+            all_characters.extend([c, ord(ch.lower()), ord(ch.upper()),
+              ord(ch.title())])
+        characters = all_characters
+    return _Set(characters, others, positive=not negate)
 
 def _parse_set_member(source, info):
     "Parses a member in a character set."
-    # It might actually be a single value, a range, or a predefined set.
+    # Parse a character or property.
     start = _parse_set_item(source, info)
-    here = source.tell()
-    if isinstance(start, _Character) and source.match("-"):
-        if source.match("]"):
-            source.seek(here)
-            return start
-        end = _parse_set_item(source, info)
-        if isinstance(end, _Character):
-            if start.value > end.value:
-                raise error("bad character range")
-            return _Range(start.value, end.value)
-        source.seek(here)
-    return start
+    if not isinstance(start, _Character):
+        # Return only a property.
+        return [], [start]
+    if not source.match("-"):
+        # Not a range, so return only a character.
+        return [start.value], []
+    # It looks like a range of characters.
+    here = source.pos
+    if source.match("]"):
+        # We've reached the end of the set, so return both the character and
+        # the hyphen.
+        source.pos = here
+        return [start.value, ord("-")], []
+    # Parse a character or property.
+    end = _parse_set_item(source, info)
+    if not isinstance(end, _Character):
+        # It's a property, so return the character, hyphen and property.
+        return [start, ord("-")], [end]
+    # It _is_ a range.
+    if start.value > end.value:
+        raise error("bad character range")
+    # Expand the range to a list of characters.
+    characters = range(start.value, end.value + 1)
+    # Return the characters.
+    return characters, []
 
 def _parse_set_item(source, info):
     "Parses an item in a character set."
+    if source.match("[:"):
+        return _parse_character_class(source, not source.match("^"), info)
     if source.match("\\"):
         return _parse_escape(source, info, True)
-    elif source.match("[:^"):
-        return _parse_character_class(source, False, info)
-    elif source.match("[:"):
-        return _parse_character_class(source, True, info)
-    else:
-        ch = source.get()
-        if not ch:
-            raise error("bad set")
-        return _Character(ch)
+    ch = source.get()
+    if not ch:
+        raise error("bad set")
+    return _Character(ord(ch))
 
 def _parse_character_class(source, positive, info):
+    "Parses a POSIX character class."
     name = _parse_name(source)
     source.expect(":]")
     value = _properties.get(name.upper())
-    if value is not None:
-        return _Property(value, positive=positive)
-    raise error("undefined character class name")
+    if value is None:
+        raise error("undefined character class name")
+    return _Property(value, positive=positive)
 
 def _compile_repl_escape(source, pattern):
     "Compiles a replacement template escape sequence."
-    here = source.tell()
+    here = source.pos
     ch = source.get()
     if ch in _ALPHA:
         # An alphabetic escape sequence.
         value = _CHARACTER_ESCAPES.get(ch)
         if value:
-            return False, value
+            return False, ord(value)
         if ch == "g":
             # A group preference.
             return True, _compile_repl_group(source, pattern)
-        else:
-            source.seek(here)
-            return False, ord("\\")
-    elif ch == "0":
+        source.pos = here
+        return False, ord("\\")
+    if ch == "0":
         # An octal escape sequence.
         digits = ch
         while len(digits) < 3:
-            here = source.tell()
+            here = source.pos
             ch = source.get()
             if ch not in _OCT_DIGITS:
-                source.seek(here)
+                source.pos = here
                 break
             digits += ch
         return False, int(digits, 8) & 0xFF
-    elif ch in _DIGITS:
+    if ch in _DIGITS:
         # Either an octal escape sequence (3 digits) or a group reference (max
         # 2 digits).
         digits = ch
-        here = source.tell()
+        here = source.pos
         ch = source.get()
         if ch in _DIGITS:
             digits += ch
-            here = source.tell()
+            here = source.pos
             ch = source.get()
             if ch and _is_octal(digits + ch):
                 # An octal escape sequence.
                 return False, int(digits + ch, 8) & 0xFF
-            else:
-                # A group reference.
-                source.seek(here)
-                return True, int(digits)
-        else:
-            source.seek(here)
-            # A group reference.
-            return True, int(digits)
-    else:
-        # A literal.
-        return False, ord(ch)
+        # A group reference.
+        source.pos = here
+        return True, int(digits)
+    # A literal.
+    return False, ord(ch)
 
 def _compile_repl_group(source, pattern):
     "Compiles a replacement template group reference."
@@ -1307,19 +1352,13 @@ def _compile_repl_group(source, pattern):
         if not 0 <= index <= pattern.groups:
             raise error("invalid group")
         return index
-    else:
-        try:
-            return pattern.groupindex[name]
-        except KeyError:
-            raise IndexError("unknown group")
+    try:
+        return pattern.groupindex[name]
+    except KeyError:
+        raise IndexError("unknown group")
 
 # The regular expression is parsed into a syntax tree. The different types of
 # node are defined below.
-
-def prefix_checks(checks, parsed):
-    if isinstance(checks, _Sequence) and not checks.sequence:
-        return parsed
-    return _Check(checks, parsed)
 
 _INDENT = "  "
 _ZEROWIDTH_OP = 0x2
@@ -1352,8 +1391,6 @@ class _RegexBase(object):
         return self
     def drop_last(self):
         return _Sequence()
-    def get_range(self):
-        return None
     def can_repeat(self):
         return True
     def firstset(self):
@@ -1364,8 +1401,6 @@ class _RegexBase(object):
         return hash(self._key)
     def __eq__(self, other):
         return type(self) is type(other) and self._key == other._key
-    def get_checks(self, reverse):
-        return _Sequence()
 
 # Base for zero-width nodes.
 class _ZeroWidthBase(_RegexBase):
@@ -1405,38 +1440,59 @@ class _Atomic(_StructureBase):
     def fix_groups(self):
         self.subpattern.fix_groups()
     def optimise(self, info):
-        subpattern = self.subpattern.optimise(info)
-        # Leading items which are atomic can be moved out of the atomic expression.
-        sequence = []
-        while True:
-            item = subpattern.get_first()
-            if not item or not item.is_atomic():
-                break
-            sequence.append(item)
-            subpattern = subpattern.drop_first()
-        # Is there anything left in the atomic expression?
-        if not subpattern.is_empty():
-            sequence.append(_Atomic(subpattern))
+        sequence = self.subpattern.optimise(info)
+        prefix, sequence = _Atomic._split_atomic_prefix(sequence)
+        suffix, sequence = _Atomic._split_atomic_suffix(sequence)
+        # Is there anything left in the atomic sequence?
+        if sequence.is_empty():
+            sequence = []
+        else:
+            sequence = [_Atomic(sequence)]
+        sequence = prefix + sequence + suffix
         if len(sequence) == 1:
             return sequence[0]
         return _Sequence(sequence)
     def pack_characters(self):
-        return _Atomic(self.subpattern.pack_characters())
+        self.subpattern = self.subpattern.pack_characters()
+        return self
     def is_empty(self):
         return self.subpattern.is_empty()
     def contains_group(self):
         return self.subpattern.contains_group()
     def compile(self, reverse=False):
-        return [(_OP.ATOMIC, )] + self.subpattern.compile(reverse) + [(_OP.END, )]
+        return [(_OP.ATOMIC, )] + self.subpattern.compile(reverse) + [(_OP.END,
+          )]
     def dump(self, indent=0, reverse=False):
         print "%s%s" % (_INDENT * indent, "ATOMIC")
         self.subpattern.dump(indent + 1, reverse)
     def firstset(self):
         return self.subpattern.firstset()
+    def has_simple_start(self):
+        return self.subpattern.has_simple_start()
     def __eq__(self, other):
         return type(self) is type(other) and self.subpattern == other.subpattern
-    def get_checks(self, reverse):
-        return self.subpattern.get_checks(reverse)
+    @staticmethod
+    def _split_atomic_prefix(sequence):
+        # Leading atomic items can be moved out of an atomic sequence.
+        prefix = []
+        while True:
+            item = sequence.get_first()
+            if not item or not item.is_atomic():
+                break
+            prefix.append(item)
+            sequence = sequence.drop_first()
+        return prefix, sequence
+    @staticmethod
+    def _split_atomic_suffix(sequence):
+        # Trailing atomic items can be moved out of an atomic sequence.
+        suffix = []
+        while True:
+            item = sequence.get_last()
+            if not item or not item.is_atomic():
+                break
+            suffix.append(item)
+            sequence = sequence.drop_last()
+        return list(reversed(suffix)), sequence
 
 class _Boundary(_ZeroWidthBase):
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
@@ -1455,91 +1511,22 @@ class _Branch(_StructureBase):
         for branch in self.branches:
             branch.fix_groups()
     def optimise(self, info):
-        # Flatten the branches so that there isn't a branch containing just a
-        # branch.
-        branches = []
-        for branch in self.branches:
-            branch = branch.optimise(info)
-            if isinstance(branch, _Branch):
-                branches.extend(branch.branches)
-            else:
-                branches.append(branch)
-
-        # Common leading items can be moved out of the branches.
-        sequence = []
-        while True:
-            item = branches[0].get_first()
-            if not item:
-                break
-            if any(branch.get_first() != item for branch in branches[1 : ]):
-                break
-            sequence.append(item)
-            branches = [branch.drop_first() for branch in branches]
-
-        # Common trailing items can be moved out of the branches.
-        suffix = []
-        while True:
-            item = branches[0].get_last()
-            if not item:
-                break
-            if any(branch.get_last() != item for branch in branches[1 : ]):
-                break
-            suffix.append(item)
-            branches = [branch.drop_last() for branch in branches]
-
-        # Branches with the same character prefix can be grouped together if
-        # they are separated only by other branches with a character prefix.
-        char_type = None
-        char_prefixes = defaultdict(list)
-        order = {}
-        new_branches = []
-        for branch in branches:
-            first = branch.get_first()
-            if isinstance(first, _Character) and first.positive:
-                if type(first) is not char_type:
-                    self._flush_char_prefix(info, char_type, char_prefixes, order, new_branches)
-                    char_type = type(first)
-                    char_prefixes.clear()
-                    order.clear()
-                char_prefixes[first.value].append(branch)
-                order.setdefault(first.value, len(order))
-            else:
-                self._flush_char_prefix(info, char_type, char_prefixes, order, new_branches)
-                char_type = None
-                char_prefixes.clear()
-                order.clear()
-                new_branches.append(branch)
-        self._flush_char_prefix(info, char_type, char_prefixes, order, new_branches)
-        branches = new_branches
-
-        # Can the branches be reduced to a set?
-        new_branches = []
-        set_members = []
-        for branch in branches:
-            if type(branch) is _Any:
-                set_members.append(branch)
-            elif type(branch) is _Character and branch.positive:
-                set_members.append(branch)
-            elif isinstance(branch, _Property):
-                set_members.append(branch)
-            elif type(branch) is _Set and branch.positive:
-                set_members.extend(branch.members)
-            else:
-                self._flush_set_members(info, True, set_members, new_branches)
-                set_members = []
-                new_branches.append(branch)
-        self._flush_set_members(info, True, set_members, new_branches)
-
-        if len(new_branches) == 1:
-            sequence.append(new_branches[0])
-        elif len(new_branches) > 1:
-            sequence.append(_Branch(new_branches))
-        sequence.extend(reversed(suffix))
+        branches = _Branch._flatten_branches(info, self.branches)
+        prefix, branches = _Branch._split_common_prefix(branches)
+        suffix, branches = _Branch._split_common_suffix(branches)
+        branches = _Branch._merge_character_prefixes(info, branches)
+        branches = _Branch._reduce_to_set(info, branches)
+        if len(branches) > 1:
+            branches = [_Branch(branches)]
+        elif len(branches) == 1:
+            branches = [branches[0]]
+        sequence = prefix + branches + suffix
         if len(sequence) == 1:
             return sequence[0]
         return _Sequence(sequence)
     def pack_characters(self):
-        return _Branch([branch.pack_characters() for branch in self.branches])
+        self.branches = [branch.pack_characters() for branch in self.branches]
+        return self
     def is_empty(self):
         return all(branch.is_empty() for branch in self.branches)
     def is_atomic(self):
@@ -1567,21 +1554,104 @@ class _Branch(_StructureBase):
         for branch in self.branches:
             fs |= branch.firstset()
         return fs or set([None])
-    def get_checks(self, reverse):
-        branches = []
-        for b in self.branches:
-            b = b.get_checks(reverse)
-            if isinstance(b, _Sequence) and not b.sequence:
-                return b
-            branches.append(b)
-        if not branches:
-            return _Sequence()
-        if len(branches) == 1:
-            return branches[0]
-        return _Branch(branches)
+    def __eq__(self, other):
+        return type(self) is type(other) and self.branches == other.branches
+    @staticmethod
+    def _flatten_branches(info, branches):
+        # Flatten the branches so that there aren't branches of branches.
+        new_branches = []
+        for branch in branches:
+            branch = branch.optimise(info)
+            if isinstance(branch, _Branch):
+                new_branches.extend(branch.branches)
+            else:
+                new_branches.append(branch)
+        return new_branches
+    @staticmethod
+    def _split_common_prefix(branches):
+        # Common leading items can be moved out of the branches.
+        prefix = []
+        while True:
+            item = branches[0].get_first()
+            if not item:
+                break
+            if any(branch.get_first() != item for branch in branches[1 : ]):
+                break
+            prefix.append(item)
+            branches = [branch.drop_first() for branch in branches]
+        return prefix, branches
+    @staticmethod
+    def _split_common_suffix(branches):
+        # Common trailing items can be moved out of the branches.
+        suffix = []
+        while True:
+            item = branches[0].get_last()
+            if not item:
+                break
+            if any(branch.get_last() != item for branch in branches[1 : ]):
+                break
+            suffix.append(item)
+            branches = [branch.drop_last() for branch in branches]
+        return list(reversed(suffix)), branches
+    @staticmethod
+    def _merge_character_prefixes(info, branches):
+        # Branches with the same character prefix can be grouped together if
+        # they are separated only by other branches with a character prefix.
+        char_type = None
+        char_prefixes = defaultdict(list)
+        order = {}
+        new_branches = []
+        for branch in branches:
+            first = branch.get_first()
+            if isinstance(first, _Character) and first.positive:
+                if type(first) is not char_type:
+                    if char_prefixes:
+                        _Branch._flush_char_prefix(info, char_type,
+                          char_prefixes, order, new_branches)
+                        char_prefixes.clear()
+                        order.clear()
+                    char_type = type(first)
+                char_prefixes[first.value].append(branch)
+                order.setdefault(first.value, len(order))
+            else:
+                if char_prefixes:
+                    _Branch._flush_char_prefix(info, char_type, char_prefixes,
+                      order, new_branches)
+                    char_prefixes.clear()
+                    order.clear()
+                char_type = None
+                new_branches.append(branch)
+        if char_prefixes:
+            _Branch._flush_char_prefix(info, char_type, char_prefixes, order,
+              new_branches)
+        return new_branches
+    @staticmethod
+    def _reduce_to_set(info, branches):
+        # Can the branches be reduced to a set?
+        new_branches = []
+        characters, others = [], []
+        for branch in branches:
+            t = type(branch)
+            if t is _Any:
+                others.append(branch)
+            elif t is _Character and branch.positive:
+                characters.append(branch.value)
+            elif isinstance(branch, _Property):
+                others.append(branch)
+            elif t is _Set and branch.positive:
+                characters.extend(branch.characters)
+                others.extend(branch.others)
+            else:
+                _Branch._flush_set_members(info, characters, others,
+                  new_branches)
+                characters, others = [], []
+                new_branches.append(branch)
+        _Branch._flush_set_members(info, characters, others, new_branches)
+        return new_branches
     @staticmethod
     def _flush_char_prefix(info, char_type, prefixed, order, new_branches):
-        for value, branches in sorted(prefixed.items(), key=lambda pair: order[pair[0]]):
+        for value, branches in sorted(prefixed.items(), key=lambda pair:
+          order[pair[0]]):
             if len(branches) == 1:
                 new_branches.extend(branches)
             else:
@@ -1597,47 +1667,32 @@ class _Branch(_StructureBase):
                 sequence = _Sequence([char_type(value), _Branch(subbranches)])
                 new_branches.append(sequence.optimise(info))
     @staticmethod
-    def _flush_set_members(info, positive, set_members, new_branches):
-        if set_members:
-            new_branches.append(_Set(set_members, positive=positive).optimise(info))
-    def __eq__(self, other):
-        return type(self) is type(other) and self.branches == other.branches
+    def _flush_set_members(info, characters, others, new_branches):
+        if characters or others:
+            new_branches.append(_Set(characters, others,
+              positive=True).optimise(info))
 
 class _Character(_RegexBase):
     _opcode = {False: _OP.CHARACTER, True: _OP.CHARACTER_REV}
     _op_name = {False: "CHARACTER", True: "CHARACTER_REV"}
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
     def __init__(self, ch, positive=True, zerowidth=False):
-        try:
-            self.value = ord(ch)
-        except TypeError:
-            self.value = ch
+        self.value = ch
         self.positive, self.zerowidth = bool(positive), bool(zerowidth)
         self._key = self.__class__, self.value, self.positive, self.zerowidth
-    def get_range(self):
-        if self.positive:
-            return (self.value, self.value)
-        return None
     def compile(self, reverse=False):
         flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
         return [(self._opcode[reverse], flags, self.value)]
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s %s" % (_INDENT * indent, self._op_name[reverse], self._pos_text[self.positive], self.value)
+        print "%s%s %s %s" % (_INDENT * indent, self._op_name[reverse],
+          self._pos_text[self.positive], self.value)
     def firstset(self):
         return set([self])
-    def get_checks(self, reverse):
-        if not self.positive:
-            return _Sequence()
-        return self
     def has_simple_start(self):
         return True
     def is_case_sensitive(self, info):
-        if (info.global_flags & UNICODE) or (self.value <= 0x7F):
-            # It's case-sensitive only if it's a letter.
-            return unichr(self.value).isalpha()
-        else:
-            # Assume that it's case-sensitive.
-            return True
+        char_type = info.char_type
+        return char_type(self.value).lower() != char_type(self.value).upper()
 
 class _CharacterIgn(_Character):
     _opcode = {False: _OP.CHARACTER_IGN, True: _OP.CHARACTER_IGN_REV}
@@ -1647,31 +1702,13 @@ class _CharacterIgn(_Character):
         # instance if the character is case-insensitive.
         if self.is_case_sensitive(info):
             return self
-        return _Character(self.value, positive=self.positive, zerowidth=self.zerowidth)
-
-class _Check(_RegexBase):
-    _opcode = {False: _OP.CHECK, True: _OP.CHECK_REV}
-    _op_name = {False: "CHECK", True: "CHECK_REV"}
-    def __init__(self, check, body):
-        self.check, self.body = check, body
-        self._key = self.__class__
-    def compile(self, reverse=False):
-        code = self.check.compile(reverse)
-        if code:
-            code = [(self._opcode[reverse], )] + code + [(_OP.END, )]
-        return code + self.body.compile(reverse)
-    def dump(self, indent=0, reverse=False):
-        print "%s%s" % (_INDENT * indent, self._op_name[reverse])
-        self.check.dump(indent + 1, reverse)
-        self.body.dump(indent, reverse)
-    def get_first_char(self):
-        raise error("internal error")
-    def drop_first_char(self):
-        raise error("internal error")
+        return _Character(self.value, positive=self.positive,
+          zerowidth=self.zerowidth)
 
 class _Conditional(_StructureBase):
     def __init__(self, info, group, yes_item, no_item):
-        self.info, self.group, self.yes_item, self.no_item = info, group, yes_item, no_item
+        self.info, self.group, self.yes_item, self.no_item = info, group, \
+          yes_item, no_item
     def fix_groups(self):
         try:
             self.group = int(self.group)
@@ -1690,9 +1727,13 @@ class _Conditional(_StructureBase):
     def optimise(self, info):
         if self.yes_item.is_empty() and self.no_item.is_empty():
             return _Sequence()
-        return _Conditional(self.info, self.group, self.yes_item.optimise(info), self.no_item.optimise(info))
+        self.yes_item = self.yes_item.optimise(info)
+        self.no_item = self.no_item.optimise(info)
+        return self
     def pack_characters(self):
-        return _Conditional(self.info, self.group, self.yes_item.pack_characters(), self.no_item.pack_characters())
+        self.yes_item = self.yes_item.pack_characters()
+        self.no_item = self.no_item.pack_characters()
+        return self
     def is_empty(self):
         return self.yes_item.is_empty() and self.no_item.is_empty()
     def is_atomic(self):
@@ -1716,14 +1757,13 @@ class _Conditional(_StructureBase):
         print "%sGROUP_EXISTS %s" % (_INDENT * indent, self.group)
         self.yes_item.dump(indent + 1, reverse)
         if self.no_item:
-            print "%sELSE" % (_INDENT * indent)
+            print "%sOR" % (_INDENT * indent)
             self.no_item.dump(indent + 1, reverse)
     def firstset(self):
         return self.yes_item.firstset() | self.no_item.firstset()
-    def get_checks(self, reverse):
-        return _Branch([self.yes_item.get_checks(reverse), self.no_item.get_checks(reverse)])
     def __eq__(self, other):
-        return type(self) is type(other) and (self.group, self.yes_item, self.no_item) == (other.group, other.yes_item, other.no_item)
+        return type(self) is type(other) and (self.group, self.yes_item,
+          self.no_item) == (other.group, other.yes_item, other.no_item)
 
 class _DefaultBoundary(_ZeroWidthBase):
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
@@ -1733,7 +1773,8 @@ class _DefaultBoundary(_ZeroWidthBase):
     def compile(self, reverse=False):
         return [(_OP.DEFAULT_BOUNDARY, int(self.positive))]
     def dump(self, indent=0, reverse=False):
-        print "%sDEFAULT_BOUNDARY %s" % (_INDENT * indent, self._pos_text[self.positive])
+        print "%sDEFAULT_BOUNDARY %s" % (_INDENT * indent,
+          self._pos_text[self.positive])
 
 class _EndOfLine(_ZeroWidthBase):
     def compile(self, reverse=False):
@@ -1757,16 +1798,19 @@ class _GreedyRepeat(_StructureBase):
     _opcode = _OP.GREEDY_REPEAT
     _op_name = "GREEDY_REPEAT"
     def __init__(self, subpattern, min_count, max_count):
-        self.subpattern, self.min_count, self.max_count = subpattern, min_count, max_count
+        self.subpattern, self.min_count, self.max_count = subpattern, \
+          min_count, max_count
     def fix_groups(self):
         self.subpattern.fix_groups()
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
         if (self.min_count, self.max_count) == (1, 1) or subpattern.is_empty():
             return subpattern
-        return type(self)(subpattern, self.min_count, self.max_count)
+        self.subpattern = subpattern
+        return self
     def pack_characters(self):
-        return type(self)(self.subpattern.pack_characters(), self.min_count, self.max_count)
+        self.subpattern = self.subpattern.pack_characters()
+        return self
     def is_empty(self):
         return self.subpattern.is_empty()
     def is_atomic(self):
@@ -1779,7 +1823,8 @@ class _GreedyRepeat(_StructureBase):
             repeat.append(_UNLIMITED)
         else:
             repeat.append(self.max_count)
-        return [tuple(repeat)] + self.subpattern.compile(reverse) + [(_OP.END, )]
+        return [tuple(repeat)] + self.subpattern.compile(reverse) + [(_OP.END,
+          )]
     def remove_captures(self):
         self.subpattern = self.subpattern.remove_captures()
         return self
@@ -1787,19 +1832,18 @@ class _GreedyRepeat(_StructureBase):
         if self.max_count is None:
             print "%s%s %s INF" % (_INDENT * indent, self._op_name, self.min_count)
         else:
-            print "%s%s %s %s" % (_INDENT * indent, self._op_name, self.min_count, self.max_count)
+            print "%s%s %s %s" % (_INDENT * indent, self._op_name, self.min_count,
+              self.max_count)
         self.subpattern.dump(indent + 1, reverse)
     def firstset(self):
         fs = self.subpattern.firstset()
         if self.min_count == 0:
             fs.add(None)
         return fs or set([None])
-    def get_checks(self, reverse):
-        if self.min_count == 0:
-            return _Sequence()
-        return self.subpattern.get_checks(reverse)
     def __eq__(self, other):
-        return type(self) is type(other) and (self.subpattern, self.min_count, self.max_count) == (other.subpattern, other.min_count, other.max_count)
+        return type(self) is type(other) and (self.subpattern, self.min_count,
+          self.max_count) == (other.subpattern, other.min_count,
+          other.max_count)
 
 class _Group(_StructureBase):
     def __init__(self, info, group, subpattern):
@@ -1807,9 +1851,11 @@ class _Group(_StructureBase):
     def fix_groups(self):
         self.subpattern.fix_groups()
     def optimise(self, info):
-        return _Group(self.info, self.group, self.subpattern.optimise(info))
+        self.subpattern = self.subpattern.optimise(info)
+        return self
     def pack_characters(self):
-        return _Group(self.info, self.group, self.subpattern.pack_characters())
+        self.subpattern = self.subpattern.pack_characters()
+        return self
     def is_empty(self):
         return self.subpattern.is_empty()
     def is_atomic(self):
@@ -1817,7 +1863,8 @@ class _Group(_StructureBase):
     def contains_group(self):
         return True
     def compile(self, reverse=False):
-        return [(_OP.GROUP, self.group)] + self.subpattern.compile(reverse) + [(_OP.END, )]
+        return [(_OP.GROUP, self.group)] + self.subpattern.compile(reverse) + \
+          [(_OP.END, )]
     def remove_captures(self):
         return self.subpattern.remove_captures()
     def dump(self, indent=0, reverse=False):
@@ -1825,10 +1872,11 @@ class _Group(_StructureBase):
         self.subpattern.dump(indent + 1, reverse)
     def firstset(self):
         return self.subpattern.firstset()
-    def get_checks(self, reverse):
-        return self.subpattern.get_checks(reverse)
+    def has_simple_start(self):
+        return self.subpattern.has_simple_start()
     def __eq__(self, other):
-        return type(self) is type(other) and (self.group, self.subpattern) == (other.group, other.subpattern)
+        return type(self) is type(other) and (self.group, self.subpattern) == \
+          (other.group, other.subpattern)
 
 class _LazyRepeat(_GreedyRepeat):
     _opcode = _OP.LAZY_REPEAT
@@ -1838,16 +1886,19 @@ class _LookAround(_StructureBase):
     _dir_text = {False: "AHEAD", True: "BEHIND"}
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
     def __init__(self, behind, positive, subpattern):
-        self.behind, self.positive, self.subpattern = bool(behind), bool(positive), subpattern
+        self.behind, self.positive, self.subpattern = bool(behind), \
+          bool(positive), subpattern
     def fix_groups(self):
         self.subpattern.fix_groups()
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
         if self.positive and subpattern.is_empty():
             return subpattern
-        return _LookAround(self.behind, self.positive, subpattern)
+        self.subpattern = subpattern
+        return self
     def pack_characters(self):
-        return _LookAround(self.behind, self.positive, self.subpattern.pack_characters())
+        self.subpattern = self.subpattern.pack_characters()
+        return self
     def is_empty(self):
         return self.subpattern.is_empty()
     def is_atomic(self):
@@ -1855,14 +1906,17 @@ class _LookAround(_StructureBase):
     def contains_group(self):
         return self.subpattern.contains_group()
     def compile(self, reverse=False):
-        return [(_OP.LOOKAROUND, int(self.positive), int(not self.behind))] + self.subpattern.compile(self.behind) + [(_OP.END, )]
+        return [(_OP.LOOKAROUND, int(self.positive), int(not self.behind))] + \
+          self.subpattern.compile(self.behind) + [(_OP.END, )]
     def dump(self, indent=0, reverse=False):
-        print "%sLOOKAROUND %s %s" % (_INDENT * indent, self._dir_text[self.behind], self._pos_text[self.positive])
+        print "%sLOOKAROUND %s %s" % (_INDENT * indent, self._dir_text[self.behind],
+          self._pos_text[self.positive])
         self.subpattern.dump(indent + 1, self.behind)
     def firstset(self):
         return set([None])
     def __eq__(self, other):
-        return type(self) is type(other) and (self.behind, self.positive, self.subpattern) == (other.behind, other.positive, other.subpattern)
+        return type(self) is type(other) and (self.behind, self.positive,
+          self.subpattern) == (other.behind, other.positive, other.subpattern)
     def can_repeat(self):
         return False
 
@@ -1871,50 +1925,21 @@ class _Property(_RegexBase):
     _op_name = {False: "PROPERTY", True: "PROPERTY_REV"}
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
     def __init__(self, value, positive=True, zerowidth=False):
-        self.value, self.positive, self.zerowidth = value, bool(positive), bool(zerowidth)
+        self.value, self.positive, self.zerowidth = value, bool(positive), \
+          bool(zerowidth)
         self._key = self.__class__, self.value, self.positive, self.zerowidth
     def compile(self, reverse=False):
         flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
         return [(self._opcode[reverse], flags, self.value)]
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s %s" % (_INDENT * indent, self._op_name[reverse], self._pos_text[self.positive], self.value)
+        print "%s%s %s %s" % (_INDENT * indent, self._op_name[reverse],
+          self._pos_text[self.positive], self.value)
     def firstset(self):
         return set([self])
     def has_simple_start(self):
         return True
     def is_case_sensitive(self, info):
         return True
-
-class _Range(_RegexBase):
-    _opcode = {False: _OP.RANGE, True: _OP.RANGE_REV}
-    _op_name = {False: "RANGE", True: "RANGE_REV"}
-    _pos_text = {False: "NON-MATCH", True: "MATCH"}
-    def __init__(self, min_value, max_value, positive=True, zerowidth=False):
-        self.min_value, self.max_value, self.positive, self.zerowidth = min_value, max_value, positive, zerowidth
-        self._key = self.__class__, self.min_value, self.max_value, self.positive, self.zerowidth
-    def optimise(self, info):
-        if self.min_value == self.max_value:
-            return _as_character(self.min_value)
-        return self
-    def compile(self, reverse=False):
-        flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
-        return [(self._opcode[reverse], flags, self.min_value, self.max_value)]
-    def dump(self, indent=0, reverse=False):
-        print "%s%s %s %s %s" % (_INDENT * indent, self._op_name[reverse], self._pos_text[self.positive], self.min_value, self.max_value)
-    def get_range(self):
-        return (self.min_value, self.max_value)
-    def is_case_sensitive(self, info):
-        return True
-    def _as_character(self, value):
-        return _Character(value, positive=self.positive, zerowidth=self.zerowidth)
-
-class _RangeIgn(_Range):
-    _opcode = {False: _OP.RANGE_IGN, True: _OP.RANGE_IGN_REV}
-    _op_name = {False: "RANGE_IGN", True: "RANGE_IGN_REV"}
-    def is_case_sensitive(self, info):
-        return False
-    def _as_character(self, value):
-        return _CharacterIgn(value, positive=self.positive, zerowidth=self.zerowidth)
 
 class _RefGroup(_RegexBase):
     _opcode = {False: _OP.REF_GROUP, True: _OP.REF_GROUP_REV}
@@ -1969,7 +1994,8 @@ class _Sequence(_StructureBase):
                 sequence.append(subpattern)
         if len(sequence) == 1:
             return sequence[0]
-        return _Sequence(sequence)
+        self.sequence = sequence
+        return self
     def pack_characters(self):
         sequence = []
         char_type, characters = _Character, []
@@ -1977,17 +2003,20 @@ class _Sequence(_StructureBase):
             if type(subpattern) is char_type and subpattern.positive:
                 characters.append(subpattern.value)
             else:
-                self._flush_characters(char_type, characters, sequence)
-                characters = []
+                if characters:
+                    _Sequence._flush_characters(char_type, characters, sequence)
+                    characters = []
                 if type(subpattern) in _all_char_types and subpattern.positive:
                     char_type = type(subpattern)
                     characters.append(subpattern.value)
                 else:
                     sequence.append(subpattern.pack_characters())
-        self._flush_characters(char_type, characters, sequence)
+        if characters:
+            _Sequence._flush_characters(char_type, characters, sequence)
         if len(sequence) == 1:
             return sequence[0]
-        return _Sequence(sequence)
+        self.sequence = sequence
+        return self
     def is_empty(self):
         return all(subpattern.is_empty() for subpattern in self.sequence)
     def is_atomic(self):
@@ -2012,19 +2041,16 @@ class _Sequence(_StructureBase):
         return _Sequence(self.sequence[ : -1])
     def compile(self, reverse=False):
         if reverse:
-            seq = reversed(self.sequence)
+            seq = list(reversed(self.sequence))
         else:
             seq = self.sequence
-        check_code = []
         code = []
         for subpattern in seq:
-            if isinstance(subpattern, _Check):
-                check_code.extend(subpattern.compile(reverse))
-            else:
-                code.extend(subpattern.compile(reverse))
-        return check_code + code
+            code.extend(subpattern.compile(reverse))
+        return code
     def remove_captures(self):
-        self.sequence = [subpattern.remove_captures() for subpattern in self.sequence]
+        self.sequence = [subpattern.remove_captures() for subpattern in
+          self.sequence]
         return self
     def dump(self, indent=0, reverse=False):
         for subpattern in self.sequence:
@@ -2038,8 +2064,8 @@ class _Sequence(_StructureBase):
         return fs or set([None])
     def has_simple_start(self):
         return self.sequence and self.sequence[0].has_simple_start()
-    def get_checks(self, reverse):
-        return _Sequence([subpattern.get_checks(reverse) for subpattern in self.sequence])
+    def __eq__(self, other):
+        return type(self) is type(other) and self.sequence == other.sequence
     @staticmethod
     def _flush_characters(char_type, characters, sequence):
         if not characters:
@@ -2048,103 +2074,56 @@ class _Sequence(_StructureBase):
             sequence.append(char_type(characters[0]))
         else:
             sequence.append(_string_classes[char_type](characters))
-    def __eq__(self, other):
-        return type(self) is type(other) and self.sequence == other.sequence
 
 class _Set(_RegexBase):
     _opcode = {False: _OP.SET, True: _OP.SET_REV}
     _op_name = {False: "SET", True: "SET_REV"}
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
-    _big_bitset_opcode = {
-      (False, False): _OP.BIG_BITSET, (False, True): _OP.BIG_BITSET_REV,
-      (True, False): _OP.BIG_BITSET_IGN, (True, True): _OP.BIG_BITSET_IGN_REV
-    }
-    _small_bitset_opcode = {
-      (False, False): _OP.SMALL_BITSET, (False, True): _OP.SMALL_BITSET_REV,
-      (True, False): _OP.SMALL_BITSET_IGN, (True, True): _OP.SMALL_BITSET_IGN_REV
-    }
-    _ignore = False
-    def __init__(self, members, positive=True, zerowidth=False):
-        self.members, self.positive, self.zerowidth = members, bool(positive), zerowidth
-        self._key = self.__class__, tuple(self.members), self.positive, self.zerowidth
+    _big_bitset_opcode = {False: _OP.BIG_BITSET, True: _OP.BIG_BITSET_REV}
+    _small_bitset_opcode = {False: _OP.SMALL_BITSET, True: _OP.SMALL_BITSET_REV}
+    def __init__(self, characters, others, positive=True, zerowidth=False):
+        characters = tuple(set(characters))
+        others = tuple(set(others))
+        self.characters, self.others, self.positive, self.zerowidth = \
+          characters, others, bool(positive), zerowidth
+        self._key = self.__class__, self.characters, self.others, \
+          self.positive, self.zerowidth
     def optimise(self, info):
-        # Divide the set members into ranges and non-ranges.
-        ranges = []
-        others = set()
-        for member in self.members:
-            r = member.get_range()
-            if r:
-                ranges.append(r)
-            else:
-                others.add(member)
-
         # If the set contains complementary properties then the set itself is
         # equivalent to _AnyAll.
         prop = {False: set(), True: set()}
-        for o in others:
+        for o in self.others:
             if isinstance(o, _Property):
                 prop[o.positive].add(o.value)
         if self.positive and (prop[False] & prop[True]) and not self.zerowidth:
             return _AnyAll()
 
-        # Merge consecutive and overlapping ranges.
-        ranges.sort()
-        for i in range(len(ranges), 1, -1):
-            r1, r2 = ranges[i - 2 : i]
-            if r1[1] + 1 >= r2[0]:
-                ranges[i - 2 : i] = [(r1[0], max(r1[1], r2[1]))]
+        # We can simplify if the set contains just a single character.
+        if not self.others and len(self.characters) == 1:
+            return _Character(self.characters[0], positive=self.positive,
+              zerowidth=self.zerowidth)
 
-        # We can simplify if the set contains just a single range.
-        if len(ranges) == 1 and not others:
-            r = ranges[0]
-            if r[0] == r[1]:
-                return self._as_character(r[0])
-            else:
-                return self._as_range(*r)
-
-        # We can simplify if the set contains just a single non-range (with
+        # We can simplify if the set contains just a single property (with
         # certain exceptions).
-        if not ranges and len(others) == 1:
-            o = list(others)[0]
+        if not self.characters and len(self.others) == 1:
+            o = self.others[0]
             if type(o) is _Any and self.positive and not self.zerowidth:
                 return o
             if isinstance(o, _Property):
-                return _Property(o.value, positive=self.positive == o.positive, zerowidth=self.zerowidth)
+                return _Property(o.value, positive=self.positive == o.positive,
+                  zerowidth=self.zerowidth)
 
-        # Rebuild the set.
-        new_ranges = []
-        for r in ranges:
-            if r[0] == r[1]:
-                new_ranges.append(_Character(r[0]))
-            else:
-                new_ranges.append(_Range(*r))
-
-        return type(self)(new_ranges + list(others), positive=self.positive, zerowidth=self.zerowidth)
+        return self
     def compile(self, reverse=False):
-        # Divide the set members into ranges and non-ranges.
-        ranges = []
-        others = []
-        for m in self.members:
-            r = m.get_range()
-            if r:
-                ranges.append(r)
-            else:
-                others.append(m)
+        # If there are only characters then compile to a character or bitset.
+        if not self.others:
+            if len(self.characters) == 1:
+                return _Character(self.characters[0]).compile(reverse)
+            return self._make_bitset(self.characters, reverse)
 
-        # If there are only ranges then compile to a character, range or bitset.
-        if not others:
-            if len(ranges) == 1:
-                r = ranges[0]
-                if r[0] == r[1]:
-                    return self._as_character(r[0]).compile(reverse)
-                else:
-                    return self._as_range(r[0], r[1]).compile(reverse)
-            else:
-                return self._make_bitset(ranges, self._ignore, reverse)
-
-        # If there's only a single other then compile to just that.
-        if not ranges and len(others) == 1:
-            o = others[0]
+        # If there's one property and no characters then compile to that.
+        if not self.characters and len(self.others) == 1:
+            o = self.others[0]
             o.positive = o.positive == self.positive
             o.zerowidth = self.zerowidth
             return o.compile(reverse)
@@ -2152,96 +2131,86 @@ class _Set(_RegexBase):
         # Compile a compound set.
         flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
         code = [(self._opcode[reverse], flags)]
-        code.extend(self._make_bitset(ranges, False, False))
-        for o in others:
+        if self.characters:
+            code.extend(self._make_bitset(self.characters, False))
+        for o in self.others:
             code.extend(o.compile())
         code.append((_OP.END, ))
         return code
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s" % (_INDENT * indent, self._op_name[reverse], self._pos_text[self.positive])
-        for subpattern in self.members:
-            subpattern.dump(indent + 1)
+        print "%s%s %s" % (_INDENT * indent, self._op_name[reverse],
+          self._pos_text[self.positive])
+        if self.characters:
+            characters = sorted(self.characters)
+            c = characters[0]
+            start, end = c, c - 1
+            for c in characters:
+                if c > end + 1:
+                    if start == end:
+                        print "%sCHARACTER %s" % (_INDENT * (indent + 1), start)
+                    else:
+                        print "%sRANGE %s %s" % (_INDENT * (indent + 1), start, end)
+                    start = c
+                end = c
+            if start == end:
+                print "%sCHARACTER %s" % (_INDENT * (indent + 1), start)
+            else:
+                print "%sRANGE %s %s" % (_INDENT * (indent + 1), start, end)
+        for o in self.others:
+            o.dump(indent + 1)
     def firstset(self):
         return set([self])
     def has_simple_start(self):
         return True
-    BITS_PER_CODE = 32
     BITS_PER_INDEX = 16
-    INDEXES_PER_CODE = BITS_PER_CODE // BITS_PER_INDEX
-    CODE_MASK = (1 << BITS_PER_CODE) - 1
-    CODES_PER_SUBSET = 256 // BITS_PER_CODE
+    INDEXES_PER_CODE = _BITS_PER_CODE // BITS_PER_INDEX
+    CODE_MASK = (1 << _BITS_PER_CODE) - 1
+    CODES_PER_SUBSET = 256 // _BITS_PER_CODE
     SUBSET_MASK = (1 << 256) - 1
-    def _make_bitset(self, ranges, ignore, reverse):
+    def _make_bitset(self, characters, reverse):
         code = []
         # values for big bitset are: max_char indexes... subsets...
         # values for small bitset are: top_bits bitset
         bitset_dict = defaultdict(int)
-        for r in ranges:
-            lo_top, lo_bottom = r[0] >> 8, r[0] & 0xFF
-            hi_top, hi_bottom = r[1] >> 8, r[1] & 0xFF
-            if lo_top == hi_top:
-                # The range is in a single subset.
-                bitset_dict[lo_top] |= (1 << (hi_bottom + 1)) - (1 << lo_bottom)
-            else:
-                # The range crosses a subset boundary.
-                bitset_dict[lo_top] |= (1 << 256) - (1 << lo_bottom)
-                for top in range(lo_top + 1, hi_top):
-                    bitset_dict[top] = (1 << 256) - 1
-                bitset_dict[hi_top] |= (1 << (hi_bottom + 1)) - 1
+        for c in characters:
+            bitset_dict[c >> 8] |= 1 << (c & 0xFF)
         if len(bitset_dict) > 1:
             # Build a big bitset.
             indexes = []
             subset_index = {}
             for top in range(max(bitset_dict.keys()) + 1):
-                subset = bitset_dict[top]
+                subset = bitset_dict.get(top, 0)
                 ind = subset_index.setdefault(subset, len(subset_index))
                 indexes.append(ind)
-            if len(indexes) % self.INDEXES_PER_CODE > 0:
-                indexes.extend([0] * (self.INDEXES_PER_CODE - len(indexes) % self.INDEXES_PER_CODE))
-            max_char = ranges[-1][1]
+            remainder = len(indexes) % self.INDEXES_PER_CODE
+            if remainder:
+                indexes.extend([0] * (self.INDEXES_PER_CODE - remainder))
             data = []
             for i in range(0, len(indexes), self.INDEXES_PER_CODE):
                 ind = 0
                 for s in range(self.INDEXES_PER_CODE):
-                    ind |= indexes[i + s] << (self.BITS_PER_INDEX * s)
+                    ind |= indexes[i + s] << (_Set.BITS_PER_INDEX * s)
                 data.append(ind)
-            for subset, ind in sorted(subset_index.items(), key=lambda pair: pair[1]):
-                data.extend(self._bitset_to_codes(subset))
+            for subset, ind in sorted(subset_index.items(), key=lambda pair:
+              pair[1]):
+                data.extend(_Set._bitset_to_codes(subset))
             flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
-            code.append((self._big_bitset_opcode[(ignore, reverse)], flags, max_char) + tuple(data))
+            code.append((self._big_bitset_opcode[reverse], flags,
+              max(characters)) + tuple(data))
         else:
             # Build a small bitset.
             flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
-            for top_bits, bitset in bitset_dict.items():
-                if bitset:
-                    code.append((self._small_bitset_opcode[(ignore, reverse)],
-                      flags, top_bits) + tuple(self._bitset_to_codes(bitset)))
+            top_bits, bitset = bitset_dict.items()[0]
+            code.append((self._small_bitset_opcode[reverse], flags, top_bits) +
+              tuple(_Set._bitset_to_codes(bitset)))
         return code
-    def _bitset_to_codes(self, bitset):
+    @staticmethod
+    def _bitset_to_codes(bitset):
         codes = []
-        for i in range(self.CODES_PER_SUBSET):
-            codes.append(bitset & self.CODE_MASK)
-            bitset >>= self.BITS_PER_CODE
+        for i in range(_Set.CODES_PER_SUBSET):
+            codes.append(bitset & _Set.CODE_MASK)
+            bitset >>= _BITS_PER_CODE
         return codes
-    def _as_character(self, value):
-        return _Character(value, positive=self.positive, zerowidth=self.zerowidth)
-    def _as_range(self, min_value, max_value):
-        return _Range(min_value, max_value, positive=self.positive, zerowidth=self.zerowidth)
-
-class _SetIgn(_Set):
-    _opcode = {False: _OP.SET_IGN, True: _OP.SET_IGN_REV}
-    _op_name = {False: "SET_IGN", True: "SET_IGN_REV"}
-    _ignore = True
-    def optimise(self, info):
-        # Case-sensitive matches are faster, so convert to a case-sensitive
-        # instance if all the members are case-insensitive.
-        if any(member.is_case_sensitive(info) for member in self.members):
-            return _Set.optimise(self, info)
-        return _Set(self.members, positive=self.positive, zerowidth=self.zerowidth).optimise(info)
-    def _as_character(self, value):
-        return _CharacterIgn(value, positive=self.positive, zerowidth=self.zerowidth)
-    def _as_range(self, min_value, max_value):
-        return _RangeIgn(min_value, max_value, positive=self.positive, zerowidth=self.zerowidth)
 
 class _StartOfLine(_ZeroWidthBase):
     def compile(self, reverse=False):
@@ -2260,17 +2229,17 @@ class _String(_RegexBase):
     _op_name = {False: "STRING", True: "STRING_REV"}
     def __init__(self, characters):
         self.characters = characters
-        self._key = self.__class__, tuple(self.characters)
+        self._key = self.__class__, self.characters
     def compile(self, reverse=False):
-        return [(self._opcode[reverse], len(self.characters)) + tuple(self.characters)]
+        return [(self._opcode[reverse], len(self.characters)) +
+          tuple(self.characters)]
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s" % (_INDENT * indent, self._op_name[reverse], " ".join(str(ch) for ch in self.characters))
+        print "%s%s %s" % (_INDENT * indent, self._op_name[reverse],
+          " ".join(map(str, self.characters)))
     def firstset(self):
         return set([_Character(self.characters[0])])
     def has_simple_start(self):
         return True
-    def get_checks(self, reverse):
-        return self
     def get_first_char(self):
         raise error("internal error")
     def drop_first_char(self):
@@ -2287,13 +2256,13 @@ _string_classes = {_Character: _String, _CharacterIgn: _StringIgn}
 
 # Character escape sequences.
 _CHARACTER_ESCAPES = {
-    "a": ord("\a"),
-    "b": ord("\b"),
-    "f": ord("\f"),
-    "n": ord("\n"),
-    "r": ord("\r"),
-    "t": ord("\t"),
-    "v": ord("\v"),
+    "a": "\a",
+    "b": "\b",
+    "f": "\f",
+    "n": "\n",
+    "r": "\r",
+    "t": "\t",
+    "v": "\v",
 }
 
 # Predefined character set escape sequences.
@@ -2324,7 +2293,12 @@ _WORD_POSITION_ESCAPES.update({
 class _Source(object):
     "Scanner for the regular expression source string."
     def __init__(self, string):
-        self.string = string
+        if isinstance(string, unicode):
+            self.string = string
+            self.char_type = unichr
+        else:
+            self.string = string
+            self.char_type = chr
         self.pos = 0
         self.ignore_space = False
         self.sep = string[ : 0]
@@ -2337,7 +2311,7 @@ class _Source(object):
             self.pos += 1
             return ch
         except IndexError:
-            return self.sep
+            return self.string[ : 0]
     def match(self, substring):
         try:
             if self.ignore_space:
@@ -2361,14 +2335,12 @@ class _Source(object):
             return pos >= len(self.string)
         except IndexError:
             return True
-    def tell(self):
-        return self.pos
-    def seek(self, pos):
-        self.pos = pos
 
 class _Info(object):
     "Info about the regular expression."
-    def __init__(self, flags=0):
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+    def __init__(self, flags=0, char_type=None):
         self.global_flags = flags & _GLOBAL_FLAGS
         self.local_flags = flags & _LOCAL_FLAGS
         self.group_count = 0
@@ -2376,6 +2348,7 @@ class _Info(object):
         self.group_name = {}
         self.used_groups = set()
         self.group_state = {}
+        self.char_type = char_type
     def new_group(self, name=None):
         group = self.group_index.get(name)
         if group is not None:
@@ -2391,21 +2364,19 @@ class _Info(object):
                 self.group_index[name] = group
                 self.group_name[group] = name
         self.used_groups.add(group)
-        self.group_state[group] = "OPEN"
+        self.group_state[group] = self.OPEN
         return group
     def close_group(self, group):
-        self.group_state[group] = "CLOSED"
+        self.group_state[group] = self.CLOSED
     def is_open_group(self, name):
         if name.isdigit():
             group = int(name)
         else:
             group = self.group_index.get(name)
-        return self.group_state.get(group) == "OPEN"
+        return self.group_state.get(group) == self.OPEN
 
 # --------------------------------------------------------------------
 # Experimental stuff (see python-dev discussions for details).
-
-import _regex
 
 class Scanner:
     def __init__(self, lexicon, flags=0):
@@ -2416,7 +2387,7 @@ class Scanner:
         for phrase, action in lexicon:
             # Parse the regular expression.
             source = _Source(phrase)
-            info = _Info(flags)
+            info = _Info(flags, source.char_type)
             source.ignore_space = bool(info.local_flags & VERBOSE)
             parsed = _parse_pattern(source, info)
             if not source.at_end():
@@ -2432,12 +2403,22 @@ class Scanner:
 
         # Optimise the compound pattern.
         parsed = parsed.optimise(info)
+        parsed = parsed.pack_characters()
+
+        reverse = bool(info.global_flags & REVERSE)
 
         # Compile the compound pattern. The result is a list of tuples.
-        code = parsed.compile() + [(_OP.SUCCESS, )]
+        code = parsed.compile(reverse) + [(_OP.SUCCESS, )]
+        if parsed.has_simple_start():
+            fs_code = []
+        else:
+            fs_code = _compile_firstset(info, parsed.firstset())
+        fs_code = _flatten_code(fs_code)
 
         # Flatten the code into a list of ints.
         code = _flatten_code(code)
+
+        code = fs_code + code
 
         # Create the PatternObject.
         #

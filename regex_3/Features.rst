@@ -112,7 +112,7 @@ Additional features
 
     A match object accepts access to the captured groups via subscripting and slicing:
 
-    >>> m = regex.search(r"(?<before>.*?)(?<num>\\d+)(?<after>.*)", "pqr123stu")
+    >>> m = regex.search(r"(?<before>.*?)(?<num>\d+)(?<after>.*)", "pqr123stu")
     >>> print m["before"]
     pqr
     >>> print m["num"]

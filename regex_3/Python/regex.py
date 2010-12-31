@@ -199,13 +199,15 @@ def findall(pattern, string, flags=0, pos=None, endpos=None, overlapped=False):
     present in the pattern, return a list of groups; this will be a list of
     tuples if the pattern has more than one group.  Empty matches are included
     in the result."""
-    return _compile(pattern, flags).findall(string, pos, endpos, overlapped=overlapped)
+    return _compile(pattern, flags).findall(string, pos, endpos,
+      overlapped=overlapped)
 
 def finditer(pattern, string, flags=0, pos=None, endpos=None, overlapped=False):
     """Return an iterator over all non-overlapping matches in the string.  For
     each match, the iterator returns a match object.  Empty matches are included
     in the result."""
-    return _compile(pattern, flags).finditer(string, pos, endpos, overlapped=overlapped)
+    return _compile(pattern, flags).finditer(string, pos, endpos,
+      overlapped=overlapped)
 
 def compile(pattern, flags=0):
     "Compile a regular expression pattern, returning a pattern object."
@@ -278,7 +280,7 @@ def _compile(pattern, flags=0):
 
     # Parse the regular expression.
     source = _rc._Source(pattern)
-    info = _rc._Info(flags)
+    info = _rc._Info(flags, source.char_type)
     source.ignore_space = bool(info.local_flags & VERBOSE)
     parsed = _rc._parse_pattern(source, info)
     if not source.at_end():
@@ -301,9 +303,8 @@ def _compile(pattern, flags=0):
     # Optimise the parsed pattern.
     parsed = parsed.optimise(info)
     parsed = parsed.pack_characters()
+
     reverse = bool(info.global_flags & REVERSE)
-    checks = parsed.get_checks(reverse).optimise(info)
-    parsed = _rc.prefix_checks(checks, parsed)
 
     # Should we print the parsed pattern?
     if flags & DEBUG:
