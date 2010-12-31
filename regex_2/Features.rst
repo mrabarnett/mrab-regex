@@ -47,6 +47,17 @@ This module supports Unicode 6.0.0.
 Additional features
 -------------------
 
+* regex.escape (issue #2650)
+
+    regex.escape has an additional keyword parameter ``special_only``. When True, only 'special' regex characters, such as '?', are escaped.
+
+    Examples:
+
+        >>> regex.escape("foo!?")
+        'foo\\!\\?'
+        >>> regex.escape("foo!?", special_only=True)
+        'foo!\\?'
+
 * Repeated captures (issue #7132)
 
     A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:

@@ -118,7 +118,7 @@ This module exports the following functions:
     finditer  Return an iterator yielding a match object for each match.
     compile   Compile a pattern into a RegexObject.
     purge     Clear the regular expression cache.
-    escape    Backslash all non-alphanumerics in a string.
+    escape    Backslash all non-alphanumerics or special characters in a string.
 
 Some of the functions in this module take flags as optional parameters. Most of
 these flags can also be set within an RE:
@@ -222,29 +222,49 @@ def template(pattern, flags=0):
     "Compile a template pattern, returning a pattern object."
     return _compile(pattern, flags | TEMPLATE)
 
-def escape(pattern):
-    "Escape all non-alphanumeric characters in pattern."
+def escape(pattern, special_only=False):
+    "Escape all non-alphanumeric characters or special characters in pattern."
     if isinstance(pattern, str):
         s = []
-        for c in pattern:
-            if c in _rc._ALNUM:
-                s.append(c)
-            elif c == "\x00":
-                s.append("\\000")
-            else:
-                s.append("\\")
-                s.append(c)
+        if special_only:
+            for c in pattern:
+                if c in _rc._SPECIAL:
+                    s.append("\\")
+                    s.append(c)
+                elif c == "\x00":
+                    s.append("\\000")
+                else:
+                    s.append(c)
+        else:
+            for c in pattern:
+                if c in _rc._ALNUM:
+                    s.append(c)
+                elif c == "\x00":
+                    s.append("\\000")
+                else:
+                    s.append("\\")
+                    s.append(c)
         return "".join(s)
     else:
         s = []
-        for c in pattern:
-            if chr(c) in _rc._ALNUM:
-                s.append(c)
-            elif c == 0:
-                s.extend(b"\\000")
-            else:
-                s.extend(b"\\")
-                s.append(c)
+        if special_only:
+            for c in pattern:
+                if chr(c) in _rc._SPECIAL:
+                    s.extend(b"\\")
+                    s.append(c)
+                elif c == 0:
+                    s.extend(b"\\000")
+                else:
+                    s.append(c)
+        else:
+            for c in pattern:
+                if chr(c) in _rc._ALNUM:
+                    s.append(c)
+                elif c == 0:
+                    s.extend(b"\\000")
+                else:
+                    s.extend(b"\\")
+                    s.append(c)
         return bytes(s)
 
 # --------------------------------------------------------------------

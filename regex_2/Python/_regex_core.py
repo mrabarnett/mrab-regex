@@ -45,6 +45,7 @@ _DIGITS = frozenset("0123456789")
 _ALNUM = _ALPHA | _DIGITS
 _OCT_DIGITS = frozenset("01234567")
 _HEX_DIGITS = frozenset("0123456789ABCDEFabcdef")
+_SPECIAL = frozenset("()[]{}?*+|^$\\")
 
 import sys
 import unicodedata

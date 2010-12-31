@@ -470,6 +470,14 @@ class Test:
 
         self.expect(lambda: regex.match("(a)", "a").pos, repr(0))
         self.expect(lambda: regex.match("(a)", "a").endpos, repr(1))
+
+        self.expect(lambda: regex.search("b(c)", "abcdef").pos, repr(0))
+        self.expect(lambda: regex.search("b(c)", "abcdef").endpos, repr(6))
+        self.expect(lambda: regex.search("b(c)", "abcdef").span(), repr((1,
+          3)))
+        self.expect(lambda: regex.search("b(c)", "abcdef").span(1), repr((2,
+          3)))
+
         self.expect(lambda: regex.match("(a)", "a").string, repr('a'))
         self.expect(lambda: regex.match("(a)", "a").regs, repr(((0, 1), (0,
           1))))
@@ -964,6 +972,8 @@ class Test:
           'bc']))
         self.expect(lambda: regex.findall(r"(?r)..", "abcde", overlapped=True),
           repr(['de', 'cd', 'bc', 'ab']))
+        self.expect(lambda: regex.findall(r"(?r)(.)(-)(.)", "a-b-c",
+          overlapped=True), repr([("b", "-", "c"), ("a", "-", "b")]))
 
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r).", "abc")],
           repr(['c', 'b', 'a']))
@@ -1244,6 +1254,8 @@ class Test:
           'bc']))
         self.expect(lambda: regex.findall(r"(?r)..", "abcde", overlapped=True),
           repr(['de', 'cd', 'bc', 'ab']))
+        self.expect(lambda: regex.findall(r"(.)(-)(.)", "a-b-c",
+          overlapped=True), repr([("a", "-", "b"), ("b", "-", "c")]))
 
         self.expect(lambda: [m[0] for m in regex.finditer(r"..", "abcde")],
           repr(['ab', 'cd']))
@@ -1253,6 +1265,11 @@ class Test:
           repr(['de', 'bc']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)..", "abcde",
           overlapped=True)], repr(['de', 'cd', 'bc', 'ab']))
+
+        self.expect(lambda: [m.groups() for m in regex.finditer(r"(.)(-)(.)",
+          "a-b-c", overlapped=True)], repr([("a", "-", "b"), ("b", "-", "c")]))
+        self.expect(lambda: [m.groups() for m in regex.finditer(r"(?r)(.)(-)(.)",
+          "a-b-c", overlapped=True)], repr([("b", "-", "c"), ("a", "-", "b")]))
 
     def test_splititer(self):
         self.expect(lambda: regex.split(r",", "a,b,,c,"),
@@ -2134,7 +2151,7 @@ xyzabc
           repr(('b',)))
         self.expect(lambda: regex.search(r".*?(?>(.){0,2})d",
           "abcd").captures(1), repr(('b', 'c')))
-        self.expect(lambda: regex.search(r"(.)+", "a").captures(1), 
+        self.expect(lambda: regex.search(r"(.)+", "a").captures(1),
           repr(('a',)))
 
     def run(self):

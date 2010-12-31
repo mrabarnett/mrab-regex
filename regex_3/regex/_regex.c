@@ -157,7 +157,6 @@ typedef struct RE_CaptureCountsBlock {
     size_t* items;
 } RE_CaptureCountsBlock;
 
-
 /* Storage for info around a recursive by 'basic'match'. */
 typedef struct RE_Info {
     RE_BacktrackBlock* current_backtrack_block;
@@ -244,8 +243,8 @@ typedef struct RE_State {
     Py_ssize_t lastindex;
     Py_ssize_t lastgroup;
     Py_ssize_t search_anchor;
-    Py_ssize_t match_pos;
-    Py_ssize_t text_pos;
+    Py_ssize_t match_pos; /* Start position of the match. */
+    Py_ssize_t text_pos; /* Current position of the match. */
     Py_ssize_t final_newline; /* Index of newline at end of string, or -1. */
     BOOL zero_width; /* Enable the correct handling of zero-width matches. */
     BOOL must_advance; /* The end of the match must advance past its start. */
@@ -307,6 +306,8 @@ typedef struct MatchObject {
     PatternObject* pattern; /* Link to the regex (pattern) object. */
     Py_ssize_t pos; /* Start of current slice. */
     Py_ssize_t endpos; /* End of current slice. */
+    Py_ssize_t match_start; /* Start of matched slice. */
+    Py_ssize_t match_end; /* End of matched slice. */
     Py_ssize_t lastindex; /* Last group seen by the engine (-1 if none). */
     Py_ssize_t lastgroup; /* Last named group seen by the engine (-1 if none). */
     Py_ssize_t group_count;
@@ -353,6 +354,9 @@ typedef struct JoinInfo {
 
 typedef Py_UNICODE RE_UCHAR;
 typedef unsigned char RE_BCHAR;
+
+/* Function types for getting info from a MatchObject. */
+typedef PyObject* (*RE_GetByIndexFunc)(MatchObject* self, Py_ssize_t index);
 
 #define UCHAR_AT(text, pos) *((RE_UCHAR*)(text) + (pos))
 #define BCHAR_AT(text, pos) *((RE_BCHAR*)(text) + (pos))
@@ -790,7 +794,11 @@ static BOOL unicode_has_property(RE_CODE property, RE_CODE ch) {
         flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
         return (flag & RE_PROP_MASK_CS) != 0;
     case RE_PROP_DIGIT:
+#if PY_VERSION_HEX < 0x03020000
         return _PyUnicode_IsDigit(ch);
+#else
+        return _PyUnicode_IsDecimalDigit(ch);
+#endif
     case RE_PROP_GRAPH:
         flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
         return (flag & RE_PROP_MASK_NONGRAPH) == 0;
@@ -3847,8 +3855,8 @@ Py_LOCAL_INLINE(BOOL) save_all_captures(RE_State* state, RE_BacktrackData*
                 n = 1;
             new_capacity = n * group_count;
 
-            new_block->items = (size_t*)safe_alloc(state, new_capacity
-              * sizeof(size_t));
+            new_block->items = (size_t*)safe_alloc(state, new_capacity *
+              sizeof(size_t));
             if (!new_block->items) {
                 safe_dealloc(state, new_block);
                 return FALSE;
@@ -4251,8 +4259,8 @@ advance:
                      */
                     bt_data = last_backtrack(state);
                     if (bt_data->op == RE_OP_END_GREEDY_REPEAT &&
-                      !bt_data->repeat.position.node && bt_data->repeat.index ==
-                      index) {
+                      !bt_data->repeat.position.node && bt_data->repeat.index
+                      == index) {
                         /* The last backtrack entry is for backtracking into
                          * the body like we want to do now, so we can save work
                          * by just re-using it.
@@ -4276,15 +4284,14 @@ advance:
                  * we want to backtrack into the body.
                  */
 
-                /* Record backtracking info for backtracking into the body.
-                 */
+                /* Record backtracking info for backtracking into the body. */
                 bt_data = last_backtrack(state);
                 if (bt_data->op == RE_OP_END_GREEDY_REPEAT &&
                   !bt_data->repeat.position.node && bt_data->repeat.index ==
                   index) {
-                    /* The last backtrack entry is for backtracking into
-                     * the body like we want to do now, so we can save work
-                     * by just re-using it.
+                    /* The last backtrack entry is for backtracking into the
+                     * body like we want to do now, so we can save work by just
+                     * re-using it.
                      */
                 } else {
                     if (!add_backtrack(state, RE_OP_END_GREEDY_REPEAT))
@@ -4390,8 +4397,8 @@ advance:
                      */
                     bt_data = last_backtrack(state);
                     if (bt_data->op == RE_OP_END_LAZY_REPEAT &&
-                      !bt_data->repeat.position.node && bt_data->repeat.index ==
-                      index) {
+                      !bt_data->repeat.position.node && bt_data->repeat.index
+                      == index) {
                         /* The last backtrack entry is for backtracking into
                          * the body like we want to do now, so we can save work
                          * by just re-using it.
@@ -4412,16 +4419,14 @@ advance:
             } else {
                 /* Only the tail could match. */
 
-                /* Record backtracking info for backtracking into the body.
-                 */
+                /* Record backtracking info for backtracking into the body. */
                 bt_data = last_backtrack(state);
                 if (bt_data->op == RE_OP_END_LAZY_REPEAT &&
                   !bt_data->repeat.position.node && bt_data->repeat.index ==
-                  index)
-                  {
-                    /* The last backtrack entry is for backtracking into
-                     * the body like we want to do now, so we can save work
-                     * by just re-using it.
+                  index) {
+                    /* The last backtrack entry is for backtracking into the
+                     * body like we want to do now, so we can save work by just
+                     * re-using it.
                      */
                 } else {
                     if (!add_backtrack(state, RE_OP_END_LAZY_REPEAT))
@@ -6586,7 +6591,8 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_by_index(MatchObject* self,
     }
 
     if (index == 0)
-        return PySequence_GetSlice(self->string, self->pos, self->endpos);
+        return PySequence_GetSlice(self->string, self->match_start,
+          self->match_end);
 
     /* Capture group indexes are 1-based (excluding group 0, which is the
      * entire matched string).
@@ -6602,9 +6608,291 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_by_index(MatchObject* self,
     return PySequence_GetSlice(self->string, span->start, span->end);
 }
 
+/* Gets a MatchObject's start by integer index. */
+static PyObject* match_get_start_by_index(MatchObject* self, Py_ssize_t index)
+  {
+    RE_GroupSpan* span;
+
+    if (index < 0 || index > self->group_count) {
+        /* Raise error if we were given a bad group number. */
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0)
+        return Py_BuildValue("n", self->match_start);
+
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    span = &self->groups[index - 1].span;
+    return Py_BuildValue("n", span->start);
+}
+
+/* Gets a MatchObject's starts by integer index. */
+static PyObject* match_get_starts_by_index(MatchObject* self, Py_ssize_t index)
+  {
+    RE_GroupData* group;
+    PyObject* result;
+    PyObject* item;
+    RE_GroupSpan* span;
+
+    if (index < 0 || index > self->group_count) {
+        /* Raise error if we were given a bad group number. */
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0) {
+        result = PyTuple_New(1);
+        if (!result)
+            return NULL;
+
+        item = Py_BuildValue("n", self->match_start);
+        if (!item)
+            goto error;
+        PyTuple_SET_ITEM(result, 0, item);
+
+        return result;
+    }
+
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    group = &self->groups[index - 1];
+    if (group->capture_count > 0) {
+        /* At least one capture. */
+        size_t i;
+
+        result = PyTuple_New(group->capture_count);
+        if (!result)
+            return NULL;
+
+        for (i = 0; i < group->capture_count; i++) {
+            span = &group->captures[i];
+            item = Py_BuildValue("n", span->start);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, i, item);
+        }
+    } else {
+        span = &group->span;
+
+        if (0 <= span->start && span->start <= span->end) {
+            /* Only one capture. */
+            result = PyTuple_New(1);
+            if (!result)
+                return NULL;
+
+            item = Py_BuildValue("n", span->start);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, 0, item);
+        } else {
+            /* No spans. */
+            result = PyTuple_New(0);
+            if (!result)
+                return NULL;
+        }
+    }
+
+    return result;
+
+error:
+    Py_DECREF(result);
+    return NULL;
+}
+
+/* Gets a MatchObject's end by integer index. */
+static PyObject* match_get_end_by_index(MatchObject* self, Py_ssize_t index) {
+    RE_GroupSpan* span;
+
+    if (index < 0 || index > self->group_count) {
+        /* Raise error if we were given a bad group number. */
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0)
+        return Py_BuildValue("n", self->match_end);
+
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    span = &self->groups[index - 1].span;
+    return Py_BuildValue("n", span->end);
+}
+
+/* Gets a MatchObject's ends by integer index. */
+static PyObject* match_get_ends_by_index(MatchObject* self, Py_ssize_t index) {
+    RE_GroupData* group;
+    PyObject* result;
+    PyObject* item;
+    RE_GroupSpan* span;
+
+    if (index < 0 || index > self->group_count) {
+        /* Raise error if we were given a bad group number. */
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0) {
+        result = PyTuple_New(1);
+        if (!result)
+            return NULL;
+
+        item = Py_BuildValue("n", self->match_end);
+        if (!item)
+            goto error;
+        PyTuple_SET_ITEM(result, 0, item);
+
+        return result;
+    }
+
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    group = &self->groups[index - 1];
+    if (group->capture_count > 0) {
+        /* At least one capture. */
+        size_t i;
+
+        result = PyTuple_New(group->capture_count);
+        if (!result)
+            return NULL;
+
+        for (i = 0; i < group->capture_count; i++) {
+            span = &group->captures[i];
+            item = Py_BuildValue("n", span->end);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, i, item);
+        }
+    } else {
+        span = &group->span;
+
+        if (0 <= span->start && span->start <= span->end) {
+            /* Only one capture. */
+            result = PyTuple_New(1);
+            if (!result)
+                return NULL;
+
+            item = Py_BuildValue("n", span->end);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, 0, item);
+        } else {
+            /* No spans. */
+            result = PyTuple_New(0);
+            if (!result)
+                return NULL;
+        }
+    }
+
+    return result;
+
+error:
+    Py_DECREF(result);
+    return NULL;
+}
+
+/* Gets a MatchObject's span by integer index. */
+static PyObject* match_get_span_by_index(MatchObject* self, Py_ssize_t index) {
+    RE_GroupSpan* span;
+
+    if (index < 0 || index > self->group_count) {
+        /* Raise error if we were given a bad group number. */
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0)
+        return Py_BuildValue("nn", self->match_start, self->match_end);
+
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    span = &self->groups[index - 1].span;
+    return Py_BuildValue("nn", span->start, span->end);
+}
+
+/* Gets a MatchObject's spans by integer index. */
+static PyObject* match_get_spans_by_index(MatchObject* self, Py_ssize_t index)
+  {
+    RE_GroupData* group;
+    PyObject* result;
+    PyObject* item;
+    RE_GroupSpan* span;
+
+    if (index < 0 || index > self->group_count) {
+        /* Raise error if we were given a bad group number. */
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0) {
+        result = PyTuple_New(1);
+        if (!result)
+            return NULL;
+
+        item = Py_BuildValue("nn", self->match_start, self->match_end);
+        if (!item)
+            goto error;
+        PyTuple_SET_ITEM(result, 0, item);
+
+        return result;
+    }
+
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    group = &self->groups[index - 1];
+    if (group->capture_count > 0) {
+        /* At least one capture. */
+        size_t i;
+
+        result = PyTuple_New(group->capture_count);
+        if (!result)
+            return NULL;
+
+        for (i = 0; i < group->capture_count; i++) {
+            span = &group->captures[i];
+            item = Py_BuildValue("nn", span->start, span->end);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, i, item);
+        }
+    } else {
+        span = &group->span;
+
+        if (0 <= span->start && span->start <= span->end) {
+            /* Only one capture. */
+            result = PyTuple_New(1);
+            if (!result)
+                return NULL;
+
+            item = Py_BuildValue("nn", span->start, span->end);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, 0, item);
+        } else {
+            /* No spans. */
+            result = PyTuple_New(0);
+            if (!result)
+                return NULL;
+        }
+    }
+
+    return result;
+
+error:
+    Py_DECREF(result);
+    return NULL;
+}
+
 /* Gets a MatchObject's captures by integer index. */
-Py_LOCAL_INLINE(PyObject*) match_get_captures_by_index(MatchObject* self,
-  Py_ssize_t index) {
+static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
+  index) {
     RE_GroupData* group;
     PyObject* result;
     PyObject* slice;
@@ -6621,7 +6909,8 @@ Py_LOCAL_INLINE(PyObject*) match_get_captures_by_index(MatchObject* self,
         if (!result)
             return NULL;
 
-        slice = PySequence_GetSlice(self->string, self->pos, self->endpos);
+        slice = PySequence_GetSlice(self->string, self->match_start,
+          self->match_end);
         if (!slice)
             goto error;
         PyTuple_SET_ITEM(result, 0, slice);
@@ -6738,13 +7027,12 @@ Py_LOCAL_INLINE(PyObject*) match_get_group(MatchObject* self, PyObject* index,
     return NULL;
 }
 
-/* Gets a MatchObject's captures by object index. */
-Py_LOCAL_INLINE(PyObject*) match_get_captures(MatchObject* self, PyObject*
-  index, BOOL allow_neg) {
+/* Gets info from a MatchObject by object index. */
+static PyObject* get_by_arg(MatchObject* self, PyObject* index,
+  RE_GetByIndexFunc get_by_index) {
     /* Check that the index is an integer or a string. */
     if (PyLong_Check(index) || PyUnicode_Check(index) || PyBytes_Check(index))
-        return match_get_captures_by_index(self, match_get_group_index(self,
-          index, allow_neg));
+        return get_by_index(self, match_get_group_index(self, index, FALSE));
 
     set_error(RE_ERROR_GROUP_INDEX_TYPE, index);
     return NULL;
@@ -6788,320 +7076,77 @@ static PyObject* match_group(MatchObject* self, PyObject* args) {
     return result;
 }
 
+/* Generic method for getting info from a MatchObject. */
+static PyObject* get_from_match(MatchObject* self, PyObject* args,
+  RE_GetByIndexFunc get_by_index) {
+    Py_ssize_t size;
+    PyObject* result;
+    Py_ssize_t i;
+
+    size = PyTuple_GET_SIZE(args);
+
+    switch (size) {
+    case 0:
+        /* get() */
+        result = get_by_index(self, 0);
+        break;
+    case 1:
+        /* get(x) */
+        result = get_by_arg(self, PyTuple_GET_ITEM(args, 0), get_by_index);
+        break;
+    default:
+        /* get(x, y, z, ...) */
+        /* Fetch multiple items. */
+        result = PyTuple_New(size);
+        if (!result)
+            return NULL;
+        for (i = 0; i < size; i++) {
+            PyObject* item = get_by_arg(self, PyTuple_GET_ITEM(args, i),
+              get_by_index);
+            if (!item) {
+                Py_DECREF(result);
+                return NULL;
+            }
+            PyTuple_SET_ITEM(result, i, item);
+        }
+        break;
+    }
+    return result;
+}
+
 /* MatchObject's 'start' method. */
 static PyObject* match_start(MatchObject* self, PyObject* args) {
-    Py_ssize_t index;
-
-    PyObject* index_ = Py_False; /* Default index is 0. */
-    if (!PyArg_UnpackTuple(args, "start", 0, 1, &index_))
-        return NULL;
-
-    index = match_get_group_index(self, index_, FALSE);
-    if (index < 0 || index > self->group_count) {
-        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
-        return NULL;
-    }
-
-    if (index == 0)
-        return Py_BuildValue("n", self->pos);
-
-    /* A position is -1 if the group is unmatched. */
-    return Py_BuildValue("n", self->groups[index - 1].span.start);
+    return get_from_match(self, args, match_get_start_by_index);
 }
 
 /* MatchObject's 'starts' method. */
 static PyObject* match_starts(MatchObject* self, PyObject* args) {
-    Py_ssize_t index;
-    PyObject* result;
-    PyObject* item;
-    RE_GroupData* group;
-    RE_GroupSpan* span;
-
-    PyObject* index_ = Py_False; /* Default index is 0. */
-    if (!PyArg_UnpackTuple(args, "starts", 0, 1, &index_))
-        return NULL;
-
-    index = match_get_group_index(self, index_, FALSE);
-    if (index < 0 || index > self->group_count) {
-        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
-        return NULL;
-    }
-
-    if (index == 0) {
-        result = PyTuple_New(1);
-        if (!result)
-            return NULL;
-
-        item = Py_BuildValue("n", self->pos);
-        if (!item)
-            goto error;
-        PyTuple_SET_ITEM(result, 0, item);
-
-        return result;
-    }
-
-    group = &self->groups[index - 1];
-    if (group->capture_count > 0) {
-        /* At least one capture. */
-        size_t i;
-
-        result = PyTuple_New(group->capture_count);
-        if (!result)
-            return NULL;
-
-        for (i = 0; i < group->capture_count; i++) {
-            span = &group->captures[i];
-            item = Py_BuildValue("n", span->start);
-            if (!item)
-                goto error;
-            PyTuple_SET_ITEM(result, i, item);
-        }
-    } else {
-        span = &group->span;
-
-        if (0 <= span->start && span->start <= span->end) {
-            /* Only one capture. */
-            result = PyTuple_New(1);
-            if (!result)
-                return NULL;
-
-            item = Py_BuildValue("n", span->start);
-            if (!item)
-                goto error;
-            PyTuple_SET_ITEM(result, 0, item);
-        } else {
-            /* No captures. */
-            result = PyTuple_New(0);
-            if (!result)
-                return NULL;
-        }
-    }
-
-    return result;
-
-error:
-    Py_DECREF(result);
-    return NULL;
+    return get_from_match(self, args, match_get_starts_by_index);
 }
 
 /* MatchObject's 'end' method. */
 static PyObject* match_end(MatchObject* self, PyObject* args) {
-    Py_ssize_t index;
-
-    PyObject* index_ = Py_False; /* Default index is 0. */
-    if (!PyArg_UnpackTuple(args, "end", 0, 1, &index_))
-        return NULL;
-
-    index = match_get_group_index(self, index_, FALSE);
-    if (index < 0 || index > self->group_count) {
-        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
-        return NULL;
-    }
-
-    if (index == 0)
-        return Py_BuildValue("n", self->endpos);
-
-    /* A position is -1 if the group is unmatched. */
-    return Py_BuildValue("n", self->groups[index - 1].span.end);
+    return get_from_match(self, args, match_get_end_by_index);
 }
 
 /* MatchObject's 'ends' method. */
 static PyObject* match_ends(MatchObject* self, PyObject* args) {
-    Py_ssize_t index;
-    PyObject* result;
-    PyObject* item;
-    RE_GroupData* group;
-    RE_GroupSpan* span;
-
-    PyObject* index_ = Py_False; /* Default index is 0. */
-    if (!PyArg_UnpackTuple(args, "ends", 0, 1, &index_))
-        return NULL;
-
-    index = match_get_group_index(self, index_, FALSE);
-    if (index < 0 || index > self->group_count) {
-        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
-        return NULL;
-    }
-
-    if (index == 0) {
-        result = PyTuple_New(1);
-        if (!result)
-            return NULL;
-
-        item = Py_BuildValue("n", self->endpos);
-        if (!item)
-            goto error;
-        PyTuple_SET_ITEM(result, 0, item);
-
-        return result;
-    }
-
-    group = &self->groups[index - 1];
-    if (group->capture_count > 0) {
-        /* At least one capture. */
-        size_t i;
-
-        result = PyTuple_New(group->capture_count);
-        if (!result)
-            return NULL;
-
-        for (i = 0; i < group->capture_count; i++) {
-            span = &group->captures[i];
-            item = Py_BuildValue("n", span->end);
-            if (!item)
-                goto error;
-            PyTuple_SET_ITEM(result, i, item);
-        }
-    } else {
-        span = &group->span;
-
-        if (0 <= span->start && span->start <= span->end) {
-            /* Only one capture. */
-            result = PyTuple_New(1);
-            if (!result)
-                return NULL;
-
-            item = Py_BuildValue("n", span->end);
-            if (!item)
-                goto error;
-            PyTuple_SET_ITEM(result, 0, item);
-        } else {
-            /* No captures. */
-            result = PyTuple_New(0);
-            if (!result)
-                return NULL;
-        }
-    }
-
-    return result;
-
-error:
-    Py_DECREF(result);
-    return NULL;
-}
-
-/* Creates an integer next (2-tuple). */
-Py_LOCAL_INLINE(PyObject*) _pair(Py_ssize_t i1, Py_ssize_t i2) {
-    PyObject* next;
-    PyObject* item;
-
-    next = PyTuple_New(2);
-    if (!next)
-        return NULL;
-
-    item = PyLong_FromSsize_t(i1);
-    if (!item)
-        goto error;
-    PyTuple_SET_ITEM(next, 0, item);
-
-    item = PyLong_FromSsize_t(i2);
-    if (!item)
-        goto error;
-    PyTuple_SET_ITEM(next, 1, item);
-
-    return next;
-
-error:
-    Py_DECREF(next);
-    return NULL;
+    return get_from_match(self, args, match_get_ends_by_index);
 }
 
 /* MatchObject's 'span' method. */
 static PyObject* match_span(MatchObject* self, PyObject* args) {
-    Py_ssize_t index;
-    RE_GroupSpan* span;
-
-    PyObject* index_ = Py_False; /* Default index is 0. */
-    if (!PyArg_UnpackTuple(args, "span", 0, 1, &index_))
-        return NULL;
-
-    index = match_get_group_index(self, index_, FALSE);
-    if (index < 0 || index > self->group_count) {
-        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
-        return NULL;
-    }
-
-    if (index == 0)
-        return _pair(self->pos, self->endpos);
-
-    /* A position is -1 if the group is unmatched. */
-    span = &self->groups[index - 1].span;
-    return _pair(span->start, span->end);
+    return get_from_match(self, args, match_get_span_by_index);
 }
 
 /* MatchObject's 'spans' method. */
 static PyObject* match_spans(MatchObject* self, PyObject* args) {
-    Py_ssize_t index;
-    PyObject* result;
-    PyObject* item;
-    RE_GroupData* group;
-    RE_GroupSpan* span;
+    return get_from_match(self, args, match_get_spans_by_index);
+}
 
-    PyObject* index_ = Py_False; /* Default index is 0. */
-    if (!PyArg_UnpackTuple(args, "spans", 0, 1, &index_))
-        return NULL;
-
-    index = match_get_group_index(self, index_, FALSE);
-    if (index < 0 || index > self->group_count) {
-        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
-        return NULL;
-    }
-
-    if (index == 0) {
-        result = PyTuple_New(1);
-        if (!result)
-            return NULL;
-
-        item = _pair(self->pos, self->endpos);
-        if (!item)
-            goto error;
-        PyTuple_SET_ITEM(result, 0, item);
-
-        return result;
-    }
-
-    group = &self->groups[index - 1];
-    if (group->capture_count > 0) {
-        /* At least one capture. */
-        size_t i;
-
-        result = PyTuple_New(group->capture_count);
-        if (!result)
-            return NULL;
-
-        for (i = 0; i < group->capture_count; i++) {
-            span = &group->captures[i];
-            item = _pair(span->start, span->end);
-            if (!item)
-                goto error;
-            PyTuple_SET_ITEM(result, i, item);
-        }
-    } else {
-        span = &group->span;
-
-        if (0 <= span->start && span->start <= span->end) {
-            /* Only one capture. */
-            result = PyTuple_New(1);
-            if (!result)
-                return NULL;
-
-            item = _pair(span->start, span->end);
-            if (!item)
-                goto error;
-            PyTuple_SET_ITEM(result, 0, item);
-        } else {
-            /* No captures. */
-            result = PyTuple_New(0);
-            if (!result)
-                return NULL;
-        }
-    }
-
-    return result;
-
-error:
-    Py_DECREF(result);
-    return NULL;
+/* MatchObject's 'captures' method. */
+static PyObject* match_captures(MatchObject* self, PyObject* args) {
+    return get_from_match(self, args, match_get_captures_by_index);
 }
 
 /* MatchObject's 'groups' method. */
@@ -7231,13 +7276,13 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
 
     if (index == 0) {
         /* The entire matched portion of the string. */
-        return PySequence_GetSlice(string, self->pos, self->endpos);
+        return PySequence_GetSlice(string, self->match_start, self->match_end);
     } else if (index >= 1 && index <= group_count) {
         /* A group. If it didn't match then return None instead. */
         RE_GroupSpan* span;
 
         span = &self->groups[index - 1].span;
-        if (span->start >= 0)
+        if (0 <= span->start && span->start <= span->end)
             return PySequence_GetSlice(string, span->start, span->end);
         else {
             Py_INCREF(Py_None);
@@ -7478,43 +7523,6 @@ error:
     return NULL;
 }
 
-/* MatchObject's 'captures' method. */
-static PyObject* match_captures(MatchObject* self, PyObject* args) {
-    Py_ssize_t size;
-    PyObject* result;
-    Py_ssize_t i;
-
-    size = PyTuple_GET_SIZE(args);
-
-    switch (size) {
-    case 0:
-        /* captures() */
-        result = match_get_captures_by_index(self, 0);
-        break;
-    case 1:
-        /* captures(x) */
-        result = match_get_captures(self, PyTuple_GET_ITEM(args, 0), FALSE);
-        break;
-    default:
-        /* captures(x, y, z, ...) */
-        /* Fetch multiple items. */
-        result = PyTuple_New(size);
-        if (!result)
-            return NULL;
-        for (i = 0; i < size; i++) {
-            PyObject* item = match_get_captures(self, PyTuple_GET_ITEM(args, i),
-              FALSE);
-            if (!item) {
-                Py_DECREF(result);
-                return NULL;
-            }
-            PyTuple_SET_ITEM(result, i, item);
-        }
-        break;
-    }
-    return result;
-}
-
 /* MatchObject's 'copy' method. */
 static PyObject* match_copy(MatchObject* self, PyObject *unused) {
     PyErr_SetString(PyExc_TypeError, "cannot copy this MatchObject");
@@ -7537,7 +7545,7 @@ static PyObject* match_regs(MatchObject* self) {
     if (!regs)
         return NULL;
 
-    item = _pair(self->pos, self->endpos);
+    item = Py_BuildValue("nn", self->match_start, self->match_end);
     if (!item) {
         Py_DECREF(regs);
         return NULL;
@@ -7548,7 +7556,7 @@ static PyObject* match_regs(MatchObject* self) {
         RE_GroupSpan* span;
 
         span = &self->groups[g].span;
-        item = _pair(span->start, span->end);
+        item = Py_BuildValue("nn", span->start, span->end);
         if (!item) {
             Py_DECREF(regs);
             return NULL;
@@ -7614,27 +7622,35 @@ static PyObject* match_subscript(MatchObject* self, PyObject* item) {
 PyDoc_STRVAR(match_group_doc,
     "group([group1, ...]) --> string or tuple of strings.\n\
     Return one or more subgroups of the match.  If there is a single argument,\n\
-    the result is a single string; if there are multiple arguments, the result\n\
-    is a tuple with one item per argument; if there are no arguments, the\n\
-    whole match is returned. Group 0 is the whole match.");
+    the result is a single string, or None if the group did not contribute to\n\
+    the match; if there are multiple arguments, the result is a tuple with one\n\
+    item per argument; if there are no arguments, the whole match is returned.\n\
+    Group 0 is the whole match.");
 
 PyDoc_STRVAR(match_start_doc,
-    "start([group]) --> int.\n\
-    Return the index of the start of a subgroup of the match.  Defaults to\n\
-    group 0 which is the whole match.  Return -1 if the group exists but did\n\
-    not contribute to the match.");
+    "start([group1, ...]) --> int or tuple of ints.\n\
+    Return the index of the start of one or more subgroups of the match.  If\n\
+    there is a single argument, the result is an index, or -1 if the group did\n\
+    not contribute to the match; if there are multiple arguments, the result is\n\
+    a tuple with one item per argument; if there are no arguments, the index of\n\
+    the start of the whole match is returned.  Group 0 is the whole match.");
 
 PyDoc_STRVAR(match_end_doc,
-    "end([group]) --> int.\n\
-    Return the index of the end of a subgroup of the match.  Defaults to group\n\
-    0 which is the whole match.  Return -1 if the group exists but did not\n\
-    contribute to the match.");
+    "end([group1, ...]) --> int or tuple of ints.\n\
+    Return the index of the end of one or more subgroups of the match.  If there\n\
+    is a single argument, the result is an index, or -1 if the group did not\n\
+    contribute to the match; if there are multiple arguments, the result is a\n\
+    tuple with one item per argument; if there are no arguments, the index of\n\
+    the end of the whole match is returned.  Group 0 is the whole match.");
 
 PyDoc_STRVAR(match_span_doc,
-    "span([group]) --> 2-tuple of int.\n\
-    Return the 2-tuple of the indices of the start and end of a subgroup of the\n\
-    match.  If a group did not contribute to the match, this is (-1, -1).\n\
-    Defaults to group 0 which is the entire match.");
+    "span([group1, ...]) --> 2-tuple of int or tuple of 2-tuple of ints.\n\
+    Return the span (a 2-tuple of the indices of the start and end) of one or\n\
+    more subgroups of the match.  If there is a single argument, the result is a\n\
+    span, or (-1, -1) if the group did not contribute to the match; if there are\n\
+    multiple arguments, the result is a tuple with one item per argument; if\n\
+    there are no arguments, the span of the whole match is returned.  Group 0 is\n\
+    the whole match.");
 
 PyDoc_STRVAR(match_groups_doc,
     "groups(default=None) --> tuple of strings.\n\
@@ -7657,26 +7673,33 @@ PyDoc_STRVAR(match_captures_doc,
     Return the captures of one or more subgroups of the match.  If there is a\n\
     single argument, the result is a tuple of strings; if there are multiple\n\
     arguments, the result is a tuple of tuples with one item per argument; if\n\
-    there are no arguments, the captures of group 0 is returned. Group 0 is the\n\
-    whole match.");
+    there are no arguments, the captures of the whole match is returned.  Group\n\
+    0 is the whole match.");
 
 PyDoc_STRVAR(match_starts_doc,
-    "starts([group]) --> tuple of int.\n\
-    Return the indices of the starts of the captures of a subgroup of the\n\
-    match.  Defaults to group 0 which is the whole match.  Return () if the\n\
-    group exists but did not contribute to the match.");
+    "starts([group1, ...]) --> tuple of ints or tuple of tuple of ints.\n\
+    Return the indices of the starts of the captures of one or more subgroups of\n\
+    the match.  If there is a single argument, the result is a tuple of indices;\n\
+    if there are multiple arguments, the result is a tuple of tuples with one\n\
+    item per argument; if there are no arguments, the indices of the starts of\n\
+    the captures of the whole match is returned.  Group 0 is the whole match.");
 
 PyDoc_STRVAR(match_ends_doc,
-    "ends([group]) --> tuple of int.\n\
-    Return the indices of the ends of the captures of a subgroup of the\n\
-    match.  Defaults to group 0 which is the whole match.  Return () if the\n\
-    group exists but did not contribute to the match.");
+    "ends([group1, ...]) --> tuple of ints or tuple of tuple of ints.\n\
+    Return the indices of the ends of the captures of one or more subgroups of\n\
+    the match.  If there is a single argument, the result is a tuple of indices;\n\
+    if there are multiple arguments, the result is a tuple of tuples with one\n\
+    item per argument; if there are no arguments, the indices of the ends of the\n\
+    captures of the whole match is returned.  Group 0 is the whole match.");
 
 PyDoc_STRVAR(match_spans_doc,
-    "spans([group]) --> tuple of 2-tuple of int.\n\
-    Return the 2-tuples of the indices of the start and end of a subgroup of\n\
-    the match.  Return () if the group exists but did not contribute to the\n\
-    match. Defaults to group 0 which is the entire match.");
+    "spans([group1, ...]) --> tuple of 2-tuple of ints or tuple of tuple of 2-tuple of ints.\n\
+    Return the spans (a 2-tuple of the indices of the start and end) of the\n\
+    captures of one or more subgroups of the match.  If there is a single\n\
+    argument, the result is a tuple of spans; if there are multiple arguments,\n\
+    the result is a tuple of tuples with one item per argument; if there are no\n\
+    arguments, the spans of the captures of the whole match is returned.  Group\n\
+    0 is the whole match.");
 
 /* MatchObject's methods. */
 static PyMethodDef match_methods[] = {
@@ -7689,7 +7712,8 @@ static PyMethodDef match_methods[] = {
     {"groupdict", (PyCFunction)match_groupdict, METH_VARARGS|METH_KEYWORDS,
       match_groupdict_doc},
     {"expand", (PyCFunction)match_expand, METH_O, match_expand_doc},
-    {"captures", (PyCFunction)match_captures, METH_VARARGS, match_captures_doc},
+    {"captures", (PyCFunction)match_captures, METH_VARARGS,
+      match_captures_doc},
     {"starts", (PyCFunction)match_starts, METH_VARARGS, match_starts_doc},
     {"ends", (PyCFunction)match_ends, METH_VARARGS, match_ends_doc},
     {"spans", (PyCFunction)match_spans, METH_VARARGS, match_spans_doc},
@@ -7863,12 +7887,15 @@ Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
         match->regs = NULL;
         match->group_count = pattern->group_count;
 
+        match->pos = state->slice_start;
+        match->endpos = state->slice_end;
+
         if (state->reverse) {
-            match->pos = state->text_pos;
-            match->endpos = state->match_pos;
+            match->match_start = state->text_pos;
+            match->match_end = state->match_pos;
         } else {
-            match->pos = state->match_pos;
-            match->endpos = state->text_pos;
+            match->match_start = state->match_pos;
+            match->match_end = state->text_pos;
         }
 
         match->lastindex = state->lastindex;
@@ -8265,7 +8292,8 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
     self->index = 0;
     self->finished = FALSE;
 
-    /* The MatchObject, and therefore repeated captures, will never be visible. */
+    /* The MatchObject, and therefore repeated captures, will never be visible.
+     */
     state->save_captures = FALSE;
 
     return (PyObject*) self;
@@ -8588,7 +8616,9 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     }
 
     if (!is_callable)
-        /* The MatchObject, and therefore repeated captures, will never be visible. */
+        /* The MatchObject, and therefore repeated captures, will never be
+         * visible.
+         */
         state.save_captures = FALSE;
 
     join_info.item = NULL;
@@ -8818,7 +8848,8 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
     if (!state_init(&state, self, string, 0, PY_SSIZE_T_MAX, FALSE))
         return NULL;
 
-    /* The MatchObject, and therefore repeated captures, will never be visible. */
+    /* The MatchObject, and therefore repeated captures, will never be visible.
+     */
     state.save_captures = FALSE;
 
     list = PyList_New(0);
@@ -8987,7 +9018,8 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     if (!state_init(&state, self, string, start, end, overlapped))
         return NULL;
 
-    /* The MatchObject, and therefore repeated captures, will never be visible. */
+    /* The MatchObject, and therefore repeated captures, will never be visible.
+     */
     state.save_captures = FALSE;
 
     list = PyList_New(0);
@@ -10064,7 +10096,7 @@ Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
     ++args->code;
 
     subargs = *args;
-	subargs.has_captures = FALSE;
+    subargs.has_captures = FALSE;
 
     /* Compile the sequence and check that we've reached the end of the
      * subpattern.
@@ -10088,7 +10120,7 @@ Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
 
     args->code = subargs.code;
     args->min_width = subargs.min_width;
-	args->has_captures |= subargs.has_captures;
+    args->has_captures |= subargs.has_captures;
 
     ++args->code;
 
@@ -10232,14 +10264,14 @@ Py_LOCAL_INLINE(BOOL) build_BRANCH(RE_CompileArgs* args) {
 
         /* Compile the sequence until the next 'BRANCH' or 'NEXT' opcode. */
         subargs.min_width = 0;
-		subargs.has_captures = FALSE;
+        subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
         if (subargs.min_width < smallest_min_width)
             smallest_min_width = subargs.min_width;
 
-		args->has_captures |= subargs.has_captures;
+        args->has_captures |= subargs.has_captures;
 
         /* Append the sequence. */
         add_node(branch_node, subargs.start);
@@ -10351,7 +10383,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
 
     args->code = subargs.code;
     args->min_width = subargs.min_width;
-	args->has_captures |= subargs.has_captures || subargs.save_captures;
+    args->has_captures |= subargs.has_captures || subargs.save_captures;
 
     ++args->code;
 
@@ -10394,7 +10426,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
         return FALSE;
 
     args->code = subargs.code;
-	args->has_captures |= subargs.has_captures;
+    args->has_captures |= subargs.has_captures;
 
     min_width = subargs.min_width;
 
@@ -10408,12 +10440,12 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
 
         subargs.code = args->code;
         subargs.min_width = 0;
-	    subargs.has_captures = FALSE;
+        subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
         args->code = subargs.code;
-		args->has_captures |= subargs.has_captures;
+        args->has_captures |= subargs.has_captures;
 
         if (subargs.min_width < min_width)
             min_width = subargs.min_width;
@@ -10475,7 +10507,7 @@ Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
         return FALSE;
 
     args->code = subargs.code;
-	args->has_captures |= subargs.has_captures;
+    args->has_captures |= subargs.has_captures;
     ++args->code;
 
     /* Create the 'SUCCESS' node and append it to the subpattern. */
@@ -10596,7 +10628,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
 
         /* Compile the sequence and check that we've reached the end of it. */
         subargs = *args;
-    	subargs.has_captures = FALSE;
+        subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
@@ -10604,7 +10636,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
             return FALSE;
 
         args->code = subargs.code;
-		args->has_captures |= subargs.has_captures;
+        args->has_captures |= subargs.has_captures;
 
         ++args->code;
 
@@ -10627,7 +10659,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         RE_CompileArgs subargs;
 
         subargs = *args;
-    	subargs.has_captures = FALSE;
+        subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
@@ -10636,7 +10668,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
 
         args->code = subargs.code;
         args->min_width = subargs.min_width;
-		args->has_captures |= subargs.has_captures;
+        args->has_captures |= subargs.has_captures;
 
         ++args->code;
 
@@ -10663,7 +10695,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         subargs = *args;
         subargs.min_width = 0;
         subargs.save_captures = TRUE;
-    	subargs.has_captures = FALSE;
+        subargs.has_captures = FALSE;
         if (!build_sequence(&subargs))
             return FALSE;
 
@@ -10672,7 +10704,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
 
         args->code = subargs.code;
         args->min_width += min_count * subargs.min_width;
-		args->has_captures |= subargs.has_captures;
+        args->has_captures |= subargs.has_captures;
 
         ++args->code;
 

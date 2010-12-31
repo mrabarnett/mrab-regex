@@ -344,6 +344,20 @@ ul.auto-toc {
 <div class="section" id="additional-features">
 <h1>Additional features</h1>
 <ul>
+<li><p class="first">regex.escape (issue #2650)</p>
+<blockquote>
+<p>regex.escape has an additional keyword parameter <tt class="docutils literal">special_only</tt>. When True, only 'special' regex characters, such as '?', are escaped.</p>
+<p>Examples:</p>
+<blockquote>
+<pre class="doctest-block">
+&gt;&gt;&gt; regex.escape(&quot;foo!?&quot;)
+'foo\\!\\?'
+&gt;&gt;&gt; regex.escape(&quot;foo!?&quot;, special_only=True)
+'foo!\\?'
+</pre>
+</blockquote>
+</blockquote>
+</li>
 <li><p class="first">Repeated captures (issue #7132)</p>
 <blockquote>
 <p>A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:</p>

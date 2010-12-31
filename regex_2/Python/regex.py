@@ -118,7 +118,7 @@ This module exports the following functions:
     finditer  Return an iterator yielding a match object for each match.
     compile   Compile a pattern into a RegexObject.
     purge     Clear the regular expression cache.
-    escape    Backslash all non-alphanumerics in a string.
+    escape    Backslash all non-alphanumerics or special characters in a string.
 
 Some of the functions in this module take flags as optional parameters. Most of
 these flags can also be set within an RE:
@@ -222,29 +222,49 @@ def template(pattern, flags=0):
     "Compile a template pattern, returning a pattern object."
     return _compile(pattern, flags | TEMPLATE)
 
-def escape(pattern):
-    "Escape all non-alphanumeric characters in pattern."
+def escape(pattern, special_only=False):
+    "Escape all non-alphanumeric characters or special characters in pattern."
     if isinstance(pattern, unicode):
         s = []
-        for c in pattern:
-            if c in _rc._ALNUM:
-                s.append(c)
-            elif c == u"\x00":
-                s.append(u"\\000")
-            else:
-                s.append(u"\\")
-                s.append(c)
+        if special_only:
+            for c in pattern:
+                if c in _rc._SPECIAL:
+                    s.append(u"\\")
+                    s.append(c)
+                elif c == u"\x00":
+                    s.append(u"\\000")
+                else:
+                    s.append(c)
+        else:
+            for c in pattern:
+                if c in _rc._ALNUM:
+                    s.append(c)
+                elif c == u"\x00":
+                    s.append(u"\\000")
+                else:
+                    s.append(u"\\")
+                    s.append(c)
         return u"".join(s)
     else:
         s = []
-        for c in pattern:
-            if c in _rc._ALNUM:
-                s.append(c)
-            elif c == "\x00":
-                s.append("\\000")
-            else:
-                s.append("\\")
-                s.append(c)
+        if special_only:
+            for c in pattern:
+                if c in _rc._ALNUM:
+                    s.append("\\")
+                    s.append(c)
+                elif c == "\x00":
+                    s.append("\\000")
+                else:
+                    s.append(c)
+        else:
+            for c in pattern:
+                if c in _rc._ALNUM:
+                    s.append(c)
+                elif c == "\x00":
+                    s.append("\\000")
+                else:
+                    s.append("\\")
+                    s.append(c)
         return "".join(s)
 
 # --------------------------------------------------------------------
