@@ -1181,7 +1181,8 @@ class Test:
 
     def test_repeated_repeats(self):
         # Issue 2537.
-        self.expect(lambda: regex.search(r"(?:a+)+", "aaa").span(), ascii((0, 3)))
+        self.expect(lambda: regex.search(r"(?:a+)+", "aaa").span(),
+          ascii((0, 3)))
         self.expect(lambda: regex.search(r"(?:(?:ab)+c)+", "abcabc").span(),
           ascii((0, 6)))
 
@@ -1222,23 +1223,29 @@ class Test:
         self.expect(lambda: type(regex.match("(?:(a)|(x))b(?=(?(1)c|x))c",
           "abc")), self.MATCH_CLASS)
 
-        self.expect(lambda: regex.match("(a)b(?<=(?(2)x|c))(c)", "abc"), ascii(None))
-        self.expect(lambda: regex.match("(a)b(?<=(?(2)b|x))(c)", "abc"), ascii(None))
-        self.expect(lambda: regex.match("(a)b(?<=(?(1)c|x))(c)", "abc"), ascii(None))
+        self.expect(lambda: regex.match("(a)b(?<=(?(2)x|c))(c)", "abc"),
+          ascii(None))
+        self.expect(lambda: regex.match("(a)b(?<=(?(2)b|x))(c)", "abc"),
+          ascii(None))
+        self.expect(lambda: regex.match("(a)b(?<=(?(1)c|x))(c)", "abc"),
+          ascii(None))
         self.expect(lambda: type(regex.match("(a)b(?<=(?(1)b|x))(c)", "abc")),
           self.MATCH_CLASS)
 
         self.expect(lambda: type(regex.match("(a)b(?=(?(2)x|c))(c)", "abc")),
           self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(a)b(?=(?(2)b|x))(c)", "abc"), ascii(None))
+        self.expect(lambda: regex.match("(a)b(?=(?(2)b|x))(c)", "abc"),
+          ascii(None))
         self.expect(lambda: type(regex.match("(a)b(?=(?(1)c|x))(c)", "abc")),
           self.MATCH_CLASS)
 
-        self.expect(lambda: type(regex.compile(r"(a)\2(b)")), self.PATTERN_CLASS)
+        self.expect(lambda: type(regex.compile(r"(a)\2(b)")),
+          self.PATTERN_CLASS)
 
     def test_unmatched_in_sub(self):
         # Issue 1519638.
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "xy"), ascii('y-x-'))
+        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "xy"),
+          ascii('y-x-'))
         self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "x"), ascii('-x-'))
         self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "y"), ascii('y--'))
 
@@ -1254,7 +1261,8 @@ class Test:
         self.expect(lambda: regex.findall(r"..", "abcde"), ascii(['ab', 'cd']))
         self.expect(lambda: regex.findall(r"..", "abcde", overlapped=True),
           ascii(['ab', 'bc', 'cd', 'de']))
-        self.expect(lambda: regex.findall(r"(?r)..", "abcde"), ascii(['de', 'bc']))
+        self.expect(lambda: regex.findall(r"(?r)..", "abcde"), ascii(['de',
+          'bc']))
         self.expect(lambda: regex.findall(r"(?r)..", "abcde", overlapped=True),
           ascii(['de', 'cd', 'bc', 'ab']))
 
@@ -1339,9 +1347,11 @@ class Test:
           regex.match(r"(?|(?<a>a)|(?<b>b))(c)", "bc").groups(),
           ascii((None, 'b', 'c')))
         self.expect(lambda:
-          regex.match(r"(?|(?<a>a)|(?<a>b))(c)", "ac").groups(), ascii(('a', 'c')))
+          regex.match(r"(?|(?<a>a)|(?<a>b))(c)", "ac").groups(), ascii(('a',
+            'c')))
         self.expect(lambda:
-          regex.match(r"(?|(?<a>a)|(?<a>b))(c)", "bc").groups(), ascii(('b', 'c')))
+          regex.match(r"(?|(?<a>a)|(?<a>b))(c)", "bc").groups(), ascii(('b',
+            'c')))
         self.expect(lambda:
           regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)", "abe").groups(),
           ascii(('a', 'b', 'e')))
@@ -1368,7 +1378,8 @@ class Test:
         self.expect(lambda: regex.match(r"[a]", "a").span(), ascii((0, 1)))
         self.expect(lambda: regex.match(r"(?i)[a]", "A").span(), ascii((0, 1)))
         self.expect(lambda: regex.match(r"[a-b]", r"a").span(), ascii((0, 1)))
-        self.expect(lambda: regex.match(r"(?i)[a-b]", r"A").span(), ascii((0, 1)))
+        self.expect(lambda: regex.match(r"(?i)[a-b]", r"A").span(), ascii((0,
+          1)))
 
         self.expect(lambda: regex.findall(r"[\p{Alpha}]", "a0"),
           ascii(["a"]))
@@ -1406,7 +1417,8 @@ class Test:
           ascii('a^c-'))
         self.expect(lambda: "".join(regex.findall(r"[^b\w]", "a b")), ascii(' '))
         self.expect(lambda: "".join(regex.findall(r"[^b\S]", "a b")), ascii(' '))
-        self.expect(lambda: "".join(regex.findall(r"[^8\d]", "a 1b2")), ascii('a b'))
+        self.expect(lambda: "".join(regex.findall(r"[^8\d]", "a 1b2")),
+          ascii('a b'))
 
     def test_various(self):
         tests = [
@@ -1464,8 +1476,8 @@ class Test:
             (r'\x00ff', '\377', '', ascii(None)),
             (r'\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', ascii('\t\n\v\r\f\ag')),
             ('\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', ascii('\t\n\v\r\f\ag')),
-            (r'\t\n\v\r\f\a', '\t\n\v\r\f\a', '0', ascii(chr(9) + chr(10) + chr(11)
-              + chr(13) + chr(12) + chr(7))),
+            (r'\t\n\v\r\f\a', '\t\n\v\r\f\a', '0', ascii(chr(9) + chr(10) +
+              chr(11) + chr(13) + chr(12) + chr(7))),
             (r'[\t][\n][\v][\r][\f][\b]', '\t\n\v\r\f\b', '0',
               ascii('\t\n\v\r\f\b')),
 
@@ -1608,7 +1620,8 @@ class Test:
               ascii(('effgz', 'effgz', None))),
             ('(((((((((a)))))))))', 'a', '0', ascii('a')),
             ('multiple words of text', 'uh-uh', '', ascii(None)),
-            ('multiple words', 'multiple words, yeah', '0', ascii('multiple words')),
+            ('multiple words', 'multiple words, yeah', '0',
+              ascii('multiple words')),
             ('(.*)c(.*)', 'abcde', '0,1,2', ascii(('abcde', 'ab', 'de'))),
             ('\\((.*), (.*)\\)', '(a, b)', '2,1', ascii(('b', 'a'))),
             ('[k]', 'ab', '', ascii(None)),
@@ -1635,8 +1648,8 @@ class Test:
             ('([^/]*/)*sub1/', 'd:msgs/tdir/sub1/trial/away.cpp', '0,1',
               ascii(('d:msgs/tdir/sub1/', 'tdir/'))),
             ('([^.]*)\\.([^:]*):[T ]+(.*)', 'track1.title:TBlah blah blah',
-              '0,1,2,3',
-              ascii(('track1.title:TBlah blah blah', 'track1', 'title', 'Blah blah blah'))),
+              '0,1,2,3', ascii(('track1.title:TBlah blah blah', 'track1',
+              'title', 'Blah blah blah'))),
             ('([^N]*N)+', 'abNNxyzN', '0,1', ascii(('abNNxyzN', 'xyzN'))),
             ('([^N]*N)+', 'abNNxyz', '0,1', ascii(('abNN', 'N'))),
             ('([abc]*)x', 'abcx', '0,1', ascii(('abcx', 'abc'))),
@@ -1788,7 +1801,8 @@ class Test:
             ('(?i)((((((((((a))))))))))\\41', '', '', self.UNKNOWN_GROUP),
             ('(((((((((a)))))))))', 'a', '0', ascii('a')),
             ('multiple words of text', 'uh-uh', '', ascii(None)),
-            ('multiple words', 'multiple words, yeah', '0', ascii('multiple words')),
+            ('multiple words', 'multiple words, yeah', '0',
+              ascii('multiple words')),
             ('(.*)c(.*)', 'abcde', '0,1,2', ascii(('abcde', 'ab', 'de'))),
             ('\\((.*), (.*)\\)', '(a, b)', '2,1', ascii(('b', 'a'))),
             ('[k]', 'ab', '', ascii(None)),
@@ -1902,23 +1916,30 @@ class Test:
             ('(?i)a[bcd]*dcdcde', 'ADCDCDE', '0', ascii('ADCDCDE')),
             ('(?i)a[bcd]+dcdcde', 'ADCDCDE', '', ascii(None)),
             ('(?i)(ab|a)b*c', 'ABC', '0,1', ascii(('ABC', 'AB'))),
-            ('(?i)((a)(b)c)(d)', 'ABCD', '1,2,3,4', ascii(('ABC', 'A', 'B', 'D'))),
+            ('(?i)((a)(b)c)(d)', 'ABCD', '1,2,3,4', ascii(('ABC', 'A', 'B',
+              'D'))),
             ('(?i)[a-zA-Z_][a-zA-Z0-9_]*', 'ALPHA', '0', ascii('ALPHA')),
             ('(?i)^a(bc+|b[eh])g|.h$', 'ABH', '0,1', ascii(('BH', None))),
-            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFGZ', '0,1,2', ascii(('EFFGZ', 'EFFGZ', None))),
-            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'IJ', '0,1,2', ascii(('IJ', 'IJ', 'J'))),
+            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFGZ', '0,1,2', ascii(('EFFGZ',
+              'EFFGZ', None))),
+            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'IJ', '0,1,2', ascii(('IJ', 'IJ',
+              'J'))),
             ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFG', '', ascii(None)),
             ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'BCDD', '', ascii(None)),
-            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'REFFGZ', '0,1,2', ascii(('EFFGZ', 'EFFGZ', None))),
+            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'REFFGZ', '0,1,2', ascii(('EFFGZ',
+              'EFFGZ', None))),
             ('(?i)((((((((((a))))))))))', 'A', '10', ascii('A')),
             ('(?i)((((((((((a))))))))))\\10', 'AA', '0', ascii('AA')),
             #('(?i)((((((((((a))))))))))\\41', 'AA', '', ascii(None)),
             #('(?i)((((((((((a))))))))))\\41', 'A!', '0', ascii('A!')),
             ('(?i)(((((((((a)))))))))', 'A', '0', ascii('A')),
-            ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a))))))))))', 'A', '1', ascii('A')),
-            ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a|b|c))))))))))', 'C', '1', ascii('C')),
+            ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a))))))))))', 'A', '1',
+              ascii('A')),
+            ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a|b|c))))))))))', 'C', '1',
+              ascii('C')),
             ('(?i)multiple words of text', 'UH-UH', '', ascii(None)),
-            ('(?i)multiple words', 'MULTIPLE WORDS, YEAH', '0', ascii('MULTIPLE WORDS')),
+            ('(?i)multiple words', 'MULTIPLE WORDS, YEAH', '0',
+              ascii('MULTIPLE WORDS')),
             ('(?i)(.*)c(.*)', 'ABCDE', '0,1,2', ascii(('ABCDE', 'AB', 'DE'))),
             ('(?i)\\((.*), (.*)\\)', '(A, B)', '2,1', ascii(('B', 'A'))),
             ('(?i)[k]', 'AB', '', ascii(None)),
@@ -2113,6 +2134,20 @@ xyzabc
         side = all * 4
         regexp = '(' + side + '|' + side + ')'
         self.expect(lambda: type(regex.compile(regexp)), self.PATTERN_CLASS)
+
+    def test_captures(self):
+        self.expect(lambda: regex.search(r"(\w)+", "abc").captures(1),
+          ascii(('a', 'b', 'c')))
+        self.expect(lambda: regex.search(r"(\w{3})+", "abcdef").captures(0, 1),
+          ascii((('abcdef',), ('abc', 'def'))))
+        self.expect(lambda: regex.search(r"^(\d{1,3})(?:\.(\d{1,3})){3}$",
+          "192.168.0.1").captures(1, 2), ascii((('192', ), ('168', '0', '1'))))
+        self.expect(lambda: regex.match(r"^([0-9A-F]{2}){4} ([a-z]\d){5}$",
+          "3FB52A0C a2c4g3k9d3").captures(1, 2), ascii((('3F', 'B5', '2A', '0C'),
+          ('a2', 'c4', 'g3', 'k9', 'd3'))))
+        self.expect(lambda: regex.match("([a-z]W)([a-z]X)+([a-z]Y)",
+          "aWbXcXdXeXfY").captures(1, 2, 3), ascii((('aW',), ('bX', 'cX', 'dX',
+          'eX'), ('fY',))))
 
     def run(self):
         print("Performing tests")

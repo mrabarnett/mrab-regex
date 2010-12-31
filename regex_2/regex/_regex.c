@@ -42,6 +42,8 @@
 #define TRACE(X)
 #endif
 
+/* #define TRACK_MEM */
+
 #define RE_MULTITHREADED
 
 #include "Python.h"
@@ -49,6 +51,10 @@
 #include <ctype.h>
 #include "_regex.h"
 #include "pyport.h"
+
+#if defined(TRACK_MEM)
+static FILE* mem_log;
+#endif
 
 typedef enum {FALSE, TRUE} BOOL;
 
@@ -122,11 +128,14 @@ typedef struct RE_BacktrackData {
         } branch;
         struct {
             RE_Position position;
-            Py_ssize_t ofs;
+            size_t index;
             Py_ssize_t start;
             size_t count;
             size_t max_count;
         } repeat;
+        struct {
+            size_t index;
+        } group;
     };
 } RE_BacktrackData;
 
@@ -161,10 +170,18 @@ typedef struct RE_Node {
     Py_ssize_t* good_suffix_offset;
 } RE_Node;
 
+/* Data about a group's span. */
+typedef struct RE_GroupSpan {
+    Py_ssize_t start;
+    Py_ssize_t end;
+} RE_GroupSpan;
+
 /* Data about a group in a context. */
 typedef struct RE_GroupData {
-    Py_ssize_t begin;
-    Py_ssize_t end;
+    RE_GroupSpan span;
+    size_t capture_count;
+    size_t capture_capacity;
+    RE_GroupSpan* captures;
 } RE_GroupData;
 
 /* Data about a repeat in a context. */
@@ -174,25 +191,17 @@ typedef struct RE_RepeatData {
     size_t max_count;
 } RE_RepeatData;
 
-/* Data about groups or repeats. */
-typedef union RE_Data {
-    RE_GroupData group;
-    RE_RepeatData repeat;
-} RE_Data;
-
 /* Info about a capture group. */
 typedef struct RE_GroupInfo {
     int id;
     BOOL referenced;
     BOOL has_name;
-    Py_ssize_t value_offset;
     Py_ssize_t end_index;
 } RE_GroupInfo;
 
 /* Info about a repeat. */
 typedef struct RE_RepeatInfo {
     int id;
-    Py_ssize_t value_offset;
 } RE_RepeatInfo;
 
 /* The state object used during matching. */
@@ -208,7 +217,9 @@ typedef struct RE_State {
     Py_ssize_t slice_end;
     BOOL overlapped; /* Matches can be overlapped. */
     BOOL reverse; /* Search backwards. */
-    Py_ssize_t* marks;
+    RE_GroupData* groups;
+    RE_RepeatData* repeats;
+    BOOL save_captures;
     Py_ssize_t lastindex;
     Py_ssize_t lastgroup;
     Py_ssize_t search_anchor;
@@ -223,8 +234,7 @@ typedef struct RE_State {
     RE_BacktrackData* backtrack;
     Py_ssize_t saved_groups_capacity;
     Py_ssize_t saved_groups_count;
-    RE_Data* saved_groups;
-    RE_Data* data; /* The data (groups followed by repeats). */
+    RE_GroupData* saved_groups;
 #if defined(RE_MULTITHREADED)
     BOOL is_multithreaded; /* Whether to release the GIL while matching. */
     PyThreadState* saved_GIL; /* Storage for GIL handling. */
@@ -244,7 +254,6 @@ typedef struct PatternObject {
     /* Nodes into which the regular expression is compiled. */
     RE_Node* start_node;
     RE_Node* success_node;
-    Py_ssize_t data_count; /* Number of data (groups + repeats). */
     Py_ssize_t group_count; /* Number of capture groups. */
     Py_ssize_t repeat_count; /* Number of repeats. */
     Py_ssize_t group_end_index; /* Number of group closures. */
@@ -262,10 +271,10 @@ typedef struct PatternObject {
     RE_RepeatInfo* repeat_info;
     size_t min_width;
     RE_EncodingTable* encoding; /* Encoding handlers. */
-    Py_ssize_t* marks_storage;
     Py_ssize_t saved_groups_capacity_storage;
-    RE_Data* saved_groups_storage;
-    RE_Data* data_storage;
+    RE_GroupData* saved_groups_storage;
+    RE_GroupData* groups_storage;
+    RE_RepeatData* repeats_storage;
     BOOL do_check;
 } PatternObject;
 
@@ -279,7 +288,7 @@ typedef struct MatchObject {
     Py_ssize_t lastindex; /* Last group seen by the engine (-1 if none). */
     Py_ssize_t lastgroup; /* Last named group seen by the engine (-1 if none). */
     Py_ssize_t group_count;
-    Py_ssize_t* marks;
+    RE_GroupData* groups;
     PyObject* regs;
 } MatchObject;
 
@@ -310,6 +319,7 @@ typedef struct RE_CompileArgs {
     size_t min_width;
     RE_Node* start;
     RE_Node* end;
+    BOOL save_captures;
 } RE_CompileArgs;
 
 typedef struct JoinInfo {
@@ -1232,6 +1242,18 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
  *
  * Sets the Python error handler and returns NULL if the allocation fails.
  */
+#if defined(TRACK_MEM)
+Py_LOCAL_INLINE(void*) re_alloc(int line, size_t size) {
+    void* new_ptr;
+
+    new_ptr = PyMem_Malloc(size);
+    fprintf(mem_log, "Line %d: alloc 0x%p\n", line, new_ptr);
+    if (!new_ptr)
+        set_error(RE_ERROR_MEMORY, NULL);
+
+    return new_ptr;
+}
+#else
 Py_LOCAL_INLINE(void*) re_alloc(size_t size) {
     void* new_ptr;
 
@@ -1241,11 +1263,24 @@ Py_LOCAL_INLINE(void*) re_alloc(size_t size) {
 
     return new_ptr;
 }
+#endif
 
 /* Reallocates memory.
  *
  * Sets the Python error handler and returns NULL if the reallocation fails.
  */
+#if defined(TRACK_MEM)
+Py_LOCAL_INLINE(void*) re_realloc(int line, void* ptr, size_t size) {
+    void* new_ptr;
+
+    new_ptr = PyMem_Realloc(ptr, size);
+    fprintf(mem_log, "Line %d: realloc 0x%p to 0x%p\n", line, ptr, new_ptr);
+    if (!new_ptr)
+        set_error(RE_ERROR_MEMORY, NULL);
+
+    return new_ptr;
+}
+#else
 Py_LOCAL_INLINE(void*) re_realloc(void* ptr, size_t size) {
     void* new_ptr;
 
@@ -1255,11 +1290,19 @@ Py_LOCAL_INLINE(void*) re_realloc(void* ptr, size_t size) {
 
     return new_ptr;
 }
+#endif
 
 /* Deallocates memory. */
+#if defined(TRACK_MEM)
+Py_LOCAL_INLINE(void) re_dealloc(int line, void* ptr) {
+    fprintf(mem_log, "Line %d: dealloc 0x%p\n", line, ptr);
+    PyMem_Free(ptr);
+}
+#else
 Py_LOCAL_INLINE(void) re_dealloc(void* ptr) {
     PyMem_Free(ptr);
 }
+#endif
 
 #if defined(RE_MULTITHREADED)
 /* Releases the GIL. */
@@ -1277,6 +1320,25 @@ Py_LOCAL_INLINE(void) acquire_GIL(RE_State* state) {
  *
  * Sets the Python error handler and returns NULL if the allocation fails.
  */
+#if defined(TRACK_MEM)
+Py_LOCAL_INLINE(void*) safe_alloc(int line, RE_State* state, size_t size) {
+    void* new_ptr;
+
+#if defined(RE_MULTITHREADED)
+    if (state->is_multithreaded)
+        acquire_GIL(state);
+
+#endif
+    new_ptr = re_alloc(line, size);
+
+#if defined(RE_MULTITHREADED)
+    if (state->is_multithreaded)
+        release_GIL(state);
+
+#endif
+    return new_ptr;
+}
+#else
 Py_LOCAL_INLINE(void*) safe_alloc(RE_State* state, size_t size) {
     void* new_ptr;
 
@@ -1294,11 +1356,32 @@ Py_LOCAL_INLINE(void*) safe_alloc(RE_State* state, size_t size) {
 #endif
     return new_ptr;
 }
+#endif
 
 /* Reallocates memory, holding the GIL during the reallocation.
  *
  * Sets the Python error handler and returns NULL if the reallocation fails.
  */
+#if defined(TRACK_MEM)
+Py_LOCAL_INLINE(void*) safe_realloc(int line, RE_State* state, void* ptr, size_t
+  size) {
+    void* new_ptr;
+
+#if defined(RE_MULTITHREADED)
+    if (state->is_multithreaded)
+        acquire_GIL(state);
+
+#endif
+    new_ptr = re_realloc(line, ptr, size);
+
+#if defined(RE_MULTITHREADED)
+    if (state->is_multithreaded)
+        release_GIL(state);
+
+#endif
+    return new_ptr;
+}
+#else
 Py_LOCAL_INLINE(void*) safe_realloc(RE_State* state, void* ptr, size_t size) {
     void* new_ptr;
 
@@ -1316,6 +1399,7 @@ Py_LOCAL_INLINE(void*) safe_realloc(RE_State* state, void* ptr, size_t size) {
 #endif
     return new_ptr;
 }
+#endif
 
 /* Checks for KeyboardInterrupt, holding the GIL during the check. */
 Py_LOCAL_INLINE(BOOL) safe_check_signals(RE_State* state) {
@@ -1462,6 +1546,8 @@ Py_LOCAL_INLINE(BOOL) push_groups(RE_State* state) {
     PatternObject* pattern;
     size_t new_count;
     size_t new_capacity;
+    RE_GroupData* saved;
+    Py_ssize_t g;
 
     pattern = state->pattern;
     if (pattern->group_count == 0)
@@ -1473,18 +1559,24 @@ Py_LOCAL_INLINE(BOOL) push_groups(RE_State* state) {
         new_capacity *= 2;
 
     if (new_capacity != state->saved_groups_capacity) {
-        RE_Data* new_groups;
+        RE_GroupData* new_groups;
 
-        new_groups = (RE_Data*)safe_realloc(state, state->saved_groups,
-          new_capacity * sizeof(RE_Data));
+#if defined(TRACK_MEM)
+        new_groups = (RE_GroupData*)safe_realloc(__LINE__, state,
+          state->saved_groups, new_capacity * sizeof(RE_GroupData));
+#else
+        new_groups = (RE_GroupData*)safe_realloc(state, state->saved_groups,
+          new_capacity * sizeof(RE_GroupData));
+#endif
         if (!new_groups)
             return FALSE;
         state->saved_groups_capacity = new_capacity;
         state->saved_groups = new_groups;
     }
 
-    Py_MEMCPY(state->saved_groups + state->saved_groups_count, state->data,
-      pattern->group_count * sizeof(RE_Data));
+    saved = &state->saved_groups[state->saved_groups_count];
+    for (g = 0; g < pattern->group_count; g++)
+        saved[g].span = state->groups[g].span;
     state->saved_groups_count = new_count;
 
     return TRUE;
@@ -1493,14 +1585,17 @@ Py_LOCAL_INLINE(BOOL) push_groups(RE_State* state) {
 /* Pops the groups. */
 Py_LOCAL_INLINE(void) pop_groups(RE_State* state) {
     PatternObject* pattern;
+    RE_GroupData* saved;
+    Py_ssize_t g;
 
     pattern = state->pattern;
     if (pattern->group_count == 0)
         return;
 
     state->saved_groups_count -= pattern->group_count;
-    Py_MEMCPY(state->data, state->saved_groups + state->saved_groups_count,
-      pattern->group_count * sizeof(RE_Data));
+    saved = &state->saved_groups[state->saved_groups_count];
+    for (g = 0; g < pattern->group_count; g++)
+        state->groups[g].span = saved[g].span;
 }
 
 /* Reloads the groups that have been pushed.
@@ -1509,13 +1604,17 @@ Py_LOCAL_INLINE(void) pop_groups(RE_State* state) {
  */
 Py_LOCAL_INLINE(void) reload_groups(RE_State* state) {
     PatternObject* pattern;
+    RE_GroupData* saved;
+    Py_ssize_t g;
 
     pattern = state->pattern;
     if (pattern->group_count == 0)
         return;
 
-    Py_MEMCPY(state->data, state->saved_groups + state->saved_groups_count -
-      pattern->group_count, pattern->group_count * sizeof(RE_Data));
+    saved = &state->saved_groups[state->saved_groups_count -
+      pattern->group_count];
+    for (g = 0; g < pattern->group_count; g++)
+        state->groups[g].span = saved[g].span;
 }
 
 /* Drops the groups that have been pushed. */
@@ -1537,14 +1636,16 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     state->search_anchor = state->text_pos;
     state->match_pos = state->text_pos;
 
-    memset(state->data, 0, state->pattern->data_count * sizeof(RE_Data));
+    memset(state->repeats, 0, state->pattern->repeat_count *
+      sizeof(RE_RepeatData));
 
     for (g = 0; g < state->pattern->group_count; g++) {
-        Py_ssize_t ofs;
+        RE_GroupData* group;
 
-        ofs = state->pattern->group_info[g].value_offset;
-        state->data[ofs].group.begin = -1;
-        state->data[ofs].group.end = -1;
+        group = &state->groups[g];
+        group->span.start = -1;
+        group->span.end = -1;
+        group->capture_count = 0;
     }
 }
 
@@ -1561,7 +1662,11 @@ Py_LOCAL_INLINE(BOOL) add_backtrack(RE_State* state, RE_CODE op) {
             capacity = current->capacity * 2;
             size = sizeof(RE_BacktrackBlock) + (capacity -
               RE_BACKTRACK_BLOCK_SIZE) * sizeof(RE_BacktrackData);
+#if defined(TRACK_MEM)
+            next = (RE_BacktrackBlock*)safe_alloc(__LINE__, state, size);
+#else
             next = (RE_BacktrackBlock*)safe_alloc(state, size);
+#endif
             if (!next)
                 return FALSE;
 
@@ -1602,8 +1707,8 @@ Py_LOCAL_INLINE(void) discard_backtrack(RE_State* state) {
 Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
     for (;;) {
         switch (node->op) {
-        case RE_OP_BEGIN_GROUP:
         case RE_OP_END_GROUP:
+        case RE_OP_START_GROUP:
             node = node->next_1.node;
             break;
         case RE_OP_LOOKAROUND:
@@ -3747,6 +3852,47 @@ again:
     return TRUE;
 }
 
+/* Saves a capture group. */
+Py_LOCAL_INLINE(BOOL) save_capture(RE_State* state, size_t index) {
+    RE_GroupData* group;
+
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    group = &state->groups[index - 1];
+    if (group->capture_count >= group->capture_capacity) {
+        size_t new_capacity;
+        RE_GroupSpan* new_captures;
+
+        new_capacity = group->capture_capacity * 2;
+        if (new_capacity == 0)
+            new_capacity = 16;
+#if defined(TRACK_MEM)
+        new_captures = (RE_GroupSpan*)safe_realloc(__LINE__, state,
+          group->captures, new_capacity * sizeof(RE_GroupSpan));
+#else
+        new_captures = (RE_GroupSpan*)safe_realloc(state, group->captures,
+          new_capacity * sizeof(RE_GroupSpan));
+#endif
+        if (!new_captures)
+            return FALSE;
+
+        group->captures = new_captures;
+        group->capture_capacity = new_capacity;
+    }
+    group->captures[group->capture_count++] = group->span;
+
+    return TRUE;
+}
+
+/* Unsaves a capture group. */
+Py_LOCAL_INLINE(void) unsave_capture(RE_State* state, size_t index) {
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    --state->groups[index - 1].capture_count;
+}
+
 /* Performs a depth-first match or search from the context. */
 Py_LOCAL_INLINE(int) basic_match(RE_State* state, RE_Node* start_node, BOOL
   search) {
@@ -3923,20 +4069,6 @@ advance:
             text_pos = state->text_pos;
             break;
         }
-        case RE_OP_BEGIN_GROUP: /* Beginning of capture group. */
-        {
-            Py_ssize_t ofs;
-            TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
-
-            /* Get the offset to the group value in the context. Capture group
-             * indexes are 1-based (excluding group 0, which is the entire
-             * matched string).
-             */
-            ofs = group_info[node->values[0] - 1].value_offset;
-            state->data[ofs].group.begin = text_pos;
-            node = node->next_1.node;
-            break;
-        }
         case RE_OP_BIG_BITSET: /* Big bitset. */
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
             if (text_pos >= slice_end || !in_big_bitset(node, char_at(text,
@@ -4032,7 +4164,7 @@ advance:
             break;
         case RE_OP_END_GREEDY_REPEAT: /* End of a greedy repeat. */
         {
-            Py_ssize_t ofs;
+            size_t index;
             RE_RepeatData* rp_data;
             BOOL try_body;
             RE_Position next_body_position;
@@ -4041,11 +4173,9 @@ advance:
             RE_BacktrackData* bt_data;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
-            /* Get the offset to the repeat values in the context. Repeat
-             * indexes are 0-based.
-             */
-            ofs = repeat_info[node->values[0]].value_offset;
-            rp_data = &state->data[ofs].repeat;
+            /* Repeat indexes are 0-based. */
+            index = node->values[0];
+            rp_data = &state->repeats[index];
 
             /* Matched the body again. */
             ++rp_data->count;
@@ -4085,7 +4215,7 @@ advance:
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.position = next_tail_position;
-                    bt_data->repeat.ofs = ofs;
+                    bt_data->repeat.index = index;
                     bt_data->repeat.count = rp_data->count;
                     bt_data->repeat.max_count = rp_data->max_count;
                 } else {
@@ -4097,8 +4227,8 @@ advance:
                      */
                     bt_data = last_backtrack(state);
                     if (bt_data->op == RE_OP_END_GREEDY_REPEAT &&
-                      !bt_data->repeat.position.node && bt_data->repeat.ofs ==
-                      ofs) {
+                      !bt_data->repeat.position.node && bt_data->repeat.index ==
+                      index) {
                         /* The last backtrack entry is for backtracking into
                          * the body like we want to do now, so we can save work
                          * by just re-using it.
@@ -4108,7 +4238,7 @@ advance:
                             return RE_ERROR_MEMORY;
                         bt_data = state->backtrack;
                         bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
-                        bt_data->repeat.ofs = ofs;
+                        bt_data->repeat.index = index;
                     }
                     bt_data->repeat.count = rp_data->count - 1;
                     bt_data->repeat.max_count = rp_data->max_count;
@@ -4126,8 +4256,8 @@ advance:
                  */
                 bt_data = last_backtrack(state);
                 if (bt_data->op == RE_OP_END_GREEDY_REPEAT &&
-                  !bt_data->repeat.position.node && bt_data->repeat.ofs ==
-                  ofs) {
+                  !bt_data->repeat.position.node && bt_data->repeat.index ==
+                  index) {
                     /* The last backtrack entry is for backtracking into
                      * the body like we want to do now, so we can save work
                      * by just re-using it.
@@ -4137,7 +4267,7 @@ advance:
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
-                    bt_data->repeat.ofs = ofs;
+                    bt_data->repeat.index = index;
                 }
                 bt_data->repeat.count = rp_data->count - 1;
                 bt_data->repeat.max_count = rp_data->max_count;
@@ -4150,21 +4280,32 @@ advance:
         }
         case RE_OP_END_GROUP: /* End of a capture group. */
         {
-            Py_ssize_t ofs;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
-            /* Get the offset to the group value in the context. Capture group
-             * indexes are 1-based (excluding group 0, which is the entire
-             * matched string).
+            /* Capture group indexes are 1-based (excluding group 0, which is
+             * the entire matched string).
              */
-            ofs = group_info[node->values[0] - 1].value_offset;
-            state->data[ofs].group.end = text_pos;
+            state->groups[node->values[0] - 1].span.end = text_pos;
+
+            /* Save the capture? */
+            if (node->values[1] && state->save_captures) {
+                RE_BacktrackData* bt_data;
+
+                if (!save_capture(state, node->values[0]))
+                    return RE_ERROR_MEMORY;
+
+                /* Record backtracking info for unsaving the capture. */
+                if (!add_backtrack(state, RE_OP_END_GROUP))
+                    return RE_ERROR_MEMORY;
+                bt_data = state->backtrack;
+                bt_data->group.index = node->values[0];
+            }
             node = node->next_1.node;
             break;
         }
         case RE_OP_END_LAZY_REPEAT: /* End of a lazy repeat. */
         {
-            Py_ssize_t ofs;
+            size_t index;
             RE_RepeatData* rp_data;
             BOOL try_body;
             RE_Position next_body_position;
@@ -4173,11 +4314,9 @@ advance:
             RE_BacktrackData* bt_data;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
-            /* Get the offset to the repeat values in the context. Repeat
-             * indexes are 0-based.
-             */
-            ofs = repeat_info[node->values[0]].value_offset;
-            rp_data = &state->data[ofs].repeat;
+            /* Repeat indexes are 0-based. */
+            index = node->values[0];
+            rp_data = &state->repeats[index];
 
             /* Matched the body again. */
             ++rp_data->count;
@@ -4214,7 +4353,7 @@ advance:
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.position = next_body_position;
-                    bt_data->repeat.ofs = ofs;
+                    bt_data->repeat.index = index;
                     bt_data->repeat.count = rp_data->count;
                     bt_data->repeat.max_count = rp_data->max_count;
 
@@ -4227,8 +4366,8 @@ advance:
                      */
                     bt_data = last_backtrack(state);
                     if (bt_data->op == RE_OP_END_LAZY_REPEAT &&
-                      !bt_data->repeat.position.node && bt_data->repeat.ofs ==
-                      ofs) {
+                      !bt_data->repeat.position.node && bt_data->repeat.index ==
+                      index) {
                         /* The last backtrack entry is for backtracking into
                          * the body like we want to do now, so we can save work
                          * by just re-using it.
@@ -4238,7 +4377,7 @@ advance:
                             return RE_ERROR_MEMORY;
                         bt_data = state->backtrack;
                         bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
-                        bt_data->repeat.ofs = ofs;
+                        bt_data->repeat.index = index;
                     }
                     bt_data->repeat.count = rp_data->count - 1;
                     bt_data->repeat.max_count = rp_data->max_count;
@@ -4253,7 +4392,8 @@ advance:
                  */
                 bt_data = last_backtrack(state);
                 if (bt_data->op == RE_OP_END_LAZY_REPEAT &&
-                  !bt_data->repeat.position.node && bt_data->repeat.ofs == ofs)
+                  !bt_data->repeat.position.node && bt_data->repeat.index ==
+                  index)
                   {
                     /* The last backtrack entry is for backtracking into
                      * the body like we want to do now, so we can save work
@@ -4264,7 +4404,7 @@ advance:
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
-                    bt_data->repeat.ofs = ofs;
+                    bt_data->repeat.index = index;
                 }
                 bt_data->repeat.count = rp_data->count - 1;
                 bt_data->repeat.max_count = rp_data->max_count;
@@ -4294,7 +4434,7 @@ advance:
             break;
         case RE_OP_GREEDY_REPEAT: /* Greedy repeat. */
         {
-            Py_ssize_t ofs;
+            size_t index;
             RE_RepeatData* rp_data;
             size_t max_count;
             BOOL try_tail;
@@ -4302,18 +4442,16 @@ advance:
             RE_BacktrackData* bt_data;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
-            /* Get the offset to the repeat values in the context. Repeat
-             * indexes are 0-based.
-             */
-            ofs = repeat_info[node->values[0]].value_offset;
-            rp_data = &state->data[ofs].repeat;
+            /* Repeat indexes are 0-based. */
+            index = node->values[0];
+            rp_data = &state->repeats[index];
 
             /* We might need to backtrack into the head. */
             if (!add_backtrack(state, RE_OP_GREEDY_REPEAT) ||
               !push_groups(state))
                 return RE_ERROR_MEMORY;
             bt_data = state->backtrack;
-            bt_data->repeat.ofs = ofs;
+            bt_data->repeat.index = index;
             bt_data->repeat.count = rp_data->count;
             bt_data->repeat.max_count = rp_data->max_count;
 
@@ -4340,7 +4478,7 @@ advance:
                     return RE_ERROR_MEMORY;
                 bt_data = state->backtrack;
                 bt_data->repeat.position = next_tail_position;
-                bt_data->repeat.ofs = ofs;
+                bt_data->repeat.index = index;
                 bt_data->repeat.count = rp_data->count;
                 bt_data->repeat.max_count = rp_data->max_count;
             }
@@ -4367,21 +4505,21 @@ advance:
                 /* The match is longer than the minimum, so we might need to
                  * backtrack the repeat to consume less.
                  */
-                Py_ssize_t ofs;
+                size_t index;
                 RE_RepeatData* rp_data;
                 RE_BacktrackData* bt_data;
 
                 /* Get the offset to the repeat values in the context. Repeat
                  * indexes are 0-based.
                  */
-                ofs = repeat_info[node->values[0]].value_offset;
-                rp_data = &state->data[ofs].repeat;
+                index = node->values[0];
+                rp_data = &state->repeats[index];
                 if (!add_backtrack(state, RE_OP_GREEDY_REPEAT_ONE) ||
                   !push_groups(state))
                     return RE_ERROR_MEMORY;
                 bt_data = state->backtrack;
                 bt_data->repeat.position.node = node;
-                bt_data->repeat.ofs = ofs;
+                bt_data->repeat.index = index;
                 bt_data->repeat.start = rp_data->start;
                 bt_data->repeat.count = rp_data->count;
 
@@ -4395,23 +4533,17 @@ advance:
         }
         case RE_OP_GROUP_EXISTS: /* Capture group exists. */
         {
-            Py_ssize_t ofs;
-            Py_ssize_t begin_group;
-            Py_ssize_t end_group;
+            RE_GroupSpan* span;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
-            /* Get the offset to the group value in the context. Capture group
-             * indexes are 1-based (excluding group 0, which is the entire
-             * matched string).
-             */
-            ofs = group_info[node->values[0] - 1].value_offset;
-
-            /* Check whether the captured text, if any, exists at this position
+            /* Capture group indexes are 1-based (excluding group 0, which is
+             * the entire matched string).
+             *
+             * Check whether the captured text, if any, exists at this position
              * in the string.
              */
-            begin_group = state->data[ofs].group.begin;
-            end_group = state->data[ofs].group.end;
-            if (0 <= begin_group && begin_group <= end_group && end_group <=
+            span = &state->groups[node->values[0] - 1].span;
+            if (0 <= span->start && span->start <= span->end && span->end <=
               text_length)
                 node = node->next_1.node;
             else
@@ -4420,24 +4552,22 @@ advance:
         }
         case RE_OP_LAZY_REPEAT: /* Lazy repeat. */
         {
-            Py_ssize_t ofs;
+            size_t index;
             RE_RepeatData* rp_data;
             size_t max_count;
             RE_BacktrackData* bt_data;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
-            /* Get the offset to the repeat values in the context. Repeat
-             * indexes are 0-based.
-             */
-            ofs = repeat_info[node->values[0]].value_offset;
-            rp_data = &state->data[ofs].repeat;
+            /* Repeat indexes are 0-based. */
+            index = node->values[0];
+            rp_data = &state->repeats[index];
 
             /* We might need to backtrack into the head. */
             if (!add_backtrack(state, RE_OP_LAZY_REPEAT) ||
               !push_groups(state))
                 return RE_ERROR_MEMORY;
             bt_data = state->backtrack;
-            bt_data->repeat.ofs = ofs;
+            bt_data->repeat.index = index;
             bt_data->repeat.count = rp_data->count;
             bt_data->repeat.max_count = rp_data->max_count;
 
@@ -4461,7 +4591,7 @@ advance:
                   !push_groups(state))
                     return RE_ERROR_MEMORY;
                 bt_data = state->backtrack;
-                bt_data->repeat.ofs = ofs;
+                bt_data->repeat.index = index;
                 bt_data->repeat.position.node = node->next_1.node;
                 bt_data->repeat.position.text_pos = text_pos;
                 bt_data->repeat.count = rp_data->count;
@@ -4494,21 +4624,21 @@ advance:
                 /* The match is shorter than the maximum, so we might need to
                  * backtrack the repeat to consume more.
                  */
-                Py_ssize_t ofs;
+                Py_ssize_t index;
                 RE_RepeatData* rp_data;
                 RE_BacktrackData* bt_data;
 
                 /* Get the offset to the repeat values in the context. Repeat
                  * indexes are 0-based.
                  */
-                ofs = repeat_info[node->values[0]].value_offset;
-                rp_data = &state->data[ofs].repeat;
+                index = node->values[0];
+                rp_data = &state->repeats[index];
                 if (!add_backtrack(state, RE_OP_LAZY_REPEAT_ONE) ||
                   !push_groups(state))
                     return RE_ERROR_MEMORY;
                 bt_data = state->backtrack;
                 bt_data->repeat.position.node = node;
-                bt_data->repeat.ofs = ofs;
+                bt_data->repeat.index = index;
                 bt_data->repeat.start = rp_data->start;
                 bt_data->repeat.count = rp_data->count;
 
@@ -4582,30 +4712,24 @@ advance:
         case RE_OP_REF_GROUP: /* Reference to a capture group. */
         case RE_OP_REF_GROUP_IGN: /* Reference to a capture group, ignoring case. */
         {
-            Py_ssize_t ofs;
-            Py_ssize_t begin_group;
-            Py_ssize_t end_group;
+            RE_GroupSpan* span;
             size_t length;
             size_t available;
             size_t i;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
-            /* Get the offset to the group value in the context. Capture group
-             * indexes are 1-based (excluding group 0, which is the entire
-             * matched string).
-             */
-            ofs = group_info[node->values[0] - 1].value_offset;
-
-            /* Check whether the captured text, if any, exists at this position
+            /* Capture group indexes are 1-based (excluding group 0, which is
+             * the entire matched string).
+             *
+             * Check whether the captured text, if any, exists at this position
              * in the string.
              */
-            begin_group = state->data[ofs].group.begin;
-            end_group = state->data[ofs].group.end;
-            if (!(0 <= begin_group && begin_group <= end_group && end_group <=
+            span = &state->groups[node->values[0] - 1].span;
+            if (!(0 <= span->start && span->start <= span->end && span->end <=
               text_length))
                 goto backtrack;
 
-            length = end_group - begin_group;
+            length = span->end - span->start;
             available = slice_end - text_pos;
             if (length > available)
                 goto backtrack;
@@ -4615,7 +4739,7 @@ advance:
                 RE_UCHAR* group_ptr;
 
                 text_ptr = (RE_UCHAR*)text + text_pos;
-                group_ptr = (RE_UCHAR*)text + begin_group;
+                group_ptr = (RE_UCHAR*)text + span->start;
 
                 if (node->op == RE_OP_REF_GROUP_IGN) {
                     for (i = 0; i < length; i++) {
@@ -4633,7 +4757,7 @@ advance:
                 RE_BCHAR* group_ptr;
 
                 text_ptr = (RE_BCHAR*)text + text_pos;
-                group_ptr = (RE_BCHAR*)text + begin_group;
+                group_ptr = (RE_BCHAR*)text + span->start;
 
                 if (node->op == RE_OP_REF_GROUP_IGN) {
                     for (i = 0; i < length; i++) {
@@ -4655,30 +4779,24 @@ advance:
         case RE_OP_REF_GROUP_IGN_REV: /* Reference to a capture group, ignoring case. */
         case RE_OP_REF_GROUP_REV: /* Reference to a capture group. */
         {
-            Py_ssize_t ofs;
-            Py_ssize_t begin_group;
-            Py_ssize_t end_group;
+            RE_GroupSpan* span;
             size_t length;
             size_t available;
             size_t i;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
-            /* Get the offset to the group value in the context. Capture group
-             * indexes are 1-based (excluding group 0, which is the entire
-             * matched string).
-             */
-            ofs = group_info[node->values[0] - 1].value_offset;
-
-            /* Check whether the captured text, if any, exists at this position
+            /* Capture group indexes are 1-based (excluding group 0, which is
+             * the entire matched string).
+             *
+             * Check whether the captured text, if any, exists at this position
              * in the string.
              */
-            begin_group = state->data[ofs].group.begin;
-            end_group = state->data[ofs].group.end;
-            if (!(0 <= begin_group && begin_group <= end_group && end_group <=
+            span = &state->groups[node->values[0] - 1].span;
+            if (!(0 <= span->start && span->start <= span->end && span->end <=
               text_length))
                 goto backtrack;
 
-            length = end_group - begin_group;
+            length = span->end - span->start;
             available = text_pos - slice_start;
             if (length > available)
                 goto backtrack;
@@ -4690,7 +4808,7 @@ advance:
                 RE_UCHAR* group_ptr;
 
                 text_ptr = (RE_UCHAR*)text + text_pos;
-                group_ptr = (RE_UCHAR*)text + begin_group;
+                group_ptr = (RE_UCHAR*)text + span->start;
 
                 if (node->op == RE_OP_REF_GROUP_IGN_REV) {
                     for (i = 0; i < length; i++) {
@@ -4708,7 +4826,7 @@ advance:
                 RE_BCHAR* group_ptr;
 
                 text_ptr = (RE_BCHAR*)text + text_pos;
-                group_ptr = (RE_BCHAR*)text + begin_group;
+                group_ptr = (RE_BCHAR*)text + span->start;
 
                 if (node->op == RE_OP_REF_GROUP_IGN_REV) {
                     for (i = 0; i < length; i++) {
@@ -4764,6 +4882,31 @@ advance:
             text_pos += node->step;
             node = node->next_1.node;
             break;
+        case RE_OP_START_GROUP: /* Start of capture group. */
+        {
+            TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
+
+            /* Capture group indexes are 1-based (excluding group 0, which is
+             * the entire matched string).
+             */
+            state->groups[node->values[0] - 1].span.start = text_pos;
+
+            /* Save the capture? */
+            if (node->values[1] && state->save_captures) {
+                RE_BacktrackData* bt_data;
+
+                if (!save_capture(state, node->values[0]))
+                    return RE_ERROR_MEMORY;
+
+                /* Record backtracking info for unsaving the capture. */
+                if (!add_backtrack(state, RE_OP_START_GROUP))
+                    return RE_ERROR_MEMORY;
+                bt_data = state->backtrack;
+                bt_data->group.index = node->values[0];
+            }
+            node = node->next_1.node;
+            break;
+        }
         case RE_OP_START_OF_LINE: /* At the start of a line. */
             TRACE(("%s\n", re_op_text[node->op]))
             if (text_pos != 0 && char_at(text, text_pos - 1) != '\n')
@@ -4908,6 +5051,16 @@ backtrack:
         bt_data = last_backtrack(state);
 
         switch (bt_data->op) {
+        case RE_OP_END_GROUP: /* End of capture group. */
+        case RE_OP_START_GROUP: /* Start of capture group. */
+        {
+            TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.index))
+
+            /* Unsave the capture and backtrack. */
+            unsave_capture(state, bt_data->group.index);
+            discard_backtrack(state);
+            break;
+        }
         case RE_OP_BRANCH: /* 2-way branch. */
         {
             TRACE(("%s\n", re_op_text[bt_data->op]))
@@ -4923,7 +5076,7 @@ backtrack:
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             /* Restore the count. */
-            rp_data = &state->data[bt_data->repeat.ofs].repeat;
+            rp_data = &state->repeats[bt_data->repeat.index];
             rp_data->count = bt_data->repeat.count;
             rp_data->max_count = bt_data->repeat.max_count;
             if (bt_data->repeat.position.node) {
@@ -4948,7 +5101,7 @@ backtrack:
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             /* Restore the count. */
-            rp_data = &state->data[bt_data->repeat.ofs].repeat;
+            rp_data = &state->repeats[bt_data->repeat.index];
             rp_data->count = bt_data->repeat.count;
             rp_data->max_count = bt_data->repeat.max_count;
             if (bt_data->repeat.position.node) {
@@ -5017,7 +5170,7 @@ backtrack:
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             pop_groups(state);
-            rp_data = &state->data[bt_data->repeat.ofs].repeat;
+            rp_data = &state->repeats[bt_data->repeat.index];
             rp_data->count = bt_data->repeat.count;
             rp_data->max_count = bt_data->repeat.max_count;
             discard_backtrack(state);
@@ -5037,7 +5190,7 @@ backtrack:
 
             node = bt_data->repeat.position.node;
 
-            rp_data = &state->data[bt_data->repeat.ofs].repeat;
+            rp_data = &state->repeats[bt_data->repeat.index];
 
             /* Unmatch one character at a time until the tail could match or we
              * have reached the minimum.
@@ -5494,7 +5647,7 @@ backtrack:
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             pop_groups(state);
-            rp_data = &state->data[bt_data->repeat.ofs].repeat;
+            rp_data = &state->repeats[bt_data->repeat.index];
             rp_data->count = bt_data->repeat.count;
             rp_data->max_count = bt_data->repeat.max_count;
             discard_backtrack(state);
@@ -5518,7 +5671,7 @@ backtrack:
 
             node = bt_data->repeat.position.node;
 
-            rp_data = &state->data[bt_data->repeat.ofs].repeat;
+            rp_data = &state->repeats[bt_data->repeat.index];
 
             /* Match one character at a time until the tail could match or we
              * have reached the maximum.
@@ -6002,23 +6155,16 @@ Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
         group_info = state->pattern->group_info;
         pattern = state->pattern;
         for (g = 0; g < pattern->group_count; g++) {
-            Py_ssize_t ofs;
-            Py_ssize_t m;
-            Py_ssize_t begin;
-            Py_ssize_t end;
+            RE_GroupSpan* span;
 
-            ofs = group_info[g].value_offset;
-            begin = state->data[ofs].group.begin;
-            end = state->data[ofs].group.end;
-            m = g * 2;
-            state->marks[m] = begin;
-            state->marks[m + 1] = end;
+            span = &state->groups[g].span;
             /* The string positions are of type Py_ssize_t, so the format needs
              * to specify that.
              */
             TRACE(("group %d at %d from %" PY_FORMAT_SIZE_T "d to %"
-              PY_FORMAT_SIZE_T "d\n", g + 1, ofs, begin, end))
-            if (begin >= 0 && end >= 0 && group_info[g].end_index >
+              PY_FORMAT_SIZE_T "d\n", g + 1, ofs, span->start, span->end))
+
+            if (span->start >= 0 && span->end >= 0 && group_info[g].end_index >
               max_end_index) {
                 max_end_index = group_info[g].end_index;
                 state->lastindex = g + 1;
@@ -6095,29 +6241,59 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
     return TRUE;
 }
 
+/* Deallocates the groups storage. */
+Py_LOCAL_INLINE(void) dealloc_groups(RE_GroupData* groups, size_t group_count)
+  {
+    size_t g;
+
+    if (!groups)
+        return;
+
+    for (g = 0; g < group_count; g++)
+#if defined(TRACK_MEM)
+        re_dealloc(__LINE__, groups[g].captures);
+#else
+        re_dealloc(groups[g].captures);
+#endif
+
+#if defined(TRACK_MEM)
+    re_dealloc(__LINE__, groups);
+#else
+    re_dealloc(groups);
+#endif
+}
+
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
   PyObject* string, void* characters, Py_ssize_t length, Py_ssize_t charsize,
   Py_ssize_t start, Py_ssize_t end, BOOL overlapped) {
-    state->marks = NULL;
+    state->groups = NULL;
+    state->repeats = NULL;
+    state->save_captures = TRUE;
     state->saved_groups = NULL;
-    state->data = NULL;
     state->backtrack_block.previous = NULL;
     state->backtrack_block.next = NULL;
     state->backtrack_block.capacity = RE_BACKTRACK_BLOCK_SIZE;
 
-    /* The marks for the capture groups. */
+    /* The capture groups. */
     if (pattern->group_count) {
         Py_ssize_t threshold;
 
-        if (pattern->marks_storage) {
-            state->marks = pattern->marks_storage;
-            pattern->marks_storage = NULL;
+        if (pattern->groups_storage) {
+            state->groups = pattern->groups_storage;
+            pattern->groups_storage = NULL;
         } else {
-            state->marks = (Py_ssize_t*)re_alloc(pattern->group_count * 2 *
-              sizeof(Py_ssize_t));
-            if (!state->marks)
+#if defined(TRACK_MEM)
+            state->groups = (RE_GroupData*)re_alloc(__LINE__,
+              pattern->group_count * sizeof(RE_GroupData));
+#else
+            state->groups = (RE_GroupData*)re_alloc(pattern->group_count *
+              sizeof(RE_GroupData));
+#endif
+            if (!state->groups)
                 goto error;
+            memset(state->groups, 0, pattern->group_count *
+              sizeof(RE_GroupData));
         }
 
         if (pattern->saved_groups_storage) {
@@ -6130,9 +6306,15 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
             threshold = pattern->group_count * 16;
             while (state->saved_groups_capacity < threshold)
                 state->saved_groups_capacity *= 2;
+#if defined(TRACK_MEM)
             state->saved_groups =
-              (RE_Data*)re_alloc(state->saved_groups_capacity *
-              sizeof(RE_Data));
+              (RE_GroupData*)re_alloc(__LINE__, state->saved_groups_capacity *
+              sizeof(RE_GroupData));
+#else
+            state->saved_groups =
+              (RE_GroupData*)re_alloc(state->saved_groups_capacity *
+              sizeof(RE_GroupData));
+#endif
             if (!state->saved_groups)
                 goto error;
         }
@@ -6199,12 +6381,21 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->pattern = pattern;
     state->string = string;
 
-    if (pattern->data_count > 0) {
-        if (pattern->data_storage) {
-            state->data = pattern->data_storage;
-            pattern->data_storage = NULL;
-        } else
-            state->data = re_alloc(pattern->data_count * sizeof(RE_Data));
+    if (pattern->repeat_count > 0) {
+        if (pattern->repeats_storage) {
+            state->repeats = pattern->repeats_storage;
+            pattern->repeats_storage = NULL;
+        } else {
+#if defined(TRACK_MEM)
+            state->repeats = (RE_RepeatData*)re_alloc(__LINE__,
+              pattern->repeat_count * sizeof(RE_RepeatData));
+#else
+            state->repeats = (RE_RepeatData*)re_alloc(pattern->repeat_count *
+              sizeof(RE_RepeatData));
+#endif
+            if (!state->repeats)
+                goto error;
+        }
     }
 
     Py_INCREF(state->pattern);
@@ -6219,12 +6410,17 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     return TRUE;
 
 error:
-    re_dealloc(state->data);
+#if defined(TRACK_MEM)
+    re_dealloc(__LINE__, state->saved_groups);
+    re_dealloc(__LINE__, state->repeats);
+#else
     re_dealloc(state->saved_groups);
-    re_dealloc(state->marks);
-    state->data = NULL;
+    re_dealloc(state->repeats);
+#endif
+    dealloc_groups(state->groups, pattern->group_count);
     state->saved_groups = NULL;
-    state->marks = NULL;
+    state->repeats = NULL;
+    state->groups = NULL;
     return FALSE;
 }
 
@@ -6248,29 +6444,42 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
     PatternObject* pattern;
     RE_BacktrackBlock* current;
 
-    pattern = state->pattern;
-    if (pattern->marks_storage)
-        re_dealloc(state->marks);
-    else
-        pattern->marks_storage = state->marks;
-
     /* Deallocate the backtrack blocks. */
     current = state->backtrack_block.next;
     while (current) {
         RE_BacktrackBlock* next;
 
         next = current->next;
+#if defined(TRACK_MEM)
+        re_dealloc(__LINE__, current);
+#else
         re_dealloc(current);
+#endif
         current = next;
     }
 
-    if (pattern->data_storage)
-        re_dealloc(state->data);
+    pattern = state->pattern;
+
+    if (pattern->groups_storage)
+        dealloc_groups(state->groups, pattern->group_count);
     else
-        pattern->data_storage = state->data;
+        pattern->groups_storage = state->groups;
+
+    if (pattern->repeats_storage)
+#if defined(TRACK_MEM)
+        re_dealloc(__LINE__, state->repeats);
+#else
+        re_dealloc(state->repeats);
+#endif
+    else
+        pattern->repeats_storage = state->repeats;
 
     if (pattern->saved_groups_storage)
+#if defined(TRACK_MEM)
+        re_dealloc(__LINE__, state->saved_groups);
+#else
         re_dealloc(state->saved_groups);
+#endif
     else {
         pattern->saved_groups_capacity_storage = state->saved_groups_capacity;
         pattern->saved_groups_storage = state->saved_groups;
@@ -6308,7 +6517,7 @@ Py_LOCAL_INLINE(Py_ssize_t) as_string_index(PyObject* obj, Py_ssize_t def) {
 static void match_dealloc(MatchObject* self) {
     Py_XDECREF(self->string);
     Py_DECREF(self->pattern);
-    re_dealloc(self->marks);
+    dealloc_groups(self->groups, self->group_count);
     Py_XDECREF(self->regs);
     PyObject_DEL(self);
 }
@@ -6316,7 +6525,7 @@ static void match_dealloc(MatchObject* self) {
 /* Gets a MatchObject's group by integer index. */
 Py_LOCAL_INLINE(PyObject*) match_get_group_by_index(MatchObject* self,
   Py_ssize_t index, PyObject* def) {
-    Py_ssize_t m;
+    RE_GroupSpan* span;
 
     if (index < 0 || index > self->group_count) {
         /* Raise error if we were given a bad group number. */
@@ -6327,17 +6536,92 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_by_index(MatchObject* self,
     if (index == 0)
         return PySequence_GetSlice(self->string, self->pos, self->endpos);
 
-    m = index * 2 - 2;
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    span = &self->groups[index - 1].span;
 
-    if (self->string == Py_None || self->marks[m] < 0 || self->marks[m + 1] <
-      0) {
+    if (self->string == Py_None || span->start < 0 || span->end < 0) {
         /* Return default value if the string or group is undefined. */
         Py_INCREF(def);
         return def;
     }
 
-    return PySequence_GetSlice(self->string, self->marks[m], self->marks[m +
-      1]);
+    return PySequence_GetSlice(self->string, span->start, span->end);
+}
+
+/* Gets a MatchObject's captures by integer index. */
+Py_LOCAL_INLINE(PyObject*) match_get_captures_by_index(MatchObject* self,
+  Py_ssize_t index) {
+    RE_GroupData* group;
+    PyObject* result;
+    PyObject* slice;
+    RE_GroupSpan* span;
+
+    if (index < 0 || index > self->group_count) {
+        /* Raise error if we were given a bad group number. */
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0) {
+        result = PyTuple_New(1);
+        if (!result)
+            return NULL;
+
+        slice = PySequence_GetSlice(self->string, self->pos, self->endpos);
+        if (!slice)
+            goto error;
+        PyTuple_SET_ITEM(result, 0, slice);
+
+        return result;
+    }
+
+    /* Capture group indexes are 1-based (excluding group 0, which is the
+     * entire matched string).
+     */
+    group = &self->groups[index - 1];
+    if (group->capture_count > 0) {
+        /* At least one capture. */
+        size_t i;
+
+        result = PyTuple_New(group->capture_count);
+        if (!result)
+            return NULL;
+
+        for (i = 0; i < group->capture_count; i++) {
+            span = &group->captures[i];
+            slice = PySequence_GetSlice(self->string, span->start, span->end);
+            if (!slice)
+                goto error;
+            PyTuple_SET_ITEM(result, i, slice);
+        }
+    } else {
+        span = &group->span;
+
+        if (0 <= span->start && span->start <= span->end) {
+            /* Only one capture. */
+            result = PyTuple_New(1);
+            if (!result)
+                return NULL;
+
+            slice = PySequence_GetSlice(self->string, span->start, span->end);
+            if (!slice)
+                goto error;
+            PyTuple_SET_ITEM(result, 0, slice);
+        } else {
+            /* No captures. */
+            result = PyTuple_New(0);
+            if (!result)
+                return NULL;
+        }
+    }
+
+    return result;
+
+error:
+    Py_DECREF(result);
+    return NULL;
 }
 
 /* Converts a group index to an integer. */
@@ -6409,6 +6693,19 @@ Py_LOCAL_INLINE(PyObject*) match_get_group(MatchObject* self, PyObject* index,
     return NULL;
 }
 
+/* Gets a MatchObject's captures by object index. */
+Py_LOCAL_INLINE(PyObject*) match_get_captures(MatchObject* self, PyObject*
+  index, BOOL allow_neg) {
+    /* Check that the index is an integer or a string. */
+    if (PyInt_Check(index) || PyLong_Check(index) || PyUnicode_Check(index) ||
+      PyString_Check(index))
+        return match_get_captures_by_index(self, match_get_group_index(self,
+          index, allow_neg));
+
+    set_error(RE_ERROR_GROUP_INDEX_TYPE, index);
+    return NULL;
+}
+
 /* MatchObject's 'group' method. */
 static PyObject* match_group(MatchObject* self, PyObject* args) {
     Py_ssize_t size;
@@ -6464,8 +6761,83 @@ static PyObject* match_start(MatchObject* self, PyObject* args) {
     if (index == 0)
         return Py_BuildValue("n", self->pos);
 
-    /* A mark is -1 if the group is undefined. */
-    return Py_BuildValue("n", self->marks[index * 2 - 2]);
+    /* A position is -1 if the group is unmatched. */
+    return Py_BuildValue("n", self->groups[index - 1].span.start);
+}
+
+/* MatchObject's 'starts' method. */
+static PyObject* match_starts(MatchObject* self, PyObject* args) {
+    Py_ssize_t index;
+    PyObject* result;
+    PyObject* item;
+    RE_GroupData* group;
+    RE_GroupSpan* span;
+
+    PyObject* index_ = Py_False; /* Default index is 0. */
+    if (!PyArg_UnpackTuple(args, "starts", 0, 1, &index_))
+        return NULL;
+
+    index = match_get_group_index(self, index_, FALSE);
+    if (index < 0 || index > self->group_count) {
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0) {
+        result = PyTuple_New(1);
+        if (!result)
+            return NULL;
+
+        item = Py_BuildValue("n", self->pos);
+        if (!item)
+            goto error;
+        PyTuple_SET_ITEM(result, 0, item);
+
+        return result;
+    }
+
+    group = &self->groups[index - 1];
+    if (group->capture_count > 0) {
+        /* At least one capture. */
+        size_t i;
+
+        result = PyTuple_New(group->capture_count);
+        if (!result)
+            return NULL;
+
+        for (i = 0; i < group->capture_count; i++) {
+            span = &group->captures[i];
+            item = Py_BuildValue("n", span->start);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, i, item);
+        }
+    } else {
+        span = &group->span;
+
+        if (0 <= span->start && span->start <= span->end) {
+            /* Only one capture. */
+            result = PyTuple_New(1);
+            if (!result)
+                return NULL;
+
+            item = Py_BuildValue("n", span->start);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, 0, item);
+        } else {
+            /* No captures. */
+            result = PyTuple_New(0);
+            if (!result)
+                return NULL;
+        }
+    }
+
+    return result;
+
+error:
+    Py_DECREF(result);
+    return NULL;
 }
 
 /* MatchObject's 'end' method. */
@@ -6485,8 +6857,83 @@ static PyObject* match_end(MatchObject* self, PyObject* args) {
     if (index == 0)
         return Py_BuildValue("n", self->endpos);
 
-    /* A mark is -1 if the group is undefined. */
-    return Py_BuildValue("n", self->marks[index * 2 - 1]);
+    /* A position is -1 if the group is unmatched. */
+    return Py_BuildValue("n", self->groups[index - 1].span.end);
+}
+
+/* MatchObject's 'ends' method. */
+static PyObject* match_ends(MatchObject* self, PyObject* args) {
+    Py_ssize_t index;
+    PyObject* result;
+    PyObject* item;
+    RE_GroupData* group;
+    RE_GroupSpan* span;
+
+    PyObject* index_ = Py_False; /* Default index is 0. */
+    if (!PyArg_UnpackTuple(args, "ends", 0, 1, &index_))
+        return NULL;
+
+    index = match_get_group_index(self, index_, FALSE);
+    if (index < 0 || index > self->group_count) {
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0) {
+        result = PyTuple_New(1);
+        if (!result)
+            return NULL;
+
+        item = Py_BuildValue("n", self->endpos);
+        if (!item)
+            goto error;
+        PyTuple_SET_ITEM(result, 0, item);
+
+        return result;
+    }
+
+    group = &self->groups[index - 1];
+    if (group->capture_count > 0) {
+        /* At least one capture. */
+        size_t i;
+
+        result = PyTuple_New(group->capture_count);
+        if (!result)
+            return NULL;
+
+        for (i = 0; i < group->capture_count; i++) {
+            span = &group->captures[i];
+            item = Py_BuildValue("n", span->end);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, i, item);
+        }
+    } else {
+        span = &group->span;
+
+        if (0 <= span->start && span->start <= span->end) {
+            /* Only one capture. */
+            result = PyTuple_New(1);
+            if (!result)
+                return NULL;
+
+            item = Py_BuildValue("n", span->end);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, 0, item);
+        } else {
+            /* No captures. */
+            result = PyTuple_New(0);
+            if (!result)
+                return NULL;
+        }
+    }
+
+    return result;
+
+error:
+    Py_DECREF(result);
+    return NULL;
 }
 
 /* Creates an integer next (2-tuple). */
@@ -6518,6 +6965,7 @@ error:
 /* MatchObject's 'span' method. */
 static PyObject* match_span(MatchObject* self, PyObject* args) {
     Py_ssize_t index;
+    RE_GroupSpan* span;
 
     PyObject* index_ = Py_False; /* Default index is 0. */
     if (!PyArg_UnpackTuple(args, "span", 0, 1, &index_))
@@ -6532,15 +6980,91 @@ static PyObject* match_span(MatchObject* self, PyObject* args) {
     if (index == 0)
         return _pair(self->pos, self->endpos);
 
-    /* Marks are -1 if group is undefined. */
-    return _pair(self->marks[index * 2 - 2], self->marks[index * 2 - 1]);
+    /* A position is -1 if the group is unmatched. */
+    span = &self->groups[index - 1].span;
+    return _pair(span->start, span->end);
+}
+
+/* MatchObject's 'spans' method. */
+static PyObject* match_spans(MatchObject* self, PyObject* args) {
+    Py_ssize_t index;
+    PyObject* result;
+    PyObject* item;
+    RE_GroupData* group;
+    RE_GroupSpan* span;
+
+    PyObject* index_ = Py_False; /* Default index is 0. */
+    if (!PyArg_UnpackTuple(args, "spans", 0, 1, &index_))
+        return NULL;
+
+    index = match_get_group_index(self, index_, FALSE);
+    if (index < 0 || index > self->group_count) {
+        set_error(RE_ERROR_NO_SUCH_GROUP, NULL);
+        return NULL;
+    }
+
+    if (index == 0) {
+        result = PyTuple_New(1);
+        if (!result)
+            return NULL;
+
+        item = _pair(self->pos, self->endpos);
+        if (!item)
+            goto error;
+        PyTuple_SET_ITEM(result, 0, item);
+
+        return result;
+    }
+
+    group = &self->groups[index - 1];
+    if (group->capture_count > 0) {
+        /* At least one capture. */
+        size_t i;
+
+        result = PyTuple_New(group->capture_count);
+        if (!result)
+            return NULL;
+
+        for (i = 0; i < group->capture_count; i++) {
+            span = &group->captures[i];
+            item = _pair(span->start, span->end);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, i, item);
+        }
+    } else {
+        span = &group->span;
+
+        if (0 <= span->start && span->start <= span->end) {
+            /* Only one capture. */
+            result = PyTuple_New(1);
+            if (!result)
+                return NULL;
+
+            item = _pair(span->start, span->end);
+            if (!item)
+                goto error;
+            PyTuple_SET_ITEM(result, 0, item);
+        } else {
+            /* No captures. */
+            result = PyTuple_New(0);
+            if (!result)
+                return NULL;
+        }
+    }
+
+    return result;
+
+error:
+    Py_DECREF(result);
+    return NULL;
 }
 
 /* MatchObject's 'groups' method. */
 static PyObject* match_groups(MatchObject* self, PyObject* args, PyObject* kw)
   {
     PyObject* result;
-    Py_ssize_t index;
+    Py_ssize_t g;
 
     PyObject* def = Py_None;
     static char* kwlist[] = { "default", NULL };
@@ -6552,14 +7076,14 @@ static PyObject* match_groups(MatchObject* self, PyObject* args, PyObject* kw)
         return NULL;
 
     /* Group 0 is the entire matched portion of the string. */
-    for (index = 0; index < self->group_count; index++) {
+    for (g = 0; g < self->group_count; g++) {
         PyObject* item;
-        item = match_get_group_by_index(self, index + 1, def);
+        item = match_get_group_by_index(self, g + 1, def);
         if (!item) {
             Py_DECREF(result);
             return NULL;
         }
-        PyTuple_SET_ITEM(result, index, item);
+        PyTuple_SET_ITEM(result, g, item);
     }
 
     return result;
@@ -6570,7 +7094,7 @@ static PyObject* match_groupdict(MatchObject* self, PyObject* args, PyObject*
   kw) {
     PyObject* result;
     PyObject* keys;
-    Py_ssize_t index;
+    Py_ssize_t g;
 
     PyObject* def = Py_None;
     static char* kwlist[] = { "default", NULL };
@@ -6585,11 +7109,11 @@ static PyObject* match_groupdict(MatchObject* self, PyObject* args, PyObject*
     if (!keys)
         goto failed;
 
-    for (index = 0; index < PyList_GET_SIZE(keys); index++) {
+    for (g = 0; g < PyList_GET_SIZE(keys); g++) {
         int status;
         PyObject* key;
         PyObject* value;
-        key = PyList_GET_ITEM(keys, index);
+        key = PyList_GET_ITEM(keys, g);
         if (!key)
             goto failed;
         value = match_get_group(self, key, def, FALSE);
@@ -6645,7 +7169,7 @@ Py_LOCAL_INLINE(PyObject*) call(char* module, char* function, PyObject* args) {
  */
 Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
   item, PyObject* string, Py_ssize_t group_count) {
-    Py_ssize_t group;
+    Py_ssize_t index;
 
     if (PyUnicode_Check(item) || PyString_Check(item)) {
         /* It's a literal, which can be added directly to the list. */
@@ -6654,22 +7178,23 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
     }
 
     /* Is it a group reference? */
-    group = as_group_index(item);
+    index = as_group_index(item);
     if (PyErr_Occurred()) {
         /* Not a group either! */
         set_error(RE_ERROR_REPLACEMENT, NULL);
         return NULL;
     }
 
-    if (group == 0) {
+    if (index == 0) {
         /* The entire matched portion of the string. */
         return PySequence_GetSlice(string, self->pos, self->endpos);
-    } else if (group >= 1 && group <= group_count) {
+    } else if (index >= 1 && index <= group_count) {
         /* A group. If it didn't match then return None instead. */
-        Py_ssize_t m = group * 2 - 2;
-        if (self->marks[m] >= 0)
-            return PySequence_GetSlice(string, self->marks[m], self->marks[m +
-              1]);
+        RE_GroupSpan* span;
+
+        span = &self->groups[index - 1].span;
+        if (span->start >= 0)
+            return PySequence_GetSlice(string, span->start, span->end);
         else {
             Py_INCREF(Py_None);
             return Py_None;
@@ -6909,6 +7434,43 @@ error:
     return NULL;
 }
 
+/* MatchObject's 'captures' method. */
+static PyObject* match_captures(MatchObject* self, PyObject* args) {
+    Py_ssize_t size;
+    PyObject* result;
+    Py_ssize_t i;
+
+    size = PyTuple_GET_SIZE(args);
+
+    switch (size) {
+    case 0:
+        /* captures() */
+        result = match_get_captures_by_index(self, 0);
+        break;
+    case 1:
+        /* captures(x) */
+        result = match_get_captures(self, PyTuple_GET_ITEM(args, 0), FALSE);
+        break;
+    default:
+        /* captures(x, y, z, ...) */
+        /* Fetch multiple items. */
+        result = PyTuple_New(size);
+        if (!result)
+            return NULL;
+        for (i = 0; i < size; i++) {
+            PyObject* item = match_get_captures(self, PyTuple_GET_ITEM(args, i),
+              FALSE);
+            if (!item) {
+                Py_DECREF(result);
+                return NULL;
+            }
+            PyTuple_SET_ITEM(result, i, item);
+        }
+        break;
+    }
+    return result;
+}
+
 /* MatchObject's 'copy' method. */
 static PyObject* match_copy(MatchObject* self, PyObject *unused) {
     PyErr_SetString(PyExc_TypeError, "cannot copy this MatchObject");
@@ -6925,7 +7487,7 @@ static PyObject* match_deepcopy(MatchObject* self, PyObject* memo) {
 static PyObject* match_regs(MatchObject* self) {
     PyObject* regs;
     PyObject* item;
-    Py_ssize_t index;
+    Py_ssize_t g;
 
     regs = PyTuple_New(self->group_count + 1);
     if (!regs)
@@ -6938,13 +7500,16 @@ static PyObject* match_regs(MatchObject* self) {
     }
     PyTuple_SET_ITEM(regs, 0, item);
 
-    for (index = 0; index < self->group_count; index++) {
-        item = _pair(self->marks[index * 2], self->marks[index * 2 + 1]);
+    for (g = 0; g < self->group_count; g++) {
+        RE_GroupSpan* span;
+
+        span = &self->groups[g].span;
+        item = _pair(span->start, span->end);
         if (!item) {
             Py_DECREF(regs);
             return NULL;
         }
-        PyTuple_SET_ITEM(regs, index + 1, item);
+        PyTuple_SET_ITEM(regs, g + 1, item);
     }
 
     Py_INCREF(regs);
@@ -7006,8 +7571,8 @@ PyDoc_STRVAR(match_group_doc,
     "group([group1, ...]) --> string or tuple of strings.\n\
     Return one or more subgroups of the match.  If there is a single argument,\n\
     the result is a single string; if there are multiple arguments, the result\n\
-    is a tuple with one item per argument; if there are no arguments, the whole\n\
-    match is returned. Group 0 is the whole match.");
+    is a tuple with one item per argument; if there are no arguments, the\n\
+    whole match is returned. Group 0 is the whole match.");
 
 PyDoc_STRVAR(match_start_doc,
     "start([group]) --> int.\n\
@@ -7017,9 +7582,9 @@ PyDoc_STRVAR(match_start_doc,
 
 PyDoc_STRVAR(match_end_doc,
     "end([group]) --> int.\n\
-    Return the index of the start of a subgroup of the match.  Defaults to\n\
-    group 0 which is the whole match.  Return -1 if the group exists but did\n\
-    not contribute to the match.");
+    Return the index of the end of a subgroup of the match.  Defaults to group\n\
+    0 which is the whole match.  Return -1 if the group exists but did not\n\
+    contribute to the match.");
 
 PyDoc_STRVAR(match_span_doc,
     "span([group]) --> 2-tuple of int.\n\
@@ -7043,6 +7608,32 @@ PyDoc_STRVAR(match_expand_doc,
     Return the string obtained by doing backslash substitution on the template,\n\
     as done by the sub() method.");
 
+PyDoc_STRVAR(match_captures_doc,
+    "captures([group1, ...]) --> tuple of strings or tuple of tuple of strings.\n\
+    Return the captures of one or more subgroups of the match.  If there is a\n\
+    single argument, the result is a tuple of strings; if there are multiple\n\
+    arguments, the result is a tuple of tuples with one item per argument; if\n\
+    there are no arguments, the captures of group 0 is returned. Group 0 is the\n\
+    whole match.");
+
+PyDoc_STRVAR(match_starts_doc,
+    "starts([group]) --> tuple of int.\n\
+    Return the indices of the starts of the captures of a subgroup of the\n\
+    match.  Defaults to group 0 which is the whole match.  Return () if the\n\
+    group exists but did not contribute to the match.");
+
+PyDoc_STRVAR(match_ends_doc,
+    "ends([group]) --> tuple of int.\n\
+    Return the indices of the ends of the captures of a subgroup of the\n\
+    match.  Defaults to group 0 which is the whole match.  Return () if the\n\
+    group exists but did not contribute to the match.");
+
+PyDoc_STRVAR(match_spans_doc,
+    "spans([group]) --> tuple of 2-tuple of int.\n\
+    Return the 2-tuples of the indices of the start and end of a subgroup of\n\
+    the match.  Return () if the group exists but did not contribute to the\n\
+    match. Defaults to group 0 which is the entire match.");
+
 /* MatchObject's methods. */
 static PyMethodDef match_methods[] = {
     {"group", (PyCFunction)match_group, METH_VARARGS, match_group_doc},
@@ -7054,6 +7645,10 @@ static PyMethodDef match_methods[] = {
     {"groupdict", (PyCFunction)match_groupdict, METH_VARARGS|METH_KEYWORDS,
       match_groupdict_doc},
     {"expand", (PyCFunction)match_expand, METH_O, match_expand_doc},
+    {"captures", (PyCFunction)match_captures, METH_VARARGS, match_captures_doc},
+    {"starts", (PyCFunction)match_starts, METH_VARARGS, match_starts_doc},
+    {"ends", (PyCFunction)match_ends, METH_VARARGS, match_ends_doc},
+    {"spans", (PyCFunction)match_spans, METH_VARARGS, match_spans_doc},
     {"__copy__", (PyCFunction)match_copy, METH_NOARGS},
     {"__deepcopy__", (PyCFunction)match_deepcopy, METH_O},
     {"__getitem__", (PyCFunction)match_subscript, METH_O|METH_COEXIST},
@@ -7167,15 +7762,62 @@ static PyTypeObject Match_Type = {
     match_methods,              /* tp_methods */
 };
 
+/* Copies the groups. */
+Py_LOCAL_INLINE(RE_GroupData*)copy_groups(RE_GroupData* groups, Py_ssize_t
+  group_count) {
+    RE_GroupData* groups_copy;
+    Py_ssize_t g;
+
+#if defined(TRACK_MEM)
+    groups_copy = (RE_GroupData*)re_alloc(__LINE__, group_count *
+      sizeof(RE_GroupData));
+#else
+    groups_copy = (RE_GroupData*)re_alloc(group_count * sizeof(RE_GroupData));
+#endif
+    if (!groups_copy)
+        return NULL;
+
+    memset(groups_copy, 0, group_count * sizeof(RE_GroupData));
+
+    for (g = 0; g < group_count; g++) {
+        RE_GroupData* orig;
+        RE_GroupData* copy;
+
+        orig = &groups[g];
+        copy = &groups_copy[g];
+        copy->span = orig->span;
+        if (orig->capture_count > 0) {
+#if defined(TRACK_MEM)
+            copy->captures = (RE_GroupSpan*)re_alloc(__LINE__,
+              orig->capture_count * sizeof(RE_GroupSpan));
+#else
+            copy->captures = (RE_GroupSpan*)re_alloc(orig->capture_count *
+              sizeof(RE_GroupSpan));
+#endif
+            if (!copy->captures)
+                goto error;
+            Py_MEMCPY(copy->captures, orig->captures, orig->capture_count *
+              sizeof(RE_GroupSpan));
+            copy->capture_capacity = orig->capture_count;
+            copy->capture_count = orig->capture_count;
+        }
+    }
+
+    return groups_copy;
+
+error:
+    dealloc_groups(groups_copy, group_count);
+    return NULL;
+}
+
 /* Creates a new MatchObject. */
 Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
   state, int status) {
     /* Create MatchObject (from state object). */
     if (status > 0) {
         MatchObject* match;
-        Py_ssize_t g;
 
-        /* Create MatchObject. */
+        /* Create a NatchObject. */
         match = PyObject_NEW(MatchObject, &Match_Type);
         if (!match)
             return NULL;
@@ -7186,11 +7828,11 @@ Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
         Py_INCREF(match->string);
         Py_INCREF(match->pattern);
 
-        match->marks = (Py_ssize_t*)re_alloc(pattern->group_count * 2 *
-          sizeof(Py_ssize_t));
-        if (!match->marks) {
+        /* Copy the groups to the MatchObject. */
+        match->groups = copy_groups(state->groups, pattern->group_count);
+        if (!match->groups) {
             Py_DECREF(match);
-            return NULL;
+            goto error;
         }
 
         match->regs = NULL;
@@ -7204,20 +7846,6 @@ Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
             match->endpos = state->text_pos;
         }
 
-        /* Fill in group slices. */
-        for (g = 0; g < pattern->group_count; g++) {
-            Py_ssize_t m = g * 2;
-            Py_ssize_t start = state->marks[m];
-            Py_ssize_t end = state->marks[m + 1];
-            if (0 <= start && start <= end) {
-                match->marks[m] = start;
-                match->marks[m + 1] = end;
-            } else {
-                match->marks[m] = -1;
-                match->marks[m + 1] = -1;
-            }
-        }
-
         match->lastindex = state->lastindex;
         match->lastgroup = state->lastgroup;
 
@@ -7228,6 +7856,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
         return Py_None;
     }
 
+error:
     /* Internal error. */
     set_error(status, NULL);
     return NULL;
@@ -7236,15 +7865,15 @@ Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
 /* Gets the text of a capture group from a state. */
 Py_LOCAL_INLINE(PyObject*) state_get_group(RE_State* state, Py_ssize_t index,
   PyObject* string, BOOL empty) {
-    Py_ssize_t m;
+    RE_GroupSpan* span;
     Py_ssize_t start;
     Py_ssize_t end;
 
-    m = index * 2 - 2;
+    span = &state->groups[index - 1].span;
     if (string != Py_None && index >= 1 && index <= state->pattern->group_count
-      && state->marks[m] >= 0 && state->marks[m + 1] >= 0) {
-        start = state->marks[m];
-        end = state->marks[m + 1];
+      && span->start >= 0 && span->end >= 0) {
+        start = span->start;
+        end = span->end;
     } else {
         if (empty)
             /* Want an empty string. */
@@ -7273,8 +7902,8 @@ static PyObject* scanner_match(ScannerObject* self, PyObject* unused) {
 
     match = pattern_new_match(self->pattern, state, status);
 
-    /* Continue from where we left off, but don't allow a contiguous zero-width
-     * match.
+    /* Continue from where we left off, but don't allow 2 contiguous zero-width
+     * matches.
      */
     state->must_advance = state->text_pos == state->match_pos;
 
@@ -7304,8 +7933,8 @@ static PyObject* scanner_search(ScannerObject* self, PyObject *unused) {
         state->text_pos = state->search_anchor + step;
         state->must_advance = FALSE;
     } else
-        /* Continue from where we left off, but don't allow a contiguous
-         * zero-width match.
+        /* Continue from where we left off, but don't allow 2 contiguous
+         * zero-width matches.
          */
         state->must_advance = state->text_pos == state->match_pos;
 
@@ -7595,6 +8224,9 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
     self->index = 0;
     self->finished = FALSE;
 
+    /* The MatchObject, and therefore repeated captures, will never be visible. */
+    state->save_captures = FALSE;
+
     return (PyObject*) self;
 }
 
@@ -7730,7 +8362,7 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
  */
 Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
   string, RE_State* state, Py_ssize_t group_count) {
-    Py_ssize_t group;
+    Py_ssize_t index;
 
     if (PyUnicode_Check(item) || PyString_Check(item)) {
         /* It's a literal, which can be added directly to the list. */
@@ -7739,14 +8371,14 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
     }
 
     /* Is it a group reference? */
-    group = as_group_index(item);
+    index = as_group_index(item);
     if (PyErr_Occurred()) {
         /* Not a group either! */
         set_error(RE_ERROR_REPLACEMENT, NULL);
         return NULL;
     }
 
-    if (group == 0) {
+    if (index == 0) {
         /* The entire matched portion of the string. */
         if (state->match_pos == state->text_pos) {
             /* Return None for "". */
@@ -7760,17 +8392,18 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
         else
             return PySequence_GetSlice(string, state->match_pos,
               state->text_pos);
-    } else if (1 <= group && group <= group_count) {
+    } else if (1 <= index && index <= group_count) {
         /* A group. */
-        Py_ssize_t m = group * 2 - 2;
-        if (state->marks[m] < 0 || state->marks[m] == state->marks[m + 1]) {
+        RE_GroupSpan* span;
+
+        span = &state->groups[index - 1].span;
+        if (span->start < 0 || span->start == span->end) {
             /* The group didn't match or is "", so return None for "". */
             Py_INCREF(Py_None);
             return Py_None;
         }
 
-        return PySequence_GetSlice(string, state->marks[m], state->marks[m +
-          1]);
+        return PySequence_GetSlice(string, span->start, span->end);
     } else {
         /* No such group. */
         set_error(RE_ERROR_INVALID_GROUP_REF, NULL);
@@ -7906,6 +8539,10 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         Py_DECREF(replacement);
         return NULL;
     }
+
+    if (!is_callable)
+        /* The MatchObject, and therefore repeated captures, will never be visible. */
+        state.save_captures = FALSE;
 
     join_info.item = NULL;
     join_info.list = NULL;
@@ -8115,7 +8752,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
     PyObject* item;
     int status;
     Py_ssize_t split_count;
-    Py_ssize_t i;
+    Py_ssize_t g;
     Py_ssize_t start_pos;
     Py_ssize_t end_pos;
     Py_ssize_t step;
@@ -8133,6 +8770,9 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
 
     if (!state_init(&state, self, string, 0, PY_SSIZE_T_MAX, FALSE))
         return NULL;
+
+    /* The MatchObject, and therefore repeated captures, will never be visible. */
+    state.save_captures = FALSE;
 
     list = PyList_New(0);
     if (!list) {
@@ -8192,8 +8832,8 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
             goto error;
 
         /* Add groups (if any). */
-        for (i = 1; i <= self->group_count; i++) {
-            item = state_get_group(&state, i, string, FALSE);
+        for (g = 1; g <= self->group_count; g++) {
+            item = state_get_group(&state, g, string, FALSE);
             if (!item)
                 goto error;
             status = PyList_Append(list, item);
@@ -8279,7 +8919,9 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     PyObject* list;
     Py_ssize_t step;
     int status;
-    Py_ssize_t i, b, e;
+    Py_ssize_t g;
+    Py_ssize_t b;
+    Py_ssize_t e;
 
     PyObject* string;
     PyObject* pos = Py_None;
@@ -8297,6 +8939,9 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
 
     if (!state_init(&state, self, string, start, end, overlapped))
         return NULL;
+
+    /* The MatchObject, and therefore repeated captures, will never be visible. */
+    state.save_captures = FALSE;
 
     list = PyList_New(0);
     if (!list) {
@@ -8340,13 +8985,13 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
             item = PyTuple_New(self->group_count);
             if (!item)
                 goto error;
-            for (i = 0; i < self->group_count; i++) {
-                PyObject* o = state_get_group(&state, i + 1, string, TRUE);
+            for (g = 0; g < self->group_count; g++) {
+                PyObject* o = state_get_group(&state, g + 1, string, TRUE);
                 if (!o) {
                     Py_DECREF(item);
                     goto error;
                 }
-                PyTuple_SET_ITEM(item, i, o);
+                PyTuple_SET_ITEM(item, g, o);
             }
             break;
         }
@@ -8361,8 +9006,8 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
             state.text_pos = state.search_anchor + step;
             state.must_advance = FALSE;
         } else
-            /* Continue from where we left off, but don't allow a contiguous
-             * zero-width match.
+            /* Continue from where we left off, but don't allow 2 contiguous
+             * zero-width matches.
              */
             state.must_advance = state.text_pos == state.match_pos;
     }
@@ -8485,22 +9130,46 @@ static void pattern_dealloc(PatternObject* self) {
         RE_Node* node;
 
         node = self->node_list[i];
+#if defined(TRACK_MEM)
+        re_dealloc(__LINE__, node->values);
+        re_dealloc(__LINE__, node->bad_character_offset);
+        re_dealloc(__LINE__, node->good_suffix_offset);
+        re_dealloc(__LINE__, node);
+#else
         re_dealloc(node->values);
         re_dealloc(node->bad_character_offset);
         re_dealloc(node->good_suffix_offset);
         re_dealloc(node);
+#endif
     }
+#if defined(TRACK_MEM)
+    re_dealloc(__LINE__, self->node_list);
+#else
     re_dealloc(self->node_list);
+#endif
 
     /* Discard the group info. */
+#if defined(TRACK_MEM)
+    re_dealloc(__LINE__, self->group_info);
+#else
     re_dealloc(self->group_info);
+#endif
 
     /* Discard the repeat info. */
+#if defined(TRACK_MEM)
+    re_dealloc(__LINE__, self->repeat_info);
+#else
     re_dealloc(self->repeat_info);
+#endif
 
-    re_dealloc(self->marks_storage);
+    dealloc_groups(self->groups_storage, self->group_count);
+#if defined(TRACK_MEM)
+    re_dealloc(__LINE__, self->repeats_storage);
+    re_dealloc(__LINE__, self->saved_groups_storage);
+#else
+    re_dealloc(self->repeats_storage);
     re_dealloc(self->saved_groups_storage);
-    re_dealloc(self->data_storage);
+#endif
 
     if (self->weakreflist)
         PyObject_ClearWeakRefs((PyObject*)self);
@@ -8597,12 +9266,22 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables(RE_EncodingTable* encoding, RE_Node*
 
     values = node->values;
 
+#if defined(TRACK_MEM)
+    bad = (Py_ssize_t*)re_alloc(__LINE__, 256 * sizeof(bad[0]));
+    good = (Py_ssize_t*)re_alloc(__LINE__, length * sizeof(good[0]));
+#else
     bad = (Py_ssize_t*)re_alloc(256 * sizeof(bad[0]));
     good = (Py_ssize_t*)re_alloc(length * sizeof(good[0]));
+#endif
 
     if (!bad || !good) {
+#if defined(TRACK_MEM)
+        re_dealloc(__LINE__, bad);
+        re_dealloc(__LINE__, good);
+#else
         re_dealloc(bad);
         re_dealloc(good);
+#endif
 
         return FALSE;
     }
@@ -8726,12 +9405,22 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables_rev(RE_EncodingTable* encoding,
 
     values = node->values;
 
+#if defined(TRACK_MEM)
+    bad = (Py_ssize_t*)re_alloc(__LINE__, 256 * sizeof(bad[0]));
+    good = (Py_ssize_t*)re_alloc(__LINE__, length * sizeof(good[0]));
+#else
     bad = (Py_ssize_t*)re_alloc(256 * sizeof(bad[0]));
     good = (Py_ssize_t*)re_alloc(length * sizeof(good[0]));
+#endif
 
     if (!bad || !good) {
+#if defined(TRACK_MEM)
+        re_dealloc(__LINE__, bad);
+        re_dealloc(__LINE__, good);
+#else
         re_dealloc(bad);
         re_dealloc(good);
+#endif
 
         return FALSE;
     }
@@ -8906,40 +9595,21 @@ Py_LOCAL_INLINE(void) discard_unused_nodes(PatternObject* pattern) {
         if (node->used)
             pattern->node_list[new_count++] = node;
         else {
+#if defined(TRACK_MEM)
+            re_dealloc(__LINE__, node->values);
+            re_dealloc(__LINE__, node->bad_character_offset);
+            re_dealloc(__LINE__, node->good_suffix_offset);
+            re_dealloc(__LINE__, node);
+#else
             re_dealloc(node->values);
             re_dealloc(node->bad_character_offset);
             re_dealloc(node->good_suffix_offset);
             re_dealloc(node);
+#endif
         }
     }
 
     pattern->node_count = new_count;
-}
-
-/* Assigns offsets for the groups into the values array.
- *
- * Entries for groups come before those for repeats.
- */
-Py_LOCAL_INLINE(BOOL) assign_group_offsets(PatternObject* pattern) {
-    Py_ssize_t offset;
-    Py_ssize_t i;
-
-    offset = 0;
-
-    for (i = 0; i < pattern->group_count; i++) {
-        RE_GroupInfo* group_info;
-
-        group_info = &pattern->group_info[i];
-        if (group_info->id < 1) {
-            /* There's an entry for a non-existent group. */
-            set_error(RE_ERROR_ILLEGAL, NULL);
-            return FALSE;
-        }
-
-         group_info->value_offset = offset++;
-    }
-
-    return TRUE;
 }
 
 /* Marks all the group which are named. */
@@ -8970,7 +9640,7 @@ Py_LOCAL_INLINE(void) set_test_node(RE_NextNode* next) {
         return;
 
     test = node;
-    while (test->op == RE_OP_BEGIN_GROUP || test->op == RE_OP_END_GROUP)
+    while (test->op == RE_OP_END_GROUP || test->op == RE_OP_START_GROUP)
         test = test->next_1.node;
 
     next->test = test;
@@ -9033,20 +9703,6 @@ Py_LOCAL_INLINE(void) set_test_nodes(PatternObject* pattern) {
     }
 }
 
-/* Assigns offsets for the repeats into the values array.
- *
- * Entries for groups come before those for repeats.
- */
-Py_LOCAL_INLINE(void) assign_repeat_offsets(PatternObject* pattern) {
-    Py_ssize_t offset;
-    Py_ssize_t r;
-
-    offset = pattern->group_count;
-
-    for (r = 0; r < pattern->repeat_count; r++)
-        pattern->repeat_info[r].value_offset = offset++;
-}
-
 /* Checks whether the matcher should do the initial check.
  *
  * It sets pattern->do_check accordingly and returns TRUE when it has done so.
@@ -9068,7 +9724,8 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
                 return TRUE;
             node = node->next_1.node;
             break;
-        case RE_OP_BEGIN_GROUP:
+        case RE_OP_END_GROUP:
+        case RE_OP_START_GROUP:
             node = node->next_1.node;
             break;
         case RE_OP_BIG_BITSET:
@@ -9102,9 +9759,6 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
         case RE_OP_END_LAZY_REPEAT:
             early = FALSE;
             node = node->next_2.node;
-            break;
-        case RE_OP_END_GROUP:
-            node = node->next_1.node;
             break;
         case RE_OP_END_OF_LINE:
         case RE_OP_END_OF_STRING:
@@ -9191,13 +9845,6 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     /* Set the test nodes. */
     set_test_nodes(pattern);
 
-    /* Assign group offsets into the values array. */
-    if (!assign_group_offsets(pattern))
-        return FALSE;
-
-    /* Assign repeat offsets into the values array. */
-    assign_repeat_offsets(pattern);
-
     /* Mark all the group that are named. */
     mark_named_groups(pattern);
 
@@ -9213,13 +9860,22 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_CODE op, BOOL
   match, Py_ssize_t step, Py_ssize_t value_count) {
     RE_Node* node;
 
+#if defined(TRACK_MEM)
+    node = (RE_Node*)re_alloc(__LINE__, sizeof(*node));
+#else
     node = (RE_Node*)re_alloc(sizeof(*node));
+#endif
     if (!node)
         return NULL;
 
     node->value_capacity = value_count;
     node->value_count = value_count;
+#if defined(TRACK_MEM)
+    node->values = (RE_CODE*)re_alloc(__LINE__, node->value_capacity *
+      sizeof(RE_CODE));
+#else
     node->values = (RE_CODE*)re_alloc(node->value_capacity * sizeof(RE_CODE));
+#endif
     if (!node->values)
         goto error;
 
@@ -9239,8 +9895,13 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_CODE op, BOOL
         RE_Node** new_node_list;
 
         pattern->node_capacity += 16;
+#if defined(TRACK_MEM)
+        new_node_list = (RE_Node**)re_realloc(__LINE__, pattern->node_list,
+          pattern->node_capacity * sizeof(RE_Node*));
+#else
         new_node_list = (RE_Node**)re_realloc(pattern->node_list,
           pattern->node_capacity * sizeof(RE_Node*));
+#endif
         if (!new_node_list)
             goto error;
         pattern->node_list = new_node_list;
@@ -9252,8 +9913,13 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_CODE op, BOOL
     return node;
 
 error:
+#if defined(TRACK_MEM)
+    re_dealloc(__LINE__, node->values);
+    re_dealloc(__LINE__, node);
+#else
     re_dealloc(node->values);
     re_dealloc(node);
+#endif
     return NULL;
 }
 
@@ -9284,8 +9950,13 @@ Py_LOCAL_INLINE(BOOL) ensure_group(PatternObject* pattern, Py_ssize_t group) {
         new_capacity += 16;
 
     if (new_capacity > old_capacity) {
+#if defined(TRACK_MEM)
+        new_group_info = (RE_GroupInfo*)re_realloc(__LINE__,
+          pattern->group_info, new_capacity * sizeof(RE_GroupInfo));
+#else
         new_group_info = (RE_GroupInfo*)re_realloc(pattern->group_info,
           new_capacity * sizeof(RE_GroupInfo));
+#endif
         if (!new_group_info)
             return FALSE;
         memset(new_group_info + old_capacity, 0, (new_capacity - old_capacity)
@@ -9377,8 +10048,13 @@ Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, int id) {
         new_capacity += 16;
 
     if (new_capacity > old_capacity) {
+#if defined(TRACK_MEM)
+        new_repeat_info = (RE_RepeatInfo*)re_realloc(__LINE__,
+          pattern->repeat_info, new_capacity * sizeof(RE_RepeatInfo));
+#else
         new_repeat_info = (RE_RepeatInfo*)re_realloc(pattern->repeat_info,
           new_capacity * sizeof(RE_RepeatInfo));
+#endif
         if (!new_repeat_info)
             return FALSE;
         memset(new_repeat_info + old_capacity, 0, (new_capacity - old_capacity)
@@ -9691,19 +10367,19 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
     args->code += 2;
 
     /* Create nodes for the start and end of the capture group. */
-    if (args->forward) {
-        start_node = create_node(args->pattern, RE_OP_BEGIN_GROUP, FALSE, 0,
-          1);
-        end_node = create_node(args->pattern, RE_OP_END_GROUP, FALSE, 0, 1);
-    } else {
-        start_node = create_node(args->pattern, RE_OP_END_GROUP, FALSE, 0, 1);
-        end_node = create_node(args->pattern, RE_OP_BEGIN_GROUP, FALSE, 0, 1);
-    }
+    start_node = create_node(args->pattern, args->forward ? RE_OP_START_GROUP :
+      RE_OP_END_GROUP, FALSE, 0, 2);
+    end_node = create_node(args->pattern, args->forward ? RE_OP_END_GROUP :
+      RE_OP_START_GROUP, FALSE, 0, 2);
     if (!start_node || !end_node)
         return FALSE;
 
     start_node->values[0] = group;
     end_node->values[0] = group;
+
+    /* Signal that the capture should be saved when it's complete. */
+    start_node->values[1] = 0;
+    end_node->values[1] = args->save_captures ? 1 : 0;
 
     /* Record that we have a new capture group. */
     if (!record_group(args->pattern, group))
@@ -10018,6 +10694,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         /* Compile the 'body' and check that we've reached the end of it. */
         subargs = *args;
         subargs.min_width = 0;
+        subargs.save_captures = TRUE;
         if (!build_sequence(&subargs))
             return FALSE;
 
@@ -10423,6 +11100,7 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     args.pattern = pattern;
     args.forward = (pattern->flags & RE_FLAG_REVERSE) == 0;
     args.min_width = 0;
+    args.save_captures = FALSE;
     if (!build_sequence(&args))
         return FALSE;
 
@@ -10439,8 +11117,6 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     add_node(args.end, success_node);
     pattern->start_node = args.start;
     pattern->success_node = success_node;
-
-    pattern->data_count = pattern->group_count + pattern->repeat_count;
 
     /* Optimise the pattern. */
     if (!optimise_pattern(pattern))
@@ -10476,7 +11152,11 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
 
     /* Read the regular expression code. */
     code_len = PyList_GET_SIZE(code_list);
+#if defined(TRACK_MEM)
+    code = (RE_CODE*)re_alloc(__LINE__, code_len * sizeof(RE_CODE));
+#else
     code = (RE_CODE*)re_alloc(code_len * sizeof(RE_CODE));
+#endif
     if (!code)
         return NULL;
 
@@ -10497,7 +11177,11 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self = PyObject_NEW(PatternObject, &Pattern_Type);
     if (!self) {
         set_error(RE_ERROR_MEMORY, NULL);
+#if defined(TRACK_MEM)
+        re_dealloc(__LINE__, code);
+#else
         re_dealloc(code);
+#endif
         return NULL;
     }
 
@@ -10519,9 +11203,10 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->group_info = NULL;
     self->repeat_info_capacity = 0;
     self->repeat_info = NULL;
-    self->marks_storage = NULL;
+    self->groups_storage = NULL;
+    self->repeats_storage = NULL;
+    self->saved_groups_capacity_storage = 0;
     self->saved_groups_storage = NULL;
-    self->data_storage = NULL;
     Py_INCREF(self->pattern);
     Py_INCREF(self->groupindex);
     Py_INCREF(self->indexgroup);
@@ -10547,7 +11232,11 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     ok = compile_to_nodes(code, code + code_len, self);
 
     /* We no longer need the regular expression code. */
+#if defined(TRACK_MEM)
+    re_dealloc(__LINE__, code);
+#else
     re_dealloc(code);
+#endif
 
     if (!ok) {
         if (!PyErr_Occurred())
@@ -10560,7 +11249,11 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     return (PyObject*)self;
 
 error:
+#if defined(TRACK_MEM)
+    re_dealloc(__LINE__, code);
+#else
     re_dealloc(code);
+#endif
     set_error(RE_ERROR_ILLEGAL, NULL);
     return NULL;
 }
@@ -10597,6 +11290,11 @@ PyMODINIT_FUNC init_regex(void) {
 #if defined(VERBOSE)
     /* Unbuffered in case it crashes! */
     setvbuf(stdout, NULL, _IONBF, 0);
+#endif
+#if defined(TRACK_MEM)
+    mem_log = fopen("M:\\projects\\regex\\memory.txt", "w");
+    /* Unbuffered in case it crashes! */
+    //setvbuf(mem_log, NULL, _IONBF, 0);
 #endif
 
     /* Patch object types. */

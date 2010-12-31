@@ -47,6 +47,46 @@ This module supports Unicode 6.0.0.
 Additional features
 -------------------
 
+* Repeated captures (issue #7132)
+
+    A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:
+
+    ``matchobject.captures([group1, ...])``
+
+        Returns a tuple of the strings matched in a group or groups. Compare with ``matchobject.group([group1, ...])``.
+
+    ``matchobject.starts([group])``
+
+        Returns a tuple of the start positions. Compare with ``matchobject.start([group])``.
+
+    ``matchobject.ends([group])``
+
+        Returns a tuple of the end positions. Compare with ``matchobject.end([group])``.
+
+    ``matchobject.spans([group])``
+
+        Returns a tuple of the spans. Compare with ``matchobject.span([group])``.
+
+    Examples:
+
+        >>> m = regex.search(r"(\w{3})+", "123456789")
+        >>> m.group(1)
+        '789'
+        >>> m.captures(1)
+        ('123', '456', '789')
+        >>> m.start(1)
+        6
+        >>> m.starts(1)
+        (0, 3, 6)
+        >>> m.end(1)
+        9
+        >>> m.ends(1)
+        (3, 6, 9)
+        >>> m.span(1)
+        (6, 9)
+        >>> m.spans(1)
+        ((0, 3), (3, 6), (6, 9))
+
 * Atomic grouping (issue #433030)
 
     ``(?>...)``
@@ -54,6 +94,7 @@ Additional features
     If the following pattern subsequently fails, then the subpattern as a whole will fail.
 
 * Possessive quantifiers.
+
     ``(?:...)?+`` ; ``(?:...)*+`` ; ``(?:...)++`` ; ``(?:...){min,max}+``
 
     The subpattern is matched up to 'max' times. If the following pattern subsequently fails, then all of the repeated subpatterns will fail as a whole. For example, ``(?:...)++`` is equivalent to ``(?>(?:...)+)``.
@@ -64,21 +105,21 @@ Additional features
 
     The flags will apply only to the subpattern. Flags can be turned on or off.
 
-* Inline flags (#433024, #433027)
+* Inline flags (issue #433024, issue #433027)
 
     ``(?flags-flags)``
 
     If the ``NEW`` flag is turned on then the flags will apply to the end of the group or pattern and can be turned on or off. If the ``NEW`` flag isn't turned on then the flags will be global and can't be turned off.
 
-* Repeated repeats (#2537)
+* Repeated repeats (issue #2537)
 
     A regex like ``((x|y+)*)*`` will be accepted and will work correctly, but should complete more quickly.
 
-* Definition of 'word' character (#1693050)
+* Definition of 'word' character (issue #1693050)
 
     The definition of a 'word' character has been expanded for Unicode. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
 
-* Groups in lookahead and lookbehind (#814253)
+* Groups in lookahead and lookbehind (issue #814253)
 
     Groups and group references are permitted in both lookahead and lookbehind.
 
@@ -86,19 +127,19 @@ Additional features
 
     A lookbehind can match a variable-length string.
 
-* Correct handling of charset with ignore case flag (#3511)
+* Correct handling of charset with ignore case flag (issue #3511)
 
     Ranges within charsets are handled correctly when the ignore-case flag is turned on.
 
-* Unmatched group in replacement (#1519638)
+* Unmatched group in replacement (issue #1519638)
 
     An unmatched group is treated as an empty string in a replacement template.
 
-* 'Pathological' patterns (#1566086, #1662581, #1448325, #1721518, #1297193)
+* 'Pathological' patterns (issue #1566086, issue #1662581, issue #1448325, issue #1721518, issue #1297193)
 
     'Pathological' patterns should complete more quickly.
 
-* Flags argument for regex.split, regex.sub and regex.subn (#3482)
+* Flags argument for regex.split, regex.sub and regex.subn (issue #3482)
 
     ``regex.split``, ``regex.sub`` and ``regex.subn`` support a 'flags' argument.
 
@@ -110,19 +151,19 @@ Additional features
 
     ``regex.findall`` and ``regex.finditer`` support an 'overlapped' flag which permits overlapped matches.
 
-* Unicode escapes (#3665)
+* Unicode escapes (issue #3665)
 
     The Unicode escapes ``\uxxxx`` and ``\Uxxxxxxxx`` are supported.
 
-* Large patterns (#1160)
+* Large patterns (issue #1160)
 
     Patterns can be much larger.
 
-* Zero-width match with regex.finditer (#1647489)
+* Zero-width match with regex.finditer (issue #1647489)
 
     ``regex.finditer`` behaves correctly when it splits at a zero-width match.
 
-* Zero-width split with regex.split (#3262)
+* Zero-width split with regex.split (issue #3262)
 
     ``regex.split`` can split at a zero-width match if the ``NEW`` flag is turned on. When the flag is turned off the current behaviour is unchanged because the BDFL thinks that some existing software might depend on it.
 
