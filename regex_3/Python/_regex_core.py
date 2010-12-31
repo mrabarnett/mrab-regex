@@ -38,7 +38,9 @@ class error(Exception):
 # The exception for when a positional flag has been turned on in the old
 # behaviour.
 class _UnscopedFlagSet(Exception):
-   pass
+    def __init__(self, global_flags):
+        Exception.__init__(self)
+        self.global_flags = global_flags
 
 _ALPHA = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 _DIGITS = frozenset("0123456789")
@@ -1030,7 +1032,7 @@ def _parse_flags_subpattern(source, info):
             if new_behaviour:
                 # New behaviour: positional flags are scoped.
                 info.global_flags &= _GLOBAL_FLAGS
-            raise _UnscopedFlagSet()
+            raise _UnscopedFlagSet(info.global_flags)
         info.all_flags = info.global_flags | info.scoped_flags
         return None
 

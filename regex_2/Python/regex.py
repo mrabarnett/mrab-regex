@@ -333,9 +333,9 @@ def _compile(pattern, flags=0):
             source.ignore_space = bool(info.all_flags & VERBOSE)
             parsed = _rc._parse_pattern(source, info)
             break
-        except _rc._UnscopedFlagSet:
+        except _rc._UnscopedFlagSet, e:
             # Remember the global flags for the next attempt.
-            global_flags = info.global_flags
+            global_flags = e.global_flags
 
     if not source.at_end():
         raise error("trailing characters in pattern")
