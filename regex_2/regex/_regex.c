@@ -1427,14 +1427,14 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
             if (in_big_bitset(member, ch))
                 return node->match;
             break;
-        case RE_OP_CHARACTER: /* A character literal. */
+        case RE_OP_CHARACTER:
             /* values are: char_code */
             TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
               member->values[0]))
             if ((ch == member->values[0]) == member->match)
                 return node->match;
             break;
-        case RE_OP_PROPERTY: /* A character property. */
+        case RE_OP_PROPERTY:
             /* values are: property */
             TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
               member->values[0]))
@@ -4049,8 +4049,12 @@ advance:
 
             /* Matched the body again. */
             ++rp_data->count;
-            /* The counts are of type size_t, so the format needs to specify that. */
-            TRACE(("min is %" PY_FORMAT_SIZE_T "u, max is %" PY_FORMAT_SIZE_T "u, count is %" PY_FORMAT_SIZE_T "u\n", node->values[1], node->values[2], rp_data->count))
+            /* The counts are of type size_t, so the format needs to specify
+             * that.
+             */
+            TRACE(("min is %" PY_FORMAT_SIZE_T "u, max is %" PY_FORMAT_SIZE_T
+              "u, count is %" PY_FORMAT_SIZE_T "u\n", node->values[1],
+              node->values[2], rp_data->count))
 
             /* Could the body or tail match?
              *
@@ -4074,26 +4078,6 @@ advance:
                      * takes precedence. If the body fails to match then we
                      * want to try the tail before backtracking into the body.
                      */
-
-                    /* Record backtracking info for backtracking into the body.
-                     */
-                    bt_data = last_backtrack(state);
-                    if (bt_data->op == RE_OP_END_GREEDY_REPEAT &&
-                      !bt_data->repeat.position.node && bt_data->repeat.ofs ==
-                      ofs) {
-                        /* The last backtrack entry is for backtracking into
-                         * the body like we want to do now, so we can save work
-                         * by just re-using it.
-                         */
-                    } else {
-                        if (!add_backtrack(state, RE_OP_END_GREEDY_REPEAT))
-                            return RE_ERROR_MEMORY;
-                        bt_data = state->backtrack;
-                        bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
-                        bt_data->repeat.ofs = ofs;
-                    }
-                    bt_data->repeat.count = rp_data->count - 1;
-                    bt_data->repeat.max_count = rp_data->max_count;
 
                     /* Record backtracking info for matching the tail. */
                     if (!add_backtrack(state, RE_OP_END_GREEDY_REPEAT) ||
@@ -4183,7 +4167,9 @@ advance:
             Py_ssize_t ofs;
             RE_RepeatData* rp_data;
             BOOL try_body;
+            RE_Position next_body_position;
             BOOL try_tail;
+            RE_Position next_tail_position;
             RE_BacktrackData* bt_data;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
@@ -4195,7 +4181,8 @@ advance:
 
             /* Matched the body again. */
             ++rp_data->count;
-            TRACE(("min is %d, max is %d, count is %d\n", node->values[1], node->values[2], rp_data->count))
+            TRACE(("min is %d, max is %d, count is %d\n", node->values[1],
+              node->values[2], rp_data->count))
 
             /* Could the body or tail match?
              *
@@ -4203,8 +4190,16 @@ advance:
              * characters this time because that could stop us from advancing
              * through the text.
              */
-            try_body = rp_data->count < rp_data->max_count;
-            try_tail = rp_data->count >= node->values[1];
+            try_body = rp_data->count < rp_data->max_count && try_match(state,
+              &node->next_1, text_pos, &next_body_position);
+            try_tail = rp_data->count >= node->values[1] && try_match(state,
+              &node->next_2, text_pos, &next_tail_position);
+            if (!try_body && !try_tail) {
+                /* Neither the body nor the tail could match. */
+                --rp_data->count;
+                goto backtrack;
+            }
+
             if (try_body) {
                 if (try_tail) {
                     /* Both the body and the tail could match, but the tail
@@ -4213,28 +4208,70 @@ advance:
                      * head.
                      */
 
-                    /* Record backtracking info for backtracking into the body.
-                     */
+                    /* Record backtracking info for matching the body. */
                     if (!add_backtrack(state, RE_OP_END_LAZY_REPEAT) ||
                       !push_groups(state))
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
+                    bt_data->repeat.position = next_body_position;
                     bt_data->repeat.ofs = ofs;
-                    bt_data->repeat.position.node = node->next_1.node;
-                    bt_data->repeat.position.text_pos = text_pos;
+                    bt_data->repeat.count = rp_data->count;
+                    bt_data->repeat.max_count = rp_data->max_count;
 
                     /* Advance into the tail. */
                     node = node->next_2.node;
-                } else
+                } else {
                     /* Only the body could match. */
+
+                    /* Record backtracking info for backtracking into the body.
+                     */
+                    bt_data = last_backtrack(state);
+                    if (bt_data->op == RE_OP_END_LAZY_REPEAT &&
+                      !bt_data->repeat.position.node && bt_data->repeat.ofs ==
+                      ofs) {
+                        /* The last backtrack entry is for backtracking into
+                         * the body like we want to do now, so we can save work
+                         * by just re-using it.
+                         */
+                    } else {
+                        if (!add_backtrack(state, RE_OP_END_LAZY_REPEAT))
+                            return RE_ERROR_MEMORY;
+                        bt_data = state->backtrack;
+                        bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
+                        bt_data->repeat.ofs = ofs;
+                    }
+                    bt_data->repeat.count = rp_data->count - 1;
+                    bt_data->repeat.max_count = rp_data->max_count;
 
                     /* Advance into the body. */
                     node = node->next_1.node;
-            } else
+                }
+            } else {
                 /* Only the tail could match. */
+
+                /* Record backtracking info for backtracking into the body.
+                 */
+                bt_data = last_backtrack(state);
+                if (bt_data->op == RE_OP_END_LAZY_REPEAT &&
+                  !bt_data->repeat.position.node && bt_data->repeat.ofs == ofs)
+                  {
+                    /* The last backtrack entry is for backtracking into
+                     * the body like we want to do now, so we can save work
+                     * by just re-using it.
+                     */
+                } else {
+                    if (!add_backtrack(state, RE_OP_END_LAZY_REPEAT))
+                        return RE_ERROR_MEMORY;
+                    bt_data = state->backtrack;
+                    bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
+                    bt_data->repeat.ofs = ofs;
+                }
+                bt_data->repeat.count = rp_data->count - 1;
+                bt_data->repeat.max_count = rp_data->max_count;
 
                 /* Advance into the tail. */
                 node = node->next_2.node;
+            }
             break;
         }
         case RE_OP_END_OF_LINE: /* At the end of a line. */
@@ -4427,15 +4464,16 @@ advance:
                 bt_data->repeat.ofs = ofs;
                 bt_data->repeat.position.node = node->next_1.node;
                 bt_data->repeat.position.text_pos = text_pos;
+                bt_data->repeat.count = rp_data->count;
+                bt_data->repeat.max_count = rp_data->max_count;
 
                 /* Advance into the tail. */
                 node = node->next_2.node;
-            } else {
+            } else
                 /* The body must match. */
 
                 /* Advance into the body. */
                 node = node->next_1.node;
-            }
             break;
         }
         case RE_OP_LAZY_REPEAT_ONE: /* Lazy repeat for one character. */
@@ -4884,33 +4922,50 @@ backtrack:
             RE_RepeatData* rp_data;
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
+            /* Restore the count. */
             rp_data = &state->data[bt_data->repeat.ofs].repeat;
             rp_data->count = bt_data->repeat.count;
             rp_data->max_count = bt_data->repeat.max_count;
             if (bt_data->repeat.position.node) {
-                /* Restore then advance. */
+                /* Advance into the tail. */
                 pop_groups(state);
                 node = bt_data->repeat.position.node;
                 text_pos = bt_data->repeat.position.text_pos;
-                discard_backtrack(state);
+                if (rp_data->count > 0) {
+                    /* Restore then backtrack into body next time. */
+                    --bt_data->repeat.count;
+                    bt_data->repeat.position.node = NULL;
+                } else
+                    discard_backtrack(state);
                 goto advance;
             } else
-                /* Restore then backtrack. */
                 discard_backtrack(state);
             break;
         }
         case RE_OP_END_LAZY_REPEAT: /* End of a lazy repeat. */
         {
-            /* Restore then advance. */
             RE_RepeatData* rp_data;
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
-            pop_groups(state);
+            /* Restore the count. */
             rp_data = &state->data[bt_data->repeat.ofs].repeat;
-            node = bt_data->repeat.position.node;
-            text_pos = bt_data->repeat.position.text_pos;
-            discard_backtrack(state);
-            goto advance;
+            rp_data->count = bt_data->repeat.count;
+            rp_data->max_count = bt_data->repeat.max_count;
+            if (bt_data->repeat.position.node) {
+                /* Advance into the body. */
+                pop_groups(state);
+                node = bt_data->repeat.position.node;
+                text_pos = bt_data->repeat.position.text_pos;
+                if (rp_data->count > 0) {
+                    /* Restore then backtrack into body next time. */
+                    --bt_data->repeat.count;
+                    bt_data->repeat.position.node = NULL;
+                } else
+                    discard_backtrack(state);
+                goto advance;
+            } else
+                discard_backtrack(state);
+            break;
         }
         case RE_OP_FAILURE:
         {
@@ -4942,7 +4997,9 @@ backtrack:
                 count = count_one(state, start_node->next_2.node, text_pos,
                   start_node->values[2]);
 
-                /* If it's fewer than the maximum then skip over those characters. */
+                /* If it's fewer than the maximum then skip over those
+                 * characters.
+                 */
                 if (count < start_node->values[2])
                     text_pos += (Py_ssize_t)count * step;
                 break;
@@ -5304,8 +5361,7 @@ backtrack:
                         ptr -= step;
                         match = same_char_ign_3(ptr[-1], ch, ch_lower,
                           ch_upper, ch_title) && try_match(state,
-                          &node->next_1, ptr - (RE_UCHAR*)text,
-                          &next_position);
+                          &node->next_1, ptr - (RE_UCHAR*)text, &next_position);
                         if (match)
                             break;
                         if (ptr == limit_ptr)
@@ -5326,8 +5382,7 @@ backtrack:
                         ptr -= step;
                         match = same_char_ign_3(ptr[-1], ch, ch_lower,
                           ch_upper, ch_title) && try_match(state,
-                          &node->next_1, ptr - (RE_BCHAR*)text,
-                          &next_position);
+                          &node->next_1, ptr - (RE_BCHAR*)text, &next_position);
                         if (match)
                             break;
                         if (ptr == limit_ptr)
@@ -5355,8 +5410,7 @@ backtrack:
 
                         ptr -= step;
                         match = ptr[-1] == ch && try_match(state,
-                          &node->next_1, ptr - (RE_UCHAR*)text,
-                          &next_position);
+                          &node->next_1, ptr - (RE_UCHAR*)text, &next_position);
                         if (match)
                             break;
                         if (ptr == limit_ptr)
@@ -5376,8 +5430,7 @@ backtrack:
 
                         ptr -= step;
                         match = ptr[-1] == ch && try_match(state,
-                          &node->next_1, ptr - (RE_BCHAR*)text,
-                          &next_position);
+                          &node->next_1, ptr - (RE_BCHAR*)text, &next_position);
                         if (match)
                             break;
                         if (ptr == limit_ptr)
@@ -5960,8 +6013,11 @@ Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
             m = g * 2;
             state->marks[m] = begin;
             state->marks[m + 1] = end;
-            /* The string positions are of type Py_ssize_t, so the format needs to specify that. */
-            TRACE(("group %d at %d from %" PY_FORMAT_SIZE_T "d to %" PY_FORMAT_SIZE_T "d\n", g + 1, ofs, begin, end))
+            /* The string positions are of type Py_ssize_t, so the format needs
+             * to specify that.
+             */
+            TRACE(("group %d at %d from %" PY_FORMAT_SIZE_T "d to %"
+              PY_FORMAT_SIZE_T "d\n", g + 1, ofs, begin, end))
             if (begin >= 0 && end >= 0 && group_info[g].end_index >
               max_end_index) {
                 max_end_index = group_info[g].end_index;
@@ -6344,7 +6400,8 @@ Py_LOCAL_INLINE(Py_ssize_t) match_get_group_index(MatchObject* self, PyObject*
 Py_LOCAL_INLINE(PyObject*) match_get_group(MatchObject* self, PyObject* index,
   PyObject* def, BOOL allow_neg) {
     /* Check that the index is an integer or a string. */
-    if (PyInt_Check(index) || PyLong_Check(index) || PyUnicode_Check(index) || PyString_Check(index))
+    if (PyInt_Check(index) || PyLong_Check(index) || PyUnicode_Check(index) ||
+      PyString_Check(index))
         return match_get_group_by_index(self, match_get_group_index(self,
           index, allow_neg), def);
 
@@ -7494,7 +7551,7 @@ static PyTypeObject Splitter_Type = {
     "_" RE_MODULE "." "Splitter",
     sizeof(SplitterObject), 0,
     (destructor)splitter_dealloc,  /* tp_dealloc */
-    0,                            /* tp_print */
+    0,                             /* tp_print */
     (getattrfunc)splitter_getattr, /* tp_getattr */
 };
 
@@ -8486,27 +8543,27 @@ static PyTypeObject Pattern_Type = {
     0,
     "_" RE_MODULE "." "Pattern",
     sizeof(PatternObject), 0,
-    (destructor)pattern_dealloc,            /* tp_dealloc */
-    0,                                      /* tp_print */
-    (getattrfunc)pattern_getattr,           /* tp_getattr */
-    0,                                      /* tp_setattr */
-    0,                                      /* tp_compare */
-    0,                                      /* tp_repr */
-    0,                                      /* tp_as_number */
-    0,                                      /* tp_as_sequence */
-    0,                                      /* tp_as_mapping */
-    0,                                      /* tp_hash */
-    0,                                      /* tp_call */
-    0,                                      /* tp_str */
-    0,                                      /* tp_getattro */
-    0,                                      /* tp_setattro */
-    0,                                      /* tp_as_buffer */
-    Py_TPFLAGS_HAVE_WEAKREFS,               /* tp_flags */
-    pattern_doc,                            /* tp_doc */
-    0,                                      /* tp_traverse */
-    0,                                      /* tp_clear */
-    0,                                      /* tp_richcompare */
-    offsetof(PatternObject, weakreflist),   /* tp_weaklistoffset */
+    (destructor)pattern_dealloc,          /* tp_dealloc */
+    0,                                    /* tp_print */
+    (getattrfunc)pattern_getattr,         /* tp_getattr */
+    0,                                    /* tp_setattr */
+    0,                                    /* tp_compare */
+    0,                                    /* tp_repr */
+    0,                                    /* tp_as_number */
+    0,                                    /* tp_as_sequence */
+    0,                                    /* tp_as_mapping */
+    0,                                    /* tp_hash */
+    0,                                    /* tp_call */
+    0,                                    /* tp_str */
+    0,                                    /* tp_getattro */
+    0,                                    /* tp_setattro */
+    0,                                    /* tp_as_buffer */
+    Py_TPFLAGS_HAVE_WEAKREFS,             /* tp_flags */
+    pattern_doc,                          /* tp_doc */
+    0,                                    /* tp_traverse */
+    0,                                    /* tp_clear */
+    0,                                    /* tp_richcompare */
+    offsetof(PatternObject, weakreflist), /* tp_weaklistoffset */
 };
 
 /* Check whether 2 characters are the same. */
@@ -8920,34 +8977,34 @@ Py_LOCAL_INLINE(void) set_test_node(RE_NextNode* next) {
         return;
 
     switch (test->op) {
-    case RE_OP_ANY: /* Any character, except newline. */
-    case RE_OP_ANY_ALL: /* Any character at all. */
-    case RE_OP_ANY_ALL_REV: /* Any character at all. */
-    case RE_OP_ANY_REV: /* Any character, except newline. */
-    case RE_OP_BIG_BITSET: /* Big bitset. */
-    case RE_OP_BIG_BITSET_REV: /* Big bitset. */
-    case RE_OP_BOUNDARY: /* At word boundary. */
-    case RE_OP_CHARACTER: /* Character literal. */
-    case RE_OP_CHARACTER_IGN: /* Character literal, ignoring case. */
-    case RE_OP_CHARACTER_IGN_REV: /* Character literal, ignoring case. */
-    case RE_OP_CHARACTER_REV: /* Character literal. */
-    case RE_OP_DEFAULT_BOUNDARY: /* At a default word boundary. */
-    case RE_OP_END_OF_LINE: /* At the end of a line. */
-    case RE_OP_END_OF_STRING: /* At the end of the string. */
-    case RE_OP_END_OF_STRING_LINE: /* At end of string or final newline. */
-    case RE_OP_PROPERTY: /* Character property. */
-    case RE_OP_PROPERTY_REV: /* Character property. */
-    case RE_OP_SEARCH_ANCHOR: /* At the start of the search. */
-    case RE_OP_SET: /* Character set. */
-    case RE_OP_SET_REV: /* Character set. */
-    case RE_OP_SMALL_BITSET: /* Small bitset. */
-    case RE_OP_SMALL_BITSET_REV: /* Small bitset. */
-    case RE_OP_START_OF_LINE: /* At the start of a line. */
-    case RE_OP_START_OF_STRING: /* At the start of the string. */
-    case RE_OP_STRING: /* A string literal. */
-    case RE_OP_STRING_IGN: /* A string literal, ignoring case. */
-    case RE_OP_STRING_IGN_REV: /* A string literal, ignoring case. */
-    case RE_OP_STRING_REV: /* A string literal. */
+    case RE_OP_ANY:
+    case RE_OP_ANY_ALL:
+    case RE_OP_ANY_ALL_REV:
+    case RE_OP_ANY_REV:
+    case RE_OP_BIG_BITSET:
+    case RE_OP_BIG_BITSET_REV:
+    case RE_OP_BOUNDARY:
+    case RE_OP_CHARACTER:
+    case RE_OP_CHARACTER_IGN:
+    case RE_OP_CHARACTER_IGN_REV:
+    case RE_OP_CHARACTER_REV:
+    case RE_OP_DEFAULT_BOUNDARY:
+    case RE_OP_END_OF_LINE:
+    case RE_OP_END_OF_STRING:
+    case RE_OP_END_OF_STRING_LINE:
+    case RE_OP_PROPERTY:
+    case RE_OP_PROPERTY_REV:
+    case RE_OP_SEARCH_ANCHOR:
+    case RE_OP_SET:
+    case RE_OP_SET_REV:
+    case RE_OP_SMALL_BITSET:
+    case RE_OP_SMALL_BITSET_REV:
+    case RE_OP_START_OF_LINE:
+    case RE_OP_START_OF_STRING:
+    case RE_OP_STRING:
+    case RE_OP_STRING_IGN:
+    case RE_OP_STRING_IGN_REV:
+    case RE_OP_STRING_REV:
         next->match_next = test->next_1.node;
         next->match_step = test->step;
         break;

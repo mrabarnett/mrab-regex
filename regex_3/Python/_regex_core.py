@@ -1433,6 +1433,8 @@ class _RegexBase:
         return hash(self._key)
     def __eq__(self, other):
         return type(self) is type(other) and self._key == other._key
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 # Base for zero-width nodes.
 class _ZeroWidthBase(_RegexBase):
@@ -1710,8 +1712,8 @@ class _Character(_RegexBase):
     _op_name = {False: "CHARACTER", True: "CHARACTER_REV"}
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
     def __init__(self, ch, positive=True, zerowidth=False):
-        self.value = ch
-        self.positive, self.zerowidth = bool(positive), bool(zerowidth)
+        self.value, self.positive, self.zerowidth = ch, bool(positive), \
+          bool(zerowidth)
         self._key = self.__class__, self.value, self.positive, self.zerowidth
     def compile(self, reverse=False):
         flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
@@ -1720,7 +1722,12 @@ class _Character(_RegexBase):
         print("{}{} {} {}".format(_INDENT * indent, self._op_name[reverse],
           self._pos_text[self.positive], self.value))
     def firstset(self):
-        return set([self])
+        try:
+            return set([self])
+        except TypeError:
+            print("_key of character is {}".format(repr(self._key)))
+            print("Hash value is {}".format(hash(self._key)))
+            raise
     def has_simple_start(self):
         return True
     def is_case_sensitive(self, info):
@@ -1969,7 +1976,11 @@ class _Property(_RegexBase):
         print("{}{} {} {}".format(_INDENT * indent, self._op_name[reverse],
           self._pos_text[self.positive], self.value))
     def firstset(self):
-        return set([self])
+        try:
+            return set([self])
+        except TypeError:
+            print("_key of property is {}".format(self._key))
+            raise
     def has_simple_start(self):
         return True
     def is_case_sensitive(self, info):
@@ -2198,7 +2209,11 @@ class _Set(_RegexBase):
         for o in self.others:
             o.dump(indent + 1)
     def firstset(self):
-        return set([self])
+        try:
+            return set([self])
+        except TypeError:
+            print("_key of set is {}".format(self._key))
+            raise
     def has_simple_start(self):
         return True
     BITS_PER_INDEX = 16

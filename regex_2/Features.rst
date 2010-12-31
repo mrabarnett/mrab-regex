@@ -213,7 +213,7 @@ Additional features
 
 * Multithreading
 
-    The regex module releases the GIL when matching on instances of the built-in string classes, enabling other Python threads to run concurrently.
+    The regex module releases the GIL when matching on instances of the built-in (immutable) string classes, enabling other Python threads to run concurrently.
 
 * Matching a single grapheme
 

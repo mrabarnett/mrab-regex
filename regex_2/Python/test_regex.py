@@ -1,4 +1,5 @@
 import regex
+import string
 import sys
 import unicodedata
 from weakref import proxy
@@ -321,6 +322,9 @@ class Test:
 
         self.expect(lambda: regex.findall(r"X(Y[^Y]+?){1,2}( |Q)+DEF",
           "XYABCYPPQ\nQ DEF"), repr([('YPPQ\n', ' ')]))
+
+        self.expect(lambda: regex.findall(r"(\nTest(\n+.+?){0,2}?)?\n+End",
+          "\nTest\nxyz\nxyz\nEnd"), repr([('\nTest\nxyz\nxyz', '\nxyz')]))
 
     def test_bug_117612(self):
         self.expect(lambda: regex.findall(r"(a|(b))", "aba"), repr([('a', ''),
@@ -2061,6 +2065,13 @@ xyzabc
                     self.record_failure("Expected %s but got %s instead: (%s)" %
                       (expected, actual, fields))
 
+    def test_common_prefix(self):
+        # Very long common prefix
+        all = string.ascii_lowercase + string.digits + string.ascii_uppercase
+        side = all * 4
+        regexp = '(' + side + '|' + side + ')'
+        self.expect(lambda: type(regex.compile(regexp)), self.PATTERN_CLASS)
+        
     def run(self):
         print "Performing tests"
         print "================"
