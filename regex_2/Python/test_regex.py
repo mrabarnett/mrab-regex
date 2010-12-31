@@ -207,7 +207,7 @@ class Test:
 
     def test_bug_462270(self):
         # Test for empty sub() behaviour, see SF bug #462270
-        self.expect(lambda: regex.sub('x*', '-', 'abxd'), repr('-a-b-d-'))
+        self.expect(lambda: regex.sub('x*', '-', 'abxd'), repr('-a-b--d-'))
         self.expect(lambda: regex.sub('x+', '-', 'abxd'), repr('ab-d'))
 
     def test_symbolic_refs(self):
@@ -1216,9 +1216,17 @@ class Test:
 
     def test_unmatched_in_sub(self):
         # Issue 1519638.
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "xy"), repr('y-x'))
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "x"), repr('-x'))
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "y"), repr('y-'))
+        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "xy"), repr('y-x-'))
+        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "x"), repr('-x-'))
+        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "y"), repr('y--'))
+
+    def test_bug_10328 (self):
+        # Issue 10328.
+        pat = regex.compile(r'(?m)(?P<trailing_ws>[ \t]+\r*$)|(?P<no_final_newline>(?<=[^\n])\Z)')
+        self.expect(lambda: pat.subn(lambda m: '<' + m.lastgroup + '>',
+          'foobar '), repr(('foobar<trailing_ws><no_final_newline>', 2)))
+        self.expect(lambda: [m.group() for m in pat.finditer('foobar ')],
+          repr([' ', '']))
 
     def test_overlapped(self):
         self.expect(lambda: regex.findall(r"..", "abcde"), repr(['ab', 'cd']))

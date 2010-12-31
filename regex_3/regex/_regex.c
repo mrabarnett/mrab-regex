@@ -7060,8 +7060,10 @@ static PyObject* match_lastgroup_get(MatchObject* self) {
         PyObject* index = Py_BuildValue("n", self->lastgroup);
         PyObject* result = PyDict_GetItem(self->pattern->indexgroup, index);
         Py_DECREF(index);
-        if (result)
+        if (result) {
+            Py_INCREF(result);
             return result;
+        }
         PyErr_Clear();
     }
 
@@ -8015,11 +8017,11 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
 
         ++sub_count;
 
-        /* Continue from where we left off, but don't allow a contiguous
-         * zero-width match.
+        /* Continue from where we left off, but don't allow 2 contiguous
+         * zero-width matches.
          */
+        state.must_advance = state.match_pos == state.text_pos;
         last = state.text_pos;
-        state.must_advance = TRUE;
     }
 
     /* Get the segment following the last match. We use 'length' instead of
