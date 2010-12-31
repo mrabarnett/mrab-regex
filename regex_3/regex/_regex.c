@@ -3239,9 +3239,17 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_State* state, RE_Node* node,
     if (text_pos > limit)
         return -1;
 
+    /* Has the node been initialised for fast searching, if necessary? */
     if (!(node->status & RE_FAST_INIT)) {
-        node->status |= RE_FAST_INIT;
-        build_fast_tables(state->encoding, node, RE_OP_STRING);
+        acquire_GIL(state);
+
+        /* Double-check because of multithreading. */
+        if (!(node->status & RE_FAST_INIT)) {
+            build_fast_tables(state->encoding, node, RE_OP_STRING);
+            node->status |= RE_FAST_INIT;
+        }
+
+        release_GIL(state);
     }
 
     if (node->bad_character_offset)
@@ -3258,9 +3266,17 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
     if (text_pos > limit)
         return -1;
 
+    /* Has the node been initialised for fast searching, if necessary? */
     if (!(node->status & RE_FAST_INIT)) {
-        node->status |= RE_FAST_INIT;
-        build_fast_tables(state->encoding, node, RE_OP_STRING_IGN);
+        acquire_GIL(state);
+
+        /* Double-check because of multithreading. */
+        if (!(node->status & RE_FAST_INIT)) {
+            build_fast_tables(state->encoding, node, RE_OP_STRING_IGN);
+            node->status |= RE_FAST_INIT;
+        }
+
+        release_GIL(state);
     }
 
     if (node->bad_character_offset)
@@ -3277,9 +3293,17 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
     if (text_pos < limit)
         return -1;
 
+    /* Has the node been initialised for fast searching, if necessary? */
     if (!(node->status & RE_FAST_INIT)) {
-        node->status |= RE_FAST_INIT;
-        build_fast_tables_rev(state->encoding, node, RE_OP_STRING_REV);
+        acquire_GIL(state);
+
+        /* Double-check because of multithreading. */
+        if (!(node->status & RE_FAST_INIT)) {
+            build_fast_tables_rev(state->encoding, node, RE_OP_STRING_REV);
+            node->status |= RE_FAST_INIT;
+        }
+
+        release_GIL(state);
     }
 
     if (node->bad_character_offset)
@@ -3296,9 +3320,17 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_State* state, RE_Node* node,
     if (text_pos < limit)
         return -1;
 
+    /* Has the node been initialised for fast searching, if necessary? */
     if (!(node->status & RE_FAST_INIT)) {
-        node->status |= RE_FAST_INIT;
-        build_fast_tables_rev(state->encoding, node, RE_OP_STRING_IGN_REV);
+        acquire_GIL(state);
+
+        /* Double-check because of multithreading. */
+        if (!(node->status & RE_FAST_INIT)) {
+            build_fast_tables_rev(state->encoding, node, RE_OP_STRING_IGN_REV);
+            node->status |= RE_FAST_INIT;
+        }
+
+        release_GIL(state);
     }
 
     if (node->bad_character_offset)
