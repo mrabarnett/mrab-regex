@@ -5456,7 +5456,11 @@ backtrack:
             switch (test->op) {
             case RE_OP_CHARACTER:
             {
-                limit -= step;
+                size_t extra;
+
+                extra = available - max_count;
+                if (extra < 1)
+                    limit -= (1 - (Py_ssize_t)extra) * step;
 
                 if (state->wide) {
                     for (;;) {
@@ -5487,11 +5491,14 @@ backtrack:
             }
             case RE_OP_CHARACTER_IGN:
             {
+                size_t extra;
                 RE_CODE ch_lower;
                 RE_CODE ch_upper;
                 RE_CODE ch_title;
 
-                limit -= step;
+                extra = available - max_count;
+                if (extra < 1)
+                    limit -= (1 - (Py_ssize_t)extra) * step;
 
                 ch_lower = encoding->lower(ch);
                 ch_upper = encoding->upper(ch);
@@ -5530,11 +5537,14 @@ backtrack:
             }
             case RE_OP_CHARACTER_IGN_REV:
             {
+                size_t extra;
                 RE_CODE ch_lower;
                 RE_CODE ch_upper;
                 RE_CODE ch_title;
 
-                limit -= step;
+                extra = available - max_count;
+                if (extra < 1)
+                    limit -= (1 - (Py_ssize_t)extra) * step;
 
                 ch_lower = encoding->lower(ch);
                 ch_upper = encoding->upper(ch);
@@ -5573,7 +5583,11 @@ backtrack:
             }
             case RE_OP_CHARACTER_REV:
             {
-                limit -= step;
+                size_t extra;
+
+                extra = available - max_count;
+                if (extra < 1)
+                    limit -= (1 - (Py_ssize_t)extra) * step;
 
                 if (state->wide) {
                     for (;;) {
@@ -5604,7 +5618,11 @@ backtrack:
             }
             case RE_OP_STRING:
             {
-                limit -= test->value_count * step;
+                size_t extra;
+
+                extra = available - max_count;
+                if (extra < (size_t)test->value_count)
+                    limit -= (test->value_count - (Py_ssize_t)extra) * step;
 
                 if (state->wide) {
                     for (;;) {
@@ -5641,11 +5659,14 @@ backtrack:
             }
             case RE_OP_STRING_IGN:
             {
+                size_t extra;
                 RE_CODE ch_lower;
                 RE_CODE ch_upper;
                 RE_CODE ch_title;
 
-                limit -= test->value_count * step;
+                extra = available - max_count;
+                if (extra < (size_t)test->value_count)
+                    limit -= (test->value_count - (Py_ssize_t)extra) * step;
 
                 ch_lower = encoding->lower(ch);
                 ch_upper = encoding->upper(ch);
@@ -5690,11 +5711,14 @@ backtrack:
             }
             case RE_OP_STRING_IGN_REV:
             {
+                size_t extra;
                 RE_CODE ch_lower;
                 RE_CODE ch_upper;
                 RE_CODE ch_title;
 
-                limit -= test->value_count * step;
+                extra = available - max_count;
+                if (extra < (size_t)test->value_count)
+                    limit -= (test->value_count - (Py_ssize_t)extra) * step;
 
                 ch = test->values[test->value_count - 1];
                 ch_lower = encoding->lower(ch);
@@ -5740,7 +5764,11 @@ backtrack:
             }
             case RE_OP_STRING_REV:
             {
-                limit -= test->value_count * step;
+                size_t extra;
+
+                extra = available - max_count;
+                if (extra < (size_t)test->value_count)
+                    limit -= (test->value_count - (Py_ssize_t)extra) * step;
 
                 ch = test->values[test->value_count - 1];
 
