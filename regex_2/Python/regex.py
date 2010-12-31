@@ -167,15 +167,15 @@ def search(pattern, string, flags=0, pos=None, endpos=None):
     object, or None if no match was found."""
     return _compile(pattern, flags).search(string, pos, endpos)
 
-def sub(pattern, repl, string, count=0, flags=0):
+def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None):
     """Return the string obtained by replacing the leftmost non-overlapping
     occurrences of the pattern in string by the replacement repl.  repl can be
     either a string or a callable; if a string, backslash escapes in it are
     processed.  If it is a callable, it's passed the match object and must
     return a replacement string to be used."""
-    return _compile(pattern, flags).sub(repl, string, count)
+    return _compile(pattern, flags).sub(repl, string, count, pos, endpos)
 
-def subn(pattern, repl, string, count=0, flags=0):
+def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None):
     """Return a 2-tuple containing (new_string, number). new_string is the
     string obtained by replacing the leftmost non-overlapping occurrences of the
     pattern in the source string by the replacement repl.  number is the number
@@ -183,7 +183,7 @@ def subn(pattern, repl, string, count=0, flags=0):
     if a string, backslash escapes in it are processed. If it is a callable,
     it's passed the match object and must return a replacement string to be
     used."""
-    return _compile(pattern, flags).subn(repl, string, count)
+    return _compile(pattern, flags).subn(repl, string, count, pos, endpos)
 
 def split(pattern, string, maxsplit=0, flags=0):
     """Split the source string by the occurrences of the pattern, returning a

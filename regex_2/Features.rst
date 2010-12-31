@@ -90,6 +90,10 @@ Additional features
 
     ``regex.split``, ``regex.sub`` and ``regex.subn`` support a 'flags' argument.
 
+* Pos and endpos arguments for regex.sub and regex.subn
+
+    ``regex.sub`` and ``regex.subn`` support 'pos' and 'endpos' arguments.
+
 * 'Overlapped' argument for regex.findall and regex.finditer
 
     ``regex.findall`` and ``regex.finditer`` support an 'overlapped' flag which permits overlapped matches.

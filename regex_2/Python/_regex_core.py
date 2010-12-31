@@ -1085,7 +1085,7 @@ def _parse_escape(source, info, in_set):
         return _parse_named_char(source, info, in_set)
     elif ch in "pP":
         # A Unicode property.
-        return _parse_property(source, info, in_set, ch)
+        return _parse_property(source, info, in_set, ch == "p")
     elif ch == "X" and not in_set:
         return _grapheme()
     elif ch in _ALPHA:
@@ -1216,13 +1216,18 @@ def _parse_named_char(source, info, in_set):
     source.pos = here
     return _char_literal(info, in_set, "N")
 
-def _parse_property(source, info, in_set, prop_ch):
+def _parse_property(source, info, in_set, positive):
     "Parses a Unicode property."
     here = source.pos
     ch = source.get()
     if ch == "{":
         name = []
         ch = source.get()
+        while ch.isspace():
+            ch = source.get()
+        negate = ch == "^"
+        if negate:
+            ch = source.get()
         while ch and (ch.isalnum() or ch.isspace() or ch in "&_-."):
             name.append(ch)
             ch = source.get()
@@ -1233,10 +1238,10 @@ def _parse_property(source, info, in_set, prop_ch):
             name = "".join(name)
             value = _properties.get(norm_name)
             if value is not None:
-                return _Property(value, positive=prop_ch == "p")
+                return _Property(value, positive=positive != negate)
             raise error("undefined property name")
     source.pos = here
-    return _char_literal(info, in_set, prop_ch)
+    return _char_literal(info, in_set, "p" if positive else "P")
 
 def _grapheme():
     "Returns a sequence that matches a grapheme."
