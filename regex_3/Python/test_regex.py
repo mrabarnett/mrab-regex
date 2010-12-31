@@ -301,6 +301,9 @@ class Test:
         self.expect(lambda: regex.findall(r"[^a]{2,3}[A-Z]", "\n   S"),
           ascii(['   S']))
 
+        self.expect(lambda: regex.findall(r"X(Y[^Y]+?){1,2}( |Q)+DEF",
+          "XYABCYPPQ\nQ DEF"), ascii([('YPPQ\n', ' ')]))
+
     def test_bug_117612(self):
         self.expect(lambda: regex.findall(r"(a|(b))", "aba"), ascii([('a', ''),
           ('b', 'b'), ('a', '')]))

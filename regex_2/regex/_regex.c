@@ -1430,7 +1430,7 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
         case RE_OP_CHARACTER: /* A character literal. */
             /* values are: char_code */
             TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
-              values[0]))
+              member->values[0]))
             if ((ch == member->values[0]) == member->match)
                 return node->match;
             break;
@@ -4049,6 +4049,8 @@ advance:
 
             /* Matched the body again. */
             ++rp_data->count;
+            /* The counts are of type size_t, so the format needs to specify that. */
+            TRACE(("min is %" PY_FORMAT_SIZE_T "u, max is %" PY_FORMAT_SIZE_T "u, count is %" PY_FORMAT_SIZE_T "u\n", node->values[1], node->values[2], rp_data->count))
 
             /* Could the body or tail match?
              *
@@ -4136,6 +4138,26 @@ advance:
                  * we want to backtrack into the body.
                  */
 
+                /* Record backtracking info for backtracking into the body.
+                 */
+                bt_data = last_backtrack(state);
+                if (bt_data->op == RE_OP_END_GREEDY_REPEAT &&
+                  !bt_data->repeat.position.node && bt_data->repeat.ofs ==
+                  ofs) {
+                    /* The last backtrack entry is for backtracking into
+                     * the body like we want to do now, so we can save work
+                     * by just re-using it.
+                     */
+                } else {
+                    if (!add_backtrack(state, RE_OP_END_GREEDY_REPEAT))
+                        return RE_ERROR_MEMORY;
+                    bt_data = state->backtrack;
+                    bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
+                    bt_data->repeat.ofs = ofs;
+                }
+                bt_data->repeat.count = rp_data->count - 1;
+                bt_data->repeat.max_count = rp_data->max_count;
+
                 /* Advance into the tail. */
                 node = next_tail_position.node;
                 text_pos = next_tail_position.text_pos;
@@ -4173,6 +4195,7 @@ advance:
 
             /* Matched the body again. */
             ++rp_data->count;
+            TRACE(("min is %d, max is %d, count is %d\n", node->values[1], node->values[2], rp_data->count))
 
             /* Could the body or tail match?
              *
@@ -4842,12 +4865,14 @@ advance:
 backtrack:
     for (;;) {
         RE_BacktrackData* bt_data;
+        TRACE(("BACKTRACK "))
 
         bt_data = last_backtrack(state);
 
         switch (bt_data->op) {
         case RE_OP_BRANCH: /* 2-way branch. */
         {
+            TRACE(("%s\n", re_op_text[bt_data->op]))
             pop_groups(state);
             node = bt_data->branch.position.node;
             text_pos = bt_data->branch.position.text_pos;
@@ -4857,6 +4882,7 @@ backtrack:
         case RE_OP_END_GREEDY_REPEAT: /* End of a greedy repeat. */
         {
             RE_RepeatData* rp_data;
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
             rp_data = &state->data[bt_data->repeat.ofs].repeat;
             rp_data->count = bt_data->repeat.count;
@@ -4877,6 +4903,7 @@ backtrack:
         {
             /* Restore then advance. */
             RE_RepeatData* rp_data;
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
             pop_groups(state);
             rp_data = &state->data[bt_data->repeat.ofs].repeat;
@@ -4888,6 +4915,7 @@ backtrack:
         case RE_OP_FAILURE:
         {
             Py_ssize_t end_pos;
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
             /* Do we have to advance? */
             if (!search)
@@ -4929,6 +4957,7 @@ backtrack:
         case RE_OP_GREEDY_REPEAT: /* Greedy repeat. */
         {
             RE_RepeatData* rp_data;
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
             pop_groups(state);
             rp_data = &state->data[bt_data->repeat.ofs].repeat;
@@ -4947,6 +4976,7 @@ backtrack:
             BOOL match;
             RE_CODE ch;
             BOOL m;
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
             node = bt_data->repeat.position.node;
 
@@ -5408,6 +5438,7 @@ backtrack:
         case RE_OP_LAZY_REPEAT: /* Lazy repeat. */
         {
             RE_RepeatData* rp_data;
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
             pop_groups(state);
             rp_data = &state->data[bt_data->repeat.ofs].repeat;
@@ -5430,6 +5461,7 @@ backtrack:
             BOOL match;
             RE_CODE ch;
             BOOL m;
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
             node = bt_data->repeat.position.node;
 
@@ -5859,6 +5891,7 @@ backtrack:
             break;
         }
         default:
+            TRACE(("UNKNOWN OP %d\n", bt_data->op))
             return RE_ERROR_ILLEGAL;
         }
     }
@@ -5927,7 +5960,8 @@ Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
             m = g * 2;
             state->marks[m] = begin;
             state->marks[m + 1] = end;
-            TRACE(("group %d at %d from %zd to %zd\n", g + 1, ofs, begin, end))
+            /* The string positions are of type Py_ssize_t, so the format needs to specify that. */
+            TRACE(("group %d at %d from %" PY_FORMAT_SIZE_T "d to %" PY_FORMAT_SIZE_T "d\n", g + 1, ofs, begin, end))
             if (begin >= 0 && end >= 0 && group_info[g].end_index >
               max_end_index) {
                 max_end_index = group_info[g].end_index;

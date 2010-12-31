@@ -6,8 +6,8 @@ For testing and comparison with the current 're' module the new implementation i
 Please note that certain aspects of this module have changed from those of previous versions to make it conform better to the 're' module.
 
 
-64-bit builds
--------------
+Building for 64-bits
+--------------------
 
 If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The 're' module appears to limit string positions to 32 bits, even on a 64-bit build.)
 
