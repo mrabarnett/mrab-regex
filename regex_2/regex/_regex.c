@@ -5896,7 +5896,7 @@ Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
             m = g * 2;
             state->marks[m] = begin;
             state->marks[m + 1] = end;
-            TRACE(("group %d at %d from %d to %d\n", g + 1, ofs, begin, end))
+            TRACE(("group %d at %d from %zd to %zd\n", g + 1, ofs, begin, end))
             if (begin >= 0 && end >= 0 && group_info[g].end_index >
               max_end_index) {
                 max_end_index = group_info[g].end_index;
@@ -5952,7 +5952,6 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
 
     /* Determine buffer size. */
     bytes = buffer->bf_getreadbuffer(string, 0, characters);
-
     if (bytes < 0) {
         PyErr_SetString(PyExc_TypeError, "buffer has negative size");
         return FALSE;
@@ -6341,10 +6340,10 @@ static PyObject* match_start(MatchObject* self, PyObject* args) {
     }
 
     if (index == 0)
-        return Py_BuildValue("i", self->pos);
+        return Py_BuildValue("n", self->pos);
 
     /* A mark is -1 if the group is undefined. */
-    return Py_BuildValue("i", self->marks[index * 2 - 2]);
+    return Py_BuildValue("n", self->marks[index * 2 - 2]);
 }
 
 /* MatchObject's 'end' method. */
@@ -6362,10 +6361,10 @@ static PyObject* match_end(MatchObject* self, PyObject* args) {
     }
 
     if (index == 0)
-        return Py_BuildValue("i", self->endpos);
+        return Py_BuildValue("n", self->endpos);
 
     /* A mark is -1 if the group is undefined. */
-    return Py_BuildValue("i", self->marks[index * 2 - 1]);
+    return Py_BuildValue("n", self->marks[index * 2 - 1]);
 }
 
 /* Creates an integer next (2-tuple). */
@@ -6951,7 +6950,7 @@ static PyObject* match_getattr(MatchObject* self, char* name) {
 
     if (!strcmp(name, "lastindex")) {
         if (self->lastindex >= 0)
-            return Py_BuildValue("i", self->lastindex);
+            return Py_BuildValue("n", self->lastindex);
 
         Py_INCREF(Py_None);
         return Py_None;
@@ -6959,7 +6958,7 @@ static PyObject* match_getattr(MatchObject* self, char* name) {
 
     if (!strcmp(name, "lastgroup")) {
         if (self->pattern->indexgroup && self->lastgroup >= 0) {
-            PyObject* index = Py_BuildValue("i", self->lastgroup);
+            PyObject* index = Py_BuildValue("n", self->lastgroup);
             PyObject* result = PyDict_GetItem(self->pattern->indexgroup, index);
             Py_DECREF(index);
             if (result)
@@ -7609,7 +7608,7 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
   string, RE_State* state, Py_ssize_t group_count) {
     Py_ssize_t group;
 
-    if (PyString_Check(item) || PyUnicode_Check(item)) {
+    if (PyUnicode_Check(item) || PyString_Check(item)) {
         /* It's a literal, which can be added directly to the list. */
         Py_INCREF(item);
         return item;
@@ -7733,7 +7732,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         Py_INCREF(string);
 
         if (subn)
-            return Py_BuildValue("Ni", string, 0);
+            return Py_BuildValue("Nn", string, 0);
 
         return string;
     }
@@ -7934,7 +7933,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         return NULL;
 
     if (subn)
-        return Py_BuildValue("Ni", item, sub_count);
+        return Py_BuildValue("Nn", item, sub_count);
 
     return item;
 
@@ -8828,7 +8827,7 @@ Py_LOCAL_INLINE(void) mark_named_groups(PatternObject* pattern) {
         PyObject* index;
 
         group_info = &pattern->group_info[i];
-        index = Py_BuildValue("i", i + 1);
+        index = Py_BuildValue("n", i + 1);
         group_info->has_name = PyDict_Contains(pattern->indexgroup, index);
         Py_DECREF(index);
     }
@@ -10347,7 +10346,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     BOOL unicode;
     BOOL ok;
 
-    if (!PyArg_ParseTuple(args, "OiOOO", &pattern, &flags, &code_list,
+    if (!PyArg_ParseTuple(args, "OnOOO", &pattern, &flags, &code_list,
       &groupindex, &indexgroup))
         return NULL;
 
@@ -10444,7 +10443,7 @@ error:
 
 /* Gets the size of the codewords. */
 static PyObject* get_code_size(PyObject* self, PyObject* unused) {
-    return Py_BuildValue("l", sizeof(RE_CODE));
+    return Py_BuildValue("n", sizeof(RE_CODE));
 }
 
 /* Sets the exception to return on error. */

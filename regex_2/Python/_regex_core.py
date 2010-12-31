@@ -162,8 +162,8 @@ def _define_opcodes(opcodes):
 _OP = _define_opcodes(_OPCODES)
 
 # The regular expression flags.
-_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE,
-  "n": NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE}
+_REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "n":
+  NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE}
 
 # Unicode properties.
 _PROPERTIES = """\
@@ -1534,7 +1534,8 @@ class _Boundary(_ZeroWidthBase):
     def compile(self, reverse=False):
         return [(_OP.BOUNDARY, int(self.positive))]
     def dump(self, indent=0, reverse=False):
-        print "%sBOUNDARY %s" % (_INDENT * indent, self._pos_text[self.positive])
+        print "%sBOUNDARY %s" % (_INDENT * indent,
+          self._pos_text[self.positive])
 
 class _Branch(_StructureBase):
     def __init__(self, branches):
@@ -1862,10 +1863,11 @@ class _GreedyRepeat(_StructureBase):
         return self
     def dump(self, indent=0, reverse=False):
         if self.max_count is None:
-            print "%s%s %s INF" % (_INDENT * indent, self._op_name, self.min_count)
+            print "%s%s %s INF" % (_INDENT * indent, self._op_name,
+              self.min_count)
         else:
-            print "%s%s %s %s" % (_INDENT * indent, self._op_name, self.min_count,
-              self.max_count)
+            print "%s%s %s %s" % (_INDENT * indent, self._op_name,
+              self.min_count, self.max_count)
         self.subpattern.dump(indent + 1, reverse)
     def firstset(self):
         fs = self.subpattern.firstset()
@@ -1941,8 +1943,8 @@ class _LookAround(_StructureBase):
         return [(_OP.LOOKAROUND, int(self.positive), int(not self.behind))] + \
           self.subpattern.compile(self.behind) + [(_OP.END, )]
     def dump(self, indent=0, reverse=False):
-        print "%sLOOKAROUND %s %s" % (_INDENT * indent, self._dir_text[self.behind],
-          self._pos_text[self.positive])
+        print "%sLOOKAROUND %s %s" % (_INDENT * indent,
+          self._dir_text[self.behind], self._pos_text[self.positive])
         self.subpattern.dump(indent + 1, self.behind)
     def firstset(self):
         return set([None])
@@ -1995,7 +1997,8 @@ class _RefGroup(_RegexBase):
     def remove_captures(self):
         raise error("group reference not allowed")
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s" % (_INDENT * indent, self._op_name[reverse], self.group)
+        print "%s%s %s" % (_INDENT * indent, self._op_name[reverse],
+          self.group)
 
 class _RefGroupIgn(_RefGroup):
     _opcode = {False: _OP.REF_GROUP_IGN, True: _OP.REF_GROUP_IGN_REV}
@@ -2182,7 +2185,8 @@ class _Set(_RegexBase):
                     if start == end:
                         print "%sCHARACTER %s" % (_INDENT * (indent + 1), start)
                     else:
-                        print "%sRANGE %s %s" % (_INDENT * (indent + 1), start, end)
+                        print "%sRANGE %s %s" % (_INDENT * (indent + 1), start,
+                          end)
                     start = c
                 end = c
             if start == end:
@@ -2410,9 +2414,6 @@ class _Info(object):
         else:
             group = self.group_index.get(name)
         return self.group_state.get(group) == self.OPEN
-
-# --------------------------------------------------------------------
-# Experimental stuff (see python-dev discussions for details).
 
 class Scanner:
     def __init__(self, lexicon, flags=0):

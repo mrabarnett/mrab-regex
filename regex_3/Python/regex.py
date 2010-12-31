@@ -95,12 +95,12 @@ resulting RE will match the second character.
     \t       Matches the tab character.
     \uXXXX   Matches the Unicode codepoint with 4-digit hex code XXXX.
     \v       Matches the vertical tab character.
-    \w       Matches any alphanumeric character; equivalent to [a-zA-Z0-9_]
-             when matching a bytestring or a Unicode string with the ASCII
-             flag, or the whole range of Unicode alphanumeric characters
-             (letters plus digits plus underscore) when matching a Unicode
-             string. With LOCALE, it will match the set [0-9_] plus characters
-             defined as letters for the current locale.
+    \w       Matches any alphanumeric character; equivalent to [a-zA-Z0-9_] when
+             matching a bytestring or a Unicode string with the ASCII flag, or
+             the whole range of Unicode alphanumeric characters (letters plus
+             digits plus underscore) when matching a Unicode string. With
+             LOCALE, it will match the set [0-9_] plus characters defined as
+             letters for the current locale.
     \W       Matches the complement of \w; equivalent to [^\w].
     \xXX     Matches the character with 2-digit hex code XX.
     \X       Matches a grapheme.
@@ -176,11 +176,11 @@ def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None):
     return _compile(pattern, flags).sub(repl, string, count, pos, endpos)
 
 def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None):
-    """Return a 2-tuple containing (new_string, number). new_string is the
+    """Return a 2-tuple containing (new_string, number).  new_string is the
     string obtained by replacing the leftmost non-overlapping occurrences of the
     pattern in the source string by the replacement repl.  number is the number
-    of substitutions that were made. repl can be either a string or a callable;
-    if a string, backslash escapes in it are processed. If it is a callable,
+    of substitutions that were made.  repl can be either a string or a callable;
+    if a string, backslash escapes in it are processed.  If it is a callable,
     it's passed the match object and must return a replacement string to be
     used."""
     return _compile(pattern, flags).subn(repl, string, count, pos, endpos)
@@ -306,7 +306,6 @@ def _compile(pattern, flags=0):
         raise ValueError("can't use UNICODE flag with a bytes pattern")
     if isinstance(pattern, str) and not (info.global_flags & all_flags):
         info.global_flags |= UNICODE
-
 
     # Fix the group references.
     parsed.fix_groups()

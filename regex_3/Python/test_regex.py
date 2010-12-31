@@ -54,44 +54,44 @@ class Test:
             self.record_failure()
 
     def test_search_star_plus(self):
-        self.expect(lambda: regex.search('a*', 'xxx').span(0), "(0, 0)")
-        self.expect(lambda: regex.search('x*', 'axx').span(), "(0, 0)")
-        self.expect(lambda: regex.search('x+', 'axx').span(0), "(1, 3)")
-        self.expect(lambda: regex.search('x+', 'axx').span(), "(1, 3)")
-        self.expect(lambda: regex.search('x', 'aaa'), "None")
-        self.expect(lambda: regex.match('a*', 'xxx').span(0), "(0, 0)")
-        self.expect(lambda: regex.match('a*', 'xxx').span(), "(0, 0)")
-        self.expect(lambda: regex.match('x*', 'xxxa').span(0), "(0, 3)")
-        self.expect(lambda: regex.match('x*', 'xxxa').span(), "(0, 3)")
-        self.expect(lambda: regex.match('a+', 'xxx'), "None")
+        self.expect(lambda: regex.search('a*', 'xxx').span(0), ascii((0, 0)))
+        self.expect(lambda: regex.search('x*', 'axx').span(), ascii((0, 0)))
+        self.expect(lambda: regex.search('x+', 'axx').span(0), ascii((1, 3)))
+        self.expect(lambda: regex.search('x+', 'axx').span(), ascii((1, 3)))
+        self.expect(lambda: regex.search('x', 'aaa'), ascii(None))
+        self.expect(lambda: regex.match('a*', 'xxx').span(0), ascii((0, 0)))
+        self.expect(lambda: regex.match('a*', 'xxx').span(), ascii((0, 0)))
+        self.expect(lambda: regex.match('x*', 'xxxa').span(0), ascii((0, 3)))
+        self.expect(lambda: regex.match('x*', 'xxxa').span(), ascii((0, 3)))
+        self.expect(lambda: regex.match('a+', 'xxx'), ascii(None))
 
     def bump_num(self, matchobj):
         int_value = int(matchobj[0])
         return str(int_value + 1)
 
     def test_basic_regex_sub(self):
-        self.expect(lambda: regex.sub("(?i)b+", "x", "bbbb BBBB"), "'x x'")
+        self.expect(lambda: regex.sub("(?i)b+", "x", "bbbb BBBB"), ascii('x x'))
         self.expect(lambda: regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y'),
-          "'9.3 -3 24x100y'")
+          ascii('9.3 -3 24x100y'))
         self.expect(lambda: regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y',
-          3), "'9.3 -3 23x99y'")
+          3), ascii('9.3 -3 23x99y'))
 
         self.expect(lambda: regex.sub('.', lambda m: r"\n", 'x'), ascii("\\n"))
         self.expect(lambda: regex.sub('.', r"\n", 'x'), ascii("\n"))
 
         s = r"\1\1"
-        self.expect(lambda: regex.sub('(.)', s, 'x'), "'xx'")
+        self.expect(lambda: regex.sub('(.)', s, 'x'), ascii('xx'))
         self.expect(lambda: regex.sub('(.)', regex.escape(s), 'x'), ascii(s))
         self.expect(lambda: regex.sub('(.)', lambda m: s, 'x'), ascii(s))
 
         self.expect(lambda: regex.sub('(?P<a>x)', r'\g<a>\g<a>', 'xx'),
-          "'xxxx'")
+          ascii('xxxx'))
         self.expect(lambda: regex.sub('(?P<a>x)', r'\g<a>\g<1>', 'xx'),
-          "'xxxx'")
+          ascii('xxxx'))
         self.expect(lambda: regex.sub('(?P<unk>x)', r'\g<unk>\g<unk>', 'xx'),
-          "'xxxx'")
+          ascii('xxxx'))
         self.expect(lambda: regex.sub('(?P<unk>x)', r'\g<1>\g<1>', 'xx'),
-          "'xxxx'")
+          ascii('xxxx'))
 
         self.expect(lambda: regex.sub('a',
           r'\t\n\v\r\f\a\b\B\Z\a\A\w\W\s\S\d\D', 'a'),
@@ -101,7 +101,7 @@ class Test:
         self.expect(lambda: regex.sub('a', '\t\n\v\r\f\a', 'a'), ascii(chr(9) +
           chr(10) + chr(11) + chr(13) + chr(12) + chr(7)))
 
-        self.expect(lambda: regex.sub(r'^\s*', 'X', 'test'), "'Xtest'")
+        self.expect(lambda: regex.sub(r'^\s*', 'X', 'test'), ascii('Xtest'))
 
     def test_bug_449964(self):
         # Fails for group followed by other escape.
@@ -175,26 +175,26 @@ class Test:
         self.expect(lambda: regex.sub('x', r'\800', 'x'),
           self.INVALID_GROUP_REF) # r'\80' + '0'
 
-        # In Python2.3 (etc), these loop endlessly in sre_parser.py.
+        # In Python 2.3 (etc), these loop endlessly in sre_parser.py.
         self.expect(lambda: regex.sub('(((((((((((x)))))))))))', r'\11', 'x'),
-          "'x'")
+          ascii('x'))
         self.expect(lambda: regex.sub('((((((((((y))))))))))(.)', r'\118',
-          'xyz'), "'xz8'")
+          'xyz'), ascii('xz8'))
         self.expect(lambda: regex.sub('((((((((((y))))))))))(.)', r'\11a',
-          'xyz'), "'xza'")
+          'xyz'), ascii('xza'))
 
     def test_qualified_re_sub(self):
-        self.expect(lambda: regex.sub('a', 'b', 'aaaaa'), "'bbbbb'")
-        self.expect(lambda: regex.sub('a', 'b', 'aaaaa', 1), "'baaaa'")
+        self.expect(lambda: regex.sub('a', 'b', 'aaaaa'), ascii('bbbbb'))
+        self.expect(lambda: regex.sub('a', 'b', 'aaaaa', 1), ascii('baaaa'))
 
     def test_bug_114660(self):
         self.expect(lambda: regex.sub(r'(\S)\s+(\S)', r'\1 \2', 'hello  there'),
-          "'hello there'")
+          ascii('hello there'))
 
     def test_bug_462270(self):
         # Test for empty sub() behaviour, see SF bug #462270
-        self.expect(lambda: regex.sub('x*', '-', 'abxd'), "'-a-b-d-'")
-        self.expect(lambda: regex.sub('x+', '-', 'abxd'), "'ab-d'")
+        self.expect(lambda: regex.sub('x*', '-', 'abxd'), ascii('-a-b-d-'))
+        self.expect(lambda: regex.sub('x+', '-', 'abxd'), ascii('ab-d'))
 
     def test_symbolic_refs(self):
         self.expect(lambda: regex.sub('(?P<a>x)', r'\g<a', 'xx'),
@@ -212,179 +212,191 @@ class Test:
         # The new behaviour of unmatched but valid groups is to treat them like
         # empty matches in the replacement template, like in Perl.
         self.expect(lambda: regex.sub('(?P<a>x)|(?P<b>y)', r'\g<b>', 'xx'),
-          "''")
-        self.expect(lambda: regex.sub('(?P<a>x)|(?P<b>y)', r'\2', 'xx'), "''")
+          ascii(''))
+        self.expect(lambda: regex.sub('(?P<a>x)|(?P<b>y)', r'\2', 'xx'),
+          ascii(''))
 
         # The old behaviour was to raise it as an IndexError.
         self.expect(lambda: regex.sub('(?P<a>x)', r'\g<-1>', 'xx'),
           self.BAD_GROUP_NAME)
 
     def test_re_subn(self):
-        self.expect(lambda: regex.subn("(?i)b+", "x", "bbbb BBBB"),
-          "('x x', 2)")
-        self.expect(lambda: regex.subn("b+", "x", "bbbb BBBB"),
-         "('x BBBB', 1)")
-        self.expect(lambda: regex.subn("b+", "x", "xyz"), "('xyz', 0)")
-        self.expect(lambda: regex.subn("b*", "x", "xyz"), "('xxxyxzx', 4)")
-        self.expect(lambda: regex.subn("b*", "x", "xyz", 2), "('xxxyz', 2)")
+        self.expect(lambda: regex.subn("(?i)b+", "x", "bbbb BBBB"), ascii(('x x',
+          2)))
+        self.expect(lambda: regex.subn("b+", "x", "bbbb BBBB"), ascii(('x BBBB',
+          1)))
+        self.expect(lambda: regex.subn("b+", "x", "xyz"), ascii(('xyz', 0)))
+        self.expect(lambda: regex.subn("b*", "x", "xyz"), ascii(('xxxyxzx', 4)))
+        self.expect(lambda: regex.subn("b*", "x", "xyz", 2), ascii(('xxxyz', 2)))
 
     def test_re_split(self):
-        self.expect(lambda: regex.split(":", ":a:b::c"),
-          "['', 'a', 'b', '', 'c']")
-        self.expect(lambda: regex.split(":*", ":a:b::c"),
-          "['', 'a', 'b', 'c']")
-        self.expect(lambda: regex.split("(:*)", ":a:b::c"),
-          "['', ':', 'a', ':', 'b', '::', 'c']")
-        self.expect(lambda: regex.split("(?::*)", ":a:b::c"),
-          "['', 'a', 'b', 'c']")
-        self.expect(lambda: regex.split("(:)*", ":a:b::c"),
-          "['', ':', 'a', ':', 'b', ':', 'c']")
-        self.expect(lambda: regex.split("([b:]+)", ":a:b::c"),
-          "['', ':', 'a', ':b::', 'c']")
-        self.expect(lambda: regex.split("(b)|(:+)", ":a:b::c"),
-          "['', None, ':', 'a', None, ':', '', 'b', None, '', None, '::', 'c']")
-        self.expect(lambda: regex.split("(?:b)|(?::+)", ":a:b::c"),
-          "['', 'a', '', '', 'c']")
+        self.expect(lambda: regex.split(":", ":a:b::c"), ascii(['', 'a', 'b', '',
+          'c']))
+        self.expect(lambda: regex.split(":*", ":a:b::c"), ascii(['', 'a', 'b',
+          'c']))
+        self.expect(lambda: regex.split("(:*)", ":a:b::c"), ascii(['', ':', 'a',
+          ':', 'b', '::', 'c']))
+        self.expect(lambda: regex.split("(?::*)", ":a:b::c"), ascii(['', 'a',
+          'b', 'c']))
+        self.expect(lambda: regex.split("(:)*", ":a:b::c"), ascii(['', ':', 'a',
+          ':', 'b', ':', 'c']))
+        self.expect(lambda: regex.split("([b:]+)", ":a:b::c"), ascii(['', ':',
+          'a', ':b::', 'c']))
+        self.expect(lambda: regex.split("(b)|(:+)", ":a:b::c"), ascii(['', None,
+          ':', 'a', None, ':', '', 'b', None, '', None, '::', 'c']))
+        self.expect(lambda: regex.split("(?:b)|(?::+)", ":a:b::c"), ascii(['',
+          'a', '', '', 'c']))
 
-        self.expect(lambda: regex.split("x", "xaxbxc"), "['', 'a', 'b', 'c']")
+        self.expect(lambda: regex.split("x", "xaxbxc"), ascii(['', 'a', 'b',
+          'c']))
         self.expect(lambda: [m for m in regex.splititer("x", "xaxbxc")],
-          "['', 'a', 'b', 'c']")
+          ascii(['', 'a', 'b', 'c']))
 
-        self.expect(lambda: regex.split("(?r)x", "xaxbxc"),
-          "['c', 'b', 'a', '']")
+        self.expect(lambda: regex.split("(?r)x", "xaxbxc"), ascii(['c', 'b', 'a',
+          '']))
         self.expect(lambda: [m for m in regex.splititer("(?r)x", "xaxbxc")],
-          "['c', 'b', 'a', '']")
+          ascii(['c', 'b', 'a', '']))
 
-        self.expect(lambda: regex.split("(x)|(y)", "xaxbxc"),
-          "['', 'x', None, 'a', 'x', None, 'b', 'x', None, 'c']")
+        self.expect(lambda: regex.split("(x)|(y)", "xaxbxc"), ascii(['', 'x',
+          None, 'a', 'x', None, 'b', 'x', None, 'c']))
         self.expect(lambda: [m for m in regex.splititer("(x)|(y)", "xaxbxc")],
-          "['', 'x', None, 'a', 'x', None, 'b', 'x', None, 'c']")
+          ascii(['', 'x', None, 'a', 'x', None, 'b', 'x', None, 'c']))
 
-        self.expect(lambda: regex.split("(?r)(x)|(y)", "xaxbxc"),
-          "['c', 'x', None, 'b', 'x', None, 'a', 'x', None, '']")
+        self.expect(lambda: regex.split("(?r)(x)|(y)", "xaxbxc"), ascii(['c',
+          'x', None, 'b', 'x', None, 'a', 'x', None, '']))
         self.expect(lambda: [m for m in regex.splititer("(?r)(x)|(y)",
-          "xaxbxc")], "['c', 'x', None, 'b', 'x', None, 'a', 'x', None, '']")
+          "xaxbxc")], ascii(['c', 'x', None, 'b', 'x', None, 'a', 'x', None,
+          '']))
 
     def test_qualified_re_split(self):
-        self.expect(lambda: regex.split(":", ":a:b::c", 2), "['', 'a', 'b::c']")
-        self.expect(lambda: regex.split(':', 'a:b:c:d', 2), "['a', 'b', 'c:d']")
-        self.expect(lambda: regex.split("(:)", ":a:b::c", 2),
-          "['', ':', 'a', ':', 'b::c']")
-        self.expect(lambda: regex.split("(:*)", ":a:b::c", 2),
-          "['', ':', 'a', ':', 'b::c']")
+        self.expect(lambda: regex.split(":", ":a:b::c", 2), ascii(['', 'a',
+          'b::c']))
+        self.expect(lambda: regex.split(':', 'a:b:c:d', 2), ascii(['a', 'b',
+          'c:d']))
+        self.expect(lambda: regex.split("(:)", ":a:b::c", 2), ascii(['', ':',
+          'a', ':', 'b::c']))
+        self.expect(lambda: regex.split("(:*)", ":a:b::c", 2), ascii(['', ':',
+          'a', ':', 'b::c']))
 
     def test_re_findall(self):
-        self.expect(lambda: regex.findall(":+", "abc"), "[]")
-        self.expect(lambda: regex.findall(":+", "a:b::c:::d"),
-          "[':', '::', ':::']")
-        self.expect(lambda: regex.findall("(:+)", "a:b::c:::d"),
-          "[':', '::', ':::']")
-        self.expect(lambda: regex.findall("(:)(:*)", "a:b::c:::d"),
-          "[(':', ''), (':', ':'), (':', '::')]")
+        self.expect(lambda: regex.findall(":+", "abc"), ascii([]))
+        self.expect(lambda: regex.findall(":+", "a:b::c:::d"), ascii([':', '::',
+          ':::']))
+        self.expect(lambda: regex.findall("(:+)", "a:b::c:::d"), ascii([':',
+          '::', ':::']))
+        self.expect(lambda: regex.findall("(:)(:*)", "a:b::c:::d"), ascii([(':',
+          ''), (':', ':'), (':', '::')]))
 
     def test_bug_117612(self):
-        self.expect(lambda: regex.findall(r"(a|(b))", "aba"),
-          "[('a', ''), ('b', 'b'), ('a', '')]")
+        self.expect(lambda: regex.findall(r"(a|(b))", "aba"), ascii([('a', ''),
+          ('b', 'b'), ('a', '')]))
 
     def test_re_match(self):
-        self.expect(lambda: regex.match('a', 'a')[:], "('a',)")
-        self.expect(lambda: regex.match('(a)', 'a')[:], "('a', 'a')")
-        self.expect(lambda: regex.match(r'(a)', 'a')[0], "'a'")
-        self.expect(lambda: regex.match(r'(a)', 'a')[1], "'a'")
-        self.expect(lambda: regex.match(r'(a)', 'a').group(1, 1), "('a', 'a')")
+        self.expect(lambda: regex.match('a', 'a')[:], ascii(('a',)))
+        self.expect(lambda: regex.match('(a)', 'a')[:], ascii(('a', 'a')))
+        self.expect(lambda: regex.match(r'(a)', 'a')[0], ascii('a'))
+        self.expect(lambda: regex.match(r'(a)', 'a')[1], ascii('a'))
+        self.expect(lambda: regex.match(r'(a)', 'a').group(1, 1), ascii(('a',
+          'a')))
 
         pat = regex.compile('((a)|(b))(c)?')
-        self.expect(lambda: pat.match('a')[:], "('a', 'a', 'a', None, None)")
-        self.expect(lambda: pat.match('b')[:], "('b', 'b', None, 'b', None)")
-        self.expect(lambda: pat.match('ac')[:], "('ac', 'a', 'a', None, 'c')")
-        self.expect(lambda: pat.match('bc')[:], "('bc', 'b', None, 'b', 'c')")
-        self.expect(lambda: pat.match('bc')[:], "('bc', 'b', None, 'b', 'c')")
+        self.expect(lambda: pat.match('a')[:], ascii(('a', 'a', 'a', None,
+          None)))
+        self.expect(lambda: pat.match('b')[:], ascii(('b', 'b', None, 'b',
+          None)))
+        self.expect(lambda: pat.match('ac')[:], ascii(('ac', 'a', 'a', None,
+          'c')))
+        self.expect(lambda: pat.match('bc')[:], ascii(('bc', 'b', None, 'b',
+          'c')))
+        self.expect(lambda: pat.match('bc')[:], ascii(('bc', 'b', None, 'b',
+          'c')))
 
         # A single group.
         m = regex.match('(a)', 'a')
-        self.expect(lambda: m.group(), "'a'")
-        self.expect(lambda: m.group(0), "'a'")
-        self.expect(lambda: m.group(1), "'a'")
-        self.expect(lambda: m.group(1, 1), "('a', 'a')")
+        self.expect(lambda: m.group(), ascii('a'))
+        self.expect(lambda: m.group(0), ascii('a'))
+        self.expect(lambda: m.group(1), ascii('a'))
+        self.expect(lambda: m.group(1, 1), ascii(('a', 'a')))
 
         pat = regex.compile('(?:(?P<a1>a)|(?P<b2>b))(?P<c3>c)?')
-        self.expect(lambda: pat.match('a').group(1, 2, 3), "('a', None, None)")
-        self.expect(lambda: pat.match('b').group('a1', 'b2', 'c3'),
-          "(None, 'b', None)")
-        self.expect(lambda: pat.match('ac').group(1, 'b2', 3),
-          "('a', None, 'c')")
+        self.expect(lambda: pat.match('a').group(1, 2, 3), ascii(('a', None,
+          None)))
+        self.expect(lambda: pat.match('b').group('a1', 'b2', 'c3'), ascii((None,
+          'b', None)))
+        self.expect(lambda: pat.match('ac').group(1, 'b2', 3), ascii(('a', None,
+          'c')))
 
     def test_re_groupref_exists(self):
         self.expect(lambda: regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a)')[:],
-          "('(a)', '(', 'a')")
+          ascii(('(a)', '(', 'a')))
         self.expect(lambda: regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a')[:],
-          "('a', None, 'a')")
+          ascii(('a', None, 'a')))
         self.expect(lambda: regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a)'),
-          "None")
+          ascii(None))
         self.expect(lambda: regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a'),
-          "None")
+          ascii(None))
         self.expect(lambda: regex.match('^(?:(a)|c)((?(1)b|d))$', 'ab')[:],
-          "('ab', 'a', 'b')")
+          ascii(('ab', 'a', 'b')))
         self.expect(lambda: regex.match('^(?:(a)|c)((?(1)b|d))$', 'cd')[:],
-          "('cd', None, 'd')")
+          ascii(('cd', None, 'd')))
         self.expect(lambda: regex.match('^(?:(a)|c)((?(1)|d))$', 'cd')[:],
-          "('cd', None, 'd')")
+          ascii(('cd', None, 'd')))
         self.expect(lambda: regex.match('^(?:(a)|c)((?(1)|d))$', 'a')[:],
-          "('a', 'a', '')")
+          ascii(('a', 'a', '')))
 
         # Tests for bug #1177831: exercise groups other than the first group.
         p = regex.compile('(?P<g1>a)(?P<g2>b)?((?(g2)c|d))')
-        self.expect(lambda: p.match('abc')[:], "('abc', 'a', 'b', 'c')")
-        self.expect(lambda: p.match('ad')[:], "('ad', 'a', None, 'd')")
-        self.expect(lambda: p.match('abd'), "None")
-        self.expect(lambda: p.match('ac'), "None")
+        self.expect(lambda: p.match('abc')[:], ascii(('abc', 'a', 'b', 'c')))
+        self.expect(lambda: p.match('ad')[:], ascii(('ad', 'a', None, 'd')))
+        self.expect(lambda: p.match('abd'), ascii(None))
+        self.expect(lambda: p.match('ac'), ascii(None))
 
     def test_re_groupref(self):
         self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1$', '|a|')[:],
-          "('|a|', '|', 'a')")
+          ascii(('|a|', '|', 'a')))
         self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1?$', 'a')[:],
-          "('a', None, 'a')")
-        self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1$', 'a|'), "None")
-        self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1$', '|a'), "None")
+          ascii(('a', None, 'a')))
+        self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1$', 'a|'), ascii(None))
+        self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1$', '|a'), ascii(None))
         self.expect(lambda: regex.match(r'^(?:(a)|c)(\1)$', 'aa')[:],
-          "('aa', 'a', 'a')")
-        self.expect(lambda: regex.match(r'^(?:(a)|c)(\1)?$', 'c')[:],
-          "('c', None, None)")
+          ascii(('aa', 'a', 'a')))
+        self.expect(lambda: regex.match(r'^(?:(a)|c)(\1)?$', 'c')[:], ascii(('c',
+          None, None)))
 
     def test_groupdict(self):
         self.expect(lambda: regex.match('(?P<first>first) (?P<second>second)',
-          'first second').groupdict(),
-           ascii({'first': 'first', 'second': 'second'}))
+          'first second').groupdict(), ascii({'first': 'first', 'second':
+          'second'}))
 
     def test_expand(self):
         self.expect(lambda: regex.match("(?P<first>first) (?P<second>second)",
           "first second").expand(r"\2 \1 \g<second> \g<first>"),
-          "'second first second first'")
+          ascii('second first second first'))
 
     def test_repeat_minmax(self):
-        self.expect(lambda: regex.match(r"^(\w){1}$", "abc"), "None")
-        self.expect(lambda: regex.match(r"^(\w){1}?$", "abc"), "None")
-        self.expect(lambda: regex.match(r"^(\w){1,2}$", "abc"), "None")
-        self.expect(lambda: regex.match(r"^(\w){1,2}?$", "abc"), "None")
+        self.expect(lambda: regex.match(r"^(\w){1}$", "abc"), ascii(None))
+        self.expect(lambda: regex.match(r"^(\w){1}?$", "abc"), ascii(None))
+        self.expect(lambda: regex.match(r"^(\w){1,2}$", "abc"), ascii(None))
+        self.expect(lambda: regex.match(r"^(\w){1,2}?$", "abc"), ascii(None))
 
-        self.expect(lambda: regex.match(r"^(\w){3}$", "abc")[1], "'c'")
-        self.expect(lambda: regex.match(r"^(\w){1,3}$", "abc")[1], "'c'")
-        self.expect(lambda: regex.match(r"^(\w){1,4}$", "abc")[1], "'c'")
-        self.expect(lambda: regex.match(r"^(\w){3,4}?$", "abc")[1], "'c'")
-        self.expect(lambda: regex.match(r"^(\w){3}?$", "abc")[1], "'c'")
-        self.expect(lambda: regex.match(r"^(\w){1,3}?$", "abc")[1], "'c'")
-        self.expect(lambda: regex.match(r"^(\w){1,4}?$", "abc")[1], "'c'")
-        self.expect(lambda: regex.match(r"^(\w){3,4}?$", "abc")[1], "'c'")
+        self.expect(lambda: regex.match(r"^(\w){3}$", "abc")[1], ascii('c'))
+        self.expect(lambda: regex.match(r"^(\w){1,3}$", "abc")[1], ascii('c'))
+        self.expect(lambda: regex.match(r"^(\w){1,4}$", "abc")[1], ascii('c'))
+        self.expect(lambda: regex.match(r"^(\w){3,4}?$", "abc")[1], ascii('c'))
+        self.expect(lambda: regex.match(r"^(\w){3}?$", "abc")[1], ascii('c'))
+        self.expect(lambda: regex.match(r"^(\w){1,3}?$", "abc")[1], ascii('c'))
+        self.expect(lambda: regex.match(r"^(\w){1,4}?$", "abc")[1], ascii('c'))
+        self.expect(lambda: regex.match(r"^(\w){3,4}?$", "abc")[1], ascii('c'))
 
-        self.expect(lambda: regex.match("^x{1}$", "xxx"), "None")
-        self.expect(lambda: regex.match("^x{1}?$", "xxx"), "None")
-        self.expect(lambda: regex.match("^x{1,2}$", "xxx"), "None")
-        self.expect(lambda: regex.match("^x{1,2}?$", "xxx"), "None")
+        self.expect(lambda: regex.match("^x{1}$", "xxx"), ascii(None))
+        self.expect(lambda: regex.match("^x{1}?$", "xxx"), ascii(None))
+        self.expect(lambda: regex.match("^x{1,2}$", "xxx"), ascii(None))
+        self.expect(lambda: regex.match("^x{1,2}?$", "xxx"), ascii(None))
 
-        self.expect(lambda: regex.match("^x{1}", "xxx")[0], "'x'")
-        self.expect(lambda: regex.match("^x{1}?", "xxx")[0], "'x'")
-        self.expect(lambda: regex.match("^x{0,1}", "xxx")[0], "'x'")
-        self.expect(lambda: regex.match("^x{0,1}?", "xxx")[0], "''")
+        self.expect(lambda: regex.match("^x{1}", "xxx")[0], ascii('x'))
+        self.expect(lambda: regex.match("^x{1}?", "xxx")[0], ascii('x'))
+        self.expect(lambda: regex.match("^x{0,1}", "xxx")[0], ascii('x'))
+        self.expect(lambda: regex.match("^x{0,1}?", "xxx")[0], ascii(''))
 
         self.expect(lambda: type(regex.match("^x{3}$", "xxx")),
           self.MATCH_CLASS)
@@ -403,80 +415,81 @@ class Test:
         self.expect(lambda: type(regex.match("^x{3,4}?$", "xxx")),
           self.MATCH_CLASS)
 
-        self.expect(lambda: regex.match("^x{}$", "xxx"), "None")
+        self.expect(lambda: regex.match("^x{}$", "xxx"), ascii(None))
         self.expect(lambda: type(regex.match("^x{}$", "x{}")), self.MATCH_CLASS)
 
     def test_getattr(self):
         self.expect(lambda: regex.compile("(?i)(a)(b)").pattern,
-          "'(?i)(a)(b)'")
+          ascii('(?i)(a)(b)'))
         self.expect(lambda: regex.compile("(?i)(a)(b)").flags, ascii(regex.I |
           regex.U))
         self.expect(lambda: regex.compile(b"(?i)(a)(b)").flags, ascii(regex.I))
-        self.expect(lambda: regex.compile("(?i)(a)(b)").groups, "2")
-        self.expect(lambda: regex.compile("(?i)(a)(b)").groupindex, "{}")
+        self.expect(lambda: regex.compile("(?i)(a)(b)").groups, ascii(2))
+        self.expect(lambda: regex.compile("(?i)(a)(b)").groupindex, ascii({}))
         self.expect(lambda:
           regex.compile("(?i)(?P<first>a)(?P<other>b)").groupindex,
           ascii({'first': 1, 'other': 2}))
 
-        self.expect(lambda: regex.match("(a)", "a").pos, "0")
-        self.expect(lambda: regex.match("(a)", "a").endpos, "1")
-        self.expect(lambda: regex.match("(a)", "a").string, "'a'")
-        self.expect(lambda: regex.match("(a)", "a").regs, "((0, 1), (0, 1))")
+        self.expect(lambda: regex.match("(a)", "a").pos, ascii(0))
+        self.expect(lambda: regex.match("(a)", "a").endpos, ascii(1))
+        self.expect(lambda: regex.match("(a)", "a").string, ascii('a'))
+        self.expect(lambda: regex.match("(a)", "a").regs, ascii(((0, 1), (0,
+          1))))
         self.expect(lambda: type(regex.match("(a)", "a").re),
           self.PATTERN_CLASS)
 
     def test_special_escapes(self):
         self.expect(lambda: regex.search(r"\b(b.)\b", "abcd abc bcd bx")[1],
-          "'bx'")
+          ascii('bx'))
         self.expect(lambda: regex.search(r"\B(b.)\B", "abc bcd bc abxd")[1],
-          "'bx'")
+          ascii('bx'))
         self.expect(lambda: regex.search(br"\b(b.)\b", b"abcd abc bcd bx",
-          regex.LOCALE)[1], "b'bx'")
+          regex.LOCALE)[1], ascii(b'bx'))
         self.expect(lambda: regex.search(br"\B(b.)\B", b"abc bcd bc abxd",
-          regex.LOCALE)[1], "b'bx'")
+          regex.LOCALE)[1], ascii(b'bx'))
         self.expect(lambda: regex.search(r"\b(b.)\b", "abcd abc bcd bx",
-          regex.UNICODE)[1], "'bx'")
+          regex.UNICODE)[1], ascii('bx'))
         self.expect(lambda: regex.search(r"\B(b.)\B", "abc bcd bc abxd",
-          regex.UNICODE)[1], "'bx'")
+          regex.UNICODE)[1], ascii('bx'))
         self.expect(lambda: regex.search(r"^abc$", "\nabc\n", regex.M)[0],
-          "'abc'")
+          ascii('abc'))
         self.expect(lambda: regex.search(r"^\Aabc\Z$", "abc", regex.M)[0],
-          "'abc'")
+          ascii('abc'))
         self.expect(lambda: regex.search(r"^\Aabc\Z$", "\nabc\n", regex.M),
-          "None")
-        self.expect(lambda: regex.search(br"\b(b.)\b",
-          b"abcd abc bcd bx")[1], "b'bx'")
-        self.expect(lambda: regex.search(br"\B(b.)\B",
-          b"abc bcd bc abxd")[1], "b'bx'")
-        self.expect(lambda: regex.search(br"^abc$", b"\nabc\n",
-          regex.M)[0], "b'abc'")
-        self.expect(lambda: regex.search(br"^\Aabc\Z$", b"abc",
-          regex.M)[0], "b'abc'")
-        self.expect(lambda: regex.search(br"^\Aabc\Z$", b"\nabc\n",
-          regex.M), "None")
+          ascii(None))
+        self.expect(lambda: regex.search(br"\b(b.)\b", b"abcd abc bcd bx")[1],
+          ascii(b'bx'))
+        self.expect(lambda: regex.search(br"\B(b.)\B", b"abc bcd bc abxd")[1],
+          ascii(b'bx'))
+        self.expect(lambda: regex.search(br"^abc$", b"\nabc\n", regex.M)[0],
+          ascii(b'abc'))
+        self.expect(lambda: regex.search(br"^\Aabc\Z$", b"abc", regex.M)[0],
+          ascii(b'abc'))
+        self.expect(lambda: regex.search(br"^\Aabc\Z$", b"\nabc\n", regex.M),
+          ascii(None))
         self.expect(lambda: regex.search(r"\d\D\w\W\s\S", "1aa! a")[0],
-          "'1aa! a'")
+          ascii('1aa! a'))
         self.expect(lambda: regex.search(br"\d\D\w\W\s\S", b"1aa! a",
-          regex.LOCALE)[0], "b'1aa! a'")
+          regex.LOCALE)[0], ascii(b'1aa! a'))
         self.expect(lambda: regex.search(r"\d\D\w\W\s\S", "1aa! a",
-          regex.UNICODE)[0], "'1aa! a'")
+          regex.UNICODE)[0], ascii('1aa! a'))
 
     def test_bigcharset(self):
-        self.expect(lambda: regex.match(r"([\u2222\u2223])",
-          "\u2222")[1], "'\\u2222'")
+        self.expect(lambda: regex.match(r"([\u2222\u2223])", "\u2222")[1],
+          ascii('\u2222'))
         self.expect(lambda: regex.match(r"([\u2222\u2223])", "\u2222",
-          regex.UNICODE)[1], "'\\u2222'")
+          regex.UNICODE)[1], ascii('\u2222'))
         self.expect(lambda: "".join(regex.findall(".",
           "e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
-          r"'e\xe8\xe9\xea\xeb\u0113\u011b\u0117'")
+          ascii('e\xe8\xe9\xea\xeb\u0113\u011b\u0117'))
         self.expect(lambda:
           "".join(regex.findall(r"[e\xe8\xe9\xea\xeb\u0113\u011b\u0117]",
           "e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
-          r"'e\xe8\xe9\xea\xeb\u0113\u011b\u0117'")
+          ascii('e\xe8\xe9\xea\xeb\u0113\u011b\u0117'))
         self.expect(lambda:
           "".join(regex.findall(r"e|\xe8|\xe9|\xea|\xeb|\u0113|\u011b|\u0117",
           "e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
-          r"'e\xe8\xe9\xea\xeb\u0113\u011b\u0117'")
+          ascii('e\xe8\xe9\xea\xeb\u0113\u011b\u0117'))
 
     def test_anyall(self):
         self.expect(lambda: regex.match("a.b", "a\nb", regex.DOTALL)[0],
@@ -485,53 +498,56 @@ class Test:
           ascii("a\n\nb"))
 
     def test_non_consuming(self):
-        self.expect(lambda: regex.match(r"(a(?=\s[^a]))", "a b")[1], "'a'")
-        self.expect(lambda: regex.match(r"(a(?=\s[^a]*))", "a b")[1], "'a'")
-        self.expect(lambda: regex.match(r"(a(?=\s[abc]))", "a b")[1], "'a'")
-        self.expect(lambda: regex.match(r"(a(?=\s[abc]*))", "a bc")[1], "'a'")
-        self.expect(lambda: regex.match(r"(a)(?=\s\1)", "a a")[1], "'a'")
-        self.expect(lambda: regex.match(r"(a)(?=\s\1*)", "a aa")[1], "'a'")
-        self.expect(lambda: regex.match(r"(a)(?=\s(abc|a))", "a a")[1], "'a'")
+        self.expect(lambda: regex.match(r"(a(?=\s[^a]))", "a b")[1], ascii('a'))
+        self.expect(lambda: regex.match(r"(a(?=\s[^a]*))", "a b")[1], ascii('a'))
+        self.expect(lambda: regex.match(r"(a(?=\s[abc]))", "a b")[1], ascii('a'))
+        self.expect(lambda: regex.match(r"(a(?=\s[abc]*))", "a bc")[1],
+          ascii('a'))
+        self.expect(lambda: regex.match(r"(a)(?=\s\1)", "a a")[1], ascii('a'))
+        self.expect(lambda: regex.match(r"(a)(?=\s\1*)", "a aa")[1], ascii('a'))
+        self.expect(lambda: regex.match(r"(a)(?=\s(abc|a))", "a a")[1],
+          ascii('a'))
 
-        self.expect(lambda: regex.match(r"(a(?!\s[^a]))", "a a")[1], "'a'")
-        self.expect(lambda: regex.match(r"(a(?!\s[abc]))", "a d")[1], "'a'")
-        self.expect(lambda: regex.match(r"(a)(?!\s\1)", "a b")[1], "'a'")
-        self.expect(lambda: regex.match(r"(a)(?!\s(abc|a))", "a b")[1], "'a'")
+        self.expect(lambda: regex.match(r"(a(?!\s[^a]))", "a a")[1], ascii('a'))
+        self.expect(lambda: regex.match(r"(a(?!\s[abc]))", "a d")[1], ascii('a'))
+        self.expect(lambda: regex.match(r"(a)(?!\s\1)", "a b")[1], ascii('a'))
+        self.expect(lambda: regex.match(r"(a)(?!\s(abc|a))", "a b")[1],
+          ascii('a'))
 
     def test_ignore_case(self):
-        self.expect(lambda: regex.match("abc", "ABC", regex.I)[0], "'ABC'")
+        self.expect(lambda: regex.match("abc", "ABC", regex.I)[0], ascii('ABC'))
         self.expect(lambda: regex.match(b"abc", b"ABC", regex.I)[0],
-          "b'ABC'")
+          ascii(b'ABC'))
 
         self.expect(lambda: regex.match(r"(a\s[^a]*)", "a bb", regex.I)[1],
-          "'a bb'")
+          ascii('a bb'))
         self.expect(lambda: regex.match(r"(a\s[abc])", "a b", regex.I)[1],
-          "'a b'")
+          ascii('a b'))
         self.expect(lambda: regex.match(r"(a\s[abc]*)", "a bb", regex.I)[1],
-          "'a bb'")
+          ascii('a bb'))
         self.expect(lambda: regex.match(r"((a)\s\2)", "a a", regex.I)[1],
-          "'a a'")
+          ascii('a a'))
         self.expect(lambda: regex.match(r"((a)\s\2*)", "a aa", regex.I)[1],
-          "'a aa'")
+          ascii('a aa'))
         self.expect(lambda: regex.match(r"((a)\s(abc|a))", "a a", regex.I)[1],
-          "'a a'")
+          ascii('a a'))
         self.expect(lambda: regex.match(r"((a)\s(abc|a)*)", "a aa", regex.I)[1],
-          "'a aa'")
+          ascii('a aa'))
 
         # Issue #3511.
-        self.expect(lambda: regex.match(r"[Z-a]", "_").span(), "(0, 1)")
-        self.expect(lambda: regex.match(r"(?i)[Z-a]", "_").span(), "(0, 1)")
+        self.expect(lambda: regex.match(r"[Z-a]", "_").span(), ascii((0, 1)))
+        self.expect(lambda: regex.match(r"(?i)[Z-a]", "_").span(), ascii((0, 1)))
 
     def test_category(self):
-        self.expect(lambda: regex.match(r"(\s)", " ")[1], "' '")
+        self.expect(lambda: regex.match(r"(\s)", " ")[1], ascii(' '))
 
     def test_not_literal(self):
-        self.expect(lambda: regex.search(r"\s([^a])", " b")[1], "'b'")
-        self.expect(lambda: regex.search(r"\s([^a]*)", " bb")[1], "'bb'")
+        self.expect(lambda: regex.search(r"\s([^a])", " b")[1], ascii('b'))
+        self.expect(lambda: regex.search(r"\s([^a]*)", " bb")[1], ascii('bb'))
 
     def test_search_coverage(self):
-        self.expect(lambda: regex.search(r"\s(b)", " b")[1], "'b'")
-        self.expect(lambda: regex.search(r"a\s", "a ")[0], "'a '")
+        self.expect(lambda: regex.search(r"\s(b)", " b")[1], ascii('b'))
+        self.expect(lambda: regex.search(r"a\s", "a ")[0], ascii('a '))
 
     def test_re_escape(self):
         p = ""
@@ -541,10 +557,10 @@ class Test:
             self.expect(lambda: type(regex.match(regex.escape(chr(i)), chr(i))),
               self.MATCH_CLASS)
             self.expect(lambda: regex.match(regex.escape(chr(i)),
-              chr(i)).span(), "(0, 1)")
+              chr(i)).span(), ascii((0, 1)))
 
         pat = regex.compile(regex.escape(p))
-        self.expect(lambda: pat.match(p).span(), "(0, 256)")
+        self.expect(lambda: pat.match(p).span(), ascii((0, 256)))
 
     def test_re_escape_byte(self):
         p = b""
@@ -555,10 +571,10 @@ class Test:
             self.expect(lambda: type(regex.match(regex.escape(b), b)),
               self.MATCH_CLASS)
             self.expect(lambda: regex.match(regex.escape(b), b).span(),
-              "(0, 1)")
+              ascii((0, 1)))
 
         pat = regex.compile(regex.escape(p))
-        self.expect(lambda: pat.match(p).span(), "(0, 256)")
+        self.expect(lambda: pat.match(p).span(), ascii((0, 256)))
 
     def test_constants(self):
         self.index += 1
@@ -615,18 +631,20 @@ class Test:
         self.expect(lambda: regex.match(r"[\911]", ""), self.BAD_ESCAPE)
 
     def test_bug_113254(self):
-        self.expect(lambda: regex.match(r'(a)|(b)', 'b').start(1), "-1")
-        self.expect(lambda: regex.match(r'(a)|(b)', 'b').end(1), "-1")
-        self.expect(lambda: regex.match(r'(a)|(b)', 'b').span(1), "(-1, -1)")
+        self.expect(lambda: regex.match(r'(a)|(b)', 'b').start(1), ascii(-1))
+        self.expect(lambda: regex.match(r'(a)|(b)', 'b').end(1), ascii(-1))
+        self.expect(lambda: regex.match(r'(a)|(b)', 'b').span(1), ascii((-1,
+          -1)))
 
     def test_bug_527371(self):
         # Bug described in patches 527371/672491.
-        self.expect(lambda: regex.match(r'(a)?a','a').lastindex, "None")
-        self.expect(lambda: regex.match(r'(a)(b)?b','ab').lastindex, "1")
+        self.expect(lambda: regex.match(r'(a)?a','a').lastindex, ascii(None))
+        self.expect(lambda: regex.match(r'(a)(b)?b','ab').lastindex, ascii(1))
         self.expect(lambda: regex.match(r'(?P<a>a)(?P<b>b)?b','ab').lastgroup,
-          "'a'")
-        self.expect(lambda: regex.match("(?P<a>a(b))", "ab").lastgroup, "'a'")
-        self.expect(lambda: regex.match("((a))", "a").lastindex, "1")
+          ascii('a'))
+        self.expect(lambda: regex.match("(?P<a>a(b))", "ab").lastgroup,
+          ascii('a'))
+        self.expect(lambda: regex.match("((a))", "a").lastindex, ascii(1))
 
     def test_bug_545855(self):
         # Bug 545855 -- This pattern failed to cause a compile error as it
@@ -638,26 +656,28 @@ class Test:
         # SRE_OP_MIN_REPEAT_ONE for eliminating recursion on simple uses of
         # pattern '*?' on a long string.
         self.expect(lambda: regex.match('.*?c', 10000 * 'ab' + 'cd').end(0),
-          "20001")
+          ascii(20001))
         self.expect(lambda: regex.match('.*?cd', 5000 * 'ab' + 'c' + 5000 * 'ab'
-          + 'cde').end(0), "20003")
+          + 'cde').end(0), ascii(20003))
         self.expect(lambda: regex.match('.*?cd', 20000 * 'abc' + 'de').end(0),
-          "60001")
+          ascii(60001))
         # Non-simple '*?' still used to hit the recursion limit, before the
         # non-recursive scheme was implemented.
         self.expect(lambda: regex.search('(a|b)*?c', 10000 * 'ab' +
-          'cd').end(0), "20001")
+          'cd').end(0), ascii(20001))
 
     def test_bug_612074(self):
         pat = "[" + regex.escape("\u2039") + "]"
-        self.expect(lambda: regex.compile(pat) and 1, "1")
+        self.expect(lambda: regex.compile(pat) and 1, ascii(1))
 
     def test_stack_overflow(self):
         # Nasty cases that used to overflow the straightforward recursive
         # implementation of repeated groups.
-        self.expect(lambda: regex.match('(x)*', 50000 * 'x')[1], "'x'")
-        self.expect(lambda: regex.match('(x)*y', 50000 * 'x' + 'y')[1], "'x'")
-        self.expect(lambda: regex.match('(x)*?y', 50000 * 'x' + 'y')[1], "'x'")
+        self.expect(lambda: regex.match('(x)*', 50000 * 'x')[1], ascii('x'))
+        self.expect(lambda: regex.match('(x)*y', 50000 * 'x' + 'y')[1],
+          ascii('x'))
+        self.expect(lambda: regex.match('(x)*?y', 50000 * 'x' + 'y')[1],
+          ascii('x'))
 
     def test_scanner(self):
         def s_ident(scanner, token): return token
@@ -674,52 +694,53 @@ class Test:
           self.PATTERN_CLASS)
 
         self.expect(lambda: scanner.scan("sum = 3*foo + 312.50 + bar"),
-          "(['sum', 'op=', 3, 'op*', 'foo', 'op+', 312.5, 'op+', 'bar'], '')")
+          ascii((['sum', 'op=', 3, 'op*', 'foo', 'op+', 312.5, 'op+', 'bar'],
+          '')))
 
     def test_bug_448951(self):
         # Bug 448951 (similar to 429357, but with single char match).
         # (Also test greedy matches.)
         for op in '', '?', '*':
             self.expect(lambda: regex.match(r'((.%s):)?z' % op, 'z')[:],
-              "('z', None, None)")
+              ascii(('z', None, None)))
             self.expect(lambda: regex.match(r'((.%s):)?z' % op, 'a:z')[:],
-              "('a:z', 'a:', 'a')")
+              ascii(('a:z', 'a:', 'a')))
 
     def test_bug_725106(self):
         # Capturing groups in alternatives in repeats.
-        self.expect(lambda: regex.match('^((a)|b)*', 'abc')[:],
-          "('ab', 'b', 'a')")
-        self.expect(lambda: regex.match('^(([ab])|c)*', 'abc')[:],
-          "('abc', 'c', 'b')")
-        self.expect(lambda: regex.match('^((d)|[ab])*', 'abc')[:],
-          "('ab', 'b', None)")
-        self.expect(lambda: regex.match('^((a)c|[ab])*', 'abc')[:],
-          "('ab', 'b', None)")
-        self.expect(lambda: regex.match('^((a)|b)*?c', 'abc')[:],
-          "('abc', 'b', 'a')")
+        self.expect(lambda: regex.match('^((a)|b)*', 'abc')[:], ascii(('ab', 'b',
+          'a')))
+        self.expect(lambda: regex.match('^(([ab])|c)*', 'abc')[:], ascii(('abc',
+          'c', 'b')))
+        self.expect(lambda: regex.match('^((d)|[ab])*', 'abc')[:], ascii(('ab',
+          'b', None)))
+        self.expect(lambda: regex.match('^((a)c|[ab])*', 'abc')[:], ascii(('ab',
+          'b', None)))
+        self.expect(lambda: regex.match('^((a)|b)*?c', 'abc')[:], ascii(('abc',
+          'b', 'a')))
         self.expect(lambda: regex.match('^(([ab])|c)*?d', 'abcd')[:],
-          "('abcd', 'c', 'b')")
+          ascii(('abcd', 'c', 'b')))
         self.expect(lambda: regex.match('^((d)|[ab])*?c', 'abc')[:],
-          "('abc', 'b', None)")
+          ascii(('abc', 'b', None)))
         self.expect(lambda: regex.match('^((a)c|[ab])*?c', 'abc')[:],
-          "('abc', 'b', None)")
+          ascii(('abc', 'b', None)))
 
     def test_bug_725149(self):
         # Mark_stack_base restoring before restoring marks.
         self.expect(lambda: regex.match('(a)(?:(?=(b)*)c)*', 'abb')[:],
-          "('a', 'a', None)")
+          ascii(('a', 'a', None)))
         self.expect(lambda: regex.match('(a)((?!(b)*))*', 'abb')[:],
-          "('a', 'a', None, None)")
+          ascii(('a', 'a', None, None)))
 
     def test_bug_764548(self):
         # Bug 764548, regex.compile() barfs on str/unicode subclasses.
         class my_unicode(str): pass
         pat = regex.compile(my_unicode("abc"))
-        self.expect(lambda: pat.match("xyz"), "None")
+        self.expect(lambda: pat.match("xyz"), ascii(None))
 
     def test_finditer(self):
         it = regex.finditer(r":+", "a:b::c:::d")
-        self.expect(lambda: [item[0] for item in it], "[':', '::', ':::']")
+        self.expect(lambda: [item[0] for item in it], ascii([':', '::', ':::']))
 
     def test_bug_926075(self):
         self.index += 1
@@ -729,30 +750,30 @@ class Test:
     def test_bug_931848(self):
         pattern = "[\u002E\u3002\uFF0E\uFF61]"
         self.expect(lambda: regex.compile(pattern).split("a.b.c"),
-          "['a', 'b', 'c']")
+          ascii(['a', 'b', 'c']))
 
     def test_bug_581080(self):
         it = regex.finditer(r"\s", "a b")
-        self.expect(lambda: next(it).span(), "(1, 2)")
-        self.expect(lambda: next(it), "StopIteration()")
+        self.expect(lambda: next(it).span(), ascii((1, 2)))
+        self.expect(lambda: next(it), ascii(StopIteration()))
 
         scanner = regex.compile(r"\s").scanner("a b")
-        self.expect(lambda: scanner.search().span(), "(1, 2)")
-        self.expect(lambda: scanner.search(), "None")
+        self.expect(lambda: scanner.search().span(), ascii((1, 2)))
+        self.expect(lambda: scanner.search(), ascii(None))
 
     def test_bug_817234(self):
         it = regex.finditer(r".*", "asdf")
-        self.expect(lambda: next(it).span(), "(0, 4)")
-        self.expect(lambda: next(it).span(), "(4, 4)")
-        self.expect(lambda: next(it), "StopIteration()")
+        self.expect(lambda: next(it).span(), ascii((0, 4)))
+        self.expect(lambda: next(it).span(), ascii((4, 4)))
+        self.expect(lambda: next(it), ascii(StopIteration()))
 
     def test_empty_array(self):
         # SF buf 1647541.
         import array
         for typecode in 'bBuhHiIlLfd':
             a = array.array(typecode)
-            self.expect(lambda: regex.compile(b"bla").match(a), "None")
-            self.expect(lambda: regex.compile(b"").match(a)[1 : ], "()")
+            self.expect(lambda: regex.compile(b"bla").match(a), ascii(None))
+            self.expect(lambda: regex.compile(b"").match(a)[1 : ], ascii(()))
 
     def test_inline_flags(self):
         # Bug #1700.
@@ -780,7 +801,7 @@ class Test:
         self.expect(lambda: type(regex.match(r"(?i)a", "A")), self.MATCH_CLASS)
         self.expect(lambda: type(regex.match(r"a(?i)", "A")), self.MATCH_CLASS)
         self.expect(lambda: type(regex.match(r"(?in)a", "A")), self.MATCH_CLASS)
-        self.expect(lambda: regex.match(r"a(?in)", "A"), "None")
+        self.expect(lambda: regex.match(r"a(?in)", "A"), ascii(None))
 
     def test_dollar_matches_twice(self):
         # $ matches the end of string, and just before the terminating \n.
@@ -826,19 +847,19 @@ class Test:
             pat = regex.compile('\w', flags)
             self.expect(lambda: type(pat.match('\xe0')), self.MATCH_CLASS)
         pat = regex.compile('\xc0', regex.ASCII | regex.IGNORECASE)
-        self.expect(lambda: pat.match('\xe0'), "None")
+        self.expect(lambda: pat.match('\xe0'), ascii(None))
         pat = regex.compile('(?a)\xc0', regex.IGNORECASE)
-        self.expect(lambda: pat.match('\xe0'), "None")
+        self.expect(lambda: pat.match('\xe0'), ascii(None))
         pat = regex.compile('\w', regex.ASCII)
-        self.expect(lambda: pat.match('\xe0'), "None")
+        self.expect(lambda: pat.match('\xe0'), ascii(None))
         pat = regex.compile('(?a)\w')
-        self.expect(lambda: pat.match('\xe0'), "None")
+        self.expect(lambda: pat.match('\xe0'), ascii(None))
         # Bytes patterns.
         for flags in (0, regex.ASCII):
             pat = regex.compile(b'\xc0', flags | regex.IGNORECASE)
-            self.expect(lambda: pat.match(b'\xe0'), "None")
+            self.expect(lambda: pat.match(b'\xe0'), ascii(None))
             pat = regex.compile(b'\w')
-            self.expect(lambda: pat.match(b'\xe0'), "None")
+            self.expect(lambda: pat.match(b'\xe0'), ascii(None))
         self.expect(lambda: regex.compile('(?au)\w'), self.MIXED_FLAGS)
 
     def test_subscripting_match(self):
@@ -914,275 +935,281 @@ class Test:
                 if chars[ : 0].join(regex.findall(pattern, chars)) != expected:
                     self.record_failure("Failed: {}".format(pattern))
             except Exception as e:
-                self.record_failure("Failed: {} raised {}".format(pattern, ascii(e)))
+                self.record_failure("Failed: {} raised {}".format(pattern,
+                  ascii(e)))
 
     def test_word_class(self):
         self.expect(lambda: regex.findall(r"\w+",
           " \u0939\u093f\u0928\u094d\u0926\u0940,"),
-          "['\\u0939\\u093f\\u0928\\u094d\\u0926\\u0940']")
+          ascii(['\u0939\u093f\u0928\u094d\u0926\u0940']))
         self.expect(lambda: regex.findall(r"\W+",
-          " \u0939\u093f\u0928\u094d\u0926\u0940,"),
-          "[' ', ',']")
+          " \u0939\u093f\u0928\u094d\u0926\u0940,"), ascii([' ', ',']))
         self.expect(lambda: regex.split(r"(?n)\b",
-          " \u0939\u093f\u0928\u094d\u0926\u0940,"),
-          "[' ', '\\u0939\\u093f\\u0928\\u094d\\u0926\\u0940', ',']")
+          " \u0939\u093f\u0928\u094d\u0926\u0940,"), ascii([' ',
+          '\u0939\u093f\u0928\u094d\u0926\u0940', ',']))
         self.expect(lambda: regex.split(r"(?n)\B",
-          " \u0939\u093f\u0928\u094d\u0926\u0940,"),
-          "['', ' \\u0939', '\\u093f', '\\u0928', '\\u094d', '\\u0926', '\\u0940,', '']")
+          " \u0939\u093f\u0928\u094d\u0926\u0940,"), ascii(['', ' \u0939',
+          '\u093f', '\u0928', '\u094d', '\u0926', '\u0940,', '']))
 
     def test_search_anchor(self):
-        self.expect(lambda: regex.findall(r"\G\w{2}", "abcd ef"),
-          "['ab', 'cd']")
+        self.expect(lambda: regex.findall(r"\G\w{2}", "abcd ef"), ascii(['ab',
+          'cd']))
 
     def test_search_reverse(self):
-        self.expect(lambda: regex.findall(r"(?r).", "abc"), "['c', 'b', 'a']")
+        self.expect(lambda: regex.findall(r"(?r).", "abc"), ascii(['c', 'b',
+          'a']))
         self.expect(lambda: regex.findall(r"(?r).", "abc", overlapped=True),
-          "['c', 'b', 'a']")
-        self.expect(lambda: regex.findall(r"(?r)..", "abcde"), "['de', 'bc']")
+          ascii(['c', 'b', 'a']))
+        self.expect(lambda: regex.findall(r"(?r)..", "abcde"), ascii(['de',
+          'bc']))
         self.expect(lambda: regex.findall(r"(?r)..", "abcde", overlapped=True),
-          "['de', 'cd', 'bc', 'ab']")
+          ascii(['de', 'cd', 'bc', 'ab']))
 
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r).", "abc")],
-          "['c', 'b', 'a']")
+          ascii(['c', 'b', 'a']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)..", "abcde",
-          overlapped=True)], "['de', 'cd', 'bc', 'ab']")
+          overlapped=True)], ascii(['de', 'cd', 'bc', 'ab']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r).",
-          "abc")],"['c', 'b', 'a']")
+          "abc")],ascii(['c', 'b', 'a']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)..", "abcde",
-          overlapped=True)],"['de', 'cd', 'bc', 'ab']")
+          overlapped=True)],ascii(['de', 'cd', 'bc', 'ab']))
 
-        self.expect(lambda: regex.findall(r"^|\w+", "foo bar"),
-          "['', 'foo', 'bar']")
-        self.expect(lambda: regex.findall(r"(?n)^|\w+", "foo bar"),
-          "['', 'foo', 'bar']")
-        self.expect(lambda: regex.findall(r"(?r)^|\w+", "foo bar"),
-          "['bar', 'foo', '']")
+        self.expect(lambda: regex.findall(r"^|\w+", "foo bar"), ascii(['', 'foo',
+          'bar']))
+        self.expect(lambda: regex.findall(r"(?n)^|\w+", "foo bar"), ascii(['',
+          'foo', 'bar']))
+        self.expect(lambda: regex.findall(r"(?r)^|\w+", "foo bar"), ascii(['bar',
+          'foo', '']))
         self.expect(lambda: regex.findall(r"(?nr)^|\w+", "foo bar"),
-          "['bar', 'foo', '']")
+          ascii(['bar', 'foo', '']))
 
         self.expect(lambda: [m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
-          "['', 'foo', 'bar']")
+          ascii(['', 'foo', 'bar']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?n)^|\w+",
-          "foo bar")], "['', 'foo', 'bar']")
+          "foo bar")], ascii(['', 'foo', 'bar']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)^|\w+",
-          "foo bar")], "['bar', 'foo', '']")
+          "foo bar")], ascii(['bar', 'foo', '']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?nr)^|\w+",
-          "foo bar")], "['bar', 'foo', '']")
+          "foo bar")], ascii(['bar', 'foo', '']))
 
-        self.expect(lambda: regex.findall(r"\G\w{2}", "abcd ef"),
-          "['ab', 'cd']")
-        self.expect(lambda: regex.findall(r".{2}(?<=\G.*)", "abcd"),
-          "['ab', 'cd']")
-        self.expect(lambda: regex.findall(r"(?r)\G\w{2}", "abcd ef"),
-          "[]")
+        self.expect(lambda: regex.findall(r"\G\w{2}", "abcd ef"), ascii(['ab',
+          'cd']))
+        self.expect(lambda: regex.findall(r".{2}(?<=\G.*)", "abcd"), ascii(['ab',
+          'cd']))
+        self.expect(lambda: regex.findall(r"(?r)\G\w{2}", "abcd ef"), ascii([]))
         self.expect(lambda: regex.findall(r"(?r)\w{2}\G", "abcd ef"),
-          "['ef']")
+          ascii(['ef']))
 
-        self.expect(lambda: regex.findall(r"q*", "qqwe"),
-          "['qq', '', '', '']")
-        self.expect(lambda: regex.findall(r"(?n)q*", "qqwe"),
-          "['qq', '', '', '']")
-        self.expect(lambda: regex.findall(r"(?r)q*", "qqwe"),
-          "['', '', 'qq', '']")
-        self.expect(lambda: regex.findall(r"(?nr)q*", "qqwe"),
-          "['', '', 'qq', '']")
+        self.expect(lambda: regex.findall(r"q*", "qqwe"), ascii(['qq', '', '',
+          '']))
+        self.expect(lambda: regex.findall(r"(?n)q*", "qqwe"), ascii(['qq', '',
+          '', '']))
+        self.expect(lambda: regex.findall(r"(?r)q*", "qqwe"), ascii(['', '',
+          'qq', '']))
+        self.expect(lambda: regex.findall(r"(?nr)q*", "qqwe"), ascii(['', '',
+          'qq', '']))
 
         self.expect(lambda: regex.findall(".", "abcd", pos=1, endpos=3),
-          "['b', 'c']")
+          ascii(['b', 'c']))
         self.expect(lambda: regex.findall(".", "abcd", pos=1, endpos=-1),
-          "['b', 'c']")
+          ascii(['b', 'c']))
         self.expect(lambda: [m[0] for m in regex.finditer(".", "abcd", pos=1,
-          endpos=3)], "['b', 'c']")
+          endpos=3)], ascii(['b', 'c']))
         self.expect(lambda: [m[0] for m in regex.finditer(".", "abcd", pos=1,
-          endpos=-1)], "['b', 'c']")
+          endpos=-1)], ascii(['b', 'c']))
 
         self.expect(lambda: [m[0] for m in regex.finditer("(?r).", "abcd",
-          pos=1, endpos=3)], "['c', 'b']")
+          pos=1, endpos=3)], ascii(['c', 'b']))
         self.expect(lambda: [m[0] for m in regex.finditer("(?r).", "abcd",
-          pos=1, endpos=-1)], "['c', 'b']")
+          pos=1, endpos=-1)], ascii(['c', 'b']))
         self.expect(lambda: regex.findall("(?r).", "abcd", pos=1, endpos=3),
-          "['c', 'b']")
+          ascii(['c', 'b']))
         self.expect(lambda: regex.findall("(?r).", "abcd", pos=1, endpos=-1),
-          "['c', 'b']")
+          ascii(['c', 'b']))
 
-        self.expect(lambda: regex.findall(r"[ab]", "aB", regex.I), "['a', 'B']")
+        self.expect(lambda: regex.findall(r"[ab]", "aB", regex.I), ascii(['a',
+          'B']))
         self.expect(lambda: regex.findall(r"(?r)[ab]", "aB", regex.I),
-          "['B', 'a']")
+          ascii(['B', 'a']))
 
-        self.expect(lambda: regex.findall(r"(?r).{2}", "abc"), "['bc']")
+        self.expect(lambda: regex.findall(r"(?r).{2}", "abc"), ascii(['bc']))
         self.expect(lambda: regex.findall(r"(?r).{2}", "abc", overlapped=True),
-          "['bc', 'ab']")
+          ascii(['bc', 'ab']))
         self.expect(lambda: regex.findall(r"(\w+) (\w+)",
-          "first second third fourth fifth"),
-          "[('first', 'second'), ('third', 'fourth')]")
+          "first second third fourth fifth"), ascii([('first', 'second'),
+          ('third', 'fourth')]))
         self.expect(lambda: regex.findall(r"(?r)(\w+) (\w+)",
-          "first second third fourth fifth"),
-          "[('fourth', 'fifth'), ('second', 'third')]")
+          "first second third fourth fifth"), ascii([('fourth', 'fifth'),
+          ('second', 'third')]))
 
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r).{2}", "abc")],
-          "['bc']")
+          ascii(['bc']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r).{2}", "abc",
-          overlapped=True)], "['bc', 'ab']")
+          overlapped=True)], ascii(['bc', 'ab']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(\w+) (\w+)",
-          "first second third fourth fifth")],
-          "['first second', 'third fourth']")
+          "first second third fourth fifth")], ascii(['first second',
+          'third fourth']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)(\w+) (\w+)",
-          "first second third fourth fifth")],
-          "['fourth fifth', 'second third']")
+          "first second third fourth fifth")], ascii(['fourth fifth',
+          'second third']))
 
-        self.expect(lambda: regex.search("abcdef", "abcdef").span(), "(0, 6)")
+        self.expect(lambda: regex.search("abcdef", "abcdef").span(), ascii((0,
+          6)))
         self.expect(lambda: regex.search("(?r)abcdef", "abcdef").span(),
-          "(0, 6)")
+          ascii((0, 6)))
         self.expect(lambda: regex.search("(?i)abcdef", "ABCDEF").span(),
-          "(0, 6)")
+          ascii((0, 6)))
         self.expect(lambda: regex.search("(?ir)abcdef", "ABCDEF").span(),
-          "(0, 6)")
+          ascii((0, 6)))
 
-        self.expect(lambda: regex.sub(r"(.)", r"\1", "abc"), "'abc'")
-        self.expect(lambda: regex.sub(r"(?r)(.)", r"\1", "abc"), "'abc'")
+        self.expect(lambda: regex.sub(r"(.)", r"\1", "abc"), ascii('abc'))
+        self.expect(lambda: regex.sub(r"(?r)(.)", r"\1", "abc"), ascii('abc'))
 
     def test_atomic(self):
         # Issue 433030.
-        self.expect(lambda: regex.search(r"(?>a*)a", "aa"), "None")
+        self.expect(lambda: regex.search(r"(?>a*)a", "aa"), ascii(None))
 
     def test_possessive(self):
         # Single-character non-possessive.
-        self.expect(lambda: regex.search(r"a?a", "a").span(), "(0, 1)")
-        self.expect(lambda: regex.search(r"a*a", "aaa").span(), "(0, 3)")
-        self.expect(lambda: regex.search(r"a+a", "aaa").span(), "(0, 3)")
-        self.expect(lambda: regex.search(r"a{1,3}a", "aaa").span(), "(0, 3)")
+        self.expect(lambda: regex.search(r"a?a", "a").span(), ascii((0, 1)))
+        self.expect(lambda: regex.search(r"a*a", "aaa").span(), ascii((0, 3)))
+        self.expect(lambda: regex.search(r"a+a", "aaa").span(), ascii((0, 3)))
+        self.expect(lambda: regex.search(r"a{1,3}a", "aaa").span(), ascii((0,
+          3)))
 
         # Multiple-character non-possessive.
-        self.expect(lambda: regex.search(r"(?:ab)?ab", "ab").span(), "(0, 2)")
+        self.expect(lambda: regex.search(r"(?:ab)?ab", "ab").span(), ascii((0,
+          2)))
         self.expect(lambda: regex.search(r"(?:ab)*ab", "ababab").span(),
-          "(0, 6)")
+          ascii((0, 6)))
         self.expect(lambda: regex.search(r"(?:ab)+ab", "ababab").span(),
-          "(0, 6)")
+          ascii((0, 6)))
         self.expect(lambda: regex.search(r"(?:ab){1,3}ab", "ababab").span(),
-          "(0, 6)")
+          ascii((0, 6)))
 
         # Single-character possessive.
-        self.expect(lambda: regex.search(r"a?+a", "a"), "None")
-        self.expect(lambda: regex.search(r"a*+a", "aaa"), "None")
-        self.expect(lambda: regex.search(r"a++a", "aaa"), "None")
-        self.expect(lambda: regex.search(r"a{1,3}+a", "aaa"), "None")
+        self.expect(lambda: regex.search(r"a?+a", "a"), ascii(None))
+        self.expect(lambda: regex.search(r"a*+a", "aaa"), ascii(None))
+        self.expect(lambda: regex.search(r"a++a", "aaa"), ascii(None))
+        self.expect(lambda: regex.search(r"a{1,3}+a", "aaa"), ascii(None))
 
         # Multiple-character possessive.
-        self.expect(lambda: regex.search(r"(?:ab)?+ab", "ab"), "None")
-        self.expect(lambda: regex.search(r"(?:ab)*+ab", "ababab"), "None")
-        self.expect(lambda: regex.search(r"(?:ab)++ab", "ababab"), "None")
-        self.expect(lambda: regex.search(r"(?:ab){1,3}+ab", "ababab"), "None")
+        self.expect(lambda: regex.search(r"(?:ab)?+ab", "ab"), ascii(None))
+        self.expect(lambda: regex.search(r"(?:ab)*+ab", "ababab"), ascii(None))
+        self.expect(lambda: regex.search(r"(?:ab)++ab", "ababab"), ascii(None))
+        self.expect(lambda: regex.search(r"(?:ab){1,3}+ab", "ababab"),
+          ascii(None))
 
     def test_zerowidth(self):
         # Issue 3262.
-        self.expect(lambda: regex.split(r"\b", "a b"), "['a b']")
-        self.expect(lambda: regex.split(r"(?n)\b", "a b"),
-          "['', 'a', ' ', 'b', '']")
+        self.expect(lambda: regex.split(r"\b", "a b"), ascii(['a b']))
+        self.expect(lambda: regex.split(r"(?n)\b", "a b"), ascii(['', 'a', ' ',
+          'b', '']))
 
         # Issue 1647489.
-        self.expect(lambda: regex.findall(r"^|\w+", "foo bar"),
-          "['', 'foo', 'bar']")
+        self.expect(lambda: regex.findall(r"^|\w+", "foo bar"), ascii(['', 'foo',
+          'bar']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
-          "['', 'foo', 'bar']")
-        self.expect(lambda: regex.findall(r"(?r)^|\w+", "foo bar"),
-          "['bar', 'foo', '']")
-        self.expect(lambda: [m[0] for m in
-          regex.finditer(r"(?r)^|\w+", "foo bar")], "['bar', 'foo', '']")
+          ascii(['', 'foo', 'bar']))
+        self.expect(lambda: regex.findall(r"(?r)^|\w+", "foo bar"), ascii(['bar',
+          'foo', '']))
+        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)^|\w+",
+          "foo bar")], ascii(['bar', 'foo', '']))
         self.expect(lambda: regex.findall(r"(?n)^|\w+", "foo bar"),
-          "['', 'foo', 'bar']")
+          ascii(['', 'foo', 'bar']))
         self.expect(lambda: [m[0] for m in
-          regex.finditer(r"(?n)^|\w+", "foo bar")], "['', 'foo', 'bar']")
+          regex.finditer(r"(?n)^|\w+", "foo bar")], ascii(['', 'foo', 'bar']))
         self.expect(lambda: regex.findall(r"(?nr)^|\w+", "foo bar"),
-          "['bar', 'foo', '']")
+          ascii(['bar', 'foo', '']))
         self.expect(lambda: [m[0] for m in
-          regex.finditer(r"(?nr)^|\w+", "foo bar")], "['bar', 'foo', '']")
+          regex.finditer(r"(?nr)^|\w+", "foo bar")], ascii(['bar', 'foo', '']))
 
-        self.expect(lambda: regex.split("", "xaxbxc"), "['xaxbxc']")
+        self.expect(lambda: regex.split("", "xaxbxc"), ascii(['xaxbxc']))
         self.expect(lambda: [m for m in regex.splititer("", "xaxbxc")],
-          "['xaxbxc']")
+          ascii(['xaxbxc']))
 
-        self.expect(lambda: regex.split("(?r)", "xaxbxc"), "['xaxbxc']")
+        self.expect(lambda: regex.split("(?r)", "xaxbxc"), ascii(['xaxbxc']))
         self.expect(lambda: [m for m in regex.splititer("(?r)", "xaxbxc")],
-          "['xaxbxc']")
+          ascii(['xaxbxc']))
 
         self.expect(lambda: regex.split("(?n)", "xaxbxc"),
-          "['', 'x', 'a', 'x', 'b', 'x', 'c', '']")
+          ascii(['', 'x', 'a', 'x', 'b', 'x', 'c', '']))
         self.expect(lambda: [m for m in regex.splititer("(?n)", "xaxbxc")],
-          "['', 'x', 'a', 'x', 'b', 'x', 'c', '']")
+          ascii(['', 'x', 'a', 'x', 'b', 'x', 'c', '']))
 
         self.expect(lambda: regex.split("(?nr)", "xaxbxc"),
-          "['', 'c', 'x', 'b', 'x', 'a', 'x', '']")
+          ascii(['', 'c', 'x', 'b', 'x', 'a', 'x', '']))
         self.expect(lambda: [m for m in regex.splititer("(?nr)", "xaxbxc")],
-          "['', 'c', 'x', 'b', 'x', 'a', 'x', '']")
+          ascii(['', 'c', 'x', 'b', 'x', 'a', 'x', '']))
 
     def test_scoped_and_inline_flags(self):
         # Issues 433028, #433024, #433027.
-        self.expect(lambda: regex.search(r"(?i)Ab", "ab").span(), "(0, 2)")
-        self.expect(lambda: regex.search(r"(?i:A)b", "ab").span(), "(0, 2)")
-        self.expect(lambda: regex.search(r"A(?i)b", "ab").span(), "(0, 2)")
-        self.expect(lambda: regex.search(r"A(?in)b", "ab"), "None")
+        self.expect(lambda: regex.search(r"(?i)Ab", "ab").span(), ascii((0, 2)))
+        self.expect(lambda: regex.search(r"(?i:A)b", "ab").span(), ascii((0, 2)))
+        self.expect(lambda: regex.search(r"A(?i)b", "ab").span(), ascii((0, 2)))
+        self.expect(lambda: regex.search(r"A(?in)b", "ab"), ascii(None))
 
         self.expect(lambda: regex.search(r"(?-i)Ab", "ab",
-          flags=regex.I).span(), "(0, 2)")
+          flags=regex.I).span(), ascii((0, 2)))
         self.expect(lambda: regex.search(r"(?n-i)Ab", "ab", flags=regex.I),
-          "None")
+          ascii(None))
         self.expect(lambda: regex.search(r"(?-i:A)b", "ab", flags=regex.I),
-          "None")
+          ascii(None))
         self.expect(lambda: regex.search(r"A(?-i)b", "ab",
-          flags=regex.I).span(), "(0, 2)")
+          flags=regex.I).span(), ascii((0, 2)))
 
     def test_repeated_repeats(self):
         # Issue 2537.
-        self.expect(lambda: regex.search(r"(?:a+)+", "aaa").span(), "(0, 3)")
+        self.expect(lambda: regex.search(r"(?:a+)+", "aaa").span(), ascii((0, 3)))
         self.expect(lambda: regex.search(r"(?:(?:ab)+c)+", "abcabc").span(),
-          "(0, 6)")
+          ascii((0, 6)))
 
     def test_lookbehind(self):
         self.expect(lambda: regex.search(r"123(?<=a\d+)", "a123").span(),
-          "(1, 4)")
-        self.expect(lambda: regex.search(r"123(?<=a\d+)", "b123"), "None")
-        self.expect(lambda: regex.search(r"123(?<!a\d+)", "a123"), "None")
+          ascii((1, 4)))
+        self.expect(lambda: regex.search(r"123(?<=a\d+)", "b123"), ascii(None))
+        self.expect(lambda: regex.search(r"123(?<!a\d+)", "a123"), ascii(None))
         self.expect(lambda: regex.search(r"123(?<!a\d+)", "b123").span(),
-          "(1, 4)")
+          ascii((1, 4)))
 
         self.expect(lambda: type(regex.match("(a)b(?<=b)(c)", "abc")),
           self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(a)b(?<=c)(c)", "abc"), "None")
+        self.expect(lambda: regex.match("(a)b(?<=c)(c)", "abc"), ascii(None))
         self.expect(lambda: type(regex.match("(a)b(?=c)(c)", "abc")),
           self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(a)b(?=b)(c)", "abc"), "None")
+        self.expect(lambda: regex.match("(a)b(?=b)(c)", "abc"), ascii(None))
 
         self.expect(lambda: regex.match("(?:(a)|(x))b(?<=(?(2)x|c))c", "abc"),
-          "None")
+          ascii(None))
         self.expect(lambda: regex.match("(?:(a)|(x))b(?<=(?(2)b|x))c", "abc"),
-          "None")
+          ascii(None))
         self.expect(lambda: type(regex.match("(?:(a)|(x))b(?<=(?(2)x|b))c",
           "abc")), self.MATCH_CLASS)
         self.expect(lambda: regex.match("(?:(a)|(x))b(?<=(?(1)c|x))c", "abc"),
-          "None")
+          ascii(None))
         self.expect(lambda: type(regex.match("(?:(a)|(x))b(?<=(?(1)b|x))c",
           "abc")), self.MATCH_CLASS)
 
         self.expect(lambda: type(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
           "abc")), self.MATCH_CLASS)
         self.expect(lambda: regex.match("(?:(a)|(x))b(?=(?(2)c|x))c", "abc"),
-          "None")
+          ascii(None))
         self.expect(lambda: type(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
           "abc")), self.MATCH_CLASS)
         self.expect(lambda: regex.match("(?:(a)|(x))b(?=(?(1)b|x))c", "abc"),
-          "None")
+          ascii(None))
         self.expect(lambda: type(regex.match("(?:(a)|(x))b(?=(?(1)c|x))c",
           "abc")), self.MATCH_CLASS)
 
-        self.expect(lambda: regex.match("(a)b(?<=(?(2)x|c))(c)", "abc"), "None")
-        self.expect(lambda: regex.match("(a)b(?<=(?(2)b|x))(c)", "abc"), "None")
-        self.expect(lambda: regex.match("(a)b(?<=(?(1)c|x))(c)", "abc"), "None")
+        self.expect(lambda: regex.match("(a)b(?<=(?(2)x|c))(c)", "abc"), ascii(None))
+        self.expect(lambda: regex.match("(a)b(?<=(?(2)b|x))(c)", "abc"), ascii(None))
+        self.expect(lambda: regex.match("(a)b(?<=(?(1)c|x))(c)", "abc"), ascii(None))
         self.expect(lambda: type(regex.match("(a)b(?<=(?(1)b|x))(c)", "abc")),
           self.MATCH_CLASS)
 
         self.expect(lambda: type(regex.match("(a)b(?=(?(2)x|c))(c)", "abc")),
           self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(a)b(?=(?(2)b|x))(c)", "abc"), "None")
+        self.expect(lambda: regex.match("(a)b(?=(?(2)b|x))(c)", "abc"), ascii(None))
         self.expect(lambda: type(regex.match("(a)b(?=(?(1)c|x))(c)", "abc")),
           self.MATCH_CLASS)
 
@@ -1190,44 +1217,44 @@ class Test:
 
     def test_unmatched_in_sub(self):
         # Issue 1519638.
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "xy"), "'y-x'")
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "x"), "'-x'")
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "y"), "'y-'")
+        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "xy"), ascii('y-x'))
+        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "x"), ascii('-x'))
+        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "y"), ascii('y-'))
 
     def test_overlapped(self):
-        self.expect(lambda: regex.findall(r"..", "abcde"), "['ab', 'cd']")
+        self.expect(lambda: regex.findall(r"..", "abcde"), ascii(['ab', 'cd']))
         self.expect(lambda: regex.findall(r"..", "abcde", overlapped=True),
-          "['ab', 'bc', 'cd', 'de']")
-        self.expect(lambda: regex.findall(r"(?r)..", "abcde"), "['de', 'bc']")
+          ascii(['ab', 'bc', 'cd', 'de']))
+        self.expect(lambda: regex.findall(r"(?r)..", "abcde"), ascii(['de', 'bc']))
         self.expect(lambda: regex.findall(r"(?r)..", "abcde", overlapped=True),
-          "['de', 'cd', 'bc', 'ab']")
+          ascii(['de', 'cd', 'bc', 'ab']))
 
         self.expect(lambda: [m[0] for m in regex.finditer(r"..", "abcde")],
-          "['ab', 'cd']")
+          ascii(['ab', 'cd']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"..", "abcde",
-          overlapped=True)], "['ab', 'bc', 'cd', 'de']")
+          overlapped=True)], ascii(['ab', 'bc', 'cd', 'de']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)..", "abcde")],
-          "['de', 'bc']")
+          ascii(['de', 'bc']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)..", "abcde",
-          overlapped=True)], "['de', 'cd', 'bc', 'ab']")
+          overlapped=True)], ascii(['de', 'cd', 'bc', 'ab']))
 
     def test_splititer(self):
         self.expect(lambda: regex.split(r",", "a,b,,c,"),
-          "['a', 'b', '', 'c', '']")
+          ascii(['a', 'b', '', 'c', '']))
         self.expect(lambda: [m for m in regex.splititer(r",", "a,b,,c,")],
-          "['a', 'b', '', 'c', '']")
+          ascii(['a', 'b', '', 'c', '']))
 
     def test_grapheme(self):
-        self.expect(lambda: regex.match(r"\X", "\xE0").span(), "(0, 1)")
+        self.expect(lambda: regex.match(r"\X", "\xE0").span(), ascii((0, 1)))
         self.expect(lambda: regex.match(r"\X", "a\u0300").span(),
-          "(0, 2)")
+          ascii((0, 2)))
 
         self.expect(lambda: regex.findall(r"\X",
           "a\xE0a\u0300e\xE9e\u0301"),
-          "['a', '\\xe0', 'a\\u0300', 'e', '\\xe9', 'e\\u0301']")
+          ascii(['a', '\xe0', 'a\u0300', 'e', '\xe9', 'e\u0301']))
         self.expect(lambda: regex.findall(r"\X{3}",
           "a\xE0a\u0300e\xE9e\u0301"),
-          "['a\\xe0a\\u0300', 'e\\xe9e\\u0301']")
+          ascii(['a\xe0a\u0300', 'e\xe9e\u0301']))
 
     def test_word_boundary(self):
         text = 'The quick ("brown") fox can\'t jump 32.3 feet, right?'
@@ -1255,102 +1282,102 @@ class Test:
 
     def test_branch_reset(self):
         self.expect(lambda: regex.match(r"(?:(a)|(b))(c)", "ac").groups(),
-          "('a', None, 'c')")
+          ascii(('a', None, 'c')))
         self.expect(lambda: regex.match(r"(?:(a)|(b))(c)", "bc").groups(),
-          "(None, 'b', 'c')")
+          ascii((None, 'b', 'c')))
         self.expect(lambda:
           regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)", "ac").groups(),
-          "('a', None, 'c')")
+          ascii(('a', None, 'c')))
         self.expect(lambda:
           regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)", "bc").groups(),
-            "(None, 'b', 'c')")
+            ascii((None, 'b', 'c')))
         self.expect(lambda:
           regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)", "abd").groups(),
-          "('a', 'b', None, 'd')")
+          ascii(('a', 'b', None, 'd')))
         self.expect(lambda:
           regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)", "acd").groups(),
-          "('a', None, 'c', 'd')")
+          ascii(('a', None, 'c', 'd')))
         self.expect(lambda: regex.match(r"(a)(?:(b)|(c))(d)", "abd").groups(),
-         "('a', 'b', None, 'd')")
+         ascii(('a', 'b', None, 'd')))
         self.expect(lambda: regex.match(r"(a)(?:(b)|(c))(d)", "acd").groups(),
-          "('a', None, 'c', 'd')")
+          ascii(('a', None, 'c', 'd')))
         self.expect(lambda: regex.match(r"(a)(?|(b)|(b))(d)", "abd").groups(),
-          "('a', 'b', 'd')")
+          ascii(('a', 'b', 'd')))
         self.expect(lambda:
           regex.match(r"(?|(?<a>a)|(?<b>b))(c)", "ac").groups(),
-          "('a', None, 'c')")
+          ascii(('a', None, 'c')))
         self.expect(lambda:
           regex.match(r"(?|(?<a>a)|(?<b>b))(c)", "bc").groups(),
-          "(None, 'b', 'c')")
+          ascii((None, 'b', 'c')))
         self.expect(lambda:
-          regex.match(r"(?|(?<a>a)|(?<a>b))(c)", "ac").groups(), "('a', 'c')")
+          regex.match(r"(?|(?<a>a)|(?<a>b))(c)", "ac").groups(), ascii(('a', 'c')))
         self.expect(lambda:
-          regex.match(r"(?|(?<a>a)|(?<a>b))(c)", "bc").groups(), "('b', 'c')")
+          regex.match(r"(?|(?<a>a)|(?<a>b))(c)", "bc").groups(), ascii(('b', 'c')))
         self.expect(lambda:
           regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)", "abe").groups(),
-          "('a', 'b', 'e')")
+          ascii(('a', 'b', 'e')))
         self.expect(lambda:
           regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)", "cde").groups(),
-          "('d', 'c', 'e')")
+          ascii(('d', 'c', 'e')))
         self.expect(lambda:
           regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)", "abe").groups(),
-          "('a', 'b', 'e')")
+          ascii(('a', 'b', 'e')))
         self.expect(lambda: regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)",
-          "cde").groups(), "('d', 'c', 'e')")
+          "cde").groups(), ascii(('d', 'c', 'e')))
         self.expect(lambda:
           regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)", "abe").groups(),
-          "('a', 'b', 'e')")
+          ascii(('a', 'b', 'e')))
         self.expect(lambda:
           regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)", "cde").groups(),
-          "('c', 'd', 'e')")
+          ascii(('c', 'd', 'e')))
         self.expect(lambda: regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
           "abe"), self.DUPLICATE_GROUP)
         self.expect(lambda: regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
           "cde"), self.DUPLICATE_GROUP)
 
     def test_set(self):
-        self.expect(lambda: regex.match(r"[a]", "a").span(), "(0, 1)")
-        self.expect(lambda: regex.match(r"(?i)[a]", "A").span(), "(0, 1)")
-        self.expect(lambda: regex.match(r"[a-b]", r"a").span(), "(0, 1)")
-        self.expect(lambda: regex.match(r"(?i)[a-b]", r"A").span(), "(0, 1)")
+        self.expect(lambda: regex.match(r"[a]", "a").span(), ascii((0, 1)))
+        self.expect(lambda: regex.match(r"(?i)[a]", "A").span(), ascii((0, 1)))
+        self.expect(lambda: regex.match(r"[a-b]", r"a").span(), ascii((0, 1)))
+        self.expect(lambda: regex.match(r"(?i)[a-b]", r"A").span(), ascii((0, 1)))
 
-        self.expect(lambda: regex.findall(r"[\p{Alpha}]", "a0"), 
+        self.expect(lambda: regex.findall(r"[\p{Alpha}]", "a0"),
           ascii(["a"]))
-        self.expect(lambda: regex.findall(r"(?i)[\p{Alpha}]", "A0"), 
+        self.expect(lambda: regex.findall(r"(?i)[\p{Alpha}]", "A0"),
           ascii(["A"]))
 
-        self.expect(lambda: regex.findall(r"[a\p{Alpha}]", "ab0"), 
+        self.expect(lambda: regex.findall(r"[a\p{Alpha}]", "ab0"),
           ascii(["a", "b"]))
-        self.expect(lambda: regex.findall(r"[a\P{Alpha}]", "ab0"), 
+        self.expect(lambda: regex.findall(r"[a\P{Alpha}]", "ab0"),
           ascii(["a", "0"]))
-        self.expect(lambda: regex.findall(r"(?i)[a\p{Alpha}]", "ab0"), 
+        self.expect(lambda: regex.findall(r"(?i)[a\p{Alpha}]", "ab0"),
           ascii(["a", "b"]))
-        self.expect(lambda: regex.findall(r"(?i)[a\P{Alpha}]", "ab0"), 
+        self.expect(lambda: regex.findall(r"(?i)[a\P{Alpha}]", "ab0"),
           ascii(["a", "0"]))
 
-        self.expect(lambda: regex.findall(r"[a-b\p{Alpha}]", "abC0"), 
+        self.expect(lambda: regex.findall(r"[a-b\p{Alpha}]", "abC0"),
           ascii(["a", "b", "C"]))
-        self.expect(lambda: regex.findall(r"(?i)[a-b\p{Alpha}]", "AbC0"), 
+        self.expect(lambda: regex.findall(r"(?i)[a-b\p{Alpha}]", "AbC0"),
           ascii(["A", "b", "C"]))
 
-        self.expect(lambda: regex.findall(r"[\p{Alpha}]", "a0"), 
+        self.expect(lambda: regex.findall(r"[\p{Alpha}]", "a0"),
           ascii(["a"]))
-        self.expect(lambda: regex.findall(r"[\P{Alpha}]", "a0"), 
+        self.expect(lambda: regex.findall(r"[\P{Alpha}]", "a0"),
           ascii(["0"]))
-        self.expect(lambda: regex.findall(r"[^\p{Alpha}]", "a0"), 
+        self.expect(lambda: regex.findall(r"[^\p{Alpha}]", "a0"),
           ascii(["0"]))
-        self.expect(lambda: regex.findall(r"[^\P{Alpha}]", "a0"), 
+        self.expect(lambda: regex.findall(r"[^\P{Alpha}]", "a0"),
           ascii(["a"]))
 
         self.expect(lambda: "".join(regex.findall(r"[^\d-h]", "a^b12c-h")),
-          "'a^bc'")
+          ascii('a^bc'))
         self.expect(lambda: "".join(regex.findall(r"[^\dh]", "a^b12c-h")),
-          "'a^bc-'")
+          ascii('a^bc-'))
         self.expect(lambda: "".join(regex.findall(r"[^h\s\db]", "a^b 12c-h")),
-          "'a^c-'")
-        self.expect(lambda: "".join(regex.findall(r"[^b\w]", "a b")), "' '")
-        self.expect(lambda: "".join(regex.findall(r"[^b\S]", "a b")), "' '")
-        self.expect(lambda: "".join(regex.findall(r"[^8\d]", "a 1b2")), "'a b'")
+          ascii('a^c-'))
+        self.expect(lambda: "".join(regex.findall(r"[^b\w]", "a b")), ascii(' '))
+        self.expect(lambda: "".join(regex.findall(r"[^b\S]", "a b")), ascii(' '))
+        self.expect(lambda: "".join(regex.findall(r"[^8\d]", "a 1b2")), ascii('a b'))
 
     def test_various(self):
         tests = [
@@ -1366,31 +1393,31 @@ class Test:
             ('(?P<foo_123>a)(?P=!)', 'aa', '', self.BAD_GROUP_NAME),
             ('(?P<foo_123>a)(?P=foo_124)', 'aa', '', self.UNKNOWN_GROUP),  # Backref to undefined group.
 
-            ('(?P<foo_123>a)', 'a', '1', "'a'"),
-            ('(?P<foo_123>a)(?P=foo_123)', 'aa', '1', "'a'"),
+            ('(?P<foo_123>a)', 'a', '1', ascii('a')),
+            ('(?P<foo_123>a)(?P=foo_123)', 'aa', '1', ascii('a')),
 
             # Mal-formed \g in pattern treated as literal for compatibility.
-            (r'(?<foo_123>a)\g<foo_123', 'aa', '', 'None'),
-            (r'(?<foo_123>a)\g<1>', 'aa', '1', "'a'"),
-            (r'(?<foo_123>a)\g<!>', 'aa', '', 'None'),
+            (r'(?<foo_123>a)\g<foo_123', 'aa', '', ascii(None)),
+            (r'(?<foo_123>a)\g<1>', 'aa', '1', ascii('a')),
+            (r'(?<foo_123>a)\g<!>', 'aa', '', ascii(None)),
             (r'(?<foo_123>a)\g<foo_124>', 'aa', '', self.UNKNOWN_GROUP),  # Backref to undefined group.
 
-            ('(?<foo_123>a)', 'a', '1', "'a'"),
-            (r'(?<foo_123>a)\g<foo_123>', 'aa', '1', "'a'"),
+            ('(?<foo_123>a)', 'a', '1', ascii('a')),
+            (r'(?<foo_123>a)\g<foo_123>', 'aa', '1', ascii('a')),
 
             # Test octal escapes.
             ('\\1', 'a', '', self.UNKNOWN_GROUP),    # Backreference.
             ('[\\1]', '\1', '0', "'\\x01'"),  # Character.
             ('\\09', chr(0) + '9', '0', ascii(chr(0) + '9')),
-            ('\\141', 'a', '0', "'a'"),
+            ('\\141', 'a', '0', ascii('a')),
             ('(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)\\119', 'abcdefghijklk9',
-              '0,11', "('abcdefghijklk9', 'k')"),
+              '0,11', ascii(('abcdefghijklk9', 'k'))),
 
             # Test \0 is handled everywhere.
             (r'\0', '\0', '0', ascii('\0')),
             (r'[\0a]', '\0', '0', ascii('\0')),
             (r'[a\0]', '\0', '0', ascii('\0')),
-            (r'[^a\0]', '\0', '', "None"),
+            (r'[^a\0]', '\0', '', ascii(None)),
 
             # Test various letter escapes.
             (r'\a[\b]\f\n\r\t\v', '\a\b\f\n\r\t\v', '0',
@@ -1398,14 +1425,14 @@ class Test:
             (r'[\a][\b][\f][\n][\r][\t][\v]', '\a\b\f\n\r\t\v', '0',
               ascii('\a\b\f\n\r\t\v')),
             (r'\c\e\g\h\i\j\k\m\o\p\q\y\z', 'ceghijkmopqyz', '0',
-              "'ceghijkmopqyz'"),
+              ascii('ceghijkmopqyz')),
             (r'\xff', '\377', '0', ascii(chr(255))),
             # New \x semantics.
-            (r'\x00ffffffffffffff', '\377', '', "None"),
-            (r'\x00f', '\017', '', "None"),
-            (r'\x00fe', '\376', '', "None"),
+            (r'\x00ffffffffffffff', '\377', '', ascii(None)),
+            (r'\x00f', '\017', '', ascii(None)),
+            (r'\x00fe', '\376', '', ascii(None)),
 
-            (r'\x00ff', '\377', '', "None"),
+            (r'\x00ff', '\377', '', ascii(None)),
             (r'\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', ascii('\t\n\v\r\f\ag')),
             ('\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', ascii('\t\n\v\r\f\ag')),
             (r'\t\n\v\r\f\a', '\t\n\v\r\f\a', '0', ascii(chr(9) + chr(10) + chr(11)
@@ -1418,469 +1445,469 @@ class Test:
               ascii("SRC=eval.c g.c blah blah blah \\\\")),
 
             # Test that . only matches \n in DOTALL mode.
-            ('a.b', 'acb', '0', "'acb'"),
-            ('a.b', 'a\nb', '', "None"),
-            ('a.*b', 'acc\nccb', '', "None"),
-            ('a.{4,5}b', 'acc\nccb', '', "None"),
+            ('a.b', 'acb', '0', ascii('acb')),
+            ('a.b', 'a\nb', '', ascii(None)),
+            ('a.*b', 'acc\nccb', '', ascii(None)),
+            ('a.{4,5}b', 'acc\nccb', '', ascii(None)),
             ('a.b', 'a\rb', '0', ascii('a\rb')),
             # The new behaviour is that the inline flag affects only what follows.
             ('a.b(?s)', 'a\nb', '0', ascii('a\nb')),
-            ('a.b(?ns)', 'a\nb', '', "None"),
+            ('a.b(?ns)', 'a\nb', '', ascii(None)),
             ('(?s)a.b', 'a\nb', '0', ascii('a\nb')),
             ('a.*(?s)b', 'acc\nccb', '0', ascii('acc\nccb')),
-            ('a.*(?ns)b', 'acc\nccb', '', "None"),
+            ('a.*(?ns)b', 'acc\nccb', '', ascii(None)),
             ('(?s)a.*b', 'acc\nccb', '0', ascii('acc\nccb')),
             ('(?s)a.{4,5}b', 'acc\nccb', '0', ascii('acc\nccb')),
 
             (')', '', '', self.TRAILING_CHARS),           # Unmatched right bracket.
             ('', '', '0', "''"),    # Empty pattern.
-            ('abc', 'abc', '0', "'abc'"),
-            ('abc', 'xbc', '', "None"),
-            ('abc', 'axc', '', "None"),
-            ('abc', 'abx', '', "None"),
-            ('abc', 'xabcy', '0', "'abc'"),
-            ('abc', 'ababc', '0', "'abc'"),
-            ('ab*c', 'abc', '0', "'abc'"),
-            ('ab*bc', 'abc', '0', "'abc'"),
-            ('ab*bc', 'abbc', '0', "'abbc'"),
-            ('ab*bc', 'abbbbc', '0', "'abbbbc'"),
-            ('ab+bc', 'abbc', '0', "'abbc'"),
-            ('ab+bc', 'abc', '', "None"),
-            ('ab+bc', 'abq', '', "None"),
-            ('ab+bc', 'abbbbc', '0', "'abbbbc'"),
-            ('ab?bc', 'abbc', '0', "'abbc'"),
-            ('ab?bc', 'abc', '0', "'abc'"),
-            ('ab?bc', 'abbbbc', '', "None"),
-            ('ab?c', 'abc', '0', "'abc'"),
-            ('^abc$', 'abc', '0', "'abc'"),
-            ('^abc$', 'abcc', '', "None"),
-            ('^abc', 'abcc', '0', "'abc'"),
-            ('^abc$', 'aabc', '', "None"),
-            ('abc$', 'aabc', '0', "'abc'"),
-            ('^', 'abc', '0', "''"),
-            ('$', 'abc', '0', "''"),
-            ('a.c', 'abc', '0', "'abc'"),
-            ('a.c', 'axc', '0', "'axc'"),
-            ('a.*c', 'axyzc', '0', "'axyzc'"),
-            ('a.*c', 'axyzd', '', "None"),
-            ('a[bc]d', 'abc', '', "None"),
-            ('a[bc]d', 'abd', '0', "'abd'"),
-            ('a[b-d]e', 'abd', '', "None"),
-            ('a[b-d]e', 'ace', '0', "'ace'"),
-            ('a[b-d]', 'aac', '0', "'ac'"),
-            ('a[-b]', 'a-', '0', "'a-'"),
-            ('a[\\-b]', 'a-', '0', "'a-'"),
-            ('a[b-]', 'a-', '0', "'a-'"),
+            ('abc', 'abc', '0', ascii('abc')),
+            ('abc', 'xbc', '', ascii(None)),
+            ('abc', 'axc', '', ascii(None)),
+            ('abc', 'abx', '', ascii(None)),
+            ('abc', 'xabcy', '0', ascii('abc')),
+            ('abc', 'ababc', '0', ascii('abc')),
+            ('ab*c', 'abc', '0', ascii('abc')),
+            ('ab*bc', 'abc', '0', ascii('abc')),
+            ('ab*bc', 'abbc', '0', ascii('abbc')),
+            ('ab*bc', 'abbbbc', '0', ascii('abbbbc')),
+            ('ab+bc', 'abbc', '0', ascii('abbc')),
+            ('ab+bc', 'abc', '', ascii(None)),
+            ('ab+bc', 'abq', '', ascii(None)),
+            ('ab+bc', 'abbbbc', '0', ascii('abbbbc')),
+            ('ab?bc', 'abbc', '0', ascii('abbc')),
+            ('ab?bc', 'abc', '0', ascii('abc')),
+            ('ab?bc', 'abbbbc', '', ascii(None)),
+            ('ab?c', 'abc', '0', ascii('abc')),
+            ('^abc$', 'abc', '0', ascii('abc')),
+            ('^abc$', 'abcc', '', ascii(None)),
+            ('^abc', 'abcc', '0', ascii('abc')),
+            ('^abc$', 'aabc', '', ascii(None)),
+            ('abc$', 'aabc', '0', ascii('abc')),
+            ('^', 'abc', '0', ascii('')),
+            ('$', 'abc', '0', ascii('')),
+            ('a.c', 'abc', '0', ascii('abc')),
+            ('a.c', 'axc', '0', ascii('axc')),
+            ('a.*c', 'axyzc', '0', ascii('axyzc')),
+            ('a.*c', 'axyzd', '', ascii(None)),
+            ('a[bc]d', 'abc', '', ascii(None)),
+            ('a[bc]d', 'abd', '0', ascii('abd')),
+            ('a[b-d]e', 'abd', '', ascii(None)),
+            ('a[b-d]e', 'ace', '0', ascii('ace')),
+            ('a[b-d]', 'aac', '0', ascii('ac')),
+            ('a[-b]', 'a-', '0', ascii('a-')),
+            ('a[\\-b]', 'a-', '0', ascii('a-')),
+            ('a[b-]', 'a-', '0', ascii('a-')),
             ('a[]b', '-', '', self.BAD_SET),
             ('a[', '-', '', self.BAD_SET),
             ('a\\', '-', '', self.BAD_ESCAPE),
             ('abc)', '-', '', self.TRAILING_CHARS),
             ('(abc', '-', '', self.MISSING_RPAREN),
-            ('a]', 'a]', '0', "'a]'"),
-            ('a[]]b', 'a]b', '0', "'a]b'"),
-            ('a[\]]b', 'a]b', '0', "'a]b'"),
-            ('a[^bc]d', 'aed', '0', "'aed'"),
-            ('a[^bc]d', 'abd', '', "None"),
-            ('a[^-b]c', 'adc', '0', "'adc'"),
-            ('a[^-b]c', 'a-c', '', "None"),
-            ('a[^]b]c', 'a]c', '', "None"),
-            ('a[^]b]c', 'adc', '0', "'adc'"),
-            ('\\ba\\b', 'a-', '0', "'a'"),
-            ('\\ba\\b', '-a', '0', "'a'"),
-            ('\\ba\\b', '-a-', '0', "'a'"),
-            ('\\by\\b', 'xy', '', "None"),
-            ('\\by\\b', 'yz', '', "None"),
-            ('\\by\\b', 'xyz', '', "None"),
-            ('x\\b', 'xyz', '', "None"),
-            ('x\\B', 'xyz', '0', "'x'"),
-            ('\\Bz', 'xyz', '0', "'z'"),
-            ('z\\B', 'xyz', '', "None"),
-            ('\\Bx', 'xyz', '', "None"),
-            ('\\Ba\\B', 'a-', '', "None"),
-            ('\\Ba\\B', '-a', '', "None"),
-            ('\\Ba\\B', '-a-', '', "None"),
-            ('\\By\\B', 'xy', '', "None"),
-            ('\\By\\B', 'yz', '', "None"),
-            ('\\By\\b', 'xy', '0', "'y'"),
-            ('\\by\\B', 'yz', '0', "'y'"),
-            ('\\By\\B', 'xyz', '0', "'y'"),
-            ('ab|cd', 'abc', '0', "'ab'"),
-            ('ab|cd', 'abcd', '0', "'ab'"),
-            ('()ef', 'def', '0,1', "('ef', '')"),
-            ('$b', 'b', '', "None"),
-            ('a\\(b', 'a(b', '', "('a(b',)"),
-            ('a\\(*b', 'ab', '0', "'ab'"),
-            ('a\\(*b', 'a((b', '0', "'a((b'"),
+            ('a]', 'a]', '0', ascii('a]')),
+            ('a[]]b', 'a]b', '0', ascii('a]b')),
+            ('a[\]]b', 'a]b', '0', ascii('a]b')),
+            ('a[^bc]d', 'aed', '0', ascii('aed')),
+            ('a[^bc]d', 'abd', '', ascii(None)),
+            ('a[^-b]c', 'adc', '0', ascii('adc')),
+            ('a[^-b]c', 'a-c', '', ascii(None)),
+            ('a[^]b]c', 'a]c', '', ascii(None)),
+            ('a[^]b]c', 'adc', '0', ascii('adc')),
+            ('\\ba\\b', 'a-', '0', ascii('a')),
+            ('\\ba\\b', '-a', '0', ascii('a')),
+            ('\\ba\\b', '-a-', '0', ascii('a')),
+            ('\\by\\b', 'xy', '', ascii(None)),
+            ('\\by\\b', 'yz', '', ascii(None)),
+            ('\\by\\b', 'xyz', '', ascii(None)),
+            ('x\\b', 'xyz', '', ascii(None)),
+            ('x\\B', 'xyz', '0', ascii('x')),
+            ('\\Bz', 'xyz', '0', ascii('z')),
+            ('z\\B', 'xyz', '', ascii(None)),
+            ('\\Bx', 'xyz', '', ascii(None)),
+            ('\\Ba\\B', 'a-', '', ascii(None)),
+            ('\\Ba\\B', '-a', '', ascii(None)),
+            ('\\Ba\\B', '-a-', '', ascii(None)),
+            ('\\By\\B', 'xy', '', ascii(None)),
+            ('\\By\\B', 'yz', '', ascii(None)),
+            ('\\By\\b', 'xy', '0', ascii('y')),
+            ('\\by\\B', 'yz', '0', ascii('y')),
+            ('\\By\\B', 'xyz', '0', ascii('y')),
+            ('ab|cd', 'abc', '0', ascii('ab')),
+            ('ab|cd', 'abcd', '0', ascii('ab')),
+            ('()ef', 'def', '0,1', ascii(('ef', ''))),
+            ('$b', 'b', '', ascii(None)),
+            ('a\\(b', 'a(b', '', ascii(('a(b',))),
+            ('a\\(*b', 'ab', '0', ascii('ab')),
+            ('a\\(*b', 'a((b', '0', ascii('a((b')),
             ('a\\\\b', 'a\\b', '0', ascii('a\\b')),
-            ('((a))', 'abc', '0,1,2', "('a', 'a', 'a')"),
-            ('(a)b(c)', 'abc', '0,1,2', "('abc', 'a', 'c')"),
-            ('a+b+c', 'aabbabc', '0', "'abc'"),
-            ('(a+|b)*', 'ab', '0,1', "('ab', 'b')"),
-            ('(a+|b)+', 'ab', '0,1', "('ab', 'b')"),
-            ('(a+|b)?', 'ab', '0,1', "('a', 'a')"),
+            ('((a))', 'abc', '0,1,2', ascii(('a', 'a', 'a'))),
+            ('(a)b(c)', 'abc', '0,1,2', ascii(('abc', 'a', 'c'))),
+            ('a+b+c', 'aabbabc', '0', ascii('abc')),
+            ('(a+|b)*', 'ab', '0,1', ascii(('ab', 'b'))),
+            ('(a+|b)+', 'ab', '0,1', ascii(('ab', 'b'))),
+            ('(a+|b)?', 'ab', '0,1', ascii(('a', 'a'))),
             (')(', '-', '', self.TRAILING_CHARS),
-            ('[^ab]*', 'cde', '0', "'cde'"),
-            ('abc', '', '', "None"),
-            ('a*', '', '0', "''"),
-            ('a|b|c|d|e', 'e', '0', "'e'"),
-            ('(a|b|c|d|e)f', 'ef', '0,1', "('ef', 'e')"),
-            ('abcd*efg', 'abcdefg', '0', "'abcdefg'"),
-            ('ab*', 'xabyabbbz', '0', "'ab'"),
-            ('ab*', 'xayabbbz', '0', "'a'"),
-            ('(ab|cd)e', 'abcde', '0,1', "('cde', 'cd')"),
-            ('[abhgefdc]ij', 'hij', '0', "'hij'"),
-            ('^(ab|cd)e', 'abcde', '', "None"),
-            ('(abc|)ef', 'abcdef', '0,1', "('ef', '')"),
-            ('(a|b)c*d', 'abcd', '0,1', "('bcd', 'b')"),
-            ('(ab|ab*)bc', 'abc', '0,1', "('abc', 'a')"),
-            ('a([bc]*)c*', 'abc', '0,1', "('abc', 'bc')"),
-            ('a([bc]*)(c*d)', 'abcd', '0,1,2', "('abcd', 'bc', 'd')"),
-            ('a([bc]+)(c*d)', 'abcd', '0,1,2', "('abcd', 'bc', 'd')"),
-            ('a([bc]*)(c+d)', 'abcd', '0,1,2', "('abcd', 'b', 'cd')"),
-            ('a[bcd]*dcdcde', 'adcdcde', '0', "'adcdcde'"),
-            ('a[bcd]+dcdcde', 'adcdcde', '', "None"),
-            ('(ab|a)b*c', 'abc', '0,1', "('abc', 'ab')"),
-            ('((a)(b)c)(d)', 'abcd', '1,2,3,4', "('abc', 'a', 'b', 'd')"),
-            ('[a-zA-Z_][a-zA-Z0-9_]*', 'alpha', '0', "'alpha'"),
-            ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', "('bh', None)"),
+            ('[^ab]*', 'cde', '0', ascii('cde')),
+            ('abc', '', '', ascii(None)),
+            ('a*', '', '0', ascii('')),
+            ('a|b|c|d|e', 'e', '0', ascii('e')),
+            ('(a|b|c|d|e)f', 'ef', '0,1', ascii(('ef', 'e'))),
+            ('abcd*efg', 'abcdefg', '0', ascii('abcdefg')),
+            ('ab*', 'xabyabbbz', '0', ascii('ab')),
+            ('ab*', 'xayabbbz', '0', ascii('a')),
+            ('(ab|cd)e', 'abcde', '0,1', ascii(('cde', 'cd'))),
+            ('[abhgefdc]ij', 'hij', '0', ascii('hij')),
+            ('^(ab|cd)e', 'abcde', '', ascii(None)),
+            ('(abc|)ef', 'abcdef', '0,1', ascii(('ef', ''))),
+            ('(a|b)c*d', 'abcd', '0,1', ascii(('bcd', 'b'))),
+            ('(ab|ab*)bc', 'abc', '0,1', ascii(('abc', 'a'))),
+            ('a([bc]*)c*', 'abc', '0,1', ascii(('abc', 'bc'))),
+            ('a([bc]*)(c*d)', 'abcd', '0,1,2', ascii(('abcd', 'bc', 'd'))),
+            ('a([bc]+)(c*d)', 'abcd', '0,1,2', ascii(('abcd', 'bc', 'd'))),
+            ('a([bc]*)(c+d)', 'abcd', '0,1,2', ascii(('abcd', 'b', 'cd'))),
+            ('a[bcd]*dcdcde', 'adcdcde', '0', ascii('adcdcde')),
+            ('a[bcd]+dcdcde', 'adcdcde', '', ascii(None)),
+            ('(ab|a)b*c', 'abc', '0,1', ascii(('abc', 'ab'))),
+            ('((a)(b)c)(d)', 'abcd', '1,2,3,4', ascii(('abc', 'a', 'b', 'd'))),
+            ('[a-zA-Z_][a-zA-Z0-9_]*', 'alpha', '0', ascii('alpha')),
+            ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', ascii(('bh', None))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effgz', '0,1,2',
-              "('effgz', 'effgz', None)"),
-            ('(bc+d$|ef*g.|h?i(j|k))', 'ij', '0,1,2', "('ij', 'ij', 'j')"),
-            ('(bc+d$|ef*g.|h?i(j|k))', 'effg', '', "None"),
-            ('(bc+d$|ef*g.|h?i(j|k))', 'bcdd', '', "None"),
+              ascii(('effgz', 'effgz', None))),
+            ('(bc+d$|ef*g.|h?i(j|k))', 'ij', '0,1,2', ascii(('ij', 'ij', 'j'))),
+            ('(bc+d$|ef*g.|h?i(j|k))', 'effg', '', ascii(None)),
+            ('(bc+d$|ef*g.|h?i(j|k))', 'bcdd', '', ascii(None)),
             ('(bc+d$|ef*g.|h?i(j|k))', 'reffgz', '0,1,2',
-              "('effgz', 'effgz', None)"),
-            ('(((((((((a)))))))))', 'a', '0', "'a'"),
-            ('multiple words of text', 'uh-uh', '', "None"),
-            ('multiple words', 'multiple words, yeah', '0', "'multiple words'"),
-            ('(.*)c(.*)', 'abcde', '0,1,2', "('abcde', 'ab', 'de')"),
-            ('\\((.*), (.*)\\)', '(a, b)', '2,1', "('b', 'a')"),
-            ('[k]', 'ab', '', "None"),
-            ('a[-]?c', 'ac', '0', "'ac'"),
-            ('(abc)\\1', 'abcabc', '1', "'abc'"),
-            ('([a-c]*)\\1', 'abcabc', '1', "'abc'"),
-            ('^(.+)?B', 'AB', '1', "'A'"),
-            ('(a+).\\1$', 'aaaaa', '0,1', "('aaaaa', 'aa')"),
-            ('^(a+).\\1$', 'aaaa', '', "None"),
-            ('(abc)\\1', 'abcabc', '0,1', "('abcabc', 'abc')"),
-            ('([a-c]+)\\1', 'abcabc', '0,1', "('abcabc', 'abc')"),
-            ('(a)\\1', 'aa', '0,1', "('aa', 'a')"),
-            ('(a+)\\1', 'aa', '0,1', "('aa', 'a')"),
-            ('(a+)+\\1', 'aa', '0,1', "('aa', 'a')"),
-            ('(a).+\\1', 'aba', '0,1', "('aba', 'a')"),
-            ('(a)ba*\\1', 'aba', '0,1', "('aba', 'a')"),
-            ('(aa|a)a\\1$', 'aaa', '0,1', "('aaa', 'a')"),
-            ('(a|aa)a\\1$', 'aaa', '0,1', "('aaa', 'a')"),
-            ('(a+)a\\1$', 'aaa', '0,1', "('aaa', 'a')"),
-            ('([abc]*)\\1', 'abcabc', '0,1', "('abcabc', 'abc')"),
-            ('(a)(b)c|ab', 'ab', '0,1,2', "('ab', None, None)"),
-            ('(a)+x', 'aaax', '0,1', "('aaax', 'a')"),
-            ('([ac])+x', 'aacx', '0,1', "('aacx', 'c')"),
+              ascii(('effgz', 'effgz', None))),
+            ('(((((((((a)))))))))', 'a', '0', ascii('a')),
+            ('multiple words of text', 'uh-uh', '', ascii(None)),
+            ('multiple words', 'multiple words, yeah', '0', ascii('multiple words')),
+            ('(.*)c(.*)', 'abcde', '0,1,2', ascii(('abcde', 'ab', 'de'))),
+            ('\\((.*), (.*)\\)', '(a, b)', '2,1', ascii(('b', 'a'))),
+            ('[k]', 'ab', '', ascii(None)),
+            ('a[-]?c', 'ac', '0', ascii('ac')),
+            ('(abc)\\1', 'abcabc', '1', ascii('abc')),
+            ('([a-c]*)\\1', 'abcabc', '1', ascii('abc')),
+            ('^(.+)?B', 'AB', '1', ascii('A')),
+            ('(a+).\\1$', 'aaaaa', '0,1', ascii(('aaaaa', 'aa'))),
+            ('^(a+).\\1$', 'aaaa', '', ascii(None)),
+            ('(abc)\\1', 'abcabc', '0,1', ascii(('abcabc', 'abc'))),
+            ('([a-c]+)\\1', 'abcabc', '0,1', ascii(('abcabc', 'abc'))),
+            ('(a)\\1', 'aa', '0,1', ascii(('aa', 'a'))),
+            ('(a+)\\1', 'aa', '0,1', ascii(('aa', 'a'))),
+            ('(a+)+\\1', 'aa', '0,1', ascii(('aa', 'a'))),
+            ('(a).+\\1', 'aba', '0,1', ascii(('aba', 'a'))),
+            ('(a)ba*\\1', 'aba', '0,1', ascii(('aba', 'a'))),
+            ('(aa|a)a\\1$', 'aaa', '0,1', ascii(('aaa', 'a'))),
+            ('(a|aa)a\\1$', 'aaa', '0,1', ascii(('aaa', 'a'))),
+            ('(a+)a\\1$', 'aaa', '0,1', ascii(('aaa', 'a'))),
+            ('([abc]*)\\1', 'abcabc', '0,1', ascii(('abcabc', 'abc'))),
+            ('(a)(b)c|ab', 'ab', '0,1,2', ascii(('ab', None, None))),
+            ('(a)+x', 'aaax', '0,1', ascii(('aaax', 'a'))),
+            ('([ac])+x', 'aacx', '0,1', ascii(('aacx', 'c'))),
             ('([^/]*/)*sub1/', 'd:msgs/tdir/sub1/trial/away.cpp', '0,1',
-              "('d:msgs/tdir/sub1/', 'tdir/')"),
+              ascii(('d:msgs/tdir/sub1/', 'tdir/'))),
             ('([^.]*)\\.([^:]*):[T ]+(.*)', 'track1.title:TBlah blah blah',
               '0,1,2,3',
-              "('track1.title:TBlah blah blah', 'track1', 'title', 'Blah blah blah')"),
-            ('([^N]*N)+', 'abNNxyzN', '0,1', "('abNNxyzN', 'xyzN')"),
-            ('([^N]*N)+', 'abNNxyz', '0,1', "('abNN', 'N')"),
-            ('([abc]*)x', 'abcx', '0,1', "('abcx', 'abc')"),
-            ('([abc]*)x', 'abc', '', "None"),
-            ('([xyz]*)x', 'abcx', '0,1', "('x', '')"),
-            ('(a)+b|aac', 'aac', '0,1', "('aac', None)"),
+              ascii(('track1.title:TBlah blah blah', 'track1', 'title', 'Blah blah blah'))),
+            ('([^N]*N)+', 'abNNxyzN', '0,1', ascii(('abNNxyzN', 'xyzN'))),
+            ('([^N]*N)+', 'abNNxyz', '0,1', ascii(('abNN', 'N'))),
+            ('([abc]*)x', 'abcx', '0,1', ascii(('abcx', 'abc'))),
+            ('([abc]*)x', 'abc', '', ascii(None)),
+            ('([xyz]*)x', 'abcx', '0,1', ascii(('x', ''))),
+            ('(a)+b|aac', 'aac', '0,1', ascii(('aac', None))),
 
             # Test symbolic groups.
 
             ('(?P<i d>aaa)a', 'aaaa', '', self.MISSING_GT),
-            ('(?P<id>aaa)a', 'aaaa', '0,id', "('aaaa', 'aaa')"),
-            ('(?P<id>aa)(?P=id)', 'aaaa', '0,id', "('aaaa', 'aa')"),
+            ('(?P<id>aaa)a', 'aaaa', '0,id', ascii(('aaaa', 'aaa'))),
+            ('(?P<id>aa)(?P=id)', 'aaaa', '0,id', ascii(('aaaa', 'aa'))),
             ('(?P<id>aa)(?P=xd)', 'aaaa', '', self.UNKNOWN_GROUP),
 
             # Character properties.
-            (r"\g", "g", '0', "'g'"),
+            (r"\g", "g", '0', ascii('g')),
             (r"\g<1>", "g", '', self.UNKNOWN_GROUP),
-            (r"(.)\g<1>", "gg", '0', "'gg'"),
-            (r"(.)\g<1>", "gg", '', "('gg', 'g')"),
-            (r"\N", "N", '0', "'N'"),
-            (r"\N{LATIN SMALL LETTER A}", "a", '0', "'a'"),
-            (r"\p", "p", '0', "'p'"),
-            (r"\p{Ll}", "a", '0', "'a'"),
-            (r"\P", "P", '0', "'P'"),
-            (r"\P{Lu}", "p", '0', "'p'"),
+            (r"(.)\g<1>", "gg", '0', ascii('gg')),
+            (r"(.)\g<1>", "gg", '', ascii(('gg', 'g'))),
+            (r"\N", "N", '0', ascii('N')),
+            (r"\N{LATIN SMALL LETTER A}", "a", '0', ascii('a')),
+            (r"\p", "p", '0', ascii('p')),
+            (r"\p{Ll}", "a", '0', ascii('a')),
+            (r"\P", "P", '0', ascii('P')),
+            (r"\P{Lu}", "p", '0', ascii('p')),
 
             # All tests from Perl.
 
-            ('abc', 'abc', '0', "'abc'"),
-            ('abc', 'xbc', '', "None"),
-            ('abc', 'axc', '', "None"),
-            ('abc', 'abx', '', "None"),
-            ('abc', 'xabcy', '0', "'abc'"),
-            ('abc', 'ababc', '0', "'abc'"),
-            ('ab*c', 'abc', '0', "'abc'"),
-            ('ab*bc', 'abc', '0', "'abc'"),
-            ('ab*bc', 'abbc', '0', "'abbc'"),
-            ('ab*bc', 'abbbbc', '0', "'abbbbc'"),
-            ('ab{0,}bc', 'abbbbc', '0', "'abbbbc'"),
-            ('ab+bc', 'abbc', '0', "'abbc'"),
-            ('ab+bc', 'abc', '', "None"),
-            ('ab+bc', 'abq', '', "None"),
-            ('ab{1,}bc', 'abq', '', "None"),
-            ('ab+bc', 'abbbbc', '0', "'abbbbc'"),
-            ('ab{1,}bc', 'abbbbc', '0', "'abbbbc'"),
-            ('ab{1,3}bc', 'abbbbc', '0', "'abbbbc'"),
-            ('ab{3,4}bc', 'abbbbc', '0', "'abbbbc'"),
-            ('ab{4,5}bc', 'abbbbc', '', "None"),
-            ('ab?bc', 'abbc', '0', "'abbc'"),
-            ('ab?bc', 'abc', '0', "'abc'"),
-            ('ab{0,1}bc', 'abc', '0', "'abc'"),
-            ('ab?bc', 'abbbbc', '', "None"),
-            ('ab?c', 'abc', '0', "'abc'"),
-            ('ab{0,1}c', 'abc', '0', "'abc'"),
-            ('^abc$', 'abc', '0', "'abc'"),
-            ('^abc$', 'abcc', '', "None"),
-            ('^abc', 'abcc', '0', "'abc'"),
-            ('^abc$', 'aabc', '', "None"),
-            ('abc$', 'aabc', '0', "'abc'"),
-            ('^', 'abc', '0', "''"),
-            ('$', 'abc', '0', "''"),
-            ('a.c', 'abc', '0', "'abc'"),
-            ('a.c', 'axc', '0', "'axc'"),
-            ('a.*c', 'axyzc', '0', "'axyzc'"),
-            ('a.*c', 'axyzd', '', "None"),
-            ('a[bc]d', 'abc', '', "None"),
-            ('a[bc]d', 'abd', '0', "'abd'"),
-            ('a[b-d]e', 'abd', '', "None"),
-            ('a[b-d]e', 'ace', '0', "'ace'"),
-            ('a[b-d]', 'aac', '0', "'ac'"),
-            ('a[-b]', 'a-', '0', "'a-'"),
-            ('a[b-]', 'a-', '0', "'a-'"),
+            ('abc', 'abc', '0', ascii('abc')),
+            ('abc', 'xbc', '', ascii(None)),
+            ('abc', 'axc', '', ascii(None)),
+            ('abc', 'abx', '', ascii(None)),
+            ('abc', 'xabcy', '0', ascii('abc')),
+            ('abc', 'ababc', '0', ascii('abc')),
+            ('ab*c', 'abc', '0', ascii('abc')),
+            ('ab*bc', 'abc', '0', ascii('abc')),
+            ('ab*bc', 'abbc', '0', ascii('abbc')),
+            ('ab*bc', 'abbbbc', '0', ascii('abbbbc')),
+            ('ab{0,}bc', 'abbbbc', '0', ascii('abbbbc')),
+            ('ab+bc', 'abbc', '0', ascii('abbc')),
+            ('ab+bc', 'abc', '', ascii(None)),
+            ('ab+bc', 'abq', '', ascii(None)),
+            ('ab{1,}bc', 'abq', '', ascii(None)),
+            ('ab+bc', 'abbbbc', '0', ascii('abbbbc')),
+            ('ab{1,}bc', 'abbbbc', '0', ascii('abbbbc')),
+            ('ab{1,3}bc', 'abbbbc', '0', ascii('abbbbc')),
+            ('ab{3,4}bc', 'abbbbc', '0', ascii('abbbbc')),
+            ('ab{4,5}bc', 'abbbbc', '', ascii(None)),
+            ('ab?bc', 'abbc', '0', ascii('abbc')),
+            ('ab?bc', 'abc', '0', ascii('abc')),
+            ('ab{0,1}bc', 'abc', '0', ascii('abc')),
+            ('ab?bc', 'abbbbc', '', ascii(None)),
+            ('ab?c', 'abc', '0', ascii('abc')),
+            ('ab{0,1}c', 'abc', '0', ascii('abc')),
+            ('^abc$', 'abc', '0', ascii('abc')),
+            ('^abc$', 'abcc', '', ascii(None)),
+            ('^abc', 'abcc', '0', ascii('abc')),
+            ('^abc$', 'aabc', '', ascii(None)),
+            ('abc$', 'aabc', '0', ascii('abc')),
+            ('^', 'abc', '0', ascii('')),
+            ('$', 'abc', '0', ascii('')),
+            ('a.c', 'abc', '0', ascii('abc')),
+            ('a.c', 'axc', '0', ascii('axc')),
+            ('a.*c', 'axyzc', '0', ascii('axyzc')),
+            ('a.*c', 'axyzd', '', ascii(None)),
+            ('a[bc]d', 'abc', '', ascii(None)),
+            ('a[bc]d', 'abd', '0', ascii('abd')),
+            ('a[b-d]e', 'abd', '', ascii(None)),
+            ('a[b-d]e', 'ace', '0', ascii('ace')),
+            ('a[b-d]', 'aac', '0', ascii('ac')),
+            ('a[-b]', 'a-', '0', ascii('a-')),
+            ('a[b-]', 'a-', '0', ascii('a-')),
             ('a[b-a]', '-', '', self.BAD_CHAR_RANGE),
             ('a[]b', '-', '', self.BAD_SET),
             ('a[', '-', '', self.BAD_SET),
-            ('a]', 'a]', '0', "'a]'"),
-            ('a[]]b', 'a]b', '0', "'a]b'"),
-            ('a[^bc]d', 'aed', '0', "'aed'"),
-            ('a[^bc]d', 'abd', '', "None"),
-            ('a[^-b]c', 'adc', '0', "'adc'"),
-            ('a[^-b]c', 'a-c', '', "None"),
-            ('a[^]b]c', 'a]c', '', "None"),
-            ('a[^]b]c', 'adc', '0', "'adc'"),
-            ('ab|cd', 'abc', '0', "'ab'"),
-            ('ab|cd', 'abcd', '0', "'ab'"),
-            ('()ef', 'def', '0,1', "('ef', '')"),
+            ('a]', 'a]', '0', ascii('a]')),
+            ('a[]]b', 'a]b', '0', ascii('a]b')),
+            ('a[^bc]d', 'aed', '0', ascii('aed')),
+            ('a[^bc]d', 'abd', '', ascii(None)),
+            ('a[^-b]c', 'adc', '0', ascii('adc')),
+            ('a[^-b]c', 'a-c', '', ascii(None)),
+            ('a[^]b]c', 'a]c', '', ascii(None)),
+            ('a[^]b]c', 'adc', '0', ascii('adc')),
+            ('ab|cd', 'abc', '0', ascii('ab')),
+            ('ab|cd', 'abcd', '0', ascii('ab')),
+            ('()ef', 'def', '0,1', ascii(('ef', ''))),
             ('*a', '-', '', self.NOTHING_TO_REPEAT),
             ('(*)b', '-', '', self.NOTHING_TO_REPEAT),
-            ('$b', 'b', '', "None"),
+            ('$b', 'b', '', ascii(None)),
             ('a\\', '-', '', self.BAD_ESCAPE),
-            ('a\\(b', 'a(b', '', "('a(b',)"),
-            ('a\\(*b', 'ab', '0', "'ab'"),
-            ('a\\(*b', 'a((b', '0', "'a((b'"),
+            ('a\\(b', 'a(b', '', ascii(('a(b',))),
+            ('a\\(*b', 'ab', '0', ascii('ab')),
+            ('a\\(*b', 'a((b', '0', ascii('a((b')),
             ('a\\\\b', 'a\\b', '0', ascii('a\\b')),
             ('abc)', '-', '', self.TRAILING_CHARS),
             ('(abc', '-', '', self.MISSING_RPAREN),
-            ('((a))', 'abc', '0,1,2', "('a', 'a', 'a')"),
-            ('(a)b(c)', 'abc', '0,1,2', "('abc', 'a', 'c')"),
-            ('a+b+c', 'aabbabc', '0', "'abc'"),
-            ('a{1,}b{1,}c', 'aabbabc', '0', "'abc'"),
+            ('((a))', 'abc', '0,1,2', ascii(('a', 'a', 'a'))),
+            ('(a)b(c)', 'abc', '0,1,2', ascii(('abc', 'a', 'c'))),
+            ('a+b+c', 'aabbabc', '0', ascii('abc')),
+            ('a{1,}b{1,}c', 'aabbabc', '0', ascii('abc')),
             ('a**', '-', '', self.NOTHING_TO_REPEAT),
-            ('a.+?c', 'abcabc', '0', "'abc'"),
-            ('(a+|b)*', 'ab', '0,1', "('ab', 'b')"),
-            ('(a+|b){0,}', 'ab', '0,1', "('ab', 'b')"),
-            ('(a+|b)+', 'ab', '0,1', "('ab', 'b')"),
-            ('(a+|b){1,}', 'ab', '0,1', "('ab', 'b')"),
-            ('(a+|b)?', 'ab', '0,1', "('a', 'a')"),
-            ('(a+|b){0,1}', 'ab', '0,1', "('a', 'a')"),
+            ('a.+?c', 'abcabc', '0', ascii('abc')),
+            ('(a+|b)*', 'ab', '0,1', ascii(('ab', 'b'))),
+            ('(a+|b){0,}', 'ab', '0,1', ascii(('ab', 'b'))),
+            ('(a+|b)+', 'ab', '0,1', ascii(('ab', 'b'))),
+            ('(a+|b){1,}', 'ab', '0,1', ascii(('ab', 'b'))),
+            ('(a+|b)?', 'ab', '0,1', ascii(('a', 'a'))),
+            ('(a+|b){0,1}', 'ab', '0,1', ascii(('a', 'a'))),
             (')(', '-', '', self.TRAILING_CHARS),
-            ('[^ab]*', 'cde', '0', "'cde'"),
-            ('abc', '', '', "None"),
-            ('a*', '', '0', "''"),
-            ('([abc])*d', 'abbbcd', '0,1', "('abbbcd', 'c')"),
-            ('([abc])*bcd', 'abcd', '0,1', "('abcd', 'a')"),
-            ('a|b|c|d|e', 'e', '0', "'e'"),
-            ('(a|b|c|d|e)f', 'ef', '0,1', "('ef', 'e')"),
-            ('abcd*efg', 'abcdefg', '0', "'abcdefg'"),
-            ('ab*', 'xabyabbbz', '0', "'ab'"),
-            ('ab*', 'xayabbbz', '0', "'a'"),
-            ('(ab|cd)e', 'abcde', '0,1', "('cde', 'cd')"),
-            ('[abhgefdc]ij', 'hij', '0', "'hij'"),
-            ('^(ab|cd)e', 'abcde', '', "None"),
-            ('(abc|)ef', 'abcdef', '0,1', "('ef', '')"),
-            ('(a|b)c*d', 'abcd', '0,1', "('bcd', 'b')"),
-            ('(ab|ab*)bc', 'abc', '0,1', "('abc', 'a')"),
-            ('a([bc]*)c*', 'abc', '0,1', "('abc', 'bc')"),
-            ('a([bc]*)(c*d)', 'abcd', '0,1,2', "('abcd', 'bc', 'd')"),
-            ('a([bc]+)(c*d)', 'abcd', '0,1,2', "('abcd', 'bc', 'd')"),
-            ('a([bc]*)(c+d)', 'abcd', '0,1,2', "('abcd', 'b', 'cd')"),
-            ('a[bcd]*dcdcde', 'adcdcde', '0', "'adcdcde'"),
-            ('a[bcd]+dcdcde', 'adcdcde', '', "None"),
-            ('(ab|a)b*c', 'abc', '0,1', "('abc', 'ab')"),
-            ('((a)(b)c)(d)', 'abcd', '1,2,3,4', "('abc', 'a', 'b', 'd')"),
-            ('[a-zA-Z_][a-zA-Z0-9_]*', 'alpha', '0', "'alpha'"),
-            ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', "('bh', None)"),
+            ('[^ab]*', 'cde', '0', ascii('cde')),
+            ('abc', '', '', ascii(None)),
+            ('a*', '', '0', ascii('')),
+            ('([abc])*d', 'abbbcd', '0,1', ascii(('abbbcd', 'c'))),
+            ('([abc])*bcd', 'abcd', '0,1', ascii(('abcd', 'a'))),
+            ('a|b|c|d|e', 'e', '0', ascii('e')),
+            ('(a|b|c|d|e)f', 'ef', '0,1', ascii(('ef', 'e'))),
+            ('abcd*efg', 'abcdefg', '0', ascii('abcdefg')),
+            ('ab*', 'xabyabbbz', '0', ascii('ab')),
+            ('ab*', 'xayabbbz', '0', ascii('a')),
+            ('(ab|cd)e', 'abcde', '0,1', ascii(('cde', 'cd'))),
+            ('[abhgefdc]ij', 'hij', '0', ascii('hij')),
+            ('^(ab|cd)e', 'abcde', '', ascii(None)),
+            ('(abc|)ef', 'abcdef', '0,1', ascii(('ef', ''))),
+            ('(a|b)c*d', 'abcd', '0,1', ascii(('bcd', 'b'))),
+            ('(ab|ab*)bc', 'abc', '0,1', ascii(('abc', 'a'))),
+            ('a([bc]*)c*', 'abc', '0,1', ascii(('abc', 'bc'))),
+            ('a([bc]*)(c*d)', 'abcd', '0,1,2', ascii(('abcd', 'bc', 'd'))),
+            ('a([bc]+)(c*d)', 'abcd', '0,1,2', ascii(('abcd', 'bc', 'd'))),
+            ('a([bc]*)(c+d)', 'abcd', '0,1,2', ascii(('abcd', 'b', 'cd'))),
+            ('a[bcd]*dcdcde', 'adcdcde', '0', ascii('adcdcde')),
+            ('a[bcd]+dcdcde', 'adcdcde', '', ascii(None)),
+            ('(ab|a)b*c', 'abc', '0,1', ascii(('abc', 'ab'))),
+            ('((a)(b)c)(d)', 'abcd', '1,2,3,4', ascii(('abc', 'a', 'b', 'd'))),
+            ('[a-zA-Z_][a-zA-Z0-9_]*', 'alpha', '0', ascii('alpha')),
+            ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', ascii(('bh', None))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effgz', '0,1,2',
-              "('effgz', 'effgz', None)"),
-            ('(bc+d$|ef*g.|h?i(j|k))', 'ij', '0,1,2', "('ij', 'ij', 'j')"),
-            ('(bc+d$|ef*g.|h?i(j|k))', 'effg', '', "None"),
-            ('(bc+d$|ef*g.|h?i(j|k))', 'bcdd', '', "None"),
+              ascii(('effgz', 'effgz', None))),
+            ('(bc+d$|ef*g.|h?i(j|k))', 'ij', '0,1,2', ascii(('ij', 'ij', 'j'))),
+            ('(bc+d$|ef*g.|h?i(j|k))', 'effg', '', ascii(None)),
+            ('(bc+d$|ef*g.|h?i(j|k))', 'bcdd', '', ascii(None)),
             ('(bc+d$|ef*g.|h?i(j|k))', 'reffgz', '0,1,2',
-              "('effgz', 'effgz', None)"),
-            ('((((((((((a))))))))))', 'a', '10', "'a'"),
-            ('((((((((((a))))))))))\\10', 'aa', '0', "'aa'"),
+              ascii(('effgz', 'effgz', None))),
+            ('((((((((((a))))))))))', 'a', '10', ascii('a')),
+            ('((((((((((a))))))))))\\10', 'aa', '0', ascii('aa')),
             # Python does not have the same rules for \\41 so this is a syntax error
-            #    ('((((((((((a))))))))))\\41', 'aa', '', "None"),
-            #    ('((((((((((a))))))))))\\41', 'a!', '0', "'a!'"),
+            #    ('((((((((((a))))))))))\\41', 'aa', '', ascii(None)),
+            #    ('((((((((((a))))))))))\\41', 'a!', '0', ascii('a!')),
             ('((((((((((a))))))))))\\41', '', '', self.UNKNOWN_GROUP),
             ('(?i)((((((((((a))))))))))\\41', '', '', self.UNKNOWN_GROUP),
-            ('(((((((((a)))))))))', 'a', '0', "'a'"),
-            ('multiple words of text', 'uh-uh', '', "None"),
-            ('multiple words', 'multiple words, yeah', '0', "'multiple words'"),
-            ('(.*)c(.*)', 'abcde', '0,1,2', "('abcde', 'ab', 'de')"),
-            ('\\((.*), (.*)\\)', '(a, b)', '2,1', "('b', 'a')"),
-            ('[k]', 'ab', '', "None"),
-            ('a[-]?c', 'ac', '0', "'ac'"),
-            ('(abc)\\1', 'abcabc', '1', "'abc'"),
-            ('([a-c]*)\\1', 'abcabc', '1', "'abc'"),
-            ('(?i)abc', 'ABC', '0', "'ABC'"),
-            ('(?i)abc', 'XBC', '', "None"),
-            ('(?i)abc', 'AXC', '', "None"),
-            ('(?i)abc', 'ABX', '', "None"),
-            ('(?i)abc', 'XABCY', '0', "'ABC'"),
-            ('(?i)abc', 'ABABC', '0', "'ABC'"),
-            ('(?i)ab*c', 'ABC', '0', "'ABC'"),
-            ('(?i)ab*bc', 'ABC', '0', "'ABC'"),
-            ('(?i)ab*bc', 'ABBC', '0', "'ABBC'"),
-            ('(?i)ab*?bc', 'ABBBBC', '0', "'ABBBBC'"),
-            ('(?i)ab{0,}?bc', 'ABBBBC', '0', "'ABBBBC'"),
-            ('(?i)ab+?bc', 'ABBC', '0', "'ABBC'"),
-            ('(?i)ab+bc', 'ABC', '', "None"),
-            ('(?i)ab+bc', 'ABQ', '', "None"),
-            ('(?i)ab{1,}bc', 'ABQ', '', "None"),
-            ('(?i)ab+bc', 'ABBBBC', '0', "'ABBBBC'"),
-            ('(?i)ab{1,}?bc', 'ABBBBC', '0', "'ABBBBC'"),
-            ('(?i)ab{1,3}?bc', 'ABBBBC', '0', "'ABBBBC'"),
-            ('(?i)ab{3,4}?bc', 'ABBBBC', '0', "'ABBBBC'"),
-            ('(?i)ab{4,5}?bc', 'ABBBBC', '', "None"),
-            ('(?i)ab??bc', 'ABBC', '0', "'ABBC'"),
-            ('(?i)ab??bc', 'ABC', '0', "'ABC'"),
-            ('(?i)ab{0,1}?bc', 'ABC', '0', "'ABC'"),
-            ('(?i)ab??bc', 'ABBBBC', '', "None"),
-            ('(?i)ab??c', 'ABC', '0', "'ABC'"),
-            ('(?i)ab{0,1}?c', 'ABC', '0', "'ABC'"),
-            ('(?i)^abc$', 'ABC', '0', "'ABC'"),
-            ('(?i)^abc$', 'ABCC', '', "None"),
-            ('(?i)^abc', 'ABCC', '0', "'ABC'"),
-            ('(?i)^abc$', 'AABC', '', "None"),
-            ('(?i)abc$', 'AABC', '0', "'ABC'"),
-            ('(?i)^', 'ABC', '0', "''"),
-            ('(?i)$', 'ABC', '0', "''"),
-            ('(?i)a.c', 'ABC', '0', "'ABC'"),
-            ('(?i)a.c', 'AXC', '0', "'AXC'"),
-            ('(?i)a.*?c', 'AXYZC', '0', "'AXYZC'"),
-            ('(?i)a.*c', 'AXYZD', '', "None"),
-            ('(?i)a[bc]d', 'ABC', '', "None"),
-            ('(?i)a[bc]d', 'ABD', '0', "'ABD'"),
-            ('(?i)a[b-d]e', 'ABD', '', "None"),
-            ('(?i)a[b-d]e', 'ACE', '0', "'ACE'"),
-            ('(?i)a[b-d]', 'AAC', '0', "'AC'"),
-            ('(?i)a[-b]', 'A-', '0', "'A-'"),
-            ('(?i)a[b-]', 'A-', '0', "'A-'"),
+            ('(((((((((a)))))))))', 'a', '0', ascii('a')),
+            ('multiple words of text', 'uh-uh', '', ascii(None)),
+            ('multiple words', 'multiple words, yeah', '0', ascii('multiple words')),
+            ('(.*)c(.*)', 'abcde', '0,1,2', ascii(('abcde', 'ab', 'de'))),
+            ('\\((.*), (.*)\\)', '(a, b)', '2,1', ascii(('b', 'a'))),
+            ('[k]', 'ab', '', ascii(None)),
+            ('a[-]?c', 'ac', '0', ascii('ac')),
+            ('(abc)\\1', 'abcabc', '1', ascii('abc')),
+            ('([a-c]*)\\1', 'abcabc', '1', ascii('abc')),
+            ('(?i)abc', 'ABC', '0', ascii('ABC')),
+            ('(?i)abc', 'XBC', '', ascii(None)),
+            ('(?i)abc', 'AXC', '', ascii(None)),
+            ('(?i)abc', 'ABX', '', ascii(None)),
+            ('(?i)abc', 'XABCY', '0', ascii('ABC')),
+            ('(?i)abc', 'ABABC', '0', ascii('ABC')),
+            ('(?i)ab*c', 'ABC', '0', ascii('ABC')),
+            ('(?i)ab*bc', 'ABC', '0', ascii('ABC')),
+            ('(?i)ab*bc', 'ABBC', '0', ascii('ABBC')),
+            ('(?i)ab*?bc', 'ABBBBC', '0', ascii('ABBBBC')),
+            ('(?i)ab{0,}?bc', 'ABBBBC', '0', ascii('ABBBBC')),
+            ('(?i)ab+?bc', 'ABBC', '0', ascii('ABBC')),
+            ('(?i)ab+bc', 'ABC', '', ascii(None)),
+            ('(?i)ab+bc', 'ABQ', '', ascii(None)),
+            ('(?i)ab{1,}bc', 'ABQ', '', ascii(None)),
+            ('(?i)ab+bc', 'ABBBBC', '0', ascii('ABBBBC')),
+            ('(?i)ab{1,}?bc', 'ABBBBC', '0', ascii('ABBBBC')),
+            ('(?i)ab{1,3}?bc', 'ABBBBC', '0', ascii('ABBBBC')),
+            ('(?i)ab{3,4}?bc', 'ABBBBC', '0', ascii('ABBBBC')),
+            ('(?i)ab{4,5}?bc', 'ABBBBC', '', ascii(None)),
+            ('(?i)ab??bc', 'ABBC', '0', ascii('ABBC')),
+            ('(?i)ab??bc', 'ABC', '0', ascii('ABC')),
+            ('(?i)ab{0,1}?bc', 'ABC', '0', ascii('ABC')),
+            ('(?i)ab??bc', 'ABBBBC', '', ascii(None)),
+            ('(?i)ab??c', 'ABC', '0', ascii('ABC')),
+            ('(?i)ab{0,1}?c', 'ABC', '0', ascii('ABC')),
+            ('(?i)^abc$', 'ABC', '0', ascii('ABC')),
+            ('(?i)^abc$', 'ABCC', '', ascii(None)),
+            ('(?i)^abc', 'ABCC', '0', ascii('ABC')),
+            ('(?i)^abc$', 'AABC', '', ascii(None)),
+            ('(?i)abc$', 'AABC', '0', ascii('ABC')),
+            ('(?i)^', 'ABC', '0', ascii('')),
+            ('(?i)$', 'ABC', '0', ascii('')),
+            ('(?i)a.c', 'ABC', '0', ascii('ABC')),
+            ('(?i)a.c', 'AXC', '0', ascii('AXC')),
+            ('(?i)a.*?c', 'AXYZC', '0', ascii('AXYZC')),
+            ('(?i)a.*c', 'AXYZD', '', ascii(None)),
+            ('(?i)a[bc]d', 'ABC', '', ascii(None)),
+            ('(?i)a[bc]d', 'ABD', '0', ascii('ABD')),
+            ('(?i)a[b-d]e', 'ABD', '', ascii(None)),
+            ('(?i)a[b-d]e', 'ACE', '0', ascii('ACE')),
+            ('(?i)a[b-d]', 'AAC', '0', ascii('AC')),
+            ('(?i)a[-b]', 'A-', '0', ascii('A-')),
+            ('(?i)a[b-]', 'A-', '0', ascii('A-')),
             ('(?i)a[b-a]', '-', '', self.BAD_CHAR_RANGE),
             ('(?i)a[]b', '-', '', self.BAD_SET),
             ('(?i)a[', '-', '', self.BAD_SET),
-            ('(?i)a]', 'A]', '0', "'A]'"),
-            ('(?i)a[]]b', 'A]B', '0', "'A]B'"),
-            ('(?i)a[^bc]d', 'AED', '0', "'AED'"),
-            ('(?i)a[^bc]d', 'ABD', '', "None"),
-            ('(?i)a[^-b]c', 'ADC', '0', "'ADC'"),
-            ('(?i)a[^-b]c', 'A-C', '', "None"),
-            ('(?i)a[^]b]c', 'A]C', '', "None"),
-            ('(?i)a[^]b]c', 'ADC', '0', "'ADC'"),
-            ('(?i)ab|cd', 'ABC', '0', "'AB'"),
-            ('(?i)ab|cd', 'ABCD', '0', "'AB'"),
-            ('(?i)()ef', 'DEF', '0,1', "('EF', '')"),
+            ('(?i)a]', 'A]', '0', ascii('A]')),
+            ('(?i)a[]]b', 'A]B', '0', ascii('A]B')),
+            ('(?i)a[^bc]d', 'AED', '0', ascii('AED')),
+            ('(?i)a[^bc]d', 'ABD', '', ascii(None)),
+            ('(?i)a[^-b]c', 'ADC', '0', ascii('ADC')),
+            ('(?i)a[^-b]c', 'A-C', '', ascii(None)),
+            ('(?i)a[^]b]c', 'A]C', '', ascii(None)),
+            ('(?i)a[^]b]c', 'ADC', '0', ascii('ADC')),
+            ('(?i)ab|cd', 'ABC', '0', ascii('AB')),
+            ('(?i)ab|cd', 'ABCD', '0', ascii('AB')),
+            ('(?i)()ef', 'DEF', '0,1', ascii(('EF', ''))),
             ('(?i)*a', '-', '', self.NOTHING_TO_REPEAT),
             ('(?i)(*)b', '-', '', self.NOTHING_TO_REPEAT),
-            ('(?i)$b', 'B', '', "None"),
+            ('(?i)$b', 'B', '', ascii(None)),
             ('(?i)a\\', '-', '', self.BAD_ESCAPE),
-            ('(?i)a\\(b', 'A(B', '', "('A(B',)"),
-            ('(?i)a\\(*b', 'AB', '0', "'AB'"),
-            ('(?i)a\\(*b', 'A((B', '0', "'A((B'"),
+            ('(?i)a\\(b', 'A(B', '', ascii(('A(B',))),
+            ('(?i)a\\(*b', 'AB', '0', ascii('AB')),
+            ('(?i)a\\(*b', 'A((B', '0', ascii('A((B')),
             ('(?i)a\\\\b', 'A\\B', '0', ascii('A\\B')),
             ('(?i)abc)', '-', '', self.TRAILING_CHARS),
             ('(?i)(abc', '-', '', self.MISSING_RPAREN),
-            ('(?i)((a))', 'ABC', '0,1,2', "('A', 'A', 'A')"),
-            ('(?i)(a)b(c)', 'ABC', '0,1,2', "('ABC', 'A', 'C')"),
-            ('(?i)a+b+c', 'AABBABC', '0', "'ABC'"),
-            ('(?i)a{1,}b{1,}c', 'AABBABC', '0', "'ABC'"),
+            ('(?i)((a))', 'ABC', '0,1,2', ascii(('A', 'A', 'A'))),
+            ('(?i)(a)b(c)', 'ABC', '0,1,2', ascii(('ABC', 'A', 'C'))),
+            ('(?i)a+b+c', 'AABBABC', '0', ascii('ABC')),
+            ('(?i)a{1,}b{1,}c', 'AABBABC', '0', ascii('ABC')),
             ('(?i)a**', '-', '', self.NOTHING_TO_REPEAT),
-            ('(?i)a.+?c', 'ABCABC', '0', "'ABC'"),
-            ('(?i)a.*?c', 'ABCABC', '0', "'ABC'"),
-            ('(?i)a.{0,5}?c', 'ABCABC', '0', "'ABC'"),
-            ('(?i)(a+|b)*', 'AB', '0,1', "('AB', 'B')"),
-            ('(?i)(a+|b){0,}', 'AB', '0,1', "('AB', 'B')"),
-            ('(?i)(a+|b)+', 'AB', '0,1', "('AB', 'B')"),
-            ('(?i)(a+|b){1,}', 'AB', '0,1', "('AB', 'B')"),
-            ('(?i)(a+|b)?', 'AB', '0,1', "('A', 'A')"),
-            ('(?i)(a+|b){0,1}', 'AB', '0,1', "('A', 'A')"),
-            ('(?i)(a+|b){0,1}?', 'AB', '0,1', "('', None)"),
+            ('(?i)a.+?c', 'ABCABC', '0', ascii('ABC')),
+            ('(?i)a.*?c', 'ABCABC', '0', ascii('ABC')),
+            ('(?i)a.{0,5}?c', 'ABCABC', '0', ascii('ABC')),
+            ('(?i)(a+|b)*', 'AB', '0,1', ascii(('AB', 'B'))),
+            ('(?i)(a+|b){0,}', 'AB', '0,1', ascii(('AB', 'B'))),
+            ('(?i)(a+|b)+', 'AB', '0,1', ascii(('AB', 'B'))),
+            ('(?i)(a+|b){1,}', 'AB', '0,1', ascii(('AB', 'B'))),
+            ('(?i)(a+|b)?', 'AB', '0,1', ascii(('A', 'A'))),
+            ('(?i)(a+|b){0,1}', 'AB', '0,1', ascii(('A', 'A'))),
+            ('(?i)(a+|b){0,1}?', 'AB', '0,1', ascii(('', None))),
             ('(?i))(', '-', '', self.TRAILING_CHARS),
-            ('(?i)[^ab]*', 'CDE', '0', "'CDE'"),
-            ('(?i)abc', '', '', "None"),
-            ('(?i)a*', '', '0', "''"),
-            ('(?i)([abc])*d', 'ABBBCD', '0,1', "('ABBBCD', 'C')"),
-            ('(?i)([abc])*bcd', 'ABCD', '0,1', "('ABCD', 'A')"),
-            ('(?i)a|b|c|d|e', 'E', '0', "'E'"),
-            ('(?i)(a|b|c|d|e)f', 'EF', '0,1', "('EF', 'E')"),
-            ('(?i)abcd*efg', 'ABCDEFG', '0', "'ABCDEFG'"),
-            ('(?i)ab*', 'XABYABBBZ', '0', "'AB'"),
-            ('(?i)ab*', 'XAYABBBZ', '0', "'A'"),
-            ('(?i)(ab|cd)e', 'ABCDE', '0,1', "('CDE', 'CD')"),
-            ('(?i)[abhgefdc]ij', 'HIJ', '0', "'HIJ'"),
-            ('(?i)^(ab|cd)e', 'ABCDE', '', "None"),
-            ('(?i)(abc|)ef', 'ABCDEF', '0,1', "('EF', '')"),
-            ('(?i)(a|b)c*d', 'ABCD', '0,1', "('BCD', 'B')"),
-            ('(?i)(ab|ab*)bc', 'ABC', '0,1', "('ABC', 'A')"),
-            ('(?i)a([bc]*)c*', 'ABC', '0,1', "('ABC', 'BC')"),
-            ('(?i)a([bc]*)(c*d)', 'ABCD', '0,1,2', "('ABCD', 'BC', 'D')"),
-            ('(?i)a([bc]+)(c*d)', 'ABCD', '0,1,2', "('ABCD', 'BC', 'D')"),
-            ('(?i)a([bc]*)(c+d)', 'ABCD', '0,1,2', "('ABCD', 'B', 'CD')"),
-            ('(?i)a[bcd]*dcdcde', 'ADCDCDE', '0', "'ADCDCDE'"),
-            ('(?i)a[bcd]+dcdcde', 'ADCDCDE', '', "None"),
-            ('(?i)(ab|a)b*c', 'ABC', '0,1', "('ABC', 'AB')"),
-            ('(?i)((a)(b)c)(d)', 'ABCD', '1,2,3,4', "('ABC', 'A', 'B', 'D')"),
-            ('(?i)[a-zA-Z_][a-zA-Z0-9_]*', 'ALPHA', '0', "'ALPHA'"),
-            ('(?i)^a(bc+|b[eh])g|.h$', 'ABH', '0,1', "('BH', None)"),
-            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFGZ', '0,1,2', "('EFFGZ', 'EFFGZ', None)"),
-            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'IJ', '0,1,2', "('IJ', 'IJ', 'J')"),
-            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFG', '', "None"),
-            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'BCDD', '', "None"),
-            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'REFFGZ', '0,1,2', "('EFFGZ', 'EFFGZ', None)"),
-            ('(?i)((((((((((a))))))))))', 'A', '10', "'A'"),
-            ('(?i)((((((((((a))))))))))\\10', 'AA', '0', "'AA'"),
-            #('(?i)((((((((((a))))))))))\\41', 'AA', '', "None"),
-            #('(?i)((((((((((a))))))))))\\41', 'A!', '0', "'A!'"),
-            ('(?i)(((((((((a)))))))))', 'A', '0', "'A'"),
-            ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a))))))))))', 'A', '1', "'A'"),
-            ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a|b|c))))))))))', 'C', '1', "'C'"),
-            ('(?i)multiple words of text', 'UH-UH', '', "None"),
-            ('(?i)multiple words', 'MULTIPLE WORDS, YEAH', '0', "'MULTIPLE WORDS'"),
-            ('(?i)(.*)c(.*)', 'ABCDE', '0,1,2', "('ABCDE', 'AB', 'DE')"),
-            ('(?i)\\((.*), (.*)\\)', '(A, B)', '2,1', "('B', 'A')"),
-            ('(?i)[k]', 'AB', '', "None"),
-        #    ('(?i)abcd', 'ABCD', SUCCEED, 'found+"-"+\\found+"-"+\\\\found', 'ABCD-$&-\\ABCD'),
-        #    ('(?i)a(bc)d', 'ABCD', SUCCEED, 'g1+"-"+\\g1+"-"+\\\\g1', 'BC-$1-\\BC'),
-            ('(?i)a[-]?c', 'AC', '0', "'AC'"),
-            ('(?i)(abc)\\1', 'ABCABC', '1', "'ABC'"),
-            ('(?i)([a-c]*)\\1', 'ABCABC', '1', "'ABC'"),
-            ('a(?!b).', 'abad', '0', "'ad'"),
-            ('a(?=d).', 'abad', '0', "'ad'"),
-            ('a(?=c|d).', 'abad', '0', "'ad'"),
-            ('a(?:b|c|d)(.)', 'ace', '1', "'e'"),
-            ('a(?:b|c|d)*(.)', 'ace', '1', "'e'"),
-            ('a(?:b|c|d)+?(.)', 'ace', '1', "'e'"),
-            ('a(?:b|(c|e){1,2}?|d)+?(.)', 'ace', '1,2', "('c', 'e')"),
+            ('(?i)[^ab]*', 'CDE', '0', ascii('CDE')),
+            ('(?i)abc', '', '', ascii(None)),
+            ('(?i)a*', '', '0', ascii('')),
+            ('(?i)([abc])*d', 'ABBBCD', '0,1', ascii(('ABBBCD', 'C'))),
+            ('(?i)([abc])*bcd', 'ABCD', '0,1', ascii(('ABCD', 'A'))),
+            ('(?i)a|b|c|d|e', 'E', '0', ascii('E')),
+            ('(?i)(a|b|c|d|e)f', 'EF', '0,1', ascii(('EF', 'E'))),
+            ('(?i)abcd*efg', 'ABCDEFG', '0', ascii('ABCDEFG')),
+            ('(?i)ab*', 'XABYABBBZ', '0', ascii('AB')),
+            ('(?i)ab*', 'XAYABBBZ', '0', ascii('A')),
+            ('(?i)(ab|cd)e', 'ABCDE', '0,1', ascii(('CDE', 'CD'))),
+            ('(?i)[abhgefdc]ij', 'HIJ', '0', ascii('HIJ')),
+            ('(?i)^(ab|cd)e', 'ABCDE', '', ascii(None)),
+            ('(?i)(abc|)ef', 'ABCDEF', '0,1', ascii(('EF', ''))),
+            ('(?i)(a|b)c*d', 'ABCD', '0,1', ascii(('BCD', 'B'))),
+            ('(?i)(ab|ab*)bc', 'ABC', '0,1', ascii(('ABC', 'A'))),
+            ('(?i)a([bc]*)c*', 'ABC', '0,1', ascii(('ABC', 'BC'))),
+            ('(?i)a([bc]*)(c*d)', 'ABCD', '0,1,2', ascii(('ABCD', 'BC', 'D'))),
+            ('(?i)a([bc]+)(c*d)', 'ABCD', '0,1,2', ascii(('ABCD', 'BC', 'D'))),
+            ('(?i)a([bc]*)(c+d)', 'ABCD', '0,1,2', ascii(('ABCD', 'B', 'CD'))),
+            ('(?i)a[bcd]*dcdcde', 'ADCDCDE', '0', ascii('ADCDCDE')),
+            ('(?i)a[bcd]+dcdcde', 'ADCDCDE', '', ascii(None)),
+            ('(?i)(ab|a)b*c', 'ABC', '0,1', ascii(('ABC', 'AB'))),
+            ('(?i)((a)(b)c)(d)', 'ABCD', '1,2,3,4', ascii(('ABC', 'A', 'B', 'D'))),
+            ('(?i)[a-zA-Z_][a-zA-Z0-9_]*', 'ALPHA', '0', ascii('ALPHA')),
+            ('(?i)^a(bc+|b[eh])g|.h$', 'ABH', '0,1', ascii(('BH', None))),
+            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFGZ', '0,1,2', ascii(('EFFGZ', 'EFFGZ', None))),
+            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'IJ', '0,1,2', ascii(('IJ', 'IJ', 'J'))),
+            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFG', '', ascii(None)),
+            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'BCDD', '', ascii(None)),
+            ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'REFFGZ', '0,1,2', ascii(('EFFGZ', 'EFFGZ', None))),
+            ('(?i)((((((((((a))))))))))', 'A', '10', ascii('A')),
+            ('(?i)((((((((((a))))))))))\\10', 'AA', '0', ascii('AA')),
+            #('(?i)((((((((((a))))))))))\\41', 'AA', '', ascii(None)),
+            #('(?i)((((((((((a))))))))))\\41', 'A!', '0', ascii('A!')),
+            ('(?i)(((((((((a)))))))))', 'A', '0', ascii('A')),
+            ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a))))))))))', 'A', '1', ascii('A')),
+            ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a|b|c))))))))))', 'C', '1', ascii('C')),
+            ('(?i)multiple words of text', 'UH-UH', '', ascii(None)),
+            ('(?i)multiple words', 'MULTIPLE WORDS, YEAH', '0', ascii('MULTIPLE WORDS')),
+            ('(?i)(.*)c(.*)', 'ABCDE', '0,1,2', ascii(('ABCDE', 'AB', 'DE'))),
+            ('(?i)\\((.*), (.*)\\)', '(A, B)', '2,1', ascii(('B', 'A'))),
+            ('(?i)[k]', 'AB', '', ascii(None)),
+        #    ('(?i)abcd', 'ABCD', SUCCEED, 'found+"-"+\\found+"-"+\\\\found', ascii(ABCD-$&-\\ABCD)),
+        #    ('(?i)a(bc)d', 'ABCD', SUCCEED, 'g1+"-"+\\g1+"-"+\\\\g1', ascii(BC-$1-\\BC)),
+            ('(?i)a[-]?c', 'AC', '0', ascii('AC')),
+            ('(?i)(abc)\\1', 'ABCABC', '1', ascii('ABC')),
+            ('(?i)([a-c]*)\\1', 'ABCABC', '1', ascii('ABC')),
+            ('a(?!b).', 'abad', '0', ascii('ad')),
+            ('a(?=d).', 'abad', '0', ascii('ad')),
+            ('a(?=c|d).', 'abad', '0', ascii('ad')),
+            ('a(?:b|c|d)(.)', 'ace', '1', ascii('e')),
+            ('a(?:b|c|d)*(.)', 'ace', '1', ascii('e')),
+            ('a(?:b|c|d)+?(.)', 'ace', '1', ascii('e')),
+            ('a(?:b|(c|e){1,2}?|d)+?(.)', 'ace', '1,2', ascii(('c', 'e'))),
 
             # Lookbehind: split by : but not if it is escaped by -.
-            ('(?<!-):(.*?)(?<!-):', 'a:bc-:de:f', '1', "'bc-:de'"),
+            ('(?<!-):(.*?)(?<!-):', 'a:bc-:de:f', '1', ascii('bc-:de')),
             # Escaping with \ as we know it.
             ('(?<!\\\):(.*?)(?<!\\\):', 'a:bc\\:de:f', '1', ascii('bc\\:de')),
             # Terminating with ' and escaping with ? as in edifact.
@@ -1889,119 +1916,120 @@ class Test:
             # Comments using the (?#...) syntax.
 
             ('w(?# comment', 'w', '', self.MISSING_RPAREN),
-            ('w(?# comment 1)xy(?# comment 2)z', 'wxyz', '0', "'wxyz'"),
+            ('w(?# comment 1)xy(?# comment 2)z', 'wxyz', '0', ascii('wxyz')),
 
             # Check odd placement of embedded pattern modifiers.
 
             # Not an error under PCRE/PRE:
             # When the new behaviour is turned on positional inline flags affect
             # only what follows.
-            ('w(?i)', 'W', '0', "'W'"),
-            ('w(?in)', 'W', '0', "None"),
-            ('w(?i)', 'w', '0', "'w'"),
-            ('w(?in)', 'w', '0', "'w'"),
-            ('(?i)w', 'W', '0', "'W'"),
-            ('(?in)w', 'W', '0', "'W'"),
+            ('w(?i)', 'W', '0', ascii('W')),
+            ('w(?in)', 'W', '0', ascii(None)),
+            ('w(?i)', 'w', '0', ascii('w')),
+            ('w(?in)', 'w', '0', ascii('w')),
+            ('(?i)w', 'W', '0', ascii('W')),
+            ('(?in)w', 'W', '0', ascii('W')),
 
             # Comments using the x embedded pattern modifier.
 
             ("""(?x)w# comment 1
 x y
 # comment 2
-z""", 'wxyz', '0', "'wxyz'"),
+z""", 'wxyz', '0', ascii('wxyz')),
 
             # Using the m embedded pattern modifier.
 
             ('^abc', """jkl
 abc
-xyz""", '', "None"),
+xyz""", '', ascii(None)),
             ('(?m)^abc', """jkl
 abc
-xyz""", '0', "'abc'"),
+xyz""", '0', ascii('abc')),
 
             ('(?m)abc$', """jkl
 xyzabc
-123""", '0', "'abc'"),
+123""", '0', ascii('abc')),
 
             # Using the s embedded pattern modifier.
 
-            ('a.b', 'a\nb', '', "None"),
+            ('a.b', 'a\nb', '', ascii(None)),
             ('(?s)a.b', 'a\nb', '0', ascii('a\nb')),
 
             # Test \w, etc. both inside and outside character classes.
 
-            ('\\w+', '--ab_cd0123--', '0', "'ab_cd0123'"),
-            ('[\\w]+', '--ab_cd0123--', '0', "'ab_cd0123'"),
-            ('\\D+', '1234abc5678', '0', "'abc'"),
-            ('[\\D]+', '1234abc5678', '0', "'abc'"),
-            ('[\\da-fA-F]+', '123abc', '0', "'123abc'"),
+            ('\\w+', '--ab_cd0123--', '0', ascii('ab_cd0123')),
+            ('[\\w]+', '--ab_cd0123--', '0', ascii('ab_cd0123')),
+            ('\\D+', '1234abc5678', '0', ascii('abc')),
+            ('[\\D]+', '1234abc5678', '0', ascii('abc')),
+            ('[\\da-fA-F]+', '123abc', '0', ascii('123abc')),
             # Not an error under PCRE/PRE:
             # ('[\\d-x]', '-', '', self.SYNTAX_ERROR),
             (r'([\s]*)([\S]*)([\s]*)', ' testing!1972', '3,2,1',
-              "('', 'testing!1972', ' ')"),
+              ascii(('', 'testing!1972', ' '))),
             (r'(\s*)(\S*)(\s*)', ' testing!1972', '3,2,1',
-              "('', 'testing!1972', ' ')"),
+              ascii(('', 'testing!1972', ' '))),
 
             #
             # Post-1.5.2 additions.
 
             # xmllib problem.
-            (r'(([a-z]+):)?([a-z]+)$', 'smil', '1,2,3', "(None, None, 'smil')"),
+            (r'(([a-z]+):)?([a-z]+)$', 'smil', '1,2,3', ascii((None, None,
+              'smil'))),
             # Bug 110866: reference to undefined group.
             (r'((.)\1+)', '', '', self.OPEN_GROUP),
             # Bug 111869: search (PRE/PCRE fails on this one, SRE doesn't).
-            (r'.*d', 'abc\nabd', '0', "'abd'"),
+            (r'.*d', 'abc\nabd', '0', ascii('abd')),
             # Bug 112468: various expected syntax errors.
             (r'(', '', '', self.MISSING_RPAREN),
-            (r'[\41]', '!', '0', "'!'"),
+            (r'[\41]', '!', '0', ascii('!')),
             # Bug 114033: nothing to repeat.
-            (r'(x?)?', 'x', '0', "'x'"),
+            (r'(x?)?', 'x', '0', ascii('x')),
             # Bug 115040: rescan if flags are modified inside pattern.
             # If the new behaviour is turned on then positional inline flags
             # affect only what follows.
-            (r' (?x)foo ', 'foo', '0', "'foo'"),
-            (r' (?nx)foo ', 'foo', '0', "None"),
-            (r'(?x) foo ', 'foo', '0', "'foo'"),
-            (r'(?nx) foo ', 'foo', '0', "'foo'"),
-            (r'(?x)foo ', 'foo', '0', "'foo'"),
-            (r'(?nx)foo ', 'foo', '0', "'foo'"),
+            (r' (?x)foo ', 'foo', '0', ascii('foo')),
+            (r' (?nx)foo ', 'foo', '0', ascii(None)),
+            (r'(?x) foo ', 'foo', '0', ascii('foo')),
+            (r'(?nx) foo ', 'foo', '0', ascii('foo')),
+            (r'(?x)foo ', 'foo', '0', ascii('foo')),
+            (r'(?nx)foo ', 'foo', '0', ascii('foo')),
             # Bug 115618: negative lookahead.
-            (r'(?<!abc)(d.f)', 'abcdefdof', '0', "'dof'"),
+            (r'(?<!abc)(d.f)', 'abcdefdof', '0', ascii('dof')),
             # Bug 116251: character class bug.
-            (r'[\w-]+', 'laser_beam', '0', "'laser_beam'"),
+            (r'[\w-]+', 'laser_beam', '0', ascii('laser_beam')),
             # Bug 123769+127259: non-greedy backtracking bug.
-            (r'.*?\S *:', 'xx:', '0', "'xx:'"),
-            (r'a[ ]*?\ (\d+).*', 'a   10', '0', "'a   10'"),
-            (r'a[ ]*?\ (\d+).*', 'a    10', '0', "'a    10'"),
+            (r'.*?\S *:', 'xx:', '0', ascii('xx:')),
+            (r'a[ ]*?\ (\d+).*', 'a   10', '0', ascii('a   10')),
+            (r'a[ ]*?\ (\d+).*', 'a    10', '0', ascii('a    10')),
             # Bug 127259: \Z shouldn't depend on multiline mode.
-            (r'(?ms).*?x\s*\Z(.*)','xx\nx\n', '1', "''"),
+            (r'(?ms).*?x\s*\Z(.*)','xx\nx\n', '1', ascii('')),
             # Bug 128899: uppercase literals under the ignorecase flag.
-            (r'(?i)M+', 'MMM', '0', "'MMM'"),
-            (r'(?i)m+', 'MMM', '0', "'MMM'"),
-            (r'(?i)[M]+', 'MMM', '0', "'MMM'"),
-            (r'(?i)[m]+', 'MMM', '0', "'MMM'"),
+            (r'(?i)M+', 'MMM', '0', ascii('MMM')),
+            (r'(?i)m+', 'MMM', '0', ascii('MMM')),
+            (r'(?i)[M]+', 'MMM', '0', ascii('MMM')),
+            (r'(?i)[m]+', 'MMM', '0', ascii('MMM')),
             # Bug 130748: ^* should be an error (nothing to repeat).
             (r'^*', '', '', self.NOTHING_TO_REPEAT),
             # Bug 133283: minimizing repeat problem.
             (r'"(?:\\"|[^"])*?"', r'"\""', '0', ascii(r'"\""')),
             # Bug 477728: minimizing repeat problem.
-            (r'^.*?$', 'one\ntwo\nthree\n', '', "None"),
+            (r'^.*?$', 'one\ntwo\nthree\n', '', ascii(None)),
             # Bug 483789: minimizing repeat problem.
-            (r'a[^>]*?b', 'a>b', '', "None"),
+            (r'a[^>]*?b', 'a>b', '', ascii(None)),
             # Bug 490573: minimizing repeat problem.
-            (r'^a*?$', 'foo', '', "None"),
+            (r'^a*?$', 'foo', '', ascii(None)),
             # Bug 470582: nested groups problem.
-            (r'^((a)c)?(ab)$', 'ab', '1,2,3', "(None, None, 'ab')"),
+            (r'^((a)c)?(ab)$', 'ab', '1,2,3', ascii((None, None, 'ab'))),
             # Another minimizing repeat problem (capturing groups in assertions).
-            ('^([ab]*?)(?=(b)?)c', 'abc', '1,2', "('ab', None)"),
-            ('^([ab]*?)(?!(b))c', 'abc', '1,2', "('ab', None)"),
-            ('^([ab]*?)(?<!(a))c', 'abc', '1,2', "('ab', None)"),
+            ('^([ab]*?)(?=(b)?)c', 'abc', '1,2', ascii(('ab', None))),
+            ('^([ab]*?)(?!(b))c', 'abc', '1,2', ascii(('ab', None))),
+            ('^([ab]*?)(?<!(a))c', 'abc', '1,2', ascii(('ab', None))),
             # Bug 410271: \b broken under locales.
-            (r'\b.\b', 'a', '0', "'a'"),
+            (r'\b.\b', 'a', '0', ascii('a')),
             (r'\b.\b', '\N{LATIN CAPITAL LETTER A WITH DIAERESIS}',
-              '0', "'\\xc4'"),
+              '0', ascii('\xc4')),
             (r'\w', '\N{LATIN CAPITAL LETTER A WITH DIAERESIS}',
-              '0', "'\\xc4'"),
+              '0', ascii('\xc4')),
         ]
 
         for t in tests:
@@ -2079,7 +2107,7 @@ xyzabc
                     current = name
                     failed_count += 1
                     print(current)
-                print("\t{0}) {1}".format(index, message))
+                print("\t{}) {}".format(index, message))
             print()
             print("Failed {}".format(failed_count))
         else:
