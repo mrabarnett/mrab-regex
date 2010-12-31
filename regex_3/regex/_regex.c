@@ -4354,10 +4354,12 @@ Py_LOCAL_INLINE(void) compress_guard_list(RE_GuardList* guard_list) {
 /* Guards a position against further matching. */
 Py_LOCAL_INLINE(BOOL) guard(RE_State* state, size_t index, Py_ssize_t text_pos,
   int guard) {
+    RE_RepeatInfo* info;
     RE_GuardList* guard_list;
 
     /* Is a guard active here? */
-    if (!(state->pattern->repeat_info[index].guards & guard))
+    info = &state->pattern->repeat_info[index];
+    if (info->inner || !(info->guards & guard))
         return TRUE;
 
     /* Which guard list? */
@@ -5059,7 +5061,8 @@ advance:
                     bt_data->repeat.text_pos = text_pos;
                 }
 
-                if (!guard(state, index, text_pos, RE_BODY))
+                if (~node->values[2] == 0 && !guard(state, index, text_pos,
+                  RE_BODY))
                     return RE_ERROR_MEMORY;
 
                 /* Advance into the body. */

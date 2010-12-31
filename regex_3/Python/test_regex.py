@@ -2184,6 +2184,12 @@ xyzabc
         self.expect(lambda: m.span(0, 1, 2), ascii(((0, 21), (12, 15), (16,
           18))))
 
+        m = regex.search(r'\d{4}(\s*\w)?\W*((?!\d)\w){2}', "9999XX")
+        self.expect(lambda: m.span(0, 1, 2), ascii(((0, 6), (-1, -1), (5, 6))))
+
+        m = regex.search(r'A\s*?.*?(\n+.*?\s*?){0,2}\(X', 'A\n1\nS\n1 (X')
+        self.expect(lambda: m.span(0, 1), ascii(((0, 10), (5, 8))))
+
     def run(self):
         print("Performing tests")
         print("================")
