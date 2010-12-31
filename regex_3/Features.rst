@@ -1,0 +1,218 @@
+Note
+----
+
+For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
+
+
+Flags
+-----
+
+There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.
+
+The scoped flags are: ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
+
+The global flags are: ``ASCII``, ``LOCALE``, ``REVERSE``, ``UNICODE``, ``ZEROWIDTH``.
+
+
+Notes on named capture groups
+-----------------------------
+
+All capture groups have a group number, starting from 1.
+
+Groups with the same group name will have the same group number, and groups with a different group name will have a different group number.
+
+The same group name can be used on different branches of an alternation because they are mutually exclusive, eg. ``(?<foo>first)|(?<foo>second)``. They will, of course, have the same group number.
+
+Group numbers will be reused, where possible, across different branches of a branch reset, eg. ``(?|(first)|(second))`` has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. ``(?|(?<foo>first)|(?<bar>second))`` has group 1 ("foo") and group 2 ("bar").
+
+
+Additional features
+-------------------
+
+* Atomic grouping (issue #433030)
+
+    ``(?>...)``
+
+    If the following pattern subsequently fails, then the subpattern as a whole will fail.
+
+* Possessive quantifiers.
+    ``(?:...)?+`` ; ``(?:...)*+`` ; ``(?:...)++`` ; ``(?:...){min,max}+``
+
+    The subpattern is matched up to 'max' times. If the following pattern subsequently fails, then all of the repeated subpatterns will fail as a whole. For example, ``(?:...)++`` is equivalent to ``(?>(?:...)+)``.
+
+* Scoped flags (issue #433028)
+
+    ``(?flags-flags:...)``
+
+    The flags will apply only to the subpattern. Flags can be turned on or off.
+
+* Inline flags (#433024, #433027)
+
+    ``(?flags-flags)``
+
+    The flags will apply to the end of the group or pattern. Flags can be turned on or off.
+
+* Repeated repeats (#2537)
+
+    A regex like ``((x|y+)*)*`` will be accepted and will work correctly, but should complete more quickly.
+
+* Definition of 'word' character (#1693050)
+
+    The definition of a 'word' character has been expanded for Unicode. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
+
+* Groups in lookahead and lookbehind (#814253)
+
+    Groups and group references are permitted in both lookahead and lookbehind.
+
+* Variable-length lookbehind
+
+    A lookbehind can match a variable-length string.
+
+* Correct handling of charset with ignore case flag (#3511)
+
+    Ranges within charsets are handled correctly when the ignore-case flag is turned on.
+
+* Unmatched group in replacement (#1519638)
+
+    An unmatched group is treated as an empty string in a replacement template.
+
+* 'Pathological' patterns (#1566086, #1662581, #1448325, #1721518, #1297193)
+
+    'Pathological' patterns should complete more quickly.
+
+* Flags argument for regex.split, regex.sub and regex.subn (#3482)
+
+    ``regex.split``, ``regex.sub`` and ``regex.subn`` support a 'flags' argument.
+
+* 'Overlapped' argument for regex.findall and regex.finditer
+
+    ``regex.findall`` and ``regex.finditer`` support an 'overlapped' flag which permits overlapped matches.
+
+* Unicode escapes (#3665)
+
+    The Unicode escapes ``\uxxxx`` and ``\Uxxxxxxxx`` are supported.
+
+* Large patterns (#1160)
+
+    Patterns can be much larger.
+
+* Zero-width match with regex.finditer (#1647489)
+
+    ``regex.finditer`` behaves correctly when it splits at a zero-width match.
+
+* Zero-width split with regex.split (#3262)
+
+    ``regex.split`` can split at a zero-width match if the zero-width flag is turned on. When the flag is turned off the current behaviour is unchanged because the BDFL thinks that some existing software might depend on it.
+
+* Splititer
+
+    ``regex.splititer`` has been added. It's a generator equivalent of ``regex.split``.
+
+* Subscripting for groups
+
+    A match object accepts access to the captured groups via subscripting and slicing:
+
+    >>> m = regex.search(r"(?<before>.*?)(?<num>\\d+)(?<after>.*)", "pqr123stu")
+    >>> print m["before"]
+    pqr
+    >>> print m["num"]
+    123
+    >>> print m["after"]
+    stu
+    >>> print len(m)
+    4
+    >>> print m[:]
+    ('pqr123stu', 'pqr', '123', 'stu')
+
+* Named groups
+
+    Named groups can be named with ``(?<name>...)`` as well as the current ``(?P<name>...)``.
+
+* Group references
+
+    Groups can be referenced within a pattern with ``\g<name>``. This also allows there to be more than 99 groups.
+
+* Named characters
+
+    ``\N{name}``
+
+    Named characters are supported.
+
+* Unicode codepoint properties, blocks and scripts
+
+    ``\p{name}`` ; ``\P{name}``
+
+    Unicode properties, blocks and scripts are supported. ``\p{name}`` matches a character which has property 'name' and ``\P{name}`` matches a character which doesn't have property 'name'.
+
+    In order to avoid ambiguity, block names should start with ``In`` and script names should start with ``Is``. If a name lacks such a prefix and it could be a block or a script, script will take priority, for example:
+
+    1. ``InBasicLatin`` or ``BasicLatin``, the 'BasicLatin' **block**.
+
+    2. ``IsLatin`` or ``Latin``, the 'Latin' **script**.
+
+    3. ``InCyrillic``, the 'Cyrillic' **block**.
+
+    4. ``IsCyrillic`` or ``Cyrillic``, the 'Cyrillic' **script**.
+
+* Posix character classes
+
+    ``[[:alpha:]]``
+
+    Posix character classes are supported.
+
+* Search anchor
+
+    ``\G``
+
+    A search anchor has been added. It matches at the position where each search started/continued and can be used for contiguous matches or in negative variable-length lookbehinds to limit how far back the lookbehind goes:
+
+    >>> regex.findall(r"\w{2}", "abcd ef")
+    ['ab', 'cd', 'ef']
+    >>> regex.findall(r"\G\w{2}", "abcd ef")
+    ['ab', 'cd']
+
+    1. The search starts at position 0 and matches 2 letters 'ab'.
+
+    2. The search continues at position 2 and matches 2 letters 'cd'.
+
+    3. The search continues at position 4 and fails to match any letters.
+
+    4. The anchor stops the search start position from being advanced, so there are no more results.
+
+* Reverse searching
+
+    Searches can now work backwards:
+
+    >>> regex.findall(r".", "abc")
+    ['a', 'b', 'c']
+    >>> regex.findall(r"(?r).", "abc")
+    ['c', 'b', 'a']
+
+    Note: the result of a reverse search is not necessarily the reverse of a forward search:
+
+    >>> regex.findall(r"..", "abcde")
+    ['ab', 'cd']
+    >>> regex.findall(r"(?r)..", "abcde")
+    ['de', 'bc']
+
+* Multithreading
+
+    The regex module now releases the GIL when matching, enabling other Python threads to run concurrently.
+
+* Matching a single grapheme
+
+    ``\X``
+
+    The grapheme matcher is supported. It's equivalent to ``\P{M}\p{M}*``.
+
+* Branch reset
+
+    (?|...|...)
+
+    Capture group numbers will be reused across the alternatives.
+
+* Default Unicode word boundary
+
+    The ``WORD`` flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to ``\b`` and ``\B``.
+
+    Please note: I'm unsure whether I've understood the specification correctly, so if you're using this feature I'd be interested in any feedback.
