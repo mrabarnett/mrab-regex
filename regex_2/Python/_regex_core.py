@@ -1143,11 +1143,15 @@ def _parse_numeric_escape(source, info, ch, in_set):
             source.pos = here
             if info.is_open_group(digits):
                 raise error("can't refer to an open group")
+            if info.all_flags & IGNORECASE:
+                return _RefGroupIgn(info, digits)
             return _RefGroup(info, digits)
     # 1 digit, so group.
     source.pos = here
     if info.is_open_group(digits):
         raise error("can't refer to an open group")
+    if info.all_flags & IGNORECASE:
+        return _RefGroupIgn(info, digits)
     return _RefGroup(info, digits)
 
 def _parse_octal_escape(source, info, digits, in_set):

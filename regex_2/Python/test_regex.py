@@ -397,6 +397,11 @@ class Test:
         self.expect(lambda: regex.match(r'^(?:(a)|c)(\1)?$', 'c')[:], repr(('c',
           None, None)))
 
+        self.expect(lambda:
+          regex.findall("(?i)(.{1,40}?),(.{1,40}?)(?:;)+(.{1,80}).{1,40}?\\3(\ |;)+(.{1,80}?)\\1",
+          "TEST, BEST; LEST ; Lest 123 Test, Best"),
+          repr([('TEST', ' BEST', ' LEST', ' ', '123 ')]))
+
     def test_groupdict(self):
         self.expect(lambda: regex.match('(?P<first>first) (?P<second>second)',
           'first second').groupdict(), repr({'first': 'first', 'second':
