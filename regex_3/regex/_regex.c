@@ -4868,11 +4868,14 @@ backtrack:
 
                 available = state->reverse ? text_pos - slice_start : slice_end
                   - text_pos;
+
+                /* How many characters did the repeat actually match? */
                 count = count_one(state, start_node->next_2.node, text_pos,
-                  available);
-                if (count > start_node->values[2])
-                    count -= start_node->values[2];
-                text_pos += (Py_ssize_t)count * step;
+                  start_node->values[2]);
+
+                /* If it's fewer than the maximum then skip over those characters. */
+                if (count < start_node->values[2])
+                    text_pos += (Py_ssize_t)count * step;
                 break;
             }
             }

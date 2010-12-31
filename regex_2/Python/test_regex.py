@@ -312,6 +312,13 @@ class Test:
         self.expect(lambda: regex.findall(r"\((?P<test>.{0,3}?T)\)",
           "(MY T)"), repr(["MY T"]))
 
+        self.expect(lambda: regex.findall(r"[^a]{2}[A-Z]", "\n  S"),
+          repr(['  S']))
+        self.expect(lambda: regex.findall(r"[^a]{2,3}[A-Z]", "\n  S"),
+          repr(['\n  S']))
+        self.expect(lambda: regex.findall(r"[^a]{2,3}[A-Z]", "\n   S"),
+          repr(['   S']))
+
     def test_bug_117612(self):
         self.expect(lambda: regex.findall(r"(a|(b))", "aba"), repr([('a', ''),
           ('b', 'b'), ('a', '')]))
