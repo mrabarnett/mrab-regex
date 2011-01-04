@@ -3245,7 +3245,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_State* state, RE_Node* node,
 
         /* Double-check because of multithreading. */
         if (!(node->status & RE_FAST_INIT)) {
-            build_fast_tables(state->encoding, node, RE_OP_STRING);
+            build_fast_tables(state->encoding, node, FALSE);
             node->status |= RE_FAST_INIT;
         }
 
@@ -3272,7 +3272,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
 
         /* Double-check because of multithreading. */
         if (!(node->status & RE_FAST_INIT)) {
-            build_fast_tables(state->encoding, node, RE_OP_STRING_IGN);
+            build_fast_tables(state->encoding, node, TRUE);
             node->status |= RE_FAST_INIT;
         }
 
@@ -3299,7 +3299,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
 
         /* Double-check because of multithreading. */
         if (!(node->status & RE_FAST_INIT)) {
-            build_fast_tables_rev(state->encoding, node, RE_OP_STRING_REV);
+            build_fast_tables_rev(state->encoding, node, TRUE);
             node->status |= RE_FAST_INIT;
         }
 
@@ -3326,7 +3326,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_State* state, RE_Node* node,
 
         /* Double-check because of multithreading. */
         if (!(node->status & RE_FAST_INIT)) {
-            build_fast_tables_rev(state->encoding, node, RE_OP_STRING_IGN_REV);
+            build_fast_tables_rev(state->encoding, node, FALSE);
             node->status |= RE_FAST_INIT;
         }
 

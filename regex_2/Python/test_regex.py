@@ -2171,6 +2171,11 @@ xyzabc
         m = regex.search(r'A\s*?.*?(\n+.*?\s*?){0,2}\(X', 'A\n1\nS\n1 (X')
         self.expect(lambda: m.span(0, 1), repr(((0, 10), (5, 8))))
 
+        m = regex.search('Derde\s*:', 'aaaaaa:\nDerde:')
+        self.expect(lambda: m.span(), repr((8, 14)))
+        m = regex.search('Derde\s*:', 'aaaaa:\nDerde:')
+        self.expect(lambda: m.span(), repr((7, 13)))
+
     def run(self):
         print "Performing tests"
         print "================"
