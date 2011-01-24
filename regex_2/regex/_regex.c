@@ -794,28 +794,29 @@ _getrecord_ex(Py_UCS4 code)
 }
 /* End of copied code. */
 
-/* Locates the info for a Unicode codepoint. */
-Py_LOCAL_INLINE(RE_InfoRange*) get_codepoint_info(RE_CODE ch) {
-    size_t lo;
-    size_t hi;
+/* Gets the property for a Unicode codepoint. */
+Py_LOCAL_INLINE(unsigned int) get_codepoint_property(RE_PropertyRange *table,
+  size_t table_size, unsigned int min_property, RE_CODE ch) {
+    unsigned int lo;
+    unsigned int hi;
 
     lo = 0;
-    hi = sizeof(re_codepoint_info) / sizeof(re_codepoint_info[0]) - 1;
-    while (lo <= hi) {
-        size_t mid;
-        RE_InfoRange* info;
+    hi = table_size / sizeof(RE_PropertyRange);
+    while (lo < hi) {
+        unsigned int mid;
+        RE_PropertyRange* range;
 
         mid = (lo + hi) / 2;
-        info = &re_codepoint_info[mid];
-        if (ch < info->min_char)
-            hi = mid - 1;
-        else if (ch <= info->max_char)
-            return info;
-        else
+        range = &table[mid];
+        if (ch < range->min_char)
+            hi = mid;
+		else if (ch - range->min_char > range->max_char_offset)
             lo = mid + 1;
+        else
+            return range->property_offset + min_property;
     }
 
-    return NULL;
+    return min_property;
 }
 
 /* Checks whether a Unicode character has the given property. */
@@ -983,21 +984,15 @@ static BOOL unicode_has_property(RE_CODE property, RE_CODE ch) {
         flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
         return (flag & RE_PROP_MASK_ZS) != 0;
     default:
-    {
-        RE_InfoRange *info;
-
-        info = get_codepoint_info(ch);
-        if (!info)
-            return FALSE;
-
         if (RE_MIN_BLOCK <= property && property <= RE_MAX_BLOCK)
-            return info->block == property;
+			return get_codepoint_property(re_block_ranges,
+			  sizeof(re_block_ranges), RE_MIN_BLOCK, ch) == property;
 
         if (RE_MIN_SCRIPT <= property && property <= RE_MAX_SCRIPT)
-            return info->script == property;
+			return get_codepoint_property(re_script_ranges,
+			  sizeof(re_script_ranges), RE_MIN_SCRIPT, ch) == property;
 
         return FALSE;
-    }
     }
 }
 
@@ -1016,10 +1011,32 @@ static RE_CODE unicode_title(RE_CODE ch) {
     return Py_UNICODE_TOTITLE((Py_UNICODE)ch);
 }
 
+/* Calculates a different case. */
+Py_LOCAL_INLINE(RE_CODE) calc_case(RE_CODE ch, int diff_index) {
+    if (diff_index >= 0)
+        return (int)ch + (int)re_case_diffs[diff_index];
+    else
+        return (int)ch - (int)re_case_diffs[-diff_index];
+}
+
+static RE_CaseBounds *case_bounds[] = {
+    re_even_case_bounds,
+    re_odd_case_bounds
+};
+
+static RE_CaseRange *case_ranges[] = {
+    re_even_case_ranges,
+    re_odd_case_ranges
+};
+
 /* Checks whether 2 characters are the same, ignoring case. */
 static BOOL unicode_same_char_ign(RE_CODE ch1, RE_CODE ch2) {
-    size_t lo;
-    size_t hi;
+    int bounds_index;
+    int bit0;
+    unsigned int half_code;
+    unsigned int lo;
+    unsigned int hi;
+    RE_CaseRange* ranges;
 
     if (ch1 == ch2)
         return TRUE;
@@ -1027,37 +1044,35 @@ static BOOL unicode_same_char_ign(RE_CODE ch1, RE_CODE ch2) {
     if (ch1 < RE_MIN_CASE || ch1 > RE_MAX_CASE)
         return FALSE;
 
-    if (ch1 <= 0xFF) {
-        lo = RE_MIN_CASE_INDEX_8;
-        hi = RE_MAX_CASE_INDEX_8;
-    } else if (ch1 <= 0xFFF) {
-        lo = RE_MIN_CASE_INDEX_12;
-        hi = RE_MAX_CASE_INDEX_12;
-    } else if (ch1 <= 0xFFFF) {
-        lo = RE_MIN_CASE_INDEX_16;
-        hi = RE_MAX_CASE_INDEX_16;
-    } else {
-        lo = RE_MIN_CASE_INDEX_32;
-        hi = RE_MAX_CASE_INDEX_32;
-    }
+    if (ch1 <= 0xFF)
+        bounds_index = 0;
+    else if (ch1 <= 0xFFF)
+        bounds_index = 1;
+    else if (ch1 <= 0xFFFF)
+        bounds_index = 2;
+    else
+        bounds_index = 3;
 
-    while (lo <= hi) {
+    bit0 = ch1 & 1;
+    half_code = ch1 / 2;
+
+    lo = case_bounds[bit0][bounds_index].lo;
+    hi = case_bounds[bit0][bounds_index].hi;
+    ranges = case_ranges[bit0];
+    while (lo < hi) {
         size_t mid;
         RE_CaseRange* range;
 
         mid = (lo + hi) / 2;
-        range = &re_codepoint_case_ranges[mid];
-        if (ch1 < range->min_char)
-            hi = mid - 1;
-        else if (ch1 > range->max_char)
+        range = &ranges[mid];
+        if (half_code < range->min_char)
+            hi = mid;
+        else if (half_code - range->min_char > range->max_char_offset)
             lo = mid + 1;
-        else {
-            RE_Case* case_;
-
-            case_ = &re_codepoint_cases[range->offset + ch1];
-            return ch2 == case_->code[0] || ch2 == case_->code[1] || ch2 ==
-              case_->code[2];
-        }
+        else
+            return ch2 == calc_case(ch1, range->diffs[0]) ||
+              ch2 == calc_case(ch1, range->diffs[1]) ||
+              ch2 ==  calc_case(ch1, range->diffs[2]);
     }
 
     return FALSE;
@@ -1078,11 +1093,8 @@ static BOOL unicode_at_boundary(RE_State* state, Py_ssize_t text_pos) {
 
 /* Gets the Unicode word break property for a character. */
 Py_LOCAL_INLINE(int) word_break_property(RE_CODE ch) {
-    RE_InfoRange* info;
-
-    info = get_codepoint_info(ch);
-
-    return info ? info->word_break : RE_BREAK_OTHER;
+    return get_codepoint_property(re_word_break_ranges,
+      sizeof(re_word_break_ranges), RE_MIN_WORD_BREAK, ch);
 }
 
 /* Checks whether a character is a Unicode vowel.
