@@ -174,18 +174,18 @@ __version__ = "2.3.0"
 # --------------------------------------------------------------------
 # Public interface.
 
-def match(pattern, string, flags=0, pos=None, endpos=None, concurrent=False):
+def match(pattern, string, flags=0, pos=None, endpos=None, concurrent=None):
     """Try to apply the pattern at the start of the string, returning a match
     object, or None if no match was found."""
     return _compile(pattern, flags).match(string, pos, endpos, concurrent)
 
-def search(pattern, string, flags=0, pos=None, endpos=None, concurrent=False):
+def search(pattern, string, flags=0, pos=None, endpos=None, concurrent=None):
     """Search through string looking for a match to the pattern, returning a
     match object, or None if no match was found."""
     return _compile(pattern, flags).search(string, pos, endpos, concurrent)
 
 def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
-  concurrent=False):
+  concurrent=None):
     """Return the string obtained by replacing the leftmost (or rightmost with
     a reverse pattern) non-overlapping occurrences of the pattern in string by
     the replacement repl.  repl can be either a string or a callable; if a
@@ -195,7 +195,7 @@ def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
       concurrent)
 
 def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
-  concurrent=False):
+  concurrent=None):
     """Return a 2-tuple containing (new_string, number).  new_string is the
     string obtained by replacing the leftmost (or rightmost with a reverse
     pattern) non-overlapping occurrences of the pattern in the source string by
@@ -206,17 +206,17 @@ def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
     return _compile(pattern, flags).subn(repl, string, count, pos, endpos,
       concurrent)
 
-def split(pattern, string, maxsplit=0, flags=0, concurrent=False):
+def split(pattern, string, maxsplit=0, flags=0, concurrent=None):
     """Split the source string by the occurrences of the pattern, returning a
     list containing the resulting substrings."""
     return _compile(pattern, flags).split(string, maxsplit, concurrent)
 
-def splititer(pattern, string, maxsplit=0, flags=0, concurrent=False):
+def splititer(pattern, string, maxsplit=0, flags=0, concurrent=None):
     """Return an iterator yielding the parts of a split string."""
     return _compile(pattern, flags).splititer(string, maxsplit, concurrent)
 
 def findall(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
-  concurrent=False):
+  concurrent=None):
     """Return a list of all matches in the string.  The matches may be
     overlapped if overlapped is True.  If one or more groups are present in the
     pattern, return a list of groups; this will be a list of tuples if the
@@ -226,7 +226,7 @@ def findall(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
       concurrent)
 
 def finditer(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
-  concurrent=False):
+  concurrent=None):
     """Return an iterator over all matches in the string.  The matches may be
     overlapped if overlapped is True.  For each match, the iterator returns a
     match object.  Empty matches are included in the result."""

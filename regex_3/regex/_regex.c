@@ -47,6 +47,7 @@
 #include <ctype.h>
 #include "_regex.h"
 #include "pyport.h"
+#include "pythread.h"
 
 typedef unsigned char BOOL;
 enum {FALSE, TRUE};
@@ -54,6 +55,8 @@ enum {FALSE, TRUE};
 typedef unsigned char BYTE;
 
 typedef unsigned short RE_STATUS_T;
+
+enum {RE_CONC_NO, RE_CONC_YES, RE_CONC_DEFAULT};
 
 /* Name of this module, minus the leading underscore. */
 #define RE_MODULE "regex"
@@ -295,7 +298,6 @@ typedef struct RE_State {
     Py_ssize_t saved_groups_capacity;
     Py_ssize_t saved_groups_count;
     RE_GroupData* saved_groups;
-    PyThreadState* saved_GIL; /* Storage for GIL handling. */
     size_t min_width;
     RE_EncodingTable* encoding;
     RE_CODE (*char_at)(void* text, Py_ssize_t pos);
@@ -308,7 +310,21 @@ typedef struct RE_State {
     BOOL must_advance; /* The end of the match must advance past its start. */
     BOOL is_multithreaded; /* Whether to release the GIL while matching. */
     BOOL do_check;
+    PyThread_type_lock lock;
 } RE_State;
+
+/* Storage for the regex state and thread state.
+ *
+ * Scanner objects can sometimes be shared across threads, which means that
+ * their RE_State structs are also shared. This isn't safe when the GIL is
+ * released, so in such instances we have a lock (mutex) in the RE_State struct
+ * to protect it during matching. We also need a thread-safe place to store the
+ * thread state when releasing the GIL.
+ */
+typedef struct RE_SafeState {
+    RE_State* re_state;
+    PyThreadState* thread_state;
+} RE_SafeState;
 
 /* The PatternObject created from a regular expression. */
 typedef struct PatternObject {
@@ -792,7 +808,7 @@ Py_LOCAL_INLINE(unsigned int) get_codepoint_property(RE_PropertyRange *table,
         range = &table[mid];
         if (ch < range->min_char)
             hi = mid;
-		else if (ch - range->min_char > range->max_char_offset)
+        else if (ch - range->min_char > range->max_char_offset)
             lo = mid + 1;
         else
             return range->property_offset + min_property;
@@ -967,12 +983,12 @@ static BOOL unicode_has_property(RE_CODE property, RE_CODE ch) {
         return (flag & RE_PROP_MASK_ZS) != 0;
     default:
         if (RE_MIN_BLOCK <= property && property <= RE_MAX_BLOCK)
-			return get_codepoint_property(re_block_ranges,
-			  sizeof(re_block_ranges), RE_MIN_BLOCK, ch) == property;
+            return get_codepoint_property(re_block_ranges,
+              sizeof(re_block_ranges), RE_MIN_BLOCK, ch) == property;
 
         if (RE_MIN_SCRIPT <= property && property <= RE_MAX_SCRIPT)
-			return get_codepoint_property(re_script_ranges,
-			  sizeof(re_script_ranges), RE_MIN_SCRIPT, ch) == property;
+            return get_codepoint_property(re_script_ranges,
+              sizeof(re_script_ranges), RE_MIN_SCRIPT, ch) == property;
 
         return FALSE;
     }
@@ -1301,30 +1317,30 @@ Py_LOCAL_INLINE(void) re_dealloc(void* ptr) {
     PyMem_Free(ptr);
 }
 
-/* Releases the GIL. */
-Py_LOCAL_INLINE(void) release_GIL(RE_State* state) {
-    state->saved_GIL = PyEval_SaveThread();
+/* Releases the GIL if multithreading is enabled. */
+Py_LOCAL_INLINE(void) release_GIL(RE_SafeState* safe_state) {
+    if (safe_state->re_state->is_multithreaded)
+        safe_state->thread_state = PyEval_SaveThread();
 }
 
-/* Acquires the GIL. */
-Py_LOCAL_INLINE(void) acquire_GIL(RE_State* state) {
-    PyEval_RestoreThread(state->saved_GIL);
+/* Acquires the GIL if multithreading is enabled. */
+Py_LOCAL_INLINE(void) acquire_GIL(RE_SafeState* safe_state) {
+    if (safe_state->re_state->is_multithreaded)
+        PyEval_RestoreThread(safe_state->thread_state);
 }
 
 /* Allocates memory, holding the GIL during the allocation.
  *
  * Sets the Python error handler and returns NULL if the allocation fails.
  */
-Py_LOCAL_INLINE(void*) safe_alloc(RE_State* state, size_t size) {
+Py_LOCAL_INLINE(void*) safe_alloc(RE_SafeState* safe_state, size_t size) {
     void* new_ptr;
 
-    if (state->is_multithreaded)
-        acquire_GIL(state);
+    acquire_GIL(safe_state);
 
     new_ptr = re_alloc(size);
 
-    if (state->is_multithreaded)
-        release_GIL(state);
+    release_GIL(safe_state);
 
     return new_ptr;
 }
@@ -1333,42 +1349,37 @@ Py_LOCAL_INLINE(void*) safe_alloc(RE_State* state, size_t size) {
  *
  * Sets the Python error handler and returns NULL if the reallocation fails.
  */
-Py_LOCAL_INLINE(void*) safe_realloc(RE_State* state, void* ptr, size_t size) {
+Py_LOCAL_INLINE(void*) safe_realloc(RE_SafeState* safe_state, void* ptr,
+  size_t size) {
     void* new_ptr;
 
-    if (state->is_multithreaded)
-        acquire_GIL(state);
+    acquire_GIL(safe_state);
 
     new_ptr = re_realloc(ptr, size);
 
-    if (state->is_multithreaded)
-        release_GIL(state);
+    release_GIL(safe_state);
 
     return new_ptr;
 }
 
 /* Deallocates memory, holding the GIL during the deallocation. */
-Py_LOCAL_INLINE(void) safe_dealloc(RE_State* state, void* ptr) {
-    if (state->is_multithreaded)
-        acquire_GIL(state);
+Py_LOCAL_INLINE(void) safe_dealloc(RE_SafeState* safe_state, void* ptr) {
+    acquire_GIL(safe_state);
 
     re_dealloc(ptr);
 
-    if (state->is_multithreaded)
-        release_GIL(state);
+    release_GIL(safe_state);
 }
 
 /* Checks for KeyboardInterrupt, holding the GIL during the check. */
-Py_LOCAL_INLINE(BOOL) safe_check_signals(RE_State* state) {
+Py_LOCAL_INLINE(BOOL) safe_check_signals(RE_SafeState* safe_state) {
     BOOL result;
 
-    if (state->is_multithreaded)
-        acquire_GIL(state);
+    acquire_GIL(safe_state);
 
     result = PyErr_CheckSignals();
 
-    if (state->is_multithreaded)
-        release_GIL(state);
+    release_GIL(safe_state);
 
     return result;
 }
@@ -1495,12 +1506,16 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
 }
 
 /* Pushes the groups. */
-Py_LOCAL_INLINE(BOOL) push_groups(RE_State* state) {
+Py_LOCAL_INLINE(BOOL) push_groups(RE_SafeState* safe_state)
+  {
+    RE_State* state;
     PatternObject* pattern;
     size_t new_count;
     size_t new_capacity;
     RE_GroupData* saved;
     Py_ssize_t g;
+
+    state = safe_state->re_state;
 
     pattern = state->pattern;
 
@@ -1512,8 +1527,8 @@ Py_LOCAL_INLINE(BOOL) push_groups(RE_State* state) {
     if (new_capacity != state->saved_groups_capacity) {
         RE_GroupData* new_groups;
 
-        new_groups = (RE_GroupData*)safe_realloc(state, state->saved_groups,
-          new_capacity * sizeof(RE_GroupData));
+        new_groups = (RE_GroupData*)safe_realloc(safe_state,
+          state->saved_groups, new_capacity * sizeof(RE_GroupData));
         if (!new_groups)
             return FALSE;
         state->saved_groups_capacity = new_capacity;
@@ -1606,8 +1621,11 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
 }
 
 /* Adds a new backtrack entry. */
-Py_LOCAL_INLINE(BOOL) add_backtrack(RE_State* state, BYTE op) {
+Py_LOCAL_INLINE(BOOL) add_backtrack(RE_SafeState* safe_state, BYTE op) {
+    RE_State* state;
     RE_BacktrackBlock* current;
+
+    state = safe_state->re_state;
 
     current = state->current_backtrack_block;
     if (current->count >= current->capacity) {
@@ -1619,7 +1637,7 @@ Py_LOCAL_INLINE(BOOL) add_backtrack(RE_State* state, BYTE op) {
             capacity = current->capacity * 2;
             size = sizeof(RE_BacktrackBlock) + (capacity -
               RE_BACKTRACK_BLOCK_SIZE) * sizeof(RE_BacktrackData);
-            next = (RE_BacktrackBlock*)safe_alloc(state, size);
+            next = (RE_BacktrackBlock*)safe_alloc(safe_state, size);
             if (!next)
                 return FALSE;
 
@@ -3262,14 +3280,21 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables_rev(RE_EncodingTable* encoding,
 }
 
 /* Performs a string search. */
-Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_State* state, RE_Node* node,
-  Py_ssize_t text_pos, Py_ssize_t limit) {
+Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_SafeState* safe_state, RE_Node*
+  node, Py_ssize_t text_pos, Py_ssize_t limit) {
+    RE_State* state;
+
+    state = safe_state->re_state;
+
     if (text_pos > limit)
         return -1;
 
     /* Has the node been initialised for fast searching, if necessary? */
     if (!(node->status & RE_STATUS_FAST_INIT)) {
-        acquire_GIL(state);
+        /* Ideally the pattern should immutable and shareable across threads.
+         * Internally, however, it isn't. For safety we need to hold the GIL.
+         */
+        acquire_GIL(safe_state);
 
         /* Double-check because of multithreading. */
         if (!(node->status & RE_STATUS_FAST_INIT)) {
@@ -3277,7 +3302,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_State* state, RE_Node* node,
             node->status |= RE_STATUS_FAST_INIT;
         }
 
-        release_GIL(state);
+        release_GIL(safe_state);
     }
 
     if (node->string.bad_character_offset)
@@ -3289,14 +3314,21 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_State* state, RE_Node* node,
 }
 
 /* Performs a string search, ignoring case. */
-Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
-  Py_ssize_t text_pos, Py_ssize_t limit) {
+Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_SafeState* safe_state,
+  RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit) {
+    RE_State* state;
+
+    state = safe_state->re_state;
+
     if (text_pos > limit)
         return -1;
 
     /* Has the node been initialised for fast searching, if necessary? */
     if (!(node->status & RE_STATUS_FAST_INIT)) {
-        acquire_GIL(state);
+        /* Ideally the pattern should immutable and shareable across threads.
+         * Internally, however, it isn't. For safety we need to hold the GIL.
+         */
+        acquire_GIL(safe_state);
 
         /* Double-check because of multithreading. */
         if (!(node->status & RE_STATUS_FAST_INIT)) {
@@ -3304,7 +3336,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
             node->status |= RE_STATUS_FAST_INIT;
         }
 
-        release_GIL(state);
+        release_GIL(safe_state);
     }
 
     if (node->string.bad_character_offset)
@@ -3316,14 +3348,21 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
 }
 
 /* Performs a string search backwards, ignoring case. */
-Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
-  node, Py_ssize_t text_pos, Py_ssize_t limit) {
+Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_SafeState* safe_state,
+  RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit) {
+    RE_State* state;
+
+    state = safe_state->re_state;
+
     if (text_pos < limit)
         return -1;
 
     /* Has the node been initialised for fast searching, if necessary? */
     if (!(node->status & RE_STATUS_FAST_INIT)) {
-        acquire_GIL(state);
+        /* Ideally the pattern should immutable and shareable across threads.
+         * Internally, however, it isn't. For safety we need to hold the GIL.
+         */
+        acquire_GIL(safe_state);
 
         /* Double-check because of multithreading. */
         if (!(node->status & RE_STATUS_FAST_INIT)) {
@@ -3331,7 +3370,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
             node->status |= RE_STATUS_FAST_INIT;
         }
 
-        release_GIL(state);
+        release_GIL(safe_state);
     }
 
     if (node->string.bad_character_offset)
@@ -3343,14 +3382,21 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
 }
 
 /* Performs a string search backwards. */
-Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_State* state, RE_Node* node,
-  Py_ssize_t text_pos, Py_ssize_t limit) {
+Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_SafeState* safe_state,
+  RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit) {
+    RE_State* state;
+
+    state = safe_state->re_state;
+
     if (text_pos < limit)
         return -1;
 
     /* Has the node been initialised for fast searching, if necessary? */
     if (!(node->status & RE_STATUS_FAST_INIT)) {
-        acquire_GIL(state);
+        /* Ideally the pattern should immutable and shareable across threads.
+         * Internally, however, it isn't. For safety we need to hold the GIL.
+         */
+        acquire_GIL(safe_state);
 
         /* Double-check because of multithreading. */
         if (!(node->status & RE_STATUS_FAST_INIT)) {
@@ -3358,7 +3404,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_State* state, RE_Node* node,
             node->status |= RE_STATUS_FAST_INIT;
         }
 
-        release_GIL(state);
+        release_GIL(safe_state);
     }
 
     if (node->string.bad_character_offset)
@@ -3660,12 +3706,16 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
 }
 
 /* Performs a general check. */
-Py_LOCAL_INLINE(BOOL) general_check(RE_State* state, RE_Node* node, Py_ssize_t
-  text_pos) {
+Py_LOCAL_INLINE(BOOL) general_check(RE_SafeState* safe_state, RE_Node* node,
+  Py_ssize_t text_pos) {
+    RE_State* state;
+
+    state = safe_state->re_state;
+
     for (;;) {
         switch (node->op) {
         case RE_OP_BRANCH:
-            if (general_check(state, node->next_1.check, text_pos))
+            if (general_check(safe_state, node->next_1.check, text_pos))
                 return TRUE;
             node = node->nonstring.next_2.check;
             break;
@@ -3697,24 +3747,24 @@ Py_LOCAL_INLINE(BOOL) general_check(RE_State* state, RE_Node* node, Py_ssize_t
                 node = node->nonstring.next_2.check;
             break;
         case RE_OP_GROUP_EXISTS:
-            if (general_check(state, node->next_1.check, text_pos))
+            if (general_check(safe_state, node->next_1.check, text_pos))
                 return TRUE;
             node = node->nonstring.next_2.check;
             break;
         case RE_OP_STRING:
-            text_pos = string_search(state, node, text_pos, state->slice_end -
-              node->value_count);
+            text_pos = string_search(safe_state, node, text_pos,
+              state->slice_end - node->value_count);
             return text_pos >= 0;
         case RE_OP_STRING_IGN:
-            text_pos = string_search_ign(state, node, text_pos,
+            text_pos = string_search_ign(safe_state, node, text_pos,
               state->slice_end - node->value_count);
             return text_pos >= 0;
         case RE_OP_STRING_IGN_REV:
-            text_pos = string_search_ign_rev(state, node, text_pos,
+            text_pos = string_search_ign_rev(safe_state, node, text_pos,
               state->slice_start + node->value_count);
             return text_pos >= 0;
         case RE_OP_STRING_REV:
-            text_pos = string_search_rev(state, node, text_pos,
+            text_pos = string_search_rev(safe_state, node, text_pos,
               state->slice_start + node->value_count);
             return text_pos >= 0;
         case RE_OP_SUCCESS:
@@ -3822,14 +3872,17 @@ Py_LOCAL_INLINE(RE_Node*) next_check(RE_Node* node) {
 }
 
 /* Searches for the start of a match. */
-Py_LOCAL_INLINE(BOOL) search_start(RE_State* state, RE_NextNode* next,
+Py_LOCAL_INLINE(BOOL) search_start(RE_SafeState* safe_state, RE_NextNode* next,
   RE_Position* new_position) {
+    RE_State* state;
     Py_ssize_t text_pos;
     RE_Node* test;
     RE_Node* node;
     Py_ssize_t start_pos;
     Py_ssize_t step;
     Py_ssize_t limit;
+
+    state = safe_state->re_state;
 
     start_pos = state->text_pos;
 
@@ -4128,22 +4181,22 @@ again:
         start_pos = 0;
         break;
     case RE_OP_STRING: /* A string literal. */
-        start_pos = string_search(state, test, start_pos, limit);
+        start_pos = string_search(safe_state, test, start_pos, limit);
         if (start_pos < 0)
             return FALSE;
         break;
     case RE_OP_STRING_IGN: /* A string literal, ignoring case. */
-        start_pos = string_search_ign(state, test, start_pos, limit);
+        start_pos = string_search_ign(safe_state, test, start_pos, limit);
         if (start_pos < 0)
             return FALSE;
         break;
     case RE_OP_STRING_IGN_REV: /* A string literal backwards, ignoring case. */
-        start_pos = string_search_ign_rev(state, test, start_pos, limit);
+        start_pos = string_search_ign_rev(safe_state, test, start_pos, limit);
         if (start_pos < 0)
             return FALSE;
         break;
     case RE_OP_STRING_REV: /* A string literal backwards. */
-        start_pos = string_search_rev(state, test, start_pos, limit);
+        start_pos = string_search_rev(safe_state, test, start_pos, limit);
         if (start_pos < 0)
             return FALSE;
         break;
@@ -4177,8 +4230,11 @@ again:
 }
 
 /* Saves a capture group. */
-Py_LOCAL_INLINE(BOOL) save_capture(RE_State* state, size_t index) {
+Py_LOCAL_INLINE(BOOL) save_capture(RE_SafeState* safe_state, size_t index) {
+    RE_State* state;
     RE_GroupData* group;
+
+    state = safe_state->re_state;
 
     /* Capture group indexes are 1-based (excluding group 0, which is the
      * entire matched string).
@@ -4191,7 +4247,7 @@ Py_LOCAL_INLINE(BOOL) save_capture(RE_State* state, size_t index) {
         new_capacity = group->capture_capacity * 2;
         if (new_capacity == 0)
             new_capacity = 16;
-        new_captures = (RE_GroupSpan*)safe_realloc(state, group->captures,
+        new_captures = (RE_GroupSpan*)safe_realloc(safe_state, group->captures,
           new_capacity * sizeof(RE_GroupSpan));
         if (!new_captures)
             return FALSE;
@@ -4213,12 +4269,15 @@ Py_LOCAL_INLINE(void) unsave_capture(RE_State* state, size_t index) {
 }
 
 /* Saves all the capture counts to backtrack. */
-Py_LOCAL_INLINE(BOOL) save_all_captures(RE_State* state, RE_BacktrackData*
-  bt_data) {
+Py_LOCAL_INLINE(BOOL) save_all_captures(RE_SafeState* safe_state,
+  RE_BacktrackData* bt_data) {
+    RE_State* state;
     Py_ssize_t group_count;
     RE_CaptureCountsBlock* current;
     size_t* capture_counts;
     Py_ssize_t g;
+
+    state = safe_state->re_state;
 
     group_count = state->pattern->group_count;
     if (group_count == 0) {
@@ -4235,7 +4294,7 @@ Py_LOCAL_INLINE(BOOL) save_all_captures(RE_State* state, RE_BacktrackData*
         if (current && current->next)
             new_block = current->next;
         else {
-            new_block = (RE_CaptureCountsBlock*)safe_alloc(state,
+            new_block = (RE_CaptureCountsBlock*)safe_alloc(safe_state,
               sizeof(RE_CaptureCountsBlock));
             if (!new_block)
                 return FALSE;
@@ -4245,10 +4304,10 @@ Py_LOCAL_INLINE(BOOL) save_all_captures(RE_State* state, RE_BacktrackData*
                 n = 1;
             new_capacity = n * group_count;
 
-            new_block->items = (size_t*)safe_alloc(state, new_capacity *
+            new_block->items = (size_t*)safe_alloc(safe_state, new_capacity *
               sizeof(size_t));
             if (!new_block->items) {
-                safe_dealloc(state, new_block);
+                safe_dealloc(safe_state, new_block);
                 return FALSE;
             }
 
@@ -4317,7 +4376,7 @@ Py_LOCAL_INLINE(void) restore_info(RE_State* state, RE_Info* info) {
 }
 
 /* Deletes a new span in a guard list. */
-Py_LOCAL_INLINE(BOOL) insert_guard_span(RE_State* state, RE_GuardList*
+Py_LOCAL_INLINE(BOOL) insert_guard_span(RE_SafeState* safe_state, RE_GuardList*
   guard_list, Py_ssize_t index) {
     size_t n;
 
@@ -4328,7 +4387,7 @@ Py_LOCAL_INLINE(BOOL) insert_guard_span(RE_State* state, RE_GuardList*
         new_capacity = guard_list->capacity * 2;
         if (new_capacity == 0)
             new_capacity = 16;
-        new_spans = (RE_GuardSpan*)safe_realloc(state, guard_list->spans,
+        new_spans = (RE_GuardSpan*)safe_realloc(safe_state, guard_list->spans,
           new_capacity * sizeof(RE_GuardSpan));
         if (!new_spans)
             return FALSE;
@@ -4359,11 +4418,14 @@ Py_LOCAL_INLINE(void) delete_guard_span(RE_GuardList* guard_list, Py_ssize_t
 }
 
 /* Guards a position against further matching. */
-Py_LOCAL_INLINE(BOOL) guard(RE_State* state, size_t index, Py_ssize_t text_pos,
-  RE_STATUS_T guard) {
+Py_LOCAL_INLINE(BOOL) guard(RE_SafeState* safe_state, size_t index, Py_ssize_t
+  text_pos, RE_STATUS_T guard) {
+    RE_State* state;
     RE_GuardList* guard_list;
     size_t low;
     size_t high;
+
+    state = safe_state->re_state;
 
     /* Is a guard active here? */
     if (!(state->pattern->repeat_info[index].status & guard))
@@ -4410,7 +4472,7 @@ Py_LOCAL_INLINE(BOOL) guard(RE_State* state, size_t index, Py_ssize_t text_pos,
         guard_list->spans[low].low = text_pos;
     else {
         /* Insert a new span.*/
-        if (!insert_guard_span(state, guard_list, low))
+        if (!insert_guard_span(safe_state, guard_list, low))
             return FALSE;
         guard_list->spans[low].low = text_pos;
         guard_list->spans[low].high = text_pos;
@@ -4495,8 +4557,9 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
 }
 
 /* Performs a depth-first match or search from the context. */
-Py_LOCAL_INLINE(int) basic_match(RE_State* state, RE_Node* start_node, BOOL
-  search) {
+Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
+  BOOL search) {
+    RE_State* state;
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
     Py_ssize_t text_pos;
@@ -4517,6 +4580,8 @@ Py_LOCAL_INLINE(int) basic_match(RE_State* state, RE_Node* start_node, BOOL
     BOOL has_groups;
     RE_Node* node;
     TRACE(("<<basic_match>>\n"))
+
+    state = safe_state->re_state;
 
     slice_start = state->slice_start;
     slice_end = state->slice_end;
@@ -4565,11 +4630,11 @@ Py_LOCAL_INLINE(int) basic_match(RE_State* state, RE_Node* start_node, BOOL
     has_groups = pattern->group_count > 0;
 
     /* Save the groups in case we need to restore them for searching. */
-    if (has_groups && !push_groups(state))
+    if (has_groups && !push_groups(safe_state))
         return RE_ERROR_MEMORY;
 
     /* Add a backtrack entry for failure. */
-    if (!add_backtrack(state, RE_OP_FAILURE))
+    if (!add_backtrack(safe_state, RE_OP_FAILURE))
         return RE_ERROR_MEMORY;
 
 start_match:
@@ -4580,7 +4645,7 @@ start_match:
         RE_Position new_position;
 
 next_match:
-        if (!search_start(state, &start_pair, &new_position))
+        if (!search_start(safe_state, &start_pair, &new_position))
             return RE_ERROR_FAILURE;
 
         node = new_position.node;
@@ -4642,9 +4707,9 @@ advance:
             /* Try to match the subpattern. */
             if (node->values[0]) {
                 /* The atomic group contains captures, so save them. */
-                if (!add_backtrack(state, RE_OP_ATOMIC))
+                if (!add_backtrack(safe_state, RE_OP_ATOMIC))
                     return RE_ERROR_MEMORY;
-                if (!save_all_captures(state, state->backtrack))
+                if (!save_all_captures(safe_state, state->backtrack))
                     return RE_ERROR_MEMORY;
             }
 
@@ -4652,7 +4717,8 @@ advance:
             state->text_pos = text_pos;
             state->must_advance = FALSE;
 
-            status = basic_match(state, node->nonstring.next_2.node, FALSE);
+            status = basic_match(safe_state, node->nonstring.next_2.node,
+              FALSE);
             if (status < 0)
                 return status;
 
@@ -4702,8 +4768,8 @@ advance:
               &next_second_position);
             if (try_first) {
                 if (try_second) {
-                    if (!add_backtrack(state, RE_OP_BRANCH) || has_groups &&
-                      !push_groups(state))
+                    if (!add_backtrack(safe_state, RE_OP_BRANCH) || has_groups
+                      && !push_groups(safe_state))
                         return RE_ERROR_MEMORY;
                     state->backtrack->branch.position = next_second_position;
                 }
@@ -4805,8 +4871,8 @@ advance:
                      */
 
                     /* Record backtracking info for matching the tail. */
-                    if (!add_backtrack(state, RE_OP_END_GREEDY_REPEAT) ||
-                      has_groups && !push_groups(state))
+                    if (!add_backtrack(safe_state, RE_OP_END_GREEDY_REPEAT) ||
+                      has_groups && !push_groups(safe_state))
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.position = next_tail_position;
@@ -4830,7 +4896,8 @@ advance:
                          * by just re-using it.
                          */
                     } else {
-                        if (!add_backtrack(state, RE_OP_END_GREEDY_REPEAT))
+                        if (!add_backtrack(safe_state,
+                          RE_OP_END_GREEDY_REPEAT))
                             return RE_ERROR_MEMORY;
                         bt_data = state->backtrack;
                         bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
@@ -4841,7 +4908,7 @@ advance:
                 }
 
                 /* Advance into the body. */
-                if (!guard(state, index, text_pos, RE_STATUS_BODY))
+                if (!guard(safe_state, index, text_pos, RE_STATUS_BODY))
                     return RE_ERROR_MEMORY;
 
                 node = next_body_position.node;
@@ -4861,7 +4928,7 @@ advance:
                      * re-using it.
                      */
                 } else {
-                    if (!add_backtrack(state, RE_OP_END_GREEDY_REPEAT))
+                    if (!add_backtrack(safe_state, RE_OP_END_GREEDY_REPEAT))
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
@@ -4871,7 +4938,7 @@ advance:
                 bt_data->repeat.max_count = rp_data->max_count;
 
                 /* Advance into the tail. */
-                if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+                if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                     return RE_ERROR_MEMORY;
 
                 node = next_tail_position.node;
@@ -4892,11 +4959,11 @@ advance:
             if (node->values[1] && state->save_captures) {
                 RE_BacktrackData* bt_data;
 
-                if (!save_capture(state, node->values[0]))
+                if (!save_capture(safe_state, node->values[0]))
                     return RE_ERROR_MEMORY;
 
                 /* Record backtracking info for unsaving the capture. */
-                if (!add_backtrack(state, RE_OP_END_GROUP))
+                if (!add_backtrack(safe_state, RE_OP_END_GROUP))
                     return RE_ERROR_MEMORY;
                 bt_data = state->backtrack;
                 bt_data->group.index = node->values[0];
@@ -4946,8 +5013,8 @@ advance:
                      */
 
                     /* Record backtracking info for matching the body. */
-                    if (!add_backtrack(state, RE_OP_END_LAZY_REPEAT) ||
-                      has_groups && !push_groups(state))
+                    if (!add_backtrack(safe_state, RE_OP_END_LAZY_REPEAT) ||
+                      has_groups && !push_groups(safe_state))
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.position = next_body_position;
@@ -4957,7 +5024,7 @@ advance:
                     bt_data->repeat.text_pos = text_pos;
 
                     /* Advance into the tail. */
-                    if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+                    if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                         return RE_ERROR_MEMORY;
 
                     node = next_tail_position.node;
@@ -4976,7 +5043,7 @@ advance:
                          * by just re-using it.
                          */
                     } else {
-                        if (!add_backtrack(state, RE_OP_END_LAZY_REPEAT))
+                        if (!add_backtrack(safe_state, RE_OP_END_LAZY_REPEAT))
                             return RE_ERROR_MEMORY;
                         bt_data = state->backtrack;
                         bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
@@ -4986,7 +5053,7 @@ advance:
                     bt_data->repeat.max_count = rp_data->max_count;
 
                     /* Advance into the body. */
-                    if (!guard(state, index, text_pos, RE_STATUS_BODY))
+                    if (!guard(safe_state, index, text_pos, RE_STATUS_BODY))
                         return RE_ERROR_MEMORY;
 
                     node = next_body_position.node;
@@ -5005,7 +5072,7 @@ advance:
                      * re-using it.
                      */
                 } else {
-                    if (!add_backtrack(state, RE_OP_END_LAZY_REPEAT))
+                    if (!add_backtrack(safe_state, RE_OP_END_LAZY_REPEAT))
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.position.node = NULL; /* Restore then backtrack. */
@@ -5015,7 +5082,7 @@ advance:
                 bt_data->repeat.max_count = rp_data->max_count;
 
                 /* Advance into the tail. */
-                if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+                if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                     return RE_ERROR_MEMORY;
 
                 node = next_tail_position.node;
@@ -5058,8 +5125,8 @@ advance:
             rp_data = &state->repeats[index];
 
             /* We might need to backtrack into the head. */
-            if (!add_backtrack(state, RE_OP_GREEDY_REPEAT) || has_groups &&
-              !push_groups(state))
+            if (!add_backtrack(safe_state, RE_OP_GREEDY_REPEAT) || has_groups
+              && !push_groups(safe_state))
                 return RE_ERROR_MEMORY;
             bt_data = state->backtrack;
             bt_data->repeat.index = index;
@@ -5092,8 +5159,8 @@ advance:
                      */
 
                     /* Record backtracking info for matching the tail. */
-                    if (!add_backtrack(state, RE_OP_END_GREEDY_REPEAT) ||
-                      has_groups && !push_groups(state))
+                    if (!add_backtrack(safe_state, RE_OP_END_GREEDY_REPEAT) ||
+                      has_groups && !push_groups(safe_state))
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.position = next_tail_position;
@@ -5104,14 +5171,14 @@ advance:
                 }
 
                 /* Advance into the body. */
-                if (!guard(state, index, text_pos, RE_STATUS_BODY))
+                if (!guard(safe_state, index, text_pos, RE_STATUS_BODY))
                     return RE_ERROR_MEMORY;
 
                 node = next_body_position.node;
                 text_pos = next_body_position.text_pos;
             } else {
                 /* Advance into the tail. */
-                if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+                if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                     return RE_ERROR_MEMORY;
 
                 node = next_tail_position.node;
@@ -5129,7 +5196,7 @@ advance:
             if (is_guarded(state, index, text_pos, RE_STATUS_BODY))
                 goto backtrack;
 
-            if (!guard(state, index, text_pos, RE_STATUS_BODY))
+            if (!guard(safe_state, index, text_pos, RE_STATUS_BODY))
                 return RE_ERROR_MEMORY;
 
             /* Count how many times the character repeats, up to the maximum.
@@ -5152,8 +5219,8 @@ advance:
                  * indexes are 0-based.
                  */
                 rp_data = &state->repeats[index];
-                if (!add_backtrack(state, RE_OP_GREEDY_REPEAT_ONE) ||
-                  has_groups && !push_groups(state))
+                if (!add_backtrack(safe_state, RE_OP_GREEDY_REPEAT_ONE) ||
+                  has_groups && !push_groups(safe_state))
                     return RE_ERROR_MEMORY;
                 bt_data = state->backtrack;
                 bt_data->repeat.position.node = node;
@@ -5167,7 +5234,7 @@ advance:
 
             text_pos += (Py_ssize_t)count * node->step;
             node = node->next_1.node;
-            if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+            if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                 return RE_ERROR_MEMORY;
             break;
         }
@@ -5207,8 +5274,8 @@ advance:
             rp_data = &state->repeats[index];
 
             /* We might need to backtrack into the head. */
-            if (!add_backtrack(state, RE_OP_LAZY_REPEAT) || has_groups &&
-              !push_groups(state))
+            if (!add_backtrack(safe_state, RE_OP_LAZY_REPEAT) || has_groups &&
+              !push_groups(safe_state))
                 return RE_ERROR_MEMORY;
             bt_data = state->backtrack;
             bt_data->repeat.index = index;
@@ -5242,8 +5309,8 @@ advance:
                      */
 
                     /* Record backtracking info for matching the body. */
-                    if (!add_backtrack(state, RE_OP_END_LAZY_REPEAT) ||
-                      has_groups && !push_groups(state))
+                    if (!add_backtrack(safe_state, RE_OP_END_LAZY_REPEAT) ||
+                      has_groups && !push_groups(safe_state))
                         return RE_ERROR_MEMORY;
                     bt_data = state->backtrack;
                     bt_data->repeat.index = index;
@@ -5254,14 +5321,14 @@ advance:
                     bt_data->repeat.text_pos = text_pos;
 
                     /* Advance into the tail. */
-                    if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+                    if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                         return RE_ERROR_MEMORY;
 
                     node = next_tail_position.node;
                     text_pos = next_tail_position.text_pos;
                 } else {
                     /* Advance into the body. */
-                    if (!guard(state, index, text_pos, RE_STATUS_BODY))
+                    if (!guard(safe_state, index, text_pos, RE_STATUS_BODY))
                         return RE_ERROR_MEMORY;
 
                     node = next_body_position.node;
@@ -5269,7 +5336,7 @@ advance:
                 }
             } else {
                 /* Advance into the tail. */
-                if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+                if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                     return RE_ERROR_MEMORY;
 
                 node = next_tail_position.node;
@@ -5287,7 +5354,7 @@ advance:
             if (is_guarded(state, index, text_pos, RE_STATUS_BODY))
                 goto backtrack;
 
-            if (!guard(state, index, text_pos, RE_STATUS_BODY))
+            if (!guard(safe_state, index, text_pos, RE_STATUS_BODY))
                 return RE_ERROR_MEMORY;
 
             /* Count how many times the character repeats, up to the minimum.
@@ -5311,8 +5378,8 @@ advance:
                  * indexes are 0-based.
                  */
                 rp_data = &state->repeats[index];
-                if (!add_backtrack(state, RE_OP_LAZY_REPEAT_ONE) || has_groups
-                  && !push_groups(state))
+                if (!add_backtrack(safe_state, RE_OP_LAZY_REPEAT_ONE) ||
+                  has_groups && !push_groups(safe_state))
                     return RE_ERROR_MEMORY;
                 bt_data = state->backtrack;
                 bt_data->repeat.position.node = node;
@@ -5326,7 +5393,7 @@ advance:
 
             text_pos += (Py_ssize_t)count * step;
             node = node->next_1.node;
-            if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+            if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                 return RE_ERROR_MEMORY;
             break;
         }
@@ -5340,9 +5407,9 @@ advance:
             /* Try to match the subpattern. */
             if (node->values[0]) {
                 /* The lookaround contains captures, so save them. */
-                if (!add_backtrack(state, RE_OP_LOOKAROUND))
+                if (!add_backtrack(safe_state, RE_OP_LOOKAROUND))
                     return RE_ERROR_MEMORY;
-                if (!save_all_captures(state, state->backtrack))
+                if (!save_all_captures(safe_state, state->backtrack))
                     return RE_ERROR_MEMORY;
             }
 
@@ -5352,7 +5419,8 @@ advance:
             state->text_pos = text_pos;
             state->must_advance = FALSE;
 
-            status = basic_match(state, node->nonstring.next_2.node, FALSE);
+            status = basic_match(safe_state, node->nonstring.next_2.node,
+              FALSE);
             if (status < 0)
                 return status;
 
@@ -5575,11 +5643,11 @@ advance:
             if (node->values[1] && state->save_captures) {
                 RE_BacktrackData* bt_data;
 
-                if (!save_capture(state, node->values[0]))
+                if (!save_capture(safe_state, node->values[0]))
                     return RE_ERROR_MEMORY;
 
                 /* Record backtracking info for unsaving the capture. */
-                if (!add_backtrack(state, RE_OP_START_GROUP))
+                if (!add_backtrack(safe_state, RE_OP_START_GROUP))
                     return RE_ERROR_MEMORY;
                 bt_data = state->backtrack;
                 bt_data->group.index = node->values[0];
@@ -5720,7 +5788,7 @@ advance:
 
         /* Should we abort the matching? */
         ++iterations;
-        if ((iterations & 0xFFFF) == 0 && safe_check_signals(state))
+        if ((iterations & 0xFFFF) == 0 && safe_check_signals(safe_state))
             return RE_ERROR_INTERRUPTED;
     }
 
@@ -5772,7 +5840,7 @@ backtrack:
             rp_data->max_count = bt_data->repeat.max_count;
             if (bt_data->repeat.position.node) {
                 /* Advance into the tail. */
-                if (!guard(state, bt_data->repeat.index,
+                if (!guard(safe_state, bt_data->repeat.index,
                   bt_data->repeat.text_pos, RE_STATUS_TAIL))
                     return RE_ERROR_MEMORY;
 
@@ -5804,7 +5872,7 @@ backtrack:
             rp_data->max_count = bt_data->repeat.max_count;
             if (bt_data->repeat.position.node) {
                 /* Advance into the body. */
-                if (!guard(state, bt_data->repeat.index,
+                if (!guard(safe_state, bt_data->repeat.index,
                   bt_data->repeat.text_pos, RE_STATUS_BODY))
                     return RE_ERROR_MEMORY;
 
@@ -6249,7 +6317,7 @@ backtrack:
 
                 node = node->next_1.node;
                 text_pos = pos;
-                if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+                if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                     return RE_ERROR_MEMORY;
                 goto advance;
             } else {
@@ -6686,7 +6754,7 @@ backtrack:
                 }
 
                 node = node->next_1.node;
-                if (!guard(state, index, text_pos, RE_STATUS_TAIL))
+                if (!guard(safe_state, index, text_pos, RE_STATUS_TAIL))
                     return RE_ERROR_MEMORY;
                 goto advance;
             } else {
@@ -6716,10 +6784,33 @@ backtrack:
     }
 }
 
-/* Performs a match or search from the current text position. */
+/* Acquires the lock (mutex) on the state if there's one. */
+void acquire_state_lock(RE_SafeState* safe_state) {
+    RE_State* state;
+
+    state = safe_state->re_state;
+    if (state->lock)
+        PyThread_acquire_lock(state->lock, 1);
+}
+
+/* Releases the lock (mutex) on the state if there's one. */
+void release_state_lock(RE_SafeState* safe_state) {
+    RE_State* state;
+
+    state = safe_state->re_state;
+    if (state->lock)
+        PyThread_release_lock(state->lock);
+}
+
+/* Performs a match or search from the current text position.
+ *
+ * The state can sometimes be shared across threads. In such instances there's
+ * a lock (mutex) on it. The lock is held for the duration of matching.
+ */
 Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
     size_t available;
     int status;
+    RE_SafeState safe_state;
     TRACE(("<<do_match>>\n"))
 
     /* Is there enough to search? */
@@ -6728,27 +6819,32 @@ Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
     if (available < state->min_width || available == 0 && state->must_advance)
         return RE_ERROR_FAILURE;
 
-    /* Release the GIL. */
-    if (state->is_multithreaded)
-        release_GIL(state);
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = state;
+    safe_state.thread_state = NULL;
+
+    /* Release the GIL and acquire the state lock. */
+    release_GIL(&safe_state);
+    acquire_state_lock(&safe_state);
 
     /* Initialise the base context. */
     init_match(state);
 
     if (state->do_check) {
         state->do_check = FALSE;
-        if (!general_check(state, state->pattern->check_node, state->text_pos))
+        if (!general_check(&safe_state, state->pattern->check_node,
+          state->text_pos))
           {
-            /* Re-acquire the GIL. */
-            if (state->is_multithreaded)
-                acquire_GIL(state);
+            /* Release the state lock and re-acquire the GIL. */
+            release_state_lock(&safe_state);
+            acquire_GIL(&safe_state);
 
             return RE_ERROR_FAILURE;
         }
     }
 
     /* Perform the match. */
-    status = basic_match(state, state->pattern->start_node, search);
+    status = basic_match(&safe_state, state->pattern->start_node, search);
     if (status == RE_ERROR_SUCCESS) {
         Py_ssize_t max_end_index;
         PatternObject* pattern;
@@ -6783,9 +6879,9 @@ Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
         }
     }
 
-    /* Re-acquire the GIL. */
-    if (state->is_multithreaded)
-        acquire_GIL(state);
+    /* Release the state lock and re-acquire the GIL. */
+    release_state_lock(&safe_state);
+    acquire_GIL(&safe_state);
 
     return status;
 }
@@ -6875,7 +6971,8 @@ Py_LOCAL_INLINE(void) dealloc_groups(RE_GroupData* groups, size_t group_count)
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
   PyObject* string, void* characters, Py_ssize_t length, Py_ssize_t charsize,
-  Py_ssize_t start, Py_ssize_t end, BOOL overlapped, BOOL concurrent) {
+  Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int concurrent, BOOL
+  use_lock) {
     Py_ssize_t final_pos;
 
     state->groups = NULL;
@@ -6886,6 +6983,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->backtrack_block.next = NULL;
     state->backtrack_block.capacity = RE_BACKTRACK_BLOCK_SIZE;
     state->current_capture_counts_block = NULL;
+    state->lock = NULL;
 
     /* The capture groups. */
     if (pattern->group_count) {
@@ -6938,7 +7036,6 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
         end = length;
 
     state->overlapped = overlapped;
-    state->is_multithreaded = concurrent;
     state->min_width = pattern->min_width;
 
     state->charsize = charsize;
@@ -6996,11 +7093,27 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     Py_INCREF(state->pattern);
     Py_INCREF(state->string);
 
-    /* Multithreading is allowed during matching on immutable strings or when
-     * explicitly enabled.
+    /* Multithreading is allowed during matching when explicitly enabled or on
+     * immutable strings.
      */
-    if (PyUnicode_Check(string) || PyBytes_Check(string))
+    switch (concurrent) {
+    case RE_CONC_YES:
         state->is_multithreaded = TRUE;
+        break;
+    case RE_CONC_NO:
+        state->is_multithreaded = FALSE;
+        break;
+    default:
+        state->is_multithreaded = PyUnicode_Check(string) || PyBytes_Check(string);
+        break;
+    }
+
+    /* A state struct can sometimes be shared across threads. In such
+     * instances, if multithreading is enabled we need to protect the state
+     * with a lock (mutex) during matching.
+     */
+    if (state->is_multithreaded && use_lock)
+        state->lock = PyThread_allocate_lock();
 
     return TRUE;
 
@@ -7040,8 +7153,8 @@ Py_LOCAL_INLINE(BOOL) check_same_charsize(PatternObject* pattern, Py_ssize_t
 
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
-  PyObject* string, Py_ssize_t start, Py_ssize_t end, BOOL overlapped, BOOL
-  concurrent) {
+  PyObject* string, Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int
+  concurrent, BOOL use_lock) {
     void* characters;
     Py_ssize_t length;
     Py_ssize_t charsize;
@@ -7054,7 +7167,7 @@ Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
         return FALSE;
 
     return state_init_2(state, pattern, string, characters, length, charsize,
-      start, end, overlapped, concurrent);
+      start, end, overlapped, concurrent, use_lock);
 }
 
 /* Deallocates repeat data. */
@@ -7078,6 +7191,10 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
     PatternObject* pattern;
     RE_BacktrackBlock* current;
     RE_CaptureCountsBlock* current2;
+
+    /* Discard the lock (mutex) if there's one. */
+    if (state->lock)
+        PyThread_free_lock(state->lock);
 
     /* Deallocate the backtrack blocks. */
     current = state->backtrack_block.next;
@@ -8622,9 +8739,23 @@ static PyTypeObject Scanner_Type = {
     0,                            /* tp_getset */
 };
 
+/* Decodes a 'concurrent' argument. */
+Py_LOCAL_INLINE(Py_ssize_t) decode_concurrent(PyObject* concurrent) {
+    Py_ssize_t value;
+
+    if (concurrent == Py_None)
+        return RE_CONC_DEFAULT;
+
+    value = PyLong_AsLong(concurrent);
+    if (value != -1 || !PyErr_Occurred())
+        return value == 0 ? RE_CONC_NO : RE_CONC_YES;
+
+    return RE_CONC_DEFAULT;
+}
+
 /* Creates a new ScannerObject. */
-static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
-  PyObject* kw) {
+static PyObject* create_pattern_scanner(PatternObject* pattern, PyObject* args,
+  PyObject* kw, BOOL use_lock) {
     /* Create search state object. */
     ScannerObject* self;
     Py_ssize_t start;
@@ -8634,10 +8765,10 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
     Py_ssize_t overlapped = FALSE;
-    Py_ssize_t concurrent = FALSE;
+    PyObject* concurrent = Py_None;
     static char* kwlist[] = { "string", "pos", "endpos", "overlapped",
       "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|OOnn:scanner", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|OOnO:scanner", kwlist,
       &string, &pos, &endpos, &overlapped, &concurrent))
         return NULL;
 
@@ -8655,12 +8786,18 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
     Py_INCREF(self->pattern);
 
     if (!state_init(&self->state, pattern, string, start, end, overlapped != 0,
-      concurrent != 0)) {
+      decode_concurrent(concurrent), use_lock)) {
         PyObject_DEL(self);
         return NULL;
     }
 
     return (PyObject*) self;
+}
+
+/* Creates a new ScannerObject whose state has a lock (mutex). */
+static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
+  PyObject* kw) {
+    return create_pattern_scanner(pattern, args, kw, TRUE);
 }
 
 /* SplitterObject's 'split' method. */
@@ -8843,9 +8980,9 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
 
     PyObject* string;
     Py_ssize_t maxsplit = 0;
-    Py_ssize_t concurrent = FALSE;
+    PyObject* concurrent = Py_None;
     static char* kwlist[] = { "string", "maxsplit", "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|nn:splitter", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|nO:splitter", kwlist,
       &string, &maxsplit, &concurrent))
         return NULL;
 
@@ -8863,7 +9000,7 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
     state = &self->state;
 
     if (!state_init(state, pattern, string, 0, PY_SSIZE_T_MAX, FALSE,
-      concurrent != 0)) {
+      decode_concurrent(concurrent), FALSE)) {
         PyObject_DEL(self);
         return NULL;
     }
@@ -8893,9 +9030,9 @@ static PyObject* pattern_match(PatternObject* self, PyObject* args, PyObject*
     PyObject* string;
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
-    Py_ssize_t concurrent = FALSE;
+    PyObject* concurrent = Py_None;
     static char* kwlist[] = { "string", "pos", "endpos", "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|OOn:match", kwlist, &string,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|OOO:match", kwlist, &string,
       &pos, &endpos, &concurrent))
         return NULL;
 
@@ -8904,7 +9041,8 @@ static PyObject* pattern_match(PatternObject* self, PyObject* args, PyObject*
     if (PyErr_Occurred())
         return NULL;
 
-    if (!state_init(&state, self, string, start, end, FALSE, concurrent != 0))
+    if (!state_init(&state, self, string, start, end, FALSE,
+      decode_concurrent(concurrent), FALSE))
         return NULL;
 
     status = do_match(&state, FALSE);
@@ -8967,9 +9105,9 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
     PyObject* string;
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
-    Py_ssize_t concurrent = FALSE;
+    PyObject* concurrent = Py_None;
     static char* kwlist[] = { "string", "pos", "endpos", "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|OOn:search", kwlist, &string,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|OOO:search", kwlist, &string,
       &pos, &endpos, &concurrent))
         return NULL;
 
@@ -8992,7 +9130,7 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
     }
 
     if (!state_init_2(&state, self, string, characters, length, charsize,
-      start, end, FALSE, concurrent != 0))
+      start, end, FALSE, decode_concurrent(concurrent), FALSE))
         return NULL;
 
     status = do_match(&state, TRUE);
@@ -9114,7 +9252,7 @@ Py_LOCAL_INLINE(Py_ssize_t) check_template(PyObject* str_template) {
 /* PatternObject's 'subx' method. */
 Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
   str_template, PyObject* string, Py_ssize_t maxsub, Py_ssize_t subn, PyObject*
-  pos, PyObject* endpos, BOOL concurrent) {
+  pos, PyObject* endpos, int concurrent) {
     void* characters;
     Py_ssize_t length;
     Py_ssize_t charsize;
@@ -9192,7 +9330,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     }
 
     if (!state_init_2(&state, self, string, characters, length, charsize,
-      start, end, FALSE, concurrent)) {
+      start, end, FALSE, concurrent, FALSE)) {
         Py_DECREF(replacement);
         return NULL;
     }
@@ -9374,15 +9512,15 @@ static PyObject* pattern_sub(PatternObject* self, PyObject* args, PyObject* kw)
     Py_ssize_t count = 0;
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
-    Py_ssize_t concurrent = FALSE;
+    PyObject* concurrent = Py_None;
     static char* kwlist[] = { "repl", "string", "count", "pos", "endpos",
       "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "OO|nOOn:sub", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "OO|nOOO:sub", kwlist,
       &ptemplate, &string, &count, &pos, &endpos, &concurrent))
         return NULL;
 
     return pattern_subx(self, ptemplate, string, count, 0, pos, endpos,
-      concurrent != 0);
+      decode_concurrent(concurrent));
 }
 
 /* PatternObject's 'subn' method. */
@@ -9393,15 +9531,15 @@ static PyObject* pattern_subn(PatternObject* self, PyObject* args, PyObject*
     Py_ssize_t count = 0;
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
-    Py_ssize_t concurrent = FALSE;
+    PyObject* concurrent = Py_None;
     static char* kwlist[] = { "repl", "string", "count", "pos", "endpos",
       "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "OO|nOOn:subn", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "OO|nOOO:subn", kwlist,
       &ptemplate, &string, &count, &pos, &endpos, &concurrent))
         return NULL;
 
     return pattern_subx(self, ptemplate, string, count, 1, pos, endpos,
-      concurrent != 0);
+      decode_concurrent(concurrent));
 }
 
 /* PatternObject's 'split' method. */
@@ -9420,17 +9558,17 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
 
     PyObject* string;
     Py_ssize_t maxsplit = 0;
-    Py_ssize_t concurrent = FALSE;
+    PyObject* concurrent = Py_None;
     static char* kwlist[] = { "string", "maxsplit", "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|nn:split", kwlist, &string,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|nO:split", kwlist, &string,
       &maxsplit, &concurrent))
         return NULL;
 
     if (maxsplit == 0)
         maxsplit = PY_SSIZE_T_MAX;
 
-    if (!state_init(&state, self, string, 0, PY_SSIZE_T_MAX, FALSE, concurrent
-      != 0))
+    if (!state_init(&state, self, string, 0, PY_SSIZE_T_MAX, FALSE,
+      decode_concurrent(concurrent), FALSE))
         return NULL;
 
     /* The MatchObject, and therefore repeated captures, will never be visible.
@@ -9589,10 +9727,10 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
     Py_ssize_t overlapped = FALSE;
-    Py_ssize_t concurrent = FALSE;
+    PyObject* concurrent = Py_None;
     static char* kwlist[] = { "string", "pos", "endpos", "overlapped",
       "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|OOnn:findall", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "O|OOnO:findall", kwlist,
       &string, &pos, &endpos, &overlapped, &concurrent))
         return NULL;
 
@@ -9602,7 +9740,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
         return NULL;
 
     if (!state_init(&state, self, string, start, end, overlapped != 0,
-      concurrent != 0))
+      decode_concurrent(concurrent), FALSE))
         return NULL;
 
     /* The MatchObject, and therefore repeated captures, will never be visible.
@@ -9694,7 +9832,7 @@ static PyObject* pattern_finditer(PatternObject* pattern, PyObject* args,
     PyObject* search;
     PyObject* iterator;
 
-    scanner = pattern_scanner(pattern, args, kw);
+    scanner = create_pattern_scanner(pattern, args, kw, FALSE);
     if (!scanner)
         return NULL;
 
@@ -9723,41 +9861,41 @@ static PyObject* pattern_deepcopy(PatternObject* self, PyObject* memo) {
 
 /* The documentation of a PatternObject. */
 PyDoc_STRVAR(pattern_match_doc,
-    "match(string, pos=None, endpos=None, concurrent=False) --> MatchObject or None.\n\
+    "match(string, pos=None, endpos=None, concurrent=None) --> MatchObject or None.\n\
     Match zero or more characters at the beginning of the string.");
 
 PyDoc_STRVAR(pattern_search_doc,
-    "search(string, pos=None, endpos=None, concurrent=False) --> MatchObject or None.\n\
+    "search(string, pos=None, endpos=None, concurrent=None) --> MatchObject or None.\n\
     Search through string looking for a match, and return a corresponding\n\
     match object instance.  Return None if no match is found.");
 
 PyDoc_STRVAR(pattern_sub_doc,
-    "sub(repl, string, count=0, flags=0, pos=None, endpos=None, concurrent=False) --> newstring\n\
+    "sub(repl, string, count=0, flags=0, pos=None, endpos=None, concurrent=None) --> newstring\n\
     Return the string obtained by replacing the leftmost (or rightmost with a\n\
     reverse pattern) non-overlapping occurrences of pattern in string by the\n\
     replacement repl.");
 
 PyDoc_STRVAR(pattern_subn_doc,
-    "subn(repl, string, count=0, flags=0, pos=None, endpos=None, concurrent=False) --> (newstring, number of subs)\n\
+    "subn(repl, string, count=0, flags=0, pos=None, endpos=None, concurrent=None) --> (newstring, number of subs)\n\
     Return the tuple (new_string, number_of_subs_made) found by replacing the\n\
     leftmost (or rightmost with a reverse pattern) non-overlapping occurrences\n\
     of pattern with the replacement repl.");
 
 PyDoc_STRVAR(pattern_split_doc,
-    "split(string, string, maxsplit=0, concurrent=False) --> list.\n\
+    "split(string, string, maxsplit=0, concurrent=None) --> list.\n\
     Split string by the occurrences of pattern.");
 
 PyDoc_STRVAR(pattern_splititer_doc,
-    "splititer(string, maxsplit=0, concurrent=False) --> iterator.\n\
+    "splititer(string, maxsplit=0, concurrent=None) --> iterator.\n\
     Return an iterator yielding the parts of a split string.");
 
 PyDoc_STRVAR(pattern_findall_doc,
-    "findall(string, pos=None, endpos=None, overlapped=False, concurrent=False) --> list.\n\
+    "findall(string, pos=None, endpos=None, overlapped=False, concurrent=None) --> list.\n\
     Return a list of all matches of pattern in string.  The matches may be\n\
     overlapped if overlapped is True.");
 
 PyDoc_STRVAR(pattern_finditer_doc,
-    "finditer(string, pos=None, endpos=None, overlapped=False, concurrent=False) --> iterator.\n\
+    "finditer(string, pos=None, endpos=None, overlapped=False, concurrent=None) --> iterator.\n\
     Return an iterator over all matches for the RE pattern in string.  The\n\
     matches may be overlapped if overlapped is True.  For each match, the\n\
     iterator returns a MatchObject.");

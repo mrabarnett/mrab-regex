@@ -17,10 +17,9 @@ The scoped flags are: ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``
 
 The global flags are: ``ASCII``, ``LOCALE``, ``NEW``, ``REVERSE``, ``UNICODE``.
 
+If neither the ASCII, LOCALE nor UNICODE flag is specified, the default is UNICODE if the regex pattern is a Unicode string and ASCII if it's a bytestring.
 
 The ``NEW`` flag turns on the new behaviour of this module, which can differ from that of the 're' module, such as splitting on zero-width matches, inline flags affecting only what follows, and being able to turn inline flags off.
-
-Note: The ``ZEROWIDTH`` flag which was in previous versions of this module has been removed. The ``NEW`` flag should be used instead.
 
 
 Notes on named capture groups

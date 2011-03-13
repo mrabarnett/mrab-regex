@@ -324,8 +324,8 @@ ul.auto-toc {
 <p>There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.</p>
 <p>The scoped flags are: <tt class="docutils literal">IGNORECASE</tt>, <tt class="docutils literal">MULTILINE</tt>, <tt class="docutils literal">DOTALL</tt>, <tt class="docutils literal">VERBOSE</tt>, <tt class="docutils literal">WORD</tt>.</p>
 <p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">NEW</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>.</p>
+<p>If neither the ASCII, LOCALE nor UNICODE flag is specified, the default is UNICODE if the regex pattern is a Unicode string and ASCII if it's a bytestring.</p>
 <p>The <tt class="docutils literal">NEW</tt> flag turns on the new behaviour of this module, which can differ from that of the 're' module, such as splitting on zero-width matches, inline flags affecting only what follows, and being able to turn inline flags off.</p>
-<p>Note: The <tt class="docutils literal">ZEROWIDTH</tt> flag which was in previous versions of this module has been removed. The <tt class="docutils literal">NEW</tt> flag should be used instead.</p>
 </div>
 <div class="section" id="notes-on-named-capture-groups">
 <h1>Notes on named capture groups</h1>
