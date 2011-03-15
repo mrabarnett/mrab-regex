@@ -295,3 +295,9 @@ Additional features
     The ``WORD`` flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to ``\b`` and ``\B``.
 
     Please note: I'm unsure whether I've understood the specification correctly, so if you're using this feature I'd be interested in any feedback.
+
+* SRE engine do not release the GIL (issue #1366311)
+
+    The regex module can release the GIL during matching (see the above section on multithreading).
+
+    Iterators can be safely shared across threads.

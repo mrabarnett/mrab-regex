@@ -381,6 +381,7 @@ typedef struct ScannerObject {
     PyObject_HEAD
     PatternObject* pattern;
     RE_State state;
+    int status;
 } ScannerObject;
 
 /* The SplitterObject. */
@@ -392,7 +393,7 @@ typedef struct SplitterObject {
     Py_ssize_t last;
     Py_ssize_t split_count;
     Py_ssize_t index;
-    BOOL finished;
+    int status;
 } SplitterObject;
 
 typedef struct RE_CompileArgs {
@@ -6802,34 +6803,18 @@ backtrack:
     }
 }
 
-/* Acquires the lock (mutex) on the state if there's one. */
-void acquire_state_lock(RE_SafeState* safe_state) {
-    RE_State* state;
-
-    state = safe_state->re_state;
-    if (state->lock)
-        PyThread_acquire_lock(state->lock, 1);
-}
-
-/* Releases the lock (mutex) on the state if there's one. */
-void release_state_lock(RE_SafeState* safe_state) {
-    RE_State* state;
-
-    state = safe_state->re_state;
-    if (state->lock)
-        PyThread_release_lock(state->lock);
-}
-
 /* Performs a match or search from the current text position.
  *
  * The state can sometimes be shared across threads. In such instances there's
  * a lock (mutex) on it. The lock is held for the duration of matching.
  */
-Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
+Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
+    RE_State* state;
     size_t available;
     int status;
-    RE_SafeState safe_state;
     TRACE(("<<do_match>>\n"))
+
+    state = safe_state->re_state;
 
     /* Is there enough to search? */
     available = state->reverse ? state->text_pos - state->slice_start :
@@ -6837,32 +6822,25 @@ Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
     if (available < state->min_width || available == 0 && state->must_advance)
         return RE_ERROR_FAILURE;
 
-    /* Initialise the "safe state" structure. */
-    safe_state.re_state = state;
-    safe_state.thread_state = NULL;
-
-    /* Release the GIL and acquire the state lock. */
-    release_GIL(&safe_state);
-    acquire_state_lock(&safe_state);
+    /* Release the GIL. */
+    release_GIL(safe_state);
 
     /* Initialise the base context. */
     init_match(state);
 
     if (state->do_check) {
         state->do_check = FALSE;
-        if (!general_check(&safe_state, state->pattern->check_node,
+        if (!general_check(safe_state, state->pattern->check_node,
           state->text_pos))
           {
-            /* Release the state lock and re-acquire the GIL. */
-            release_state_lock(&safe_state);
-            acquire_GIL(&safe_state);
-
+            /* Re-acquire the GIL. */
+            acquire_GIL(safe_state);
             return RE_ERROR_FAILURE;
         }
     }
 
     /* Perform the match. */
-    status = basic_match(&safe_state, state->pattern->start_node, search);
+    status = basic_match(safe_state, state->pattern->start_node, search);
     if (status == RE_ERROR_SUCCESS) {
         Py_ssize_t max_end_index;
         PatternObject* pattern;
@@ -6897,9 +6875,8 @@ Py_LOCAL_INLINE(int) do_match(RE_State* state, BOOL search) {
         }
     }
 
-    /* Release the state lock and re-acquire the GIL. */
-    release_state_lock(&safe_state);
-    acquire_GIL(&safe_state);
+    /* Re-acquire the GIL. */
+    acquire_GIL(safe_state);
 
     return status;
 }
@@ -8631,41 +8608,96 @@ Py_LOCAL_INLINE(PyObject*) state_get_group(RE_State* state, Py_ssize_t index,
     return PySequence_GetSlice(string, start, end);
 }
 
-/* ScannerObject's 'match' method. */
-static PyObject* scanner_match(ScannerObject* self, PyObject* unused) {
+/* Acquires the lock (mutex) on the state if there's one.
+ *
+ * It also increments the owner's refcount just to ensure that it won't be
+ * destroyed by another thread.
+ */
+void acquire_state_lock(PyObject* owner, RE_SafeState* safe_state) {
     RE_State* state;
-    int status;
-    PyObject* match;
 
-    state = &self->state;
+    state = safe_state->re_state;
 
-    status = do_match(state, FALSE);
-    if (status < 0)
-        return NULL;
-
-    match = pattern_new_match(self->pattern, state, status);
-
-    /* Continue from where we left off, but don't allow 2 contiguous zero-width
-     * matches.
-     */
-    state->must_advance = state->text_pos == state->match_pos;
-
-    return match;
+    if (state->lock) {
+        /* In order to avoid deadlock we need to release the GIL while trying
+         * to acquire the lock.
+         */
+        Py_INCREF(owner);
+        if (!PyThread_acquire_lock(state->lock, 0)) {
+            release_GIL(safe_state);
+            PyThread_acquire_lock(state->lock, 1);
+            acquire_GIL(safe_state);
+        }
+    }
 }
 
-/* ScannerObject's 'search' method. */
-static PyObject* scanner_search(ScannerObject* self, PyObject *unused) {
+/* Releases the lock (mutex) on the state if there's one.
+ *
+ * It also decrements the owner's refcount, which was incremented when the lock
+ * was acquired.
+ */
+void release_state_lock(PyObject* owner, RE_SafeState* safe_state) {
     RE_State* state;
-    int status;
+
+    state = safe_state->re_state;
+
+    if (state->lock) {
+        PyThread_release_lock(state->lock);
+        Py_DECREF(owner);
+    }
+}
+
+/* Returns an iterator for a ScannerObject.
+ *
+ * The iterator is actually the ScannerObject itself.
+ */
+static PyObject* scanner_iter(PyObject* self) {
+    Py_INCREF(self);
+    return self;
+}
+
+/* Gets the next results from a scanner iterator. */
+static PyObject* scanner_next(PyObject* self) {
+    ScannerObject* scanner;
+    RE_State* state;
+    RE_SafeState safe_state;
     PyObject* match;
 
-    state = &self->state;
+    scanner = (ScannerObject*)self;
 
-    status = do_match(state, TRUE);
-    if (status < 0)
+    state = &scanner->state;
+
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = state;
+    safe_state.thread_state = NULL;
+
+    /* Acquire the state lock in case we're sharing the scanner object across
+     * threads.
+     */
+    acquire_state_lock((PyObject*)scanner, &safe_state);
+
+    if (scanner->status == 0) {
+        /* No match. */
+        release_state_lock((PyObject*)scanner, &safe_state);
         return NULL;
+    } else if (scanner->status < 0) {
+        /* Internal error. */
+        release_state_lock((PyObject*)scanner, &safe_state);
+        set_error(scanner->status, NULL);
+        return NULL;
+    }
 
-    match = pattern_new_match(self->pattern, state, status);
+    scanner->status = do_match(&safe_state, TRUE);
+    if (scanner->status < 0) {
+        release_state_lock((PyObject*)scanner, &safe_state);
+        return NULL;
+    }
+
+    match = pattern_new_match(scanner->pattern, state, scanner->status);
+    if (match == Py_None) {
+        Py_DECREF(Py_None);
+        match = NULL;
+    }
 
     if (state->overlapped) {
         /* Advance one character. */
@@ -8679,6 +8711,113 @@ static PyObject* scanner_search(ScannerObject* self, PyObject *unused) {
          * zero-width matches.
          */
         state->must_advance = state->text_pos == state->match_pos;
+
+    /* Release the state lock. */
+    release_state_lock((PyObject*)scanner, &safe_state);
+
+    return match;
+}
+
+/* ScannerObject's 'match' method. */
+static PyObject* scanner_match(ScannerObject* self, PyObject* unused) {
+    RE_State* state;
+    RE_SafeState safe_state;
+    PyObject* match;
+
+    state = &self->state;
+
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = state;
+    safe_state.thread_state = NULL;
+
+    /* Acquire the state lock in case we're sharing the scanner object across
+     * threads.
+     */
+    acquire_state_lock((PyObject*)self, &safe_state);
+
+    if (self->status == 0) {
+        /* No match. */
+        release_state_lock((PyObject*)self, &safe_state);
+        Py_INCREF(Py_None);
+        return Py_None;
+    } else if (self->status < 0) {
+        /* Internal error. */
+        release_state_lock((PyObject*)self, &safe_state);
+        set_error(self->status, NULL);
+        return NULL;
+    }
+
+    self->status = do_match(&safe_state, FALSE);
+    if (self->status < 0) {
+        release_state_lock((PyObject*)self, &safe_state);
+        return NULL;
+    }
+
+    match = pattern_new_match(self->pattern, state, self->status);
+
+    /* Continue from where we left off, but don't allow 2 contiguous zero-width
+     * matches.
+     */
+    state->must_advance = state->text_pos == state->match_pos;
+
+    /* Release the state lock. */
+    release_state_lock((PyObject*)self, &safe_state);
+
+    return match;
+}
+
+/* ScannerObject's 'search' method. */
+static PyObject* scanner_search(ScannerObject* self, PyObject *unused) {
+    RE_State* state;
+    RE_SafeState safe_state;
+    PyObject* match;
+
+    state = &self->state;
+
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = state;
+    safe_state.thread_state = NULL;
+
+    /* Acquire the state lock in case we're sharing the scanner object across
+     * threads.
+     */
+    acquire_state_lock((PyObject*)self, &safe_state);
+
+    if (self->status == 0) {
+        /* No match. */
+        release_state_lock((PyObject*)self, &safe_state);
+        Py_INCREF(Py_None);
+        return Py_None;
+    } else if (self->status < 0) {
+        /* Internal error. */
+        release_state_lock((PyObject*)self, &safe_state);
+        set_error(self->status, NULL);
+        return NULL;
+    }
+
+    self->status = do_match(&safe_state, TRUE);
+    if (self->status < 0) {
+        release_state_lock((PyObject*)self, &safe_state);
+        return NULL;
+    }
+
+    match = pattern_new_match(self->pattern, state, self->status);
+
+    if (state->overlapped) {
+        /* Advance one character. */
+        Py_ssize_t step;
+
+        step = state->reverse ? -1 : 1;
+        state->text_pos = state->match_pos + step;
+        state->must_advance = FALSE;
+    } else
+        /* Continue from where we left off, but don't allow 2 contiguous
+         * zero-width matches.
+         */
+        state->must_advance = state->text_pos == state->match_pos;
+
+    /* Release the state lock. */
+    release_state_lock((PyObject*)self, &safe_state);
 
     return match;
 }
@@ -8741,8 +8880,8 @@ Py_LOCAL_INLINE(Py_ssize_t) decode_concurrent(PyObject* concurrent) {
 }
 
 /* Creates a new ScannerObject. */
-static PyObject* create_pattern_scanner(PatternObject* pattern, PyObject* args,
-  PyObject* kw, BOOL use_lock) {
+static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
+  PyObject* kw) {
     /* Create search state object. */
     ScannerObject* self;
     Py_ssize_t start;
@@ -8773,33 +8912,195 @@ static PyObject* create_pattern_scanner(PatternObject* pattern, PyObject* args,
     Py_INCREF(self->pattern);
 
     if (!state_init(&self->state, pattern, string, start, end, overlapped != 0,
-      decode_concurrent(concurrent), use_lock)) {
+      decode_concurrent(concurrent), TRUE)) {
         PyObject_DEL(self);
         return NULL;
     }
 
+    self->status = 1;
+
     return (PyObject*) self;
 }
 
-/* Creates a new ScannerObject whose state has a lock (mutex). */
-static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
-  PyObject* kw) {
-    return create_pattern_scanner(pattern, args, kw, TRUE);
+/* Returns an iterator for a SplitterObject.
+ *
+ * The iterator is actually the SplitterObject itself.
+ */
+static PyObject* splitter_iter(PyObject* self) {
+    Py_INCREF(self);
+    return self;
+}
+
+/* Gets the next result from a splitter iterator. */
+static PyObject* splitter_next(PyObject* self) {
+    SplitterObject* splitter;
+    RE_State* state;
+    RE_SafeState safe_state;
+    PyObject* result;
+
+    splitter = (SplitterObject*)self;
+
+    state = &splitter->state;
+
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = state;
+    safe_state.thread_state = NULL;
+
+    /* Acquire the state lock in case we're sharing the splitter object across
+     * threads.
+     */
+    acquire_state_lock((PyObject*)splitter, &safe_state);
+
+    if (splitter->status == 0) {
+        /* No match. */
+        release_state_lock((PyObject*)splitter, &safe_state);
+        return NULL;
+    } else if (splitter->status < 0) {
+        /* Internal error. */
+        release_state_lock((PyObject*)splitter, &safe_state);
+        set_error(splitter->status, NULL);
+        return NULL;
+    }
+
+    if (splitter->index == 0) {
+        if (splitter->split_count < splitter->maxsplit) {
+            Py_ssize_t step;
+            Py_ssize_t end_pos;
+
+            if (state->reverse) {
+                step = -1;
+                end_pos = state->slice_start;
+            } else {
+                step = 1;
+                end_pos = state->slice_end;
+            }
+
+retry:
+            splitter->status = do_match(&safe_state, TRUE);
+            if (splitter->status < 0)
+                goto error;
+
+            if (splitter->status == RE_ERROR_SUCCESS) {
+                if (!state->zero_width) {
+                    /* The current behaviour is to advance one character if the
+                     * split was zero-width. Unfortunately, this can give an
+                     * incorrect result. GvR wants this behaviour to be
+                     * retained so as not to break any existing software which
+                     * might rely on it. The correct behaviour is enabled by
+                     * setting the 'new' flag.
+                     */
+                     if (state->text_pos == state->match_pos) {
+                         if (splitter->last == end_pos)
+                             goto no_match;
+
+                         /* Advance one character. */
+                         state->text_pos += step;
+                         state->must_advance = FALSE;
+                         goto retry;
+                     }
+                }
+
+                ++splitter->split_count;
+
+                /* Get segment before this match. */
+                if (state->reverse)
+                    result = PySequence_GetSlice(state->string,
+                      state->match_pos, splitter->last);
+                else
+                    result = PySequence_GetSlice(state->string, splitter->last,
+                      state->match_pos);
+                if (!result)
+                    goto error;
+
+                splitter->last = state->text_pos;
+
+                /* The correct behaviour is to reject a zero-width match just
+                 * after a split point. The current behaviour is to advance one
+                 * character if the match was zero-width. Unfortunately, this
+                 * can give an incorrect result. GvR wants this behaviour to be
+                 * retained so as not to break any existing software which
+                 * might rely on it. The correct behaviour is enabled by
+                 * setting the 'new' flag.
+                 */
+                if (state->zero_width)
+                    /* Continue from where we left off, but don't allow a
+                     * contiguous zero-width match.
+                     */
+                    state->must_advance = TRUE;
+                else {
+                    if (state->text_pos == state->match_pos)
+                        /* Advance one character. */
+                        state->text_pos += step;
+
+                    state->must_advance = FALSE;
+                }
+            }
+        } else
+            goto no_match;
+
+        if (splitter->status == RE_ERROR_FAILURE) {
+no_match:
+            /* Get segment following last match (even if empty). */
+            if (state->reverse)
+                result = PySequence_GetSlice(state->string, 0, splitter->last);
+            else
+                result = PySequence_GetSlice(state->string, splitter->last,
+                  state->text_length);
+            if (!result)
+                goto error;
+        }
+    } else {
+        /* Add group. */
+        result = state_get_group(state, splitter->index, state->string, FALSE);
+        if (!result)
+            goto error;
+    }
+
+    ++splitter->index;
+    if (splitter->index > state->pattern->group_count)
+        splitter->index = 0;
+
+    /* Release the state lock. */
+    release_state_lock((PyObject*)splitter, &safe_state);
+
+    return result;
+
+error:
+    /* Release the state lock. */
+    release_state_lock((PyObject*)splitter, &safe_state);
+
+    return NULL;
 }
 
 /* SplitterObject's 'split' method. */
 static PyObject* splitter_split(SplitterObject* self, PyObject *unused) {
     RE_State* state;
+    RE_SafeState safe_state;
     PyObject* result;
-    int status;
 
-    if (self->finished) {
+    state = &self->state;
+
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = state;
+    safe_state.thread_state = NULL;
+
+    /* Acquire the state lock in case we're sharing the splitter object across
+     * threads.
+     */
+    acquire_state_lock((PyObject*)self, &safe_state);
+
+    if (self->status == 0) {
+        /* Finished. */
+        release_state_lock((PyObject*)self, &safe_state);
         result = Py_False;
         Py_INCREF(result);
         return result;
+    } else if (self->status < 0) {
+        /* Internal error. */
+        release_state_lock((PyObject*)self, &safe_state);
+        set_error(self->status, NULL);
+        return NULL;
     }
-
-    state = &self->state;
 
     if (self->index == 0) {
         if (self->split_count < self->maxsplit) {
@@ -8815,11 +9116,11 @@ static PyObject* splitter_split(SplitterObject* self, PyObject *unused) {
             }
 
 retry:
-            status = do_match(state, TRUE);
-            if (status < 0)
+            self->status = do_match(&safe_state, TRUE);
+            if (self->status < 0)
                 goto error;
 
-            if (status == RE_ERROR_SUCCESS) {
+            if (self->status == RE_ERROR_SUCCESS) {
                 if (!state->zero_width) {
                     /* The current behaviour is to advance one character if the
                      * split was zero-width. Unfortunately, this can give an
@@ -8877,7 +9178,7 @@ retry:
         } else
             goto no_match;
 
-        if (status == RE_ERROR_FAILURE) {
+        if (self->status == RE_ERROR_FAILURE) {
 no_match:
             /* Get segment following last match (even if empty). */
             if (state->reverse)
@@ -8887,8 +9188,6 @@ no_match:
                   state->text_length);
             if (!result)
                 goto error;
-
-            self->finished = TRUE;
         }
     } else {
         /* Add group. */
@@ -8901,10 +9200,15 @@ no_match:
     if (self->index > state->pattern->group_count)
         self->index = 0;
 
+    /* Release the state lock. */
+    release_state_lock((PyObject*)self, &safe_state);
+
     return result;
 
 error:
-    state_fini(state);
+    /* Release the state lock. */
+    release_state_lock((PyObject*)self, &safe_state);
+
     return NULL;
 }
 
@@ -8979,7 +9283,7 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
     state = &self->state;
 
     if (!state_init(state, pattern, string, 0, PY_SSIZE_T_MAX, FALSE,
-      decode_concurrent(concurrent), FALSE)) {
+      decode_concurrent(concurrent), TRUE)) {
         PyObject_DEL(self);
         return NULL;
     }
@@ -8988,7 +9292,7 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
     self->last = state->reverse ? state->text_length : 0;
     self->split_count = 0;
     self->index = 0;
-    self->finished = FALSE;
+    self->status = 1;
 
     /* The MatchObject, and therefore repeated captures, will never be visible.
      */
@@ -9003,6 +9307,7 @@ static PyObject* pattern_match(PatternObject* self, PyObject* args, PyObject*
     Py_ssize_t start;
     Py_ssize_t end;
     RE_State state;
+    RE_SafeState safe_state;
     int status;
     PyObject* match;
 
@@ -9024,7 +9329,11 @@ static PyObject* pattern_match(PatternObject* self, PyObject* args, PyObject*
       decode_concurrent(concurrent), FALSE))
         return NULL;
 
-    status = do_match(&state, FALSE);
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = &state;
+    safe_state.thread_state = NULL;
+
+    status = do_match(&safe_state, FALSE);
     if (status < 0) {
         state_fini(&state);
         return NULL;
@@ -9078,6 +9387,7 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
     Py_ssize_t start;
     Py_ssize_t end;
     RE_State state;
+    RE_SafeState safe_state;
     int status;
     PyObject* match;
 
@@ -9109,7 +9419,11 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
       start, end, FALSE, decode_concurrent(concurrent), FALSE))
         return NULL;
 
-    status = do_match(&state, TRUE);
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = &state;
+    safe_state.thread_state = NULL;
+
+    status = do_match(&safe_state, TRUE);
     if (status < 0) {
         state_fini(&state);
         return NULL;
@@ -9238,6 +9552,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     BOOL is_literal;
     PyObject* replacement;
     RE_State state;
+    RE_SafeState safe_state;
     JoinInfo join_info;
     Py_ssize_t sub_count;
     Py_ssize_t last;
@@ -9308,6 +9623,10 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         return NULL;
     }
 
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = &state;
+    safe_state.thread_state = NULL;
+
     if (!is_callable)
         /* The MatchObject, and therefore repeated captures, will never be
          * visible.
@@ -9323,7 +9642,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     while (sub_count < maxsub) {
         int status;
 
-        status = do_match(&state, TRUE);
+        status = do_match(&safe_state, TRUE);
         if (status < 0)
             goto error;
 
@@ -9519,6 +9838,7 @@ static PyObject* pattern_subn(PatternObject* self, PyObject* args, PyObject*
 static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
   kw) {
     RE_State state;
+    RE_SafeState safe_state;
     PyObject* list;
     PyObject* item;
     int status;
@@ -9544,6 +9864,10 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
       decode_concurrent(concurrent), FALSE))
         return NULL;
 
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = &state;
+    safe_state.thread_state = NULL;
+
     /* The MatchObject, and therefore repeated captures, will never be visible.
      */
     state.save_captures = FALSE;
@@ -9566,7 +9890,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
     }
     last = start_pos;
     while (split_count < maxsplit) {
-        status = do_match(&state, TRUE);
+        status = do_match(&safe_state, TRUE);
         if (status < 0)
             goto error;
 
@@ -9669,6 +9993,7 @@ static PyObject* pattern_splititer(PatternObject* pattern, PyObject* args,
     PyObject* iterator;
 
     splitter = pattern_splitter(pattern, args, kw);
+    return splitter;
     if (!splitter)
         return NULL;
 
@@ -9689,6 +10014,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     Py_ssize_t start;
     Py_ssize_t end;
     RE_State state;
+    RE_SafeState safe_state;
     PyObject* list;
     Py_ssize_t step;
     int status;
@@ -9716,6 +10042,10 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
       decode_concurrent(concurrent), FALSE))
         return NULL;
 
+    /* Initialise the "safe state" structure. */
+    safe_state.re_state = &state;
+    safe_state.thread_state = NULL;
+
     /* The MatchObject, and therefore repeated captures, will never be visible.
      */
     state.save_captures = FALSE;
@@ -9731,7 +10061,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
       state.slice_end) {
         PyObject* item;
 
-        status = do_match(&state, TRUE);
+        status = do_match(&safe_state, TRUE);
         if (status < 0)
             goto error;
 
@@ -9801,23 +10131,7 @@ error:
 /* PatternObject's 'finditer' method. */
 static PyObject* pattern_finditer(PatternObject* pattern, PyObject* args,
   PyObject* kw) {
-    PyObject* scanner;
-    PyObject* search;
-    PyObject* iterator;
-
-    scanner = create_pattern_scanner(pattern, args, kw, FALSE);
-    if (!scanner)
-        return NULL;
-
-    search = PyObject_GetAttrString(scanner, "search");
-    Py_DECREF(scanner);
-    if (!search)
-        return NULL;
-
-    iterator = PyCallIter_New(search, Py_None);
-    Py_DECREF(search);
-
-    return iterator;
+    return pattern_scanner(pattern, args, kw);
 }
 
 /* PatternObject's 'copy' method. */

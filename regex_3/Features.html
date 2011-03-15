@@ -612,6 +612,12 @@ stu
 <p>Please note: I'm unsure whether I've understood the specification correctly, so if you're using this feature I'd be interested in any feedback.</p>
 </blockquote>
 </li>
+<li><p class="first">SRE engine do not release the GIL (issue #1366311)</p>
+<blockquote>
+<p>The regex module can release the GIL during matching (see the above section on multithreading).</p>
+<p>Iterators can be safely shared across threads.</p>
+</blockquote>
+</li>
 </ul>
 </div>
 </div>
