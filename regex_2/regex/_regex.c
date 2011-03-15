@@ -8647,77 +8647,6 @@ void release_state_lock(PyObject* owner, RE_SafeState* safe_state) {
     }
 }
 
-/* Returns an iterator for a ScannerObject.
- *
- * The iterator is actually the ScannerObject itself.
- */
-static PyObject* scanner_iter(PyObject* self) {
-    Py_INCREF(self);
-    return self;
-}
-
-/* Gets the next results from a scanner iterator. */
-static PyObject* scanner_next(PyObject* self) {
-    ScannerObject* scanner;
-    RE_State* state;
-    RE_SafeState safe_state;
-    PyObject* match;
-
-    scanner = (ScannerObject*)self;
-
-    state = &scanner->state;
-
-    /* Initialise the "safe state" structure. */
-    safe_state.re_state = state;
-    safe_state.thread_state = NULL;
-
-    /* Acquire the state lock in case we're sharing the scanner object across
-     * threads.
-     */
-    acquire_state_lock((PyObject*)scanner, &safe_state);
-
-    if (scanner->status == 0) {
-        /* No match. */
-        release_state_lock((PyObject*)scanner, &safe_state);
-        return NULL;
-    } else if (scanner->status < 0) {
-        /* Internal error. */
-        release_state_lock((PyObject*)scanner, &safe_state);
-        set_error(scanner->status, NULL);
-        return NULL;
-    }
-
-    scanner->status = do_match(&safe_state, TRUE);
-    if (scanner->status < 0) {
-        release_state_lock((PyObject*)scanner, &safe_state);
-        return NULL;
-    }
-
-    match = pattern_new_match(scanner->pattern, state, scanner->status);
-    if (match == Py_None) {
-        Py_DECREF(Py_None);
-        match = NULL;
-    }
-
-    if (state->overlapped) {
-        /* Advance one character. */
-        Py_ssize_t step;
-
-        step = state->reverse ? -1 : 1;
-        state->text_pos = state->match_pos + step;
-        state->must_advance = FALSE;
-    } else
-        /* Continue from where we left off, but don't allow 2 contiguous
-         * zero-width matches.
-         */
-        state->must_advance = state->text_pos == state->match_pos;
-
-    /* Release the state lock. */
-    release_state_lock((PyObject*)scanner, &safe_state);
-
-    return match;
-}
-
 /* ScannerObject's 'match' method. */
 static PyObject* scanner_match(ScannerObject* self, PyObject* unused) {
     RE_State* state;
@@ -8822,10 +8751,51 @@ static PyObject* scanner_search(ScannerObject* self, PyObject *unused) {
     return match;
 }
 
+/* ScannerObject's 'next' method. */
+static PyObject* scanner_next(PyObject* self) {
+    PyObject* match;
+
+    match = scanner_search((ScannerObject*)self, NULL);
+
+    if (match == Py_None) {
+        /* No match. */
+        Py_DECREF(Py_None);
+        PyErr_SetNone(PyExc_StopIteration);
+        return NULL;
+    }
+
+    return match;
+}
+
+/* Returns an iterator for a ScannerObject.
+ *
+ * The iterator is actually the ScannerObject itself.
+ */
+static PyObject* scanner_iter(PyObject* self) {
+    Py_INCREF(self);
+    return self;
+}
+
+/* Gets the next results from a scanner iterator. */
+static PyObject* scanner_iternext(PyObject* self) {
+    PyObject* match;
+
+    match = scanner_search((ScannerObject*)self, NULL);
+
+    if (match == Py_None) {
+        /* No match. */
+        Py_DECREF(Py_None);
+        return NULL;
+    }
+
+    return match;
+}
+
 /* ScannerObject's methods. */
 static PyMethodDef scanner_methods[] = {
     {"match", (PyCFunction)scanner_match, METH_NOARGS},
     {"search", (PyCFunction)scanner_search, METH_NOARGS},
+    {"next", (PyCFunction)scanner_next, METH_NOARGS},
     {NULL, NULL}
 };
 
@@ -8863,6 +8833,27 @@ static PyTypeObject Scanner_Type = {
     (destructor)scanner_dealloc,  /* tp_dealloc */
     0,                            /* tp_print */
     (getattrfunc)scanner_getattr, /* tp_getattr */
+    0,                            /* tp_setattr */
+    0,                            /* tp_compare */
+    0,                            /* tp_repr */
+    0,                            /* tp_as_number */
+    0,                            /* tp_as_sequence */
+    0,                            /* tp_as_mapping */
+    0,                            /* tp_hash */
+    0,                            /* tp_call */
+    0,                            /* tp_str */
+    0,                            /* tp_getattro */
+    0,                            /* tp_setattro */
+    0,                            /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,           /* tp_flags */
+    0,                            /* tp_doc */
+    0,                            /* tp_traverse */
+    0,                            /* tp_clear */
+    0,                            /* tp_richcompare */
+    0,                            /* tp_weaklistoffset */
+    scanner_iter,                 /* tp_iter */
+    scanner_iternext,             /* tp_iternext */
+    scanner_methods,              /* tp_methods */
 };
 
 /* Decodes a 'concurrent' argument. */
@@ -8920,156 +8911,6 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
     self->status = 1;
 
     return (PyObject*) self;
-}
-
-/* Returns an iterator for a SplitterObject.
- *
- * The iterator is actually the SplitterObject itself.
- */
-static PyObject* splitter_iter(PyObject* self) {
-    Py_INCREF(self);
-    return self;
-}
-
-/* Gets the next result from a splitter iterator. */
-static PyObject* splitter_next(PyObject* self) {
-    SplitterObject* splitter;
-    RE_State* state;
-    RE_SafeState safe_state;
-    PyObject* result;
-
-    splitter = (SplitterObject*)self;
-
-    state = &splitter->state;
-
-    /* Initialise the "safe state" structure. */
-    safe_state.re_state = state;
-    safe_state.thread_state = NULL;
-
-    /* Acquire the state lock in case we're sharing the splitter object across
-     * threads.
-     */
-    acquire_state_lock((PyObject*)splitter, &safe_state);
-
-    if (splitter->status == 0) {
-        /* No match. */
-        release_state_lock((PyObject*)splitter, &safe_state);
-        return NULL;
-    } else if (splitter->status < 0) {
-        /* Internal error. */
-        release_state_lock((PyObject*)splitter, &safe_state);
-        set_error(splitter->status, NULL);
-        return NULL;
-    }
-
-    if (splitter->index == 0) {
-        if (splitter->split_count < splitter->maxsplit) {
-            Py_ssize_t step;
-            Py_ssize_t end_pos;
-
-            if (state->reverse) {
-                step = -1;
-                end_pos = state->slice_start;
-            } else {
-                step = 1;
-                end_pos = state->slice_end;
-            }
-
-retry:
-            splitter->status = do_match(&safe_state, TRUE);
-            if (splitter->status < 0)
-                goto error;
-
-            if (splitter->status == RE_ERROR_SUCCESS) {
-                if (!state->zero_width) {
-                    /* The current behaviour is to advance one character if the
-                     * split was zero-width. Unfortunately, this can give an
-                     * incorrect result. GvR wants this behaviour to be
-                     * retained so as not to break any existing software which
-                     * might rely on it. The correct behaviour is enabled by
-                     * setting the 'new' flag.
-                     */
-                     if (state->text_pos == state->match_pos) {
-                         if (splitter->last == end_pos)
-                             goto no_match;
-
-                         /* Advance one character. */
-                         state->text_pos += step;
-                         state->must_advance = FALSE;
-                         goto retry;
-                     }
-                }
-
-                ++splitter->split_count;
-
-                /* Get segment before this match. */
-                if (state->reverse)
-                    result = PySequence_GetSlice(state->string,
-                      state->match_pos, splitter->last);
-                else
-                    result = PySequence_GetSlice(state->string, splitter->last,
-                      state->match_pos);
-                if (!result)
-                    goto error;
-
-                splitter->last = state->text_pos;
-
-                /* The correct behaviour is to reject a zero-width match just
-                 * after a split point. The current behaviour is to advance one
-                 * character if the match was zero-width. Unfortunately, this
-                 * can give an incorrect result. GvR wants this behaviour to be
-                 * retained so as not to break any existing software which
-                 * might rely on it. The correct behaviour is enabled by
-                 * setting the 'new' flag.
-                 */
-                if (state->zero_width)
-                    /* Continue from where we left off, but don't allow a
-                     * contiguous zero-width match.
-                     */
-                    state->must_advance = TRUE;
-                else {
-                    if (state->text_pos == state->match_pos)
-                        /* Advance one character. */
-                        state->text_pos += step;
-
-                    state->must_advance = FALSE;
-                }
-            }
-        } else
-            goto no_match;
-
-        if (splitter->status == RE_ERROR_FAILURE) {
-no_match:
-            /* Get segment following last match (even if empty). */
-            if (state->reverse)
-                result = PySequence_GetSlice(state->string, 0, splitter->last);
-            else
-                result = PySequence_GetSlice(state->string, splitter->last,
-                  state->text_length);
-            if (!result)
-                goto error;
-        }
-    } else {
-        /* Add group. */
-        result = state_get_group(state, splitter->index, state->string, FALSE);
-        if (!result)
-            goto error;
-    }
-
-    ++splitter->index;
-    if (splitter->index > state->pattern->group_count)
-        splitter->index = 0;
-
-    /* Release the state lock. */
-    release_state_lock((PyObject*)splitter, &safe_state);
-
-    return result;
-
-error:
-    /* Release the state lock. */
-    release_state_lock((PyObject*)splitter, &safe_state);
-
-    return NULL;
 }
 
 /* SplitterObject's 'split' method. */
@@ -9212,9 +9053,50 @@ error:
     return NULL;
 }
 
+/* SplitterObject's 'next' method. */
+static PyObject* splitter_next(PyObject* self) {
+    PyObject* result;
+
+	result = splitter_split((SplitterObject*)self, NULL);
+
+	if (result == Py_False) {
+        /* No match. */
+        Py_DECREF(Py_False);
+        PyErr_SetNone(PyExc_StopIteration);
+        return NULL;
+    }
+
+	return result;
+}
+
+/* Returns an iterator for a SplitterObject.
+ *
+ * The iterator is actually the SplitterObject itself.
+ */
+static PyObject* splitter_iter(PyObject* self) {
+    Py_INCREF(self);
+    return self;
+}
+
+/* Gets the next result from a splitter iterator. */
+static PyObject* splitter_iternext(PyObject* self) {
+    PyObject* result;
+
+	result = splitter_split((SplitterObject*)self, NULL);
+
+	if (result == Py_False) {
+        /* No match. */
+        Py_DECREF(Py_False);
+        return NULL;
+    }
+
+	return result;
+}
+
 /* SplitterObject's methods. */
 static PyMethodDef splitter_methods[] = {
     {"split", (PyCFunction)splitter_split, METH_NOARGS},
+    {"next", (PyCFunction)splitter_next, METH_NOARGS},
     {NULL, NULL}
 };
 
@@ -9252,6 +9134,27 @@ static PyTypeObject Splitter_Type = {
     (destructor)splitter_dealloc,  /* tp_dealloc */
     0,                             /* tp_print */
     (getattrfunc)splitter_getattr, /* tp_getattr */
+    0,                             /* tp_setattr */
+    0,                             /* tp_compare */
+    0,                             /* tp_repr */
+    0,                             /* tp_as_number */
+    0,                             /* tp_as_sequence */
+    0,                             /* tp_as_mapping */
+    0,                             /* tp_hash */
+    0,                             /* tp_call */
+    0,                             /* tp_str */
+    0,                             /* tp_getattro */
+    0,                             /* tp_setattro */
+    0,                             /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,            /* tp_flags */
+    0,                             /* tp_doc */
+    0,                             /* tp_traverse */
+    0,                             /* tp_clear */
+    0,                             /* tp_richcompare */
+    0,                             /* tp_weaklistoffset */
+    splitter_iter,                 /* tp_iter */
+    splitter_iternext,             /* tp_iternext */
+    splitter_methods,              /* tp_methods */
 };
 
 /* Creates a new SplitterObject. */
@@ -10307,6 +10210,9 @@ static PyTypeObject Pattern_Type = {
     0,                                    /* tp_clear */
     0,                                    /* tp_richcompare */
     offsetof(PatternObject, weakreflist), /* tp_weaklistoffset */
+    0,                                    /* tp_iter */
+    0,                                    /* tp_iternext */
+    pattern_methods,                      /* tp_methods */
 };
 
 /* Building the nodes is made simpler by allowing branches to have a single
