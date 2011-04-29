@@ -888,6 +888,143 @@ class Test:
             self.record_failure("Failed")
 
     def test_properties(self):
+        self.expect(lambda: regex.match('(?i)\xC0', '\xE0'), repr(None))
+        self.expect(lambda: regex.match(r'(?i)\xC0', '\xE0'), repr(None))
+        self.expect(lambda: regex.match(r'(?)\w', '\xE0'), repr(None))
+        self.expect(lambda: type(regex.match(ur'(?u)\w', u'\xE0')),
+          self.MATCH_CLASS)
+
+        self.expect(lambda: regex.match(r'(?L)\w', '\xE0'), repr(None))
+
+        self.expect(lambda: type(regex.match(r'(?L)\d', '0')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(r'(?L)\s', ' ')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(r'(?L)\w', 'a')),
+          self.MATCH_CLASS)
+        self.expect(lambda: regex.match(r'(?L)\d', '?'), repr(None))
+        self.expect(lambda: regex.match(r'(?L)\s', '?'), repr(None))
+        self.expect(lambda: regex.match(r'(?L)\w', '?'), repr(None))
+
+        self.expect(lambda: regex.match(r'(?L)\D', '0'), repr(None))
+        self.expect(lambda: regex.match(r'(?L)\S', ' '), repr(None))
+        self.expect(lambda: regex.match(r'(?L)\W', 'a'), repr(None))
+        self.expect(lambda: type(regex.match(r'(?L)\D', '?')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(r'(?L)\S', '?')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(r'(?L)\W', '?')),
+          self.MATCH_CLASS)
+
+        self.expect(lambda: type(regex.match(ur'(?u)\p{Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{IsCyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{Script=Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{InCyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{Block=Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:Cyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:IsCyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:Script=Cyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:InCyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:Block=Cyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+
+        self.expect(lambda: type(regex.match(ur'(?u)\P{Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\P{IsCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\P{Script=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\P{InCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\P{Block=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{^Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{^IsCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{^Script=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{^InCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{^Block=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:^Cyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:^IsCyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:^Script=Cyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:^InCyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)[[:^Block=Cyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+
+        self.expect(lambda: type(regex.match(ur'(?u)\d', u'0')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\s', u' ')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\w', u'A')),
+          self.MATCH_CLASS)
+
+        self.expect(lambda: regex.match(ur"(?u)\d", u"?"), repr(None))
+        self.expect(lambda: regex.match(ur"(?u)\s", u"?"), repr(None))
+        self.expect(lambda: regex.match(ur"(?u)\w", u"?"), repr(None))
+        self.expect(lambda: regex.match(ur"(?u)\D", u"0"), repr(None))
+        self.expect(lambda: regex.match(ur"(?u)\S", u" "), repr(None))
+        self.expect(lambda: regex.match(ur"(?u)\W", u"A"), repr(None))
+        self.expect(lambda: type(regex.match(ur'(?u)\D', u'?')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\S', u'?')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\W', u'?')),
+          self.MATCH_CLASS)
+
+        self.expect(lambda: type(regex.match(ur'(?u)\p{L}', u'A')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{L}', u'a')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{Lu}', u'A')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\p{Ll}', u'a')),
+          self.MATCH_CLASS)
+
+        self.expect(lambda: type(regex.match(ur'(?u)(?i)a', u'a')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)(?i)a', u'A')),
+          self.MATCH_CLASS)
+
+        self.expect(lambda: type(regex.match(ur'(?u)\w', u'0')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\w', u'a')),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(ur'(?u)\w', u'_')),
+          self.MATCH_CLASS)
+
+        self.expect(lambda: regex.match(ur"(?u)\X", u"\xE0").span(),
+          repr((0, 1)))
+        self.expect(lambda: regex.match(ur"(?u)\X", u"a\u0300").span(),
+          repr((0, 2)))
+        self.expect(lambda: regex.findall(ur"(?u)\X",
+          u"a\xE0a\u0300e\xE9e\u0301"), repr([u'a', u'\xe0', u'a\u0300', u'e', 
+          u'\xe9', u'e\u0301']))
+        self.expect(lambda: regex.findall(ur"(?u)\X{3}",
+          u"a\xE0a\u0300e\xE9e\u0301"), repr([u'a\xe0a\u0300',
+          u'e\xe9e\u0301']))
+        self.expect(lambda: regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"), 
+          repr([u'\r', u'\r\n', u'\u0301', u'A\u0301']))
+
+        self.expect(lambda: type(regex.match(ur'(?u)\p{Ll}', u'a')),
+          self.MATCH_CLASS)
+
         chars_u = u"-09AZaz_\u0393\u03b3"
         chars_b = "-09AZaz_"
         word_set = set("Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc".split())
@@ -1289,6 +1426,8 @@ class Test:
         self.expect(lambda: regex.findall(ur"(?u)\X{3}",
           u"a\xE0a\u0300e\xE9e\u0301"),
           repr([u'a\xe0a\u0300', u'e\xe9e\u0301']))
+        self.expect(lambda: regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"),
+          repr([u'\r', u'\r\n', u'\u0301', u'A\u0301']))
 
     def test_word_boundary(self):
         text = u'The quick ("brown") fox can\'t jump 32.3 feet, right?'

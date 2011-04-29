@@ -120,6 +120,7 @@ END_LAZY_REPEAT
 END_OF_LINE
 END_OF_STRING
 END_OF_STRING_LINE
+GRAPHEME_BOUNDARY
 GREEDY_REPEAT
 GREEDY_REPEAT_ONE
 GROUP
@@ -168,385 +169,6 @@ _OP = _define_opcodes(_OPCODES)
 # The regular expression flags.
 _REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "n":
   NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE}
-
-# Unicode properties.
-_PROPERTIES = """\
-0 Cn Unassigned
-1 Lu Uppercase_Letter
-2 Ll Lowercase_Letter
-3 Lt Titlecase_Letter
-4 Mn Non_Spacing_Mark
-5 Mc Spacing_Combining_Mark
-6 Enclosing_Mark Me
-7 Decimal_Digit_Number Nd
-8 Letter_Number Nl
-9 No Other_Number
-10 Space_Separator Zs
-11 Line_Separator Zl
-12 Paragraph_Separator Zp
-13 Cc Control
-14 Cf Format
-15 Cs Surrogate
-16 Co Private_Use
-18 Lm Modifier_Letter
-19 Lo Other_Letter
-20 Connector_Punctuation Pc
-21 Dash_Punctuation Pd
-22 Open_Punctuation Ps
-23 Close_Punctuation Pe
-24 Initial_Punctuation Pi
-25 Final_Punctuation Pf
-26 Other_Punctuation Po
-27 Math_Symbol Sm
-28 Currency_Symbol Sc
-29 Modifier_Symbol Sk
-30 Other_Symbol So
-32 L L& Letter Letter&
-33 M M& Mark Mark&
-34 Separator Separator& Z Z&
-35 S S& Symbol Symbol&
-36 N N& Number Number&
-37 P P& Punctuation Punctuation&
-38 C C& Other Other&
-39 Alpha
-40 Alnum
-41 ASCII
-42 Blank
-43 Cntrl
-44 Digit
-45 Graph
-46 Linebreak
-47 Lower
-48 Print
-49 Punct
-50 Space
-51 Upper
-52 Word
-53 XDigit
-54 InNo_Block No_Block
-55 BasicLatin InBasicLatin
-56 InLatin1Supplement Latin1Supplement
-57 InLatinExtendedA LatinExtendedA
-58 InLatinExtendedB LatinExtendedB
-59 IPAExtensions InIPAExtensions
-60 InSpacingModifierLetters SpacingModifierLetters
-61 CombiningDiacriticalMarks InCombiningDiacriticalMarks
-62 GreekandCoptic InGreekandCoptic
-63 Cyrillic InCyrillic
-64 CyrillicSupplement InCyrillicSupplement
-65 Armenian InArmenian
-66 Hebrew InHebrew
-67 Arabic InArabic
-68 InSyriac Syriac
-69 ArabicSupplement InArabicSupplement
-70 InThaana Thaana
-71 InNKo NKo
-72 InSamaritan Samaritan
-73 InMandaic Mandaic
-74 Devanagari InDevanagari
-75 Bengali InBengali
-76 Gurmukhi InGurmukhi
-77 Gujarati InGujarati
-78 InOriya Oriya
-79 InTamil Tamil
-80 InTelugu Telugu
-81 InKannada Kannada
-82 InMalayalam Malayalam
-83 InSinhala Sinhala
-84 InThai Thai
-85 InLao Lao
-86 InTibetan Tibetan
-87 InMyanmar Myanmar
-88 Georgian InGeorgian
-89 HangulJamo InHangulJamo
-90 Ethiopic InEthiopic
-91 EthiopicSupplement InEthiopicSupplement
-92 Cherokee InCherokee
-93 InUnifiedCanadianAboriginalSyllabics UnifiedCanadianAboriginalSyllabics
-94 InOgham Ogham
-95 InRunic Runic
-96 InTagalog Tagalog
-97 Hanunoo InHanunoo
-98 Buhid InBuhid
-99 InTagbanwa Tagbanwa
-100 InKhmer Khmer
-101 InMongolian Mongolian
-102 InUnifiedCanadianAboriginalSyllabicsExtended UnifiedCanadianAboriginalSyllabicsExtended
-103 InLimbu Limbu
-104 InTaiLe TaiLe
-105 InNewTaiLue NewTaiLue
-106 InKhmerSymbols KhmerSymbols
-107 Buginese InBuginese
-108 InTaiTham TaiTham
-109 Balinese InBalinese
-110 InSundanese Sundanese
-111 Batak InBatak
-112 InLepcha Lepcha
-113 InOlChiki OlChiki
-114 InVedicExtensions VedicExtensions
-115 InPhoneticExtensions PhoneticExtensions
-116 InPhoneticExtensionsSupplement PhoneticExtensionsSupplement
-117 CombiningDiacriticalMarksSupplement InCombiningDiacriticalMarksSupplement
-118 InLatinExtendedAdditional LatinExtendedAdditional
-119 GreekExtended InGreekExtended
-120 GeneralPunctuation InGeneralPunctuation
-121 InSuperscriptsandSubscripts SuperscriptsandSubscripts
-122 CurrencySymbols InCurrencySymbols
-123 CombiningDiacriticalMarksforSymbols InCombiningDiacriticalMarksforSymbols
-124 InLetterlikeSymbols LetterlikeSymbols
-125 InNumberForms NumberForms
-126 Arrows InArrows
-127 InMathematicalOperators MathematicalOperators
-128 InMiscellaneousTechnical MiscellaneousTechnical
-129 ControlPictures InControlPictures
-130 InOpticalCharacterRecognition OpticalCharacterRecognition
-131 EnclosedAlphanumerics InEnclosedAlphanumerics
-132 BoxDrawing InBoxDrawing
-133 BlockElements InBlockElements
-134 GeometricShapes InGeometricShapes
-135 InMiscellaneousSymbols MiscellaneousSymbols
-136 Dingbats InDingbats
-137 InMiscellaneousMathematicalSymbolsA MiscellaneousMathematicalSymbolsA
-138 InSupplementalArrowsA SupplementalArrowsA
-139 BraillePatterns InBraillePatterns
-140 InSupplementalArrowsB SupplementalArrowsB
-141 InMiscellaneousMathematicalSymbolsB MiscellaneousMathematicalSymbolsB
-142 InSupplementalMathematicalOperators SupplementalMathematicalOperators
-143 InMiscellaneousSymbolsandArrows MiscellaneousSymbolsandArrows
-144 Glagolitic InGlagolitic
-145 InLatinExtendedC LatinExtendedC
-146 Coptic InCoptic
-147 GeorgianSupplement InGeorgianSupplement
-148 InTifinagh Tifinagh
-149 EthiopicExtended InEthiopicExtended
-150 CyrillicExtendedA InCyrillicExtendedA
-151 InSupplementalPunctuation SupplementalPunctuation
-152 CJKRadicalsSupplement InCJKRadicalsSupplement
-153 InKangxiRadicals KangxiRadicals
-154 IdeographicDescriptionCharacters InIdeographicDescriptionCharacters
-155 CJKSymbolsandPunctuation InCJKSymbolsandPunctuation
-156 Hiragana InHiragana
-157 InKatakana Katakana
-158 Bopomofo InBopomofo
-159 HangulCompatibilityJamo InHangulCompatibilityJamo
-160 InKanbun Kanbun
-161 BopomofoExtended InBopomofoExtended
-162 CJKStrokes InCJKStrokes
-163 InKatakanaPhoneticExtensions KatakanaPhoneticExtensions
-164 EnclosedCJKLettersandMonths InEnclosedCJKLettersandMonths
-165 CJKCompatibility InCJKCompatibility
-166 CJKUnifiedIdeographsExtensionA InCJKUnifiedIdeographsExtensionA
-167 InYijingHexagramSymbols YijingHexagramSymbols
-168 CJKUnifiedIdeographs InCJKUnifiedIdeographs
-169 InYiSyllables YiSyllables
-170 InYiRadicals YiRadicals
-171 InLisu Lisu
-172 InVai Vai
-173 CyrillicExtendedB InCyrillicExtendedB
-174 Bamum InBamum
-175 InModifierToneLetters ModifierToneLetters
-176 InLatinExtendedD LatinExtendedD
-177 InSylotiNagri SylotiNagri
-178 CommonIndicNumberForms InCommonIndicNumberForms
-179 InPhagspa Phagspa
-180 InSaurashtra Saurashtra
-181 DevanagariExtended InDevanagariExtended
-182 InKayahLi KayahLi
-183 InRejang Rejang
-184 HangulJamoExtendedA InHangulJamoExtendedA
-185 InJavanese Javanese
-186 Cham InCham
-187 InMyanmarExtendedA MyanmarExtendedA
-188 InTaiViet TaiViet
-189 EthiopicExtendedA InEthiopicExtendedA
-190 InMeeteiMayek MeeteiMayek
-191 HangulSyllables InHangulSyllables
-192 HangulJamoExtendedB InHangulJamoExtendedB
-193 HighSurrogates InHighSurrogates
-194 HighPrivateUseSurrogates InHighPrivateUseSurrogates
-195 InLowSurrogates LowSurrogates
-196 InPrivateUseArea PrivateUseArea
-197 CJKCompatibilityIdeographs InCJKCompatibilityIdeographs
-198 AlphabeticPresentationForms InAlphabeticPresentationForms
-199 ArabicPresentationFormsA InArabicPresentationFormsA
-200 InVariationSelectors VariationSelectors
-201 InVerticalForms VerticalForms
-202 CombiningHalfMarks InCombiningHalfMarks
-203 CJKCompatibilityForms InCJKCompatibilityForms
-204 InSmallFormVariants SmallFormVariants
-205 ArabicPresentationFormsB InArabicPresentationFormsB
-206 HalfwidthandFullwidthForms InHalfwidthandFullwidthForms
-207 InSpecials Specials
-208 InLinearBSyllabary LinearBSyllabary
-209 InLinearBIdeograms LinearBIdeograms
-210 AegeanNumbers InAegeanNumbers
-211 AncientGreekNumbers InAncientGreekNumbers
-212 AncientSymbols InAncientSymbols
-213 InPhaistosDisc PhaistosDisc
-214 InLycian Lycian
-215 Carian InCarian
-216 InOldItalic OldItalic
-217 Gothic InGothic
-218 InUgaritic Ugaritic
-219 InOldPersian OldPersian
-220 Deseret InDeseret
-221 InShavian Shavian
-222 InOsmanya Osmanya
-223 CypriotSyllabary InCypriotSyllabary
-224 ImperialAramaic InImperialAramaic
-225 InPhoenician Phoenician
-226 InLydian Lydian
-227 InKharoshthi Kharoshthi
-228 InOldSouthArabian OldSouthArabian
-229 Avestan InAvestan
-230 InInscriptionalParthian InscriptionalParthian
-231 InInscriptionalPahlavi InscriptionalPahlavi
-232 InOldTurkic OldTurkic
-233 InRumiNumeralSymbols RumiNumeralSymbols
-234 Brahmi InBrahmi
-235 InKaithi Kaithi
-236 Cuneiform InCuneiform
-237 CuneiformNumbersandPunctuation InCuneiformNumbersandPunctuation
-238 EgyptianHieroglyphs InEgyptianHieroglyphs
-239 BamumSupplement InBamumSupplement
-240 InKanaSupplement KanaSupplement
-241 ByzantineMusicalSymbols InByzantineMusicalSymbols
-242 InMusicalSymbols MusicalSymbols
-243 AncientGreekMusicalNotation InAncientGreekMusicalNotation
-244 InTaiXuanJingSymbols TaiXuanJingSymbols
-245 CountingRodNumerals InCountingRodNumerals
-246 InMathematicalAlphanumericSymbols MathematicalAlphanumericSymbols
-247 InMahjongTiles MahjongTiles
-248 DominoTiles InDominoTiles
-249 InPlayingCards PlayingCards
-250 EnclosedAlphanumericSupplement InEnclosedAlphanumericSupplement
-251 EnclosedIdeographicSupplement InEnclosedIdeographicSupplement
-252 InMiscellaneousSymbolsAndPictographs MiscellaneousSymbolsAndPictographs
-253 Emoticons InEmoticons
-254 InTransportAndMapSymbols TransportAndMapSymbols
-255 AlchemicalSymbols InAlchemicalSymbols
-256 CJKUnifiedIdeographsExtensionB InCJKUnifiedIdeographsExtensionB
-257 CJKUnifiedIdeographsExtensionC InCJKUnifiedIdeographsExtensionC
-258 CJKUnifiedIdeographsExtensionD InCJKUnifiedIdeographsExtensionD
-259 CJKCompatibilityIdeographsSupplement InCJKCompatibilityIdeographsSupplement
-260 InTags Tags
-261 InVariationSelectorsSupplement VariationSelectorsSupplement
-262 InSupplementaryPrivateUseAreaA SupplementaryPrivateUseAreaA
-263 InSupplementaryPrivateUseAreaB SupplementaryPrivateUseAreaB
-264 IsUnknown Unknown
-265 Common IsCommon
-266 IsLatin Latin
-267 Greek IsGreek
-268 Cyrillic IsCyrillic
-269 Armenian IsArmenian
-270 Hebrew IsHebrew
-271 Arabic IsArabic
-272 IsSyriac Syriac
-273 IsThaana Thaana
-274 Devanagari IsDevanagari
-275 Bengali IsBengali
-276 Gurmukhi IsGurmukhi
-277 Gujarati IsGujarati
-278 IsOriya Oriya
-279 IsTamil Tamil
-280 IsTelugu Telugu
-281 IsKannada Kannada
-282 IsMalayalam Malayalam
-283 IsSinhala Sinhala
-284 IsThai Thai
-285 IsLao Lao
-286 IsTibetan Tibetan
-287 IsMyanmar Myanmar
-288 Georgian IsGeorgian
-289 Hangul IsHangul
-290 Ethiopic IsEthiopic
-291 Cherokee IsCherokee
-292 CanadianAboriginal IsCanadianAboriginal
-293 IsOgham Ogham
-294 IsRunic Runic
-295 IsKhmer Khmer
-296 IsMongolian Mongolian
-297 Hiragana IsHiragana
-298 IsKatakana Katakana
-299 Bopomofo IsBopomofo
-300 Han IsHan
-301 IsYi Yi
-302 IsOldItalic OldItalic
-303 Gothic IsGothic
-304 Deseret IsDeseret
-305 Inherited IsInherited
-306 IsTagalog Tagalog
-307 Hanunoo IsHanunoo
-308 Buhid IsBuhid
-309 IsTagbanwa Tagbanwa
-310 IsLimbu Limbu
-311 IsTaiLe TaiLe
-312 IsLinearB LinearB
-313 IsUgaritic Ugaritic
-314 IsShavian Shavian
-315 IsOsmanya Osmanya
-316 Cypriot IsCypriot
-317 Braille IsBraille
-318 Buginese IsBuginese
-319 Coptic IsCoptic
-320 IsNewTaiLue NewTaiLue
-321 Glagolitic IsGlagolitic
-322 IsTifinagh Tifinagh
-323 IsSylotiNagri SylotiNagri
-324 IsOldPersian OldPersian
-325 IsKharoshthi Kharoshthi
-326 Balinese IsBalinese
-327 Cuneiform IsCuneiform
-328 IsPhoenician Phoenician
-329 IsPhagsPa PhagsPa
-330 IsNko Nko
-331 IsSundanese Sundanese
-332 IsLepcha Lepcha
-333 IsOlChiki OlChiki
-334 IsVai Vai
-335 IsSaurashtra Saurashtra
-336 IsKayahLi KayahLi
-337 IsRejang Rejang
-338 IsLycian Lycian
-339 Carian IsCarian
-340 IsLydian Lydian
-341 Cham IsCham
-342 IsTaiTham TaiTham
-343 IsTaiViet TaiViet
-344 Avestan IsAvestan
-345 EgyptianHieroglyphs IsEgyptianHieroglyphs
-346 IsSamaritan Samaritan
-347 IsLisu Lisu
-348 Bamum IsBamum
-349 IsJavanese Javanese
-350 IsMeeteiMayek MeeteiMayek
-351 ImperialAramaic IsImperialAramaic
-352 IsOldSouthArabian OldSouthArabian
-353 InscriptionalParthian IsInscriptionalParthian
-354 InscriptionalPahlavi IsInscriptionalPahlavi
-355 IsOldTurkic OldTurkic
-356 IsKaithi Kaithi
-357 Batak IsBatak
-358 Brahmi IsBrahmi
-359 IsMandaic Mandaic
-"""
-
-def _create_properties(definitions):
-    "Creates the Unicode properties."
-    # Normalise the names.
-    definitions = definitions.upper().replace("_", "").replace("-", "")
-
-    properties = {}
-    for line in filter(None, definitions.splitlines()):
-        fields = line.split()
-        id, names = int(fields[0]), fields[1 : ]
-        for name in names:
-            properties[name] = id
-
-    return properties
-
-# Build the property dictionary.
-_properties = _create_properties(_PROPERTIES)
 
 def _compile_firstset(info, fs):
     "Compiles the firstset for the pattern."
@@ -1106,7 +728,7 @@ def _parse_escape(source, info, in_set):
         # A Unicode property.
         return _parse_property(source, info, in_set, ch == "p")
     elif ch == "X" and not in_set:
-        return _grapheme()
+        return _Grapheme()
     elif ch in _ALPHA:
         # An alphabetic escape sequence.
         # Positional escapes aren't allowed inside a character set.
@@ -1254,24 +876,22 @@ def _parse_property(source, info, in_set, positive):
         while ch and (ch.isalnum() or ch.isspace() or ch in "&_-."):
             name.append(ch)
             ch = source.get()
+        if ch in (":" , "="):
+            prop_name = name
+            name = []
+            ch = source.get()
+            while ch and (ch.isalnum() or ch.isspace() or ch in "&_-."):
+                name.append(ch)
+                ch = source.get()
+        else:
+            prop_name = None
         if ch == "}":
-            # The normalised name.
-            norm_name = "".join(ch.upper() for ch in name if ch.isalnum())
-            # The un-normalised name.
-            name = "".join(name)
-            value = _properties.get(norm_name)
-            if value is not None:
-                return _Property(value, positive=positive != negate)
-            raise error("undefined property name")
+            prop = _lookup_property(prop_name, name, positive != negate)
+            if not prop:
+                raise error("unknown property")
+            return prop
     source.pos = here
     return _char_literal(info, in_set, "p" if positive else "P")
-
-def _grapheme():
-    "Returns a sequence that matches a grapheme."
-    # To match a grapheme use \P{M}\p{M}*
-    mod = _properties.get("M")
-    return _Sequence([_Property(mod, positive=False),
-      _GreedyRepeat(_Property(mod), 0, None)])
 
 def _parse_set(source, info):
     "Parses a character set."
@@ -1347,11 +967,62 @@ def _parse_set_item(source, info):
 def _parse_character_class(source, positive, info):
     "Parses a POSIX character class."
     name = _parse_name(source)
-    source.expect(":]")
-    value = _properties.get(name.upper())
-    if value is None:
-        raise error("undefined character class name")
-    return _Property(value, positive=positive)
+    ch = source.get()
+    here = source.pos
+    if ch in (":" , "=") and not source.match("]"):
+        prop_name = name
+        name = []
+        ch = source.get()
+        while ch and (ch.isalnum() or ch.isspace() or ch in "&_-."):
+            name.append(ch)
+            ch = source.get()
+    else:
+        source.pos = here
+        prop_name = None
+    if ch != ":" or source.get() != "]":
+        raise error("missing :]")
+    prop = _lookup_property(prop_name, name, positive)
+    if not prop:
+        raise error("unknown character class")
+    return prop
+
+def _standardise_name(name):
+    return "".join(ch for ch in name if ch not in "_- ").upper()
+
+def _lookup_property(property, value, positive):
+    # Normalise the names.
+    property = _standardise_name(property) if property else None
+    value = _standardise_name(value)
+    if property:
+        # Both the property and the value are provided.
+        prop = _properties.get(property)
+        if prop:
+            prop_id, value_dict = prop
+            val_id = value_dict.get(value)
+            if val_id is not None:
+                return _Property((prop_id << 16) | val_id, positive)
+        return None
+    # Only the value is provided.
+    # It might be the name of a GC, block or script value.
+    for property in ("GC", "BLOCK", "SCRIPT"):
+        prop_id, value_dict = _properties.get(property)
+        val_id = value_dict.get(value)
+        if val_id is not None:
+            return _Property((prop_id << 16) | val_id, positive)
+    # It might be the name of a property.
+    prop = _properties.get(value)
+    if prop:
+        prop_id, value_dict = prop
+        return _Property(prop_id << 16, not positive)
+    # It might be the prefixed name of a block or script.
+    for prefix, property in (("IN", "BLOCK"), ("IS", "SCRIPT")):
+        if value.startswith(prefix):
+            prop_id, value_dict = _properties.get(property)
+            val_id = value_dict.get(value[2 : ])
+            if val_id is not None:
+                return _Property((prop_id << 16) | val_id, positive)
+    # Unknown property.
+    return None
 
 def _compile_repl_escape(source, pattern):
     "Compiles a replacement template escape sequence."
@@ -1858,6 +1529,18 @@ class _EndOfStringLine(_ZeroWidthBase):
     def dump(self, indent=0, reverse=False):
         print "%sEND_OF_STRING_LINE" % (_INDENT * indent)
 
+class _Grapheme(_RegexBase):
+    def __init__(self):
+        self._key = self.__class__
+    def compile(self, reverse=False):
+        # Match at least 1 character until a grapheme boundary is reached.
+        # Note that this is the same whether matching forwards or backwards.
+        character_matcher = _LazyRepeat(_AnyAll(), 1, None).compile(reverse)
+        boundary_matcher = [(_OP.GRAPHEME_BOUNDARY, 1)]
+        return character_matcher + boundary_matcher
+    def dump(self, indent=0, reverse=False):
+        print "%sGRAPHEME" % (_INDENT * indent)
+
 class _GreedyRepeat(_StructureBase):
     _opcode = _OP.GREEDY_REPEAT
     _op_name = "GREEDY_REPEAT"
@@ -2330,6 +2013,8 @@ class _StringIgn(_String):
 _all_char_types = (_Character, _CharacterIgn)
 _string_classes = {_Character: _String, _CharacterIgn: _StringIgn}
 
+_properties = _regex.get_properties()
+
 # Character escape sequences.
 _CHARACTER_ESCAPES = {
     "a": "\a",
@@ -2343,12 +2028,12 @@ _CHARACTER_ESCAPES = {
 
 # Predefined character set escape sequences.
 _CHARSET_ESCAPES = {
-    "d": _Property(_properties["DIGIT"]),
-    "D": _Property(_properties["DIGIT"], positive=False),
-    "s": _Property(_properties["SPACE"]),
-    "S": _Property(_properties["SPACE"], positive=False),
-    "w": _Property(_properties["WORD"]),
-    "W": _Property(_properties["WORD"], positive=False),
+    "d": _lookup_property(None, "DIGIT", True),
+    "D": _lookup_property(None, "DIGIT", False),
+    "s": _lookup_property(None, "SPACE", True),
+    "S": _lookup_property(None, "SPACE", False),
+    "w": _lookup_property(None, "WORD", True),
+    "W": _lookup_property(None, "WORD", False),
 }
 
 # Positional escape sequences.

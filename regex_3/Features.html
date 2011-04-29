@@ -437,7 +437,7 @@ ul.auto-toc {
 </li>
 <li><p class="first">Definition of 'word' character (issue #1693050)</p>
 <blockquote>
-<p>The definition of a 'word' character has been expanded for Unicode. This applies to <tt class="docutils literal">\w</tt>, <tt class="docutils literal">\W</tt>, <tt class="docutils literal">\b</tt> and <tt class="docutils literal">\B</tt>.</p>
+<p>The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at <tt class="docutils literal"><span class="pre">http://www.unicode.org/reports/tr29/</span></tt>. This applies to <tt class="docutils literal">\w</tt>, <tt class="docutils literal">\W</tt>, <tt class="docutils literal">\b</tt> and <tt class="docutils literal">\B</tt>.</p>
 </blockquote>
 </li>
 <li><p class="first">Groups in lookahead and lookbehind (issue #814253)</p>
@@ -539,23 +539,24 @@ stu
 <p>Named characters are supported.</p>
 </blockquote>
 </li>
-<li><p class="first">Unicode codepoint properties, blocks and scripts</p>
+<li><p class="first">Unicode codepoint properties, including blocks and scripts</p>
 <blockquote>
-<p><tt class="docutils literal">\p{name}</tt> ; <tt class="docutils literal">\P{name}</tt></p>
-<p>Unicode properties, blocks and scripts are supported. <tt class="docutils literal">\p{name}</tt> matches a character which has property 'name' and <tt class="docutils literal">\P{name}</tt> matches a character which doesn't have property 'name'.</p>
-<p>In order to avoid ambiguity, block names should start with <tt class="docutils literal">In</tt> and script names should start with <tt class="docutils literal">Is</tt>. If a name lacks such a prefix and it could be a block or a script, script will take priority, for example:</p>
+<p><tt class="docutils literal">\p{property=value}</tt>; <tt class="docutils literal">\P{property=value}</tt>; <tt class="docutils literal">\p{value}</tt> ; <tt class="docutils literal">\P{value}</tt></p>
+<p>Many Unicode properties are supported, including blocks and scripts. <tt class="docutils literal">\p{property=value}</tt> or <tt class="docutils literal">\p{property:value}</tt> matches a character whose property <tt class="docutils literal">property</tt> has value <tt class="docutils literal">value</tt>. The inverse of <tt class="docutils literal">\p{property=value}</tt> is <tt class="docutils literal">\P{property=value}</tt> or <tt class="docutils literal"><span class="pre">\p{^property=value}</span></tt>.</p>
+<p>The short form <tt class="docutils literal">\p{value}</tt> is also supported for a limited number of properties and values, principally the <tt class="docutils literal">General_Category</tt>, <tt class="docutils literal">Block</tt> and <tt class="docutils literal">Script</tt> properties.</p>
+<p>In order to avoid ambiguity when using the short form, block names should start with <tt class="docutils literal">In</tt> and script names should start with <tt class="docutils literal">Is</tt>. If a name lacks such a prefix and it could be a block or a script, script will take priority, for example:</p>
 <ol class="arabic simple">
-<li><tt class="docutils literal">InBasicLatin</tt> or <tt class="docutils literal">BasicLatin</tt>, the 'BasicLatin' <strong>block</strong>.</li>
-<li><tt class="docutils literal">IsLatin</tt> or <tt class="docutils literal">Latin</tt>, the 'Latin' <strong>script</strong>.</li>
-<li><tt class="docutils literal">InCyrillic</tt>, the 'Cyrillic' <strong>block</strong>.</li>
-<li><tt class="docutils literal">IsCyrillic</tt> or <tt class="docutils literal">Cyrillic</tt>, the 'Cyrillic' <strong>script</strong>.</li>
+<li><tt class="docutils literal">InBasicLatin</tt> or <tt class="docutils literal">BasicLatin</tt>, the 'BasicLatin' <strong>block</strong> (<tt class="docutils literal">Block=BasicLatin</tt>).</li>
+<li><tt class="docutils literal">IsLatin</tt> or <tt class="docutils literal">Latin</tt>, the 'Latin' <strong>script</strong> (<tt class="docutils literal">Script=Latin</tt>).</li>
+<li><tt class="docutils literal">InCyrillic</tt>, the 'Cyrillic' <strong>block</strong> (<tt class="docutils literal">Block=Cyrillic</tt>).</li>
+<li><tt class="docutils literal">IsCyrillic</tt> or <tt class="docutils literal">Cyrillic</tt>, the 'Cyrillic' <strong>script</strong> (<tt class="docutils literal">Script=Cyrillic</tt>).</li>
 </ol>
 </blockquote>
 </li>
 <li><p class="first">POSIX character classes</p>
 <blockquote>
-<p><tt class="docutils literal"><span class="pre">[[:alpha:]]</span></tt></p>
-<p>POSIX character classes are supported.</p>
+<p><tt class="docutils literal"><span class="pre">[[:alpha:]]</span></tt>; <tt class="docutils literal"><span class="pre">[[:^alpha:]]</span></tt></p>
+<p>POSIX character classes are supported. This is actually treated as an alternative form of <tt class="docutils literal"><span class="pre">\p{...}</span></tt>.</p>
 </blockquote>
 </li>
 <li><p class="first">Search anchor</p>
@@ -597,7 +598,7 @@ stu
 <li><p class="first">Matching a single grapheme</p>
 <blockquote>
 <p><tt class="docutils literal">\X</tt></p>
-<p>The grapheme matcher is supported. It's equivalent to <tt class="docutils literal"><span class="pre">\P{M}\p{M}*</span></tt>.</p>
+<p>The grapheme matcher is supported. It now conforms to the Unicode specification at <tt class="docutils literal"><span class="pre">http://www.unicode.org/reports/tr29/</span></tt>.</p>
 </blockquote>
 </li>
 <li><p class="first">Branch reset</p>
@@ -609,7 +610,6 @@ stu
 <li><p class="first">Default Unicode word boundary</p>
 <blockquote>
 <p>The <tt class="docutils literal">WORD</tt> flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to <tt class="docutils literal">\b</tt> and <tt class="docutils literal">\B</tt>.</p>
-<p>Please note: I'm unsure whether I've understood the specification correctly, so if you're using this feature I'd be interested in any feedback.</p>
 </blockquote>
 </li>
 <li><p class="first">SRE engine do not release the GIL (issue #1366311)</p>

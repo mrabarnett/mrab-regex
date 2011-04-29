@@ -49,8 +49,10 @@
 #include "pyport.h"
 #include "pythread.h"
 
-typedef unsigned char BOOL;
-enum {FALSE, TRUE};
+typedef RE_UINT32 RE_CODE;
+
+/* Unlimited repeat count. */
+#define RE_UNLIMITED (~(RE_CODE)0)
 
 typedef unsigned char BYTE;
 
@@ -119,6 +121,8 @@ static char copyright[] =
 /* The exception to return on error. */
 static PyObject* error_exception;
 
+static PyObject* property_dict;
+
 /* The shortest string prefix for which we'll use a fast string search. */
 #define RE_MIN_FAST_LENGTH 3
 
@@ -131,6 +135,7 @@ typedef struct RE_EncodingTable {
     BOOL (*same_char_ign)(RE_CODE ch1, RE_CODE ch2);
     BOOL (*at_boundary)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_default_boundary)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*at_grapheme_boundary)(struct RE_State* state, Py_ssize_t text_pos);
 } RE_EncodingTable;
 
 /* Position with the regex and text. */
@@ -516,55 +521,32 @@ static RE_CODE unicode_char_at(void* text, Py_ssize_t pos) {
     return *((RE_UCHAR*)text + pos);
 }
 
+/* Default for whether the current text position is on a boundary. */
+static BOOL at_boundary_always(RE_State* state, Py_ssize_t text_pos) {
+    return TRUE;
+}
+
 /* ASCII-specific. */
 
-#define RE_ASCII_MAX 0x7F
+static BOOL unicode_has_property(RE_CODE property, RE_CODE ch);
 
 /* Checks whether an ASCII character has the given property. */
 static BOOL ascii_has_property(RE_CODE property, RE_CODE ch) {
-    if (ch > RE_ASCII_MAX)
+    if (ch > RE_ASCII_MAX) {
         /* Outside the ASCII range. */
-        return FALSE;
+        RE_UINT32 value;
 
-    switch (property) {
-    case RE_PROP_ALNUM:
-        return (re_ascii_property[ch] & RE_MASK_ALNUM) != 0;
-    case RE_PROP_ALPHA:
-        return (re_ascii_property[ch] & RE_MASK_ALPHA) != 0;
-    case RE_PROP_ASCII:
-        return TRUE;
-    case RE_PROP_BLANK:
-        return ch == '\t' || ch == ' ';
-    case RE_PROP_CNTRL:
-        return ch < 0x20 || ch == 0x7F;
-    case RE_PROP_DIGIT:
-        return (re_ascii_property[ch] & RE_MASK_DIGIT) != 0;
-    case RE_PROP_GRAPH:
-        return 0x21 <= ch && ch <= 0x7E;
-    case RE_PROP_LINEBREAK:
-        return ch == '\n';
-    case RE_PROP_LOWER:
-        return (re_ascii_property[ch] & RE_MASK_LOWER) != 0;
-    case RE_PROP_PRINT:
-        return 0x20 <= ch && ch <= 0x7E;
-    case RE_PROP_PUNCT:
-        return (re_ascii_property[ch] & RE_MASK_PUNCT) != 0;
-    case RE_PROP_SPACE:
-        return (re_ascii_property[ch] & RE_MASK_SPACE) != 0;
-    case RE_PROP_UPPER:
-        return (re_ascii_property[ch] & RE_MASK_UPPER) != 0;
-    case RE_PROP_WORD:
-        return ch == '_' || (re_ascii_property[ch] & RE_MASK_ALNUM) != 0;
-    case RE_PROP_XDIGIT:
-        return (re_ascii_property[ch] & RE_MASK_XDIGIT) != 0;
-    default:
-        return FALSE;
+        value = property & 0xFFFF;
+
+        return value == 0;
     }
+
+    return unicode_has_property(property, ch);
 }
 
 /* Converts an ASCII character to lowercase. */
 static RE_CODE ascii_lower(RE_CODE ch) {
-    if (ch > RE_ASCII_MAX || (re_ascii_property[ch] & RE_MASK_UPPER) == 0)
+    if (ch > RE_ASCII_MAX || !re_get_uppercase(ch))
         return ch;
 
     return ch ^ 0x20;
@@ -572,18 +554,18 @@ static RE_CODE ascii_lower(RE_CODE ch) {
 
 /* Converts an ASCII character to uppercase. */
 static RE_CODE ascii_upper(RE_CODE ch) {
-    if (ch > RE_ASCII_MAX || (re_ascii_property[ch] & RE_MASK_LOWER) == 0)
+    if (ch > RE_ASCII_MAX || !re_get_lowercase(ch))
         return ch;
 
     return ch ^ 0x20;
 }
 
-/* Checks whether 2 ASCII characters are the same, ignoring case.
- *
- * We can ignore titlecase because for ASCII it's the same as uppercase.
- */
+/* Checks whether 2 ASCII characters are the same, ignoring case. */
 static BOOL ascii_same_char_ign(RE_CODE ch1, RE_CODE ch2) {
-    return ch1 == ch2 || ascii_lower(ch1) == ascii_lower(ch2);
+    if (ch1 > RE_ASCII_MAX)
+        return ch1 == ch2;
+
+    return re_is_same_char_ign(ch1, ch2);
 }
 
 /* Checks whether the current text position is on a word boundary. */
@@ -608,53 +590,78 @@ static RE_EncodingTable ascii_encoding = {
     ascii_same_char_ign,
     ascii_at_boundary,
     ascii_at_boundary, /* No special "default word boundary" for ASCII. */
+    at_boundary_always, /* No special "grapheme boundary" for ASCII. */
 };
 
 /* Locale-specific. */
 
-#define RE_LOCALE_MAX 0xFF
-
 /* Checks whether a locale character has the given property. */
 static BOOL locale_has_property(RE_CODE property, RE_CODE ch) {
+    RE_UINT32 value;
+    RE_UINT32 v;
+
+    value = property & 0xFFFF;
+
     if (ch > RE_LOCALE_MAX)
         /* Outside the locale range. */
-        return FALSE;
+        return value == 0;
 
-    switch (property) {
-    case RE_PROP_ALNUM:
-        return isalnum(ch) != 0;
-    case RE_PROP_ALPHA:
-        return isalpha(ch) != 0;
-    case RE_PROP_ASCII:
-        return ch <= RE_ASCII_MAX;
-    case RE_PROP_BLANK:
-        return ch == '\t' || ch == ' ';
-    case RE_PROP_CNTRL:
-        return iscntrl(ch) != 0;
-    case RE_PROP_DIGIT:
-        return isdigit(ch) != 0;
-    case RE_PROP_GRAPH:
-        return isgraph(ch) != 0;
-    case RE_PROP_LINEBREAK:
-        return ch == '\n';
-    case RE_PROP_LOWER:
-        return islower(ch) != 0;
-    case RE_PROP_PRINT:
-        return isprint(ch) != 0;
-    case RE_PROP_PUNCT:
-        return ispunct(ch) != 0;
-    case RE_PROP_SPACE:
-        return isspace(ch) != 0;
-    case RE_PROP_UPPER:
-        return isupper(ch) != 0;
-    case RE_PROP_WORD:
-        return ch == '_' || isalnum(ch) != 0;
-    case RE_PROP_XDIGIT:
-        return ch <= RE_ASCII_MAX && (re_ascii_property[ch] & RE_MASK_XDIGIT)
-          != 0;
+    switch (property >> 16) {
+    case RE_PROP_ALNUM >> 16:
+        v = isalnum(ch) != 0;
+        break;
+    case RE_PROP_ALPHA >> 16:
+        v = isalpha(ch) != 0;
+        break;
+    case RE_PROP_ASCII >> 16:
+        v = ch <= RE_ASCII_MAX;
+        break;
+    case RE_PROP_BLANK >> 16:
+        v = ch == '\t' || ch == ' ';
+        break;
+    case RE_PROP_GRAPH >> 16:
+        v = isgraph(ch) != 0;
+        break;
+    case RE_PROP_LOWER >> 16:
+        v = islower(ch) != 0;
+        break;
+    case RE_PROP_PRINT >> 16:
+        v = isprint(ch) != 0;
+        break;
+    case RE_PROP_SPACE >> 16:
+        v = isspace(ch) != 0;
+        break;
+    case RE_PROP_UPPER >> 16:
+        v = isupper(ch) != 0;
+        break;
+    case RE_PROP_WORD >> 16:
+        v = ch == '_' || isalnum(ch) != 0;
+        break;
+    case RE_PROP_XDIGIT >> 16:
+        v = re_get_hex_digit(ch) != 0;
+        break;
+    case 0:
+        switch (property) {
+        case RE_PROP_CNTRL:
+            v = iscntrl(ch) != 0 ? value : 0;
+            break;
+        case RE_PROP_DIGIT:
+            v = isdigit(ch) != 0 ? value : 0;
+            break;
+        case RE_PROP_PUNCT:
+            v = ispunct(ch) != 0 ? value : 0;
+            break;
+        default:
+            v = 0;
+            break;
+        }
+        break;
     default:
-        return FALSE;
+        v = 0;
+        break;
     }
+
+    return v == value;
 }
 
 /* Converts a locale character to lowercase. */
@@ -723,276 +730,47 @@ static RE_EncodingTable locale_encoding = {
     locale_same_char_ign,
     locale_at_boundary,
     locale_at_boundary, /* No special "default word boundary" for locale. */
+    at_boundary_always, /* No special "grapheme boundary" for locale. */
 };
 
 /* Unicode-specific. */
 
 /* Unicode character properties. */
 
-/* (Typedefs copied from unicodedata.c) */
-
-#if PY_VERSION_HEX < 0x03020000
-typedef struct {
-    const unsigned char category;	/* index into
-					   _PyUnicode_CategoryNames */
-    const unsigned char	combining; 	/* combining class value 0 - 255 */
-    const unsigned char	bidirectional; 	/* index into
-					   _PyUnicode_BidirectionalNames */
-    const unsigned char mirrored;	/* true if mirrored in bidir mode */
-    const unsigned char east_asian_width;	/* index into
-						   _PyUnicode_EastAsianWidth */
-    const unsigned char normalization_quick_check; /* see is_normalized() */
-} _PyUnicode_DatabaseRecord;
-
-typedef struct change_record {
-    /* sequence of fields should be the same as in merge_old_version */
-    const unsigned char bidir_changed;
-    const unsigned char category_changed;
-    const unsigned char decimal_changed;
-    const unsigned char mirrored_changed;
-    const int numeric_changed;
-} change_record;
-#else
-typedef struct {
-    const unsigned char category;       /* index into
-                                           _PyUnicode_CategoryNames */
-    const unsigned char combining;      /* combining class value 0 - 255 */
-    const unsigned char bidirectional;  /* index into
-                                           _PyUnicode_BidirectionalNames */
-    const unsigned char mirrored;       /* true if mirrored in bidir mode */
-    const unsigned char east_asian_width;       /* index into
-                                                   _PyUnicode_EastAsianWidth */
-    const unsigned char normalization_quick_check; /* see is_normalized() */
-} _PyUnicode_DatabaseRecord;
-
-typedef struct change_record {
-    /* sequence of fields should be the same as in merge_old_version */
-    const unsigned char bidir_changed;
-    const unsigned char category_changed;
-    const unsigned char decimal_changed;
-    const unsigned char mirrored_changed;
-    const double numeric_changed;
-} change_record;
-#endif
-
-/* data file generated by Tools/unicode/makeunicodedata.py */
-#include "unicodedata_db.h"
-
-static const _PyUnicode_DatabaseRecord*
-_getrecord_ex(Py_UCS4 code)
-{
-    int index;
-    if (code >= 0x110000)
-        index = 0;
-    else {
-        index = index1[(code>>SHIFT)];
-        index = index2[(index<<SHIFT)+(code&((1<<SHIFT)-1))];
-    }
-
-    return &_PyUnicode_Database_Records[index];
-}
-/* End of copied code. */
-
-/* Gets the property for a Unicode codepoint. */
-Py_LOCAL_INLINE(unsigned int) get_codepoint_property(RE_PropertyRange *table,
-  size_t table_size, unsigned int min_property, RE_CODE ch) {
-    unsigned int lo;
-    unsigned int hi;
-
-    lo = 0;
-    hi = table_size / sizeof(RE_PropertyRange);
-    while (lo < hi) {
-        unsigned int mid;
-        RE_PropertyRange* range;
-
-        mid = (lo + hi) / 2;
-        range = &table[mid];
-        if (ch < range->min_char)
-            hi = mid;
-        else if (ch - range->min_char > range->max_char_offset)
-            lo = mid + 1;
-        else
-            return range->property_offset + min_property;
-    }
-
-    return min_property;
-}
-
 /* Checks whether a Unicode character has the given property. */
 static BOOL unicode_has_property(RE_CODE property, RE_CODE ch) {
-    unsigned int flag;
+    RE_UINT32 prop;
+    RE_UINT32 value;
+    RE_UINT32 v;
+
+    prop = property >> 16;
+    if (prop >= sizeof(re_get_property) / sizeof(re_get_property[0]))
+        return FALSE;
+
+    value = property & 0xFFFF;
+    v = re_get_property[prop](ch);
+
+    if (v == value)
+        return TRUE;
 
     switch (property) {
-    case RE_PROP_ALNUM:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_ALNUM) != 0;
-    case RE_PROP_ALPHA:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_L) != 0;
-    case RE_PROP_ASCII:
-        return ch <= RE_ASCII_MAX;
-    case RE_PROP_BLANK:
-        if (ch == '\t')
-            return TRUE;
-
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_ZS) != 0;
     case RE_PROP_C:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_C) != 0;
-    case RE_PROP_CC:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_CC) != 0;
-    case RE_PROP_CF:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_CF) != 0;
-    case RE_PROP_CN:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_CN) != 0;
-    case RE_PROP_CNTRL:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_CC) != 0;
-    case RE_PROP_CO:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_CO) != 0;
-    case RE_PROP_CS:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_CS) != 0;
-    case RE_PROP_DIGIT:
-#if PY_VERSION_HEX < 0x03020000
-        return _PyUnicode_IsDigit(ch);
-#else
-        return _PyUnicode_IsDecimalDigit(ch);
-#endif
-    case RE_PROP_GRAPH:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_NONGRAPH) == 0;
+        return (RE_PROP_C_MASK & (1 << v)) != 0;
     case RE_PROP_L:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_L) != 0;
-    case RE_PROP_LINEBREAK:
-        return ch == '\n';
-    case RE_PROP_LL:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_LL) != 0;
-    case RE_PROP_LM:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_LM) != 0;
-    case RE_PROP_LO:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_LO) != 0;
-    case RE_PROP_LOWER:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_LL) != 0;
-    case RE_PROP_LT:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_LT) != 0;
-    case RE_PROP_LU:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_LU) != 0;
+        return (RE_PROP_L_MASK & (1 << v)) != 0;
     case RE_PROP_M:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_M) != 0;
-    case RE_PROP_MC:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_MC) != 0;
-    case RE_PROP_ME:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_ME) != 0;
-    case RE_PROP_MN:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_MN) != 0;
+        return (RE_PROP_M_MASK & (1 << v)) != 0;
     case RE_PROP_N:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_N) != 0;
-    case RE_PROP_ND:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_ND) != 0;
-    case RE_PROP_NL:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_NL) != 0;
-    case RE_PROP_NO:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_NO) != 0;
+        return (RE_PROP_N_MASK & (1 << v)) != 0;
     case RE_PROP_P:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_P) != 0;
-    case RE_PROP_PC:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_PC) != 0;
-    case RE_PROP_PD:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_PD) != 0;
-    case RE_PROP_PE:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_PE) != 0;
-    case RE_PROP_PF:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_PF) != 0;
-    case RE_PROP_PI:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_PI) != 0;
-    case RE_PROP_PO:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_PO) != 0;
-    case RE_PROP_PRINT:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_C) == 0;
-    case RE_PROP_PS:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_PS) != 0;
-    case RE_PROP_PUNCT:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_PUNCT) != 0;
+        return (RE_PROP_P_MASK & (1 << v)) != 0;
     case RE_PROP_S:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_S) != 0;
-    case RE_PROP_SC:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_SC) != 0;
-    case RE_PROP_SK:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_SK) != 0;
-    case RE_PROP_SM:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_SM) != 0;
-    case RE_PROP_SO:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_SO) != 0;
-    case RE_PROP_SPACE:
-        return _PyUnicode_IsWhitespace(ch);
-    case RE_PROP_UPPER:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_LU) != 0;
-    case RE_PROP_WORD:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_WORD) != 0;
-    case RE_PROP_XDIGIT:
-        return ch <= RE_ASCII_MAX && (re_ascii_property[ch] & RE_MASK_XDIGIT)
-          !=0;
+        return (RE_PROP_S_MASK & (1 << v)) != 0;
     case RE_PROP_Z:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_Z) != 0;
-    case RE_PROP_ZL:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_ZL) != 0;
-    case RE_PROP_ZP:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_ZP) != 0;
-    case RE_PROP_ZS:
-        flag = 1 << _getrecord_ex((Py_UCS4)ch)->category;
-        return (flag & RE_PROP_MASK_ZS) != 0;
-    default:
-        if (RE_MIN_BLOCK <= property && property <= RE_MAX_BLOCK)
-            return get_codepoint_property(re_block_ranges,
-              sizeof(re_block_ranges), RE_MIN_BLOCK, ch) == property;
-
-        if (RE_MIN_SCRIPT <= property && property <= RE_MAX_SCRIPT)
-            return get_codepoint_property(re_script_ranges,
-              sizeof(re_script_ranges), RE_MIN_SCRIPT, ch) == property;
-
-        return FALSE;
+        return (RE_PROP_Z_MASK & (1 << v)) != 0;
     }
+
+    return FALSE;
 }
 
 /* Converts a Unicode character to lowercase. */
@@ -1010,73 +788,6 @@ static RE_CODE unicode_title(RE_CODE ch) {
     return Py_UNICODE_TOTITLE((Py_UNICODE)ch);
 }
 
-/* Calculates a different case. */
-Py_LOCAL_INLINE(RE_CODE) calc_case(RE_CODE ch, int diff_index) {
-    if (diff_index >= 0)
-        return (int)ch + (int)re_case_diffs[diff_index];
-    else
-        return (int)ch - (int)re_case_diffs[-diff_index];
-}
-
-static RE_CaseBounds *case_bounds[] = {
-    re_even_case_bounds,
-    re_odd_case_bounds
-};
-
-static RE_CaseRange *case_ranges[] = {
-    re_even_case_ranges,
-    re_odd_case_ranges
-};
-
-/* Checks whether 2 characters are the same, ignoring case. */
-static BOOL unicode_same_char_ign(RE_CODE ch1, RE_CODE ch2) {
-    int bounds_index;
-    int bit0;
-    unsigned int half_code;
-    unsigned int lo;
-    unsigned int hi;
-    RE_CaseRange* ranges;
-
-    if (ch1 == ch2)
-        return TRUE;
-
-    if (ch1 < RE_MIN_CASE || ch1 > RE_MAX_CASE)
-        return FALSE;
-
-    if (ch1 <= 0xFF)
-        bounds_index = 0;
-    else if (ch1 <= 0xFFF)
-        bounds_index = 1;
-    else if (ch1 <= 0xFFFF)
-        bounds_index = 2;
-    else
-        bounds_index = 3;
-
-    bit0 = ch1 & 1;
-    half_code = ch1 / 2;
-
-    lo = case_bounds[bit0][bounds_index].lo;
-    hi = case_bounds[bit0][bounds_index].hi;
-    ranges = case_ranges[bit0];
-    while (lo < hi) {
-        size_t mid;
-        RE_CaseRange* range;
-
-        mid = (lo + hi) / 2;
-        range = &ranges[mid];
-        if (half_code < range->min_char)
-            hi = mid;
-        else if (half_code - range->min_char > range->max_char_offset)
-            lo = mid + 1;
-        else
-            return ch2 == calc_case(ch1, range->diffs[0]) ||
-              ch2 == calc_case(ch1, range->diffs[1]) ||
-              ch2 ==  calc_case(ch1, range->diffs[2]);
-    }
-
-    return FALSE;
-}
-
 /* Checks whether the current text position is on a word boundary. */
 static BOOL unicode_at_boundary(RE_State* state, Py_ssize_t text_pos) {
     BOOL before;
@@ -1088,12 +799,6 @@ static BOOL unicode_at_boundary(RE_State* state, Py_ssize_t text_pos) {
       state->char_at(state->text, text_pos));
 
     return before != after;
-}
-
-/* Gets the Unicode word break property for a character. */
-Py_LOCAL_INLINE(int) word_break_property(RE_CODE ch) {
-    return get_codepoint_property(re_word_break_ranges,
-      sizeof(re_word_break_ranges), RE_MIN_WORD_BREAK, ch);
 }
 
 /* Checks whether a character is a Unicode vowel.
@@ -1132,8 +837,8 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     text = state->text;
     char_at = state->char_at;
 
-    prop = word_break_property(char_at(text, text_pos));
-    prop_m1 = word_break_property(char_at(text, text_pos - 1));
+    prop = re_get_word_break(char_at(text, text_pos));
+    prop_m1 = re_get_word_break(char_at(text, text_pos - 1));
 
     /* Don't break within CRLF. */
     if (prop_m1 == RE_BREAK_CR && prop == RE_BREAK_LF)
@@ -1141,8 +846,8 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
 
     /* Otherwise break before and after Newlines (including CR and LF). */
     if (prop_m1 == RE_BREAK_NEWLINE || prop_m1 == RE_BREAK_CR || prop_m1 ==
-      RE_BREAK_LF || prop == RE_BREAK_NEWLINE || prop == RE_BREAK_CR || prop ==
-      RE_BREAK_LF)
+      RE_BREAK_LF || prop == RE_BREAK_NEWLINE || prop == RE_BREAK_CR || prop
+      == RE_BREAK_LF)
         return TRUE;
 
     /* Don't break just before Format or Extend characters. */
@@ -1153,7 +858,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     pos_m1 = text_pos - 1;
     prop_m1 = RE_BREAK_OTHER;
     while (pos_m1 >= 0) {
-        prop_m1 = word_break_property(char_at(text, pos_m1));
+        prop_m1 = re_get_word_break(char_at(text, pos_m1));
         if (prop_m1 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT)
             break;
         --pos_m1;
@@ -1170,7 +875,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     pos_p1 = text_pos + 1;
     prop_p1 = RE_BREAK_OTHER;
     while (pos_p1 < state->text_length) {
-        prop_p1 = word_break_property(char_at(text, pos_p1));
+        prop_p1 = re_get_word_break(char_at(text, pos_p1));
         if (prop_p1 != RE_BREAK_EXTEND && prop_p1 != RE_BREAK_FORMAT)
             break;
         --pos_p1;
@@ -1184,7 +889,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     pos_m2 = pos_m1 - 1;
     prop_m2 = RE_BREAK_OTHER;
     while (pos_m2 >= 0) {
-        prop_m2 = word_break_property(char_at(text, pos_m2));
+        prop_m2 = re_get_word_break(char_at(text, pos_m2));
         if (prop_m2 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT)
             break;
         --pos_m2;
@@ -1197,8 +902,8 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     /* Don't break within sequences of digits, or digits adjacent to letters
      * ("3a", or "A3").
      */
-    if ((prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_ALETTER) && prop ==
-      RE_BREAK_NUMERIC)
+    if ((prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_ALETTER) && prop
+      == RE_BREAK_NUMERIC)
         return FALSE;
 
     if (prop_m1 == RE_BREAK_NUMERIC && prop == RE_BREAK_ALETTER)
@@ -1231,15 +936,69 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     return TRUE;
 }
 
+/* Checks whether the current text position is on a grapheme boundary. */
+static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos) {
+    void* text;
+    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    int prop;
+    int prop_m1;
+
+    /* Break at the start and end of text. */
+    if (text_pos <= 0 || text_pos >= state->text_length)
+        return TRUE;
+
+    text = state->text;
+    char_at = state->char_at;
+
+    prop = re_get_grapheme_break(char_at(text, text_pos));
+    prop_m1 = re_get_grapheme_break(char_at(text, text_pos - 1));
+
+    /* Don't break within CRLF. */
+    if (prop_m1 == RE_GBREAK_CR && prop == RE_GBREAK_LF)
+        return FALSE;
+
+    /* Otherwise break before and after controls (including CR and LF). */
+    if (prop_m1 == RE_GBREAK_CONTROL || prop_m1 == RE_GBREAK_CR || prop_m1 ==
+      RE_GBREAK_LF || prop == RE_GBREAK_CONTROL || prop == RE_GBREAK_CR || prop
+      == RE_GBREAK_LF)
+        return TRUE;
+
+    /* Don't break Hangul syllable sequences. */
+    if (prop_m1 == RE_GBREAK_L && (prop == RE_GBREAK_L || prop == RE_GBREAK_V ||
+      prop == RE_GBREAK_LV || prop == RE_GBREAK_LVT))
+        return FALSE;
+    if ((prop_m1 == RE_GBREAK_LV || prop_m1 == RE_GBREAK_V) && (prop ==
+      RE_GBREAK_V || prop == RE_GBREAK_T))
+        return FALSE;
+    if ((prop_m1 == RE_GBREAK_LVT || prop_m1 == RE_GBREAK_T) && (prop ==
+      RE_GBREAK_T))
+        return FALSE;
+
+    /* Don't break just before Extend characters. */
+    if (prop == RE_GBREAK_EXTEND)
+        return FALSE;
+
+    /* Don't break before SpacingMarks, or after Prepend characters. */
+    if (prop == RE_GBREAK_SPACINGMARK)
+        return FALSE;
+
+    if (prop_m1 == RE_GBREAK_PREPEND)
+        return FALSE;
+
+    /* Otherwise, break everywhere. */
+    return TRUE;
+}
+
 /* The handlers for Unicode characters. */
 static RE_EncodingTable unicode_encoding = {
     unicode_has_property,
     unicode_lower,
     unicode_upper,
     unicode_title,
-    unicode_same_char_ign,
+    re_is_same_char_ign,
     unicode_at_boundary,
     unicode_at_default_boundary,
+    unicode_at_grapheme_boundary,
 };
 
 /* Sets the error message. */
@@ -3506,6 +3265,11 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         if (text_pos != state->text_length && text_pos != state->final_newline)
             return FALSE;
         break;
+    case RE_OP_GRAPHEME_BOUNDARY: /* At a grapheme boundary. */
+        if (state->encoding->at_grapheme_boundary(state, text_pos) !=
+          test->match)
+            return FALSE;
+        break;
     case RE_OP_PROPERTY: /* A character property. */
         /* values are: property */
         if (text_pos >= state->slice_end ||
@@ -4079,6 +3843,25 @@ again:
                 return FALSE;
         }
         break;
+    case RE_OP_GRAPHEME_BOUNDARY: /* At a grapheme boundary. */
+    {
+        BOOL match;
+        Py_ssize_t step;
+        BOOL (*at_boundary)(RE_State* state, Py_ssize_t start_pos);
+
+        match = test->match;
+        step = state->reverse ? -1 : 1;
+        at_boundary = state->encoding->at_grapheme_boundary;
+
+        for (;;) {
+            if (at_boundary(state, start_pos) == match)
+                break;
+            if (start_pos == limit)
+                return FALSE;
+            start_pos += step;
+        }
+        break;
+    }
     case RE_OP_PROPERTY: /* A character property. */
         start_pos = match_many_PROPERTY(state, test, start_pos, limit + 1,
           FALSE);
@@ -4568,6 +4351,7 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     BOOL (*same_char_ign)(RE_CODE ch1, RE_CODE ch2);
     BOOL (*at_boundary)(RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_default_boundary)(RE_State* state, Py_ssize_t text_pos);
+    BOOL (*at_grapheme_boundary)(RE_State* state, Py_ssize_t text_pos);
     PatternObject* pattern;
     Py_ssize_t text_length;
     RE_NextNode start_pair;
@@ -4592,6 +4376,7 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     same_char_ign = encoding->same_char_ign;
     at_boundary = encoding->at_boundary;
     at_default_boundary = encoding->at_default_boundary;
+    at_grapheme_boundary = encoding->at_grapheme_boundary;
 
     pattern = state->pattern;
 
@@ -5106,6 +4891,12 @@ advance:
         case RE_OP_END_OF_STRING_LINE: /* At end of string or final newline. */
             TRACE(("%s\n", re_op_text[node->op]))
             if (text_pos != text_length && text_pos != final_newline)
+                goto backtrack;
+            node = node->next_1.node;
+            break;
+        case RE_OP_GRAPHEME_BOUNDARY: /* At a grapheme boundary. */
+            TRACE(("%s %d\n", re_op_text[node->op], node->match))
+            if (at_grapheme_boundary(state, text_pos) != node->match)
                 goto backtrack;
             node = node->next_1.node;
             break;
@@ -9040,15 +8831,15 @@ static PyObject* splitter_iter(PyObject* self) {
 static PyObject* splitter_iternext(PyObject* self) {
     PyObject* result;
 
-	result = splitter_split((SplitterObject*)self, NULL);
+    result = splitter_split((SplitterObject*)self, NULL);
 
-	if (result == Py_False) {
+    if (result == Py_False) {
         /* No match. */
         Py_DECREF(Py_False);
         return NULL;
     }
 
-	return result;
+    return result;
 }
 
 /* SplitterObject's methods. */
@@ -10517,6 +10308,7 @@ Py_LOCAL_INLINE(void) set_test_node(RE_NextNode* next) {
     case RE_OP_END_OF_LINE:
     case RE_OP_END_OF_STRING:
     case RE_OP_END_OF_STRING_LINE:
+    case RE_OP_GRAPHEME_BOUNDARY:
     case RE_OP_PROPERTY:
     case RE_OP_PROPERTY_REV:
     case RE_OP_SEARCH_ANCHOR:
@@ -10576,6 +10368,7 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
         case RE_OP_END_OF_LINE:
         case RE_OP_END_OF_STRING:
         case RE_OP_END_OF_STRING_LINE:
+        case RE_OP_GRAPHEME_BOUNDARY:
         case RE_OP_PROPERTY:
         case RE_OP_PROPERTY_REV:
         case RE_OP_SET:
@@ -11814,7 +11607,8 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
             break;
         case RE_OP_BOUNDARY:
         case RE_OP_DEFAULT_BOUNDARY:
-            /* A word boundary. */
+        case RE_OP_GRAPHEME_BOUNDARY:
+            /* A word or grapheme boundary. */
             if (!build_BOUNDARY(args))
                 return FALSE;
             break;
@@ -12097,13 +11891,97 @@ static PyObject* set_exception(PyObject* self_, PyObject* args) {
     return Py_None;
 }
 
+/* Gets the property dict. */
+static PyObject* get_properties(PyObject* self_, PyObject* args) {
+    Py_INCREF(property_dict);
+
+    return property_dict;
+}
+
 /* The table of the module's functions. */
 static PyMethodDef _functions[] = {
     {"compile", (PyCFunction)re_compile, METH_VARARGS},
     {"get_code_size", (PyCFunction)get_code_size, METH_NOARGS},
     {"set_exception", (PyCFunction)set_exception, METH_VARARGS},
+    {"get_properties", (PyCFunction)get_properties, METH_VARARGS},
     {NULL, NULL}
 };
+
+static BOOL init_property_dict() {
+    int value_set_count;
+    int i;
+    PyObject** value_dicts;
+
+    property_dict = NULL;
+
+    value_set_count = 0;
+
+    for (i = 0; i < sizeof(re_property_values) / sizeof(re_property_values[0]); i++) {
+        RE_PropertyValue* value;
+
+        value = &re_property_values[i];
+        if (value->value_set >= value_set_count)
+            value_set_count = value->value_set + 1;
+    }
+
+    value_dicts = (PyObject**)PyMem_Malloc(value_set_count * sizeof(value_dicts[0]));
+    if (!value_dicts)
+        return FALSE;
+
+    memset(value_dicts, 0, value_set_count * sizeof(value_dicts[0]));
+
+    for (i = 0; i < sizeof(re_property_values) / sizeof(re_property_values[0]); i++) {
+        RE_PropertyValue* value;
+        PyObject* v;
+
+        value = &re_property_values[i];
+        if (!value_dicts[value->value_set]) {
+            value_dicts[value->value_set] = PyDict_New();
+            if (!value_dicts[value->value_set])
+                goto error;
+        }
+
+        v = Py_BuildValue("i", value->id);
+        if (!v)
+            goto error;
+
+        PyDict_SetItemString(value_dicts[value->value_set], re_strings[value->name], v);
+    }
+
+    property_dict = PyDict_New();
+
+    if (!property_dict)
+        goto error;
+
+    for (i = 0; i < sizeof(re_properties) / sizeof(re_properties[0]); i++) {
+        RE_Property* property;
+        PyObject* v;
+
+        property = &re_properties[i];
+        v = Py_BuildValue("iO", property->id, value_dicts[property->value_set]);
+        if (!v)
+            goto error;
+
+        PyDict_SetItemString(property_dict, re_strings[property->name], v);
+    }
+
+    for (i = 0; i < value_set_count; i++)
+        Py_XDECREF(value_dicts[i]);
+
+    PyMem_Free(value_dicts);
+
+    return TRUE;
+
+error:
+    Py_XDECREF(property_dict);
+
+    for (i = 0; i < value_set_count; i++)
+        Py_XDECREF(value_dicts[i]);
+
+    PyMem_Free(value_dicts);
+
+    return FALSE;
+}
 
 static struct PyModuleDef remodule = {
     PyModuleDef_HEAD_INIT,
@@ -12122,7 +12000,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
     PyObject* m;
     PyObject* d;
     PyObject* x;
-#if 1 || defined(VERBOSE)
+#if defined(VERBOSE)
     /* Unbuffered in case it crashes! */
     setvbuf(stdout, NULL, _IONBF, 0);
 #endif
@@ -12161,6 +12039,9 @@ PyMODINIT_FUNC PyInit__regex(void) {
         PyDict_SetItemString(d, "copyright", x);
         Py_DECREF(x);
     }
+
+    if (!init_property_dict())
+        return NULL;
 
     return m;
 }

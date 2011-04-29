@@ -114,7 +114,7 @@ resulting RE will match the second character.
                characters defined as letters for the current locale.
     \W         Matches the complement of \w; equivalent to [^\w].
     \xXX       Matches the character with 2-digit hex code XX.
-    \X         Matches a grapheme; equivalent to \P{M}\p{M}*.
+    \X         Matches a grapheme.
     \Z         Matches only at the end of the string.
     \\         Matches a literal backslash.
 

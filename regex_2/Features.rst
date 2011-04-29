@@ -137,7 +137,7 @@ Additional features
 
 * Definition of 'word' character (issue #1693050)
 
-    The definition of a 'word' character has been expanded for Unicode. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
+    The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
 
 * Groups in lookahead and lookbehind (issue #814253)
 
@@ -221,27 +221,29 @@ Additional features
 
     Named characters are supported.
 
-* Unicode codepoint properties, blocks and scripts
+* Unicode codepoint properties, including blocks and scripts
 
-    ``\p{name}`` ; ``\P{name}``
+    ``\p{property=value}``; ``\P{property=value}``; ``\p{value}`` ; ``\P{value}``
 
-    Unicode properties, blocks and scripts are supported. ``\p{name}`` matches a character which has property 'name' and ``\P{name}`` matches a character which doesn't have property 'name'.
+    Many Unicode properties are supported, including blocks and scripts. ``\p{property=value}`` or ``\p{property:value}`` matches a character whose property ``property`` has value ``value``. The inverse of ``\p{property=value}`` is ``\P{property=value}`` or ``\p{^property=value}``.
 
-    In order to avoid ambiguity, block names should start with ``In`` and script names should start with ``Is``. If a name lacks such a prefix and it could be a block or a script, script will take priority, for example:
+    The short form ``\p{value}`` is also supported for a limited number of properties and values, principally the ``General_Category``, ``Block`` and ``Script`` properties.
+    
+    In order to avoid ambiguity when using the short form, block names should start with ``In`` and script names should start with ``Is``. If a name lacks such a prefix and it could be a block or a script, script will take priority, for example:
 
-    1. ``InBasicLatin`` or ``BasicLatin``, the 'BasicLatin' **block**.
+    1. ``InBasicLatin`` or ``BasicLatin``, the 'BasicLatin' **block** (``Block=BasicLatin``).
 
-    2. ``IsLatin`` or ``Latin``, the 'Latin' **script**.
+    2. ``IsLatin`` or ``Latin``, the 'Latin' **script** (``Script=Latin``).
 
-    3. ``InCyrillic``, the 'Cyrillic' **block**.
+    3. ``InCyrillic``, the 'Cyrillic' **block** (``Block=Cyrillic``).
 
-    4. ``IsCyrillic`` or ``Cyrillic``, the 'Cyrillic' **script**.
+    4. ``IsCyrillic`` or ``Cyrillic``, the 'Cyrillic' **script** (``Script=Cyrillic``).
 
 * POSIX character classes
 
-    ``[[:alpha:]]``
+    ``[[:alpha:]]``; ``[[:^alpha:]]``
 
-    POSIX character classes are supported.
+    POSIX character classes are supported. This is actually treated as an alternative form of ``\p{...}``.
 
 * Search anchor
 
@@ -282,7 +284,7 @@ Additional features
 
     ``\X``
 
-    The grapheme matcher is supported. It's equivalent to ``\P{M}\p{M}*``.
+    The grapheme matcher is supported. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``.
 
 * Branch reset
 
@@ -293,8 +295,6 @@ Additional features
 * Default Unicode word boundary
 
     The ``WORD`` flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to ``\b`` and ``\B``.
-
-    Please note: I'm unsure whether I've understood the specification correctly, so if you're using this feature I'd be interested in any feedback.
 
 * SRE engine do not release the GIL (issue #1366311)
 
