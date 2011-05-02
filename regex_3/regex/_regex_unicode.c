@@ -1,1241 +1,2608 @@
 #include "_regex_unicode.h"
 
 char* re_strings[] = {
-    "GENERALCATEGORY",
-    "GC",
-    "BLOCK",
-    "BLK",
-    "SCRIPT",
-    "SC",
-    "WORDBREAK",
-    "WB",
-    "GRAPHEMEBREAK",
-    "CHANGESWHENTITLECASED",
-    "CWT",
-    "GRAPHEMEEXTEND",
-    "GREXT",
-    "LOWERCASE",
-    "LOWER",
-    "GRAPHEMEBASE",
-    "GRBASE",
-    "CHANGESWHENUPPERCASED",
-    "CWU",
-    "UPPERCASE",
-    "UPPER",
-    "IDSTART",
-    "IDS",
-    "GRAPHEMELINK",
-    "GRLINK",
-    "CASED",
-    "IDCONTINUE",
-    "IDC",
-    "XIDCONTINUE",
-    "XIDC",
-    "CHANGESWHENLOWERCASED",
-    "CWL",
-    "CHANGESWHENCASEFOLDED",
-    "CWCF",
-    "MATH",
-    "ALPHABETIC",
-    "ALPHA",
-    "XIDSTART",
-    "XIDS",
-    "DEFAULTIGNORABLECODEPOINT",
-    "DI",
-    "CASEIGNORABLE",
-    "CI",
-    "CHANGESWHENCASEMAPPED",
-    "CWCM",
-    "PATTERNWHITESPACE",
-    "PATWS",
-    "OTHERDEFAULTIGNORABLECODEPOINT",
-    "ODI",
-    "PATTERNSYNTAX",
-    "PATSYN",
-    "IDSBINARYOPERATOR",
-    "IDSB",
-    "STERM",
-    "OTHERLOWERCASE",
-    "OLOWER",
-    "OTHERALPHABETIC",
-    "OALPHA",
-    "IDSTRINARYOPERATOR",
-    "IDST",
-    "BIDICONTROL",
-    "BIDIC",
-    "ASCIIHEXDIGIT",
-    "AHEX",
-    "OTHERIDCONTINUE",
-    "OIDC",
-    "OTHERGRAPHEMEEXTEND",
-    "OGREXT",
-    "EXTENDER",
-    "EXT",
-    "DEPRECATED",
-    "DEP",
-    "SOFTDOTTED",
-    "SD",
-    "IDEOGRAPHIC",
-    "IDEO",
-    "OTHERMATH",
-    "OMATH",
-    "JOINCONTROL",
-    "JOINC",
-    "QUOTATIONMARK",
-    "QMARK",
-    "TERMINALPUNCTUATION",
-    "TERM",
-    "LOGICALORDEREXCEPTION",
-    "LOE",
-    "VARIATIONSELECTOR",
-    "VS",
-    "DIACRITIC",
-    "DIA",
-    "RADICAL",
-    "HYPHEN",
-    "UNIFIEDIDEOGRAPH",
-    "UIDEO",
-    "DASH",
-    "HEXDIGIT",
-    "HEX",
-    "NONCHARACTERCODEPOINT",
-    "NCHAR",
-    "OTHERIDSTART",
-    "OIDS",
-    "OTHERUPPERCASE",
-    "OUPPER",
-    "WHITESPACE",
-    "WSPACE",
-    "SPACE",
-    "ALPHANUMERIC",
-    "ALNUM",
-    "ASCII",
-    "BLANK",
-    "GRAPH",
-    "PRINT",
-    "WORD",
-    "XDIGIT",
-    "CN",
-    "UNASSIGNED",
-    "CC",
-    "CONTROL",
-    "CNTRL",
-    "CF",
-    "FORMAT",
-    "CO",
-    "PRIVATEUSE",
-    "CS",
-    "SURROGATE",
-    "LL",
-    "LOWERCASELETTER",
-    "LM",
-    "MODIFIERLETTER",
-    "LO",
-    "OTHERLETTER",
-    "LT",
-    "TITLECASELETTER",
-    "LU",
-    "UPPERCASELETTER",
-    "MC",
-    "SPACINGMARK",
-    "ME",
-    "ENCLOSINGMARK",
-    "MN",
-    "NONSPACINGMARK",
-    "ND",
-    "DECIMALNUMBER",
-    "DIGIT",
-    "NL",
-    "LETTERNUMBER",
-    "NO",
-    "OTHERNUMBER",
-    "PC",
-    "CONNECTORPUNCTUATION",
-    "PD",
-    "DASHPUNCTUATION",
-    "PE",
-    "CLOSEPUNCTUATION",
-    "PF",
-    "FINALPUNCTUATION",
-    "PI",
-    "INITIALPUNCTUATION",
-    "PO",
-    "OTHERPUNCTUATION",
-    "PS",
-    "OPENPUNCTUATION",
-    "CURRENCYSYMBOL",
-    "SK",
-    "MODIFIERSYMBOL",
-    "SM",
-    "MATHSYMBOL",
-    "SO",
-    "OTHERSYMBOL",
-    "ZL",
-    "LINESEPARATOR",
-    "ZP",
-    "PARAGRAPHSEPARATOR",
-    "ZS",
-    "SPACESEPARATOR",
-    "C",
-    "C&",
-    "OTHER",
-    "L",
-    "L&",
-    "LETTER",
-    "M",
-    "M&",
-    "MARK",
-    "N",
-    "N&",
-    "NUMBER",
-    "P",
-    "P&",
-    "PUNCTUATION",
-    "PUNCT",
-    "S",
-    "S&",
-    "SYMBOL",
-    "Z",
-    "SEPARATOR",
-    "Z&",
-    "NOBLOCK",
-    "TAIXUANJINGSYMBOLS",
-    "THAANA",
-    "HIGHPRIVATEUSESURROGATES",
-    "TELUGU",
-    "CYRILLIC",
-    "OPTICALCHARACTERRECOGNITION",
-    "MEETEIMAYEK",
-    "VARIATIONSELECTORSSUPPLEMENT",
-    "LATINEXTENDEDADDITIONAL",
-    "CJKCOMPATIBILITYIDEOGRAPHS",
-    "ETHIOPIC",
-    "CONTROLPICTURES",
+    "-1/2",
+    "0",
+    "1",
+    "1/10",
+    "1/16",
+    "1/2",
+    "1/3",
+    "1/4",
+    "1/5",
+    "1/6",
+    "1/7",
+    "1/8",
+    "1/9",
+    "10",
+    "100",
+    "1000",
+    "10000",
+    "100000",
+    "100000000",
+    "1000000000000",
+    "103",
+    "107",
+    "11",
+    "11/2",
+    "118",
+    "12",
+    "122",
+    "129",
+    "13",
+    "13/2",
+    "130",
+    "132",
+    "14",
+    "15",
+    "15/2",
+    "16",
+    "17",
+    "17/2",
+    "18",
+    "19",
+    "2",
+    "2/3",
+    "2/5",
+    "20",
+    "200",
+    "2000",
+    "20000",
+    "202",
+    "21",
+    "214",
+    "216",
+    "218",
+    "22",
+    "220",
+    "222",
+    "224",
+    "226",
+    "228",
+    "23",
+    "230",
+    "232",
+    "233",
+    "234",
+    "24",
+    "240",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "3",
+    "3/16",
+    "3/2",
+    "3/4",
+    "3/5",
+    "3/8",
+    "30",
+    "300",
+    "3000",
+    "30000",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37",
+    "38",
+    "39",
+    "4",
+    "4/5",
+    "40",
+    "400",
+    "4000",
+    "40000",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "5",
+    "5/2",
+    "5/6",
+    "5/8",
+    "50",
+    "500",
+    "5000",
+    "50000",
+    "6",
+    "60",
+    "600",
+    "6000",
+    "60000",
+    "7",
+    "7/2",
+    "7/8",
+    "70",
+    "700",
+    "7000",
+    "70000",
+    "8",
+    "80",
+    "800",
+    "8000",
+    "80000",
+    "84",
+    "9",
+    "9/2",
+    "90",
+    "900",
+    "9000",
+    "90000",
+    "91",
+    "A",
+    "ABOVE",
+    "ABOVELEFT",
+    "ABOVERIGHT",
     "AEGEANNUMBERS",
-    "BYZANTINEMUSICALSYMBOLS",
-    "CHAM",
-    "MISCELLANEOUSSYMBOLSANDPICTOGRAPHS",
-    "MISCELLANEOUSSYMBOLS",
-    "CJKCOMPATIBILITYIDEOGRAPHSSUPPLEMENT",
-    "TAILE",
-    "CJKCOMPATIBILITY",
-    "GREEKANDCOPTIC",
-    "INSCRIPTIONALPARTHIAN",
-    "ETHIOPICEXTENDED",
-    "GEORGIANSUPPLEMENT",
-    "ARMENIAN",
-    "KHMERSYMBOLS",
+    "AHEX",
+    "AI",
+    "AIN",
+    "AL",
+    "ALAPH",
+    "ALCHEMICALSYMBOLS",
+    "ALEF",
+    "ALETTER",
+    "ALNUM",
+    "ALPHA",
+    "ALPHABETIC",
+    "ALPHABETICPRESENTATIONFORMS",
+    "ALPHANUMERIC",
+    "AMBIGUOUS",
+    "AN",
     "ANCIENTGREEKMUSICALNOTATION",
-    "COMBININGDIACRITICALMARKSSUPPLEMENT",
-    "BOPOMOFO",
-    "BRAILLEPATTERNS",
-    "MUSICALSYMBOLS",
-    "IDEOGRAPHICDESCRIPTIONCHARACTERS",
-    "SUNDANESE",
-    "UNIFIEDCANADIANABORIGINALSYLLABICSEXTENDED",
-    "BAMUMSUPPLEMENT",
-    "SPACINGMODIFIERLETTERS",
-    "ENCLOSEDIDEOGRAPHICSUPPLEMENT",
-    "CJKCOMPATIBILITYFORMS",
-    "TAGALOG",
-    "ETHIOPICEXTENDEDA",
-    "MALAYALAM",
-    "VEDICEXTENSIONS",
-    "OLDITALIC",
-    "MAHJONGTILES",
-    "LYDIAN",
-    "CARIAN",
-    "BUHID",
-    "HIRAGANA",
-    "TAGBANWA",
-    "KATAKANAPHONETICEXTENSIONS",
-    "CJKSYMBOLSANDPUNCTUATION",
-    "CYRILLICEXTENDEDB",
-    "CYRILLICEXTENDEDA",
-    "OLDSOUTHARABIAN",
-    "PHAISTOSDISC",
-    "YISYLLABLES",
-    "KANASUPPLEMENT",
-    "EMOTICONS",
-    "DEVANAGARIEXTENDED",
-    "DOMINOTILES",
-    "CJKUNIFIEDIDEOGRAPHSEXTENSIONA",
-    "CJKUNIFIEDIDEOGRAPHSEXTENSIONC",
-    "CJKUNIFIEDIDEOGRAPHSEXTENSIONB",
-    "CJKUNIFIEDIDEOGRAPHS",
-    "ENCLOSEDCJKLETTERSANDMONTHS",
-    "ENCLOSEDALPHANUMERICS",
-    "BUGINESE",
-    "KHAROSHTHI",
-    "MISCELLANEOUSTECHNICAL",
-    "CYRILLICSUPPLEMENT",
-    "CYPRIOTSYLLABARY",
-    "SUPERSCRIPTSANDSUBSCRIPTS",
-    "SAURASHTRA",
-    "SYLOTINAGRI",
-    "GEORGIAN",
-    "LATINEXTENDEDB",
-    "LATINEXTENDEDC",
-    "LATINEXTENDEDA",
-    "ARABICSUPPLEMENT",
-    "EGYPTIANHIEROGLYPHS",
-    "LATINEXTENDEDD",
-    "DEVANAGARI",
-    "THAI",
-    "MODIFIERTONELETTERS",
-    "TIBETAN",
-    "PHONETICEXTENSIONSSUPPLEMENT",
-    "ETHIOPICSUPPLEMENT",
-    "TIFINAGH",
-    "UGARITIC",
-    "LATIN1SUPPLEMENT",
-    "BATAK",
+    "ANCIENTGREEKNUMBERS",
     "ANCIENTSYMBOLS",
-    "IPAEXTENSIONS",
-    "SUPPLEMENTARYPRIVATEUSEAREAB",
-    "HIGHSURROGATES",
-    "COMBININGHALFMARKS",
-    "CJKSTROKES",
-    "GEOMETRICSHAPES",
-    "BLOCKELEMENTS",
-    "LETTERLIKESYMBOLS",
-    "OLCHIKI",
-    "VAI",
-    "OGHAM",
-    "COMBININGDIACRITICALMARKSFORSYMBOLS",
-    "BASICLATIN",
-    "COUNTINGRODNUMERALS",
-    "UNIFIEDCANADIANABORIGINALSYLLABICS",
-    "LYCIAN",
-    "TAIVIET",
-    "SINHALA",
-    "SYRIAC",
-    "RUNIC",
-    "GOTHIC",
-    "BOXDRAWING",
+    "AR",
+    "ARAB",
     "ARABIC",
-    "OSMANYA",
-    "KANGXIRADICALS",
-    "CJKRADICALSSUPPLEMENT",
-    "LIMBU",
-    "CHEROKEE",
-    "LINEARBSYLLABARY",
-    "ORIYA",
-    "NUMBERFORMS",
-    "GUJARATI",
-    "HANGULJAMOEXTENDEDA",
+    "ARABICLETTER",
+    "ARABICNUMBER",
     "ARABICPRESENTATIONFORMSA",
     "ARABICPRESENTATIONFORMSB",
-    "MATHEMATICALALPHANUMERICSYMBOLS",
-    "YIJINGHEXAGRAMSYMBOLS",
-    "KHMER",
-    "CUNEIFORM",
-    "TAGS",
-    "MANDAIC",
-    "COMMONINDICNUMBERFORMS",
-    "VERTICALFORMS",
-    "ENCLOSEDALPHANUMERICSUPPLEMENT",
-    "PHOENICIAN",
-    "BENGALI",
-    "KAITHI",
-    "IMPERIALARAMAIC",
-    "GLAGOLITIC",
-    "KANBUN",
-    "HANGULCOMPATIBILITYJAMO",
-    "SUPPLEMENTARYPRIVATEUSEAREAA",
-    "BOPOMOFOEXTENDED",
-    "CJKUNIFIEDIDEOGRAPHSEXTENSIOND",
-    "GREEKEXTENDED",
-    "HANGULSYLLABLES",
-    "GURMUKHI",
-    "JAVANESE",
-    "ALCHEMICALSYMBOLS",
-    "SPECIALS",
-    "OLDPERSIAN",
-    "ANCIENTGREEKNUMBERS",
-    "TAMIL",
-    "PLAYINGCARDS",
-    "KANNADA",
-    "RUMINUMERALSYMBOLS",
-    "SUPPLEMENTALPUNCTUATION",
-    "MONGOLIAN",
-    "OLDTURKIC",
-    "PHONETICEXTENSIONS",
-    "BRAHMI",
-    "MYANMAREXTENDEDA",
-    "PHAGSPA",
-    "DINGBATS",
-    "VARIATIONSELECTORS",
-    "LINEARBIDEOGRAMS",
-    "INSCRIPTIONALPAHLAVI",
-    "DESERET",
-    "REJANG",
-    "MATHEMATICALOPERATORS",
-    "GENERALPUNCTUATION",
-    "BALINESE",
-    "LAO",
-    "HANUNOO",
-    "CURRENCYSYMBOLS",
-    "COMBININGDIACRITICALMARKS",
-    "HANGULJAMO",
-    "MISCELLANEOUSSYMBOLSANDARROWS",
-    "LEPCHA",
-    "HANGULJAMOEXTENDEDB",
-    "PRIVATEUSEAREA",
-    "TRANSPORTANDMAPSYMBOLS",
-    "MISCELLANEOUSMATHEMATICALSYMBOLSA",
-    "MISCELLANEOUSMATHEMATICALSYMBOLSB",
-    "SUPPLEMENTALMATHEMATICALOPERATORS",
-    "ALPHABETICPRESENTATIONFORMS",
-    "SAMARITAN",
-    "ARROWS",
-    "LISU",
-    "NKO",
-    "NEWTAILUE",
-    "COPTIC",
-    "TAITHAM",
-    "KATAKANA",
-    "BAMUM",
-    "MYANMAR",
-    "SHAVIAN",
-    "CUNEIFORMNUMBERSANDPUNCTUATION",
-    "HALFWIDTHANDFULLWIDTHFORMS",
-    "AVESTAN",
-    "SMALLFORMVARIANTS",
-    "HEBREW",
-    "YIRADICALS",
-    "KAYAHLI",
-    "SUPPLEMENTALARROWSB",
-    "LOWSURROGATES",
-    "SUPPLEMENTALARROWSA",
-    "UNKNOWN",
-    "ZZZZ",
-    "THAA",
-    "TELU",
-    "CYRL",
-    "HANGUL",
-    "HANG",
-    "SARB",
-    "ETHI",
-    "INHERITED",
-    "QAAI",
-    "ZINH",
-    "HAN",
-    "HANI",
-    "ARMN",
-    "TAML",
-    "BOPO",
-    "SUND",
-    "TGLG",
-    "MLYM",
-    "CARI",
-    "HIRA",
-    "TAGB",
-    "MTEI",
-    "TALE",
-    "KALI",
-    "BUGI",
-    "KHAR",
-    "LANA",
-    "ITAL",
-    "XPEO",
-    "LATIN",
-    "LATN",
-    "SAUR",
-    "SHAW",
-    "GEOR",
-    "BRAILLE",
-    "BRAI",
-    "DEVA",
-    "TIBT",
-    "TFNG",
-    "UGAR",
-    "BATK",
-    "GREEK",
-    "GREK",
-    "LYCI",
-    "TAVT",
-    "VAII",
-    "OGAM",
-    "PRTI",
-    "SYRC",
-    "RUNR",
-    "GOTH",
-    "KANA",
-    "OSMA",
-    "TALU",
-    "OLCK",
-    "LIMB",
-    "CHER",
-    "ORYA",
-    "GUJR",
-    "PHLI",
-    "KHMR",
-    "XSUX",
-    "MAND",
-    "SYLO",
-    "NKOO",
-    "CANADIANABORIGINAL",
-    "CANS",
-    "PHNX",
-    "BENG",
-    "KTHI",
-    "GLAG",
+    "ARABICSUPPLEMENT",
+    "ARMENIAN",
     "ARMI",
-    "GURU",
-    "JAVA",
-    "PHAG",
-    "CYPRIOT",
-    "CPRT",
-    "KNDA",
-    "MONG",
-    "SINH",
-    "BRAH",
-    "DSRT",
-    "RJNG",
-    "YI",
-    "YIII",
-    "BALI",
-    "LAOO",
-    "HANO",
-    "LINEARB",
-    "LINB",
-    "ORKH",
-    "LEPC",
-    "LYDI",
-    "EGYP",
-    "SAMR",
-    "BUHD",
-    "COMMON",
-    "ZYYY",
-    "COPT",
-    "QAAC",
-    "ARAB",
-    "BAMU",
-    "MYMR",
+    "ARMN",
+    "ARROWS",
+    "ASCII",
+    "ASCIIHEXDIGIT",
+    "AT",
+    "ATA",
+    "ATAR",
+    "ATB",
+    "ATERM",
+    "ATTACHEDABOVE",
+    "ATTACHEDABOVERIGHT",
+    "ATTACHEDBELOW",
+    "AVESTAN",
     "AVST",
-    "HEBR",
-    "XX",
-    "LF",
-    "MIDNUM",
-    "MIDLETTER",
-    "ML",
-    "EXTEND",
-    "FO",
-    "ALETTER",
-    "LE",
-    "NEWLINE",
-    "NUMERIC",
-    "NU",
-    "MIDNUMLET",
-    "MB",
-    "EXTENDNUMLET",
-    "EX",
+    "B",
+    "B2",
+    "BA",
+    "BALI",
+    "BALINESE",
+    "BAMU",
+    "BAMUM",
+    "BAMUMSUPPLEMENT",
+    "BASICLATIN",
+    "BATAK",
+    "BATK",
+    "BB",
+    "BC",
+    "BEH",
+    "BELOW",
+    "BELOWLEFT",
+    "BELOWRIGHT",
+    "BENG",
+    "BENGALI",
+    "BETH",
+    "BIDIC",
+    "BIDICLASS",
+    "BIDICONTROL",
+    "BK",
+    "BL",
+    "BLANK",
+    "BLK",
+    "BLOCK",
+    "BLOCKELEMENTS",
+    "BN",
+    "BOPO",
+    "BOPOMOFO",
+    "BOPOMOFOEXTENDED",
+    "BOUNDARYNEUTRAL",
+    "BOXDRAWING",
+    "BR",
+    "BRAH",
+    "BRAHMI",
+    "BRAI",
+    "BRAILLE",
+    "BRAILLEPATTERNS",
+    "BREAKAFTER",
+    "BREAKBEFORE",
+    "BREAKBOTH",
+    "BREAKSYMBOLS",
+    "BUGI",
+    "BUGINESE",
+    "BUHD",
+    "BUHID",
+    "BURUSHASKIYEHBARREE",
+    "BYZANTINEMUSICALSYMBOLS",
+    "C",
+    "C&",
+    "CAN",
+    "CANADIANABORIGINAL",
+    "CANADIANSYLLABICS",
+    "CANONICAL",
+    "CANONICALCOMBININGCLASS",
+    "CANS",
+    "CARI",
+    "CARIAN",
+    "CARRIAGERETURN",
+    "CASED",
+    "CASEIGNORABLE",
+    "CB",
+    "CC",
+    "CCC",
+    "CF",
+    "CHAM",
+    "CHANGESWHENCASEFOLDED",
+    "CHANGESWHENCASEMAPPED",
+    "CHANGESWHENLOWERCASED",
+    "CHANGESWHENTITLECASED",
+    "CHANGESWHENUPPERCASED",
+    "CHER",
+    "CHEROKEE",
+    "CI",
+    "CIRCLE",
+    "CJKCOMPATIBILITY",
+    "CJKCOMPATIBILITYFORMS",
+    "CJKCOMPATIBILITYIDEOGRAPHS",
+    "CJKCOMPATIBILITYIDEOGRAPHSSUPPLEMENT",
+    "CJKRADICALSSUPPLEMENT",
+    "CJKSTROKES",
+    "CJKSYMBOLSANDPUNCTUATION",
+    "CJKUNIFIEDIDEOGRAPHS",
+    "CJKUNIFIEDIDEOGRAPHSEXTENSIONA",
+    "CJKUNIFIEDIDEOGRAPHSEXTENSIONB",
+    "CJKUNIFIEDIDEOGRAPHSEXTENSIONC",
+    "CJKUNIFIEDIDEOGRAPHSEXTENSIOND",
+    "CL",
+    "CLOSE",
+    "CLOSEPARENTHESIS",
+    "CLOSEPUNCTUATION",
+    "CM",
+    "CN",
+    "CNTRL",
+    "CO",
+    "COM",
+    "COMBININGDIACRITICALMARKS",
+    "COMBININGDIACRITICALMARKSFORSYMBOLS",
+    "COMBININGDIACRITICALMARKSSUPPLEMENT",
+    "COMBININGHALFMARKS",
+    "COMBININGMARK",
+    "COMBININGMARKSFORSYMBOLS",
+    "COMMON",
+    "COMMONINDICNUMBERFORMS",
+    "COMMONSEPARATOR",
+    "COMPAT",
+    "COMPLEXCONTEXT",
+    "CONNECTORPUNCTUATION",
+    "CONTINGENTBREAK",
+    "CONTROL",
+    "CONTROLPICTURES",
+    "COPT",
+    "COPTIC",
+    "COUNTINGRODNUMERALS",
+    "CP",
+    "CPRT",
     "CR",
-    "KA",
-    "LVT",
-    "V",
-    "PREPEND",
-    "LV",
-    "T",
-    "YES",
-    "TRUE",
-    "Y",
+    "CS",
+    "CUNEIFORM",
+    "CUNEIFORMNUMBERSANDPUNCTUATION",
+    "CURRENCYSYMBOL",
+    "CURRENCYSYMBOLS",
+    "CWCF",
+    "CWCM",
+    "CWL",
+    "CWT",
+    "CWU",
+    "CYPRIOT",
+    "CYPRIOTSYLLABARY",
+    "CYRILLIC",
+    "CYRILLICEXTENDEDA",
+    "CYRILLICEXTENDEDB",
+    "CYRILLICSUPPLEMENT",
+    "CYRILLICSUPPLEMENTARY",
+    "CYRL",
+    "D",
+    "DA",
+    "DAL",
+    "DALATHRISH",
+    "DASH",
+    "DASHPUNCTUATION",
+    "DB",
+    "DE",
+    "DECIMAL",
+    "DECIMALNUMBER",
+    "DECOMPOSITIONTYPE",
+    "DEFAULTIGNORABLECODEPOINT",
+    "DEP",
+    "DEPRECATED",
+    "DESERET",
+    "DEVA",
+    "DEVANAGARI",
+    "DEVANAGARIEXTENDED",
+    "DI",
+    "DIA",
+    "DIACRITIC",
+    "DIGIT",
+    "DINGBATS",
+    "DOMINOTILES",
+    "DOUBLEABOVE",
+    "DOUBLEBELOW",
+    "DSRT",
+    "DT",
+    "DUALJOINING",
+    "E",
+    "EA",
+    "EASTASIANWIDTH",
+    "EGYP",
+    "EGYPTIANHIEROGLYPHS",
+    "EMOTICONS",
+    "EN",
+    "ENC",
+    "ENCLOSEDALPHANUMERICS",
+    "ENCLOSEDALPHANUMERICSUPPLEMENT",
+    "ENCLOSEDCJKLETTERSANDMONTHS",
+    "ENCLOSEDIDEOGRAPHICSUPPLEMENT",
+    "ENCLOSINGMARK",
+    "ES",
+    "ET",
+    "ETHI",
+    "ETHIOPIC",
+    "ETHIOPICEXTENDED",
+    "ETHIOPICEXTENDEDA",
+    "ETHIOPICSUPPLEMENT",
+    "EUROPEANNUMBER",
+    "EUROPEANSEPARATOR",
+    "EUROPEANTERMINATOR",
+    "EX",
+    "EXCLAMATION",
+    "EXT",
+    "EXTEND",
+    "EXTENDER",
+    "EXTENDNUMLET",
     "F",
     "FALSE",
+    "FARSIYEH",
+    "FE",
+    "FEH",
+    "FIN",
+    "FINAL",
+    "FINALPUNCTUATION",
+    "FINALSEMKATH",
+    "FO",
+    "FONT",
+    "FORMAT",
+    "FRA",
+    "FRACTION",
+    "FULLWIDTH",
+    "GAF",
+    "GAMAL",
+    "GC",
+    "GCB",
+    "GENERALCATEGORY",
+    "GENERALPUNCTUATION",
+    "GEOMETRICSHAPES",
+    "GEOR",
+    "GEORGIAN",
+    "GEORGIANSUPPLEMENT",
+    "GL",
+    "GLAG",
+    "GLAGOLITIC",
+    "GLUE",
+    "GOTH",
+    "GOTHIC",
+    "GRAPH",
+    "GRAPHEMEBASE",
+    "GRAPHEMECLUSTERBREAK",
+    "GRAPHEMEEXTEND",
+    "GRAPHEMELINK",
+    "GRBASE",
+    "GREEK",
+    "GREEKANDCOPTIC",
+    "GREEKEXTENDED",
+    "GREK",
+    "GREXT",
+    "GRLINK",
+    "GUJARATI",
+    "GUJR",
+    "GURMUKHI",
+    "GURU",
+    "H",
+    "H2",
+    "H3",
+    "HAH",
+    "HALFWIDTH",
+    "HALFWIDTHANDFULLWIDTHFORMS",
+    "HAMZAONHEHGOAL",
+    "HAN",
+    "HANG",
+    "HANGUL",
+    "HANGULCOMPATIBILITYJAMO",
+    "HANGULJAMO",
+    "HANGULJAMOEXTENDEDA",
+    "HANGULJAMOEXTENDEDB",
+    "HANGULSYLLABLES",
+    "HANGULSYLLABLETYPE",
+    "HANI",
+    "HANO",
+    "HANUNOO",
+    "HE",
+    "HEBR",
+    "HEBREW",
+    "HEH",
+    "HEHGOAL",
+    "HETH",
+    "HEX",
+    "HEXDIGIT",
+    "HIGHPRIVATEUSESURROGATES",
+    "HIGHSURROGATES",
+    "HIRA",
+    "HIRAGANA",
+    "HST",
+    "HY",
+    "HYPHEN",
+    "ID",
+    "IDC",
+    "IDCONTINUE",
+    "IDEO",
+    "IDEOGRAPHIC",
+    "IDEOGRAPHICDESCRIPTIONCHARACTERS",
+    "IDS",
+    "IDSB",
+    "IDSBINARYOPERATOR",
+    "IDST",
+    "IDSTART",
+    "IDSTRINARYOPERATOR",
+    "IMPERIALARAMAIC",
+    "IN",
+    "INFIXNUMERIC",
+    "INHERITED",
+    "INIT",
+    "INITIAL",
+    "INITIALPUNCTUATION",
+    "INSCRIPTIONALPAHLAVI",
+    "INSCRIPTIONALPARTHIAN",
+    "INSEPARABLE",
+    "INSEPERABLE",
+    "IOTASUBSCRIPT",
+    "IPAEXTENSIONS",
+    "IS",
+    "ISO",
+    "ISOLATED",
+    "ITAL",
+    "JAVA",
+    "JAVANESE",
+    "JG",
+    "JL",
+    "JOINC",
+    "JOINCAUSING",
+    "JOINCONTROL",
+    "JOININGGROUP",
+    "JOININGTYPE",
+    "JT",
+    "JV",
+    "KA",
+    "KAF",
+    "KAITHI",
+    "KALI",
+    "KANA",
+    "KANASUPPLEMENT",
+    "KANAVOICING",
+    "KANBUN",
+    "KANGXIRADICALS",
+    "KANNADA",
+    "KAPH",
+    "KATAKANA",
+    "KATAKANAPHONETICEXTENSIONS",
+    "KAYAHLI",
+    "KHAPH",
+    "KHAR",
+    "KHAROSHTHI",
+    "KHMER",
+    "KHMERSYMBOLS",
+    "KHMR",
+    "KNDA",
+    "KNOTTEDHEH",
+    "KTHI",
+    "KV",
+    "L",
+    "L&",
+    "LAM",
+    "LAMADH",
+    "LANA",
+    "LAO",
+    "LAOO",
+    "LATIN",
+    "LATIN1",
+    "LATIN1SUPPLEMENT",
+    "LATINEXTENDEDA",
+    "LATINEXTENDEDADDITIONAL",
+    "LATINEXTENDEDB",
+    "LATINEXTENDEDC",
+    "LATINEXTENDEDD",
+    "LATN",
+    "LB",
+    "LE",
+    "LEADINGJAMO",
+    "LEFT",
+    "LEFTTORIGHT",
+    "LEFTTORIGHTEMBEDDING",
+    "LEFTTORIGHTOVERRIDE",
+    "LEPC",
+    "LEPCHA",
+    "LETTER",
+    "LETTERLIKESYMBOLS",
+    "LETTERNUMBER",
+    "LF",
+    "LIMB",
+    "LIMBU",
+    "LINB",
+    "LINEARB",
+    "LINEARBIDEOGRAMS",
+    "LINEARBSYLLABARY",
+    "LINEBREAK",
+    "LINEFEED",
+    "LINESEPARATOR",
+    "LISU",
+    "LL",
+    "LM",
+    "LO",
+    "LOE",
+    "LOGICALORDEREXCEPTION",
+    "LOWER",
+    "LOWERCASE",
+    "LOWERCASELETTER",
+    "LOWSURROGATES",
+    "LRE",
+    "LRO",
+    "LT",
+    "LU",
+    "LV",
+    "LVSYLLABLE",
+    "LVT",
+    "LVTSYLLABLE",
+    "LYCI",
+    "LYCIAN",
+    "LYDI",
+    "LYDIAN",
+    "M",
+    "M&",
+    "MAHJONGTILES",
+    "MALAYALAM",
+    "MAND",
+    "MANDAIC",
+    "MANDATORYBREAK",
+    "MARK",
+    "MATH",
+    "MATHEMATICALALPHANUMERICSYMBOLS",
+    "MATHEMATICALOPERATORS",
+    "MATHSYMBOL",
+    "MB",
+    "MC",
+    "ME",
+    "MED",
+    "MEDIAL",
+    "MEEM",
+    "MEETEIMAYEK",
+    "MIDLETTER",
+    "MIDNUM",
+    "MIDNUMLET",
+    "MIM",
+    "MISCELLANEOUSMATHEMATICALSYMBOLSA",
+    "MISCELLANEOUSMATHEMATICALSYMBOLSB",
+    "MISCELLANEOUSSYMBOLS",
+    "MISCELLANEOUSSYMBOLSANDARROWS",
+    "MISCELLANEOUSSYMBOLSANDPICTOGRAPHS",
+    "MISCELLANEOUSTECHNICAL",
+    "ML",
+    "MLYM",
+    "MN",
+    "MODIFIERLETTER",
+    "MODIFIERSYMBOL",
+    "MODIFIERTONELETTERS",
+    "MONG",
+    "MONGOLIAN",
+    "MTEI",
+    "MUSICALSYMBOLS",
+    "MYANMAR",
+    "MYANMAREXTENDEDA",
+    "MYMR",
+    "N",
+    "N&",
+    "NA",
+    "NAN",
+    "NAR",
+    "NARROW",
+    "NB",
+    "NCHAR",
+    "ND",
+    "NEUTRAL",
+    "NEWLINE",
+    "NEWTAILUE",
+    "NEXTLINE",
+    "NK",
+    "NKO",
+    "NKOO",
+    "NL",
+    "NO",
+    "NOBLOCK",
+    "NOBREAK",
+    "NOJOININGGROUP",
+    "NONCHARACTERCODEPOINT",
+    "NONE",
+    "NONJOINING",
+    "NONSPACINGMARK",
+    "NONSTARTER",
+    "NOON",
+    "NOTAPPLICABLE",
+    "NOTREORDERED",
+    "NR",
+    "NS",
+    "NSM",
+    "NT",
+    "NU",
+    "NUKTA",
+    "NUMBER",
+    "NUMBERFORMS",
+    "NUMERIC",
+    "NUMERICTYPE",
+    "NUMERICVALUE",
+    "NUN",
+    "NV",
+    "NYA",
+    "OALPHA",
+    "ODI",
+    "OGAM",
+    "OGHAM",
+    "OGREXT",
+    "OIDC",
+    "OIDS",
+    "OLCHIKI",
+    "OLCK",
+    "OLDITALIC",
+    "OLDPERSIAN",
+    "OLDSOUTHARABIAN",
+    "OLDTURKIC",
+    "OLETTER",
+    "OLOWER",
+    "OMATH",
+    "ON",
+    "OP",
+    "OPENPUNCTUATION",
+    "OPTICALCHARACTERRECOGNITION",
+    "ORIYA",
+    "ORKH",
+    "ORYA",
+    "OSMA",
+    "OSMANYA",
+    "OTHER",
+    "OTHERALPHABETIC",
+    "OTHERDEFAULTIGNORABLECODEPOINT",
+    "OTHERGRAPHEMEEXTEND",
+    "OTHERIDCONTINUE",
+    "OTHERIDSTART",
+    "OTHERLETTER",
+    "OTHERLOWERCASE",
+    "OTHERMATH",
+    "OTHERNEUTRAL",
+    "OTHERNUMBER",
+    "OTHERPUNCTUATION",
+    "OTHERSYMBOL",
+    "OTHERUPPERCASE",
+    "OUPPER",
+    "OV",
+    "OVERLAY",
+    "P",
+    "P&",
+    "PARAGRAPHSEPARATOR",
+    "PATSYN",
+    "PATTERNSYNTAX",
+    "PATTERNWHITESPACE",
+    "PATWS",
+    "PC",
+    "PD",
+    "PDF",
+    "PE",
+    "PF",
+    "PHAG",
+    "PHAGSPA",
+    "PHAISTOSDISC",
+    "PHLI",
+    "PHNX",
+    "PHOENICIAN",
+    "PHONETICEXTENSIONS",
+    "PHONETICEXTENSIONSSUPPLEMENT",
+    "PI",
+    "PLAYINGCARDS",
+    "PO",
+    "POPDIRECTIONALFORMAT",
+    "POSTFIXNUMERIC",
+    "PP",
+    "PR",
+    "PREFIXNUMERIC",
+    "PREPEND",
+    "PRINT",
+    "PRIVATEUSE",
+    "PRIVATEUSEAREA",
+    "PRTI",
+    "PS",
+    "PUNCT",
+    "PUNCTUATION",
+    "QAAC",
+    "QAAI",
+    "QAF",
+    "QAPH",
+    "QMARK",
+    "QU",
+    "QUOTATION",
+    "QUOTATIONMARK",
+    "R",
+    "RADICAL",
+    "REH",
+    "REJANG",
+    "REVERSEDPE",
+    "RIGHT",
+    "RIGHTJOINING",
+    "RIGHTTOLEFT",
+    "RIGHTTOLEFTEMBEDDING",
+    "RIGHTTOLEFTOVERRIDE",
+    "RJNG",
+    "RLE",
+    "RLO",
+    "RUMINUMERALSYMBOLS",
+    "RUNIC",
+    "RUNR",
+    "S",
+    "S&",
+    "SA",
+    "SAD",
+    "SADHE",
+    "SAMARITAN",
+    "SAMR",
+    "SARB",
+    "SAUR",
+    "SAURASHTRA",
+    "SB",
+    "SC",
+    "SCONTINUE",
+    "SCRIPT",
+    "SD",
+    "SE",
+    "SEEN",
+    "SEGMENTSEPARATOR",
+    "SEMKATH",
+    "SENTENCEBREAK",
+    "SEP",
+    "SEPARATOR",
+    "SG",
+    "SHAVIAN",
+    "SHAW",
+    "SHIN",
+    "SINH",
+    "SINHALA",
+    "SK",
+    "SM",
+    "SMALL",
+    "SMALLFORMVARIANTS",
+    "SML",
+    "SO",
+    "SOFTDOTTED",
+    "SP",
+    "SPACE",
+    "SPACESEPARATOR",
+    "SPACINGMARK",
+    "SPACINGMODIFIERLETTERS",
+    "SPECIALS",
+    "SQR",
+    "SQUARE",
+    "ST",
+    "STERM",
+    "SUB",
+    "SUND",
+    "SUNDANESE",
+    "SUP",
+    "SUPER",
+    "SUPERSCRIPTSANDSUBSCRIPTS",
+    "SUPPLEMENTALARROWSA",
+    "SUPPLEMENTALARROWSB",
+    "SUPPLEMENTALMATHEMATICALOPERATORS",
+    "SUPPLEMENTALPUNCTUATION",
+    "SUPPLEMENTARYPRIVATEUSEAREAA",
+    "SUPPLEMENTARYPRIVATEUSEAREAB",
+    "SURROGATE",
+    "SWASHKAF",
+    "SY",
+    "SYLO",
+    "SYLOTINAGRI",
+    "SYMBOL",
+    "SYRC",
+    "SYRIAC",
+    "SYRIACWAW",
+    "T",
+    "TAGALOG",
+    "TAGB",
+    "TAGBANWA",
+    "TAGS",
+    "TAH",
+    "TAILE",
+    "TAITHAM",
+    "TAIVIET",
+    "TAIXUANJINGSYMBOLS",
+    "TALE",
+    "TALU",
+    "TAMIL",
+    "TAML",
+    "TAVT",
+    "TAW",
+    "TEHMARBUTA",
+    "TEHMARBUTAGOAL",
+    "TELU",
+    "TELUGU",
+    "TERM",
+    "TERMINALPUNCTUATION",
+    "TETH",
+    "TFNG",
+    "TGLG",
+    "THAA",
+    "THAANA",
+    "THAI",
+    "TIBETAN",
+    "TIBT",
+    "TIFINAGH",
+    "TITLECASELETTER",
+    "TRAILINGJAMO",
+    "TRANSPARENT",
+    "TRANSPORTANDMAPSYMBOLS",
+    "TRUE",
+    "U",
+    "UGAR",
+    "UGARITIC",
+    "UIDEO",
+    "UNASSIGNED",
+    "UNIFIEDCANADIANABORIGINALSYLLABICS",
+    "UNIFIEDCANADIANABORIGINALSYLLABICSEXTENDED",
+    "UNIFIEDIDEOGRAPH",
+    "UNKNOWN",
+    "UP",
+    "UPPER",
+    "UPPERCASE",
+    "UPPERCASELETTER",
+    "V",
+    "VAI",
+    "VAII",
+    "VARIATIONSELECTOR",
+    "VARIATIONSELECTORS",
+    "VARIATIONSELECTORSSUPPLEMENT",
+    "VEDICEXTENSIONS",
+    "VERT",
+    "VERTICAL",
+    "VERTICALFORMS",
+    "VIRAMA",
+    "VOWELJAMO",
+    "VR",
+    "VS",
+    "W",
+    "WAW",
+    "WB",
+    "WHITESPACE",
+    "WIDE",
+    "WJ",
+    "WORD",
+    "WORDBREAK",
+    "WORDJOINER",
+    "WS",
+    "WSPACE",
+    "XDIGIT",
+    "XIDC",
+    "XIDCONTINUE",
+    "XIDS",
+    "XIDSTART",
+    "XPEO",
+    "XSUX",
+    "XX",
+    "Y",
+    "YEH",
+    "YEHBARREE",
+    "YEHWITHTAIL",
+    "YES",
+    "YI",
+    "YIII",
+    "YIJINGHEXAGRAMSYMBOLS",
+    "YIRADICALS",
+    "YISYLLABLES",
+    "YUDH",
+    "YUDHHE",
+    "Z",
+    "Z&",
+    "ZAIN",
+    "ZHAIN",
+    "ZINH",
+    "ZL",
+    "ZP",
+    "ZS",
+    "ZW",
+    "ZWSPACE",
+    "ZYYY",
+    "ZZZZ",
 };
 
-/* strings: 7900 bytes. */
+/* strings: 12047 bytes. */
 
 RE_Property re_properties[] = {
-    {0, 0, 0},
-    {1, 0, 0},
-    {2, 1, 1},
-    {3, 1, 1},
-    {4, 2, 2},
-    {5, 2, 2},
-    {6, 3, 3},
-    {7, 3, 3},
-    {8, 4, 4},
-    {9, 5, 5},
-    {10, 5, 5},
-    {11, 6, 5},
-    {12, 6, 5},
-    {13, 7, 5},
-    {14, 7, 5},
-    {15, 8, 5},
-    {16, 8, 5},
-    {17, 9, 5},
-    {18, 9, 5},
-    {19, 10, 5},
-    {20, 10, 5},
-    {21, 11, 5},
-    {22, 11, 5},
-    {23, 12, 5},
-    {24, 12, 5},
-    {25, 13, 5},
-    {26, 14, 5},
-    {27, 14, 5},
-    {28, 15, 5},
-    {29, 15, 5},
-    {30, 16, 5},
-    {31, 16, 5},
-    {32, 17, 5},
-    {33, 17, 5},
-    {34, 18, 5},
-    {35, 19, 5},
-    {36, 19, 5},
-    {37, 20, 5},
-    {38, 20, 5},
-    {39, 21, 5},
-    {40, 21, 5},
-    {41, 22, 5},
-    {42, 22, 5},
-    {43, 23, 5},
-    {44, 23, 5},
-    {45, 24, 5},
-    {46, 24, 5},
-    {47, 25, 5},
-    {48, 25, 5},
-    {49, 26, 5},
-    {50, 26, 5},
-    {51, 27, 5},
-    {52, 27, 5},
-    {53, 28, 5},
-    {54, 29, 5},
-    {55, 29, 5},
-    {56, 30, 5},
-    {57, 30, 5},
-    {58, 31, 5},
-    {59, 31, 5},
-    {60, 32, 5},
-    {61, 32, 5},
-    {62, 33, 5},
-    {63, 33, 5},
-    {64, 34, 5},
-    {65, 34, 5},
-    {66, 35, 5},
-    {67, 35, 5},
-    {68, 36, 5},
-    {69, 36, 5},
-    {70, 37, 5},
-    {71, 37, 5},
-    {72, 38, 5},
-    {73, 38, 5},
-    {74, 39, 5},
-    {75, 39, 5},
-    {76, 40, 5},
-    {77, 40, 5},
-    {78, 41, 5},
-    {79, 41, 5},
-    {80, 42, 5},
-    {81, 42, 5},
-    {82, 43, 5},
-    {83, 43, 5},
-    {84, 44, 5},
-    {85, 44, 5},
-    {86, 45, 5},
-    {87, 45, 5},
-    {88, 46, 5},
-    {89, 46, 5},
-    {90, 47, 5},
-    {91, 48, 5},
-    {92, 49, 5},
-    {93, 49, 5},
-    {94, 50, 5},
-    {95, 51, 5},
-    {96, 51, 5},
-    {97, 52, 5},
-    {98, 52, 5},
-    {99, 53, 5},
-    {100, 53, 5},
-    {101, 54, 5},
-    {102, 54, 5},
-    {103, 55, 5},
-    {104, 55, 5},
-    {105, 55, 5},
-    {106, 56, 5},
-    {107, 56, 5},
-    {108, 57, 5},
-    {109, 58, 5},
-    {110, 59, 5},
-    {111, 60, 5},
-    {112, 61, 5},
-    {113, 62, 5},
+    {397, 0, 0},
+    {399, 0, 0},
+    {210, 1, 1},
+    {211, 1, 1},
+    {783, 2, 2},
+    {785, 2, 2},
+    {903, 3, 3},
+    {908, 3, 3},
+    {398, 4, 4},
+    {413, 4, 4},
+    {782, 5, 5},
+    {791, 5, 5},
+    {593, 6, 6},
+    {151, 7, 6},
+    {152, 7, 6},
+    {569, 8, 6},
+    {570, 8, 6},
+    {884, 9, 6},
+    {885, 9, 6},
+    {246, 10, 6},
+    {247, 11, 6},
+    {260, 11, 6},
+    {255, 12, 6},
+    {311, 12, 6},
+    {257, 13, 6},
+    {313, 13, 6},
+    {256, 14, 6},
+    {312, 14, 6},
+    {253, 15, 6},
+    {309, 15, 6},
+    {254, 16, 6},
+    {310, 16, 6},
+    {467, 17, 6},
+    {471, 17, 6},
+    {462, 18, 6},
+    {463, 18, 6},
+    {915, 19, 6},
+    {916, 19, 6},
+    {913, 20, 6},
+    {914, 20, 6},
+    {333, 21, 6},
+    {340, 21, 6},
+    {414, 22, 6},
+    {421, 22, 6},
+    {412, 23, 6},
+    {416, 23, 6},
+    {415, 24, 6},
+    {422, 24, 6},
+    {808, 25, 6},
+    {904, 25, 6},
+    {911, 25, 6},
+    {204, 26, 6},
+    {206, 26, 6},
+    {494, 27, 6},
+    {496, 27, 6},
+    {326, 28, 6},
+    {460, 29, 6},
+    {752, 30, 6},
+    {755, 30, 6},
+    {858, 31, 6},
+    {859, 31, 6},
+    {685, 32, 6},
+    {703, 32, 6},
+    {452, 33, 6},
+    {453, 33, 6},
+    {142, 34, 6},
+    {173, 34, 6},
+    {670, 35, 6},
+    {696, 35, 6},
+    {464, 36, 6},
+    {465, 36, 6},
+    {341, 37, 6},
+    {342, 37, 6},
+    {376, 38, 6},
+    {378, 38, 6},
+    {684, 39, 6},
+    {702, 39, 6},
+    {708, 40, 6},
+    {709, 40, 6},
+    {634, 41, 6},
+    {648, 41, 6},
+    {674, 42, 6},
+    {698, 42, 6},
+    {468, 43, 6},
+    {469, 43, 6},
+    {470, 44, 6},
+    {472, 44, 6},
+    {757, 45, 6},
+    {877, 46, 6},
+    {881, 46, 6},
+    {671, 47, 6},
+    {697, 47, 6},
+    {334, 48, 6},
+    {335, 48, 6},
+    {786, 49, 6},
+    {806, 49, 6},
+    {567, 50, 6},
+    {568, 50, 6},
+    {676, 51, 6},
+    {700, 51, 6},
+    {675, 52, 6},
+    {699, 52, 6},
+    {816, 53, 6},
+    {890, 54, 6},
+    {900, 54, 6},
+    {717, 55, 6},
+    {718, 55, 6},
+    {715, 56, 6},
+    {716, 56, 6},
+    {442, 57, 7},
+    {458, 57, 7},
+    {196, 58, 8},
+    {205, 58, 8},
+    {241, 59, 9},
+    {250, 59, 9},
+    {332, 60, 10},
+    {349, 60, 10},
+    {352, 61, 11},
+    {353, 61, 11},
+    {492, 62, 12},
+    {497, 62, 12},
+    {498, 63, 13},
+    {499, 63, 13},
+    {541, 64, 14},
+    {560, 64, 14},
+    {659, 65, 15},
+    {665, 65, 15},
+    {666, 66, 16},
+    {668, 66, 16},
+    {150, 67, 6},
+    {154, 67, 6},
+    {172, 68, 6},
+    {209, 69, 6},
+    {411, 70, 6},
+    {741, 71, 6},
+    {907, 72, 6},
+    {912, 73, 6},
 };
 
-/* properties: 456 bytes. */
+/* properties: 548 bytes. */
 
 RE_PropertyValue re_property_values[] = {
-    {114, 0, 0},
-    {115, 0, 0},
-    {116, 0, 1},
-    {117, 0, 1},
-    {118, 0, 1},
-    {119, 0, 2},
-    {120, 0, 2},
-    {121, 0, 3},
-    {122, 0, 3},
-    {123, 0, 4},
-    {124, 0, 4},
-    {125, 0, 5},
-    {126, 0, 5},
-    {127, 0, 6},
-    {128, 0, 6},
-    {129, 0, 7},
-    {130, 0, 7},
-    {131, 0, 8},
-    {132, 0, 8},
-    {133, 0, 9},
-    {134, 0, 9},
-    {135, 0, 10},
-    {136, 0, 10},
-    {138, 0, 11},
-    {137, 0, 11},
-    {139, 0, 12},
-    {140, 0, 12},
-    {142, 0, 13},
-    {141, 0, 13},
-    {143, 0, 13},
-    {145, 0, 14},
-    {144, 0, 14},
-    {146, 0, 15},
-    {147, 0, 15},
-    {149, 0, 16},
-    {148, 0, 16},
-    {151, 0, 17},
-    {150, 0, 17},
-    {153, 0, 18},
-    {152, 0, 18},
-    {155, 0, 19},
-    {154, 0, 19},
-    {157, 0, 20},
-    {156, 0, 20},
-    {159, 0, 21},
-    {158, 0, 21},
-    {161, 0, 22},
-    {160, 0, 22},
-    {162, 0, 23},
-    {5, 0, 23},
-    {164, 0, 24},
-    {163, 0, 24},
-    {166, 0, 25},
-    {165, 0, 25},
-    {168, 0, 26},
-    {167, 0, 26},
-    {170, 0, 27},
-    {169, 0, 27},
-    {172, 0, 28},
-    {171, 0, 28},
-    {174, 0, 29},
-    {173, 0, 29},
-    {175, 0, 30},
-    {176, 0, 30},
-    {177, 0, 30},
-    {178, 0, 31},
-    {179, 0, 31},
-    {180, 0, 31},
-    {181, 0, 32},
-    {182, 0, 32},
-    {183, 0, 32},
-    {184, 0, 33},
-    {185, 0, 33},
-    {186, 0, 33},
-    {187, 0, 34},
-    {188, 0, 34},
-    {189, 0, 34},
-    {190, 0, 34},
-    {191, 0, 35},
-    {192, 0, 35},
-    {193, 0, 35},
-    {195, 0, 36},
-    {194, 0, 36},
-    {196, 0, 36},
-    {197, 1, 0},
-    {198, 1, 1},
-    {199, 1, 2},
-    {200, 1, 3},
-    {201, 1, 4},
-    {202, 1, 5},
-    {203, 1, 6},
-    {204, 1, 7},
-    {205, 1, 8},
-    {206, 1, 9},
-    {207, 1, 10},
-    {208, 1, 11},
-    {209, 1, 12},
-    {210, 1, 13},
-    {211, 1, 14},
-    {212, 1, 15},
-    {213, 1, 16},
-    {214, 1, 17},
-    {215, 1, 18},
-    {216, 1, 19},
-    {217, 1, 20},
-    {218, 1, 21},
-    {219, 1, 22},
-    {220, 1, 23},
-    {221, 1, 24},
-    {222, 1, 25},
-    {223, 1, 26},
-    {224, 1, 27},
-    {225, 1, 28},
-    {226, 1, 29},
-    {227, 1, 30},
-    {228, 1, 31},
-    {229, 1, 32},
-    {230, 1, 33},
-    {231, 1, 34},
-    {232, 1, 35},
-    {233, 1, 36},
-    {234, 1, 37},
-    {235, 1, 38},
-    {236, 1, 39},
-    {237, 1, 40},
-    {238, 1, 41},
-    {239, 1, 42},
-    {240, 1, 43},
-    {241, 1, 44},
-    {242, 1, 45},
-    {243, 1, 46},
-    {244, 1, 47},
-    {245, 1, 48},
-    {246, 1, 49},
-    {247, 1, 50},
-    {248, 1, 51},
-    {249, 1, 52},
-    {250, 1, 53},
-    {251, 1, 54},
-    {252, 1, 55},
-    {253, 1, 56},
-    {254, 1, 57},
-    {255, 1, 58},
-    {256, 1, 59},
-    {257, 1, 60},
-    {258, 1, 61},
-    {259, 1, 62},
-    {260, 1, 63},
-    {261, 1, 64},
-    {262, 1, 65},
-    {263, 1, 66},
-    {264, 1, 67},
-    {265, 1, 68},
-    {266, 1, 69},
-    {267, 1, 70},
-    {268, 1, 71},
-    {269, 1, 72},
-    {270, 1, 73},
-    {271, 1, 74},
-    {272, 1, 75},
-    {273, 1, 76},
-    {274, 1, 77},
-    {275, 1, 78},
-    {276, 1, 79},
-    {277, 1, 80},
-    {278, 1, 81},
-    {279, 1, 82},
-    {280, 1, 83},
-    {281, 1, 84},
-    {282, 1, 85},
-    {283, 1, 86},
-    {284, 1, 87},
-    {285, 1, 88},
-    {286, 1, 89},
-    {287, 1, 90},
-    {288, 1, 91},
-    {289, 1, 92},
-    {290, 1, 93},
-    {291, 1, 94},
-    {292, 1, 95},
-    {293, 1, 96},
-    {294, 1, 97},
-    {295, 1, 98},
-    {296, 1, 99},
-    {297, 1, 100},
-    {298, 1, 101},
-    {299, 1, 102},
-    {300, 1, 103},
-    {301, 1, 104},
-    {302, 1, 105},
-    {303, 1, 106},
-    {304, 1, 107},
-    {305, 1, 108},
-    {306, 1, 109},
-    {307, 1, 110},
-    {308, 1, 111},
-    {309, 1, 112},
-    {310, 1, 113},
-    {311, 1, 114},
-    {312, 1, 115},
-    {313, 1, 116},
-    {314, 1, 117},
-    {315, 1, 118},
-    {316, 1, 119},
-    {317, 1, 120},
-    {318, 1, 121},
-    {319, 1, 122},
-    {320, 1, 123},
-    {321, 1, 124},
-    {322, 1, 125},
-    {323, 1, 126},
-    {324, 1, 127},
-    {325, 1, 128},
-    {326, 1, 129},
-    {327, 1, 130},
-    {328, 1, 131},
-    {329, 1, 132},
-    {330, 1, 133},
-    {331, 1, 134},
-    {332, 1, 135},
-    {333, 1, 136},
-    {334, 1, 137},
-    {335, 1, 138},
-    {336, 1, 139},
-    {337, 1, 140},
-    {338, 1, 141},
-    {339, 1, 142},
-    {340, 1, 143},
-    {341, 1, 144},
-    {342, 1, 145},
-    {343, 1, 146},
-    {344, 1, 147},
-    {345, 1, 148},
-    {346, 1, 149},
-    {347, 1, 150},
-    {348, 1, 151},
-    {349, 1, 152},
-    {350, 1, 153},
-    {351, 1, 154},
-    {352, 1, 155},
-    {353, 1, 156},
-    {354, 1, 157},
-    {355, 1, 158},
-    {356, 1, 159},
-    {357, 1, 160},
-    {358, 1, 161},
-    {359, 1, 162},
-    {360, 1, 163},
-    {361, 1, 164},
-    {362, 1, 165},
-    {363, 1, 166},
-    {364, 1, 167},
-    {365, 1, 168},
-    {366, 1, 169},
-    {367, 1, 170},
-    {368, 1, 171},
-    {369, 1, 172},
-    {370, 1, 173},
-    {371, 1, 174},
-    {372, 1, 175},
-    {373, 1, 176},
-    {374, 1, 177},
-    {375, 1, 178},
-    {376, 1, 179},
-    {377, 1, 180},
-    {378, 1, 181},
-    {379, 1, 182},
-    {380, 1, 183},
-    {381, 1, 184},
-    {382, 1, 185},
-    {383, 1, 186},
-    {384, 1, 187},
-    {385, 1, 188},
-    {386, 1, 189},
-    {387, 1, 190},
-    {388, 1, 191},
-    {389, 1, 192},
-    {390, 1, 193},
-    {391, 1, 194},
-    {392, 1, 195},
-    {393, 1, 196},
-    {394, 1, 197},
-    {395, 1, 198},
-    {396, 1, 199},
-    {397, 1, 200},
-    {398, 1, 201},
-    {399, 1, 202},
-    {400, 1, 203},
-    {401, 1, 204},
-    {402, 1, 205},
-    {403, 1, 206},
-    {404, 1, 207},
-    {405, 1, 208},
-    {406, 1, 209},
-    {407, 2, 0},
-    {408, 2, 0},
-    {409, 2, 1},
-    {199, 2, 1},
-    {410, 2, 2},
-    {201, 2, 2},
-    {202, 2, 3},
-    {411, 2, 3},
-    {413, 2, 4},
-    {412, 2, 4},
-    {251, 2, 5},
-    {414, 2, 5},
-    {415, 2, 6},
-    {208, 2, 6},
-    {416, 2, 7},
-    {417, 2, 7},
-    {418, 2, 7},
-    {419, 2, 8},
-    {420, 2, 8},
-    {222, 2, 9},
-    {421, 2, 9},
-    {352, 2, 10},
-    {422, 2, 10},
-    {423, 2, 11},
-    {226, 2, 11},
-    {424, 2, 12},
-    {230, 2, 12},
-    {236, 2, 13},
-    {425, 2, 13},
-    {238, 2, 14},
-    {426, 2, 14},
-    {427, 2, 15},
-    {243, 2, 15},
-    {428, 2, 16},
-    {245, 2, 16},
-    {429, 2, 17},
-    {246, 2, 17},
-    {204, 2, 18},
-    {430, 2, 18},
-    {216, 2, 19},
-    {431, 2, 19},
-    {432, 2, 20},
-    {403, 2, 20},
-    {433, 2, 21},
-    {264, 2, 21},
-    {434, 2, 22},
-    {265, 2, 22},
-    {435, 2, 23},
-    {392, 2, 23},
-    {436, 2, 24},
-    {240, 2, 24},
-    {350, 2, 25},
-    {437, 2, 25},
-    {438, 2, 26},
-    {439, 2, 26},
-    {440, 2, 27},
-    {270, 2, 27},
-    {396, 2, 28},
-    {441, 2, 28},
-    {442, 2, 29},
-    {272, 2, 29},
-    {444, 2, 30},
-    {443, 2, 30},
-    {445, 2, 31},
-    {279, 2, 31},
-    {280, 2, 32},
-    {282, 2, 33},
-    {446, 2, 33},
-    {447, 2, 34},
-    {285, 2, 34},
-    {448, 2, 35},
-    {286, 2, 35},
-    {288, 2, 36},
-    {449, 2, 36},
-    {450, 2, 37},
-    {451, 2, 37},
-    {452, 2, 38},
-    {305, 2, 38},
-    {306, 2, 39},
-    {453, 2, 39},
-    {299, 2, 40},
-    {454, 2, 40},
-    {455, 2, 41},
-    {300, 2, 41},
-    {219, 2, 42},
-    {456, 2, 42},
-    {212, 2, 43},
-    {457, 2, 44},
-    {308, 2, 44},
-    {309, 2, 45},
-    {458, 2, 45},
-    {459, 2, 46},
-    {310, 2, 46},
-    {460, 2, 47},
-    {393, 2, 47},
-    {461, 2, 48},
-    {313, 2, 48},
-    {390, 2, 49},
-    {462, 2, 49},
-    {298, 2, 50},
-    {463, 2, 50},
-    {464, 2, 51},
-    {316, 2, 51},
-    {465, 2, 52},
-    {317, 2, 52},
-    {319, 2, 53},
-    {466, 2, 53},
-    {321, 2, 54},
-    {467, 2, 54},
-    {366, 2, 55},
-    {468, 2, 55},
-    {327, 2, 56},
-    {469, 2, 56},
-    {328, 2, 57},
-    {470, 2, 57},
-    {471, 2, 58},
-    {330, 2, 58},
-    {472, 2, 59},
-    {271, 2, 59},
-    {389, 2, 60},
-    {473, 2, 60},
-    {474, 2, 61},
-    {475, 2, 61},
-    {476, 2, 62},
-    {334, 2, 62},
-    {477, 2, 63},
-    {335, 2, 63},
-    {336, 2, 64},
-    {478, 2, 64},
-    {479, 2, 65},
-    {338, 2, 65},
-    {480, 2, 66},
-    {337, 2, 66},
-    {346, 2, 67},
-    {481, 2, 67},
-    {482, 2, 68},
-    {347, 2, 68},
-    {483, 2, 69},
-    {362, 2, 69},
-    {485, 2, 70},
-    {484, 2, 70},
-    {354, 2, 71},
-    {486, 2, 71},
-    {487, 2, 72},
-    {357, 2, 72},
-    {488, 2, 73},
-    {307, 2, 73},
-    {489, 2, 74},
-    {360, 2, 74},
-    {367, 2, 75},
-    {490, 2, 75},
-    {368, 2, 76},
-    {491, 2, 76},
-    {492, 2, 77},
-    {493, 2, 77},
-    {494, 2, 78},
-    {371, 2, 78},
-    {372, 2, 79},
-    {495, 2, 79},
-    {496, 2, 80},
-    {373, 2, 80},
-    {498, 2, 81},
-    {497, 2, 81},
-    {358, 2, 82},
-    {499, 2, 82},
-    {500, 2, 83},
-    {378, 2, 83},
-    {501, 2, 84},
-    {242, 2, 84},
-    {502, 2, 85},
-    {277, 2, 85},
-    {386, 2, 86},
-    {503, 2, 86},
-    {388, 2, 87},
-    {504, 2, 88},
-    {244, 2, 88},
-    {505, 2, 89},
-    {506, 2, 89},
-    {507, 2, 90},
-    {391, 2, 90},
-    {508, 2, 90},
-    {509, 2, 91},
-    {312, 2, 91},
-    {510, 2, 92},
-    {394, 2, 92},
-    {395, 2, 93},
-    {511, 2, 93},
-    {399, 2, 94},
-    {512, 2, 94},
-    {513, 2, 95},
-    {401, 2, 95},
-    {177, 3, 0},
-    {514, 3, 0},
-    {515, 3, 1},
-    {139, 3, 2},
-    {516, 3, 2},
-    {518, 3, 3},
-    {517, 3, 3},
-    {519, 3, 4},
-    {520, 3, 5},
-    {120, 3, 5},
-    {521, 3, 6},
-    {522, 3, 6},
-    {144, 3, 7},
-    {523, 3, 7},
-    {525, 3, 8},
-    {524, 3, 8},
-    {527, 3, 9},
-    {526, 3, 9},
-    {529, 3, 10},
-    {528, 3, 10},
-    {530, 3, 11},
-    {531, 3, 12},
-    {393, 3, 12},
-    {177, 4, 0},
-    {117, 4, 1},
-    {515, 4, 2},
-    {519, 4, 3},
-    {532, 4, 4},
-    {533, 4, 5},
-    {178, 4, 6},
-    {534, 4, 7},
-    {535, 4, 8},
-    {536, 4, 9},
-    {136, 4, 10},
-    {530, 4, 11},
-    {536, 5, 0},
-    {538, 5, 0},
-    {539, 5, 0},
-    {537, 5, 0},
-    {540, 5, 1},
-    {541, 5, 1},
-    {184, 5, 1},
-    {146, 5, 1},
+    {279, 0, 0},
+    {878, 0, 0},
+    {576, 0, 1},
+    {886, 0, 1},
+    {564, 0, 2},
+    {571, 0, 2},
+    {575, 0, 3},
+    {869, 0, 3},
+    {565, 0, 4},
+    {617, 0, 4},
+    {566, 0, 5},
+    {701, 0, 5},
+    {616, 0, 6},
+    {651, 0, 6},
+    {363, 0, 7},
+    {599, 0, 7},
+    {598, 0, 8},
+    {810, 0, 8},
+    {331, 0, 9},
+    {343, 0, 9},
+    {635, 0, 9},
+    {552, 0, 10},
+    {643, 0, 10},
+    {644, 0, 11},
+    {705, 0, 11},
+    {809, 0, 12},
+    {939, 0, 12},
+    {562, 0, 13},
+    {937, 0, 13},
+    {714, 0, 14},
+    {938, 0, 14},
+    {249, 0, 15},
+    {280, 0, 15},
+    {296, 0, 15},
+    {251, 0, 16},
+    {391, 0, 16},
+    {281, 0, 17},
+    {742, 0, 17},
+    {304, 0, 18},
+    {829, 0, 18},
+    {327, 0, 19},
+    {720, 0, 19},
+    {688, 0, 20},
+    {745, 0, 20},
+    {277, 0, 21},
+    {722, 0, 21},
+    {294, 0, 22},
+    {719, 0, 22},
+    {706, 0, 23},
+    {734, 0, 23},
+    {596, 0, 24},
+    {801, 0, 24},
+    {307, 0, 25},
+    {783, 0, 25},
+    {618, 0, 26},
+    {800, 0, 26},
+    {707, 0, 27},
+    {805, 0, 27},
+    {479, 0, 28},
+    {732, 0, 28},
+    {387, 0, 29},
+    {723, 0, 29},
+    {235, 0, 30},
+    {236, 0, 30},
+    {695, 0, 30},
+    {525, 0, 31},
+    {526, 0, 31},
+    {550, 0, 31},
+    {585, 0, 32},
+    {586, 0, 32},
+    {592, 0, 32},
+    {627, 0, 33},
+    {628, 0, 33},
+    {662, 0, 33},
+    {712, 0, 34},
+    {713, 0, 34},
+    {746, 0, 34},
+    {747, 0, 34},
+    {772, 0, 35},
+    {773, 0, 35},
+    {834, 0, 35},
+    {793, 0, 36},
+    {932, 0, 36},
+    {933, 0, 36},
+    {645, 1, 0},
+    {172, 1, 1},
+    {192, 1, 1},
+    {533, 1, 2},
+    {534, 1, 2},
+    {535, 1, 3},
+    {537, 1, 4},
+    {485, 1, 5},
+    {811, 1, 6},
+    {283, 1, 7},
+    {417, 1, 8},
+    {418, 1, 8},
+    {316, 1, 9},
+    {319, 1, 10},
+    {320, 1, 10},
+    {168, 1, 11},
+    {448, 1, 12},
+    {162, 1, 13},
+    {836, 1, 14},
+    {167, 1, 15},
+    {864, 1, 16},
+    {641, 1, 17},
+    {777, 1, 18},
+    {590, 1, 19},
+    {338, 1, 20},
+    {202, 1, 21},
+    {425, 1, 22},
+    {423, 1, 23},
+    {690, 1, 24},
+    {850, 1, 25},
+    {857, 1, 26},
+    {510, 1, 27},
+    {588, 1, 28},
+    {799, 1, 29},
+    {865, 1, 30},
+    {530, 1, 31},
+    {866, 1, 32},
+    {624, 1, 33},
+    {403, 1, 34},
+    {438, 1, 35},
+    {367, 1, 36},
+    {370, 1, 37},
+    {259, 1, 38},
+    {239, 1, 39},
+    {879, 1, 39},
+    {673, 1, 40},
+    {770, 1, 41},
+    {839, 1, 42},
+    {445, 1, 43},
+    {232, 1, 44},
+    {841, 1, 45},
+    {518, 1, 46},
+    {621, 1, 47},
+    {880, 1, 48},
+    {555, 1, 49},
+    {844, 1, 50},
+    {638, 1, 51},
+    {519, 1, 52},
+    {230, 1, 53},
+    {845, 1, 54},
+    {188, 1, 55},
+    {819, 1, 56},
+    {193, 1, 57},
+    {549, 1, 58},
+    {677, 1, 59},
+    {893, 1, 60},
+    {730, 1, 61},
+    {731, 1, 62},
+    {285, 1, 63},
+    {536, 1, 64},
+    {419, 1, 65},
+    {400, 1, 66},
+    {822, 1, 67},
+    {308, 1, 68},
+    {284, 1, 69},
+    {288, 1, 69},
+    {551, 1, 70},
+    {663, 1, 71},
+    {171, 1, 72},
+    {595, 1, 73},
+    {613, 1, 74},
+    {297, 1, 75},
+    {689, 1, 76},
+    {359, 1, 77},
+    {218, 1, 78},
+    {212, 1, 79},
+    {401, 1, 80},
+    {610, 1, 81},
+    {344, 1, 82},
+    {608, 1, 83},
+    {823, 1, 84},
+    {224, 1, 85},
+    {824, 1, 86},
+    {609, 1, 87},
+    {825, 1, 88},
+    {611, 1, 89},
+    {407, 1, 90},
+    {538, 1, 91},
+    {299, 1, 92},
+    {404, 1, 93},
+    {868, 1, 94},
+    {368, 1, 95},
+    {317, 1, 96},
+    {826, 1, 97},
+    {266, 1, 98},
+    {509, 1, 99},
+    {466, 1, 100},
+    {268, 1, 101},
+    {457, 1, 102},
+    {512, 1, 103},
+    {215, 1, 104},
+    {437, 1, 105},
+    {508, 1, 106},
+    {216, 1, 107},
+    {267, 1, 108},
+    {513, 1, 109},
+    {361, 1, 110},
+    {262, 1, 111},
+    {270, 1, 112},
+    {927, 1, 113},
+    {269, 1, 114},
+    {929, 1, 115},
+    {928, 1, 116},
+    {563, 1, 117},
+    {888, 1, 118},
+    {318, 1, 119},
+    {190, 1, 120},
+    {619, 1, 121},
+    {539, 1, 122},
+    {833, 1, 123},
+    {290, 1, 124},
+    {725, 1, 125},
+    {781, 1, 126},
+    {339, 1, 127},
+    {514, 1, 128},
+    {759, 1, 129},
+    {439, 1, 130},
+    {491, 1, 131},
+    {252, 1, 132},
+    {625, 1, 133},
+    {846, 1, 134},
+    {369, 1, 135},
+    {603, 1, 136},
+    {441, 1, 137},
+    {440, 1, 138},
+    {455, 1, 139},
+    {454, 1, 140},
+    {572, 1, 141},
+    {742, 1, 142},
+    {743, 1, 142},
+    {264, 1, 143},
+    {153, 1, 144},
+    {165, 1, 145},
+    {891, 1, 146},
+    {896, 1, 147},
+    {286, 1, 148},
+    {263, 1, 149},
+    {803, 1, 150},
+    {166, 1, 151},
+    {432, 1, 152},
+    {812, 1, 153},
+    {559, 1, 154},
+    {558, 1, 155},
+    {141, 1, 156},
+    {158, 1, 157},
+    {159, 1, 158},
+    {726, 1, 159},
+    {582, 1, 160},
+    {244, 1, 161},
+    {679, 1, 162},
+    {410, 1, 163},
+    {876, 1, 164},
+    {680, 1, 165},
+    {336, 1, 166},
+    {795, 1, 167},
+    {694, 1, 168},
+    {315, 1, 169},
+    {473, 1, 170},
+    {729, 1, 171},
+    {584, 1, 172},
+    {517, 1, 173},
+    {681, 1, 174},
+    {182, 1, 175},
+    {481, 1, 176},
+    {480, 1, 177},
+    {682, 1, 178},
+    {769, 1, 179},
+    {221, 1, 180},
+    {503, 1, 181},
+    {305, 1, 182},
+    {306, 1, 183},
+    {355, 1, 184},
+    {191, 1, 185},
+    {506, 1, 186},
+    {234, 1, 187},
+    {623, 1, 188},
+    {157, 1, 189},
+    {847, 1, 190},
+    {300, 1, 191},
+    {594, 1, 192},
+    {587, 1, 193},
+    {345, 1, 194},
+    {733, 1, 195},
+    {360, 1, 196},
+    {362, 1, 197},
+    {612, 1, 198},
+    {356, 1, 199},
+    {872, 1, 200},
+    {147, 1, 201},
+    {271, 1, 202},
+    {272, 1, 203},
+    {273, 1, 204},
+    {265, 1, 205},
+    {842, 1, 206},
+    {892, 1, 207},
+    {827, 1, 208},
+    {828, 1, 209},
+    {882, 2, 0},
+    {943, 2, 0},
+    {289, 2, 1},
+    {942, 2, 1},
+    {532, 2, 2},
+    {540, 2, 2},
+    {417, 2, 3},
+    {420, 2, 3},
+    {316, 2, 4},
+    {321, 2, 4},
+    {168, 2, 5},
+    {170, 2, 5},
+    {447, 2, 6},
+    {448, 2, 6},
+    {161, 2, 7},
+    {162, 2, 7},
+    {835, 2, 8},
+    {836, 2, 8},
+    {863, 2, 9},
+    {864, 2, 9},
+    {337, 2, 10},
+    {338, 2, 10},
+    {201, 2, 11},
+    {202, 2, 11},
+    {425, 2, 12},
+    {426, 2, 12},
+    {423, 2, 13},
+    {424, 2, 13},
+    {690, 2, 14},
+    {692, 2, 14},
+    {850, 2, 15},
+    {851, 2, 15},
+    {856, 2, 16},
+    {857, 2, 16},
+    {510, 2, 17},
+    {521, 2, 17},
+    {588, 2, 18},
+    {615, 2, 18},
+    {798, 2, 19},
+    {799, 2, 19},
+    {865, 2, 20},
+    {530, 2, 21},
+    {531, 2, 21},
+    {866, 2, 22},
+    {867, 2, 22},
+    {624, 2, 23},
+    {626, 2, 23},
+    {402, 2, 24},
+    {403, 2, 24},
+    {435, 2, 25},
+    {436, 2, 25},
+    {366, 2, 26},
+    {367, 2, 26},
+    {258, 2, 27},
+    {259, 2, 27},
+    {238, 2, 28},
+    {242, 2, 28},
+    {672, 2, 29},
+    {673, 2, 29},
+    {770, 2, 30},
+    {771, 2, 30},
+    {518, 2, 31},
+    {520, 2, 31},
+    {620, 2, 32},
+    {621, 2, 32},
+    {456, 2, 33},
+    {457, 2, 33},
+    {505, 2, 34},
+    {512, 2, 34},
+    {214, 2, 35},
+    {215, 2, 35},
+    {434, 2, 36},
+    {443, 2, 36},
+    {925, 2, 37},
+    {926, 2, 37},
+    {489, 2, 38},
+    {679, 2, 38},
+    {409, 2, 39},
+    {410, 2, 39},
+    {336, 2, 40},
+    {348, 2, 40},
+    {476, 2, 41},
+    {749, 2, 41},
+    {936, 2, 41},
+    {839, 2, 42},
+    {862, 2, 42},
+    {444, 2, 43},
+    {445, 2, 43},
+    {231, 2, 44},
+    {232, 2, 44},
+    {840, 2, 45},
+    {841, 2, 45},
+    {554, 2, 46},
+    {555, 2, 46},
+    {844, 2, 47},
+    {848, 2, 47},
+    {556, 2, 48},
+    {557, 2, 48},
+    {875, 2, 49},
+    {876, 2, 49},
+    {795, 2, 50},
+    {796, 2, 50},
+    {693, 2, 51},
+    {694, 2, 51},
+    {302, 2, 52},
+    {314, 2, 52},
+    {222, 2, 53},
+    {223, 2, 53},
+    {229, 2, 54},
+    {230, 2, 54},
+    {298, 2, 55},
+    {299, 2, 55},
+    {748, 2, 55},
+    {638, 2, 56},
+    {849, 2, 56},
+    {406, 2, 57},
+    {407, 2, 57},
+    {861, 2, 58},
+    {868, 2, 58},
+    {832, 2, 59},
+    {833, 2, 59},
+    {680, 2, 60},
+    {917, 2, 60},
+    {516, 2, 61},
+    {517, 2, 61},
+    {187, 2, 62},
+    {188, 2, 62},
+    {305, 2, 63},
+    {918, 2, 63},
+    {728, 2, 64},
+    {729, 2, 64},
+    {724, 2, 65},
+    {725, 2, 65},
+    {641, 2, 66},
+    {642, 2, 66},
+    {818, 2, 67},
+    {819, 2, 67},
+    {548, 2, 68},
+    {549, 2, 68},
+    {677, 2, 69},
+    {678, 2, 69},
+    {888, 2, 70},
+    {889, 2, 70},
+    {780, 2, 71},
+    {781, 2, 71},
+    {504, 2, 72},
+    {514, 2, 72},
+    {759, 2, 73},
+    {766, 2, 73},
+    {581, 2, 74},
+    {582, 2, 74},
+    {243, 2, 75},
+    {244, 2, 75},
+    {583, 2, 76},
+    {584, 2, 76},
+    {252, 2, 77},
+    {529, 2, 78},
+    {845, 2, 78},
+    {846, 2, 79},
+    {852, 2, 79},
+    {182, 2, 80},
+    {183, 2, 80},
+    {354, 2, 81},
+    {355, 2, 81},
+    {777, 2, 82},
+    {778, 2, 82},
+    {563, 2, 83},
+    {189, 2, 84},
+    {190, 2, 84},
+    {490, 2, 85},
+    {491, 2, 85},
+    {603, 2, 86},
+    {622, 2, 86},
+    {169, 2, 87},
+    {473, 2, 87},
+    {681, 2, 88},
+    {779, 2, 88},
+    {481, 2, 89},
+    {744, 2, 89},
+    {480, 2, 90},
+    {727, 2, 90},
+    {682, 2, 91},
+    {691, 2, 91},
+    {503, 2, 92},
+    {523, 2, 92},
+    {193, 2, 93},
+    {194, 2, 93},
+    {220, 2, 94},
+    {221, 2, 94},
+    {589, 2, 95},
+    {590, 2, 95},
+    {695, 3, 0},
+    {919, 3, 0},
+    {303, 3, 1},
+    {553, 3, 2},
+    {637, 3, 3},
+    {643, 3, 3},
+    {377, 3, 4},
+    {389, 3, 5},
+    {391, 3, 5},
+    {501, 3, 6},
+    {512, 3, 6},
+    {149, 3, 7},
+    {542, 3, 7},
+    {604, 3, 8},
+    {614, 3, 8},
+    {605, 3, 9},
+    {616, 3, 9},
+    {597, 3, 10},
+    {606, 3, 10},
+    {660, 3, 11},
+    {664, 3, 11},
+    {374, 3, 12},
+    {379, 3, 12},
+    {695, 4, 0},
+    {919, 4, 0},
+    {303, 4, 1},
+    {553, 4, 2},
+    {279, 4, 3},
+    {296, 4, 3},
+    {374, 4, 4},
+    {377, 4, 4},
+    {737, 4, 5},
+    {740, 4, 5},
+    {801, 4, 6},
+    {810, 4, 6},
+    {525, 4, 7},
+    {887, 4, 8},
+    {838, 4, 9},
+    {577, 4, 10},
+    {579, 4, 11},
+    {695, 5, 0},
+    {919, 5, 0},
+    {303, 5, 1},
+    {553, 5, 2},
+    {374, 5, 3},
+    {377, 5, 3},
+    {787, 5, 4},
+    {792, 5, 4},
+    {389, 5, 5},
+    {391, 5, 5},
+    {807, 5, 6},
+    {566, 5, 7},
+    {569, 5, 7},
+    {883, 5, 8},
+    {884, 5, 8},
+    {542, 5, 9},
+    {683, 5, 9},
+    {660, 5, 10},
+    {664, 5, 10},
+    {174, 5, 11},
+    {178, 5, 11},
+    {815, 5, 12},
+    {816, 5, 12},
+    {274, 5, 13},
+    {275, 5, 13},
+    {783, 5, 14},
+    {784, 5, 14},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {629, 7, 0},
+    {654, 7, 0},
+    {525, 7, 1},
+    {543, 7, 1},
+    {887, 7, 2},
+    {898, 7, 2},
+    {838, 7, 3},
+    {870, 7, 3},
+    {577, 7, 4},
+    {578, 7, 4},
+    {579, 7, 5},
+    {580, 7, 5},
+    {525, 8, 1},
+    {545, 8, 1},
+    {756, 8, 2},
+    {763, 8, 2},
+    {357, 8, 3},
+    {371, 8, 3},
+    {364, 8, 4},
+    {372, 8, 4},
+    {365, 8, 5},
+    {373, 8, 5},
+    {156, 8, 6},
+    {164, 8, 6},
+    {291, 8, 7},
+    {304, 8, 7},
+    {184, 8, 8},
+    {714, 8, 8},
+    {772, 8, 9},
+    {789, 8, 9},
+    {904, 8, 10},
+    {910, 8, 10},
+    {686, 8, 11},
+    {704, 8, 11},
+    {213, 8, 12},
+    {217, 8, 12},
+    {651, 8, 13},
+    {658, 8, 13},
+    {145, 8, 14},
+    {163, 8, 14},
+    {547, 8, 15},
+    {574, 8, 15},
+    {765, 8, 16},
+    {768, 8, 16},
+    {546, 8, 17},
+    {573, 8, 17},
+    {764, 8, 18},
+    {767, 8, 18},
+    {721, 8, 19},
+    {735, 8, 19},
+    {1, 9, 1},
+    {655, 9, 1},
+    {656, 9, 1},
+    {2, 9, 2},
+    {710, 9, 2},
+    {711, 9, 2},
+    {117, 9, 3},
+    {640, 9, 3},
+    {661, 9, 3},
+    {124, 9, 4},
+    {507, 9, 4},
+    {524, 9, 4},
+    {130, 9, 5},
+    {897, 9, 5},
+    {899, 9, 5},
+    {13, 9, 6},
+    {22, 9, 7},
+    {25, 9, 8},
+    {28, 9, 9},
+    {32, 9, 10},
+    {33, 9, 11},
+    {35, 9, 12},
+    {36, 9, 13},
+    {38, 9, 14},
+    {39, 9, 15},
+    {43, 9, 16},
+    {48, 9, 17},
+    {52, 9, 18},
+    {58, 9, 19},
+    {63, 9, 20},
+    {65, 9, 21},
+    {66, 9, 22},
+    {67, 9, 23},
+    {68, 9, 24},
+    {69, 9, 25},
+    {76, 9, 26},
+    {80, 9, 27},
+    {81, 9, 28},
+    {82, 9, 29},
+    {83, 9, 30},
+    {84, 9, 31},
+    {85, 9, 32},
+    {129, 9, 33},
+    {136, 9, 34},
+    {20, 9, 35},
+    {21, 9, 36},
+    {24, 9, 37},
+    {26, 9, 38},
+    {27, 9, 39},
+    {30, 9, 40},
+    {31, 9, 41},
+    {47, 9, 42},
+    {177, 9, 42},
+    {181, 9, 42},
+    {49, 9, 43},
+    {175, 9, 43},
+    {179, 9, 43},
+    {50, 9, 44},
+    {176, 9, 44},
+    {180, 9, 44},
+    {51, 9, 45},
+    {199, 9, 45},
+    {208, 9, 45},
+    {53, 9, 46},
+    {184, 9, 46},
+    {198, 9, 46},
+    {54, 9, 47},
+    {200, 9, 47},
+    {219, 9, 47},
+    {55, 9, 48},
+    {525, 9, 48},
+    {544, 9, 48},
+    {56, 9, 49},
+    {756, 9, 49},
+    {761, 9, 49},
+    {57, 9, 50},
+    {139, 9, 50},
+    {145, 9, 50},
+    {59, 9, 51},
+    {137, 9, 51},
+    {138, 9, 51},
+    {60, 9, 52},
+    {140, 9, 52},
+    {160, 9, 52},
+    {61, 9, 53},
+    {328, 9, 53},
+    {347, 9, 53},
+    {62, 9, 54},
+    {323, 9, 54},
+    {346, 9, 54},
+    {64, 9, 55},
+    {484, 9, 55},
+    {486, 9, 55},
+    {649, 10, 0},
+    {237, 10, 1},
+    {240, 10, 1},
+    {282, 10, 2},
+    {292, 10, 2},
+    {390, 10, 3},
+    {633, 10, 4},
+    {646, 10, 4},
+    {477, 10, 5},
+    {478, 10, 5},
+    {600, 10, 6},
+    {601, 10, 6},
+    {385, 10, 7},
+    {386, 10, 7},
+    {487, 10, 8},
+    {488, 10, 8},
+    {261, 10, 9},
+    {358, 10, 9},
+    {820, 10, 10},
+    {821, 10, 10},
+    {817, 10, 11},
+    {894, 10, 12},
+    {895, 10, 12},
+    {905, 10, 13},
+    {631, 10, 14},
+    {632, 10, 14},
+    {802, 10, 15},
+    {804, 10, 15},
+    {813, 10, 16},
+    {814, 10, 16},
+    {392, 10, 17},
+    {393, 10, 17},
+    {627, 11, 1},
+    {636, 11, 1},
+    {137, 11, 2},
+    {155, 11, 2},
+    {427, 11, 3},
+    {431, 11, 3},
+    {901, 11, 4},
+    {905, 11, 4},
+    {380, 11, 5},
+    {394, 11, 5},
+    {629, 11, 6},
+    {632, 11, 6},
+    {647, 12, 0},
+    {144, 12, 1},
+    {146, 12, 2},
+    {148, 12, 3},
+    {197, 12, 4},
+    {203, 12, 5},
+    {324, 12, 6},
+    {325, 12, 7},
+    {351, 12, 8},
+    {384, 12, 9},
+    {388, 12, 10},
+    {395, 12, 11},
+    {396, 12, 12},
+    {430, 12, 13},
+    {433, 12, 14},
+    {855, 12, 14},
+    {446, 12, 15},
+    {449, 12, 16},
+    {450, 12, 17},
+    {451, 12, 18},
+    {502, 12, 19},
+    {511, 12, 20},
+    {522, 12, 21},
+    {527, 12, 22},
+    {528, 12, 23},
+    {602, 12, 24},
+    {607, 12, 25},
+    {653, 12, 26},
+    {667, 12, 27},
+    {722, 12, 28},
+    {750, 12, 29},
+    {751, 12, 30},
+    {758, 12, 31},
+    {760, 12, 32},
+    {775, 12, 33},
+    {776, 12, 34},
+    {788, 12, 35},
+    {790, 12, 36},
+    {797, 12, 37},
+    {830, 12, 38},
+    {843, 12, 39},
+    {853, 12, 40},
+    {854, 12, 41},
+    {860, 12, 42},
+    {902, 12, 43},
+    {837, 12, 44},
+    {921, 12, 45},
+    {922, 12, 46},
+    {923, 12, 47},
+    {930, 12, 48},
+    {931, 12, 49},
+    {934, 12, 50},
+    {935, 12, 51},
+    {515, 12, 52},
+    {383, 12, 53},
+    {233, 12, 54},
+    {382, 12, 55},
+    {669, 12, 56},
+    {650, 13, 0},
+    {874, 13, 0},
+    {235, 13, 1},
+    {495, 13, 1},
+    {322, 13, 2},
+    {350, 13, 2},
+    {756, 13, 3},
+    {762, 13, 3},
+    {838, 13, 4},
+    {871, 13, 4},
+    {882, 14, 1},
+    {919, 14, 1},
+    {687, 14, 2},
+    {688, 14, 2},
+    {274, 14, 3},
+    {277, 14, 3},
+    {753, 14, 4},
+    {754, 14, 4},
+    {405, 14, 5},
+    {408, 14, 5},
+    {652, 14, 6},
+    {657, 14, 6},
+    {374, 14, 7},
+    {375, 14, 7},
+    {228, 14, 8},
+    {831, 14, 8},
+    {475, 14, 9},
+    {486, 14, 9},
+    {738, 14, 10},
+    {739, 14, 10},
+    {734, 14, 11},
+    {736, 14, 11},
+    {660, 14, 12},
+    {664, 14, 12},
+    {145, 14, 13},
+    {152, 14, 13},
+    {461, 14, 14},
+    {465, 14, 14},
+    {474, 14, 15},
+    {482, 14, 15},
+    {483, 14, 15},
+    {459, 14, 16},
+    {460, 14, 16},
+    {278, 14, 17},
+    {287, 14, 17},
+    {195, 14, 18},
+    {226, 14, 18},
+    {186, 14, 19},
+    {225, 14, 19},
+    {807, 14, 20},
+    {808, 14, 20},
+    {207, 14, 21},
+    {591, 14, 21},
+    {245, 14, 22},
+    {303, 14, 22},
+    {553, 14, 23},
+    {561, 14, 23},
+    {248, 14, 24},
+    {295, 14, 24},
+    {293, 14, 25},
+    {774, 14, 25},
+    {143, 14, 26},
+    {155, 14, 26},
+    {185, 14, 27},
+    {227, 14, 27},
+    {794, 14, 28},
+    {829, 14, 28},
+    {940, 14, 29},
+    {941, 14, 29},
+    {639, 14, 30},
+    {643, 14, 30},
+    {906, 14, 31},
+    {909, 14, 31},
+    {493, 14, 32},
+    {500, 14, 33},
+    {499, 14, 34},
+    {428, 14, 35},
+    {429, 14, 36},
+    {276, 14, 37},
+    {301, 14, 37},
+    {649, 15, 0},
+    {660, 15, 1},
+    {664, 15, 1},
+    {340, 15, 2},
+    {343, 15, 2},
+    {329, 15, 3},
+    {330, 15, 3},
+    {630, 16, 0},
+    {0, 16, 1},
+    {1, 16, 2},
+    {4, 16, 3},
+    {3, 16, 4},
+    {12, 16, 5},
+    {11, 16, 6},
+    {10, 16, 7},
+    {9, 16, 8},
+    {71, 16, 9},
+    {8, 16, 10},
+    {7, 16, 11},
+    {6, 16, 12},
+    {75, 16, 13},
+    {42, 16, 14},
+    {5, 16, 15},
+    {74, 16, 16},
+    {107, 16, 17},
+    {41, 16, 18},
+    {73, 16, 19},
+    {90, 16, 20},
+    {106, 16, 21},
+    {119, 16, 22},
+    {2, 16, 23},
+    {72, 16, 24},
+    {40, 16, 25},
+    {105, 16, 26},
+    {70, 16, 27},
+    {118, 16, 28},
+    {89, 16, 29},
+    {131, 16, 30},
+    {104, 16, 31},
+    {23, 16, 32},
+    {112, 16, 33},
+    {29, 16, 34},
+    {117, 16, 35},
+    {34, 16, 36},
+    {124, 16, 37},
+    {37, 16, 38},
+    {130, 16, 39},
+    {13, 16, 40},
+    {22, 16, 41},
+    {25, 16, 42},
+    {28, 16, 43},
+    {32, 16, 44},
+    {33, 16, 45},
+    {35, 16, 46},
+    {36, 16, 47},
+    {38, 16, 48},
+    {39, 16, 49},
+    {43, 16, 50},
+    {48, 16, 51},
+    {52, 16, 52},
+    {58, 16, 53},
+    {63, 16, 54},
+    {65, 16, 55},
+    {66, 16, 56},
+    {67, 16, 57},
+    {68, 16, 58},
+    {69, 16, 59},
+    {76, 16, 60},
+    {80, 16, 61},
+    {81, 16, 62},
+    {82, 16, 63},
+    {83, 16, 64},
+    {84, 16, 65},
+    {85, 16, 66},
+    {86, 16, 67},
+    {87, 16, 68},
+    {88, 16, 69},
+    {91, 16, 70},
+    {95, 16, 71},
+    {96, 16, 72},
+    {97, 16, 73},
+    {98, 16, 74},
+    {99, 16, 75},
+    {100, 16, 76},
+    {101, 16, 77},
+    {102, 16, 78},
+    {103, 16, 79},
+    {108, 16, 80},
+    {113, 16, 81},
+    {120, 16, 82},
+    {125, 16, 83},
+    {132, 16, 84},
+    {14, 16, 85},
+    {44, 16, 86},
+    {77, 16, 87},
+    {92, 16, 88},
+    {109, 16, 89},
+    {114, 16, 90},
+    {121, 16, 91},
+    {126, 16, 92},
+    {133, 16, 93},
+    {15, 16, 94},
+    {45, 16, 95},
+    {78, 16, 96},
+    {93, 16, 97},
+    {110, 16, 98},
+    {115, 16, 99},
+    {122, 16, 100},
+    {127, 16, 101},
+    {134, 16, 102},
+    {16, 16, 103},
+    {46, 16, 104},
+    {79, 16, 105},
+    {94, 16, 106},
+    {111, 16, 107},
+    {116, 16, 108},
+    {123, 16, 109},
+    {128, 16, 110},
+    {135, 16, 111},
+    {17, 16, 112},
+    {18, 16, 113},
+    {19, 16, 114},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
+    {380, 6, 0},
+    {381, 6, 0},
+    {627, 6, 0},
+    {644, 6, 0},
+    {838, 6, 1},
+    {873, 6, 1},
+    {920, 6, 1},
+    {924, 6, 1},
 };
 
-/* properties values: 2640 bytes. */
+/* properties values: 7350 bytes. */
 
 /* General_Category. */
 
 RE_UINT8 re_general_category_stage_1[] = {
      0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 14,  7,  7, 15, 
-    16, 17, 18,  7, 19,  7, 20,  7,  7,  7,  7,  7,  7, 21,  7,  7, 
-     7,  7,  7,  7,  7,  7, 22,  7,  7,  7, 23,  7,  7,  7, 24,  7, 
-    25,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7, 26,  7, 27, 28,  7,  7,  7,  7,  7,  7,  7, 29, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 14, 14, 14, 15, 
+    16, 17, 18, 19, 20, 19, 21, 19, 19, 19, 19, 19, 19, 22, 19, 19, 
+    19, 19, 19, 19, 19, 19, 23, 19, 19, 19, 24, 19, 19, 19, 25, 19, 
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-    30,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-    14,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 31, 
-    14,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 31, 
+     7,  7,  7,  7, 26,  7, 27, 28, 19, 19, 19, 19, 19, 19, 19, 29, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    30, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 31, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 31, 
 };
 
 RE_UINT8 re_general_category_stage_2[] = {
@@ -1245,503 +2612,367 @@ RE_UINT8 re_general_category_stage_2[] = {
      44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59, 
      60,  61,  62,  63,  64,  64,  65,  66,  67,  68,  69,  70,  71,  69,  72,  73, 
      69,  69,  64,  74,  64,  64,  75,  17,  76,  77,  78,  79,  80,  81,  69,  82, 
-     83,  84,  85,  86,  87,  88,  69,  69,  89,  17,  17,  17,  17,  17,  17,  17, 
+     83,  84,  85,  86,  87,  88,  69,  69,  34,  34,  34,  34,  34,  34,  34,  34, 
+     34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34, 
+     34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  89,  34,  34,  34,  34, 
+     34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  90, 
+     91,  34,  34,  34,  34,  34,  34,  34,  34,  92,  34,  34,  93,  94,  95,  96, 
+     97,  98,  99, 100, 101, 102, 103, 104,  34,  34,  34,  34,  34,  34,  34,  34, 
+     34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34, 105, 
+    106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 106, 
+    107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 
+    107, 107,  34,  34, 108, 109, 110, 111,  34,  34, 112, 113, 114, 115, 116, 117, 
+    118, 119, 120, 121,  17, 122, 123, 124, 125, 126,  17,  17,  17,  17,  17,  17, 
+    127,  17, 128,  17, 129,  17, 130,  17, 131,  17,  17,  17, 132,  17,  17,  17, 
+    133, 134,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
      17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
-     17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  90,  89,  17,  17,  17, 
-     17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  91, 
-     92,  34,  34,  34,  34,  34,  34,  34,  34,  93,  34,  34,  94,  95,  96,  97, 
-     98,  99, 100, 101, 102, 103, 104, 105,  89,  17,  17,  17,  17,  17,  17,  17, 
-     17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 106, 
-    107,  17,  17,  17,  17,  17, 108, 109, 107,  17,  17,  17,  17,  17,  17, 108, 
-    110,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
-     17, 111,  34,  34, 112, 113, 114, 115,  34,  34, 116, 117, 118, 119, 120, 121, 
-    122, 123, 124, 125,  17, 126, 127, 128, 129, 130,  17,  17,  17,  17,  17,  17, 
-    131,  17, 132,  17, 133,  17, 134,  17, 135,  17,  17,  17, 136,  17,  17,  17, 
-    137, 138,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
-     34,  34,  34,  34,  34,  34, 139,  17, 140,  17,  17,  17,  17,  17,  17,  17, 
-     34,  34,  34,  34,  34,  34,  34,  34, 141,  17,  17,  17,  17,  17,  17,  17, 
-     34,  34,  34,  34, 142,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
-    143,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
-     69, 144, 145, 146, 147,  17, 148,  17, 149, 150, 151, 152, 153, 154, 155, 156, 
-    157, 158, 159, 160, 161,  17, 162, 163, 164, 165, 166, 167, 168, 169, 170,  17, 
-     89,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
-     17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 171,  89,  17, 
-     17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 172,  17, 
-    173,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
-     34,  34,  34,  34, 174,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
-    175,  17, 176, 177,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
-     17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 178, 
+     34,  34,  34,  34,  34,  34, 135,  17, 136,  17,  17,  17,  17,  17,  17,  17, 
+     34,  34,  34,  34,  34,  34,  34,  34, 137,  17,  17,  17,  17,  17,  17,  17, 
+     34,  34,  34,  34, 138,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
+    139,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
+     69, 140, 141, 142, 143,  17, 144,  17, 145, 146, 147, 148, 149, 150, 151, 152, 
+    153, 154, 155, 156, 157,  17, 158, 159, 160, 161, 162, 163, 164, 165, 166,  17, 
+     34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34, 167,  34,  34, 
+     34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34,  34, 168,  34, 
+    169,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
+     34,  34,  34,  34, 169,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
+    170,  17, 171, 172,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 
+    107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 173, 
 };
 
 RE_UINT16 re_general_category_stage_3[] = {
-      0,   0,   0,   0,   1,   2,   3,   4,   5,   6,   6,   7,   8,   9,   9,  10, 
-      0,   0,   0,   0,  11,  12,  13,  14,   6,   6,  15,  16,   9,   9,  17,   9, 
-     18,  18,  18,  18,  18,  18,  18,  19,  19,  20,  18,  18,  18,  18,  18,  21, 
-     22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  19,  32,  18,  18,  33,  18, 
-     18,  18,  18,  18,  18,  18,  34,  35,  36,  18,   9,   9,   9,   9,   9,   9, 
-      9,   9,  37,   9,   9,   9,  38,  38,  39,  38,  40,  41,  42,  43,  41,  41, 
-     44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  45,  46, 
-     47,  48,  49,   6,  50,  51,   9,   9,   9,  52,  53,  18,  18,  18,  54,  55, 
-      6,   6,   6,   6,   6,   6,   9,   9,   9,   9,   9,   9,  18,  18,  18,  18, 
-     56,  57,  18,  18,  18,  18,  18,  18,  58,  59,  18,  18,  18,  18,  18,  18, 
-     18,  18,  18,  18,  18,  60,  61,   6,   6,   6,  62,  63,  64,   9,   9,   9, 
-      9,  65,  66,  44,  44,  44,  44,  67,  68,  60,  69,  69,  69,  70,  71,  60, 
-     72,  73,  44,  74,  69,  69,  69,  69,  75,  76,  44,  44,   3,  77,  78,  69, 
-     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  79,  80,  81,  82,   3,  83, 
-     84,  85,  86,  69,  69,  69,  44,  44,  44,  87,  69,  69,  69,  69,  69,  69, 
-     69,  69,  69,  69,  88,  44,  89,  60,   3,  90,  69,  69,  69,  76,  91,  92, 
-     69,  69,  88,  93,  94,  95,  84,  96,  69,  69,  69,  97,  60,  60,  60,  60, 
-     60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-     98,  69,  69,  69,  69,  69,  69,  99, 100, 101, 102,  69, 103,   3, 104, 105, 
-    106, 107, 108,  69,  69, 109, 110, 111, 112, 113, 114, 115, 116,   3, 117, 118, 
-    119, 120, 108,  69,  69, 109, 121, 122, 123, 124, 125, 126, 127,   3, 128,  60, 
-    119, 129, 130,  69,  69, 109, 131, 111, 132, 133, 134,  60, 116,   3, 135,  60, 
-    106, 107, 108,  69,  69, 109, 131, 136, 112, 137, 138, 115, 116,   3, 139,  60, 
-    140, 141, 142, 143, 144, 141,  69, 145, 146, 147, 148,  60, 127,   3, 149, 150, 
-    151, 152, 109,  69,  69, 109, 153, 154, 155, 156, 157, 158, 116,   3,  60, 159, 
-    160, 152, 109,  69,  69, 109, 153, 136, 161, 162, 163, 164, 116,   3, 165,  60, 
-    160, 152, 109,  69,  69,  69,  69, 166, 167, 168, 114,  60, 116,   3, 169, 170, 
-    160,  69, 171, 172,  69,  69, 130, 173, 171, 174, 175, 176,  60,  60, 177,  60, 
-    105,  69,  69,  69,  69,  69, 178, 179, 180, 181,   3, 182,  60,  60,  60,  60, 
-    183, 184, 185, 105, 186, 187, 178, 188, 189, 190,   3, 191,  60,  60,  60,  60, 
-    192,  84, 193, 194,   3, 195, 196, 197,  69, 105,  69,  69,  69, 198,  66, 199, 
-    200, 201,  44,  66,  44,  44,  44, 202, 203, 204, 205, 206,  60,  60,  60,  60, 
-     69,  69,  69,  69,  69, 207, 208, 209,   3, 210, 211, 212, 213, 214, 215,  69, 
-    216, 217,   3, 218,   6,   6,   6,   6, 219,  60,  69,  69,  69,  69,  69, 220, 
-     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 
-     69,  69,  69,  69,  69,  69,  69,  69,  69, 142, 171, 142,  69,  69,  69,  69, 
-     69, 142,  69,  69,  69,  69, 142, 171, 142,  69, 171,  69,  69,  69,  69,  69, 
-     69,  69, 142,  69,  69,  69,  69,  69,  69,  69,  69, 221, 222, 223, 224, 225, 
-     69,  69, 226, 227,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 198,  60, 
-    228,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 
-     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 229,  69,  69, 
-    230,  69,  69, 231,  69,  69,  69,  69,  69,  69,  69,  69,  69, 232, 233,  60, 
-     69, 152, 234,  60,  69,  69, 235,  60,  69,  69, 236,  60,  69, 152, 237,  60, 
-     69,  69,  69,  69,  69,  69, 238, 239, 240, 100, 241, 242,   3, 243, 224, 244, 
-    245, 246,   3, 243,  69,  69,  69,  69, 247,  69,  69,  69,  69,  69,  69,  60, 
-     69,  69,  69,  69,  69, 248,  69,  69,  69,  69,  69,  69,  69,  69, 249,  60, 
-     69,  69,  69, 198, 250, 251, 252, 253, 254,   3,  69,  69,  69, 249, 198,  60, 
-     69,  69,  69,  69,  69, 255, 176, 176, 256, 257,   3, 258, 226, 226, 226, 226, 
-     69,  69, 259, 260,  69,  69,  69,  69,  69,  69, 261, 262, 263, 264, 265, 266, 
-      3, 243,   3, 243, 267, 268,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-    269,  69,  69,  69,  69,  69, 270, 271, 272, 255,   3, 210, 273, 274, 275, 276, 
-    277,  69,  69,  69, 278, 279,   3, 243,  69,  69,  69,  69, 280, 281, 282, 283, 
-     69,  69,  69,  69, 284, 285, 286, 287,   3, 288,   3,  90,  69,  69,  69, 289, 
-     60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 290,  44, 208, 291, 292,  60, 
-      9,   9,   9,   9,   9, 293,  38,  38,  38,  38,  38,  38, 294,   9,   9, 295, 
-      9,   9,   9, 296,  38,  38,  38,  38,  44,  44,  44,  44, 262,  60,  60, 297, 
-     18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18, 
-     18,  18, 298, 299,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18, 
-      9,   6, 300, 219,   9,   6,   9,   6, 300, 219,   9, 301,   9,   6,   9, 300, 
-      9, 302,   9, 302,   9, 302, 303, 304, 305, 306, 307, 308,   9, 309, 310, 311, 
-    312, 313, 314, 315,  84, 316,  84, 317, 318,  84, 319, 320, 321, 322, 323, 324, 
-    224, 325,  38, 326, 327, 327, 327, 328,  60,  60,  44, 329, 330,  44, 331,  60, 
-    332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 224, 224, 342, 342, 342, 342, 
-    343, 344, 345, 346, 347, 348, 226, 226, 226, 349, 350, 226, 226, 226, 351, 352, 
-    352, 352, 352, 352, 352, 352, 352, 352, 352, 352, 352, 352, 352, 352, 352, 352, 
-    226, 353, 226, 226, 354, 355, 226, 226, 226, 226, 226, 226, 226, 226, 226, 356, 
-    226, 226, 226, 357, 352, 352, 353, 226, 226, 226, 226, 351, 354, 226, 358,  60, 
-    226, 226, 226, 226, 359,  60,  60,  60, 226, 360,  60,  60, 224, 224, 224, 224, 
-    224, 224, 224, 361, 226, 226, 226, 226, 226, 226, 226, 226, 226, 362, 224, 224, 
-    226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 
-    226, 226, 226, 226, 226, 226, 363, 226, 364, 226, 226, 226, 226, 226, 226, 352, 
-    226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 363, 226, 226, 
-    365, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 366, 367, 224, 
-    224, 224, 361, 226, 226, 226, 226, 226, 368, 369, 352, 352, 370, 366, 352, 352, 
-    371, 372, 372, 373, 352, 352, 352, 352, 352, 352, 352, 374, 352, 352, 352, 375, 
-    226, 226, 226, 226, 226, 226, 352, 352, 376, 377, 226, 227,  60,  60,  60,  60, 
-      6,   6,   6,   6,   6,  62,   9,   9,   9,   9,   9, 378, 379, 380, 381, 382, 
-     18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18, 383, 384, 385, 386, 
-      9,   9,   9,   9, 300,  60,  69,  69,  69,  69,  69,  69, 249, 387, 388, 389, 
-     69,  69, 171,  60, 171, 171, 171, 171, 171, 171, 171, 171,  44,  44,  44,  44, 
-    390, 391, 392, 393, 394, 395, 396,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-    226, 226, 226, 397, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 358,  60, 
-    226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 398,  60,  60,  60, 226, 358, 
-    399, 366, 400, 401, 402, 403, 404, 405, 105,  69,  69,  69,  69,  69,  69,  69, 
-     69,  69, 171, 406, 228,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 407, 
-    408,  69,  69,  69,  69, 249, 105,  69,  69,  69,  69,  69,  69,  69,  69,  69, 
-     69, 171, 409, 226,  69,  69,  69,  70, 226, 226, 226, 226, 358,  60,  69,  69, 
-    226, 226, 226, 359, 224, 410, 226, 226, 226, 226, 411, 224, 226, 226, 226, 226, 
-    224, 410, 226, 226, 226, 226, 411, 224, 226, 226, 226, 226, 226, 226, 226, 359, 
-    134,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-     60,  60,  60,  60,  60,  60, 412,  60, 226, 226, 226, 226, 226, 226, 226, 226, 
-     60,  60,  60,  60,  60,  60,  60,  60,  60, 413,  60,  60,  60,  60,  60,  60, 
-     69,  69, 414,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 
-     69, 198, 226, 226, 226, 226, 226, 226, 359,  60,  69,  69,  69,  69,  69, 289, 
-     69, 415,  69,  69,   3, 416,  60,  60,  18,  18,  18,  18,  18, 417, 418, 419, 
-     18,  18,  18,  60,  69,  69,  69,  69,  69,  69,  69,  69, 420, 342, 421,  60, 
-     41,  41, 422,  38, 423,  18,  20,  18,  18,  18,  18,  18,  18,  18, 295, 424, 
-     18, 425, 426,  60,  18, 426,  60,  60,  60,  60,  60,  60,  60,  60,  60, 427, 
-    428, 429,  69,  69, 430, 358, 431, 432,  69,  69,  69,  69,  69,  69, 433,  60, 
-    434,  69,  69,  69,  69,  69, 284, 176, 435, 436,   3, 243,  44,  44, 437, 438, 
-      3,  90,  69,  69,  88, 439,  69,  69, 259,  44, 282, 440,  69,  69,  69, 198, 
-     98,  69,  69,  69,  69,  69, 441, 442, 443, 444,   3, 445,  60,  60,  60,  60, 
-     69,  69,  69,  69,  69, 446, 447,  60, 429, 448,   3, 449,  69,  69, 450, 451, 
-     69,  69,  69,  69,  69,  69, 452, 453, 248,  60,  60, 454,  60,  60,  60,  60, 
-    455, 455, 455,  60, 171, 171,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-     60,  60,  60,  60,  60,  60,  60,  60,  69,  69,  69,  69, 456, 457,   3, 243, 
-     60,  60,  60,  60, 413,  60,  69,  69, 171, 458,  69,  69,  69,  69,  69, 255, 
-    459,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-     60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 460, 
-    459,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 460, 
-    461,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-     60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 462, 
-     69,  69,  69,  69,  69, 249,  69,  69,  69,  69,  69,  69,  69, 249,  69,  69, 
-     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 158,  60,  60,  60,  60, 
-    378,  60, 463, 464,  69, 465, 171, 466, 467,  69,  69,  69,  69,  69,  69,  69, 
-     69,  69,  69,  69,  69,  69, 468,  41, 469,  60, 458,  69,  69,  69,  69,  69, 
-     69,  69,  69,  69,  69,  69,  69, 470,  60,  60,  69,  69,  69,  69,  69,  69, 
-     69,  69, 172,  69,  69,  69,  69,  69,  69,  60,  60,  60,  60,  60,  69, 471, 
-     44,  44, 472, 473, 262,  60, 474, 372, 475, 476, 477, 478, 479, 480, 152,  69, 
-     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 481, 
-    482,   2,   3,   4,   5,   6,   6,   7,   8,   9,   9, 483, 484,  69,  75,  69, 
-     69,  69,  69, 485,  69,  69,  69, 171, 172, 172, 172, 486, 487, 488,  60, 489, 
-     69, 153,  69,  69, 171,  69,  69, 490,  69, 249,  69, 249,  60,  60,  60,  60, 
-     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  70, 
-    491, 224, 224, 224, 224, 224, 492, 226, 342, 342, 342, 342, 342, 342, 493, 494, 
-    226, 495, 226, 358,  60,  60,  60,  60,  60,  60, 226, 226, 226, 226, 226, 496, 
-     69,  69,  69, 198,  69,  69,  69,  69,  69,  69, 134,  60,  60,  60,  60,  60, 
-     69,  69,  69, 171, 497,  60,  69,  69, 498, 499,  60,  60,  60,  60,  60,  60, 
-     69,  69,  69, 500,  69,  69,  69,  69, 255,  69, 501,  60,  60,  60,  60,  60, 
-      6,   6,   6,   6,   6,   9,   9,   9,   9,   9,  69,  69,  69,  69,  69,  69, 
-     69,  69,  69, 249,   3, 243,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-    249, 109,  69,  69,  69,  69, 129, 502,  69,  69, 500, 224,  60,  60,  60,  60, 
-     69,  69, 503, 504,  69,  69,  69, 505,  60,  60,  60,  60,  60,  60,  60,  60, 
-    506, 297, 153, 105,  69,  69, 255, 507, 224,  60,  84, 388,  69,  69,  69, 508, 
-     69,  69,  69,  69,  69,  69, 249, 509,  69,  69, 249, 224,  69,  69,  70, 224, 
-     69,  69,  69,  69,  69,  69,  69,  69,  69, 134,  60,  60,  60,  60,  60,  60, 
-     60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 224, 224, 224, 510, 
-    511,  69,  69,  69,  69,  69,  69,  44, 181, 268, 512, 224, 513,   3,  60,  60, 
-    277,  69,  69,  69,  69,  69, 514, 515, 396,  60,  60,  60,  60,  60,  60,  60, 
-     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 171,  60,  60, 
-    342, 342, 342, 342, 342, 342, 342, 342, 342, 342, 342, 342, 516,  60, 517,  60, 
-     69,  69,  69,  69,  69, 171,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-     69,  69,  69,  69,  69,  69,  69, 134,  60,  60,  60,  60,  60,  60,  60,  60, 
-    158,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-    226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 398,  60, 
-    226, 226, 226, 226, 359, 365, 226, 226, 226, 226, 226, 226, 518, 519, 520, 521, 
-    522, 275, 226, 226, 226, 523, 226, 226, 226, 226, 226, 398,  60,  60,  60,  60, 
-    226, 226, 226, 226, 226, 226, 226, 226, 524,  60,  60,  60,  60,  60,  60,  60, 
-    226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 359,  60, 224, 224, 244,  60, 
-      6,   6,   6, 525,   9,   9, 526,   6,   6, 527, 303,   9,   9,   6,   6,   6, 
-    525,   9,   9, 528, 529, 530, 527, 531, 532,   9,   6,   6,   6, 525,   9,   9, 
-    533, 534, 535, 536,   9,   9,   9, 537, 538, 539, 540,   9,   9, 526,   6,   6, 
-    527,   9,   9,   9,   6,   6,   6, 525,   9,   9, 526,   6,   6, 527,   9,   9, 
-      9,   6,   6,   6, 525,   9,   9, 526,   6,   6, 527,   9,   9,   9,   6,   6, 
-      6, 525,   9,   9, 300,   6,   6,   6, 541,   9,   9, 542, 543,   6,   6, 544, 
-      9,   9, 545, 526,   6,   6, 546,   9,   9,  17, 547,   6,   6,  15,   9,   9, 
-      9, 548,   6,   6,   6, 541,   9,   9, 542, 549,   3,   3,   3,   3,   3,   3, 
-    226, 226, 226, 226, 226, 358, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 
-    226, 226, 358,  60, 226, 359, 365, 359, 365, 226, 365, 226,  60,  60,  60,  60, 
-    224, 550, 226, 226, 226, 359, 226, 226, 226, 226, 226, 226, 226, 227, 226, 226, 
-    226, 226, 226, 360,  60,  60,  60,  60,  60,  60,  60,  60, 551, 226, 226, 226, 
-    360,  60, 226, 226, 226, 226, 226, 360, 226, 552, 227,  60,  60,  60,  60,  60, 
-    226, 226, 226, 226, 552,  60, 553, 226, 226, 226, 226, 226, 226, 226, 226, 276, 
-    226, 226, 358,  60, 226, 226, 226, 226, 204, 360,  60,  60, 226, 226, 552,  60, 
-    226, 226, 226, 226, 226, 226, 226, 359, 554, 226, 226, 226, 226, 226, 226, 226, 
-    226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 555, 
-    226, 226, 226, 226, 226, 226, 226, 398,  60,  60, 226, 226, 226,  60,  60,  60, 
-     60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 556, 
-    365, 226, 557, 558, 398, 559, 560, 226, 561, 226,  60,  60,  60,  60,  60,  60, 
-    226, 226, 226, 226, 226, 226, 226, 226, 398,  60,  60,  60,  60,  60,  60,  60, 
-    226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 358,  60, 
-     60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 164,  60,  60,  60,  60,  60, 
-     60,  60,  60,  60,  60,  60, 562,  60, 134,  60,  60,  60,  60,  60,  60,  60, 
-     60,  60,  60, 412,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-     69,  69,  69, 249,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 
-    563,  60,  60,  60, 564, 564, 564, 564, 564, 564, 564, 564, 564, 564, 564, 564, 
-     44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44, 
-     44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  60,  60, 
-     60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60, 565, 
+      0,   0,   1,   2,   3,   4,   5,   6,   0,   0,   7,   8,   9,  10,  11,  12, 
+     13,  13,  13,  14,  15,  13,  13,  16,  17,  18,  19,  20,  21,  22,  13,  23, 
+     13,  13,  13,  24,  25,  11,  11,  11,  11,  26,  11,  27,  28,  29,  30,  31, 
+     32,  32,  32,  32,  32,  32,  32,  33,  34,  35,  36,  11,  37,  38,  13,  39, 
+      9,   9,   9,  11,  11,  11,  13,  13,  40,  13,  13,  13,  41,  13,  13,  13, 
+     13,  13,  42,  43,   9,  44,  45,  11,  46,  47,  32,  48,  49,  50,  51,  52, 
+     53,  54,  50,  50,  55,  32,  56,  57,  50,  50,  50,  50,  50,  58,  59,  60, 
+     61,  62,  50,  32,  63,  50,  50,  50,  50,  50,  64,  65,  66,  50,  67,  68, 
+     50,  69,  70,  71,  50,  72,  73,  73,  73,  73,  73,  73,  73,  73,  73,  73, 
+     74,  50,  50,  75,  76,  77,  78,  79,  80,  81,  82,  83,  84,  85,  86,  87, 
+     88,  81,  82,  89,  90,  91,  92,  93,  94,  95,  82,  96,  97,  98,  86,  99, 
+     80,  81,  82, 100, 101, 102,  86, 103, 104, 105, 106, 107, 108, 109,  92, 110, 
+    111, 112,  82, 113, 114, 115,  86, 116, 117, 112,  82, 118, 119, 120,  86, 121, 
+    117, 112,  50, 122, 123, 124,  86, 125, 126, 127,  50, 128, 129, 130,  73, 131, 
+    132,  50,  50, 133, 134, 135,  73,  73, 136, 137, 138, 139, 140, 141,  73,  73, 
+    142, 143, 144, 145, 146,  50, 147, 148, 149, 150,  32, 151, 152, 153,  73,  73, 
+     50,  50, 154, 155, 156, 157, 158, 159, 160, 161,   9,   9, 162,  50,  50, 163, 
+     50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50, 164, 165,  50,  50, 
+    164,  50,  50, 166, 167, 168,  50,  50,  50, 167,  50,  50,  50, 169, 170, 171, 
+     50, 172,  50,  50,  50,  50,  50, 173, 174,  50,  50,  50,  50,  50,  50,  50, 
+     50,  50,  50,  50,  50,  50, 175,  50, 176, 177,  50,  50,  50,  50, 178, 179, 
+    180, 181,  50, 182,  50, 183, 180, 184,  50,  50,  50, 185, 186, 187, 188, 189, 
+    190, 188,  50,  50, 191,  50,  50, 192,  50,  50, 193,  50,  50,  50,  50, 194, 
+     50, 147, 195, 196, 197,  50, 198, 173,  50,  50, 199, 200, 201, 202, 203, 203, 
+     50, 204,  50,  50,  50, 205, 206, 207, 188, 188, 208,  73,  73,  73,  73,  73, 
+    209,  50,  50, 210, 211, 156, 212, 213, 214,  50, 215, 188,  50,  50, 216, 217, 
+     50,  50, 218, 219, 220,  66,  50, 221,  73,  73,  73,  73,  73, 222, 223, 224, 
+     11,  11, 225,  27,  27,  27, 226, 227,  11, 228,  27,  27,  32,  32, 229, 230, 
+     13,  13,  13,  13,  13,  13,  13,  13,  13, 231,  13,  13,  13,  13,  13,  13, 
+    232, 233, 232, 232, 233, 234, 232, 235, 236, 236, 236, 237, 238, 239, 240, 241, 
+    242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,  73, 254, 255, 256, 
+    257, 258, 259, 260, 261, 262, 263, 263, 264, 265, 266, 203, 267, 268, 203, 269, 
+    270, 270, 270, 270, 270, 270, 270, 270, 271, 203, 272, 203, 203, 203, 203, 273, 
+    203, 274, 270, 275, 203, 276, 277, 278, 203, 203, 279,  73, 280,  73, 262, 262, 
+    262, 281, 203, 203, 203, 203, 282, 262, 203, 203, 203, 203, 203, 203, 203, 203, 
+    203, 203, 203, 283, 284, 203, 203, 285, 203, 203, 203, 203, 203, 203, 286, 203, 
+    287, 203, 203, 203, 203, 203, 288, 289, 262, 290, 203, 203, 291, 270, 292, 270, 
+    293, 294, 270, 270, 270, 295, 270, 296, 203, 203, 203, 270, 297, 172,  73,  73, 
+      9,   9, 298,  11,  11, 299, 300, 301,  13,  13,  13,  13,  13,  13, 302, 303, 
+     11,  11, 304,  50,  50,  50, 305, 306,  50, 307, 308, 308, 308, 308,  32,  32, 
+    309, 310, 311, 312,  73,  73,  73,  73, 203, 313, 203, 203, 203, 203, 203, 278, 
+    203, 203, 203, 203, 203, 314,  73, 315, 316, 317, 318, 319, 132,  50,  50,  50, 
+     50, 320, 174,  50,  50,  50,  50, 321, 322,  50, 198, 132,  50,  50,  50,  50, 
+    323, 324,  50,  51, 203, 203, 278,  50, 203, 325, 326, 203, 203, 327, 203, 203, 
+    326, 203, 203, 327, 203, 203, 203, 325,  50,  50,  50, 194, 203, 203, 203, 203, 
+     50,  50,  50,  50, 199,  73,  73,  73,  50, 328,  50,  50,  50,  50,  50,  50, 
+    147, 203, 203, 203, 279,  50,  50, 221, 329,  50, 330,  73,  13,  13, 331, 332, 
+     13,  42,  50,  50,  50,  50, 333, 334,  31, 335, 336, 337,  13,  13,  13, 338, 
+    339, 340, 341,  73,  73,  73,  73, 342, 343,  50, 344, 345,  50,  50,  50, 346, 
+    347,  50,  50, 348, 349, 188,  32, 350,  66,  50, 351,  50, 352, 353,  50, 147, 
+     74,  50,  50, 354, 355, 356,  73,  73,  50,  50, 357, 358, 359, 360,  50, 361, 
+     50,  50,  50, 362, 363, 364,  73,  73, 365, 366, 308,  73,  73,  73,  73,  73, 
+     73,  73,  73,  73,  50,  50, 367, 188,  50,  50, 368,  50, 369,  50,  50, 199, 
+    370, 370, 370, 370, 370, 370, 370, 370, 371, 371, 371, 371, 371, 371, 371, 371, 
+     50,  50, 198,  50,  50,  50, 198,  50,  50,  50,  50,  50,  50, 372,  73,  73, 
+    373, 374, 375, 376, 377,  50,  50,  50,  50,  50,  50, 378, 379, 380,  50,  50, 
+     50,  50,  50, 381,  73,  50,  50,  50,  50, 382,  50,  50, 192,  73,  73, 383, 
+     32, 384, 229, 385, 386, 387, 388, 389,  50,  50,  50,  50,  50,  50,  50, 390, 
+    391,   2,   3,   4,   5, 392, 393, 394,  50, 395,  50, 323, 396, 397, 398, 399, 
+    400,  50, 168, 401, 198, 198,  73,  73,  50,  50,  50,  50,  50,  50,  50,  51, 
+    402, 262, 262, 403, 263, 263, 263, 404, 405, 315,  73,  73,  73, 203, 203, 406, 
+     50, 147,  50,  50,  50,  98,  73,  73,  50, 323, 407,  50, 408,  73,  73,  73, 
+     50, 409,  50,  50, 410, 411,  73,  73,   9,   9, 412,  11,  11,  50,  50,  50, 
+     50, 198, 188,  73,  73,  73,  73,  73, 413,  50,  50, 414,  50, 415,  73,  73, 
+     50, 416,  50, 417,  73,  73,  73,  73, 418, 419,  50, 420, 421, 422,  50, 423, 
+     50,  50,  50, 424,  50, 425,  50, 426,  50,  50,  50,  50, 427,  73,  73,  73, 
+     73,  73,  73,  73,  73,  73, 262, 428, 429,  50,  50, 430, 431, 432, 433,  73, 
+    214,  50,  50, 434, 312,  73,  73,  73,  50,  50,  50,  50,  50,  50, 323,  73, 
+    263, 263, 263, 263, 263, 263, 435, 436,  50,  50, 323,  73,  73,  73,  73,  73, 
+     50,  50,  50, 427,  73,  73,  73,  73, 437,  73,  73,  73,  73,  73,  73,  73, 
+    203, 203, 203, 203, 203, 203, 203, 314, 203, 203, 438, 203, 203, 203, 439, 440, 
+    441, 203, 442, 203, 203, 443,  73,  73, 203, 203, 203, 203, 444,  73,  73,  73, 
+    203, 203, 203, 203, 203, 279, 262, 445,   9, 446,  11, 447, 448, 449, 232,   9, 
+    450, 451, 452, 453, 454,   9, 446,  11, 455, 456,  11, 457, 458, 459, 460,   9, 
+    461,  11,   9, 446,  11, 447, 448,  11, 232,   9, 450, 460,   9, 461,  11,   9, 
+    446,  11, 462,   9, 463, 464, 465, 466,  11, 467,   9, 468, 469, 470, 471,  11, 
+    472,   9, 473,  11, 474, 475, 475, 475, 203, 203, 315, 203, 203, 203, 203, 203, 
+    203, 278, 325, 476, 287, 287,  73,  73, 477, 203, 325, 203, 203, 203, 172, 203, 
+    203, 280,  73,  73,  73,  73, 478, 203, 479, 203, 203, 280, 480, 481,  73,  73, 
+    203, 203, 482, 483, 203, 203, 203, 484, 203, 278, 203, 203, 485,  73, 203, 482, 
+    203, 203, 203, 325, 486, 203, 203, 203, 203, 203, 203, 203, 203, 203, 203, 487, 
+    203, 203, 203, 443,  73, 203, 488,  73,  73,  73,  73,  73,  73,  73,  73, 489, 
+    287, 490, 491, 492, 493,  73,  73,  73, 203, 203, 203, 203, 314,  73,  73,  73, 
+    203, 203, 203, 203, 203, 203, 203, 278,  50,  50,  50,  50,  50, 307,  73,  73, 
+     50,  50,  50, 173,  50,  50,  50,  50,  50, 198,  73,  73,  73,  73,  73,  73, 
+    494,  73, 495, 495, 495, 495, 495, 495,  32,  32,  32,  32,  32,  32,  32,  32, 
+     32,  32,  32,  32,  32,  32,  32,  73, 371, 371, 371, 371, 371, 371, 371, 496, 
 };
 
-RE_UINT8 re_general_category_stage_4[] = {
-     1,  1,  1,  1,  1,  1,  1,  1, 29, 21, 21, 21, 23, 21, 21, 21, 
-    22, 18, 21, 25, 21, 17, 21, 21, 13, 13, 13, 13, 13, 13, 13, 13, 
-    13, 13, 21, 21, 25, 25, 25, 21, 21,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 22, 21, 18, 24, 16, 
-    24,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 
-     5,  5,  5, 22, 25, 18, 25,  1, 29, 21, 23, 23, 23, 23, 26, 26, 
-    24, 26,  5, 20, 25,  2, 26, 24, 26, 25, 15, 15, 24,  5, 26, 21, 
-    24, 15,  5, 19, 15, 15, 15, 21,  9,  9,  9,  9,  9,  9,  9, 25, 
-     9,  9,  9,  9,  9,  9,  9,  5,  5,  5,  5,  5,  5,  5,  5, 25, 
-     9,  5,  9,  5,  9,  5,  9,  5,  5,  9,  5,  9,  5,  9,  5,  9, 
-     5,  5,  9,  5,  9,  5,  9,  5,  9,  9,  5,  9,  5,  9,  5,  5, 
-     5,  9,  9,  5,  9,  5,  9,  9,  5,  9,  9,  9,  5,  5,  9,  9, 
-     9,  9,  5,  9,  9,  5,  9,  9,  9,  5,  5,  5,  9,  9,  5,  9, 
-     9,  5,  9,  5,  9,  5,  9,  9,  5,  9,  5,  5,  9,  5,  9,  9, 
-     5,  9,  9,  9,  5,  9,  5,  9,  9,  5,  5,  7,  9,  5,  5,  5, 
-     7,  7,  7,  7,  9,  8,  5,  9,  8,  5,  9,  8,  5,  9,  5,  9, 
-     5,  9,  5,  9,  5,  5,  9,  5,  5,  9,  8,  5,  9,  5,  9,  9, 
-     9,  5,  9,  5,  5,  5,  5,  5,  5,  5,  9,  9,  5,  9,  9,  5, 
-     5,  9,  5,  9,  9,  9,  9,  5,  5,  5,  5,  5,  7,  5,  5,  5, 
-     6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 24, 24, 24, 24,  6,  6, 
-     6,  6, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 
-     6,  6,  6,  6,  6, 24, 24, 24, 24, 24, 24, 24,  6, 24,  6, 24, 
-    12, 12, 12, 12, 12, 12, 12, 12,  9,  5,  9,  5,  6, 24,  9,  5, 
-     0,  0,  6,  5,  5,  5, 21,  0,  0,  0,  0,  0, 24, 24,  9, 21, 
-     9,  9,  9,  0,  9,  0,  9,  9,  5,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  0,  9,  9,  9,  9,  9,  9,  9,  9,  9,  5,  5,  5,  5, 
-     5,  5,  5,  5,  5,  5,  5,  9,  5,  5,  9,  9,  9,  5,  5,  5, 
-     5,  5,  5,  5,  9,  5, 25,  9,  5,  9,  9,  5,  5,  9,  9,  9, 
-     9,  5, 26, 12, 12, 12, 12, 12, 11, 11,  9,  5,  9,  5,  9,  5, 
-     9,  9,  5,  9,  5,  9,  5,  9,  5,  9,  5,  9,  5,  9,  5,  5, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  0,  0,  6, 21, 21, 21, 21, 21, 21, 
-     0,  5,  5,  5,  5,  5,  5,  5,  0, 21, 17,  0,  0,  0,  0,  0, 
-     0, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 17, 12, 
-    21, 12, 12, 21, 12, 12, 21, 12,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  0,  0,  0,  0,  0,  7,  7,  7, 21, 21,  0,  0,  0, 
-     2,  2,  2,  2,  0,  0, 25, 25, 25, 21, 21, 23, 21, 21, 26, 26, 
-    12, 12, 12, 21,  0,  0, 21, 21,  6,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7, 12, 12, 12, 12, 12, 13, 13, 21, 21, 21, 21,  7,  7, 
-    12,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 21,  7, 12, 12, 
-    12, 12, 12, 12, 12,  2, 26, 12, 12, 12, 12, 12, 12,  6,  6, 12, 
-    12, 26, 12, 12, 12, 12,  7,  7, 13, 13,  7,  7,  7, 26, 26,  7, 
-    21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,  0,  2, 
-     7, 12,  7,  7,  7,  7,  7,  7, 12, 12, 12,  0,  0,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7, 12, 12, 12,  7,  0,  0,  0,  0,  0,  0, 
-    13, 13,  7,  7,  7,  7,  7,  7, 12, 12, 12, 12,  6,  6, 26, 21, 
-    21, 21,  6,  0,  0,  0,  0,  0, 12, 12,  6, 12, 12, 12, 12, 12, 
-    12, 12, 12, 12,  6, 12, 12, 12,  6, 12, 12, 12, 12, 12,  0,  0, 
-    21, 21, 21, 21, 21, 21, 21,  0,  7, 12, 12, 12,  0,  0, 21,  0, 
-    12, 12, 12, 10,  7,  7,  7,  7,  7,  7, 12, 10, 12,  7, 10, 10, 
-    10, 12, 12, 12, 12, 12, 12, 12, 12, 10, 10, 10, 10, 12, 10, 10, 
-     7, 12, 12, 12, 12, 12, 12, 12,  7,  7, 12, 12, 21, 21, 13, 13, 
-    21,  6,  7,  7,  7,  7,  7,  7,  0,  7,  7,  7,  7,  7,  7,  7, 
-     0, 12, 10, 10,  0,  7,  7,  7,  7,  7,  7,  7,  7,  0,  0,  7, 
-     7,  0,  0,  7,  7,  7,  7,  7,  7,  0,  7,  7,  7,  7,  7,  7, 
-     7,  0,  7,  0,  0,  0,  7,  7,  7,  7,  0,  0, 12,  7, 10, 10, 
-    10, 12, 12, 12, 12,  0,  0, 10, 10,  0,  0, 10, 10, 12,  7,  0, 
-     0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  7,  7,  0,  7, 
-     7,  7, 12, 12,  0,  0, 13, 13,  7,  7, 23, 23, 15, 15, 15, 15, 
-    15, 15, 26, 23,  0,  0,  0,  0,  0, 12, 12, 10,  0,  7,  7,  7, 
-     7,  7,  7,  0,  0,  0,  0,  7,  7,  0,  7,  7,  0,  7,  7,  0, 
-     7,  7,  0,  0, 12,  0, 10, 10, 10, 12, 12,  0,  0,  0,  0, 12, 
-    12,  0,  0, 12, 12, 12,  0,  0,  0, 12,  0,  0,  0,  0,  0,  0, 
-     0,  7,  7,  7,  7,  0,  7,  0,  0,  0,  0,  0,  0,  0, 13, 13, 
-    12, 12,  7,  7,  7, 12,  0,  0,  7,  7,  7,  7,  7,  7,  0,  7, 
-     7,  7,  0,  7,  7,  7,  7,  7,  7,  0,  7,  7,  0,  7,  7,  7, 
-    10, 12, 12, 12, 12, 12,  0, 12, 12, 10,  0, 10, 10, 12,  0,  0, 
-     7,  0,  0,  0,  0,  0,  0,  0,  0, 23,  0,  0,  0,  0,  0,  0, 
-     7,  7,  0,  0, 12,  7, 10, 12, 10,  0,  0, 10, 10, 12,  0,  0, 
-     0,  0,  0,  0,  0,  0, 12, 10, 26,  7, 15, 15, 15, 15, 15, 15, 
-     0,  0, 12,  7,  0,  7,  7,  7,  7,  7,  7,  0,  0,  0,  7,  7, 
-     7,  0,  7,  7,  7,  7,  0,  0,  0,  7,  7,  0,  7,  0,  7,  7, 
-     0,  0,  0,  7,  7,  0,  0,  0,  7,  7,  0,  0,  0,  0, 10, 10, 
-    12, 10, 10,  0,  0,  0, 10, 10, 10,  0, 10, 10, 10, 12,  0,  0, 
-     7,  0,  0,  0,  0,  0,  0, 10, 15, 15, 15, 26, 26, 26, 26, 26, 
-    26, 23, 26,  0,  0,  0,  0,  0,  0, 10, 10, 10,  0,  7,  7,  7, 
-     7,  7,  7,  7,  7,  0,  7,  7,  7,  7,  7,  7,  0,  7,  7,  7, 
-     7,  7,  0,  0,  0,  7, 12, 12, 12, 10, 10, 10, 10,  0, 12, 12, 
-    12,  0, 12, 12, 12, 12,  0,  0,  0,  0,  0,  0,  0, 12, 12,  0, 
-     7,  7,  0,  0,  0,  0,  0,  0, 15, 15, 15, 15, 15, 15, 15, 26, 
-     0,  0, 10, 10,  0,  7,  7,  7, 10, 10, 10, 10, 10,  0, 12, 10, 
-    10,  0, 10, 10, 12, 12,  0,  0,  0,  0,  0,  0,  0, 10, 10,  0, 
-     0,  0,  0,  0,  0,  0,  7,  0,  0,  7,  7,  0,  0,  0,  0,  0, 
-     7,  7,  7,  0,  0,  7, 10, 10, 10, 12, 12, 12, 12,  0, 10, 10, 
-    10,  0, 10, 10, 10, 12,  7,  0, 15, 15, 15, 15, 15, 15,  0,  0, 
-     0, 26,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  0, 
-     0,  0,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  0,  7,  0,  0, 
-     0,  0, 12,  0,  0,  0,  0, 10, 10, 10, 12, 12, 12,  0, 12,  0, 
-    10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 21,  0,  0,  0, 
-     7, 12,  7,  7, 12, 12, 12, 12, 12, 12, 12,  0,  0,  0,  0, 23, 
-     7,  7,  7,  7,  7,  7,  6, 12, 12, 12, 12, 12, 12, 12, 12, 21, 
-    13, 13, 21, 21,  0,  0,  0,  0,  0,  7,  7,  0,  7,  0,  0,  7, 
-     7,  0,  7,  0,  0,  7,  0,  0,  0,  0,  0,  0,  7,  7,  7,  7, 
-     0,  7,  7,  7,  0,  7,  0,  7,  0,  0,  7,  7,  0,  7,  7,  7, 
-    12, 12,  0, 12, 12,  7,  0,  0,  7,  7,  7,  7,  7,  0,  6,  0, 
-    12, 12, 12, 12, 12, 12,  0,  0, 13, 13,  0,  0,  7,  7,  0,  0, 
-     7, 26, 26, 26, 21, 21, 21, 21, 21, 21, 21, 26, 26, 26, 26, 26, 
-    12, 12, 26, 26, 26, 26, 26, 26, 13, 13, 15, 15, 15, 15, 15, 15, 
-    15, 15, 15, 15, 26, 12, 26, 12, 26, 12, 22, 18, 22, 18, 10, 10, 
-     7,  7,  7,  7,  7,  0,  0,  0, 12, 12, 12, 12, 12, 12, 12, 10, 
-    12, 12, 12, 12, 12, 21, 12, 12,  7,  7,  7,  7,  7, 12, 12, 12, 
-    12, 12, 12, 12, 12,  0, 26, 26, 26, 26, 26, 26, 26, 26, 12, 26, 
-    26, 26, 26, 26, 26,  0, 26, 26, 21, 21, 21, 21, 21, 26, 26, 26, 
-    26, 21, 21,  0,  0,  0,  0,  0,  7,  7,  7, 10, 10, 12, 12, 12, 
-    12, 10, 12, 12, 12, 12, 12, 12, 10, 12, 12, 10, 10, 12, 12,  7, 
-    13, 13, 21, 21, 21, 21, 21, 21,  7,  7,  7,  7,  7,  7, 10, 10, 
-    12, 12,  7,  7,  7,  7, 12, 12, 12,  7, 10, 10, 10,  7,  7, 10, 
-    10, 10, 10, 10, 10, 10,  7,  7,  7, 12, 12, 12, 12,  7,  7,  7, 
-     7,  7, 12, 10, 10, 12, 12, 10, 10, 10, 10, 10, 10, 12,  7, 10, 
-    13, 13, 10, 10, 10, 12, 26, 26,  9,  9,  9,  9,  9,  9,  0,  0, 
-     7,  7,  7, 21,  6,  0,  0,  0,  7,  7,  7,  0,  0, 12, 12, 12, 
-    26, 21, 21, 21, 21, 21, 21, 21, 21, 15, 15, 15, 15, 15, 15, 15, 
-    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0,  0,  0, 
-    26, 26, 26, 26, 26, 26, 26, 26, 26, 26,  0,  0,  0,  0,  0,  0, 
-    17,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 21, 21,  7, 
-    29,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 22, 18,  0,  0,  0, 
-     7,  7,  7, 21, 21, 21, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0, 
-     7,  7, 12, 12, 12,  0,  0,  0,  7,  7, 12, 12, 12, 21, 21,  0, 
-     7,  7, 12, 12,  0,  0,  0,  0,  7,  0, 12, 12,  0,  0,  0,  0, 
-     7,  7,  7,  7,  2,  2, 10, 12, 12, 12, 12, 12, 12, 12, 10, 10, 
-    10, 10, 10, 10, 10, 10, 12, 10, 12, 12, 12, 12, 21, 21, 21,  6, 
-    21, 21, 21, 23,  7, 12,  0,  0, 13, 13,  0,  0,  0,  0,  0,  0, 
-    15, 15,  0,  0,  0,  0,  0,  0, 21, 21, 21, 21, 21, 21, 17, 21, 
-    21, 21, 21, 12, 12, 12, 29,  0,  7,  7,  7,  6,  7,  7,  7,  7, 
-     7, 12,  7,  0,  0,  0,  0,  0,  7,  7,  7,  7,  7,  7,  0,  0, 
-    12, 12, 12, 10, 10, 10, 10, 12, 12, 10, 10, 10,  0,  0,  0,  0, 
-    10, 10, 12, 10, 10, 10, 10, 10, 10, 12, 12, 12,  0,  0,  0,  0, 
-    26,  0,  0,  0, 21, 21, 13, 13,  7,  7,  7,  7,  0,  0,  0,  0, 
-    10,  7,  7,  7,  7,  7,  7,  7, 10, 10,  0,  0,  0,  0,  0,  0, 
-    13, 13, 15,  0,  0,  0, 26, 26,  7,  7,  7,  7,  7,  7,  7, 12, 
-    12, 10, 10, 10,  0,  0, 21, 21,  7,  7,  7,  7,  7, 10, 12, 10, 
-    12, 12, 12, 12, 12, 12, 12,  0, 12, 10, 12, 10, 10, 12, 12, 12, 
-    12, 12, 12, 12, 12, 10, 10, 10, 10, 10, 10, 12, 12, 12, 12, 12, 
-    12, 12, 12, 12, 12,  0,  0, 12, 21, 21, 21, 21, 21, 21, 21,  6, 
-    21, 21, 21, 21, 21, 21,  0,  0, 12, 12, 12, 12, 10,  7,  7,  7, 
-     7,  7,  7,  7, 12, 10, 12, 12, 12, 12, 12, 10, 12, 10, 10, 10, 
-    10, 10, 12, 10, 10,  7,  7,  7, 21, 26, 26, 26, 26, 26, 26, 26, 
-    26, 26, 26, 12, 12, 12, 12, 12, 12, 12, 12, 12, 26, 26, 26, 26, 
-    26, 26, 26, 26, 26,  0,  0,  0, 12, 12, 10,  7,  7,  7,  7,  7, 
-     7, 10, 12, 12, 12, 12, 10, 10, 12, 12, 10,  0,  0,  0,  7,  7, 
-     7,  7,  7,  7,  7,  7, 12, 10, 12, 12, 10, 10, 10, 12, 10, 12, 
-    12, 12, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0, 21, 21, 21, 21, 
-     7,  7,  7,  7, 10, 10, 10, 10, 10, 10, 10, 10, 12, 12, 12, 12, 
-    12, 12, 12, 12, 10, 10, 12, 12,  0,  0,  0, 21, 21, 21, 21, 21, 
-    13, 13,  0,  0,  0,  7,  7,  7,  6,  6,  6,  6,  6,  6, 21, 21, 
-    12, 12, 12, 21, 12, 12, 12, 12, 12,  7,  7,  7,  7, 12,  7,  7, 
-     7,  7, 10,  0,  0,  0,  0,  0,  5,  5,  5,  5,  6,  6,  6,  6, 
-     6,  6,  5,  5,  5,  5,  5,  5,  6,  5,  5,  5,  5,  5,  5,  5, 
-     5,  5,  5,  6,  6,  6,  6,  6,  0,  0,  0,  0, 12, 12, 12, 12, 
-     9,  5,  9,  5,  9,  5,  5,  5,  5,  5,  5,  5,  5,  5,  9,  5, 
-     5,  5,  5,  5,  5,  5,  0,  0,  0,  9,  0,  9,  0,  9,  0,  9, 
-     8,  8,  8,  8,  8,  8,  8,  8,  5,  5,  5,  5,  5,  0,  5,  5, 
-     9,  9,  9,  9,  8, 24,  5, 24, 24, 24,  5,  5,  5,  0,  5,  5, 
-     9,  9,  9,  9,  8, 24, 24, 24,  5,  5,  5,  5,  0,  0,  5,  5, 
-     9,  9,  9,  9,  0, 24, 24, 24,  9,  9,  9,  9,  9, 24, 24, 24, 
-     0,  0,  5,  5,  5,  0,  5,  5,  9,  9,  9,  9,  8, 24, 24,  0, 
-    29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29,  2,  2,  2,  2,  2, 
-    17, 17, 17, 17, 17, 17, 21, 21, 20, 19, 22, 20, 20, 19, 22, 20, 
-    27, 28,  2,  2,  2,  2,  2, 29, 21, 20, 19, 21, 21, 21, 21, 16, 
-    16, 21, 21, 21, 25, 22, 18, 21, 21, 21, 25, 21, 16, 21, 21, 21, 
-    21, 21, 21, 21, 21, 21, 21, 29,  2,  2,  2,  2,  2,  0,  0,  0, 
-     0,  0,  2,  2,  2,  2,  2,  2, 15,  6,  0,  0, 15, 15, 15, 15, 
-    15, 15, 25, 25, 25, 22, 18,  6, 15, 15, 25, 25, 25, 22, 18,  0, 
-     6,  6,  6,  6,  6,  0,  0,  0, 23, 23, 23, 23, 23, 23, 23, 23, 
-    23, 23,  0,  0,  0,  0,  0,  0, 12, 12, 12, 12, 12, 11, 11, 11, 
-    11, 12, 11, 11, 11, 12, 12, 12, 12,  0,  0,  0,  0,  0,  0,  0, 
-    26, 26,  9, 26, 26, 26, 26,  9, 26, 26,  5,  9,  9,  9,  5,  5, 
-     9,  9,  9,  5, 26,  9, 26, 26, 25,  9,  9,  9,  9,  9, 26, 26, 
-    26, 26, 26, 26,  9, 26,  9, 26,  9, 26,  9,  9,  9,  9, 26,  5, 
-     9,  9,  9,  9,  5,  7,  7,  7,  7,  5, 26, 26,  5,  5,  9,  9, 
-    25, 25, 25, 25, 25,  9,  5,  5,  5,  5, 26, 25, 26, 26,  5, 26, 
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  9,  5, 14, 14, 14, 
-    14, 15,  0,  0,  0,  0,  0,  0, 25, 25, 25, 25, 25, 26, 26, 26, 
-    26, 26, 25, 25, 26, 26, 26, 26, 25, 26, 26, 25, 26, 26, 25, 26, 
-    26, 26, 26, 26, 26, 26, 25, 26, 26, 26, 26, 26, 26, 26, 25, 25, 
-    26, 26, 25, 26, 25, 26, 26, 26, 26, 26, 26, 26, 25, 25, 25, 25, 
-    25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 
-    25, 25, 26, 26, 26, 26, 26, 26, 26, 22, 18, 26, 26, 26, 26, 26, 
-    26, 26, 26, 26, 25, 26, 26, 26, 26, 26, 26, 25, 25, 25, 25, 25, 
-    26, 26, 26, 26,  0,  0,  0,  0, 26, 26, 26, 26, 26, 26, 26,  0, 
-    26, 26, 26,  0,  0,  0,  0,  0, 15, 15, 15, 15, 26, 26, 26, 26, 
-    26, 26, 15, 15, 15, 15, 15, 15, 26, 26, 26, 26, 26, 26, 26, 25, 
-    26, 25, 26, 26, 26, 26, 26, 26,  0, 26, 26, 26, 26, 26, 26, 26, 
-    22, 18, 22, 18, 22, 18, 22, 18, 22, 18, 22, 18, 22, 18, 15, 15, 
-    25, 25, 25, 25, 25, 22, 18, 25, 25, 25, 25,  0, 25,  0, 25, 25, 
-    25, 25, 25, 25, 25, 25, 22, 18, 25, 25, 25, 22, 18, 22, 18, 22, 
-    18, 22, 18, 22, 18, 22, 18, 22, 18, 25, 25, 25, 25, 25, 25, 25, 
-    22, 18, 22, 18, 25, 25, 25, 25, 25, 25, 25, 25, 22, 18, 25, 25, 
-    25, 25, 25, 25, 25, 26, 26, 25, 25, 25, 25, 25, 25,  0,  0,  0, 
-     5,  5,  5,  5,  5,  5,  5,  0,  9,  5,  9,  9,  9,  5,  5,  9, 
-     5,  9,  5,  9,  5,  9,  9,  9,  9,  5,  9,  5,  5,  9,  5,  5, 
-     5,  5,  5,  5,  5,  6,  9,  9,  9,  5,  9,  5,  5, 26, 26, 26, 
-    26, 26, 26,  9,  5,  9,  5, 12, 12, 12,  0,  0,  0,  0,  0,  0, 
-     0, 21, 21, 21, 21, 15, 21, 21,  0,  0,  0,  0,  0,  0,  0,  6, 
-    21,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 12, 
-    21, 21, 20, 19, 20, 19, 21, 21, 21, 20, 19, 21, 20, 19, 21, 21, 
-    21, 21, 21, 21, 21, 21, 21, 17, 21, 21, 17, 21, 20, 19, 21, 21, 
-    20, 19, 22, 18, 22, 18, 22, 18, 22, 18, 21, 21, 21, 21, 21,  6, 
-    21, 21,  0,  0,  0,  0,  0,  0, 26, 26,  0, 26, 26, 26, 26, 26, 
-    26, 26, 26, 26, 26, 26,  0,  0, 29, 21, 21, 21, 26,  6,  7, 14, 
-    22, 18, 26, 26, 22, 18, 22, 18, 22, 18, 22, 18, 17, 22, 18, 18, 
-    26, 14, 14, 14, 14, 14, 14, 14, 14, 14, 12, 12, 12, 12, 12, 12, 
-    17,  6,  6,  6,  6,  6, 26, 26, 14, 14, 14,  6,  7, 21, 26, 26, 
-     0, 12, 12, 24, 24,  6,  6,  7,  7,  7,  7, 21,  6,  6,  6,  7, 
-     0,  0,  0,  0,  0,  7,  7,  7, 26, 26, 15, 15, 15, 15, 26, 26, 
-    15, 15, 26, 26, 26, 26, 26, 26, 26, 15, 15, 15, 15, 15, 15, 15, 
-     0,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0,  7,  0,  0,  0,  0, 
-     7,  7,  7,  7,  7,  6,  7,  7,  7,  7,  7,  7,  6, 21, 21, 21, 
-    13, 13,  7,  7,  0,  0,  0,  0,  9,  5,  9,  5,  9,  5,  7, 12, 
-    11, 11, 11, 21,  0,  0,  0,  0,  0,  0,  0,  0, 12, 12, 21,  6, 
-     7,  7,  7,  7,  7,  7, 14, 14, 12, 12, 21, 21, 21, 21, 21, 21, 
-    24, 24, 24, 24, 24, 24, 24,  6, 24, 24,  9,  5,  9,  5,  9,  5, 
-     5,  9,  5,  9,  5,  9,  9,  5,  6, 24, 24,  9,  5,  9,  5,  0, 
-     9,  5,  0,  0,  0,  0,  0,  0,  0,  0,  5,  7,  7,  7,  7,  7, 
-     7,  7, 12,  7,  7,  7, 12,  7,  7,  7,  7, 12,  7,  7,  7,  7, 
-     7,  7,  7, 10, 10, 12, 12, 10, 15, 15, 15, 15, 15, 15, 26, 26, 
-    23, 26,  0,  0,  0,  0,  0,  0,  7,  7,  7,  7, 21, 21, 21, 21, 
-    10, 10,  7,  7,  7,  7,  7,  7, 10, 10, 10, 10, 12,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0, 21, 21, 12, 12,  7,  7,  7,  7,  7,  7, 
-    21, 21, 21,  7,  0,  0,  0,  0, 12, 12, 12, 12, 12, 12, 21, 21, 
-     0,  0,  0,  0,  0,  0,  0, 21,  7,  7,  7, 12, 10, 10, 12, 12, 
-    12, 12, 10, 10, 12, 10, 10, 10, 10, 21, 21, 21, 21, 21, 21, 21, 
-    21, 21, 21, 21, 21, 21,  0,  6, 13, 13,  0,  0,  0,  0, 21, 21, 
-     7, 12, 12, 12, 12, 12, 12, 10, 10, 12, 12, 10, 10, 12, 12,  0, 
-     7,  7,  7,  7, 12, 10,  0,  0, 13, 13,  0,  0, 21, 21, 21, 21, 
-     6,  7,  7,  7,  7,  7,  7, 26, 26, 26,  7, 10,  0,  0,  0,  0, 
-    12,  7, 12, 12, 12,  7,  7, 12, 12,  7,  7,  7,  7,  7, 12, 12, 
-     0,  0,  0,  7,  7,  6, 21, 21,  0,  7,  7,  7,  7,  7,  7,  0, 
-     7,  7,  7, 10, 10, 12, 10, 10, 12, 10, 10, 21, 10, 12,  0,  0, 
-     0,  0,  0,  7,  7,  7,  7,  7,  4,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  4,  3,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  3,  0,  0,  0,  5,  5,  5,  5,  5, 
-     0,  0,  0,  0,  0,  7, 12,  7,  7, 25,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  0,  7,  0,  7,  7,  0,  7,  7,  0,  7,  7, 
-     7,  7, 24, 24, 24, 24, 24, 24, 24, 24,  0,  0,  0,  0,  0,  0, 
-     7,  7,  7,  7,  7,  7, 22, 18,  7,  7,  7,  7, 23, 26,  0,  0, 
-    21, 21, 21, 21, 21, 21, 21, 22, 18, 21,  0,  0,  0,  0,  0,  0, 
-    21, 17, 17, 16, 16, 22, 18, 22, 18, 22, 18, 22, 18, 21, 21, 22, 
-    18, 21, 21, 21, 21, 16, 16, 16, 21, 21, 21,  0, 21, 21, 21, 21, 
-    17, 22, 18, 22, 18, 22, 18, 21, 21, 21, 25, 17, 25, 25, 25,  0, 
-    21, 23, 21, 21,  0,  0,  0,  0,  7,  7,  7,  7,  7,  0,  0,  2, 
-     0, 21, 21, 21, 23, 21, 21, 21,  5,  5,  5, 22, 25, 18, 25, 22, 
-    18, 21, 22, 18, 21, 21,  7,  7,  7,  7,  7,  7,  7,  7,  6,  6, 
-     0,  0,  7,  7,  7,  0,  0,  0, 23, 23, 25, 24, 26, 23, 23,  0, 
-    26, 25, 25, 25, 25, 26, 26,  0,  0,  2,  2,  2, 26, 26,  0,  0, 
-     7,  7,  7,  0,  7,  7,  0,  7, 21, 21, 26,  0,  0,  0,  0, 15, 
-    15, 15, 15, 15,  0,  0,  0, 26, 14, 14, 14, 14, 14, 15, 15, 15, 
-    15, 26, 26, 26, 26, 26, 26, 26, 26, 26, 15,  0,  0,  0,  0,  0, 
-    26, 26, 26, 26, 26, 12,  0,  0, 15, 15, 15, 15,  0,  0,  0,  0, 
-     7, 14,  7,  7,  7,  7,  7,  7,  7,  7, 14,  0,  0,  0,  0,  0, 
-     7,  7,  7,  7,  7,  7,  0, 21, 21, 14, 14, 14, 14, 14,  0,  0, 
-     7,  0,  0,  0,  7,  0,  0,  7,  7,  7,  7,  7,  7,  7, 15, 15, 
-    15, 15, 15, 15,  0,  0,  0, 21,  7,  7,  0,  0,  0,  0,  0, 21, 
-     7, 12, 12, 12,  0, 12, 12,  0, 12, 12, 12,  0,  0,  0,  0, 12, 
-     7,  7,  7,  7,  7, 15, 15, 21,  0, 21, 21, 21, 21, 21, 21, 21, 
-    15, 15, 15, 15, 15, 15, 15,  0, 10, 12, 10,  7,  7,  7,  7,  7, 
-     0,  0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 13, 13, 
-    10, 10, 10, 12, 12, 12, 12, 10, 10, 12, 12, 21, 21,  2, 21, 21, 
-    14, 14, 14,  0,  0,  0,  0,  0, 21, 21, 21, 21,  0,  0,  0,  0, 
-    26, 26, 26, 26, 26, 10, 10, 12, 12, 12, 26, 26, 26, 10, 10, 10, 
-    10, 10, 10,  2,  2,  2,  2,  2,  2,  2,  2, 12, 12, 12, 12, 12, 
-    12, 12, 12, 26, 26, 12, 12, 12, 26, 26, 12, 12, 12, 12, 26, 26, 
-    26, 26, 12, 12, 12, 26,  0,  0,  9,  9,  5,  5,  5,  5,  5,  5, 
-     5,  5,  5,  5,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  5,  5, 
-     5,  5,  5,  5,  9,  0,  9,  9,  0,  0,  9,  0,  0,  9,  9,  0, 
-     0,  9,  9,  9,  9,  0,  9,  9,  5,  5,  0,  5,  0,  5,  5,  5, 
-     5,  5,  5,  5,  0,  5,  5,  5,  5,  5,  5,  5,  9,  9,  0,  9, 
-     9,  9,  9,  0,  0,  9,  9,  9,  9,  9,  9,  9,  9,  0,  9,  9, 
-     9,  9,  9,  9,  9,  0,  5,  5,  9,  9,  0,  9,  9,  9,  9,  0, 
-     9,  9,  9,  9,  9,  0,  9,  0,  0,  0,  9,  9,  9,  9,  9,  9, 
-     9,  0,  5,  5,  5,  5,  5,  5,  9, 25,  5,  5,  5,  5,  5,  5, 
-     5,  5,  5, 25,  5,  5,  5,  5,  5,  5,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9, 25,  5,  5,  5,  5,  5,  5,  5,  5,  5, 25,  5,  5, 
-     9,  9,  9,  9,  9, 25,  5,  5,  5,  5,  5,  5,  5,  5,  9,  9, 
-     5, 25,  5,  5,  5,  5,  5,  5,  5,  5,  9,  5,  0,  0, 13, 13, 
-    15, 15, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 26, 26, 
-    26,  0,  0,  0,  0,  0,  0,  0, 26, 26, 26, 26, 26, 26,  0, 26, 
-    26,  0, 26, 26, 26, 26, 26, 26,  0, 26, 26, 26, 26,  0,  0,  0, 
-     0,  0,  0, 26, 26, 26, 26, 26, 26,  0, 26, 26, 26,  0, 26,  0, 
-    26,  0, 26,  0, 26, 26, 26,  0, 26, 26, 26, 26,  0, 26,  0,  0, 
-    26, 26, 26, 26,  0, 26, 26, 26, 26,  0,  0,  0,  0, 26, 26, 26, 
-     0,  0,  0,  0,  7,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0, 
-     2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0,  0,  3,  0,  0, 
+RE_UINT16 re_general_category_stage_4[] = {
+      0,   0,   0,   0,   1,   2,   3,   4,   5,   5,   6,   7,   8,   9,   9,   9, 
+      9,   9,  10,  11,  12,  13,  13,  13,  13,  13,  14,  15,  16,  17,  18,  19, 
+     20,  21,  22,  23,   9,   9,   9,   9,   9,  24,   9,  25,  13,  13,  13,  13, 
+     13,  26,  13,  13,  27,  27,  27,  27,  27,  27,  28,  28,  28,  28,  29,  27, 
+     27,  27,  30,  31,  32,  33,  34,  35,  30,  33,  36,  30,  27,  33,  31,  33, 
+     34,  28,  37,  36,  38,  39,  40,  28,  28,  28,  28,  29,  41,  33,  27,  27, 
+     27,  13,  35,  32,  28,  25,  27,  27,  13,  42,  13,  13,  43,  43,  43,  43, 
+     44,  45,  43,  43,  44,  46,  46,  46,  43,  47,  46,  48,  46,  46,  46,  46, 
+     49,  49,  49,  49,  27,  50,  51,  52,  53,  54,  55,  56,  34,   9,   9,   9, 
+     57,   9,   9,  13,  13,  13,  13,  58,  35,  36,  27,  27,  13,  59,  32,  34, 
+     60,  49,  61,  27,  30,  28,  28,  31,  27,  27,  53,  53,  62,   9,   9,   9, 
+      9,  55,  63,  64,  65,  13,  13,  13,  13,  13,  66,  53,  67,  49,  49,  49, 
+     49,  49,  49,  68,  69,  70,  53,  53,  38,  38,  38,  38,  38,  38,  71,  53, 
+     72,  73,  53,  53,  74,  75,  76,  77,  49,  49,  78,  79,  80,  38,  81,  49, 
+      5,   5,   6,  82,  83,  38,  38,  38,  38,  84,  49,  85,  49,  86,  87,  88, 
+      5,   5,  89,  90,  64,  64,  64,  91,  92,  38,  38,  38,  49,  49,  93,  94, 
+     38,  95,  49,  49,  96,  53,  53,  53,   5,   5,  89,  38,  38,  38,  81,  49, 
+     49,  97,  98,  53,  38,  95,  99,  49,  49, 100, 100, 101,  64,  64,  64, 102, 
+     38,  38, 103, 104,  53,  53,  53,  53, 105,  38,  38,  38,  38,  38, 106, 107, 
+    108,  49, 109, 110, 103,  49,  38,  38,  95, 111,   5,   5, 112,  38,  94,  38, 
+    113,  94,  38, 114, 114,  38,  38,  38,  38,  38, 115,  38, 116, 117, 118, 107, 
+    108, 119, 120, 121,  53, 122,  53, 123,  95, 124,   5,   5, 125, 126, 127,  53, 
+    128,  94,  71, 129, 115, 130, 118, 131, 132, 133, 134, 101, 135,  53,  94, 116, 
+     53, 124,   5,   5,  88, 136,  53,  53, 128,  94,  38, 123, 123,  38,  38,  38, 
+    115,  94, 118, 107, 108, 137, 138, 139, 140,  53,  53,  53, 141,  53,  53,  53, 
+    115,  94, 118, 142, 108, 119, 120, 139,  53, 143,  53, 123, 144, 126,  53,  53, 
+    145,  94,  71, 117, 115, 118, 130, 115, 129, 140,  71, 117,  38,  38, 118, 146, 
+    147, 146, 148, 139, 140, 122,  53,  53, 149, 150, 151,  53, 152,  94,  38, 115, 
+    115,  38,  38,  38,  38,  94, 118, 153, 109, 154, 155, 101,  53, 156, 118,  53, 
+     53,  53, 126, 149, 146,  94,  38, 115,  38,  94, 118, 142, 157, 158, 148, 101, 
+     53, 159,  53, 160, 130,  53,  53,  53,  38,  38,  71, 161, 108, 131, 148, 121, 
+     53, 122,  53,  53, 126, 162, 163,  38, 146,  94,  38,  38,  38,  71, 117,  38, 
+    123,  38,  38, 164,  38,  71, 165, 122, 166, 167, 157, 157, 146,  73,  53,  53, 
+     94,  38,  38,  38,  92,  49,  93, 168,  38, 169,  49,  78,   5,   5,   6,  53, 
+    130, 114, 116, 164,  53,  38,  94,  38,  94, 170, 117,  94,  92,  49, 137,  96, 
+     38, 171,  49, 101,   5,   5, 172, 118, 173,  64,  64,  64, 174, 150, 175, 150, 
+      5,   5, 176, 126, 126, 177, 178, 179,  38,  38,  94,  38,  38,  38,  38, 140, 
+     67,  49,  49, 105,  49, 180,  38, 103,  49,  49,  67,  49,  49,  49,  49, 181, 
+    150, 182, 150, 183,  64, 184, 185,  53,  38,  38, 186, 108, 187,  49, 188, 189, 
+      5,   5,   6,  64,  38, 190,  88,  95, 107, 191, 157, 192, 103,  83,  38,  38, 
+    106, 188, 157, 193,   5,   5, 194, 195,   9, 196,  53,  53,  38,  38,  72, 197, 
+     38,  38, 115, 118,  38,  71, 115, 118, 115, 118,  38,  71, 115, 118,  38,  38, 
+     38,  71,  38,  38,  38,  38,  71,  67, 198,  64, 199, 126, 126, 126, 126, 200, 
+    150, 150, 201,  53,  38, 140,  53,  53, 202,  38,  38,  38,  38,  38,  38, 203, 
+    204,  38,  38,  38,  38,  38, 205, 206,  38,  38,  72, 207, 208,  53,  53,  53, 
+     38,  38,  38, 115,  95, 209,  53,  53,  95, 210,  53,  53,  95,  53,  53,  53, 
+    211,  53,  53,  53,  38, 212,  49, 213, 157, 214, 108,  49,  49, 215, 216, 136, 
+      5,   5, 172,  53, 126, 126, 162,  53,  64, 217, 218, 219, 220,  38,  38,  38, 
+     38,  38,  53,  53,  38,  38, 221,  53,  38, 118,  53,  53, 105, 222, 109,  53, 
+    214, 157, 108,  53, 223, 111,   5,   5,  38,  38,  38, 118,  38,  38,  38,  53, 
+    157, 157, 157, 157, 224,  38, 225,  53,   5,   5, 226, 227, 150, 150, 150, 150, 
+     38,  81, 109,  79,  38, 228,  49,  93, 229, 108,  49, 109, 222,  49,  49, 134, 
+     64, 215,  64, 230,  49, 224,  38,  38,  38, 187, 105, 109, 214, 224,  38,  53, 
+    184, 150, 231,  49,  49, 150, 150, 223, 232,  38,  38,  38, 233, 213, 234, 117, 
+     38, 106, 213, 235, 213,  53,  53,  64,  38, 157, 157,  49,  49, 166, 236,  64, 
+      5,   5, 172,  94,  38,  38,  43, 237,  78,  49,  49,  49, 187,  49,  83,  92, 
+    238,  53,  53,  53,  13,  13,  13,  43, 239,  13,  13,  13,  13,  13, 240,  13, 
+     13,  13, 241,  43,  49,  93,  53,  53,  53,  53,  53,  49,  27,  36,  13,  29, 
+     13,  13,   9,   9,  13, 242,   9, 196,  13,  13, 243, 243,  13,  13,  13, 242, 
+     13,  13, 244, 244,  13, 245,   9, 246, 247, 245,   9, 248,  13, 249,   9, 250, 
+     13,  13,   9, 251, 249, 245,   9, 252, 253, 253, 254,  74, 255, 256, 257, 257, 
+     64,  64, 258, 259,  64,  64, 260, 261, 262, 263,  64,  64, 264, 262,  64, 265, 
+     74, 266, 267,  74, 268, 126, 269, 270, 126, 126, 269, 271,  43,  43,  43, 197, 
+    272, 272, 272, 272, 272, 272, 273,  53,  49,  49,  49, 274, 275, 276,  49,  49, 
+    209,  53,  53,  53, 277, 278, 279, 280,  25, 281, 282, 283, 150, 284, 285, 286, 
+      9, 287, 288,  35, 289, 290, 291, 292, 126, 126, 126, 126, 293, 293, 293, 293, 
+    294, 295, 296,  53, 289, 297, 298, 150, 299, 300, 150, 300, 150, 150, 150, 298, 
+    300, 297, 150, 150, 150, 289, 289, 289, 289, 289, 289, 289, 150, 150, 289, 150, 
+    301, 150, 302, 150, 150, 150, 150, 297, 150, 150, 303, 289, 289, 150, 150, 150, 
+    150, 150, 150, 289, 301, 150, 150, 150, 150,  53,  53,  53, 150, 304,  53,  53, 
+    150, 150, 304,  53, 126, 126, 126, 150, 150, 150, 305, 126, 150, 303, 150, 150, 
+    306, 150, 150, 150, 150, 150, 289, 289, 150, 150, 150, 303, 307, 150, 150, 150, 
+    150, 150, 308, 308, 308, 309, 126, 126, 126, 150, 150, 150, 289, 310, 311, 312, 
+    289, 313, 308, 308, 314, 315, 315, 315, 315, 315, 316, 289, 289, 289, 308, 289, 
+    289, 289, 289, 317, 289, 299, 289, 318,   9,   9,   9,  55,  13,  13,  13, 319, 
+     33, 320,  28,  34,  27,  31,  13, 321,  27, 322, 278, 323, 101,  53, 324, 325, 
+     13, 242,  53,  53,  38, 118,  53, 326,  73,  53,  53, 133,  38,  71,  53,  53, 
+     38,  71,  38,  71, 327, 328, 260, 328,  64, 329, 217, 328, 330, 308, 331, 215, 
+    230,  53,  53,  53, 150, 150, 332, 150, 150, 201,  53,  53, 150, 150, 150,  53, 
+      1, 333, 308, 308, 334, 308, 308, 335, 336, 293, 337,  49, 338, 339, 340, 341, 
+     38,  71, 342, 343,  38,  38,  72, 344,  53,  94,  38,  38,  38,  38,  38,  71, 
+    305, 345, 150, 150, 150, 150, 150, 304, 126, 126, 345, 150, 346, 126, 126, 126, 
+     38, 347,  38,  38,  38,  38,  38, 348,   5,   5,  89,  53,  27,  27,  27, 349, 
+    350,  53,  53, 351,  38, 352, 293, 293, 353,  64,  53,  53,  46, 354,  43,  43, 
+    355,  27,  27,  27,  29,  27,  27,  27, 240,  13,  28,  32,  27,  27, 356, 357, 
+    358,  53,  53,  53,  27,  27, 358,  53,  53,  53, 359,  38, 360, 360,  81,  38, 
+    186, 188, 150,  53, 126, 345, 361,  53,  38,  64,  53,  53, 192,  38,  38,  38, 
+     38, 157, 157, 157, 157, 209,  53,  79,  88,  38, 362,  53,  38,  95,  49, 353, 
+     38,  81,  49,  49, 213,  53,  53, 236,  81, 166, 213, 109, 363,  64,  64, 364, 
+      5,   5, 172,  79,  38,  38, 103, 105, 188, 132,  53,  53,  81,  38,  38, 365, 
+      5,   5, 172,  64,  80, 366, 367,  53, 368, 369,  83,  95, 221,  53,  53,  53, 
+     53,  53, 129, 370,  94,  71,  94,  71,  94,  71,  53,  53, 186, 110, 371, 139, 
+     38,  53,  53,  53,  38,  71, 129,  38, 372, 372, 372, 372, 373, 373, 373, 373, 
+     38,  38, 118,  53,  13, 319,  53,  53, 374,  13,  53, 375,  38,  38, 376,  38, 
+     38,  71,  38, 116, 123, 115,  38,  38, 377,  46,  46,  46, 378,  53,  53,  53, 
+    129,  38,  38,  38,  38,  38,  38, 379, 117,  38,  38,  38,  38,  38,  38, 361, 
+     64, 380, 381,  53, 382, 383, 315, 315, 315, 384, 385, 386, 102,  64, 387, 388, 
+    389, 311, 390,  53,  38, 115,  38,  38,  38,  38,  38, 391, 324,   2,   3,   4, 
+     13,  13,  14, 392, 393,  82,  38,  38,  80,  38,  38,  38,  38,  38,  38, 394, 
+    117,  38, 117,  38, 117,  38, 117, 140, 395, 396, 397, 398,  53,  53, 399, 201, 
+     38,  38,  38,  94,  38,  38,  71, 123, 400, 401, 126, 126, 126, 402, 150, 150, 
+    293, 403, 404, 150, 150, 150, 405,  53, 150, 150, 150, 406, 126,  53,  53,  53, 
+    407,  38, 408,  53,  38,  38,  38, 409,  38,  53,  38,  38, 410, 411,  53,  53, 
+      9,   9,  13,  13,  38, 118, 115,  38,  38, 123, 140, 114,  38, 409, 126, 126, 
+     38, 412, 126, 236,  38,  38, 118, 236, 103, 156,  53,  49,  38,  94,  94,  38, 
+     38,  53,  93, 133, 126, 126,  53,  53,  64,  64,  73,  53,  38,  38,  38, 413, 
+     38, 118, 324,  64,  38, 118, 126, 126,  71,  53, 126, 126,  38,  38, 140,  53, 
+    126, 126, 126, 414, 415,  38,  38,  38,  38,  38,  49,  49,  49,  78,  64, 230, 
+    416, 126, 126, 126, 126, 417,   5,   5, 222, 105, 418, 419, 420,  53,  53,  53, 
+     64,  53,  53,  53, 118,  53,  53,  53, 150, 304, 307, 150, 150, 421, 175, 422, 
+    423,  74, 424,  49, 425, 426,  49, 150, 150, 150, 427, 175, 150, 150, 150, 201, 
+    427, 428,  53,  53, 162,  53,  53,  53,   9,   9, 280,  13,  13,   9,   9,   9, 
+      9,   9,   9, 280,  13, 245,  13,  13, 280,  13,  13,  13,  13,  13,  13,  56, 
+    429, 430,  62,  56,   9, 280, 431,  65,  13,  65,  13,  13,  13,  57,  55,  62, 
+      9,  56,   9, 432,  13,  13,  57,  55,   9, 433, 434,   9, 432,  13,  13,  13, 
+     13,  13,  13,   9,   9, 280,  13,  13,  13, 242,   9,   9, 435,  13,  13,  13, 
+     13,  13,  26,  13,  35,   9,   9,   9,   9,   9,  24,  13,  13, 436,  13,   9, 
+      9, 435,  13,  13,  13,  13,  13,  26,  13,  35,   9,   9,   9,   9,   9,  24, 
+     13,  13, 436,  13,   9,   9, 435,  13,  26,  13,  29, 124,   5,   5,   5,   5, 
+    307, 150, 150, 304, 126, 126, 414,  53,  53, 227, 150, 150, 304,  53,  53,  53, 
+    150, 150, 223,  53, 201,  53,  53,  53, 223,  53,  53,  53, 150, 332, 150, 150, 
+    150, 150, 150, 223, 150, 183, 304,  53, 183, 150, 150, 150, 150, 150, 307, 223, 
+    150, 150,  53,  53,  53,  53, 402, 150, 183, 437, 437, 304, 150, 201, 150, 438, 
+    150, 307, 150, 150, 223, 307, 150, 150, 439,  53,  53,  53,  74,  74,  74,  74, 
+    373, 373, 373, 440, 
 };
 
-/* General_Category: 11312 bytes. */
+RE_UINT8 re_general_category_stage_5[] = {
+    15, 15, 15, 15, 12, 23, 23, 23, 25, 23, 23, 23, 20, 21, 23, 24, 
+    23, 19, 23, 23,  9,  9,  9,  9,  9,  9, 23, 23, 24, 24, 24, 23, 
+    23,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20, 23, 21, 26, 22, 
+    26,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 20, 24, 21, 24, 15, 
+    12, 23, 25, 25, 25, 25, 27, 27, 26, 27,  2, 28, 24, 16, 27, 26, 
+    27, 24, 11, 11, 26,  2, 27, 23, 26, 11,  2, 29, 11, 11, 11, 23, 
+     1,  1,  1, 24,  1,  1,  1,  2,  2,  2,  2, 24,  1,  2,  1,  2, 
+     2,  1,  2,  1,  2,  2,  1,  2,  1,  1,  2,  1,  2,  1,  2,  2, 
+     2,  1,  1,  2,  1,  2,  1,  1,  2,  1,  1,  1,  2,  2,  1,  1, 
+     1,  2,  2,  2,  1,  2,  2,  5,  5,  5,  5,  5,  1,  3,  2,  1, 
+     3,  2,  1,  3,  2,  1,  3,  2,  5,  2,  2,  2,  4,  4,  4,  4, 
+     4,  4, 26, 26, 26, 26,  4,  4, 26, 26, 26, 26,  4, 26, 26, 26, 
+     4, 26,  4, 26,  6,  6,  6,  6,  4, 26,  1,  2,  0,  0,  4,  2, 
+     2,  2, 23,  0,  0,  0,  0,  0, 26, 26,  1, 23,  1,  1,  1,  0, 
+     1,  0,  1,  1,  1,  1,  0,  1,  2,  2,  2,  1,  1,  2, 24,  1, 
+     1,  2, 27,  6,  7,  7,  1,  2,  0,  1,  1,  1,  0,  4, 23, 23, 
+    23, 23, 23, 23,  0,  2,  2,  2,  0, 23, 19,  0,  0,  6,  6,  6, 
+     6,  6, 19,  6, 23,  6,  6, 23,  6,  6, 23,  6,  5,  5,  5,  0, 
+     5,  5,  5, 23, 23,  0,  0,  0, 16, 16, 16, 16,  0,  0, 24, 24, 
+    24, 23, 23, 25, 23, 23, 27, 27,  6,  6,  6, 23,  0,  0, 23, 23, 
+     4,  5,  5,  5,  5,  5,  5,  6, 23, 23,  5,  5,  6,  5,  5,  5, 
+    23,  5,  6,  6,  6, 16, 27,  6,  6,  4,  4,  6,  6, 27,  6,  6, 
+     6,  6,  5,  5,  9,  9,  5,  5,  5, 27, 27,  5, 23, 23,  0, 16, 
+     5,  6,  5,  5,  6,  6,  6,  0,  0,  5,  5,  5,  5,  5,  6,  6, 
+     6,  5,  0,  0,  4,  4, 27, 23, 23, 23,  4,  0,  6,  6,  4,  6, 
+     4,  6,  6,  6,  6,  6,  0,  0, 23, 23, 23,  0,  5,  6,  6,  6, 
+     0,  0, 23,  0,  6,  6,  6,  8,  5,  5,  6,  8,  6,  5,  8,  8, 
+     8,  6,  6,  6,  6,  8,  8,  8,  8,  6,  8,  8, 23, 23,  9,  9, 
+    23,  4,  5,  5,  0,  6,  8,  8,  5,  0,  0,  5,  5,  0,  5,  5, 
+     5,  0,  5,  0,  0,  0,  5,  5,  5,  5,  0,  0,  6,  0,  0,  8, 
+     8,  0,  0,  8,  8,  6,  5,  0,  0,  0,  0,  8,  5,  5,  0,  5, 
+     0,  0,  9,  9,  5,  5, 25, 25, 11, 11, 11, 11, 11, 11, 27, 25, 
+     0,  6,  6,  8,  0,  0,  0,  5,  0,  5,  5,  0,  6,  0,  8,  8, 
+     8,  6,  6,  0,  0,  0,  0,  6,  6,  0,  0,  6,  0,  6,  0,  0, 
+     5,  6,  0,  0,  6,  6,  0,  6,  6,  8,  0,  8,  8,  6,  0,  0, 
+     5,  0,  0,  0,  0, 25,  0,  0,  6,  5,  8,  6,  0,  0,  6,  8, 
+    27,  5, 11, 11,  0,  0,  6,  5,  0,  0,  8,  8,  6,  8,  8,  0, 
+     8,  0,  8,  8, 11, 11, 11, 27, 27, 27, 27, 27, 27, 25, 27,  0, 
+     0,  8,  8,  8,  0,  5,  6,  6,  8,  0,  6,  6,  6,  0,  6,  6, 
+     0,  6,  6,  0,  8,  8,  8,  8,  8,  0,  6,  8,  0,  8,  8,  0, 
+     0,  0,  5,  0,  0,  5,  8,  8, 11, 11,  0,  0,  0, 27,  5,  5, 
+     0,  5,  0,  0,  0,  0,  6,  0,  8,  8,  6,  6,  6,  0,  6,  0, 
+     0,  0,  0, 25,  5,  5,  4,  6,  0,  5,  0,  5,  5,  0,  4,  0, 
+     9,  9,  0,  0,  5, 27, 27, 27, 23, 23, 23, 27,  6,  6, 27, 27, 
+     9,  9, 11, 11, 27,  6, 27,  6, 27,  6, 20, 21, 20, 21,  8,  8, 
+     6, 23,  6,  6,  6,  0, 27, 27, 27, 27,  6, 27, 27,  0, 27, 27, 
+    23, 27, 27, 27, 27, 23, 23,  0,  5,  5,  5,  8,  6,  8,  6,  6, 
+     8,  6,  6,  8,  8,  6,  6,  5,  5,  5,  8,  8,  8,  5,  5,  8, 
+     8,  8,  5,  5,  8,  6,  5,  8,  9,  9,  8,  8,  8,  6, 27, 27, 
+     1,  1,  0,  0,  4,  0,  0,  0, 27, 23, 23, 23, 23, 11, 11, 11, 
+    11,  0,  0,  0, 27, 27,  0,  0, 19,  5,  5,  5,  5, 23, 23,  5, 
+    12,  5,  5,  5,  5,  5,  5, 20, 21,  0,  0,  0, 23, 23, 10, 10, 
+    10,  0,  0,  0,  6,  0,  0,  0,  6, 23, 23,  0,  5,  0,  6,  6, 
+    16, 16,  8,  6,  6,  6,  8,  8,  8,  8,  6,  8, 23, 23, 23,  4, 
+    23, 23, 23, 25, 23, 23, 19, 23, 23, 23, 23,  6,  6,  6, 12,  0, 
+     5,  5,  5,  4,  5,  6,  5,  0,  8,  8,  8,  6, 27,  0,  0,  0, 
+     8,  5,  5,  5,  8,  8,  0,  0,  9,  9, 11,  0,  0,  0, 27, 27, 
+     5,  8,  6,  8,  6,  8,  6,  8, 23, 23,  0,  0, 27, 27, 27,  6, 
+     6,  6,  8,  5,  5,  8,  6,  6,  6,  6,  8,  0,  8,  6,  8,  6, 
+     0,  0,  0, 23,  4,  4, 23, 23,  5,  5,  8,  0,  4,  4,  2,  2, 
+     4,  2,  2,  2,  2,  2,  2,  4,  2,  2,  0,  0,  0,  1,  0,  1, 
+     3,  3,  3,  3,  2,  0,  2,  2,  3, 26,  2, 26, 26, 26,  2,  2, 
+     3, 26, 26, 26,  0,  0,  2,  2,  0, 26, 26, 26,  1, 26, 26, 26, 
+     3, 26, 26,  0, 12, 12, 12, 12, 12, 12, 12, 16, 19, 19, 19, 19, 
+    19, 19, 23, 23, 28, 29, 20, 28, 13, 14, 16, 16, 16, 16, 16, 12, 
+    23, 28, 29, 23, 23, 23, 23, 22, 22, 23, 23, 23, 24, 20, 21, 23, 
+    23, 23, 24, 23, 23, 23, 23, 12, 16,  0,  0,  0,  0,  0, 16, 16, 
+    11,  4,  0,  0, 11, 11, 24, 24, 24, 20, 21,  4, 24, 20, 21,  0, 
+    25, 25, 25, 25, 25, 25,  0,  0,  6,  7,  7,  7,  7,  6,  7,  7, 
+     7,  6,  6,  6, 27, 27,  1, 27, 27, 27, 27,  1, 27, 27,  2,  1, 
+     1,  1,  2,  2, 27,  1, 27, 27, 24,  1,  1,  1,  1,  1, 27, 27, 
+     1, 27,  1, 27,  1, 27,  1,  1,  1,  1, 27,  2,  2,  5,  5,  5, 
+     5,  2, 27, 27, 24, 24, 24, 24, 24,  1,  2,  2,  2,  2, 27, 24, 
+    27, 27,  2, 27, 10, 10, 10, 10, 10, 10, 10,  1,  2, 10, 10, 10, 
+    10, 11,  0,  0, 24, 27, 27, 27, 27, 27, 24, 24, 24, 27, 27, 24, 
+    27, 27, 24, 27, 24, 24, 27, 27, 27, 20, 21, 27, 27, 27, 27, 24, 
+    27, 27, 27,  0, 27, 27, 11, 11, 27, 24, 27, 27,  0, 27, 27, 27, 
+    20, 21, 20, 21, 20, 21, 11, 11, 24, 20, 21, 24, 24, 24, 24,  0, 
+    24,  0, 24, 24, 24, 24, 20, 21, 24, 24, 24, 20, 21, 20, 21, 20, 
+    21, 24, 24, 24, 20, 21, 24, 24, 24,  0,  0,  0,  2,  2,  2,  0, 
+     1,  2,  2,  1,  2,  4,  1,  1,  2, 27, 27, 27,  2,  1,  2,  6, 
+     0, 23, 23, 23, 23, 11, 23, 23,  0,  0,  0,  4, 23, 23, 28, 29, 
+    28, 29, 23, 23, 23, 23, 23, 19, 28, 29, 20, 21, 20, 21, 23, 23, 
+    27, 27,  0, 27, 27,  4,  5, 10, 20, 21, 27, 27, 19, 20, 21, 21, 
+    27, 10, 10, 10, 10, 10,  6,  6, 19,  4,  4,  4,  4,  4, 27, 27, 
+    10, 10, 10,  4,  5, 23, 27, 27,  0,  6,  6, 26, 26,  4,  4,  5, 
+     4,  4,  4,  5, 11, 11, 27, 27, 27, 11, 11, 11,  5,  4,  5,  5, 
+     4, 23, 23, 23,  1,  2,  5,  6,  7,  7,  7, 23,  6,  6, 23,  4, 
+     5,  5, 10, 10,  6,  6, 23, 23, 26, 26, 26,  4, 26, 26,  1,  2, 
+     4, 26, 26,  1,  2,  1,  2,  0,  1,  2,  0,  0,  0,  0,  2,  5, 
+     5,  5,  6,  5, 25, 27,  0,  0, 23, 23, 23,  5,  8, 23, 23, 23, 
+    23, 23,  0,  4,  6,  8,  0,  0,  5,  5,  5, 27, 27, 27,  5,  8, 
+     6,  5,  6,  6,  6,  5,  5,  6,  5,  4, 23, 23,  6,  8,  8, 23, 
+    18, 18, 18, 18, 17, 17, 17, 17,  0,  0,  0,  2,  0,  5,  6,  5, 
+     5, 24,  5,  5,  5,  5, 26, 26, 26, 26,  0,  0,  5,  5, 20, 21, 
+    23, 23, 23, 20, 21, 23,  0,  0, 23, 19, 19, 22, 22, 20, 21, 20, 
+    21, 23, 23, 20, 21, 23, 23, 23, 23, 22, 22, 22, 19, 20, 21, 20, 
+    21, 20, 21, 23, 23, 23, 24, 19, 23, 25, 23, 23,  5,  0,  0, 16, 
+    24, 21, 24, 20, 21, 23, 20, 21,  5,  5,  4,  4, 25, 25, 24, 26, 
+    27, 25, 25,  0, 27, 24, 24, 24, 24, 27, 27,  0,  0, 16, 16, 16, 
+    23, 23, 27,  0,  0,  0,  0, 11,  0,  0,  0, 27, 10, 11, 11, 11, 
+    11, 27, 27, 27, 27, 27, 11,  0, 27,  6,  0,  0,  5, 10,  5,  5, 
+     5,  5, 10,  0,  5,  5,  0, 23, 23, 10, 10, 10, 10, 10,  0,  0, 
+     5,  5, 11, 11,  5, 11, 11, 23, 11, 11, 11,  0,  8,  6,  8,  5, 
+     0,  0, 11, 11, 11, 11,  9,  9,  8,  6,  6, 23, 23, 16, 23, 23, 
+    10, 10, 10,  0, 27,  8,  8,  6, 27,  8,  8,  8,  8,  8,  8, 16, 
+    16, 16, 16,  6,  6,  6,  6, 27, 27,  6,  6,  6, 27, 27,  6,  6, 
+     6, 27,  0,  0,  0,  0,  1,  0,  0,  1,  1,  0,  2,  2,  0,  2, 
+     1,  0,  2,  2,  1,  0,  1,  0,  0,  0,  1,  1,  1, 24,  2,  2, 
+     2, 24,  2,  2, 27,  0, 27,  0,  0, 27,  0,  0,  0, 16,  0,  0, 
+    17, 17,  0,  0, 
+};
+
+/* General_Category: 9580 bytes. */
 
 RE_UINT32 re_get_general_category(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -1754,11 +2985,14 @@ RE_UINT32 re_get_general_category(RE_UINT32 ch) {
     pos = ((RE_UINT32)re_general_category_stage_1[f] << 4);
     f = code >> 7;
     code ^= (f << 7);
-    pos = ((RE_UINT32)re_general_category_stage_2[pos + f] << 4);
-    f = code >> 3;
-    code ^= (f << 3);
-    pos = ((RE_UINT32)re_general_category_stage_3[pos + f] << 3);
-    value = re_general_category_stage_4[pos + code];
+    pos = ((RE_UINT32)re_general_category_stage_2[pos + f] << 3);
+    f = code >> 4;
+    code ^= (f << 4);
+    pos = ((RE_UINT32)re_general_category_stage_3[pos + f] << 2);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_general_category_stage_4[pos + f] << 2);
+    value = re_general_category_stage_5[pos + code];
 
     return value;
 }
@@ -1803,303 +3037,243 @@ RE_UINT8 re_block_stage_1[] = {
 };
 
 RE_UINT8 re_block_stage_2[] = {
-      0,   0,   1,   1,   2,   2,   3,   3,   3,   4,   5,   6,   7,   8,   9,   9, 
-     10,  10,  10,  10,  11,  12,  13,  14,  15,  15,  15,  15,  16,  17,  18,  19, 
-     20,  21,  22,  22,  23,  23,  24,  24,  25,  25,  26,  26,  27,  27,  28,  28, 
-     29,  29,  30,  30,  31,  31,  32,  32,  33,  33,  34,  34,  35,  35,  35,  35, 
-     36,  36,  37,  38,  39,  39,  39,  39,  40,  40,  40,  40,  40,  40,  41,  42, 
-     43,  43,  43,  43,  43,  43,  43,  43,  43,  43,  44,  45,  46,  47,  48,  48, 
-     49,  49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  22,  59,  59,  60,  61, 
-     62,  63,  22,  64,  65,  65,  66,  67,  68,  68,  68,  68,  69,  69,  69,  69, 
-     70,  71,  72,  73,  74,  75,  76,  77,  78,  78,  78,  78,  79,  79,  79,  79, 
-     80,  81,  82,  82,  83,  83,  84,  85,  86,  86,  86,  86,  87,  87,  87,  88, 
-     89,  89,  89,  89,  90,  90,  91,  91,  92,  92,  92,  92,  93,  93,  93,  93, 
-     94,  95,  96,  96,  97,  98,  99, 100, 101, 101, 102, 102, 103, 103, 103, 104, 
-    105, 106, 107, 108, 109, 110, 111, 112, 113, 113, 113, 113, 114, 114, 114, 114, 
-    115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 
-    115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 
-    115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 
-    115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 
-    115, 115, 115, 115, 115, 115, 115, 116, 117, 117, 117, 117, 117, 117, 117, 117, 
-    117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 
-    117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 
-    118, 118, 118, 118, 118, 118, 118, 118, 118, 118, 118, 118, 118, 118, 118, 118, 
-    118, 118, 119, 120, 121, 121, 121, 121, 121, 122, 123, 124, 125, 126, 126, 126, 
-    127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139,  22,  22, 140, 
-    141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 
-    141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 
-    141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 
-    141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 
-    141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 142, 143, 
-    144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 145, 145, 
-    146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 
-    147, 147, 147, 147, 148, 148, 148, 148, 148, 148, 148, 148, 149, 150, 151, 151, 
-    151, 151, 151, 151, 151, 151, 151, 151, 152, 153, 154, 154, 155, 155, 155, 156, 
-    157, 157, 158, 158, 159, 160, 161, 162,  22,  22, 163, 164, 165, 166, 167, 168, 
-    169, 170, 171,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-    172, 173,  22,  22, 174,  22,  22,  22, 175, 176,  22,  22, 177, 178,  22,  22, 
-    179, 180,  22,  22,  22,  22,  22,  22,  22, 181,  22,  22,  22,  22,  22,  22, 
-    182, 182, 183, 184,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-    185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 
-    186, 186,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-    187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 
-    188,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-    189, 189, 189, 189, 189, 189, 189, 189, 189,  22,  22,  22,  22,  22,  22,  22, 
-     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-    190, 190, 190, 190,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-    191, 191, 191, 191, 192, 192, 192, 192, 193, 194,  22,  22, 195, 196,  22,  22, 
-    197, 197, 197, 197, 197, 197, 197, 197, 197, 197, 197, 197, 197, 197, 197, 197, 
-    198, 199, 200, 201, 202, 202, 202, 202, 203, 203, 203, 203, 204, 204, 204, 204, 
-    204, 204, 204, 204, 204, 204, 204, 204, 205, 206, 207, 207, 208, 208,  22,  22, 
-    209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 
-    209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 
-    209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 
-    209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 210, 211, 211, 211, 211, 
-    211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 
-    211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 
-    211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 
-    211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 212, 212, 212, 
-    213,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-    214, 214, 214, 214, 214, 214, 214, 214, 215,  22,  22,  22,  22,  22,  22,  22, 
-     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-    216, 216,  22,  22, 217, 217, 217, 218,  22,  22,  22,  22,  22,  22,  22,  22, 
-     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 
-    219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 
-    219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 
-    220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 
-    220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 
+      0,   1,   2,   3,   4,   5,   6,   7,   8,   8,   9,  10,  11,  11,  12,  13, 
+     14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  28, 
+     29,  30,  31,  31,  32,  32,  32,  33,  34,  34,  34,  34,  34,  35,  36,  37, 
+     38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  50,  51,  51, 
+     52,  53,  54,  55,  56,  56,  57,  57,  58,  59,  60,  61,  62,  62,  63,  64, 
+     65,  65,  66,  67,  68,  68,  69,  69,  70,  71,  72,  73,  74,  75,  76,  77, 
+     78,  79,  80,  81,  82,  82,  83,  83,  84,  84,  84,  84,  84,  84,  84,  84, 
+     84,  84,  84,  84,  84,  84,  84,  84,  84,  84,  84,  84,  84,  84,  84,  84, 
+     84,  84,  84,  84,  84,  84,  84,  84,  84,  84,  84,  85,  86,  86,  86,  86, 
+     86,  86,  86,  86,  86,  86,  86,  86,  86,  86,  86,  86,  86,  86,  86,  86, 
+     87,  87,  87,  87,  87,  87,  87,  87,  87,  88,  89,  89,  90,  91,  92,  93, 
+     94,  95,  96,  97,  98,  99, 100, 101, 102, 102, 102, 102, 102, 102, 102, 102, 
+    102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 
+    102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 103, 
+    104, 104, 104, 104, 104, 104, 104, 105, 106, 106, 106, 106, 106, 106, 106, 106, 
+    107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 
+    107, 107, 108, 108, 108, 108, 109, 110, 110, 110, 110, 110, 111, 112, 113, 114, 
+    115, 116, 117, 118,  15, 119, 120, 121, 122, 123,  15,  15,  15,  15,  15,  15, 
+    124,  15, 125,  15, 126,  15, 127,  15, 128,  15,  15,  15, 129,  15,  15,  15, 
+    130, 131,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15, 
+     15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15, 
+    132, 132, 132, 132, 132, 132, 132, 132, 133,  15,  15,  15,  15,  15,  15,  15, 
+    134, 134, 134, 134, 134, 134, 134, 134, 135,  15,  15,  15,  15,  15,  15,  15, 
+    136, 136, 136, 136, 137,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15, 
+    138, 138,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15, 
+    139, 139, 140, 140, 141,  15, 142,  15, 143, 143, 143, 143, 143, 143, 143, 143, 
+    144, 145, 146, 146, 147, 147, 148, 148, 148, 148, 148, 148, 149, 150, 151,  15, 
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 153, 154, 154, 
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 155, 156, 
+    157,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15, 
+    158, 158, 158, 158, 159,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15, 
+    160,  15, 161, 162,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15, 
+    163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 
+    164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 
 };
 
 RE_UINT8 re_block_stage_3[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1, 
       2,   2,   2,   2,   2,   2,   2,   2,   3,   3,   3,   3,   3,   3,   3,   3, 
-      3,   3,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   5,   5, 
-      5,   5,   5,   5,   5,   5,   5,   5,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,   6,   6,   6,   6,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      8,   8,   8,   8,   8,   8,   8,   8,   9,   9,   9,   9,   9,   9,  10,  10, 
-     10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  11,  11,  11,  11,  11,  11, 
-     11,  11,  11,  11,  11,  11,  11,  11,  12,  12,  12,  12,  12,  12,  12,  12, 
-     13,  13,  13,  13,  13,  13,  13,  13,  13,  13,  14,  14,  14,  14,  14,  14, 
-     15,  15,  15,  15,  15,  15,  15,  15,  16,  16,  16,  16,  16,  16,  16,  16, 
-     17,  17,  17,  17,  17,  17,  17,  17,  18,  18,  18,  18,  19,  19,  19,  19, 
-     19,  19,  19,  19,  19,  19,  19,  19,  20,  20,  20,  20,  20,  20,  20,  20, 
-     21,  21,  21,  21,  21,  21,  21,  21,  22,  22,  22,  22,  22,  22,  22,  22, 
-     23,  23,  23,  23,  23,  23,  23,  23,  24,  24,  24,  24,  24,  24,  24,  24, 
-     25,  25,  25,  25,  25,  25,  25,  25,  26,  26,  26,  26,  26,  26,  26,  26, 
-     27,  27,  27,  27,  27,  27,  27,  27,  28,  28,  28,  28,  28,  28,  28,  28, 
-     29,  29,  29,  29,  29,  29,  29,  29,  30,  30,  30,  30,  30,  30,  30,  30, 
-     31,  31,  31,  31,  31,  31,  31,  31,  32,  32,  32,  32,  32,  32,  32,  32, 
-     33,  33,  33,  33,  33,  33,  33,  33,  33,  33,  33,  33,  34,  34,  34,  34, 
-     34,  34,  34,  34,  34,  34,  34,  34,  35,  35,  35,  35,  35,  35,  35,  35, 
-     36,  36,  36,  36,  36,  36,  36,  36,  37,  37,  37,  37,  38,  38,  38,  38, 
-     38,  38,  38,  38,  38,  38,  38,  38,  39,  39,  39,  39,  39,  39,  39,  39, 
-     40,  40,  40,  40,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41, 
-     42,  42,  42,  42,  43,  43,  43,  43,  44,  44,  44,  44,  45,  45,  45,  45, 
-     46,  46,  46,  46,  46,  46,  46,  46,  47,  47,  47,  47,  47,  47,  47,  47, 
-     47,  47,  47,  47,  47,  47,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48, 
-     49,  49,  49,  49,  49,  49,  49,  49,  49,  49,  50,  50,  50,  50,  50,  50, 
-     51,  51,  51,  51,  51,  51,  51,  51,  51,  51,  51,  51,  52,  52,  52,  52, 
-     53,  53,  53,  53,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54, 
-     54,  54,  54,  54,  54,  54,  19,  19,  55,  55,  55,  55,  55,  55,  55,  55, 
-     56,  56,  56,  56,  56,  56,  56,  56,  57,  57,  57,  57,  57,  57,  57,  57, 
-     58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  59,  59,  59,  59,  59,  59, 
-     19,  19,  60,  60,  60,  60,  60,  60,  61,  61,  61,  61,  61,  61,  61,  61, 
-     62,  62,  62,  62,  62,  62,  62,  62,  63,  63,  63,  63,  63,  63,  63,  63, 
+      3,   3,   3,   3,   3,   4,   4,   4,   4,   4,   4,   5,   5,   5,   5,   5, 
+      6,   6,   6,   6,   6,   6,   6,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
+      8,   8,   8,   8,   8,   8,   8,   8,   9,   9,   9,  10,  10,  10,  10,  10, 
+     10,  11,  11,  11,  11,  11,  11,  11,  12,  12,  12,  12,  12,  12,  12,  12, 
+     13,  13,  13,  13,  13,  14,  14,  14,  15,  15,  15,  15,  16,  16,  16,  16, 
+     17,  17,  17,  17,  18,  18,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19, 
+     20,  20,  20,  20,  20,  20,  20,  20,  21,  21,  21,  21,  21,  21,  21,  21, 
+     22,  22,  22,  22,  22,  22,  22,  22,  23,  23,  23,  23,  23,  23,  23,  23, 
+     24,  24,  24,  24,  24,  24,  24,  24,  25,  25,  25,  25,  25,  25,  25,  25, 
+     26,  26,  26,  26,  26,  26,  26,  26,  27,  27,  27,  27,  27,  27,  27,  27, 
+     28,  28,  28,  28,  28,  28,  28,  28,  29,  29,  29,  29,  29,  29,  29,  29, 
+     30,  30,  30,  30,  30,  30,  30,  30,  31,  31,  31,  31,  31,  31,  31,  31, 
+     32,  32,  32,  32,  32,  32,  32,  32,  33,  33,  33,  33,  33,  33,  33,  33, 
+     33,  33,  34,  34,  34,  34,  34,  34,  35,  35,  35,  35,  35,  35,  35,  35, 
+     36,  36,  36,  36,  36,  36,  36,  36,  37,  37,  38,  38,  38,  38,  38,  38, 
+     39,  39,  39,  39,  39,  39,  39,  39,  40,  40,  41,  41,  41,  41,  41,  41, 
+     42,  42,  43,  43,  44,  44,  45,  45,  46,  46,  46,  46,  46,  46,  46,  46, 
+     47,  47,  47,  47,  47,  47,  47,  47,  47,  47,  47,  48,  48,  48,  48,  48, 
+     49,  49,  49,  49,  49,  50,  50,  50,  51,  51,  51,  51,  51,  51,  52,  52, 
+     53,  53,  54,  54,  54,  54,  54,  54,  54,  54,  54,  19,  19,  19,  19,  19, 
+     55,  55,  55,  55,  55,  55,  55,  55,  56,  56,  56,  56,  57,  57,  57,  57, 
+     58,  58,  58,  58,  58,  59,  59,  59,  19,  19,  19,  19,  19,  60,  60,  60, 
+     61,  61,  61,  61,  61,  61,  61,  61,  62,  62,  62,  62,  63,  63,  63,  63, 
      64,  64,  64,  64,  64,  64,  64,  64,  65,  65,  65,  65,  65,  65,  65,  65, 
-     66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  67,  67, 
-     67,  67,  67,  67,  68,  68,  68,  68,  68,  68,  69,  69,  69,  69,  69,  69, 
-     70,  70,  70,  70,  70,  70,  70,  70,  70,  70,  71,  71,  71,  71,  71,  71, 
-     71,  71,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72, 
+     66,  66,  66,  66,  66,  66,  66,  67,  67,  67,  68,  68,  68,  69,  69,  69, 
+     70,  70,  70,  70,  70,  71,  71,  71,  71,  72,  72,  72,  72,  72,  72,  72, 
      73,  73,  73,  73,  73,  73,  73,  73,  74,  74,  74,  74,  74,  74,  74,  74, 
-     75,  75,  75,  75,  75,  75,  75,  75,  76,  76,  76,  76,  77,  77,  77,  77, 
-     77,  77,  77,  77,  77,  77,  77,  77,  78,  78,  78,  78,  78,  78,  78,  78, 
-     79,  79,  79,  79,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80, 
+     75,  75,  75,  75,  76,  76,  77,  77,  77,  77,  77,  77,  77,  77,  77,  77, 
+     78,  78,  78,  78,  78,  78,  78,  78,  79,  79,  80,  80,  80,  80,  80,  80, 
      81,  81,  81,  81,  81,  81,  81,  81,  82,  82,  82,  82,  82,  82,  82,  82, 
-     83,  83,  83,  83,  83,  83,  84,  84,  85,  85,  85,  85,  85,  85,  85,  85, 
+     82,  82,  82,  82,  83,  83,  83,  84,  85,  85,  85,  85,  85,  85,  85,  85, 
      86,  86,  86,  86,  86,  86,  86,  86,  87,  87,  87,  87,  87,  87,  87,  87, 
      88,  88,  88,  88,  88,  88,  88,  88,  89,  89,  89,  89,  89,  89,  89,  89, 
-     90,  90,  90,  90,  90,  90,  90,  90,  90,  90,  90,  90,  91,  91,  91,  91, 
-     92,  92,  92,  92,  92,  92,  92,  92,  93,  93,  93,  93,  93,  93,  94,  94, 
-     94,  94,  94,  94,  94,  94,  94,  94,  95,  95,  95,  95,  95,  95,  95,  95, 
-     95,  95,  95,  95,  96,  96,  96,  96,  97,  97,  97,  97,  97,  97,  97,  97, 
-     98,  98,  98,  98,  98,  98,  98,  98,  99,  99,  99,  99,  99,  99,  99,  99, 
-     99,  99,  99,  99,  19,  19, 100, 100, 101, 101, 101, 101, 101, 101, 101, 101, 
-    102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 103, 103, 103, 103, 
-    103, 103, 103, 103, 103, 103, 103, 103, 104, 104, 104, 104, 104, 104, 105, 105, 
-    105, 105, 105, 105, 105, 105, 105, 105, 105, 105, 106, 106, 107, 107, 107, 107, 
-    108, 108, 108, 108, 108, 108, 109, 109, 110, 110, 110, 110, 110, 110, 110, 110, 
-    111, 111, 111, 111, 111, 111, 111, 111, 112, 112, 112, 112, 112, 112, 112, 112, 
-    113, 113, 113, 113, 113, 113, 113, 113, 114, 114, 114, 114, 114, 114, 114, 114, 
-    115, 115, 115, 115, 115, 115, 115, 115, 115, 115, 116, 116, 116, 116, 116, 116, 
-    116, 116, 117, 117, 117, 117, 117, 117, 118, 118, 118, 118, 118, 118, 118, 118, 
-    119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 120, 120, 120, 120, 
-    120, 120, 120, 120, 120, 120, 120, 120, 121, 121, 121, 121, 122, 122, 122, 122, 
-    122, 122, 122, 122, 122, 122, 122, 122, 123, 123, 123, 123, 123, 123, 124, 124, 
-    125, 125, 125, 125, 125, 125, 125, 125, 126, 126, 126, 126, 126, 126, 126, 126, 
-    126, 126, 126, 126, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 129, 129, 
-    129, 129, 129, 129, 130, 130, 130, 130, 131, 131, 131, 131, 131, 131, 131, 131, 
-    131, 131, 131, 131,  19,  19,  19,  19, 132, 132, 132, 132, 132, 132, 132, 132, 
-    132, 132, 132, 132, 133, 133, 133, 133, 134, 134, 134, 134, 134, 134, 134, 134, 
-    134, 134, 134, 134,  19,  19,  19,  19, 135, 135, 135, 135, 135, 135,  19,  19, 
-    136, 136, 136, 136, 136, 136, 136, 136, 137, 137, 137, 137, 137, 137, 137, 137, 
-    137, 137, 137, 137, 137, 137, 138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 
+     90,  90,  90,  90,  90,  90,  91,  91,  92,  92,  92,  92,  92,  92,  92,  92, 
+     93,  93,  93,  94,  94,  94,  94,  94,  95,  95,  95,  95,  95,  95,  96,  96, 
+     97,  97,  97,  97,  97,  97,  97,  97,  98,  98,  98,  98,  98,  98,  98,  98, 
+     99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  19, 100, 
+    101, 101, 101, 101, 102, 102, 102, 102, 102, 102, 103, 103, 103, 103, 103, 103, 
+    104, 104, 104, 105, 105, 105, 105, 105, 105, 106, 107, 107, 108, 108, 108, 109, 
+    110, 110, 110, 110, 110, 110, 110, 110, 111, 111, 111, 111, 111, 111, 111, 111, 
+    112, 112, 112, 112, 112, 112, 112, 112, 112, 112, 112, 112, 113, 113, 113, 113, 
+    114, 114, 114, 114, 114, 114, 114, 114, 115, 115, 115, 115, 115, 115, 115, 115, 
+    115, 116, 116, 116, 116, 117, 117, 117, 118, 118, 118, 118, 118, 118, 118, 118, 
+    118, 118, 118, 118, 119, 119, 119, 119, 119, 119, 120, 120, 120, 120, 120, 120, 
+    121, 121, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 
+    123, 123, 123, 124, 125, 125, 125, 125, 126, 126, 126, 126, 126, 126, 127, 127, 
+    128, 128, 128, 129, 129, 129, 130, 130, 131, 131, 131, 131, 131, 131,  19,  19, 
+    132, 132, 132, 132, 132, 132, 133, 133, 134, 134, 134, 134, 134, 134,  19,  19, 
+    135, 135, 135,  19,  19,  19,  19,  19,  19,  19,  19,  19, 136, 136, 136, 136, 
+    137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 138, 138, 138, 138, 138, 
     139, 139, 139, 139, 139, 139, 139, 139, 140, 140, 140, 140, 140, 140, 140, 140, 
     141, 141, 141, 141, 141, 141, 141, 141, 142, 142, 142, 142, 142, 142, 142, 142, 
-    143, 143, 143, 143, 143, 143, 143, 143, 144, 144, 144, 144, 144, 144, 144, 144, 
-    144, 144, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 
-    146, 146, 147, 147, 148, 148, 149, 149, 149, 149, 150, 150, 150, 150, 151, 151, 
+    143, 143, 143, 143, 143, 143, 143, 143, 144, 144, 144, 144, 144, 145, 145, 145, 
+    145, 145, 145, 145, 145, 145, 145, 145, 146, 147, 148, 149, 149, 150, 150, 151, 
     151, 151, 151, 151, 151, 151, 151, 151, 152, 152, 152, 152, 152, 152, 152, 152, 
-    152, 152, 152, 152, 152, 152, 153, 153, 154, 154, 154, 154, 154, 154, 154, 154, 
-    155, 155, 155, 155, 155, 155, 155, 155, 156, 156, 156, 156, 156, 156, 156, 156, 
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 158, 158, 158, 158, 158, 158, 
-    158, 158, 159, 159, 159, 159, 159, 159, 160, 160, 160, 160, 161, 161, 161, 161, 
-    161, 161, 161, 161,  19,  19,  19,  19, 162, 162, 162, 162, 162, 162, 163, 163, 
-    163, 163,  19,  19,  19,  19,  19,  19, 164, 164, 164, 164, 165, 165, 165, 165, 
-    165, 165, 165, 165,  19,  19,  19,  19, 166, 166, 166, 166, 166, 166, 166, 166, 
-    166, 166, 167, 167, 167, 167, 167, 167, 168, 168, 168, 168, 168, 168,  19,  19, 
-    169, 169, 169, 169, 169, 169, 169, 169, 170, 170, 170, 170,  19,  19,  19,  19, 
-    171, 171, 171, 171, 172, 172, 172, 172, 173, 173, 173, 173, 173, 173, 173, 173, 
-    173, 173, 173, 173, 174, 174, 174, 174, 175, 175, 175, 175, 175, 175, 175, 175, 
-    176, 176, 176, 176, 177, 177, 177, 177, 178, 178, 178, 178, 178, 178, 178, 178, 
-    178, 178,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19, 179, 179, 179, 179, 
-    180, 180, 180, 180, 180, 180, 180, 180, 181, 181, 181, 181, 181, 181, 181, 181, 
-    181, 181,  19,  19,  19,  19,  19,  19, 182, 182, 182, 182, 182, 182, 182, 182, 
-    183, 183, 183, 183, 183, 183, 183, 183, 184, 184, 184, 184, 184, 184, 184, 184, 
-    184, 184, 184, 184, 184, 184,  19,  19, 185, 185, 185, 185, 185, 185, 185, 185, 
+    152, 152, 152, 152, 152, 152, 152, 153, 154, 154, 154, 154, 154, 154, 154, 154, 
+    155, 155, 155, 155, 155, 155, 155, 155, 156, 156, 156, 156, 157, 157, 157, 157, 
+    157, 158, 158, 158, 158, 159, 159, 159, 160, 160, 161, 161, 161, 161,  19,  19, 
+    162, 162, 162, 163, 163,  19,  19,  19, 164, 164, 165, 165, 165, 165,  19,  19, 
+    166, 166, 166, 166, 166, 167, 167, 167, 168, 168, 168,  19,  19,  19,  19,  19, 
+    169, 169, 169, 169, 170, 170,  19,  19, 171, 171, 172, 172,  19,  19,  19,  19, 
+    173, 173, 173, 173, 173, 173, 174, 174, 175, 175, 175, 175, 176, 176, 177, 177, 
+    178, 178, 178, 178, 178,  19,  19,  19,  19,  19,  19,  19,  19,  19, 179, 179, 
+    180, 180, 180, 180, 180, 180, 180, 180, 181, 181, 181, 181, 181,  19,  19,  19, 
+    182, 182, 182, 182, 182, 182, 182, 182, 183, 183, 183, 183, 183, 183, 183, 183, 
+    184, 184, 184, 184, 184, 184, 184, 184, 184, 184, 184,  19,  19,  19,  19,  19, 
+    185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,  19,  19,  19,  19, 
     186, 186, 186, 186, 186, 186, 186, 186, 187, 187, 187, 187, 187, 187, 187, 187, 
-    188, 188, 188, 188, 188, 188, 188, 188, 189, 189, 189, 189, 189, 189, 189, 189, 
-    189, 189,  19,  19,  19,  19,  19,  19, 190, 190, 190, 190, 190, 190, 190, 190, 
-    190, 190, 190, 190, 191, 191, 191, 191, 192, 192, 192, 192, 192, 192, 192, 192, 
-    193, 193, 193, 193, 193, 193, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 
-    194, 194, 194, 194, 195, 195, 195, 195, 195, 195, 195, 195, 195, 195, 195, 195, 
+    188, 188, 188, 188, 188, 188, 188, 188, 189, 189, 189, 189, 189,  19,  19,  19, 
+    190, 190, 190, 190, 190, 190, 191, 191, 192, 192, 192, 192, 192, 192, 192, 192, 
+    193, 193, 193, 194, 194, 194, 194, 194, 194, 194, 195, 195, 195, 195, 195, 195, 
     196, 196, 196, 196, 196, 196, 196, 196, 197, 197, 197, 197, 197, 197, 197, 197, 
-    198, 198, 198, 198, 198, 198, 198, 198, 199, 199, 199, 199, 199, 199, 199, 199, 
-    199, 199,  19,  19,  19,  19,  19,  19, 200, 200, 200, 200, 200, 200, 200, 200, 
-    201, 201, 201, 201, 201, 201, 201, 201, 202, 202, 202, 202, 202, 202, 202, 202, 
-    202, 202, 202, 202,  19,  19,  19,  19, 203, 203, 203, 203, 203, 203, 203, 203, 
-    204, 204, 204, 204, 204, 204, 204, 204, 204, 204, 204, 204,  19,  19,  19,  19, 
-    205, 205, 205, 205, 205, 205, 205, 205, 205, 205, 205, 205,  19,  19,  19,  19, 
+    198, 198, 198, 198, 198, 198, 198, 198, 199, 199, 199, 199, 199,  19,  19,  19, 
+    200, 200, 200, 200, 200, 200, 200, 200, 201, 201, 201, 201, 201, 201, 201, 201, 
+    202, 202, 202, 202, 202, 202, 202, 202, 202, 202, 202, 202, 202, 202,  19,  19, 
+    203, 203, 203, 203, 203, 203, 203, 203, 203, 203, 203, 203, 204, 204, 204, 204, 
+    204, 204, 204, 204, 204, 204, 204, 204, 204, 204,  19,  19,  19,  19,  19,  19, 
+    205, 205, 205, 205, 205, 205, 205, 205, 205, 205,  19,  19,  19,  19,  19,  19, 
     206, 206, 206, 206, 206, 206, 206, 206, 207, 207, 207, 207, 207, 207, 207, 207, 
-    207, 207, 207, 207, 207, 207,  19,  19, 208, 208, 208, 208, 208, 208, 208, 208, 
+    207, 207, 207, 207, 207, 207, 207,  19, 208, 208, 208, 208, 208, 208, 208, 208, 
     209, 209, 209, 209, 209, 209, 209, 209, 
 };
 
 RE_UINT8 re_block_stage_4[] = {
-    105, 105, 105, 105, 105, 105, 105, 105,  90,  90,  90,  90,  90,  90,  90,  90, 
-     78,  78,  78,  78,  78,  78,  78,  78,  76,  76,  76,  76,  76,  76,  76,  76, 
-     93,  93,  93,  93,  93,  93,  93,  93,  36,  36,  36,  36,  36,  36,  36,  36, 
-    178, 178, 178, 178, 178, 178, 178, 178,  21,  21,  21,  21,  21,  21,  21,  21, 
-      5,   5,   5,   5,   5,   5,   5,   5,  70,  70,  70,  70,  70,  70,  70,  70, 
-     25,  25,  25,  25,  25,  25,  25,  25, 204, 204, 204, 204, 204, 204, 204, 204, 
-    115, 115, 115, 115, 115, 115, 115, 115, 111, 111, 111, 111, 111, 111, 111, 111, 
-     79,  79,  79,  79,  79,  79,  79,  79,   2,   2,   2,   2,   2,   2,   2,   2, 
-    192, 192, 192, 192, 192, 192, 192, 192, 189, 189, 189, 189, 189, 189, 189, 189, 
-    133, 133, 133, 133, 133, 133, 133, 133,   0,   0,   0,   0,   0,   0,   0,   0, 
-     82,  82,  82,  82,  82,  82,  82,  82, 138, 138, 138, 138, 138, 138, 138, 138, 
-    149, 149, 149, 149, 149, 149, 149, 149, 124, 124, 124, 124, 124, 124, 124, 124, 
-    122, 122, 122, 122, 122, 122, 122, 122, 155, 155, 155, 155, 155, 155, 155, 155, 
-      4,   4,   4,   4,   4,   4,   4,   4, 157, 157, 157, 157, 157, 157, 157, 157, 
-     41,  41,  41,  41,  41,  41,  41,  41, 110, 110, 110, 110, 110, 110, 110, 110, 
-     83,  83,  83,  83,  83,  83,  83,  83, 175, 175, 175, 175, 175, 175, 175, 175, 
-     85,  85,  85,  85,  85,  85,  85,  85, 198, 198, 198, 198, 198, 198, 198, 198, 
-     75,  75,  75,  75,  75,  75,  75,  75, 179, 179, 179, 179, 179, 179, 179, 179, 
-     11,  11,  11,  11,  11,  11,  11,  11,  87,  87,  87,  87,  87,  87,  87,  87, 
-    120, 120, 120, 120, 120, 120, 120, 120, 107, 107, 107, 107, 107, 107, 107, 107, 
-    103, 103, 103, 103, 103, 103, 103, 103, 112, 112, 112, 112, 112, 112, 112, 112, 
-     39,  39,  39,  39,  39,  39,  39,  39, 176, 176, 176, 176, 176, 176, 176, 176, 
-     47,  47,  47,  47,  47,  47,  47,  47,  49,  49,  49,  49,  49,  49,  49,  49, 
-    130, 130, 130, 130, 130, 130, 130, 130, 160, 160, 160, 160, 160, 160, 160, 160, 
-     34,  34,  34,  34,  34,  34,  34,  34, 119, 119, 119, 119, 119, 119, 119, 119, 
-     19,  19,  19,  19,  19,  19,  19,  19, 193, 193, 193, 193, 193, 193, 193, 193, 
-     26,  26,  26,  26,  26,  26,  26,  26,  67,  67,  67,  67,  67,  67,  67,  67, 
-    195, 195, 195, 195, 195, 195, 195, 195, 174, 174, 174, 174, 174, 174, 174, 174, 
-     33,  33,  33,  33,  33,  33,  33,  33,  91,  91,  91,  91,  91,  91,  91,  91, 
-    181, 181, 181, 181, 181, 181, 181, 181, 101, 101, 101, 101, 101, 101, 101, 101, 
-     42,  42,  42,  42,  42,  42,  42,  42, 162, 162, 162, 162, 162, 162, 162, 162, 
-     86,  86,  86,  86,  86,  86,  86,  86,  28,  28,  28,  28,  28,  28,  28,  28, 
-      9,   9,   9,   9,   9,   9,   9,   9, 147, 147, 147, 147, 147, 147, 147, 147, 
-    173, 173, 173, 173, 173, 173, 173, 173,  72,  72,  72,  72,  72,  72,  72,  72, 
-    177, 177, 177, 177, 177, 177, 177, 177, 104, 104, 104, 104, 104, 104, 104, 104, 
-    100, 100, 100, 100, 100, 100, 100, 100, 123, 123, 123, 123, 123, 123, 123, 123, 
-    190, 190, 190, 190, 190, 190, 190, 190, 172, 172, 172, 172, 172, 172, 172, 172, 
-     69,  69,  69,  69,  69,  69,  69,  69,  12,  12,  12,  12,  12,  12,  12,  12, 
-      6,   6,   6,   6,   6,   6,   6,   6,  66,  66,  66,  66,  66,  66,  66,  66, 
-    114, 114, 114, 114, 114, 114, 114, 114,  99,  99,  99,  99,  99,  99,  99,  99, 
-     98,  98,  98,  98,  98,  98,  98,  98,  17,  17,  17,  17,  17,  17,  17,  17, 
-    166, 166, 166, 166, 166, 166, 166, 166, 185, 185, 185, 185, 185, 185, 185, 185, 
-    209, 209, 209, 209, 209, 209, 209, 209,  30,  30,  30,  30,  30,  30,  30,  30, 
-    207, 207, 207, 207, 207, 207, 207, 207, 186, 186, 186, 186, 186, 186, 186, 186, 
-    187, 187, 187, 187, 187, 187, 187, 187, 180, 180, 180, 180, 180, 180, 180, 180, 
-    141, 141, 141, 141, 141, 141, 141, 141,  77,  77,  77,  77,  77,  77,  77,  77, 
-    194, 194, 194, 194, 194, 194, 194, 194,  24,  24,  24,  24,  24,  24,  24,  24, 
-     88,  88,  88,  88,  88,  88,  88,  88,  23,  23,  23,  23,  23,  23,  23,  23, 
-     53,  53,  53,  53,  53,  53,  53,  53, 159, 159, 159, 159, 159, 159, 159, 159, 
-    118, 118, 118, 118, 118, 118, 118, 118, 117, 117, 117, 117, 117, 117, 117, 117, 
-     32,  32,  32,  32,  32,  32,  32,  32,  51,  51,  51,  51,  51,  51,  51,  51, 
-     48,  48,  48,  48,  48,  48,  48,  48, 196, 196, 196, 196, 196, 196, 196, 196, 
-     29,  29,  29,  29,  29,  29,  29,  29, 143, 143, 143, 143, 143, 143, 143, 143, 
-    142, 142, 142, 142, 142, 142, 142, 142, 145, 145, 145, 145, 145, 145, 145, 145, 
-     97,  97,  97,  97,  97,  97,  97,  97,  50,  50,  50,  50,  50,  50,  50,  50, 
-     65,  65,  65,  65,  65,  65,  65,  65,  20,  20,  20,  20,  20,  20,  20,  20, 
-     61,  61,  61,  61,  61,  61,  61,  61, 129, 129, 129, 129, 129, 129, 129, 129, 
-     64,  64,  64,  64,  64,  64,  64,  64,  56,  56,  56,  56,  56,  56,  56,  56, 
-    205, 205, 205, 205, 205, 205, 205, 205, 191, 191, 191, 191, 191, 191, 191, 191, 
-    102, 102, 102, 102, 102, 102, 102, 102,  52,  52,  52,  52,  52,  52,  52,  52, 
-    197, 197, 197, 197, 197, 197, 197, 197,  84,  84,  84,  84,  84,  84,  84,  84, 
-     81,  81,  81,  81,  81,  81,  81,  81,  74,  74,  74,  74,  74,  74,  74,  74, 
-    134, 134, 134, 134, 134, 134, 134, 134, 165, 165, 165, 165, 165, 165, 165, 165, 
-     73,  73,  73,  73,  73,  73,  73,  73,  59,  59,  59,  59,  59,  59,  59,  59, 
-    206, 206, 206, 206, 206, 206, 206, 206, 171, 171, 171, 171, 171, 171, 171, 171, 
-    125, 125, 125, 125, 125, 125, 125, 125, 150, 150, 150, 150, 150, 150, 150, 150, 
-     15,  15,  15,  15,  15,  15,  15,  15, 164, 164, 164, 164, 164, 164, 164, 164, 
-    109, 109, 109, 109, 109, 109, 109, 109,  40,  40,  40,  40,  40,  40,  40,  40, 
-      7,   7,   7,   7,   7,   7,   7,   7, 148, 148, 148, 148, 148, 148, 148, 148, 
-    182, 182, 182, 182, 182, 182, 182, 182,  95,  95,  95,  95,  95,  95,  95,  95, 
-      3,   3,   3,   3,   3,   3,   3,   3, 208, 208, 208, 208, 208, 208, 208, 208, 
-    183, 183, 183, 183, 183, 183, 183, 183,  10,  10,  10,  10,  10,  10,  10,  10, 
-    188, 188, 188, 188, 188, 188, 188, 188, 126, 126, 126, 126, 126, 126, 126, 126, 
-    167, 167, 167, 167, 167, 167, 167, 167, 135, 135, 135, 135, 135, 135, 135, 135, 
-     96,  96,  96,  96,  96,  96,  96,  96,  38,  38,  38,  38,  38,  38,  38,  38, 
-    203, 203, 203, 203, 203, 203, 203, 203, 127, 127, 127, 127, 127, 127, 127, 127, 
-    201, 201, 201, 201, 201, 201, 201, 201, 152, 152, 152, 152, 152, 152, 152, 152, 
-    121, 121, 121, 121, 121, 121, 121, 121, 168, 168, 168, 168, 168, 168, 168, 168, 
-     13,  13,  13,  13,  13,  13,  13,  13, 154, 154, 154, 154, 154, 154, 154, 154, 
-     92,  92,  92,  92,  92,  92,  92,  92,  55,  55,  55,  55,  55,  55,  55,  55, 
-    108, 108, 108, 108, 108, 108, 108, 108,  46,  46,  46,  46,  46,  46,  46,  46, 
-     43,  43,  43,  43,  43,  43,  43,  43, 113, 113, 113, 113, 113, 113, 113, 113, 
-     89,  89,  89,  89,  89,  89,  89,  89, 153, 153, 153, 153, 153, 153, 153, 153, 
-    170, 170, 170, 170, 170, 170, 170, 170, 199, 199, 199, 199, 199, 199, 199, 199, 
-    116, 116, 116, 116, 116, 116, 116, 116,  71,  71,  71,  71,  71,  71,  71,  71, 
-    140, 140, 140, 140, 140, 140, 140, 140, 137, 137, 137, 137, 137, 137, 137, 137, 
-     45,  45,  45,  45,  45,  45,  45,  45,  68,  68,  68,  68,  68,  68,  68,  68, 
-     54,  54,  54,  54,  54,  54,  54,  54, 202, 202, 202, 202, 202, 202, 202, 202, 
-     22,  22,  22,  22,  22,  22,  22,  22, 169, 169, 169, 169, 169, 169, 169, 169, 
-    161, 161, 161, 161, 161, 161, 161, 161, 158, 158, 158, 158, 158, 158, 158, 158, 
-    163, 163, 163, 163, 163, 163, 163, 163, 139, 139, 139, 139, 139, 139, 139, 139, 
-    131, 131, 131, 131, 131, 131, 131, 131, 200, 200, 200, 200, 200, 200, 200, 200, 
-     80,  80,  80,  80,  80,  80,  80,  80,  35,  35,  35,  35,  35,  35,  35,  35, 
-     57,  57,  57,  57,  57,  57,  57,  57,  14,  14,  14,  14,  14,  14,  14,  14, 
-     31,  31,  31,  31,  31,  31,  31,  31,  27,  27,  27,  27,  27,  27,  27,  27, 
-      1,   1,   1,   1,   1,   1,   1,   1, 106, 106, 106, 106, 106, 106, 106, 106, 
-    128, 128, 128, 128, 128, 128, 128, 128,  44,  44,  44,  44,  44,  44,  44,  44, 
-     60,  60,  60,  60,  60,  60,  60,  60, 156, 156, 156, 156, 156, 156, 156, 156, 
-    136, 136, 136, 136, 136, 136, 136, 136,  37,  37,  37,  37,  37,  37,  37,  37, 
-     16,  16,  16,  16,  16,  16,  16,  16,  58,  58,  58,  58,  58,  58,  58,  58, 
-    184, 184, 184, 184, 184, 184, 184, 184, 151, 151, 151, 151, 151, 151, 151, 151, 
-     63,  63,  63,  63,  63,  63,  63,  63,  62,  62,  62,  62,  62,  62,  62,  62, 
-    146, 146, 146, 146, 146, 146, 146, 146,  18,  18,  18,  18,  18,  18,  18,  18, 
-    132, 132, 132, 132, 132, 132, 132, 132,   8,   8,   8,   8,   8,   8,   8,   8, 
-    144, 144, 144, 144, 144, 144, 144, 144,  94,  94,  94,  94,  94,  94,  94,  94, 
+      0,   0,   0,   0,   1,   1,   1,   1,   2,   2,   2,   2,   3,   3,   3,   3, 
+      4,   4,   4,   4,   5,   5,   5,   5,   6,   6,   6,   6,   7,   7,   7,   7, 
+      8,   8,   8,   8,   9,   9,   9,   9,  10,  10,  10,  10,  11,  11,  11,  11, 
+     12,  12,  12,  12,  13,  13,  13,  13,  14,  14,  14,  14,  15,  15,  15,  15, 
+     16,  16,  16,  16,  17,  17,  17,  17,  18,  18,  18,  18,  19,  19,  19,  19, 
+     20,  20,  20,  20,  21,  21,  21,  21,  22,  22,  22,  22,  23,  23,  23,  23, 
+     24,  24,  24,  24,  25,  25,  25,  25,  26,  26,  26,  26,  27,  27,  27,  27, 
+     28,  28,  28,  28,  29,  29,  29,  29,  30,  30,  30,  30,  31,  31,  31,  31, 
+     32,  32,  32,  32,  33,  33,  33,  33,  34,  34,  34,  34,  35,  35,  35,  35, 
+     36,  36,  36,  36,  37,  37,  37,  37,  38,  38,  38,  38,  39,  39,  39,  39, 
+     40,  40,  40,  40,  41,  41,  41,  41,  42,  42,  42,  42,  43,  43,  43,  43, 
+     44,  44,  44,  44,  45,  45,  45,  45,  46,  46,  46,  46,  47,  47,  47,  47, 
+     48,  48,  48,  48,  49,  49,  49,  49,  50,  50,  50,  50,  51,  51,  51,  51, 
+     52,  52,  52,  52,  53,  53,  53,  53,  54,  54,  54,  54,  55,  55,  55,  55, 
+     56,  56,  56,  56,  57,  57,  57,  57,  58,  58,  58,  58,  59,  59,  59,  59, 
+     60,  60,  60,  60,  61,  61,  61,  61,  62,  62,  62,  62,  63,  63,  63,  63, 
+     64,  64,  64,  64,  65,  65,  65,  65,  66,  66,  66,  66,  67,  67,  67,  67, 
+     68,  68,  68,  68,  69,  69,  69,  69,  70,  70,  70,  70,  71,  71,  71,  71, 
+     72,  72,  72,  72,  73,  73,  73,  73,  74,  74,  74,  74,  75,  75,  75,  75, 
+     76,  76,  76,  76,  77,  77,  77,  77,  78,  78,  78,  78,  79,  79,  79,  79, 
+     80,  80,  80,  80,  81,  81,  81,  81,  82,  82,  82,  82,  83,  83,  83,  83, 
+     84,  84,  84,  84,  85,  85,  85,  85,  86,  86,  86,  86,  87,  87,  87,  87, 
+     88,  88,  88,  88,  89,  89,  89,  89,  90,  90,  90,  90,  91,  91,  91,  91, 
+     92,  92,  92,  92,  93,  93,  93,  93,  94,  94,  94,  94,  95,  95,  95,  95, 
+     96,  96,  96,  96,  97,  97,  97,  97,  98,  98,  98,  98,  99,  99,  99,  99, 
+    100, 100, 100, 100, 101, 101, 101, 101, 102, 102, 102, 102, 103, 103, 103, 103, 
+    104, 104, 104, 104, 105, 105, 105, 105, 106, 106, 106, 106, 107, 107, 107, 107, 
+    108, 108, 108, 108, 109, 109, 109, 109, 110, 110, 110, 110, 111, 111, 111, 111, 
+    112, 112, 112, 112, 113, 113, 113, 113, 114, 114, 114, 114, 115, 115, 115, 115, 
+    116, 116, 116, 116, 117, 117, 117, 117, 118, 118, 118, 118, 119, 119, 119, 119, 
+    120, 120, 120, 120, 121, 121, 121, 121, 122, 122, 122, 122, 123, 123, 123, 123, 
+    124, 124, 124, 124, 125, 125, 125, 125, 126, 126, 126, 126, 127, 127, 127, 127, 
+    128, 128, 128, 128, 129, 129, 129, 129, 130, 130, 130, 130, 131, 131, 131, 131, 
+    132, 132, 132, 132, 133, 133, 133, 133, 134, 134, 134, 134, 135, 135, 135, 135, 
+    136, 136, 136, 136, 137, 137, 137, 137, 138, 138, 138, 138, 139, 139, 139, 139, 
+    140, 140, 140, 140, 141, 141, 141, 141, 142, 142, 142, 142, 143, 143, 143, 143, 
+    144, 144, 144, 144, 145, 145, 145, 145, 146, 146, 146, 146, 147, 147, 147, 147, 
+    148, 148, 148, 148, 149, 149, 149, 149, 150, 150, 150, 150, 151, 151, 151, 151, 
+    152, 152, 152, 152, 153, 153, 153, 153, 154, 154, 154, 154, 155, 155, 155, 155, 
+    156, 156, 156, 156, 157, 157, 157, 157, 158, 158, 158, 158, 159, 159, 159, 159, 
+    160, 160, 160, 160, 161, 161, 161, 161, 162, 162, 162, 162, 163, 163, 163, 163, 
+    164, 164, 164, 164, 165, 165, 165, 165, 166, 166, 166, 166, 167, 167, 167, 167, 
+    168, 168, 168, 168, 169, 169, 169, 169, 170, 170, 170, 170, 171, 171, 171, 171, 
+    172, 172, 172, 172, 173, 173, 173, 173, 174, 174, 174, 174, 175, 175, 175, 175, 
+    176, 176, 176, 176, 177, 177, 177, 177, 178, 178, 178, 178, 179, 179, 179, 179, 
+    180, 180, 180, 180, 181, 181, 181, 181, 182, 182, 182, 182, 183, 183, 183, 183, 
+    184, 184, 184, 184, 185, 185, 185, 185, 186, 186, 186, 186, 187, 187, 187, 187, 
+    188, 188, 188, 188, 189, 189, 189, 189, 190, 190, 190, 190, 191, 191, 191, 191, 
+    192, 192, 192, 192, 193, 193, 193, 193, 194, 194, 194, 194, 195, 195, 195, 195, 
+    196, 196, 196, 196, 197, 197, 197, 197, 198, 198, 198, 198, 199, 199, 199, 199, 
+    200, 200, 200, 200, 201, 201, 201, 201, 202, 202, 202, 202, 203, 203, 203, 203, 
+    204, 204, 204, 204, 205, 205, 205, 205, 206, 206, 206, 206, 207, 207, 207, 207, 
+    208, 208, 208, 208, 209, 209, 209, 209, 
 };
 
-/* Block: 5144 bytes. */
+RE_UINT8 re_block_stage_5[] = {
+      1,   1,   1,   1,   2,   2,   2,   2,   3,   3,   3,   3,   4,   4,   4,   4, 
+      5,   5,   5,   5,   6,   6,   6,   6,   7,   7,   7,   7,   8,   8,   8,   8, 
+      9,   9,   9,   9,  10,  10,  10,  10,  11,  11,  11,  11,  12,  12,  12,  12, 
+     13,  13,  13,  13,  14,  14,  14,  14,  15,  15,  15,  15,  16,  16,  16,  16, 
+     17,  17,  17,  17,  18,  18,  18,  18,  19,  19,  19,  19,   0,   0,   0,   0, 
+     20,  20,  20,  20,  21,  21,  21,  21,  22,  22,  22,  22,  23,  23,  23,  23, 
+     24,  24,  24,  24,  25,  25,  25,  25,  26,  26,  26,  26,  27,  27,  27,  27, 
+     28,  28,  28,  28,  29,  29,  29,  29,  30,  30,  30,  30,  31,  31,  31,  31, 
+     32,  32,  32,  32,  33,  33,  33,  33,  34,  34,  34,  34,  35,  35,  35,  35, 
+     36,  36,  36,  36,  37,  37,  37,  37,  38,  38,  38,  38,  39,  39,  39,  39, 
+     40,  40,  40,  40,  41,  41,  41,  41,  42,  42,  42,  42,  43,  43,  43,  43, 
+     44,  44,  44,  44,  45,  45,  45,  45,  46,  46,  46,  46,  47,  47,  47,  47, 
+     48,  48,  48,  48,  49,  49,  49,  49,  50,  50,  50,  50,  51,  51,  51,  51, 
+     52,  52,  52,  52,  53,  53,  53,  53,  54,  54,  54,  54,  55,  55,  55,  55, 
+     56,  56,  56,  56,  57,  57,  57,  57,  58,  58,  58,  58,  59,  59,  59,  59, 
+     60,  60,  60,  60,  61,  61,  61,  61,  62,  62,  62,  62,  63,  63,  63,  63, 
+     64,  64,  64,  64,  65,  65,  65,  65,  66,  66,  66,  66,  67,  67,  67,  67, 
+     68,  68,  68,  68,  69,  69,  69,  69,  70,  70,  70,  70,  71,  71,  71,  71, 
+     72,  72,  72,  72,  73,  73,  73,  73,  74,  74,  74,  74,  75,  75,  75,  75, 
+     76,  76,  76,  76,  77,  77,  77,  77,  78,  78,  78,  78,  79,  79,  79,  79, 
+     80,  80,  80,  80,  81,  81,  81,  81,  82,  82,  82,  82,  83,  83,  83,  83, 
+     84,  84,  84,  84,  85,  85,  85,  85,  86,  86,  86,  86,  87,  87,  87,  87, 
+     88,  88,  88,  88,  89,  89,  89,  89,  90,  90,  90,  90,  91,  91,  91,  91, 
+     92,  92,  92,  92,  93,  93,  93,  93,  94,  94,  94,  94,  95,  95,  95,  95, 
+     96,  96,  96,  96,  97,  97,  97,  97,  98,  98,  98,  98,  99,  99,  99,  99, 
+    100, 100, 100, 100, 101, 101, 101, 101, 102, 102, 102, 102, 103, 103, 103, 103, 
+    104, 104, 104, 104, 105, 105, 105, 105, 106, 106, 106, 106, 107, 107, 107, 107, 
+    108, 108, 108, 108, 109, 109, 109, 109, 110, 110, 110, 110, 111, 111, 111, 111, 
+    112, 112, 112, 112, 113, 113, 113, 113, 114, 114, 114, 114, 115, 115, 115, 115, 
+    116, 116, 116, 116, 117, 117, 117, 117, 118, 118, 118, 118, 119, 119, 119, 119, 
+    120, 120, 120, 120, 121, 121, 121, 121, 122, 122, 122, 122, 123, 123, 123, 123, 
+    124, 124, 124, 124, 125, 125, 125, 125, 126, 126, 126, 126, 127, 127, 127, 127, 
+    128, 128, 128, 128, 129, 129, 129, 129, 130, 130, 130, 130, 131, 131, 131, 131, 
+    132, 132, 132, 132, 133, 133, 133, 133, 134, 134, 134, 134, 135, 135, 135, 135, 
+    136, 136, 136, 136, 137, 137, 137, 137, 138, 138, 138, 138, 139, 139, 139, 139, 
+    140, 140, 140, 140, 141, 141, 141, 141, 142, 142, 142, 142, 143, 143, 143, 143, 
+    144, 144, 144, 144, 145, 145, 145, 145, 146, 146, 146, 146, 147, 147, 147, 147, 
+    148, 148, 148, 148, 149, 149, 149, 149, 150, 150, 150, 150, 151, 151, 151, 151, 
+    152, 152, 152, 152, 153, 153, 153, 153, 154, 154, 154, 154, 155, 155, 155, 155, 
+    156, 156, 156, 156, 157, 157, 157, 157, 158, 158, 158, 158, 159, 159, 159, 159, 
+    160, 160, 160, 160, 161, 161, 161, 161, 162, 162, 162, 162, 163, 163, 163, 163, 
+    164, 164, 164, 164, 165, 165, 165, 165, 166, 166, 166, 166, 167, 167, 167, 167, 
+    168, 168, 168, 168, 169, 169, 169, 169, 170, 170, 170, 170, 171, 171, 171, 171, 
+    172, 172, 172, 172, 173, 173, 173, 173, 174, 174, 174, 174, 175, 175, 175, 175, 
+    176, 176, 176, 176, 177, 177, 177, 177, 178, 178, 178, 178, 179, 179, 179, 179, 
+    180, 180, 180, 180, 181, 181, 181, 181, 182, 182, 182, 182, 183, 183, 183, 183, 
+    184, 184, 184, 184, 185, 185, 185, 185, 186, 186, 186, 186, 187, 187, 187, 187, 
+    188, 188, 188, 188, 189, 189, 189, 189, 190, 190, 190, 190, 191, 191, 191, 191, 
+    192, 192, 192, 192, 193, 193, 193, 193, 194, 194, 194, 194, 195, 195, 195, 195, 
+    196, 196, 196, 196, 197, 197, 197, 197, 198, 198, 198, 198, 199, 199, 199, 199, 
+    200, 200, 200, 200, 201, 201, 201, 201, 202, 202, 202, 202, 203, 203, 203, 203, 
+    204, 204, 204, 204, 205, 205, 205, 205, 206, 206, 206, 206, 207, 207, 207, 207, 
+    208, 208, 208, 208, 209, 209, 209, 209, 
+};
+
+/* Block: 4120 bytes. */
 
 RE_UINT32 re_get_block(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -2109,14 +3283,17 @@ RE_UINT32 re_get_block(RE_UINT32 ch) {
 
     f = ch >> 11;
     code = ch ^ (f << 11);
-    pos = ((RE_UINT32)re_block_stage_1[f] << 5);
-    f = code >> 6;
-    code ^= (f << 6);
+    pos = ((RE_UINT32)re_block_stage_1[f] << 4);
+    f = code >> 7;
+    code ^= (f << 7);
     pos = ((RE_UINT32)re_block_stage_2[pos + f] << 3);
-    f = code >> 3;
-    code ^= (f << 3);
-    pos = ((RE_UINT32)re_block_stage_3[pos + f] << 3);
-    value = re_block_stage_4[pos + code];
+    f = code >> 4;
+    code ^= (f << 4);
+    pos = ((RE_UINT32)re_block_stage_3[pos + f] << 2);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_block_stage_4[pos + f] << 2);
+    value = re_block_stage_5[pos + code];
 
     return value;
 }
@@ -2194,414 +3371,308 @@ RE_UINT8 re_script_stage_2[] = {
 };
 
 RE_UINT16 re_script_stage_3[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   1,   2,   2,   3,   1,   2,   2,   3, 
-      0,   0,   0,   0,   0,   4,   0,   4,   2,   2,   5,   2,   2,   2,   5,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,   2,   2,   6,   0,   0,   0,   0,   7,   8,   0,   0, 
-      9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,  10,  11, 
-     12,  13,  14,  14,  15,  14,  14,  14,  14,  14,  14,  14,  16,  17,  14,  14, 
-     18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18, 
-     19,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18, 
-     18,  18,  18,  18,  18,  20,  21,  22,  22,  22,  23,  21,  21,  22,  22,  22, 
-     22,  24,  25,  26,  26,  26,  26,  26,  26,  20,  26,  26,  26,  27,  28,  20, 
-     29,  30,  31,  32,  31,  31,  31,  31,  33,  34,  35,  36,   0,  37,  38,  31, 
-     31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  39,  31,  31,  31,  31, 
-     40,  41,  40,  40,  40,  40,  40,  40,  40,  42,  31,  31,  31,  31,  31,  31, 
-     43,  43,  43,  43,  43,  43,  44,  20,  45,  45,  45,  45,  45,  45,  45,  46, 
-     47,  47,  47,  47,  47,  48,  47,  49,  50,  50,  50,  51,  20,  20,  20,  20, 
-     20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20, 
-     52,  52,  52,  52,  52,  52,  52,  52,  52,  52,  53,  52,  54,  52,  55,  56, 
-     57,  58,  59,  60,  60,  61,  62,  63,  58,  64,  65,  66,  67,  60,  60,  68, 
-     69,  70,  71,  72,  72,  73,  74,  75,  70,  76,  77,  78,  79,  72,  80,  20, 
-     81,  82,  83,  84,  84,  85,  86,  87,  82,  88,  89,  20,  90,  84,  91,  20, 
-     92,  93,  94,  95,  95,  96,  97,  98,  93,  99, 100, 101, 102,  95,  95,  20, 
-    103, 104, 105, 106, 107, 104, 108, 109, 104, 105, 110,  20, 111, 108, 108, 112, 
-    113, 114, 115, 116, 116, 115, 117, 118, 114, 119, 120, 121, 122, 116,  20, 116, 
-    123, 124, 125, 126, 126, 125, 127, 128, 124, 129, 130, 131, 132, 126, 133,  20, 
-    134, 135, 136, 137, 137, 137, 137, 138, 135, 139, 140,  20, 141, 137, 142, 143, 
-    144, 145, 146, 147, 145, 145, 148, 149, 146, 150, 151, 145,  20,  20, 152,  20, 
-    153, 154, 154, 154, 154, 154, 154, 155, 154, 154, 154, 156,  20,  20,  20,  20, 
-    157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 163, 167,  20,  20,  20,  20, 
-    168, 168, 168, 168, 168, 168, 168, 168, 168, 169, 168, 168, 168, 170, 169, 168, 
-    168, 168, 168, 169, 168, 168, 168, 171, 168, 171, 172, 173,  20,  20,  20,  20, 
-    174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 
-    174, 174, 174, 174, 175, 175, 175, 175, 176,  20, 175, 175, 175, 175, 175, 177, 
-    178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 178, 
-    179, 179, 179, 179, 179, 179, 179, 179, 179, 180, 181, 180, 179, 179, 179, 179, 
-    179, 180, 179, 179, 179, 179, 180, 181, 180, 179, 181, 179, 179, 179, 179, 179, 
-    179, 179, 180, 179, 179, 179, 179, 179, 179, 179, 179, 182, 179, 179, 179, 183, 
-    179, 179, 179, 184, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 186,  20, 
-    187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 
-    188, 188, 188, 189, 190, 190, 190, 190, 190, 190, 190, 190, 190, 191, 192,  20, 
-    193, 194, 195,  20, 196, 196, 197,  20, 198, 198, 199,  20, 200, 201, 202,  20, 
-    203, 203, 203, 203, 203, 203, 203, 203, 203, 203, 203, 204, 203, 205, 203, 205, 
-    206, 207, 208, 209, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,  20, 
-    208, 208, 208, 208, 208, 210, 187, 187, 187, 187, 187, 187, 187, 187, 211,  20, 
-    212, 212, 212, 213, 212, 214, 212, 214, 215, 212, 216, 216, 216, 217, 218,  20, 
-    219, 219, 219, 219, 219, 220, 219, 219, 219, 221, 219, 222, 203, 203, 203, 203, 
-    223, 223, 223, 224, 225, 225, 225, 225, 225, 225, 225, 226, 225, 225, 225, 227, 
-    225, 228, 225, 228, 225, 229,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20, 
-    230, 230, 230, 230, 230, 230, 230, 230, 230, 231, 230, 230, 230, 230, 230, 232, 
-    233, 233, 233, 233, 233, 234, 233, 235, 236, 236, 236, 236, 236, 236, 237, 238, 
-    239, 239, 239, 239, 239, 239, 239, 240, 239, 241, 242, 242, 242, 242, 242, 242, 
-     20,  20,  20,  20,  20,  20,  20,  20,  20,  20, 243,   9, 244, 245, 246,  20, 
-      2,   2,   2,   2, 247, 248,   2,   2,   2,   2,   2, 249, 250, 251,   2, 252, 
-      2,   2,   2,   2,   2,   2,   2, 253,   9,   9,   9,   9, 254,  20,  20, 255, 
-     14,  14, 256, 256,  14,  14,  14,  14, 256, 256,  14, 257,  14,  14,  14, 256, 
-     14,  14,  14,  14,  14,  14, 258,  14, 258,  14, 259, 260,  14,  14, 261, 262, 
-      0, 263,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 264, 265, 266, 267, 
-      0, 268,   2, 269,   0,   0,   0, 270,  20,  20,   9,   9,   9,   9, 271,  20, 
-      0,   0,   0,   0, 272, 273,   4,   0,   0, 274,   0,   0,   2,   2,   2,   2, 
-      2, 275,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 276,  20, 
-      0,   0,   0,   0, 268,  20,  20,  20,   0, 246,  20,  20,   0,   0,   0,   0, 
-    277,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0, 278,   0,   0,   0,   0,   0,   0, 
-    279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0, 264,   0, 270,  20,  20,  20,  20, 
-    280, 280, 280, 280, 280, 281, 280, 280, 280, 280, 280, 281,   2,   2,   2,   2, 
-     17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17, 282, 283, 
-    175, 175, 175, 175, 176,  20, 284, 284, 284, 284, 284, 284, 285, 286, 287, 286, 
-    179, 179, 181,  20, 181, 181, 181, 181, 181, 181, 181, 181,  18,  18,  18,  18, 
-      0,   0,   0,   0,   0,   0, 270,  20,  20,  20,  20,  20,  20,  20,  20,  20, 
-    288, 288, 288, 289, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 290,  20, 
-    288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 
-    288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 291,  20,  20,  20,   0, 276, 
-    292,   0,   0,   0, 293, 294,   0, 295, 296, 297, 297, 297, 297, 297, 297, 297, 
-    297, 297, 298, 299, 300, 301, 301, 301, 301, 301, 301, 301, 301, 301, 301, 302, 
-    303, 304, 304, 304, 304, 305, 306, 178, 178, 178, 178, 178, 178, 178, 178, 178, 
-    178, 307,   0,   0, 304, 304, 304, 308,   0,   0,   0,   0, 276,  20, 301, 301, 
-    178, 178, 178, 307,   0,   0,   0,   0,   0,   0,   0,   0, 178, 178, 178, 309, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 301, 301, 301, 301, 301, 310, 
-    301, 301, 301, 301, 301, 301, 301, 301, 301, 301, 301,   0,   0,   0,   0,   0, 
-    288, 288, 288, 288, 288, 288, 291,  20,   0,   0,   0,   0,   0,   0,   0,   0, 
-    288, 288, 288, 288, 288, 288, 288, 288, 288, 290,  20,  20,  20,  20,  20,  20, 
-    311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 
-    311, 312, 311, 311, 311, 311, 311, 311, 313,  20, 314, 314, 314, 314, 314, 314, 
-    315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 
-    315, 315, 315, 315, 315, 316,  20,  20,  18,  18,  18,  18,  18,  18, 317, 318, 
-     18,  18,  18,  20, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319,  20, 
-      0,   0,   0,   0, 320,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2, 321, 322,  20,   2, 322,  20,  20,  20,  20,  20,  20,  20,  20,  20, 323, 
-    324, 324, 324, 324, 324, 325,   0, 270, 326, 326, 326, 326, 326, 326, 326,  20, 
-    327, 327, 327, 327, 327, 327, 327, 327, 328, 329, 327, 330,  52,  52,  52, 331, 
-    332, 332, 332, 332, 332, 332, 333, 333, 333, 333, 334, 335, 178, 178, 178, 336, 
-    337, 337, 337, 337, 337, 337, 337, 337, 337, 338, 337, 339,  20,  20,  20,  20, 
-    340, 340, 340, 340, 340, 340, 341,  20, 340, 342, 340, 343, 174, 174, 174, 344, 
-    345, 345, 345, 345, 345, 345, 345, 345, 346,  20,  20, 347,  20,  20,  20,  20, 
-    348, 348, 348,  20, 181, 181,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20, 
-     20,  20,  20,  20,  20,  20,  20,  20, 349, 349, 349, 349, 349, 350, 349, 351, 
-    178, 178, 178, 178, 352,  20, 178, 178, 307, 353, 178, 178, 178, 178, 178, 352, 
-    288, 288, 288, 288, 288, 291, 288, 288, 288, 288, 288, 288, 288, 291, 288, 288, 
-    288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 354,  20,  20,  20,  20, 
-    355,  20, 356, 357,  26,  26, 358, 359, 360,  26,  31,  31,  31,  31,  31,  31, 
-     31,  31,  31,  31,  31,  31,  31,  31, 361,  20, 362,  31,  31,  31,  31,  31, 
-     31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31, 
-     31,  31,  31,  31,  31,  31,  31, 363,  20,  20,  31,  31,  31,  31,  31,  31, 
-     31,  31, 364,  31,  31,  31,  31,  31,  31,  20,  20,  20,  20,  20,  31, 365, 
-      9,   9,   0, 270, 254,  20,   0,   0,   0,   0, 366,   0, 268, 276, 367,  31, 
-     31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31, 368, 
-    277,   0,   0,   0,   1,   2,   2,   3,   1,   2,   2,   3, 369, 301, 300, 301, 
-    301, 301, 301, 370, 178, 178, 178, 307, 371, 371, 371, 372, 268, 268,  20, 373, 
-    374, 375, 374, 374, 376, 374, 374, 377, 374, 378, 374, 378,  20,  20,  20,  20, 
-    374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 379, 
-    380,   0,   0,   0,   0,   0, 381,   0,  14,  14,  14,  14,  14,  14,  14,  14, 
-     14, 382,   0, 276,  20,  20,  20,  20,  20,  20,   0,   0,   0,   0,   0, 383, 
-    384, 384, 384, 385, 386, 386, 386, 386, 386, 386, 387,  20,  20,  20,  20,  20, 
-    388, 388, 388, 389, 390,  20, 391, 391, 391, 392,  20,  20,  20,  20,  20,  20, 
-    393, 393, 393, 394, 395, 395, 395, 395, 396, 395, 397,  20,  20,  20,  20,  20, 
-    398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 399, 399, 399, 399, 399, 399, 
-    400, 400, 400, 401, 400, 402,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20, 
-    403, 404, 405, 405, 405, 405, 406, 407, 408, 408, 409, 408,  20,  20,  20,  20, 
-    410, 410, 410, 411, 412, 412, 412, 413,  20,  20,  20,  20,  20,  20,  20,  20, 
-    414, 415, 416, 417, 418, 418, 419, 420, 418,  20, 418, 421, 422, 422, 422, 422, 
-    423, 423, 423, 423, 423, 423, 424, 425, 426, 426, 427, 426, 428, 428, 429, 428, 
-    430, 430, 430, 430, 430, 430, 430, 430, 430, 431,  20,  20,  20,  20,  20,  20, 
-     20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  31,  31,  31, 432, 
-    433, 433, 433, 433, 433, 433, 433, 433, 433, 434, 435, 433, 433, 433,  20,  20, 
-    436, 436, 436, 436, 436, 436, 436, 436, 437,  20,  20,  20,  20,  20,  20,  20, 
-    438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 
-    438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 439,  20,  20, 
-    438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 440,  20, 441,  20, 
-    442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 
-    442, 442, 442, 442, 442, 443,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20, 
-    319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 
-    319, 319, 319, 319, 319, 319, 319, 444,  20,  20,  20,  20,  20,  20,  20,  20, 
-    445,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 446,  20, 
-      0,   0,   0,   0, 268, 277,   0,   0,   0,   0,   0,   0, 447, 448,   0, 449, 
-    450, 451,   0,   0,   0, 452,   0,   0,   0,   0,   0, 446,  20,  20,  20,  20, 
-     14,  14,  14,  14,  14,  14,  14,  14, 256,  20,  20,  20,  20,  20,  20,  20, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 268,  20,   0,   0, 270,  20, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 453,   0,   0,   0,   0,   0, 
-      0,   0,   0, 453, 454, 455,   0, 456, 457,   0,   0,   0,   0,   0,   0,   0, 
-    458, 459, 453, 453,   0,   0,   0, 460, 461, 265, 462,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0, 446,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0, 463,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0, 276,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0, 276,  20,   0, 268, 277, 268, 277,   0, 277,   0,  20,  20,  20,  20, 
-      0, 246,   0,   0,   0, 268,   0,   0,   0,   0,   0,   0,   0, 270,   0,   0, 
-      0,   0,   0, 246,  20,  20,  20,  20,  20,  20,  20,  20, 464,   0,   0,   0, 
-    465,  20,   0,   0,   0,   0,   0, 246,   0, 466, 270,  20,  20,  20,  20,  20, 
-      0,   0,   0,   0, 466,  20, 458,   0,   0,   0,   0,   0,   0,   0,   0, 264, 
-      0,   0, 276,  20,   0,   0,   0,   0, 453, 246,  20,  20,   0,   0, 466,  20, 
-      0,   0,   0,   0,   0,   0,   0, 268, 462,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 467, 
-      0,   0,   0,   0,   0,   0,   0, 446,  20,  20,   0,   0,   0,  20,  20,  20, 
-     20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20, 468, 
-    277,   0, 469, 470, 446, 471, 457,   0, 472,   0,  20,  20,  20,  20,  20,  20, 
-      0,   0,   0,   0,   0,   0,   0,   0, 446,  20,  20,  20,  20,  20,  20,  20, 
-    288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 473,  20,  20,  20,  20,  20, 
-    288, 288, 288, 288, 288, 288, 474,  20, 288, 288, 288, 288, 288, 288, 288, 288, 
-    288, 288, 288, 291,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20, 
-    475,  20,  20,  20,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9, 
-      9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,  20,  20, 
+      0,   0,   0,   0,   1,   2,   1,   2,   0,   0,   3,   3,   4,   5,   4,   5, 
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   6,   0,   0,   7,   0, 
+      8,   8,   8,   8,   8,   8,   8,   9,  10,  11,  12,  11,  11,  11,  13,  11, 
+     14,  14,  14,  14,  14,  14,  14,  14,  15,  14,  14,  14,  14,  14,  14,  14, 
+     14,  14,  16,  17,  18,  19,  17,  18,  20,  21,  22,  22,  23,  22,  24,  25, 
+     26,  27,  28,  28,  29,  30,  31,  32,  28,  28,  28,  28,  28,  33,  28,  28, 
+     34,  35,  35,  35,  36,  28,  28,  28,  37,  37,  37,  38,  39,  39,  39,  40, 
+     41,  41,  42,  43,  44,  45,  46,  46,  46,  46,  46,  46,  46,  46,  46,  46, 
+     47,  47,  47,  47,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  58, 
+     59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74, 
+     75,  76,  77,  78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90, 
+     91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 
+    107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120,  46, 121, 
+    122, 123, 123, 124, 123, 125,  46,  46, 126, 127, 128, 129, 130, 131,  46,  46, 
+    132, 132, 132, 132, 133, 132, 134, 135, 132, 133, 132, 136, 136, 137,  46,  46, 
+    138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 139, 139, 140, 139, 139, 141, 
+    142, 142, 142, 142, 142, 142, 142, 142, 143, 143, 143, 143, 144, 145, 143, 143, 
+    144, 143, 143, 146, 147, 148, 143, 143, 143, 147, 143, 143, 143, 149, 143, 150, 
+    143, 151, 152, 152, 152, 152, 152, 153, 154, 154, 154, 154, 154, 154, 154, 154, 
+    155, 156, 157, 157, 157, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 
+    168, 168, 168, 168, 168, 169, 170, 170, 171, 172, 173, 173, 173, 173, 173, 174, 
+    173, 173, 175, 154, 154, 154, 154, 176, 177, 178, 179, 179, 180, 181, 182, 183, 
+    184, 184, 185, 184, 186, 187, 168, 168, 188, 189, 190, 190, 190, 191, 190, 192, 
+    193, 193, 194,  46,  46,  46,  46,  46, 195, 195, 195, 195, 196, 195, 195, 197, 
+    198, 198, 199, 200, 201, 201, 201, 202, 203, 203, 203, 204, 205, 206, 206, 206, 
+     46,  46,  46,  46,  46, 207, 208, 209,   4,   4, 210,   4,   4, 211, 212, 213, 
+      4,   4,   4, 214,   8,   8, 215, 216,  11, 217,  11,  11, 217, 218,  11, 219, 
+     11,  11,  11, 220, 220, 221,  11, 222, 223,   0,   0,   0,   0,   0, 224, 225, 
+    226, 227,   0, 228,  46,   8,   8, 229,   0,   0, 230, 231, 232,   0,   4,   4, 
+    233,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0, 234,   0,   0, 235,  46, 236,  46,   0,   0, 
+    237,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 238,   0,   0,   0, 
+    239, 239, 239, 239, 239, 239, 239, 239,   0,   0,   0,   0, 240, 228,  46,  46, 
+    241, 241, 242, 241, 241, 242,   4,   4, 243, 243, 243, 243, 243, 243, 243, 244, 
+    139, 139, 140, 245, 245, 245, 246, 247, 143, 248, 249, 249, 249, 249,  14,  14, 
+      0,   0,   0, 250,  46,  46,  46,  46, 251, 252, 251, 251, 251, 251, 251, 253, 
+    251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 254,  46, 255, 
+    256,   0, 257, 258, 259, 260, 260, 260, 260, 261, 262, 263, 263, 263, 263, 264, 
+    265, 266, 267, 268, 142, 142, 142, 142, 269,   0, 266, 270,   0,   0, 234, 263, 
+    142, 269,   0,   0,   0,   0, 142, 271,   0,   0,   0,   0,   0, 263, 263, 272, 
+    263, 263, 263, 263, 263, 273,   0,   0, 251, 251, 251, 254,   0,   0,   0,   0, 
+    251, 251, 251, 251, 274,  46,  46,  46, 275, 275, 275, 275, 275, 275, 275, 275, 
+    276, 275, 275, 275, 277, 278, 278, 278, 279, 279, 279, 279, 279, 279, 279, 279, 
+    279, 279, 280,  46,  14,  14,  14, 281,  14,  16, 282, 282, 282, 282, 282, 283, 
+      0,   0, 284,   4,   4,   4,   4,   4, 285, 286, 287,  46,  46,  46,  46, 288, 
+    289, 289, 290, 228, 291, 291, 291, 292, 293, 293, 293, 293, 294, 295,  47, 296, 
+    297, 297, 297, 298, 298, 299, 142, 300, 301, 301, 301, 301, 302, 303,  46,  46, 
+    304, 304, 304, 305, 306, 307, 138, 308, 309, 309, 309, 309, 310, 311,  46,  46, 
+    312, 313, 249,  46,  46,  46,  46,  46,  46,  46,  46,  46, 314, 314, 315, 316, 
+    142, 142, 317, 142, 318, 142, 142, 319, 251, 251, 320, 251, 251, 251, 320, 251, 
+    251, 251, 251, 251, 251, 321,  46,  46, 322, 323,  22, 324, 325,  28,  28,  28, 
+     28,  28,  28,  28, 326, 327,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28, 
+     28,  28,  28, 328,  46,  28,  28,  28,  28, 329,  28,  28, 330,  46,  46, 331, 
+      8, 228, 215,   0,   0, 332, 333, 334,  28,  28,  28,  28,  28,  28,  28, 335, 
+    237,   0,   1,   2,   1,   2, 336, 262, 263, 337, 142, 269, 338, 339, 340, 341, 
+    342, 343, 344, 345, 346, 346,  46,  46, 343, 343, 343, 343, 343, 343, 343, 347, 
+    348,   0,   0, 349,  11,  11,  11,  11, 350, 255,  46,  46,  46,   0,   0, 351, 
+    352, 353, 354, 354, 354, 355,  46,  46, 356, 357, 358, 359, 360,  46,  46,  46, 
+    361, 362, 363, 363, 364, 365,  46,  46, 366, 366, 366, 366, 366, 367, 367, 367, 
+    368, 369, 370,  46,  46,  46,  46,  46, 371, 372, 372, 373, 374, 375,  46,  46, 
+    376, 377, 378, 379,  46,  46,  46,  46, 380, 381, 382, 383, 384, 385, 386, 386, 
+    387, 387, 387, 388, 389, 390, 391, 392, 393, 393, 393, 393, 394,  46,  46,  46, 
+     46,  46,  46,  46,  46,  46,  28, 395, 396, 396, 396, 396, 397, 398, 396,  46, 
+    399, 399, 399, 399, 400,  46,  46,  46, 401, 401, 401, 401, 401, 401, 401, 401, 
+    401, 401, 401, 401, 401, 401, 402,  46, 401, 401, 401, 401, 401, 401, 403, 404, 
+    405, 405, 405, 405, 405, 405, 405, 405, 405, 405, 406,  46,  46,  46,  46,  46, 
+    282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 407,  46,  46,  46,  46, 
+    408,  46,  46,  46,  46,  46,  46,  46,   0,   0,   0,   0,   0,   0,   0, 409, 
+      0,   0, 410,   0,   0,   0, 411, 412, 413,   0, 414,   0,   0, 415,  46,  46, 
+     11,  11,  11,  11, 416,  46,  46,  46,   0,   0,   0,   0,   0, 235,   0, 250, 
+      0,   0,   0,   0,   0, 417,   0,   0,   0, 418, 419, 420, 421,   0,   0,   0, 
+    422, 423,   0, 424, 425, 426,   0,   0,   0,   0, 427,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0, 428,   0,   0,   0,   0,   0, 255,   0,   0,   0,   0,   0, 
+      0, 234, 226, 429, 237, 237,  46,  46, 236,   0, 226,   0,   0,   0, 228,   0, 
+      0, 236,  46,  46,  46,  46, 430,   0, 431,   0,   0, 236, 432, 250,  46,  46, 
+      0,   0, 433, 434,   0,   0,   0, 240,   0, 234,   0,   0, 435,  46,   0, 433, 
+      0,   0,   0, 226, 426,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 436, 
+      0,   0,   0, 415,  46,   0, 437,  46,  46,  46,  46,  46,  46,  46,  46, 438, 
+    237, 439, 440, 421, 441,  46,  46,  46,   0,   0,   0,   0, 409,  46,  46,  46, 
+    251, 251, 251, 251, 251, 442,  46,  46, 251, 251, 251, 443, 251, 251, 251, 251, 
+    251, 320,  46,  46,  46,  46,  46,  46, 444,  46,   0,   0,   0,   0,   0,   0, 
+      8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,  46, 
 };
 
-RE_UINT8 re_script_stage_4[] = {
-    89, 89, 89, 89, 89, 89, 89, 89, 89, 26, 26, 26, 26, 26, 26, 26, 
-    26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 89, 89, 89, 89, 89, 
-    89, 89, 26, 89, 89, 89, 89, 89, 26, 26, 26, 26, 26, 26, 26, 89, 
-    26, 89, 89, 89, 89, 89, 89, 89, 26, 26, 26, 26, 26, 89, 89, 89, 
-    89, 89, 11, 11, 89, 89, 89, 89,  7,  7,  7,  7,  7,  7,  7,  7, 
-    37, 37, 37, 37, 89, 37, 37, 37,  0,  0, 37, 37, 37, 37, 89,  0, 
-     0,  0,  0,  0, 37, 89, 37, 89, 37, 37, 37,  0, 37,  0, 37, 37, 
-    37, 37, 37, 37, 37, 37, 37, 37, 37, 37,  0, 37, 37, 37, 37, 37, 
-    37, 37, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  7,  7,  3, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0, 
-     0, 89,  9,  0,  0,  0,  0,  0,  0, 95, 95, 95, 95, 95, 95, 95, 
-    95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95,  0,  0,  0,  0,  0, 
-    95, 95, 95, 95, 95,  0,  0,  0, 91, 91, 91, 91,  0,  0, 91, 91, 
-    91, 91, 91, 91, 89, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 
-    91, 91, 91, 89,  0,  0, 91, 89, 89, 91, 91, 91, 91, 91, 91, 91, 
-    91, 91, 91,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 91, 91, 
-    91, 91, 91, 91, 91, 91, 91,  7, 89, 89, 91, 91, 91, 91, 91, 91, 
-     7, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 89, 91, 91, 
-    44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44,  0, 44, 
-    44, 44, 44,  0,  0, 44, 44, 44,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  0,  0,  0,  0,  0,  0, 60, 60, 60, 60, 60, 60, 60, 60, 
-    60, 60, 60,  0,  0,  0,  0,  0, 86, 86, 86, 86, 86, 86, 86, 86, 
-    86, 86, 86, 86, 86, 86,  0,  0, 86, 86, 86, 86, 86, 86, 86,  0, 
-    58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58,  0,  0, 58,  0, 
-    31, 31, 31, 31, 31, 31, 31, 31, 31,  7,  7, 31, 31, 31, 31, 31, 
-    31, 31, 31, 31, 89, 89, 31, 31, 89, 31, 31, 31, 31, 31, 31, 31, 
-     0, 31, 31, 31, 31, 31, 31, 31,  0, 63, 63, 63,  0, 63, 63, 63, 
-    63, 63, 63, 63, 63,  0,  0, 63, 63,  0,  0, 63, 63, 63, 63, 63, 
-    63, 63, 63, 63, 63, 63, 63, 63, 63,  0, 63, 63, 63, 63, 63, 63, 
-    63,  0, 63,  0,  0,  0, 63, 63, 63, 63,  0,  0, 63, 63, 63, 63, 
-    63,  0,  0, 63, 63, 63, 63,  0,  0,  0,  0,  0,  0,  0,  0, 63, 
-     0,  0,  0,  0, 63, 63,  0, 63, 63, 63, 63, 63,  0,  0, 63, 63, 
-    63, 63, 63, 63,  0,  0,  0,  0,  0, 67, 67, 67,  0, 67, 67, 67, 
-    67, 67, 67,  0,  0,  0,  0, 67, 67,  0,  0, 67, 67, 67, 67, 67, 
-    67, 67, 67, 67, 67, 67, 67, 67, 67,  0, 67, 67, 67, 67, 67, 67, 
-    67,  0, 67, 67,  0, 67, 67,  0, 67, 67,  0,  0, 67,  0, 67, 67, 
-    67,  0,  0, 67, 67, 67,  0,  0,  0, 67,  0,  0,  0,  0,  0,  0, 
-     0, 67, 67, 67, 67,  0, 67,  0,  0,  0,  0,  0,  0,  0, 67, 67, 
-    67, 67, 67, 67, 67, 67,  0,  0,  0, 54, 54, 54,  0, 54, 54, 54, 
-    54, 54, 54, 54, 54, 54,  0, 54, 54, 54,  0, 54, 54, 54, 54, 54, 
-    54, 54, 54, 54, 54, 54, 54, 54, 54,  0, 54, 54, 54, 54, 54, 54, 
-    54,  0, 54, 54,  0, 54, 54, 54, 54, 54,  0,  0, 54, 54, 54, 54, 
-    54, 54,  0, 54, 54, 54,  0,  0, 54,  0,  0,  0,  0,  0,  0,  0, 
-    54, 54, 54, 54,  0,  0, 54, 54,  0, 54,  0,  0,  0,  0,  0,  0, 
-     0, 53, 53, 53,  0, 53, 53, 53, 53, 53, 53, 53, 53,  0,  0, 53, 
-    53,  0,  0, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 
-    53,  0, 53, 53, 53, 53, 53, 53, 53,  0, 53, 53,  0, 53, 53, 53, 
-    53, 53,  0,  0, 53, 53, 53, 53, 53,  0,  0, 53, 53, 53,  0,  0, 
-     0,  0,  0,  0,  0,  0, 53, 53,  0,  0,  0,  0, 53, 53,  0, 53, 
-    53, 53, 53, 53,  0,  0, 53, 53,  0,  0, 10, 10,  0, 10, 10, 10, 
-    10, 10, 10,  0,  0,  0, 10, 10, 10,  0, 10, 10, 10, 10,  0,  0, 
-     0, 10, 10,  0, 10,  0, 10, 10,  0,  0,  0, 10, 10,  0,  0,  0, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10, 10, 
-    10,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0, 10, 10, 
-    10, 10, 10,  0,  0,  0,  0,  0,  0,  2,  2,  2,  0,  2,  2,  2, 
-     2,  2,  2,  2,  2,  0,  2,  2,  2,  0,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  2,  2,  2, 
-     2,  2,  0,  0,  0,  2,  2,  2,  2,  0,  2,  2,  2,  2,  0,  0, 
-     0,  0,  0,  0,  0,  2,  2,  0,  2,  2,  0,  0,  0,  0,  0,  0, 
-     2,  2,  2,  2,  0,  0,  2,  2,  0,  0, 71, 71,  0, 71, 71, 71, 
-    71, 71, 71, 71, 71,  0, 71, 71, 71,  0, 71, 71, 71, 71, 71, 71, 
-    71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71,  0, 71, 71, 71, 
-    71, 71,  0,  0, 71, 71, 71, 71, 71,  0, 71, 71, 71, 71,  0,  0, 
-     0,  0,  0,  0,  0, 71, 71,  0,  0,  0,  0,  0,  0,  0, 71,  0, 
-    71, 71, 71, 71,  0,  0, 71, 71,  0, 71, 71,  0,  0,  0,  0,  0, 
-     0,  0, 14, 14,  0, 14, 14, 14, 14, 14, 14, 14, 14,  0, 14, 14, 
-    14,  0, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
-    14, 14, 14,  0,  0, 14, 14, 14, 14,  0, 14, 14, 14, 14, 14,  0, 
-     0,  0,  0,  0,  0,  0,  0, 14, 14, 14, 14, 14,  0,  0, 14, 14, 
-    14, 14, 14, 14, 14, 14,  0,  0,  0, 14, 14, 14, 14, 14, 14, 14, 
-     0,  0, 73, 73,  0, 73, 73, 73, 73, 73, 73, 73, 73, 73, 73, 73, 
-    73, 73, 73, 73, 73, 73, 73,  0,  0,  0, 73, 73, 73, 73, 73, 73, 
-    73, 73,  0, 73, 73, 73, 73, 73, 73, 73, 73, 73,  0, 73,  0,  0, 
-     0,  0, 73,  0,  0,  0,  0, 73, 73, 73, 73, 73, 73,  0, 73,  0, 
-     0,  0, 73, 73, 73,  0,  0,  0,  0, 32, 32, 32, 32, 32, 32, 32, 
-    32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,  0,  0,  0,  0, 89, 
-    32, 32, 32, 32,  0,  0,  0,  0,  0, 79, 79,  0, 79,  0,  0, 79, 
-    79,  0, 79,  0,  0, 79,  0,  0,  0,  0,  0,  0, 79, 79, 79, 79, 
-     0, 79, 79, 79, 79, 79, 79, 79,  0, 79, 79, 79,  0, 79,  0, 79, 
-     0,  0, 79, 79,  0, 79, 79, 79, 79, 79, 79, 79, 79, 79, 79, 79, 
-    79, 79,  0, 79, 79, 79,  0,  0, 79, 79, 79, 79, 79,  0, 79,  0, 
-    79, 79, 79, 79, 79, 79,  0,  0, 79, 79,  0,  0, 79, 79,  0,  0, 
-    33, 33, 33, 33, 33, 33, 33, 33,  0, 33, 33, 33, 33, 33, 33, 33, 
-    33, 33, 33, 33, 33,  0,  0,  0, 33, 33, 33, 33, 33,  0, 33, 33, 
-    33, 33, 33, 33, 33, 89, 89, 89, 89, 33, 33,  0,  0,  0,  0,  0, 
-    93, 93, 93, 93, 93, 93, 93, 93, 29, 29, 29, 29, 29, 29, 29, 29, 
-    29, 29, 29, 29, 29, 29,  0,  0, 29, 29, 29, 89, 29,  0,  0,  0, 
-     4,  4,  4,  4,  4,  4,  4,  4,  6,  6,  6,  6,  6,  6,  6,  6, 
-     6,  0,  6,  6,  6,  6,  0,  0,  6,  6,  6,  6,  6,  6,  6,  0, 
-     6,  6,  6,  0,  0,  6,  6,  6,  6,  6,  6,  6,  6,  0,  0,  0, 
-     6,  6,  0,  0,  0,  0,  0,  0, 52, 52, 52, 52, 52, 52, 52, 52, 
-    52, 52, 52, 52, 52,  0,  0,  0, 61, 61, 61, 61, 61, 61, 61, 61, 
-    41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41,  0,  0,  0, 
-    45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 89, 89, 89, 45, 45, 
-    45,  0,  0,  0,  0,  0,  0,  0, 13, 13, 13, 13, 13, 13, 13, 13, 
-    13, 13, 13, 13, 13,  0, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0, 
-    80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 89, 89,  0, 
-    88, 88, 88, 88, 88, 88, 88, 88, 88, 88, 88, 88,  0,  0,  0,  0, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,  0, 17, 17, 
-    17,  0, 17, 17,  0,  0,  0,  0, 56, 56, 56, 56, 56, 56, 56, 56, 
-    56, 56, 56, 56, 56, 56,  0,  0, 56, 56,  0,  0,  0,  0,  0,  0, 
-    72, 72, 89, 89, 72, 89, 72, 72, 72, 72, 72, 72, 72, 72, 72,  0, 
-    72, 72, 72, 72, 72, 72, 72, 72, 72, 72,  0,  0,  0,  0,  0,  0, 
-    72, 72, 72,  0,  0,  0,  0,  0, 61, 61, 61, 61, 61, 61,  0,  0, 
-    51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51,  0,  0,  0, 
-    51, 51, 51, 51,  0,  0,  0,  0, 51,  0,  0,  0, 51, 51, 51, 51, 
-    19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19,  0,  0, 
-    19, 19, 19, 19, 19,  0,  0,  0, 49, 49, 49, 49, 49, 49, 49, 49, 
-    49, 49, 49, 49,  0,  0,  0,  0, 49, 49,  0,  0,  0,  0,  0,  0, 
-    49, 49, 49,  0,  0,  0, 49, 49, 21, 21, 21, 21, 21, 21, 21, 21, 
-    21, 21, 21, 21,  0,  0, 21, 21, 23, 23, 23, 23, 23, 23, 23, 23, 
-    23, 23, 23, 23, 23, 23, 23,  0, 23, 23, 23, 23, 23,  0,  0, 23, 
-    23, 23,  0,  0,  0,  0,  0,  0, 23, 23, 23, 23, 23, 23,  0,  0, 
-    78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78,  0,  0,  0,  0, 
-    78, 78, 78, 78, 78,  0,  0,  0, 12, 12, 12, 12, 12, 12, 12, 12, 
-    12, 12, 12,  0,  0,  0, 12, 12, 12, 12,  0,  0,  0,  0,  0,  0, 
-    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  0,  0,  0,  0, 
-     0,  0,  0,  0, 36, 36, 36, 36, 83, 83, 83, 83, 83, 83, 83, 83, 
-     0,  0,  0, 83, 83, 83, 83, 83, 83, 83,  0,  0,  0, 83, 83, 83, 
-    50, 50, 50, 50, 50, 50, 50, 50,  7,  7,  7, 89,  7,  7,  7,  7, 
-     7, 89,  7,  7,  7,  7,  7,  7,  7, 89, 89, 89, 89,  7, 89, 89, 
-    89, 89, 89,  0,  0,  0,  0,  0, 26, 26, 26, 26, 26, 26, 37, 37, 
-    37, 37, 37,  3, 26, 26, 26, 26, 26, 26, 26, 26, 26, 37, 37, 37, 
-    37, 37, 26, 26, 26, 26, 37, 37, 37, 37, 37, 26, 26, 26, 26, 26, 
-     3, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 37, 
-     7,  7,  7,  7,  7,  7,  7,  0,  0,  0,  0,  0,  7,  7,  7,  7, 
-    37, 37, 37, 37, 37, 37,  0,  0,  0, 37,  0, 37,  0, 37,  0, 37, 
-    37, 37, 37, 37, 37,  0, 37, 37, 37, 37, 37, 37,  0,  0, 37, 37, 
-    37, 37, 37, 37,  0, 37, 37, 37,  0,  0, 37, 37, 37,  0, 37, 37, 
-    37, 37, 37, 37, 37, 37, 37,  0, 89, 89, 89, 89,  7,  7, 89, 89, 
-    89, 89, 89, 89, 89,  0,  0,  0,  0,  0, 89, 89, 89, 89, 89, 89, 
-    89, 26,  0,  0, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 26, 
-    89, 89, 89, 89, 89, 89, 89,  0, 26, 26, 26, 26, 26,  0,  0,  0, 
-    89, 89,  0,  0,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0,  0,  0, 
-    89, 89, 89, 89, 89, 89, 37, 89, 89, 89, 26, 26, 89, 89, 89, 89, 
-    89, 89, 89, 89, 89, 89, 26, 89, 26, 89,  0,  0,  0,  0,  0,  0, 
-    89, 89, 89, 89,  0,  0,  0,  0,  0, 89, 89, 89, 89, 89, 89, 89, 
-    89, 89, 89,  0, 89,  0, 89, 89, 30, 30, 30, 30, 30, 30, 30, 30, 
-    65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65,  0, 
-    90, 90,  0,  0,  0,  0,  0,  0,  0, 90, 90, 90, 90, 90, 90, 90, 
-    34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0, 34, 34,  0,  0,  0,  0,  0,  0,  0, 
-     8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  0,  8,  8,  8,  8,  8, 
-     8,  8,  8,  8,  0,  0,  0,  0,  8,  8,  8,  8,  8,  8,  0,  0, 
-    89, 89, 89, 89, 89,  8, 89,  8, 89,  8,  8,  8,  8,  8,  8,  8, 
-     8,  8,  7,  7,  7,  7,  4,  4,  8,  8,  8,  8, 89, 89, 89, 89, 
-     0, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
-    16, 16, 16, 16, 16, 16, 16,  0,  0,  7,  7, 89, 89, 16, 16, 16, 
-    89, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 
-    47, 47, 47, 89, 89, 47, 47, 47,  0,  0,  0,  0,  0, 11, 11, 11, 
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0, 
-     0,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  0, 
-    11, 11, 11,  0,  0,  0,  0,  0,  4,  4,  4,  4,  4,  4,  4, 89, 
-    47, 47, 47, 47, 47, 47, 47,  0, 77, 77, 77, 77, 77, 77, 77, 77, 
-    77, 77, 77, 77, 77,  0,  0,  0, 77, 77, 77, 77, 77, 77, 77,  0, 
-    87, 87, 87, 87, 87, 87, 87, 87, 40, 40, 40, 40, 40, 40, 40, 40, 
-    40, 40, 40, 40,  0,  0,  0,  0,  3,  3,  3,  3,  0,  0,  0,  0, 
-     0,  0,  0,  0,  3,  3,  3,  3, 92, 92, 92, 92, 92, 92, 92, 92, 
-    89, 89, 26, 26, 26, 26, 26, 26, 89, 89, 89, 26, 26, 26, 26,  0, 
-    26, 26,  0,  0,  0,  0,  0,  0,  0,  0, 26, 26, 26, 26, 26, 26, 
-    59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59,  0,  0,  0,  0, 
-    69, 69, 69, 69, 69, 69, 69, 69, 27, 27, 27, 27, 27, 27, 27, 27, 
-    27, 27, 27, 27, 27,  0,  0,  0,  0,  0,  0,  0,  0,  0, 27, 27, 
-    27, 27,  0,  0,  0,  0,  0,  0, 31, 31, 31, 31,  0,  0,  0,  0, 
-    20, 20, 20, 20, 20, 20, 20, 20, 76, 76, 76, 76, 76, 76, 76, 76, 
-    76, 76, 76, 76,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 76, 
-     4,  4,  4,  4,  4,  0,  0,  0, 68, 68, 68, 68, 68, 68, 68, 68, 
-    68, 68, 68, 68, 68, 68,  0, 68, 68, 68,  0,  0,  0,  0, 68, 68, 
-    43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43,  0, 
-    43, 43, 43, 43, 43, 43,  0,  0, 43, 43,  0,  0, 43, 43, 43, 43, 
-    93, 93, 93, 93,  0,  0,  0,  0, 39, 39, 39, 39, 39, 39, 39, 39, 
-    39, 39, 39,  0,  0,  0,  0,  0,  0,  0,  0, 39, 39, 39, 39, 39, 
-     0,  6,  6,  6,  6,  6,  6,  0, 18, 18, 18, 18, 18, 18, 18, 18, 
-    18, 18, 18, 18, 18, 18,  0,  0, 18, 18,  0,  0,  0,  0,  0,  0, 
-     4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  4,  4,  4,  4,  4, 
-     8,  8,  0,  0,  0,  0,  0,  0, 26, 26, 26, 26, 26, 26, 26,  0, 
-     0,  0,  0,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0, 95, 95, 95, 
-    95, 95, 95, 95, 95, 95, 95,  0, 95, 95, 95, 95, 95,  0, 95,  0, 
-    95, 95,  0, 95, 95,  0, 95, 95, 91, 91,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 89, 89, 
-     0,  0, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 89,  0,  0, 
-    89, 89, 89,  0, 89, 89, 89, 89, 91, 91, 91, 91, 91,  0, 91, 91, 
-    91, 91, 91, 91, 91,  0,  0, 89, 89, 89, 89, 89, 89, 89, 47, 47, 
-    47, 47, 47, 47, 47, 47, 89, 89,  0,  0,  4,  4,  4,  4,  4,  4, 
-     0,  0,  4,  4,  4,  0,  0,  0,  0, 89, 89, 89, 89, 89,  0,  0, 
-    81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81,  0, 81, 81, 81, 
-    81, 81, 81, 81, 81, 81, 81,  0, 81, 81, 81,  0, 81, 81,  0, 81, 
-    81, 81, 81, 81, 81, 81,  0,  0, 81, 81, 81,  0,  0,  0,  0,  0, 
-    89, 89, 89,  0,  0,  0,  0, 89, 89, 89, 89, 89,  0,  0,  0, 89, 
-    37, 37, 37,  0,  0,  0,  0,  0, 89, 89, 89, 89, 89,  7,  0,  0, 
-    38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38,  0,  0,  0, 
-    15, 15, 15, 15, 15, 15, 15, 15, 15,  0,  0,  0,  0,  0,  0,  0, 
-    24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,  0, 
-    24, 24, 24, 24,  0,  0,  0,  0, 46, 46, 46, 46, 46, 46, 46, 46, 
-    46, 46, 46,  0,  0,  0,  0,  0, 35, 35, 35, 35, 35, 35, 35, 35, 
-    35, 35, 35, 35, 35, 35,  0, 35, 25, 25, 25, 25, 25, 25, 25, 25, 
-    25, 25, 25, 25,  0,  0,  0,  0, 25, 25, 25, 25, 25, 25,  0,  0, 
-    75, 75, 75, 75, 75, 75, 75, 75, 28, 28, 28, 28, 28, 28, 28, 28, 
-    48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,  0,  0, 
-    48, 48,  0,  0,  0,  0,  0,  0, 70, 70, 70, 70, 70, 70,  0,  0, 
-    70,  0, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 
-    70, 70, 70, 70, 70, 70,  0, 70, 70,  0,  0,  0, 70,  0,  0, 70, 
-    66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,  0, 66, 
-    62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62,  0,  0,  0, 62, 
-    84, 84, 84, 84, 84, 84, 84, 84, 84, 84,  0,  0,  0,  0,  0, 84, 
-    22, 22, 22, 22,  0, 22, 22,  0,  0,  0,  0,  0, 22, 22, 22, 22, 
-    22, 22, 22, 22,  0, 22, 22, 22,  0, 22, 22, 22, 22, 22, 22, 22, 
-    22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,  0,  0,  0,  0, 
-    22, 22, 22,  0,  0,  0,  0, 22, 22,  0,  0,  0,  0,  0,  0,  0, 
-     5,  5,  5,  5,  5,  5,  5,  5, 94, 94, 94, 94, 94, 94, 94, 94, 
-    94, 94, 94, 94, 94, 94,  0,  0,  0, 94, 94, 94, 94, 94, 94, 94, 
-    42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42,  0,  0, 
-    55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55,  0,  0,  0,  0,  0, 
-    82, 82, 82, 82, 82, 82, 82, 82, 82,  0,  0,  0,  0,  0,  0,  0, 
-    91, 91, 91, 91, 91, 91, 91,  0, 74, 74, 74, 74, 74, 74, 74, 74, 
-    74, 74, 74, 74, 74, 74,  0,  0,  0,  0, 74, 74, 74, 74, 74, 74, 
-    64, 64, 64, 64, 64, 64, 64, 64, 64, 64,  0,  0,  0,  0,  0,  0, 
-    57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57,  0, 
-    57, 57, 57,  0,  0,  0,  0,  0, 57, 57, 57, 57,  0,  0,  0,  0, 
-    85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,  0, 
-    92,  0,  0,  0,  0,  0,  0,  0, 47, 16,  0,  0,  0,  0,  0,  0, 
-    89, 89, 89, 89, 89, 89,  0,  0, 89, 89, 89, 89, 89, 89, 89,  7, 
-     7,  7, 89, 89, 89, 89, 89, 89, 89, 89, 89,  7,  7,  7,  7,  7, 
-     7,  7,  7, 89, 89,  7,  7,  7,  7,  7,  7,  7, 89, 89, 89, 89, 
-    89, 89,  7,  7,  7,  7, 89, 89, 89, 89, 89, 89, 89,  0, 89, 89, 
-     0,  0, 89,  0,  0, 89, 89,  0,  0, 89, 89, 89, 89,  0, 89, 89, 
-    89, 89,  0, 89,  0, 89, 89, 89, 89, 89, 89, 89,  0, 89, 89, 89, 
-    89, 89, 89, 89, 89, 89,  0, 89, 89, 89, 89,  0,  0, 89, 89, 89, 
-    89, 89,  0, 89, 89, 89, 89,  0, 89, 89, 89, 89, 89,  0, 89,  0, 
-    89,  0, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89,  0,  0, 89, 89, 
-     0,  0,  0,  0,  0,  0, 89, 89, 16, 89, 89,  0,  0,  0,  0,  0, 
-    89,  0,  0,  0,  0,  0,  0,  0,  0, 89, 89, 89, 89,  0,  0,  0, 
-     0,  0,  0, 89, 89, 89, 89, 89, 89,  0, 89, 89, 89,  0, 89,  0, 
-    89,  0, 89,  0, 89, 89, 89,  0, 89, 89, 89, 89,  0, 89,  0,  0, 
-    89,  0,  0,  0,  0, 89, 89, 89,  8,  8,  8,  8,  8,  8,  8,  0, 
-     8,  8,  8,  8,  8,  0,  0,  0,  0, 89,  0,  0,  0,  0,  0,  0, 
+RE_UINT16 re_script_stage_4[] = {
+      0,   0,   0,   0,   1,   2,   2,   2,   2,   2,   3,   0,   0,   0,   4,   0, 
+      2,   2,   2,   2,   2,   3,   2,   2,   2,   2,   5,   0,   2,   5,   6,   0, 
+      7,   7,   7,   7,   8,   9,  10,  11,  12,  13,  14,  15,   8,   8,   8,   8, 
+     16,   8,   8,   8,  17,  18,  18,  18,  19,  19,  19,  19,  19,  20,  19,  19, 
+     19,  19,  12,  12,  21,  22,  22,  22,  22,  22,  22,  22,  22,  23,  21,  22, 
+     22,  22,  24,  12,  25,  26,  26,  26,  26,  26,  26,  26,  26,  26,  12,  12, 
+     26,  26,  27,  12,  26,  28,  12,  12,  29,  30,  29,  31,  29,  29,  32,  33, 
+     29,  29,  29,  29,  31,  29,  34,   7,   7,  35,  29,  34,   0,   0,  36,  29, 
+     37,  29,  29,  29,  29,  29,  29,  38,  39,  39,  39,  40,  39,  39,  39,  39, 
+     39,  39,  41,  42,  43,  43,  43,  43,  44,  12,  12,  12,  45,  45,  45,  45, 
+     45,  45,  46,  12,  47,  47,  47,  47,  47,  47,  47,  48,  47,  47,  47,  49, 
+     50,  50,  50,  50,  50,  50,  50,  51,  12,  12,  12,  12,  52,  52,  52,  52, 
+     53,  52,  52,  52,  52,  54,  52,  52,  55,  52,  56,  52,  57,  57,  58,  59, 
+     59,  58,  58,  58,  58,  58,  60,  58,  61,  62,  63,  58,  58,  59,  59,  64, 
+     12,  65,  12,  66,  58,  62,  58,  58,  58,  58,  58,  12,  67,  67,  68,  69, 
+     70,  71,  71,  71,  71,  71,  72,  71,  72,  73,  74,  72,  68,  69,  70,  74, 
+     75,  12,  67,  76,  12,  77,  71,  71,  71,  74,  12,  12,  78,  78,  79,  80, 
+     80,  79,  79,  79,  79,  79,  81,  79,  81,  78,  82,  79,  79,  80,  80,  82, 
+     83,  12,  12,  12,  79,  84,  79,  79,  85,  12,  12,  12,  86,  86,  87,  88, 
+     88,  87,  87,  87,  87,  87,  89,  87,  89,  86,  90,  87,  87,  88,  88,  90, 
+     12,  91,  12,  92,  87,  91,  87,  87,  87,  87,  12,  12,  93,  94,  95,  93, 
+     96,  97,  98,  96,  99, 100,  95,  93, 101, 101,  97,  93,  95,  93,  96,  97, 
+    100,  99,  12,  12,  12,  93, 101, 101, 101, 101,  95,  12, 102, 102, 103, 104, 
+    104, 103, 103, 103, 103, 103, 104, 103, 103, 102, 105, 102, 103, 104, 104, 105, 
+     12, 106, 105,  12, 103, 107, 103, 103,  12,  12, 103, 103, 108, 109, 110, 111, 
+    111, 110, 110, 110, 110, 110, 111, 110, 110, 109, 112, 110, 110, 111, 111, 112, 
+     12, 113,  12, 114, 110, 108, 110, 110, 113,  12,  12,  12, 115, 116, 117, 118, 
+    118, 117, 117, 117, 117, 117, 117, 117, 117, 117, 119, 116, 117, 118, 118, 119, 
+     12, 120,  12,  12, 117, 115, 117, 117, 117, 121, 116, 117, 122, 123, 124, 124, 
+    124, 125, 122, 124, 124, 124, 124, 124, 126, 124, 124, 127, 124, 125, 128, 129, 
+    124, 130, 124, 124, 122, 131,  12,  12, 132, 133, 133, 133, 133, 133, 133, 133, 
+    133, 133, 134, 135, 133, 133, 133,  12, 136, 137, 138, 139,  12, 140, 141, 140, 
+    141, 142, 143, 141, 140, 140, 144, 145, 140, 138, 140, 145, 140, 140, 145, 145, 
+    146, 146, 146, 146, 146, 146, 147, 146, 146, 146, 146, 148, 147, 146, 146, 146, 
+    146, 146, 146, 149, 146, 150, 151,  12, 152, 152, 152, 152, 153, 153, 153, 153, 
+    153, 154,  12,  12, 153, 153, 155, 156, 157, 157, 157, 157, 158, 158, 158, 158, 
+    158, 158, 159, 160, 158, 161, 159, 160, 159, 160, 158, 161, 159, 160, 158, 158, 
+    158, 161, 158, 158, 158, 158, 161, 162, 158, 158, 158, 163, 158, 158, 160,  12, 
+    164, 164, 164, 164, 164, 165,  12,  12, 166, 166, 166, 166, 167, 167, 167, 167, 
+    167, 167, 167, 168, 169, 169, 169, 169, 169, 169, 170, 171, 172,  12,  12,  12, 
+    173, 173, 173, 174, 173, 175,  12,  12, 176, 176, 176, 176, 176, 177,  12,  12, 
+    178, 178, 178, 178, 178,  12,  12,  12, 179, 179, 179, 180, 180,  12,  12,  12, 
+    181, 181, 181, 181, 181, 181, 181, 182, 181, 181, 182,  12, 183, 184, 185, 186, 
+    185, 185, 187,  12, 185, 185, 185, 185, 185, 185,  12,  12, 185, 185, 186,  12, 
+    166, 188,  12,  12, 189, 189, 189, 189, 189, 189, 189, 190, 189, 189, 189,  12, 
+    190, 189, 189, 189, 191, 191, 191, 191, 191, 191, 191, 192, 191, 193,  12,  12, 
+    194, 194, 194, 194, 194, 194, 194,  12, 194, 194, 195,  12, 194, 194, 196, 197, 
+    198, 198, 198, 198, 198, 198, 198, 199, 200, 200, 200, 200, 200, 200, 200, 201, 
+    200, 200, 200, 202, 200, 200, 203,  12, 200, 200, 200, 203, 204, 204, 204, 204, 
+    204, 204, 204,  12, 204, 204, 204, 205, 206, 206, 206, 206, 206, 206, 207, 208, 
+    206, 206, 209,  12, 210, 210, 210, 210, 210,  12,  12, 210, 211, 211, 211, 211, 
+    211, 211, 212, 211, 211, 211, 213, 214, 215, 215, 215, 215, 216,   7,   7,   7, 
+    217,   7, 218, 219, 220,  12,  12,  12,   2, 221, 222,   2,   2,   2,   2, 223, 
+    224, 221, 225,   2,   2,   2, 226,   2,   2,   2,   2, 227,   7, 228,  12,  12, 
+     12,  12,  12,   7,   8, 229,   8, 229,   8,   8, 230, 230,   8,   8,   8, 229, 
+      8,  15,   8,   8,   8,  10,   8, 231,  10,  15,   8,  14,   0,   0,   0, 232, 
+      0, 233, 234,   0, 235,   0,   0, 236,   0,   0,   0, 220,   2,   2,   2, 237, 
+      0,   0, 238,  12, 239,  12,  12,  12,   0, 240, 241,   0,   4,   0,   0,   0, 
+      0,   0,   0,   4,   2,   2, 242,  12,   0,  12,  12,  12,   0, 220,  12,  12, 
+      0,   0, 220,  12, 243,   0,   0,   0,   0,   0, 220, 244, 245, 245, 245, 245, 
+      0,   0,   0, 233, 246, 246, 246, 246, 246, 246, 246, 247,  18,  18,  18,  18, 
+    248,  12, 249,  18, 250, 250, 250, 250, 250, 251,  12, 252, 253,  12,  12, 252, 
+    158, 161,  12,  12, 158, 161, 158, 161, 238,  12,  12,  12, 254, 254, 254, 254, 
+    254, 254, 255, 254, 254,  12,  12,  12, 254, 256,  12,  12,   0,   0,   0,  12, 
+      0, 257,   0,   0, 258, 254, 259, 260,   0,   0, 254,   0, 261, 262, 262, 262, 
+    262, 262, 262, 262, 262, 263, 264, 265, 266, 267, 267, 267, 267, 267, 267, 267, 
+    267, 267, 268, 266,  12, 269, 270, 270, 270, 270, 270, 270, 270, 270, 270, 271, 
+    272, 157, 157, 157, 157, 157, 157, 273, 270, 270, 274,  12, 157, 157, 157, 275, 
+    267, 267, 267, 276, 267, 267,   0,   0, 254, 254, 254,  12, 277, 277, 277, 277, 
+    277, 277, 277, 278, 277, 279,  12,  12, 280, 280, 280, 280, 281, 281, 281, 281, 
+    281, 281, 281,  12,  19,  12,  12,  19, 282, 282, 282, 282, 282, 282,  12,  12, 
+    241,   2,   2,   2,   2,   2, 236, 283, 284,  12,  12,  12,   2,   2, 284,  12, 
+     12,  12, 285,   2, 286, 286, 286, 286, 286, 286, 286,  12, 287, 287, 287, 287, 
+    287, 287,  12,  12, 288, 288, 288, 288, 288, 289,  12, 290, 288, 288, 291,  12, 
+     52,  52,  52,  12, 292, 292, 292, 292, 293, 293, 293, 293, 293,  12,  12, 294, 
+    157, 157, 157, 295, 296, 296, 296, 296, 296, 296, 296, 297, 296, 296, 298, 299, 
+    300, 300, 300, 300, 300, 301,  12,  12, 300, 300, 300, 302, 300, 300, 302, 300, 
+    152, 152, 152,  12, 303, 303, 303, 303, 304,  12,  12,  12,  12,  12, 305, 303, 
+    162, 161, 162, 161, 162, 161,  12,  12, 306, 306, 306, 306, 306, 306, 306, 307, 
+    306, 306, 307,  12, 157,  12,  12,  12, 157, 273, 308, 157, 157, 157, 157,  12, 
+    254, 254, 254, 256, 254, 254, 256,  12,   2, 283,  12,  12, 309,  22,  12,  25, 
+     26,  27,  26, 310, 311, 312,  26,  26, 313,  12,  12,  12, 314,  29,  29,  29, 
+     29,  29,  29, 315,  30,  29,  29,  29,  29,  29,  12,  12,  29,  29,  29, 316, 
+    220,   0,   0,   0,   0, 220,   0,  12,  29, 317,  29,  29,  29,  29,  29, 318, 
+      0, 319, 267, 267, 267, 267, 267, 320, 321, 157, 321, 157, 321, 157, 321, 295, 
+      0, 220,   0, 220,  12,  12, 243, 238, 322, 322, 322, 323, 322, 322, 322, 322, 
+    322, 324, 322, 322, 322, 322, 324, 325, 322, 322, 322, 326, 322, 322, 324,  12, 
+    220, 135,   0,   0,   0, 135,   0,   0,   8,   8,  14,  12,   0,   0,   0, 327, 
+    328, 328, 328, 328, 328, 328, 328, 329, 330, 330, 330, 330, 331,  12,  12,  12, 
+    332, 332, 332, 332, 332, 332, 332, 333, 332,  12,  12,  12, 334, 334, 334, 334, 
+    334, 334, 335,  12, 336, 336, 336, 336, 336, 336, 336, 337, 338, 338, 338, 338, 
+    338,  12, 338, 338, 338, 339,  12,  12, 340, 340, 340, 340, 341, 341, 341, 341, 
+    342, 342, 342, 342, 342, 342, 342, 343, 342, 342, 343,  12, 344, 345, 346, 344, 
+    344, 344, 344, 344, 344, 347, 348, 349, 350, 350, 350, 350, 350, 351, 350, 350, 
+    352, 352, 352, 352, 352, 352, 352, 353, 354, 354, 354, 354, 354, 354, 355, 356, 
+    357, 358,  12, 357, 357, 359, 359, 357, 357, 357, 357, 357, 357,  12, 360, 361, 
+    357, 357,  12,  12, 357, 357, 362,  12, 363, 363, 363, 363, 364, 364, 364, 364, 
+    364, 365, 366, 364, 367, 367, 367, 367, 367, 368, 367, 367, 369, 369, 369, 369, 
+    370,  12, 369, 369, 371, 371, 371, 371, 371, 371, 372,  12,  29,  29,  29, 373, 
+    374, 374, 374, 374, 374, 374, 374, 375, 376, 374, 374, 374, 377, 377, 377, 377, 
+    378,  12,  12,  12, 379, 379, 379, 379, 379, 379, 379, 380, 380,  12,  12,  12, 
+    379,  12,  12,  12, 381, 381, 381, 381, 381, 381, 381, 382, 282, 282, 383,  12, 
+    384,  12,  12,  12,   0, 238,  12,  12,   0, 220, 243,   0,   0, 385, 232,   0, 
+      0,   0, 385,   7, 216, 386,   7,   0,   0,   0, 387, 232,   0,   0,   0, 238, 
+      8, 229,  12,  12,   0, 244,   0,   0,   0,   0,   0, 244, 388, 389, 243, 244, 
+      0,   0, 390, 243,   0, 243,   0,   0,   0, 390, 220, 243,   0, 244,   0, 244, 
+      0,   0, 390, 220,   0, 391, 234,   0, 244,   0,   0,   0,   0, 238,   0,   0, 
+      0,   0,   0, 234, 243,   0,   0, 220,  12, 234,   0,   0, 392,  12,  12,  12, 
+      0,   0, 233,  12, 233,  12,  12,  12,   0, 390,   0,   0,   0, 244, 220,  12, 
+      0,   0, 243, 233,   0,   0,  12,  12,  12,  12, 135,   0, 244, 391, 391, 220, 
+      0, 238,   0, 393, 233, 243,   0,   0, 254, 394,  12,  12, 254, 395,  12,  12, 
+    393,  12,  12,  12, 
 };
 
-/* Script: 10080 bytes. */
+RE_UINT8 re_script_stage_5[] = {
+     1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1, 
+     1,  1,  2,  1,  2,  1,  1,  1,  1,  1, 35, 35, 41, 41, 41, 41, 
+     3,  3,  3,  3,  1,  3,  3,  3,  0,  0,  3,  3,  3,  3,  1,  0, 
+     0,  0,  0,  0,  3,  1,  3,  1,  3,  3,  3,  0,  3,  0,  3,  3, 
+     3,  3,  0,  3,  3,  3, 55, 55, 55, 55, 55, 55,  4,  4,  4,  4, 
+     4, 41, 41,  4,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0, 
+     0,  1,  5,  0,  0,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  0, 
+     6,  0,  0,  0,  7,  7,  7,  7,  0,  0,  7,  7,  1,  7,  7,  7, 
+     7,  7,  7,  1,  0,  0,  7,  1,  7,  7,  7, 41, 41, 41,  7,  7, 
+     1,  1,  7,  7, 41,  7,  7,  7,  7,  1,  7,  7,  8,  8,  8,  8, 
+     8,  8,  0,  8,  8,  8,  8,  0,  0,  8,  8,  8,  9,  9,  9,  9, 
+     9,  9,  0,  0, 66, 66, 66, 66, 66, 66, 66,  0, 82, 82, 82, 82, 
+    82, 82,  0,  0, 82, 82, 82,  0, 95, 95, 95, 95,  0,  0, 95,  0, 
+    10, 10, 10, 10, 10, 41, 41, 10,  1,  1, 10, 10,  1, 10, 10, 10, 
+     0, 10, 10, 10,  0, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0, 11, 
+    11,  0, 11, 11, 11,  0, 11,  0,  0,  0, 11, 11, 11, 11,  0,  0, 
+    11, 11, 11,  0,  0,  0,  0, 11, 11, 11,  0, 11,  0, 12, 12, 12, 
+    12, 12, 12,  0,  0,  0,  0, 12, 12,  0,  0, 12, 12, 12, 12, 12, 
+    12,  0, 12, 12,  0, 12, 12,  0, 12, 12,  0,  0,  0, 12,  0,  0, 
+    12,  0, 12,  0,  0,  0, 12, 12,  0, 13, 13, 13, 13, 13, 13, 13, 
+    13, 13,  0, 13, 13,  0, 13, 13, 13, 13,  0,  0, 13,  0,  0,  0, 
+     0,  0, 13, 13,  0, 13,  0,  0,  0, 14, 14, 14, 14, 14, 14, 14, 
+    14,  0,  0, 14, 14,  0, 14, 14, 14, 14,  0,  0,  0,  0, 14, 14, 
+    14, 14,  0, 14,  0,  0, 15, 15,  0, 15, 15, 15, 15, 15, 15,  0, 
+    15,  0, 15, 15, 15, 15,  0,  0,  0, 15, 15,  0,  0,  0,  0, 15, 
+    15,  0,  0,  0, 15, 15, 15, 15,  0, 16, 16, 16, 16, 16, 16, 16, 
+    16,  0, 16, 16, 16, 16,  0,  0,  0, 16, 16,  0,  0,  0, 16, 16, 
+     0,  0, 17, 17,  0, 17, 17, 17, 17, 17, 17, 17, 17,  0, 17, 17, 
+    17, 17,  0,  0,  0, 17, 17,  0,  0,  0, 17,  0,  0,  0, 18, 18, 
+     0, 18, 18, 18, 18, 18, 18, 18, 18,  0, 18, 18, 18, 18, 18,  0, 
+     0,  0,  0, 18, 18, 18,  0,  0,  0,  0, 19, 19,  0, 19, 19, 19, 
+    19, 19, 19, 19, 19, 19, 19,  0, 19, 19,  0, 19,  0, 19,  0,  0, 
+     0,  0, 19,  0,  0,  0,  0, 19, 19,  0, 19,  0, 19,  0,  0,  0, 
+     0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,  0,  0,  0,  0,  1, 
+     0, 21, 21,  0, 21,  0,  0, 21, 21,  0, 21,  0,  0, 21,  0,  0, 
+    21, 21, 21, 21,  0, 21, 21, 21,  0, 21,  0, 21,  0,  0, 21, 21, 
+    21, 21,  0, 21, 21, 21,  0,  0, 22, 22, 22, 22,  0, 22, 22, 22, 
+    22,  0,  0,  0, 22,  0, 22, 22, 22,  1,  1,  1,  1, 22, 22,  0, 
+    23, 23, 23, 23, 24, 24, 24, 24, 24, 24,  0,  0, 24, 24, 24,  1, 
+    24,  0,  0,  0, 25, 25, 25, 25, 26, 26, 26, 26, 26,  0, 26, 26, 
+    26, 26,  0,  0, 26, 26, 26,  0,  0, 26, 26, 26, 26,  0,  0,  0, 
+    27, 27, 27, 27, 27,  0,  0,  0, 28, 28, 28, 28, 29, 29, 29, 29, 
+    29,  0,  0,  0, 30, 30, 30, 30, 30, 30, 30,  1,  1,  1, 30, 30, 
+    30,  0,  0,  0, 42, 42, 42, 42, 42,  0, 42, 42, 42,  0,  0,  0, 
+    43, 43, 43, 43, 43,  1,  1,  0, 44, 44, 44, 44, 45, 45, 45, 45, 
+    45,  0, 45, 45, 31, 31, 31, 31, 31, 31,  0,  0, 32, 32,  1,  1, 
+    32,  1, 32, 32, 32, 32, 32, 32, 32, 32, 32,  0, 32, 32,  0,  0, 
+    28, 28,  0,  0, 46, 46, 46, 46, 46,  0,  0,  0, 47, 47, 47, 47, 
+    47, 47,  0,  0, 47,  0,  0,  0, 56, 56, 56, 56, 56, 56,  0,  0, 
+    56, 56, 56,  0,  0,  0, 56, 56, 54, 54, 54, 54,  0,  0, 54, 54, 
+    78, 78, 78, 78, 78, 78, 78,  0, 78,  0,  0, 78, 78, 78,  0,  0, 
+    62, 62, 62, 62, 62,  0,  0,  0, 67, 67, 67, 67, 67, 67, 67,  0, 
+     0,  0, 67, 67, 67, 67,  0,  0, 93, 93, 93, 93, 68, 68, 68, 68, 
+     0,  0,  0, 68, 68, 68,  0,  0,  0, 68, 68, 68, 69, 69, 69, 69, 
+    41, 41, 41,  1, 41,  1, 41, 41, 41,  1,  1,  1,  1, 41,  1,  1, 
+     1,  1,  1,  0,  2,  2,  3,  3,  3,  3,  3,  4,  2,  3,  3,  3, 
+     3,  3,  2,  2,  3,  3,  3,  2,  4,  2,  2,  2,  2,  2,  2,  3, 
+    41, 41, 41,  0,  3,  3,  0,  0,  0,  3,  0,  3,  0,  3,  3,  3, 
+    41, 41,  1,  1,  1,  0,  0,  0,  0,  0,  1,  1,  1,  2,  0,  0, 
+     1,  1,  1,  2,  2,  0,  0,  0,  1,  1,  0,  0, 41,  0,  0,  0, 
+     1,  1,  3,  1,  1,  1,  2,  2,  2,  1,  0,  0,  0,  1,  1,  1, 
+     1,  0,  1,  1, 53, 53, 53, 53, 57, 57, 57, 57, 57, 57, 57,  0, 
+    55, 55,  0,  0,  0, 55, 55, 55, 58, 58, 58, 58, 58, 58,  0,  0, 
+     0,  0,  0, 58, 58,  0,  0,  0, 36, 36, 36, 36, 36, 36,  0, 36, 
+    36, 36,  0,  0,  1, 36,  1, 36,  1, 36, 36, 36, 36, 36, 41, 41, 
+    41, 41, 25, 25,  0, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,  0, 
+     0, 41, 41,  1,  1, 33, 33, 33,  1, 34, 34, 34, 34, 34, 34, 34, 
+    34, 34, 34,  1,  0, 35, 35, 35, 35, 35, 35, 35, 35, 35,  0,  0, 
+     0, 25, 25, 25, 25, 25, 25,  0, 35, 35, 35,  0, 25, 25, 25,  1, 
+    34, 34, 34,  0, 37, 37, 37, 37, 37,  0,  0,  0, 37, 37, 37,  0, 
+    83, 83, 83, 83, 70, 70, 70, 70, 84, 84, 84, 84,  2,  2,  2,  0, 
+     2,  2,  0,  0,  0,  0,  2,  2, 59, 59, 59, 59, 65, 65, 65, 65, 
+    71, 71, 71, 71, 71,  0,  0,  0,  0,  0, 71, 71, 71, 71,  0,  0, 
+    72, 72, 72, 72, 73, 73, 73, 73,  0,  0,  0, 73, 25,  0,  0,  0, 
+    85, 85, 85, 85, 85, 85,  0, 85, 85, 85,  0,  0,  0,  0, 85, 85, 
+    77, 77, 77, 77, 77, 77, 77,  0, 77, 77,  0,  0, 79, 79, 79, 79, 
+    79, 79, 79,  0,  0,  0,  0, 79, 86, 86, 86, 86, 86, 86,  0,  0, 
+     0,  0,  0, 25,  0,  0,  0,  5,  6,  0,  6,  0,  6,  6,  0,  6, 
+     6,  0,  6,  6,  7,  7,  0,  0,  0,  0,  0,  7,  7,  7,  1,  1, 
+     7,  1,  0,  0,  7,  0,  7,  7,  7,  0,  0,  1,  1,  1, 34, 34, 
+    34, 34,  1,  1,  0,  0, 25, 25, 48, 48, 48, 48,  0, 48, 48, 48, 
+    48, 48, 48,  0, 48, 48,  0, 48, 48, 48,  0,  0,  1, 41,  0,  0, 
+    74, 74, 74, 74, 74,  0,  0,  0, 75, 75, 75, 75, 75,  0,  0,  0, 
+    38, 38, 38, 38, 38, 38, 38,  0, 39, 39, 39, 39, 39, 39, 39,  0, 
+    49, 49, 49, 49, 49, 49,  0, 49, 60, 60, 60, 60, 60, 60,  0,  0, 
+    40, 40, 40, 40, 50, 50, 50, 50, 51, 51, 51, 51, 51, 51,  0,  0, 
+    52, 52, 52, 52, 52, 52,  0,  0, 52,  0, 52, 52, 52, 52,  0, 52, 
+    52,  0,  0,  0, 52,  0,  0, 52, 87, 87, 87, 87, 87, 87,  0, 87, 
+    64, 64, 64, 64,  0,  0,  0, 64, 76, 76, 76, 76, 76, 76,  0,  0, 
+     0,  0,  0, 76, 61, 61, 61, 61,  0, 61, 61,  0,  0, 61, 61, 61, 
+    61, 61, 61,  0,  0,  0,  0, 61, 61,  0,  0,  0, 88, 88, 88, 88, 
+    80, 80, 80, 80, 80, 80,  0,  0,  0, 80, 80, 80, 89, 89, 89, 89, 
+    89, 89,  0,  0, 90, 90, 90, 90, 90, 90, 90,  0, 91, 91, 91, 91, 
+    91,  0,  0,  0,  7,  7,  7,  0, 94, 94, 94, 94, 94, 94,  0,  0, 
+     0,  0, 94, 94, 92, 92, 92, 92, 92, 92,  0,  0, 63, 63, 63, 63, 
+    63, 63, 63,  0, 81, 81, 81, 81, 81, 81, 81,  0, 84,  0,  0,  0, 
+    34, 33,  0,  0,  1,  1,  1, 41,  1, 41, 41, 41,  1,  1, 41, 41, 
+     0,  0,  1,  0,  0,  1,  1,  0,  1,  1,  0,  1,  1,  0,  1,  0, 
+    33,  1,  1,  0,  0,  1,  0,  0, 36, 36, 36,  0, 36,  0,  0,  0, 
+};
+
+/* Script: 8792 bytes. */
 
 RE_UINT32 re_get_script(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -2614,11 +3685,14 @@ RE_UINT32 re_get_script(RE_UINT32 ch) {
     pos = ((RE_UINT32)re_script_stage_1[f] << 4);
     f = code >> 7;
     code ^= (f << 7);
-    pos = ((RE_UINT32)re_script_stage_2[pos + f] << 4);
-    f = code >> 3;
-    code ^= (f << 3);
-    pos = ((RE_UINT32)re_script_stage_3[pos + f] << 3);
-    value = re_script_stage_4[pos + code];
+    pos = ((RE_UINT32)re_script_stage_2[pos + f] << 3);
+    f = code >> 4;
+    code ^= (f << 4);
+    pos = ((RE_UINT32)re_script_stage_3[pos + f] << 2);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_script_stage_4[pos + f] << 2);
+    value = re_script_stage_5[pos + code];
 
     return value;
 }
@@ -2626,43 +3700,33 @@ RE_UINT32 re_get_script(RE_UINT32 ch) {
 /* Word_Break. */
 
 RE_UINT8 re_word_break_stage_1[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  8,  9, 10, 10, 10, 10, 11,  7,  7,  7,  7, 12, 
-    13, 14, 15,  7, 16,  7, 17,  7,  7,  7,  7,  7,  7, 18,  7,  7, 
-     7,  7,  7,  7,  7,  7, 19,  7,  7,  7, 20,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-    21,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
-     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     0,  1,  2,  2,  2,  3,  4,  5,  6,  7,  2,  8,  2,  9, 10,  2, 
+     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+    11,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+     2,  2,  2,  2,  2,  2,  2,  2, 
 };
 
-RE_UINT16 re_word_break_stage_2[] = {
+RE_UINT8 re_word_break_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16, 17, 18, 17, 17, 17, 19, 20, 21, 22, 17, 17, 17, 17, 17, 17, 
+    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
+    23, 23, 24, 25, 26, 27, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 
+    23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 28, 17, 17, 17, 17, 
+    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 29, 30, 31, 
+    32, 33, 34, 17, 35, 36, 37, 17, 38, 17, 17, 17, 17, 17, 17, 17, 
+    23, 39, 40, 17, 17, 17, 17, 17, 23, 23, 41, 17, 17, 17, 17, 17, 
+    17, 17, 17, 17, 23, 42, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
+    17, 17, 17, 17, 17, 17, 17, 17, 43, 17, 17, 17, 17, 17, 17, 17, 
+    17, 17, 17, 17, 17, 17, 17, 17, 44, 45, 46, 47, 17, 17, 17, 17, 
+    48, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
+};
+
+RE_UINT16 re_word_break_stage_3[] = {
       0,   1,   2,   3,   4,   5,   6,   6,   7,   7,   7,   7,   7,   7,   7,   7, 
       7,   7,   7,   7,   7,   7,   8,   9,  10,  10,  10,  11,  12,  13,   7,  14, 
       7,   7,   7,   7,  15,   7,   7,   7,   7,  16,  17,  18,  19,  20,  21,  22, 
@@ -2682,78 +3746,39 @@ RE_UINT16 re_word_break_stage_2[] = {
     138, 139, 140, 141, 142,  37, 114, 143, 144, 145, 146,   7, 147,  37,  37,  37, 
      37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
      37,  37,  37,  37,  37, 148,   7, 149,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
       7, 150, 151,   7,   7,   7,   7, 152,   7,  89,   7, 153, 154, 155, 155,  10, 
      37, 156,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
     157, 158,  37,  37, 159, 160, 160, 161, 162, 163,   7,   7, 164, 165,  37, 166, 
      37,  37,  37,  37,  37,  37, 166, 167, 160, 160, 168,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
       7,   7,   7,   7, 169,  37, 170, 129,   7,   7,   7,   7,   7,   7,   7,   7, 
     171, 172,   7, 173, 109,   7,   7, 174, 175, 176,   7,   7, 177, 149,  37, 178, 
     179, 180,   7, 181, 182, 121, 183, 184,  32, 185, 186, 112,  38, 187, 188,  37, 
       7, 189, 190, 191,  37, 192, 193,  37, 194, 195,  37,  37,  37,  37,   7, 196, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 197, 198, 199, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
      37,  37,  37,  37,  37,  37,  37,  37, 200, 201, 202,   7,   7, 203, 204,   7, 
       7,   7,   7,   7,   7,   7,   7,   7,   7, 129, 170,   7, 205,   7, 206, 207, 
     208, 209, 210, 211,   7,   7,   7, 212, 213,   2,   3, 214, 215, 151, 216, 217, 
     218, 219, 220,  37,   7,   7,   7, 165,  37,  37,   7,  98,  37,  37,  37, 221, 
      37,  37,  37,  37, 112,   7, 222,  37, 151, 170, 223,  37, 129,   7, 224,  37, 
       7,   7,   7,   7, 129, 107,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
     225, 226, 111,  37,  37,  37,  37,  37, 111, 227,  37,  37,  37,  37,  37,  37, 
     228, 229,  37, 112,  37,  37,  37,  37,   7, 111, 111, 230,  37,  37,  37,  37, 
       7,   7, 147,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
     124, 231, 232,  59, 124, 233,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 164,  37,  37,  37,  37, 
       7,   7,   7, 234,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
       7, 164,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 
       7, 235,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
     236,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
      37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 237, 238, 239,  37,  37, 
      37,  37, 240,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
       7,   7, 241,   7, 242, 243, 244,   7, 245, 246, 247,   7,   7,   7,   7,   7, 
       7,   7,   7,   7,   7, 248, 249, 250, 241, 241, 150, 150, 251, 251, 252, 253, 
     254, 255, 255, 255,  37,  37,  37,  37,  10,  10,  10,  10,  10,  10,  10, 256, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
-     37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37, 
 };
 
-RE_UINT8 re_word_break_stage_3[] = {
+RE_UINT8 re_word_break_stage_4[] = {
       0,   0,   1,   2,   0,   0,   0,   0,   0,   3,   0,   4,   5,   5,   6,   0, 
       7,   8,   8,   8,   8,   8,   9,  10,   7,   8,   8,   8,   8,   8,   9,   0, 
       0,  11,   0,   0,   0,   0,   0,   0,   0,   0,  12,  13,   0,  14,  12,   0, 
@@ -2885,36 +3910,36 @@ RE_UINT8 re_word_break_stage_3[] = {
      19,  19,  19,  19,   0,   0,   0,   0, 
 };
 
-RE_UINT8 re_word_break_stage_4[] = {
-     0,  0,  0,  0,  0,  0,  1,  7,  7, 11,  0,  0,  0,  0,  0,  9, 
-     2,  0,  9,  0,  8,  8,  8,  8,  8,  8,  3,  2,  0,  6,  6,  6, 
-     6,  6,  6,  6,  6,  6,  6,  0,  0,  0,  0, 10,  0,  7,  0,  0, 
-     0,  0,  6,  0,  0,  5,  0,  0,  0,  6,  0,  3,  6,  6,  0,  0, 
-     0,  0,  6,  6,  6,  0,  0,  0,  6,  0,  6,  0,  4,  4,  4,  4, 
-     6,  0,  6,  6,  6,  6,  2,  0,  0,  0,  6,  3,  6,  6,  0,  6, 
-     6,  6,  0,  4,  4,  4,  6,  6,  0,  6,  0,  0,  0,  2,  0,  0, 
-     0,  4,  4,  4,  4,  4,  0,  4,  0,  4,  4,  0,  3,  0,  0,  0, 
-     5,  5,  5,  5,  2,  2,  0,  0,  4,  4,  4,  0,  6,  6,  6,  4, 
-     8,  8,  0,  8,  2,  0,  6,  6,  4,  6,  6,  6,  0,  6,  4,  4, 
-     4,  5,  0,  4,  4,  6,  6,  4,  4,  0,  4,  4,  8,  8,  6,  6, 
-     6,  0,  0,  6,  0,  0,  0,  5,  6,  4,  6,  6,  6,  6,  4,  4, 
-     4,  6,  0,  0,  2,  0,  6,  0,  4,  4,  6,  4,  6,  4,  4,  4, 
-     4,  4,  0,  0,  4,  6,  4,  4,  0,  0,  8,  8,  4,  0,  0,  4, 
-     4,  4,  6,  0,  0,  0,  0,  4,  0,  0,  0,  6,  0,  6,  6,  0, 
-     0,  4,  0,  0,  6,  4,  0,  0,  0,  0,  4,  4,  0,  0,  4,  6, 
-     0,  0,  4,  0,  4,  0,  4,  0,  8,  8,  0,  0,  4,  0,  0,  0, 
-     0,  4,  0,  4,  8,  8,  4,  4,  6,  0,  4,  4,  5,  5,  4,  4, 
-     6,  4,  6,  0,  4,  4,  4,  6,  6,  6,  4,  0,  0,  6,  0,  6, 
-     4,  4,  5,  5,  9,  9,  0,  0,  9,  0,  0,  3,  7,  7,  5,  5, 
-     5,  5,  5,  0, 10,  0,  0,  0,  2,  0,  0,  0,  5,  0,  0,  0, 
-     0,  0,  5,  5,  0, 12, 12, 12, 12, 12,  0,  0,  0,  4,  4, 12, 
-    12,  0,  0,  0, 12, 12, 12, 12, 12, 12, 12,  0,  4,  4,  0,  6, 
-     6,  6,  4,  6,  0,  6,  4,  6,  2,  0,  0,  3,  0, 10, 10, 10, 
-     2,  3,  0,  0,  6,  0,  0,  5,  0,  0,  3,  2,  0,  0, 12, 12, 
-    12, 12,  4,  4,  0,  5,  5,  5,  4,  4,  4,  5,  5,  5,  5,  4, 
+RE_UINT8 re_word_break_stage_5[] = {
+     0,  0,  0,  0,  0,  0,  2,  3,  3,  1,  0,  0,  0,  0,  0, 10, 
+     9,  0, 10,  0, 11, 11, 11, 11, 11, 11,  8,  9,  0,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7,  0,  0,  0,  0, 12,  0,  3,  0,  0, 
+     0,  0,  7,  0,  0,  5,  0,  0,  0,  7,  0,  8,  7,  7,  0,  0, 
+     0,  0,  7,  7,  7,  0,  0,  0,  7,  0,  7,  0,  4,  4,  4,  4, 
+     7,  0,  7,  7,  7,  7,  9,  0,  0,  0,  7,  8,  7,  7,  0,  7, 
+     7,  7,  0,  4,  4,  4,  7,  7,  0,  7,  0,  0,  0,  9,  0,  0, 
+     0,  4,  4,  4,  4,  4,  0,  4,  0,  4,  4,  0,  8,  0,  0,  0, 
+     5,  5,  5,  5,  9,  9,  0,  0,  4,  4,  4,  0,  7,  7,  7,  4, 
+    11, 11,  0, 11,  9,  0,  7,  7,  4,  7,  7,  7,  0,  7,  4,  4, 
+     4,  5,  0,  4,  4,  7,  7,  4,  4,  0,  4,  4, 11, 11,  7,  7, 
+     7,  0,  0,  7,  0,  0,  0,  5,  7,  4,  7,  7,  7,  7,  4,  4, 
+     4,  7,  0,  0,  9,  0,  7,  0,  4,  4,  7,  4,  7,  4,  4,  4, 
+     4,  4,  0,  0,  4,  7,  4,  4,  0,  0, 11, 11,  4,  0,  0,  4, 
+     4,  4,  7,  0,  0,  0,  0,  4,  0,  0,  0,  7,  0,  7,  7,  0, 
+     0,  4,  0,  0,  7,  4,  0,  0,  0,  0,  4,  4,  0,  0,  4,  7, 
+     0,  0,  4,  0,  4,  0,  4,  0, 11, 11,  0,  0,  4,  0,  0,  0, 
+     0,  4,  0,  4, 11, 11,  4,  4,  7,  0,  4,  4,  5,  5,  4,  4, 
+     7,  4,  7,  0,  4,  4,  4,  7,  7,  7,  4,  0,  0,  7,  0,  7, 
+     4,  4,  5,  5, 10, 10,  0,  0, 10,  0,  0,  8,  3,  3,  5,  5, 
+     5,  5,  5,  0, 12,  0,  0,  0,  9,  0,  0,  0,  5,  0,  0,  0, 
+     0,  0,  5,  5,  0,  6,  6,  6,  6,  6,  0,  0,  0,  4,  4,  6, 
+     6,  0,  0,  0,  6,  6,  6,  6,  6,  6,  6,  0,  4,  4,  0,  7, 
+     7,  7,  4,  7,  0,  7,  4,  7,  9,  0,  0,  8,  0, 12, 12, 12, 
+     9,  8,  0,  0,  7,  0,  0,  5,  0,  0,  8,  9,  0,  0,  6,  6, 
+     6,  6,  4,  4,  0,  5,  5,  5,  4,  4,  4,  5,  5,  5,  5,  4, 
 };
 
-/* Word_Break: 4424 bytes. */
+/* Word_Break: 3584 bytes. */
 
 RE_UINT32 re_get_word_break(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -2922,23 +3947,26 @@ RE_UINT32 re_get_word_break(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 11;
-    code = ch ^ (f << 11);
-    pos = ((RE_UINT32)re_word_break_stage_1[f] << 6);
+    f = ch >> 13;
+    code = ch ^ (f << 13);
+    pos = ((RE_UINT32)re_word_break_stage_1[f] << 4);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_word_break_stage_2[pos + f] << 4);
     f = code >> 5;
     code ^= (f << 5);
-    pos = ((RE_UINT32)re_word_break_stage_2[pos + f] << 3);
+    pos = ((RE_UINT32)re_word_break_stage_3[pos + f] << 3);
     f = code >> 2;
     code ^= (f << 2);
-    pos = ((RE_UINT32)re_word_break_stage_3[pos + f] << 2);
-    value = re_word_break_stage_4[pos + code];
+    pos = ((RE_UINT32)re_word_break_stage_4[pos + f] << 2);
+    value = re_word_break_stage_5[pos + code];
 
     return value;
 }
 
-/* Grapheme_Break. */
+/* Grapheme_Cluster_Break. */
 
-RE_UINT8 re_grapheme_break_stage_1[] = {
+RE_UINT8 re_grapheme_cluster_break_stage_1[] = {
     0, 1, 2, 2, 2, 3, 4, 5, 6, 2, 2, 2, 2, 2, 7, 2, 
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
@@ -2950,212 +3978,150 @@ RE_UINT8 re_grapheme_break_stage_1[] = {
     2, 2, 2, 2, 2, 2, 2, 2, 
 };
 
-RE_UINT8 re_grapheme_break_stage_2[] = {
-     0,  1,  2,  2,  2,  2,  3,  2,  2,  4,  2,  5,  6,  7,  8,  9, 
-    10,  2, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 
-    25, 26, 27, 28,  2,  2, 29,  2,  2,  2,  2,  2,  2,  2, 30, 31, 
-    32, 33, 34, 35, 36,  2, 37, 38, 39, 40,  2, 41,  2,  2,  2,  2, 
-    42, 43,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2, 44, 45, 46,  2,  2,  2,  2, 
-    47, 48,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 49, 50,  2,  2, 
-    51, 52, 53, 54, 55, 56,  2, 57, 58, 59, 60, 61, 62, 63, 64, 58, 
-    59, 60, 61, 62, 63, 64, 58, 59, 60, 61, 62, 63, 64, 58, 59, 60, 
-    61, 62, 63, 64, 58, 59, 60, 61, 62, 63, 64, 58, 59, 60, 61, 62, 
-    63, 64, 58, 59, 60, 61, 62, 63, 64, 58, 59, 60, 61, 62, 63, 64, 
-    58, 59, 60, 61, 62, 63, 64, 58, 59, 60, 61, 62, 63, 64, 58, 59, 
-    60, 61, 62, 63, 64, 58, 59, 60, 61, 62, 63, 64, 58, 59, 60, 65, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2, 66,  2,  2,  2,  2,  2, 67, 68,  2, 69, 
-     2,  2,  2, 70,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2, 71,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-    72, 73,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2, 74, 75, 76,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-    77,  2, 78,  3,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+RE_UINT8 re_grapheme_cluster_break_stage_2[] = {
+     0,  1,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 
+    15, 16,  1, 17,  1,  1,  1, 18, 19, 20, 21, 22, 23, 24,  1,  1, 
+    25,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 26, 27,  1,  1, 
+    28,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1, 29,  1, 30, 31, 32, 33, 34, 35, 36, 37, 
+    38, 39, 40, 34, 35, 36, 37, 38, 39, 40, 34, 35, 36, 37, 38, 39, 
+    40, 34, 35, 36, 37, 38, 39, 40, 34, 35, 36, 37, 38, 39, 40, 34, 
+    35, 36, 37, 38, 39, 40, 34, 41,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 42,  1,  1, 43, 44, 
+     1, 45,  1,  1,  1,  1,  1,  1,  1,  1, 46,  1,  1,  1,  1,  1, 
+    47,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1, 48, 49,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+    50, 51,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
 };
 
-RE_UINT8 re_grapheme_break_stage_3[] = {
-      0,   1,   0,   0,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   3, 
-      0,   0,   0,   0,   2,   4,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
+RE_UINT8 re_grapheme_cluster_break_stage_3[] = {
+      0,   1,   2,   2,   2,   2,   2,   3,   1,   1,   4,   2,   2,   2,   2,   2, 
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   2,   2, 
-      6,   7,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   8,   5,   5,   5,   5,   9,  10,   2,   2,   2,   2,   2,   2,   2, 
-     11,   2,   5,  12,   2,   2,   2,   2,   2,   6,   5,   5,   2,   2,  13,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  14,  15,  16,  17,   2,   2, 
-      2,   3,  18,   2,   2,   2,   5,   5,   5,  12,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,  14,   5,  13,   2,   2,   2,   2,   2,   2,   6,  19,   2, 
-      2,   2,  14,  20,  21,  22,   2,   2,   2,   2,   2,  23,   2,   2,   2,   2, 
-     24,   2,   2,   2,   2,   2,   2,  25,  26,  27,   8,   2,  28,   2,   2,   2, 
-     29,   2,   2,   2,   2,   2,   2,  30,  31,  32,  33,   2,  28,   2,   2,   2, 
-     34,   2,   2,   2,   2,   2,   2,  35,  36,  37,  18,   2,   2,   2,  38,   2, 
-     34,   2,   2,   2,   2,   2,   2,  35,  39,  40,   2,   2,  28,   2,   2,   2, 
-     29,   2,   2,   2,   2,   2,   2,  41,  31,  32,  14,   2,  28,   2,   2,   2, 
-     42,   2,   2,   2,   2,   2,   2,  43,  44,  45,  33,   2,   2,   2,   2,   2, 
-     46,   2,   2,   2,   2,   2,   2,  14,  47,  17,  48,   2,  28,   2,   2,   2, 
-     49,   2,   2,   2,   2,   2,   2,  50,  51,  52,  48,   2,  28,   2,   2,   2, 
-     49,   2,   2,   2,   2,   2,   2,  43,  53,  45,  33,   2,  28,   2,   2,   2, 
-     49,   2,   2,   2,   2,   2,   2,   2,   2,  54,  55,  56,   2,   2,  49,   2, 
-      2,   2,   2,   2,   2,   2,  57,  12,  58,  59,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,   2,  57,  60,  61,  62,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   7,   2,   2,  63,  64,   2,   2,   2,   2,   2,   2,   8,  65, 
-     66,  67,   5,   8,   5,   5,   5,  68,  69,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,  70,  71,  72,   2,   2,  73,  74,  75,  76,  77,   2, 
-     78,  79,   2,  80,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  82,  82,  82,  82, 
-     82,  82,  82,  82,  82,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  67,   2,   2,   2,   2, 
-      2,   2,  84,   2,   2,   2,  84,   2,   2,   2,  28,   2,   2,   2,  28,   2, 
-      2,   2,   2,   2,   2,   2,  85,  86,  87,  26,  19,  88,   2,   2,   2,   2, 
-      2,  89,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,  18,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,  90,  91,  92,  93,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,   2,  94,  94,  95,  96,   2,   2,   2,   2,   2,   2, 
-      2,   2,  33,  91,   2,   2,   2,   2,   2,   2,  97,  59,  98,  99, 100,  16, 
-    101,   2,   2,   2,   2,   2, 102, 103, 104,   2,   2,   2,   2,   6,  19,   2, 
-    105,   2,   2,   2, 106, 105,   2,   2,   2,   2,   2,   2,  43, 107, 108,   2, 
-      2,   2,   2,   2, 109, 110, 111,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 112,   5,  71, 113, 114,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   5,   5,   5,   5,  59,   2,   2, 115, 
-      2, 116,   2,   2,   2, 117,   2,   2,   2,   2,   2,   2, 118, 119,   2,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   5,   5,   5,   5,  13,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  33,   7,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  33, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   5,   5,   5,   5, 
-      2,   2,   2,   2,   2, 120,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2, 121,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  33,  12, 122, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   7,   2, 
-    123, 124,   2,   2, 125,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-     96,   2,   2,   2,   2,   2, 109,  94, 126,   2,   2,   2,   5,   5,   7,   2, 
-      2,   2,   2,   2,  14,  62,   2,   2,  33,   5, 108,   2,  81,  81,  81, 127, 
-     24,   2,   2,   2,   2,   2, 128, 129,  95,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2, 130,  72,   2, 124, 131,   2,   2,   2,   2,   2, 132, 
-      2,   2,   2,   2,   2,   2, 133, 134,  18,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 135, 136,   2,   2, 
-    137, 138, 138, 139, 138, 138, 138, 137, 138, 138, 139, 138, 138, 138, 137, 138, 
-    138, 139, 138, 138, 138, 137, 138, 138, 139, 138, 138, 138, 137, 138, 138, 139, 
-    138, 138, 138, 137, 138, 138, 139, 138, 138, 138, 137, 138, 138, 139, 138, 138, 
-    138, 137, 138, 138, 139, 138, 138, 138, 137, 138, 138, 139, 138, 138, 138, 137, 
-    138, 138, 139, 138, 138, 138, 137, 138, 138, 139, 138, 138, 138, 137, 138, 138, 
-    139, 138, 138, 138, 137, 138, 138, 139, 138, 138, 138, 137, 138, 138, 139, 138, 
-    138, 138, 137, 138, 138, 139, 138, 138, 138, 137, 138, 138, 139, 138, 138, 138, 
-    138, 137, 138, 138, 140,   2,  82,  82, 141, 142,  83,  83,  83,  83,  83, 143, 
-      2,   2,   2,  69,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      5,   5,   2,   2,  59,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   3, 
-      2,   2,   2,  14,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 144, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  88, 
-    145, 115,   2,   2,   2,   2,   2, 146,   2,   2,   2,   2,   2,   2,   2,   2, 
-    147,   2,   2,   2,   2,   2,   2,   5,  59,   2,   2,   2,   2,   2,   2,   2, 
-    105,   2,   2,   2,   2,   2, 148, 149,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 150, 151, 152, 153, 
-    154,  19,   2,   2,   2, 155,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
-      2,   2,   2,   2,   2,   2,   2,   2,  84,   2,   2,   2,   2,   2,   2,   2, 
-    156,   2,   2,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 
+      5,   5,   5,   5,   5,   5,   5,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
+      2,   2,   2,   2,   2,   2,   2,   2,   6,   2,   2,   2,   2,   2,   2,   2, 
+      2,   2,   2,   2,   2,   2,   2,   2,   2,   7,   5,   8,   9,   2,   2,   2, 
+     10,  11,   2,   2,  12,   5,   2,  13,   2,   2,   2,   2,   2,  14,  15,   2, 
+      3,  16,   2,   5,  11,   2,   2,   2,   2,   2,  17,  13,   2,   2,  12,  18, 
+      2,  19,  20,   2,   2,  21,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
+     22,   2,   2,  23,  24,  25,  26,   2,  27,   2,   2,  28,  29,  30,  26,   2, 
+     31,   2,   2,  32,  33,  16,   2,  34,  31,   2,   2,  32,  35,   2,  26,   2, 
+     27,   2,   2,  36,  29,  37,  26,   2,  38,   2,   2,  39,  40,  30,   2,   2, 
+     41,   2,   2,  42,  43,  44,  26,   2,  45,   2,   2,  46,  47,  44,  26,   2, 
+     45,   2,   2,  39,  48,  30,  26,   2,  45,   2,   2,   2,  49,  50,   2,  45, 
+      2,   2,   2,  51,  52,   2,   2,   2,   2,   2,   2,  53,  54,   2,   2,   2, 
+      2,  55,   2,  56,   2,   2,   2,  57,  58,  59,   5,  60,  61,   2,   2,   2, 
+      2,   2,  62,  63,   2,  64,  65,  66,  67,  68,   2,   2,   2,   2,   2,   2, 
+     69,  69,  69,  69,  69,  69,  70,  70,  70,  70,  71,  72,  72,  72,  72,  72, 
+      2,   2,   2,   2,   2,  73,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
+      2,  74,   2,  74,   2,  26,   2,  26,   2,   2,   2,  75,  76,  77,   2,   2, 
+     78,   2,   2,   2,   2,   2,   2,   2,   2,   2,  79,   2,   2,   2,   2,   2, 
+      2,   2,  80,  81,   2,   2,   2,   2,   2,   2,   2,  82,  83,   2,   2,   2, 
+      2,  84,   2,   2,   2,  85,  86,  87,   2,   2,   2,   2,   2,   2,   2,   2, 
+     88,   2,   2,  89,  90,   2,  12,  18,  91,   2,  92,   2,   2,   2,  93,  94, 
+      2,   2,  95,  96,   2,   2,   2,   2,   2,   2,   2,   2,   2,  97,  98,  99, 
+      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   5,   5, 100, 101, 
+    102,   2, 103,   2,   2,   2, 104,   2,   2,   2,   2,   2,   2,   5,   5,  13, 
+      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 105, 106, 
+      2,   2,   2,   2,   2,   2,   2, 105,   2,   2,   2,   2,   2,   2,   5,   5, 
+      2,   2, 107,   2,   2,   2,   2,   2,   2, 108,   2,   2,   2,   2,   2,   2, 
+      2,   2,   2,   2,   2,   2, 105, 109,   2,   2,   2,   2,   2,   2,   2, 106, 
+    110,   2, 111,   2,   2,   2,   2,   2, 112,   2,   2, 113, 114,   2,   5, 106, 
+      2,   2, 115,   2, 116,  94,  69, 117,  22,   2,   2, 118, 119,   2,   2,   2, 
+      2,   2, 120, 121, 122,   2,   2, 123,   2,   2,   2, 124,  16,   2,   2,   2, 
+      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 125,   2, 
+    126, 127, 128, 129, 128, 130, 128, 126, 127, 128, 129, 128, 130, 128, 126, 127, 
+    128, 129, 128, 130, 128, 126, 127, 128, 129, 128, 130, 128, 126, 127, 128, 129, 
+    128, 130, 128, 126, 127, 128, 129, 128, 130, 128, 126, 127, 128, 129, 128, 130, 
+    128, 126, 127, 128, 129, 128, 130, 128, 126, 127, 128, 129, 128, 130, 128, 126, 
+    127, 128, 129, 128, 130, 128, 126, 127, 128, 129, 128, 130, 128, 126, 127, 128, 
+    129, 128, 130, 128, 126, 127, 128, 129, 128, 130, 128, 126, 127, 128, 129, 128, 
+    130, 128, 126, 127, 128, 129, 128, 130, 128, 126, 127, 128, 129, 128, 130, 128, 
+    128, 129, 128, 130, 128, 126, 127, 128, 129, 128, 131,  70, 132,  72,  72, 133, 
+      2, 134,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
+      5,   2, 100,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   3, 
+      2,   2,   2,   2,   2,   2,   2,   2,   2,  42,   2,   2,   2,   2,   2, 135, 
+      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 136, 
+    137,   2,   2, 138,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
+    139,   2,   2, 140, 100,   2,   2,   2,  91,   2,   2, 141,   2,   2,   2,   2, 
+      2,   2,   2,   2,   2,   2, 142, 143, 144,   2, 145,   2,   2,   2,   2,   2, 
+      2,   2,   2,   2,  74,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
+    146,   2,   1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   2,   2,   2, 
+      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   2, 
 };
 
-RE_UINT8 re_grapheme_break_stage_4[] = {
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  1,  1, 11,  1,  1, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1, 
-     0,  0,  0,  0,  0,  1,  0,  0,  3,  3,  3,  3,  3,  3,  3,  3, 
-     0,  0,  0,  3,  3,  3,  3,  3,  3,  3,  0,  0,  0,  0,  0,  0, 
-     0,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  0,  3, 
-     0,  3,  3,  0,  3,  3,  0,  3,  1,  1,  1,  1,  0,  0,  0,  0, 
-     3,  3,  3,  0,  0,  0,  0,  0,  3,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  3,  3,  3,  3,  3,  3,  3,  1,  0,  3, 
-     3,  3,  3,  3,  3,  0,  0,  3,  3,  0,  3,  3,  3,  3,  0,  0, 
-     0,  3,  0,  0,  0,  0,  0,  0,  3,  3,  3,  3,  0,  0,  0,  0, 
-     3,  3,  0,  3,  3,  3,  3,  3,  3,  3,  3,  3,  0,  3,  3,  3, 
-     0,  3,  3,  3,  3,  3,  0,  0,  0,  3,  3,  3,  0,  0,  0,  0, 
-     3,  3,  3, 10,  0,  0,  0,  0,  0,  0,  3, 10,  3,  0, 10, 10, 
-    10,  3,  3,  3,  3,  3,  3,  3,  3, 10, 10, 10, 10,  3, 10, 10, 
-     0,  0,  3,  3,  0,  0,  0,  0,  0,  3, 10, 10,  0,  0,  0,  0, 
-     0,  0,  0,  0,  3,  0,  3, 10, 10,  3,  3,  3,  3,  0,  0, 10, 
-    10,  0,  0, 10, 10,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3, 
-     0,  3,  3, 10,  0,  0,  0,  0,  0,  0,  0,  0,  3,  0, 10, 10, 
-    10,  3,  3,  0,  0,  0,  0,  3,  3,  0,  0,  3,  3,  3,  0,  0, 
-     3,  3,  0,  0,  0,  3,  0,  0, 10,  3,  3,  3,  3,  3,  0,  3, 
-     3, 10,  0, 10, 10,  3,  0,  0,  0,  0,  0,  0,  3,  0,  3,  3, 
-     0,  0,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3, 10, 
-     3, 10, 10,  0,  0,  0, 10, 10, 10,  0, 10, 10, 10,  3,  0,  0, 
-     0, 10, 10, 10,  0,  0,  0,  0,  3, 10, 10, 10, 10,  0,  3,  3, 
-     0,  0,  0,  0,  0,  3,  3,  0,  0,  0, 10, 10,  0,  0,  0,  0, 
-     0,  0,  0,  0,  3,  0, 10,  3, 10, 10,  3, 10, 10,  0,  3, 10, 
-    10,  0, 10, 10,  3,  3,  0,  0, 10,  3,  3,  3,  3,  0, 10, 10, 
-     0,  0,  3,  0,  0,  0,  0,  3, 10, 10,  3,  3,  3,  0,  3,  0, 
-    10, 10, 10, 10, 10, 10, 10,  3, 10,  3, 10, 10,  3,  3,  3,  3, 
-     7,  7,  7,  7,  7, 10,  0,  3,  3,  3,  3,  3,  3,  3,  3,  0, 
-     3,  3,  0,  3,  3,  0,  0,  0,  7,  7,  7,  7,  7,  0,  0,  0, 
-     3,  3,  3,  3,  3,  3,  0,  0,  0,  0,  0,  0,  0,  3,  0,  3, 
-     0,  3,  0,  0,  0,  0, 10, 10,  3,  3,  3,  3,  3,  3,  3, 10, 
-     3,  3,  3,  3,  3,  0,  3,  3,  0,  0,  0,  0,  0,  3,  3,  3, 
-     3,  3,  3,  3,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  0, 
-     0,  0,  0, 10, 10,  3,  3,  3,  3, 10,  3,  3,  3,  3,  3,  3, 
-    10,  3,  3, 10, 10,  3,  3,  0,  0,  0,  0,  0,  0,  0, 10, 10, 
-     3,  3,  0,  0,  0,  0,  3,  3,  3,  0, 10, 10, 10,  0,  0, 10, 
-    10, 10, 10, 10, 10, 10,  0,  0,  0,  3,  3,  3,  3,  0,  0,  0, 
-     0,  0,  3, 10, 10,  3,  3, 10, 10, 10, 10, 10, 10,  3,  0, 10, 
-     0,  0, 10, 10, 10,  3,  0,  0,  6,  6,  6,  6,  6,  6,  6,  6, 
-     5,  5,  5,  5,  5,  5,  5,  5,  9,  9,  9,  9,  9,  9,  9,  9, 
-     0,  0,  3,  3,  3,  0,  0,  0,  0,  0,  0,  0,  1,  1, 10,  3, 
-     3,  3,  3,  3,  3,  3, 10, 10, 10, 10, 10, 10, 10, 10,  3, 10, 
-     0,  0,  0,  0,  0,  3,  0,  0,  0,  0,  0,  3,  3,  3,  0,  0, 
-     3,  3,  3, 10, 10, 10, 10,  3,  3, 10, 10, 10,  0,  0,  0,  0, 
-    10, 10,  3, 10, 10, 10, 10, 10, 10,  3,  3,  3,  0,  0,  0,  0, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0, 
-    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  3, 10, 
-     3, 10,  3, 10, 10,  3,  3,  3,  3,  3,  3,  3,  3, 10, 10, 10, 
-    10, 10, 10,  3,  3,  3,  3,  3,  3,  3,  3,  3, 10,  0,  0,  0, 
-     0,  0,  0,  0,  3, 10,  3,  3,  3,  3,  3, 10,  3, 10, 10, 10, 
-    10, 10,  3, 10, 10,  0,  0,  0,  3,  3, 10,  0,  0,  0,  0,  0, 
-     0, 10,  3,  3,  3,  3, 10, 10,  3,  3, 10, 10, 10,  3, 10,  3, 
-     3,  3, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 
-    10, 10, 10, 10,  3,  3,  3,  3,  3,  3,  3,  3, 10, 10,  3,  3, 
-     3,  3,  3,  0,  3,  3,  3,  3,  3,  0,  0,  0,  0,  3,  0,  0, 
-     0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  3,  3,  3, 
-     0,  0,  0,  1,  3,  3,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0, 
-     1,  1,  1,  1,  1,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1, 
-     0,  0,  3,  3,  3,  3,  3,  3,  0,  3,  3,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  3,  3,  0,  0,  0,  0,  3,  0,  0,  0,  3,  0, 
-     0,  0,  0,  3,  0,  0,  0,  0,  0,  0,  0, 10, 10,  3,  3, 10, 
-    10, 10, 10, 10,  3,  0,  0,  0,  6,  6,  6,  6,  6,  0,  0,  0, 
-     0,  0,  0,  3, 10, 10,  3,  3,  3,  3, 10, 10,  3, 10, 10, 10, 
-     0,  3,  3,  3,  3,  3,  3, 10,  0,  0,  0,  0,  3, 10,  0,  0, 
-     0,  0,  0, 10,  0,  0,  0,  0,  3,  0,  3,  3,  3,  7,  7,  3, 
-     3,  7,  0,  7,  7,  0,  3,  3,  0,  0,  0, 10, 10,  3, 10, 10, 
-     3, 10, 10,  0, 10,  3,  0,  0,  8,  4,  4,  4,  4,  4,  4,  4, 
-     4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  8,  4,  4,  4, 
-     4,  4,  4,  4,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,  5,  0, 
-     0,  0,  0,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0, 
-     0,  1,  1,  1,  0,  0,  0,  0,  0,  3,  3,  3,  0,  3,  3,  0, 
-     3,  3,  3,  0,  0,  0,  0,  3, 10,  3, 10,  0,  0,  0,  0,  0, 
-    10, 10, 10,  3,  3,  3,  3, 10, 10,  3,  3,  0,  0,  1,  0,  0, 
-     0,  0,  0,  0,  0,  3, 10,  3,  3,  3,  0,  0,  0, 10,  3,  3, 
-     3,  3,  3,  1,  1,  1,  1,  1,  1,  1,  1,  3,  3,  3,  3,  3, 
-     3,  3,  3,  0,  0,  3,  3,  3,  0,  0,  3,  3,  3,  3,  0,  0, 
-     0,  1,  0,  0,  0,  0,  0,  0, 
+RE_UINT8 re_grapheme_cluster_break_stage_4[] = {
+     0,  0,  1,  2,  0,  0,  0,  0,  3,  3,  3,  3,  3,  3,  3,  4, 
+     3,  3,  3,  5,  6,  6,  6,  6,  7,  6,  8,  3,  9,  6,  6,  6, 
+     6,  6,  6, 10, 11, 10,  3,  3,  0,  3,  3,  3,  6,  6, 12,  3, 
+     3,  3,  7,  6, 13,  3,  3,  3,  3, 14,  6, 15,  6, 16, 17,  8, 
+    18,  3,  3,  3,  3, 14,  6,  6,  6,  3,  3,  3,  3, 14, 10,  6, 
+     6,  9,  9,  8,  3,  3,  9,  3, 19,  3,  3,  3,  3,  3, 20, 21, 
+    22,  6, 23, 24,  9,  6,  3,  3, 14,  3,  3,  3, 25,  3,  3,  3, 
+     3,  3,  3, 26, 22, 27, 28, 29,  3,  7,  3,  3, 30,  3,  3,  3, 
+     3,  3,  3, 21, 31,  7, 16,  8,  8, 18,  3,  3, 22, 10, 32, 29, 
+     3,  3,  3, 17,  3, 14,  3,  3, 33,  3,  3,  3,  3,  3,  3, 20, 
+    34, 35, 36, 29, 37,  3,  3,  3,  3,  3,  3, 14, 23, 38, 17,  8, 
+     3, 11,  3,  3, 35,  3,  3,  3,  3,  3,  3, 39, 40, 41, 36,  8, 
+    22, 21, 36, 29,  3,  3, 33,  7, 42, 43, 44, 45, 24,  6, 12,  3, 
+    46, 47,  6, 12, 24,  6, 10, 13, 46, 48,  6,  8,  3,  3,  8,  3, 
+     3, 49, 18, 35,  9,  6,  6, 19,  6, 17,  3,  9,  6,  6,  9,  6, 
+     6,  6,  6, 13,  3, 33,  3,  3,  3,  3, 50, 22, 51,  6, 52, 31, 
+     3, 35,  8, 14, 21, 28, 44, 53,  9, 13,  3,  3, 20, 52, 44, 54, 
+     3,  3, 35, 29, 55, 55, 55, 55, 56, 56, 56, 56, 56, 56, 57, 57, 
+    57, 57, 57, 57,  3,  3,  3,  9, 14, 13,  3,  3,  3, 58,  6, 59, 
+    44, 40, 22,  6,  6,  3,  3, 18,  3,  3,  7,  8,  3,  3, 18,  3, 
+    19, 45, 23,  3, 40, 44, 22,  3, 44, 44, 44, 44, 60,  3, 53,  3, 
+     3,  7, 23,  3,  3, 61,  6, 12, 62, 22,  6, 23, 45,  6,  6, 16, 
+     6, 60,  3,  3,  3, 51, 19, 23, 40, 60,  3,  3, 63,  3,  3,  3, 
+    64, 59, 63,  3,  3, 20, 59, 65, 59,  3,  3,  3,  3, 44, 44,  6, 
+     6, 42,  3,  3, 12,  6,  6,  6, 51,  6, 13, 18, 66,  3,  3,  3, 
+     6, 12,  3,  3,  3,  3,  3,  6,  3,  3,  4, 67,  3,  3,  0, 68, 
+     0, 69, 70,  0,  3,  3,  3,  7,  8,  3,  3,  3,  3,  3, 14,  6, 
+     3,  3, 11,  3, 12,  3,  3,  8, 33, 33,  7,  3, 50, 52,  3,  3, 
+    53,  3,  3,  3,  3, 44, 44, 44, 44, 13,  3,  3,  3, 14,  6,  8, 
+     3,  7,  6,  6, 55, 55, 55, 71,  7, 42, 59, 23, 60,  3,  3,  3, 
+     3,  3,  9, 19, 52, 31,  3,  3,  7,  3,  3, 72,  3,  3, 50,  3, 
+    17, 73, 74, 75, 50, 24, 34, 29, 76, 77, 77, 77, 77, 77, 77, 76, 
+    77, 77, 77, 77, 77, 77, 76, 77, 77, 76, 77, 77, 77,  3,  3,  3, 
+    56, 78, 79, 57, 57, 57, 57,  3,  3,  3,  3, 33,  3,  3, 80,  3, 
+     3,  3,  3, 18,  9, 11,  3,  6,  3,  3, 12,  7, 81,  3,  3,  3, 
+     3,  3,  6,  6, 45, 19, 31,  5,  3, 82,  8, 64, 83,  0, 84,  6, 
+    12,  9,  6,  3,  3,  3, 14,  8,  5,  3,  3,  3, 
 };
 
-/* Grapheme_Break: 3232 bytes. */
+RE_UINT8 re_grapheme_cluster_break_stage_5[] = {
+     3,  3,  3,  3,  3,  3,  2,  3,  3,  1,  3,  3,  0,  0,  0,  0, 
+     0,  0,  0,  3,  0,  3,  0,  0,  4,  4,  4,  4,  0,  0,  0,  4, 
+     4,  4,  0,  0,  0,  4,  4,  4,  4,  4,  0,  4,  0,  4,  4,  0, 
+     4,  4,  4,  0,  4,  0,  0,  0,  0,  0,  4,  4,  4,  3,  0,  4, 
+     4,  0,  0,  4,  4,  0,  4,  4,  0,  4,  0,  0,  4,  4,  4,  6, 
+     0,  0,  4,  6,  4,  0,  6,  6,  6,  4,  4,  4,  4,  6,  6,  6, 
+     6,  4,  6,  6,  0,  4,  6,  6,  4,  0,  4,  6,  4,  0,  0,  6, 
+     6,  0,  0,  6,  6,  4,  0,  0,  0,  4,  4,  6,  6,  4,  4,  0, 
+     4,  6,  0,  6,  0,  0,  4,  0,  4,  6,  6,  0,  0,  0,  6,  6, 
+     6,  0,  6,  6,  0,  6,  6,  6,  6,  0,  4,  4,  4,  0,  6,  4, 
+     6,  6,  4,  6,  6,  0,  4,  6,  6,  6,  4,  4,  4,  0,  4,  0, 
+     6,  6,  6,  6,  6,  6,  6,  4,  5,  5,  5,  5,  5,  6,  0,  4, 
+     5,  0,  0,  0,  0,  4,  0,  4,  0,  0,  0,  6,  4,  6,  4,  4, 
+     6,  4,  4,  6,  6,  6,  0,  0,  6,  4,  0,  6,  7,  7,  7,  7, 
+     8,  8,  8,  8,  9,  9,  9,  9,  3,  3,  6,  4,  4,  4,  6,  6, 
+     6,  0,  0,  0,  0,  6,  4,  6,  4,  6,  4,  6,  4,  4,  6,  0, 
+     0,  6,  4,  4,  6,  4,  6,  4,  0,  0,  6,  0,  4,  4,  3,  3, 
+     3,  3,  3,  0,  3,  0,  0,  0,  0,  0,  3,  3,  7,  0,  0,  0, 
+     4,  6,  0,  0,  4,  5,  5,  4,  4,  5,  0,  5,  5,  0,  4,  4, 
+    10, 11, 11, 11, 11, 11, 11, 11,  8,  8,  8,  0,  0,  0,  0,  9, 
+     0,  3,  3,  3,  6,  4,  6,  0,  0,  4,  6,  4,  4,  4,  4,  3, 
+     3,  3,  3,  4, 
+};
 
-RE_UINT32 re_get_grapheme_break(RE_UINT32 ch) {
+/* Grapheme_Cluster_Break: 2184 bytes. */
+
+RE_UINT32 re_get_grapheme_cluster_break(RE_UINT32 ch) {
     RE_UINT32 code;
     RE_UINT32 f;
     RE_UINT32 pos;
@@ -3163,14 +4129,1107 @@ RE_UINT32 re_get_grapheme_break(RE_UINT32 ch) {
 
     f = ch >> 13;
     code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_grapheme_break_stage_1[f] << 6);
+    pos = ((RE_UINT32)re_grapheme_cluster_break_stage_1[f] << 5);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_grapheme_cluster_break_stage_2[pos + f] << 4);
+    f = code >> 4;
+    code ^= (f << 4);
+    pos = ((RE_UINT32)re_grapheme_cluster_break_stage_3[pos + f] << 2);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_grapheme_cluster_break_stage_4[pos + f] << 2);
+    value = re_grapheme_cluster_break_stage_5[pos + code];
+
+    return value;
+}
+
+/* Sentence_Break. */
+
+RE_UINT8 re_sentence_break_stage_1[] = {
+     0,  1,  2,  3,  4,  5,  5,  5,  5,  6,  7,  5,  5,  8,  9, 10, 
+    11, 12, 13, 14,  9,  9, 15,  9,  9,  9,  9, 16,  9, 17,  9,  9, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 18, 19,  9,  9,  9, 20, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+    21,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+};
+
+RE_UINT8 re_sentence_break_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16, 17, 18, 19, 20, 17, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 
+    31, 32, 33, 34, 35, 33, 33, 36, 33, 37, 33, 33, 38, 39, 40, 33, 
+    41, 42, 33, 33, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
+    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 43, 17, 17, 
+    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
+    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 44, 
+    17, 17, 17, 17, 45, 17, 46, 47, 48, 49, 50, 51, 17, 17, 17, 17, 
+    17, 17, 17, 17, 17, 17, 17, 52, 33, 33, 33, 33, 33, 33, 33, 33, 
+    33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 
+    33, 33, 33, 33, 33, 33, 33, 33, 33, 17, 53, 54, 17, 55, 56, 57, 
+    58, 59, 60, 61, 62, 33, 33, 33, 63, 64, 65, 66, 67, 33, 33, 33, 
+    68, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 
+    17, 17, 17, 69, 70, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 
+    17, 17, 17, 17, 71, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 
+    33, 33, 33, 33, 33, 33, 33, 33, 17, 17, 72, 33, 33, 33, 33, 33, 
+    73, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 
+    33, 74, 75, 33, 76, 77, 78, 79, 33, 33, 33, 33, 33, 33, 33, 33, 
+    17, 17, 17, 17, 17, 17, 80, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
+    17, 17, 17, 17, 17, 17, 17, 81, 82, 33, 33, 33, 33, 33, 33, 33, 
+    33, 33, 33, 33, 33, 33, 33, 33, 17, 17, 82, 33, 33, 33, 33, 33, 
+    83, 84, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 
+};
+
+RE_UINT16 re_sentence_break_stage_3[] = {
+      0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15, 
+      8,  16,  17,  18,  19,  20,  21,  22,  23,  23,  23,  24,  25,  26,  27,  28, 
+     29,  30,  18,   8,  31,   8,  32,   8,   8,  33,  34,  35,  36,  37,  38,  39, 
+     40,  41,  42,  43,  41,  41,  44,  45,  46,  47,  48,  41,  41,  49,  50,  51, 
+     52,  53,  54,  55,  55,  55,  55,  55,  56,  57,  58,  59,  60,  61,  62,  63, 
+     64,  65,  66,  67,  68,  69,  70,  71,  60,  69,  72,  73,  74,  75,  76,  77, 
+     78,  79,  80,  71,  81,  82,  83,  84,  81,  85,  86,  87,  88,  89,  90,  91, 
+     92,  93,  94,  55,  95,  96,  97,  55,  98,  99, 100, 101, 102, 103, 104,  55, 
+     41, 105, 106, 107, 108,  29, 109, 110,  41,  41,  41,  41,  41,  41,  41,  41, 
+     41,  41, 111,  41, 112, 113, 114,  41, 115,  41, 116, 117, 118,  41,  41, 119, 
+     92,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41, 120, 121,  41,  41, 122, 
+    123, 124, 125, 126,  41, 127, 128, 129, 130,  41,  41, 131,  41, 132,  41, 133, 
+    134, 135, 136, 137,  41, 138, 139,  55, 140,  41, 141, 142, 143, 144,  55,  55, 
+    145, 146, 147, 148, 149, 150,  41, 151,  41, 152, 153, 154,  55,  55, 155, 156, 
+     18,  18,  18,  18,  18,  18,  23, 157,   8,   8,   8,   8, 158,   8,   8,   8, 
+    159, 160, 161, 162, 160, 163, 164, 165, 166, 167, 168, 169, 170,  55, 171, 172, 
+    173, 174, 175,  30, 176,  55,  55,  55,  55,  55,  55,  55,  55,  55,  55,  55, 
+     55, 177,  55,  55,  55,  55,  55,  55,  55,  55,  55,  55,  55, 178,  30, 179, 
+     55,  55, 180, 181,  55,  55, 182, 183,  55,  55,  55,  55, 184,  55, 185, 186, 
+     29, 187, 188, 189,   8,   8,   8, 190,  18, 191,  41, 192, 193, 194, 194,  23, 
+    195, 196,  55,  55,  55,  55,  55,  55, 197, 198,  92,  41, 199,  92,  41, 200, 
+    201, 202,  41,  41, 203, 204,  55, 205,  41,  41,  41,  41,  41, 133,  55,  55, 
+     41,  41,  41,  41,  41,  41, 206,  55,  41,  41,  41,  41, 207,  55, 205, 208, 
+    209, 210,   8, 211, 212,  41,  41, 213, 214, 215,   8, 216, 217, 218,  55, 219, 
+    220, 221,  41, 222, 223, 146, 224, 225,  50, 226, 227, 134,  56, 228, 229,  55, 
+     41, 230, 231, 232,  41, 233, 234,  55, 235, 236,  55,  55,  55,  55,  41, 237, 
+     41,  41,  41,  41,  41, 238, 239, 240,  41, 241,  41, 241,  41,  41, 242,  55, 
+    243, 244, 245,  41,  41, 246, 247,  41,  41, 248, 205,  41, 249,  41, 250, 251, 
+    252, 253, 254, 255,  41,  41,  41, 256, 257,   2, 258, 259, 260, 261, 262, 263, 
+    264, 265, 266,  55,  41,  41,  41, 204,  55,  55,  41, 119,  55,  55,  55, 267, 
+     55,  55,  55,  55, 134,  41, 268,  55, 261, 205, 269,  55, 270,  41, 271,  55, 
+     29, 272, 273,  41, 270, 129,  55,  55, 274, 275, 133,  55,  55,  55,  55,  55, 
+    133, 242,  55,  55,  55,  55,  55,  55, 276, 277, 278, 134,  55,  55,  55,  55, 
+     41, 133, 133, 279,  55,  55,  55,  55,  41,  41, 280,  55,  55,  55,  55,  55, 
+    149, 281, 282,  77, 149, 283, 284,  55,  41,  41,  41, 203,  55,  55,  55,  55, 
+     41,  41,  41, 285,  55,  55,  55,  55,  41, 203,  55,  55,  55,  55,  55,  55, 
+     41, 286,  55,  55,  55,  55,  55,  55, 287,  55,  55,  55,  55,  55,  55,  55, 
+     55,  55,  55, 288, 289, 290,  55,  55,  55,  55, 291,  55,  55,  55,  55,  55, 
+    292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 292, 293, 305, 
+    295, 306, 307, 308, 299, 309, 310, 311, 312, 313, 314, 187, 315, 316, 317, 318, 
+     41,  41,  41,  41,  41,  41, 193,  55,  41, 119,  41,  41,  41,  41,  41,  41, 
+    270,  55,  55,  55,  55,  55,  55,  55, 319, 320, 320, 320,  55,  55,  55,  55, 
+     23,  23,  23,  23,  23,  23,  23, 321, 
+};
+
+RE_UINT8 re_sentence_break_stage_4[] = {
+      0,   0,   1,   2,   0,   0,   0,   0,   3,   4,   5,   6,   7,   7,   8,   9, 
+     10,  11,  11,  11,  11,  11,  12,  13,  14,  15,  15,  15,  15,  15,  16,  13, 
+      0,  17,   0,   0,   0,   0,   0,   0,  18,   0,  19,  20,   0,  21,  19,   0, 
+     11,  11,  11,  11,  11,  22,  11,  23,  15,  15,  15,  15,  15,  24,  15,  15, 
+     25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  26,  26, 
+     26,  26,  27,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  28,  29, 
+     30,  31,  32,  33,  28,  31,  34,  28,  25,  31,  29,  31,  32,  26,  35,  34, 
+     36,  28,  31,  26,  26,  26,  26,  27,  25,  25,  25,  25,  30,  31,  25,  25, 
+     25,  25,  25,  25,  25,  15,  33,  30,  26,  23,  25,  25,  15,  15,  15,  15, 
+     15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  37,  15,  15, 
+     15,  15,  15,  15,  15,  15,  38,  36,  39,  40,  36,  36,  41,   0,   0,   0, 
+     15,  42,   0,  43,   0,   0,   0,   0,  44,  44,  44,  44,  44,  44,  44,  44, 
+     44,  44,  44,  44,  25,  45,  46,  39,   0,  47,  22,  48,  32,  11,  11,  11, 
+     49,  11,  11,  15,  15,  15,  15,  15,  15,  15,  15,  50,  33,  34,  25,  25, 
+     25,  25,  25,  25,  15,  51,  30,  32,  11,  11,  11,  11,  11,  11,  11,  11, 
+     11,  11,  11,  11,  15,  15,  15,  15,  52,  44,  53,  25,  25,  25,  25,  25, 
+     28,  26,  26,  29,  25,  25,  25,  25,  25,  25,   0,   0,  10,  11,  11,  11, 
+     11,  11,  11,  11,  11,  22,  54,  55,  14,  15,  15,  15,  15,  15,  15,  15, 
+     15,  15,  56,   0,  57,  44,  44,  44,  44,  44,  44,  44,  44,  44,  44,  58, 
+     59,  58,   0,   0,  36,  36,  36,  36,  36,  36,  60,   0,  36,   0,   0,   0, 
+     61,   0,   0,  62,  44,  44,  63,   9,  36,  36,  36,  36,  36,  36,  36,  36, 
+     36,  36,  64,  44,  44,  44,  44,  44,   7,   7,  65,  66,  67,  36,  36,  36, 
+     36,  36,  36,  36,  36,  68,  44,  69,  44,  70,  71,  72,   7,   7,  73,  74, 
+     75,   0,   0,  76,  77,  36,  36,  36,  36,  36,  36,  36,  44,  44,  44,  44, 
+     44,  44,  63,  78,  36,  36,  36,  36,  36,  79,  44,  44,  80,   0,   0,   0, 
+      7,   7,  73,  36,  36,  36,  36,  36,  36,  36,  64,  44,  44,  41,  81,   0, 
+     36,  36,  36,  36,  36,  79,  82,  44,  44,  83,  83,  84,   0,   0,   0,   0, 
+     36,  36,  36,  36,  36,  36,  83,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+     44,  36,  36,  36,  36,  36,  36,  36,  36,  36,  36,  36,  36,  36,  79,  85, 
+     44,  44,  44,  44,  83,  44,  36,  36,  79,  86,   7,   7,  78,  36,  78,  36, 
+     57,  78,  36,  74,  74,  36,  36,  36,  36,  36,  87,  36,  43,  40,  41,  85, 
+     44,  88,  88,  89,   0,  90,   0,  91,  79,  92,   7,   7,  41,   0,   0,   0, 
+     57,  78,  60,  93,  74,  36,  36,  36,  36,  36,  87,  36,  87,  94,  41,  71, 
+     63,  90,  88,  84,  95,   0,  78,  43,   0,  92,   7,   7,  72,  96,   0,   0, 
+     57,  78,  36,  91,  91,  36,  36,  36,  36,  36,  87,  36,  87,  78,  41,  85, 
+     44,  58,  58,  84,  97,   0,   0,   0,  79,  92,   7,   7,   0,   0,   0,   0, 
+     44,  88,  88,  84,   0,  98,   0,  91,  79,  92,   7,   7,  54,   0,   0,   0, 
+     99,  78,  60,  40,  87,  41,  94,  87,  93,  97,  60,  40,  36,  36,  41,  98, 
+     63,  98,  71,  84,  97,  90,   0,   0,   0,  92,   7,   7,   0,   0,   0,   0, 
+     57,  78,  36,  87,  87,  36,  36,  36,  36,  36,  87,  36,  36,  78,  41, 100, 
+     44,  71,  71,  84,   0,  59,  41,   0,  98,  78,  36,  87,  87,  36,  36,  36, 
+     36,  36,  87,  36,  36,  78,  41,  85,  44,  71,  71,  84,   0,  59,   0, 101, 
+     79,  92,   7,   7,  94,   0,   0,   0,  36,  36,  36,  36,  36,  36,  60, 100, 
+     44,  71,  71,  89,   0,  90,   0,   0,  79,  92,   7,   7,   0,   0,  40,  36, 
+     98,  78,  36,  36,  36,  60,  40,  36,  36,  36,  36,  36,  91,  36,  36,  54, 
+     36,  60, 102,  90,  44, 103,  44,  44,   0,   0,   0,   0,  98,   0,   0,   0, 
+     78,  36,  36,  36,  36,  36,  36,  36,  36,  36,  36,  36,  77,  44,  63,   0, 
+     36,  64,  44,  63,   7,   7, 104,   0,  94,  74,  43,  54,   0,  36,  78,  36, 
+     78, 105,  40,  78,  77,  44,  58,  80,  36,  43,  44,  84,   7,   7, 104,  41, 
+     97,   0,   0,   0,   0,   0,  84,   0,   7,   7, 104,   0,   0, 106, 107, 108, 
+     36,  36,  78,  36,  36,  36,  36,  36,  36,  36,  36,  97,  57,  44,  44,  44, 
+     44,  71,  36,  83,  44,  44,  57,  44,  44,  44,  44,  44,  44,  44,  44, 109, 
+      0, 102,   0,   0,   0,   0,   0,   0,  36,  36,  64,  44,  44,  44,  44, 110, 
+      7,   7, 111,   0,  36,  79,  72,  79,  85,  70,  44,  72,  83,  67,  36,  36, 
+     79,  44,  44,  82,   7,   7, 112,  84,  11, 113,   0,   0,  36,  36,  36,  36, 
+     36,  36,  36,  36,  36,  36,  60,  97,  36,  36,  87,  41,  36,  60,  87,  41, 
+     36,  36,  87,  41,  36,  36,  36,  36,  36,  36,  36,  36,  87,  41,  36,  60, 
+     87,  41,  36,  36,  36,  60,  36,  36,  36,  36,  36,  36,  87,  41,  36,  36, 
+     36,  36,  36,  36,  36,  36,  60,  57, 114,   9, 115,   0,   0,   0,   0,   0, 
+     36,  36,  36,  36,   0,   0,   0,   0,  36,  36,  36,  36,  36,  97,   0,   0, 
+     36,  36,  36, 116,  36,  36,  36,  36, 117,  36,  36,  36,  36,  36, 118, 119, 
+     36,  36,  60,  40,  97,   0,   0,   0,  36,  36,  36,  87,  79, 109,   0,   0, 
+     36,  36,  36,  36,  79, 120,   0,   0,  36,  36,  36,  36,  79,   0,   0,   0, 
+     36,  36,  36,  87, 121,   0,   0,   0,  36,  36,  36,  36,  36, 122,  44,  44, 
+     44,  44,  44,  44,  44,  93,   0,  96,   7,   7, 104,   0,   0,   0,   0,   0, 
+    123,   0, 124, 125,   7,   7, 104,   0,  36,  36,  36,  36,  36,  36,   0,   0, 
+     36,  36, 126,   0,  36,  36,  36,  36,  36,  36,  36,  36,  36,  41,   0,   0, 
+     36,  36,  36,  36,  36,  36,  36,  97,  44,  44,  44,   0,  44,  44,  44,   0, 
+      0,  86,   7,   7,  36,  36,  36,  36,  36,  36,  36,  41,  36,  97,   0,   0, 
+     36,  36,  36,   0,  44,  44,  44,  44,  67,  36,  84,   0,   7,   7, 104,   0, 
+     36,  36,  36,  36,  36,  64,  44,   0,  36,  36,  36,  36,  36,  83,  44,  63, 
+     44,  44,  44,  44,  44,  44,  44,  88,   7,   7, 104,   0,   7,   7, 104,   0, 
+      0,  93, 127,   0,   0,   0,   0,   0,  44,  67,  36,  36,  36,  36,  36,  36, 
+     36,  36,  36,  36,  36,  44,  44,  44,  44,  67,  36,   0,   7,   7, 111, 128, 
+      0,   0,  90,  44,  44,   0,   0,   0, 110,  36,  36,  36,  36,  36,  36,  36, 
+     83,  44,  63,  40,   7,   7, 104,   0,  36,  79,  44,  44,  44,   0,   0,   0, 
+     36,  44,  44,  44,  44,  44,   9, 115,   7,   7, 104,  78,   7,   7,  73,  36, 
+     36,  36,  36,  36,  36,  36,  36, 129,   0,   0,   0,   0,  63,  44,  44,  44, 
+     44,  44,  67,  77, 130,   0,   0,   0,  44,  63,   0,   0,   0,   0,   0,  44, 
+     25,  25,  25,  25,  25,  34,  15,  27,  15,  15,  11,  11,  15,  39,  11, 113, 
+     15,  15,  11,  11,  15,  15,  11,  11,  15,  39,  11, 113,  15,  15, 131, 131, 
+     15,  15,  11,  11,  15,  15,  15,  39,  15,  15,  11,  11,  15, 132,  11, 133, 
+     46, 132,  11, 134,  15,  46,  11,   0,  15,  15,  11, 134,  46, 132,  11, 134, 
+    135, 135, 136, 137, 138, 139, 140, 140,   0, 141, 142, 143,   0,   0, 144, 145, 
+      0, 146, 145,   0,   0,   0,   0, 147,  61, 148, 149,  61,  54,   0,   0, 150, 
+      0,   0,   0, 144,  15,  38,  36,  97,   0,   0,   0,   0,  44,  44,  44,  44, 
+     44,  44,  44,  44, 109,   0,   0,   0,  47, 151, 152, 153,  23, 154,  10, 113, 
+      0, 155,  48, 156,  11,  38, 157,  33,   0, 158,  39, 159,   0,   0,   0,   0, 
+    160,  38,  97,   0,   0,   0,   0,   0,   0,   0, 144,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0, 161,  11,  11,  15,  15,  39,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   4, 162,   0,   0, 140, 140, 140,   5,   0,   0, 
+      0, 144,   0,   0,   0,   0,   0,   0,   0, 163, 140, 140,   0,   0,   0,   0, 
+      4, 140, 140, 140, 140, 140, 119,   0,   0,   0,   0,   0,   0,   0, 140,   0, 
+      0,   0,   0,   0,   0,   0,   0,   5,  11,  11,  11,  22,  15,  15,  15,  15, 
+     15,  15,  15,  15,  15,  15,  15,  24,  31, 164,  26,  32,  25,  29,  15,  33, 
+     25,  42, 151, 165,  84,   0,   0,   0,  15,  39,   0,   0,  36,  36,  36,  36, 
+     36,  41,   0,  93,   0,   0,   0,  90,  36,  36,  36,  36,  36,  60,   0,   0, 
+     36,  60,  36,  60,  36,  60,  36,  60, 140, 140, 140,   5,   0,   0,   0,   5, 
+    140, 140,   5, 166,   0,   0,   0,   0, 167,  78, 140, 140,   5, 140, 140, 168, 
+     78,  36,  79,  44,  78,  41,  36,  97,  36,  36,  36,  36,  36,  60,  59,  78, 
+     36,  36,  36,  36,  36,  36,  60,  36,   0,  78,  36,  36,  36,  36,  36,  36, 
+     36,  36,  36,  41,  78,  36,  36,  36,  36,  36,  36,  60,   0,   0,   0,   0, 
+     36,  36,  36,  36,  36,  36,  60,   0,   0,   0,   0,   0,  36,  36,  36,  36, 
+     36,  36,  36,   0,   0,   0,   0,   0,  36,  36,  36,  97,   0,   0,   0,   0, 
+     36,  36,  36,  36,  36,  36,  36, 169,  36,  36,  36, 170,  36,  36,  36,  36, 
+      7,   7,  73,   0,   0,   0,   0,   0,  25,  25,  25, 171,  63,   0,   0, 172, 
+     25,  25,  25,  25,  25,  25,   0,   0,  36,  36,  36,  36, 173,   9,   0,   0, 
+      0,   0,   0,   0,   0,  93,  36,  36, 174,  25,  25,  25,  27,  25,  25,  25, 
+     25,  25,  25,  25,  15,  15,  26,  30,  25,  25, 175, 176, 177,   0,   0,   0, 
+     25,  25, 177,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 178,  36, 
+    179, 179,  64,  36,  36,  36,  36,  36,  64,  44,   0,   0,   0,   0,   0,   0, 
+     36,  36,  36,  36,  36, 128,   0,   0,  72,  36,  36,  36,  36,  36,  36,  36, 
+     44, 109,   0, 128,   7,   7, 104,   0,  44,  44,  44,  44,  72,  36,  93,   0, 
+     36,  79,  44, 173,  36,  36,  36,  36,  36,  64,  44,  44,  44,   0,   0,   0, 
+     36,  36,  36,  36,  64,  44,  44,  44, 109,   0, 145,  93,   7,   7, 104,   0, 
+     36,  36,  83,  44,  44,  63,   0,   0,  64,  36,  36,  84,   7,   7, 104, 180, 
+     36,  36,  36,  36,  36,  60, 181,   0,  36,  36,  36,  36,  85,  70,  67,  79, 
+    126,   0,   0,   0,   0,   0,  93,  41,  78,  60,  78,  60,  78,  60,   0,   0, 
+     36,  60,  36,  60,   0,   0,   0,   0,  64,  44, 182,  84,   7,   7, 104,   0, 
+     36,   0,   0,   0,  36,  36,  36,  36,  36,  60,  93,  36,  36,  36,  36,  36, 
+     36,  36,  36,  36,  36,  36,  36,   0,  36,  36,  36,  41,  36,  36,  36,  36, 
+     36,  36,  36,  36,  36,  36,  41,   0,  15,  24,   0,   0, 183,  15,   0, 184, 
+     36,  36,  87,  36,  36,  60,  36,  43,  91,  87,  36,  36,  36,  36,  36,  36, 
+     36,  36,  36,  36,  41,   0,   0,   0,   0,   0,   0,   0,  93,  36,  36,  36, 
+     36,  36,  36,  36,  36,  36,  36, 185,  36,  36,  36,  36,  40,  36,  36,  36, 
+     36,  36,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  36,  36,  36,   0, 
+     44,  44,  44,  44, 186,   4, 119,   0,  44,  63,   0,   0, 187, 168, 140, 140, 
+    140, 188, 119,   0,   6, 189, 190, 162, 138,   0,   0,   0,  36,  87,  36,  36, 
+     36,  36,  36,  36,  36,  36,  36, 191,  56,   0,   5,   6,   0,   0, 192,   9, 
+     14,  15,  15,  15,  15,  15,  16, 193, 194, 195,  36,  36,  36,  36,  36,  36, 
+     36,  36,  36,  36,  36,  36,  36,  79,  36,  36,  36,  36,  36,  36,  36,  60, 
+     40,  36,  40,  36,  40,  36,  40,  97,   0,   0,   0,   0,   0,   0, 196,   0, 
+     36,  36,  36,  78,  36,  36,  36,  36,  36,  60,  36,  36,  36,  36,  60,  91, 
+     36,  36,  36,  41,  36,  36,  36,  41,   0,   0,   0,   0,   0,   0,   0,  95, 
+     36,  36,  36,  36,  97,   0,   0,   0,  36,  36,  60,   0,   0,   0,   0,   0, 
+     36,  36,  36,  36,  36,  36,  36,  41,  36,   0,  36,  36,  78,  41,   0,   0, 
+     11,  11,  15,  15,  15,  15,  15,  15,  15,  15,  15,  15,  36,  36,  36,  36, 
+     36,  41,  87,  36,  36,  36,  36,  36,  36,  36,  36,  36,  36,  91,  97,  74, 
+     83,  59,   0,  44,  36,  78,  78,  36,  36,  36,  36,  36,  36,   0,  63,  90, 
+      0,   0,   0,   0,   0, 128,   0,   0,  36,  36,  36,  36,  60,   0,   0,   0, 
+     36,  36,  97,   0,   0,   0,   0,   0,  36,  36,  36,  36,  36,  36,  44,  44, 
+     44, 182, 115,   0,   0,   0,   0,   0,  36,  36,  36,  36,  44,  44,  63, 197, 
+    145,   0,   0,   0,   0,   0,   0,   0,  60,   0,   0,   0,   0,   0,   0,   0, 
+     36,  36,  36,  36,  36,  36,  97,   0,  41,   0,   0,   0,   0,   0,   0,   0, 
+      0,  57,  84,  57, 198,  61, 199,  44,  63,  57,  44,   0,   0,   0,   0,   0, 
+      0,   0,  98,  84,   0,   0,   0,   0,  98, 109,   0,   0,   0,   0,   0,   0, 
+     11,  11,  11,  11,  11,  11, 153,  15,  15,  15,  15,  15,  15,  11,  11,  11, 
+     11,  11,  11, 153,  15, 132,  15,  15,  15,  15,  11,  11,  11,  11,  11,  11, 
+    153,  15,  15,  15,  15,  15,  15,  48,  47, 200,  10,  48,  11, 153, 201,  14, 
+     15,  14,  15,  15,  11,  11,  11,  11,  11,  11, 153,  15,  15,  15,  15,  15, 
+     15,  49,  22,  10,  11,  48,  11, 202,  15,  15,  15,  15,  15,  15,  49,  22, 
+     11, 155, 161,  11, 202,  15,  15,  15,  15,  15,  15,  11,  11,  11,  11,  11, 
+     11, 153,  15,  15,  15,  15,  15,  15,  11,  11,  11, 153,  15,  15,  15,  15, 
+    153,  15,  15,  15,  15,  15,  15,  11,  11,  11,  11,  11,  11, 153,  15,  15, 
+     15,  15,  15,  15,  11,  11,  11,  11,  15,  39,  11,  11,  11,  11,  11,  11, 
+    202,  15,  15,  15,  15,  15,  24,  15,  33,  11,  11,  11,  11,  11,  22,  15, 
+     15,  15,  15,  15,  15, 132,  15,  11,  11,  11,  11,  11,  11, 202,  15,  15, 
+     15,  15,  15,  24,  15,  33,  11,  11,  15,  15, 132,  15,  11,  11,  11,  11, 
+     11,  11, 202,  15,  15,  15,  15,  15,  24,  15,  27,  92,   7,   7,   7,   7, 
+      7,   7,   7,   7,   7,   7,   7,   7,  20,   0,   0,   0,   0,   0,   0,   0, 
+     61,  61,  61,  61,  61,  61,  61,  61,  44,  44,  44,  44,   0,   0,   0,   0, 
+};
+
+RE_UINT8 re_sentence_break_stage_5[] = {
+     0,  0,  0,  0,  0,  6,  2,  6,  6,  1,  0,  0,  6, 12, 13,  0, 
+     0,  0,  0, 13, 13, 13,  0,  0, 14, 14, 11,  0, 10, 10, 10, 10, 
+    10, 10, 14,  0,  0,  0,  0, 12,  0,  8,  8,  8,  8,  8,  8,  8, 
+     8,  8,  8, 13,  0, 13,  0,  0,  0,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7, 13,  0,  4,  0,  0,  6,  0,  0,  0,  0,  0,  7, 13, 
+     0,  5,  0,  0,  0,  7,  0,  0,  8,  8,  8,  0,  8,  8,  8,  7, 
+     7,  7,  7,  0,  8,  7,  8,  7,  7,  8,  7,  8,  7,  7,  8,  7, 
+     8,  8,  7,  8,  7,  8,  7,  7,  7,  8,  8,  7,  8,  7,  8,  8, 
+     7,  8,  8,  8,  7,  7,  8,  8,  8,  7,  7,  7,  8,  7,  7,  9, 
+     9,  9,  9,  9,  9,  7,  7,  7,  7,  9,  9,  9,  7,  7,  0,  0, 
+     0,  0,  9,  9,  9,  9,  0,  0,  7,  0,  0,  0,  9,  0,  9,  0, 
+     3,  3,  3,  3,  9,  0,  8,  7,  0,  0,  7,  7,  0,  0,  8,  0, 
+     8,  0,  8,  8,  8,  8,  0,  8,  7,  7,  7,  8,  8,  7,  0,  8, 
+     8,  7,  0,  3,  3,  3,  8,  7,  0,  9,  0,  0, 12, 14, 12,  0, 
+     0, 12,  0,  0,  0,  3,  3,  3,  3,  3,  0,  3,  0,  3,  3,  0, 
+     9,  9,  9,  0,  5,  5,  5,  5, 14, 14,  0,  0,  3,  3,  3,  0, 
+     9,  9,  9,  3, 10, 10,  0, 10, 10,  0,  9,  9,  3,  9,  9,  9, 
+    12,  9,  3,  3,  3,  5,  0,  3,  3,  9,  9,  3,  3,  0,  3,  3, 
+     3,  3,  9,  9, 10, 10,  9,  9,  9,  0,  0,  9, 12, 12, 12,  0, 
+     0,  0,  0,  5,  9,  3,  9,  9,  0,  9,  9,  9,  9,  9,  3,  3, 
+     3,  9,  0,  0, 14, 12,  9,  0,  3,  3,  9,  3,  9,  3,  3,  3, 
+     3,  3,  0,  0,  3,  9,  3,  3, 12, 12, 10, 10,  9,  0,  9,  9, 
+     3,  0,  0,  3,  3,  3,  9,  0,  0,  0,  0,  3,  9,  9,  0,  9, 
+     0,  0, 10, 10,  0,  0,  0,  9,  0,  9,  9,  0,  0,  3,  0,  0, 
+     9,  3,  0,  0,  9,  0,  0,  0,  0,  0,  3,  3,  0,  0,  3,  9, 
+     0,  9,  3,  3,  0,  0,  9,  0,  0,  0,  3,  0,  3,  0,  3,  0, 
+    10, 10,  0,  0,  0,  9,  0,  9,  0,  3,  0,  3,  0,  3, 13, 13, 
+    13, 13,  3,  3,  3,  0,  0,  0,  3,  3,  3,  9, 10, 10, 12, 12, 
+    10, 10,  3,  3,  8,  8,  0,  0,  0,  0, 12,  0, 12,  0,  0,  0, 
+     9,  0, 12,  9,  6,  9,  9,  9,  9,  9,  9, 13, 13,  0,  0,  0, 
+     3, 12, 12,  0,  9,  0,  3,  3,  5,  5,  3,  3,  0,  0, 14, 12, 
+    14, 12,  0,  3,  3,  3,  6,  0,  9,  3,  9,  0, 12, 12, 12, 12, 
+     0,  0, 12, 12,  9,  9, 12, 12,  9,  9,  3,  0,  0,  8,  0,  8, 
+     7,  0,  7,  7,  8,  0,  7,  0,  8,  0,  0,  0,  6,  6,  6,  6, 
+     6,  6,  6,  5,  3,  3,  5,  5,  0,  0,  0, 14, 14,  0,  0,  0, 
+    13, 13, 13, 13, 11,  0,  0,  0,  4,  4,  5,  5,  5,  5,  5,  6, 
+     0, 13, 13,  0, 12, 12,  0,  0,  0, 13, 13, 12,  0,  0,  0,  6, 
+     5,  0,  0,  0,  0,  0,  5,  5,  0, 13, 13,  9,  0,  0,  0,  8, 
+     0,  0,  7,  8,  8,  8,  7,  7,  0,  8,  0,  0,  8,  0,  8,  0, 
+     8,  8,  0,  7,  9,  7,  0,  0,  0,  8,  7,  7,  0,  0,  7,  0, 
+     9,  9,  9,  8,  0,  0,  8,  8, 13, 13, 13,  0,  0,  0, 13, 13, 
+     8,  7,  7,  8,  7,  8,  7,  3,  0,  0, 12,  9,  6, 14, 12,  0, 
+     0, 13, 13, 13,  9,  9,  0, 12,  9,  0, 12, 12,  8,  7,  9,  3, 
+     3,  3,  0,  9,  3,  3,  0, 12,  0,  0,  8,  7,  9,  0,  0,  8, 
+     7,  8,  7,  0,  8,  7,  0,  0,  0,  0,  7,  9,  9,  9,  3,  9, 
+     0, 12, 12, 12,  0,  0,  9,  3,  3,  3,  3, 12,  0,  0,  0,  7, 
+     0,  9,  3,  9,  9,  9, 13, 13, 14, 14,  0, 14,  0, 14, 14,  0, 
+    13,  0,  0, 13,  0, 14, 12, 12, 14, 13, 13, 13,  9,  0,  0,  5, 
+     0,  0, 14,  0,  0, 13,  0, 13, 13, 12, 13, 13, 14,  0,  9,  9, 
+     0,  5,  5,  5,  0,  5, 12, 12,  3,  3,  3,  5,  5,  5,  5,  3, 
+     0,  8,  8,  0,  7,  7,  0,  7,  8,  0,  7,  7, 
+};
+
+/* Sentence_Break: 5372 bytes. */
+
+RE_UINT32 re_get_sentence_break(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 12;
+    code = ch ^ (f << 12);
+    pos = ((RE_UINT32)re_sentence_break_stage_1[f] << 4);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_sentence_break_stage_2[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_sentence_break_stage_3[pos + f] << 3);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_sentence_break_stage_4[pos + f] << 2);
+    value = re_sentence_break_stage_5[pos + code];
+
+    return value;
+}
+
+/* Math. */
+
+RE_UINT8 re_math_stage_1[] = {
+    0, 1, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 
+};
+
+RE_UINT8 re_math_stage_2[] = {
+    0, 1, 1, 1, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_math_stage_3[] = {
+     0,  1,  2,  2,  2,  2,  2,  3,  2,  2,  2,  2,  4,  2,  2,  2, 
+     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+     5,  6,  7,  8,  9,  9, 10, 11,  2,  2,  2, 12, 13,  2,  2, 14, 
+     2,  2,  9,  9,  9,  9, 15,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
+     2,  2,  2,  2,  2,  2, 16,  2,  2,  2,  2,  2, 17,  2, 18, 19, 
+     2,  2,  2,  2,  2,  2,  2,  2, 20, 21, 22,  9,  9, 23,  9, 24, 
+};
+
+RE_UINT8 re_math_stage_4[] = {
+     0,  1,  2,  3,  0,  4,  5,  5,  0,  0,  0,  0,  0,  0,  6,  7, 
+     8,  0,  0,  0,  9, 10, 11, 12, 13,  0, 14, 15, 16, 17, 18,  0, 
+    19, 20, 21, 22, 23, 23, 23, 23, 24, 25,  0, 26, 27, 28, 29, 30, 
+     0, 31, 32, 33, 34,  0, 35, 36,  0,  0, 37, 23,  0, 19, 38,  0, 
+     0, 39,  0,  0,  0,  0,  0, 40,  1,  3,  3,  0,  0,  0,  0, 41, 
+    23, 23, 42, 23, 43, 44, 45, 23, 46, 47, 48, 23, 23, 49, 23, 23, 
+    23, 23, 50, 23, 
+};
+
+RE_UINT8 re_math_stage_5[] = {
+      0,   0,   0,   0,   0,   8,   0, 112,   0,   0,   0,  64,   0,   0,   0,  80, 
+      0,  16,   2,   0,   0,   0, 128,   0,   0,   0,  39,   0,   0,   0, 115,   0, 
+    192,   1,   0,   0,   0,   0,  64,   0,   0,   0,  28,   0,  17,   0,   4,   0, 
+     30,   0,   0, 124,   0, 124,   0,   0,   0,   0, 255,  31,  98, 248,   0,   0, 
+    132, 252,  47,  63,  16, 179, 251, 241, 255,  11,   0,   0,   0,   0, 255, 255, 
+    255, 126, 195, 240, 255, 255, 255,  47,  48,   0, 240, 255, 255, 255, 255, 255, 
+      0,  15,   0,   0,   3,   0,   0,   0,   0,   0,   0,  16,   0,   0,   0, 248, 
+    255, 255, 191,   0,   0,   0,   1, 240,   7,   0,   0,   0,   3, 192, 255, 240, 
+    195, 140,  15,   0, 148,  31,   0, 255,  96,   0,   0,   0,   5,   0,   0,   0, 
+     15, 224,   0,   0, 255, 215, 255, 255, 159,  31,   0,   0,   0,   2,   0,   0, 
+    126,   1,   0,   0,   4,  30,   0,   0, 255, 255, 223, 255, 255, 255, 255, 223, 
+    100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123, 
+     95, 252, 253, 255,  63, 255, 255, 255, 255, 207, 255, 255, 
+};
+
+/* Math: 498 bytes. */
+
+RE_UINT32 re_get_math(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_math_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_math_stage_2[pos + f] << 4);
     f = code >> 7;
     code ^= (f << 7);
-    pos = ((RE_UINT32)re_grapheme_break_stage_2[pos + f] << 4);
-    f = code >> 3;
-    code ^= (f << 3);
-    pos = ((RE_UINT32)re_grapheme_break_stage_3[pos + f] << 3);
-    value = re_grapheme_break_stage_4[pos + code];
+    pos = ((RE_UINT32)re_math_stage_3[pos + f] << 2);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_math_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_math_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Alphabetic. */
+
+RE_UINT8 re_alphabetic_stage_1[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 
+};
+
+RE_UINT8 re_alphabetic_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 13, 13, 13, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 13, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 23,  7, 24, 25, 13, 13, 13, 13, 13, 13, 13, 26, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+};
+
+RE_UINT8 re_alphabetic_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16,  1, 17, 18, 19,  1, 20, 21, 22, 23, 24, 25, 26, 27,  1, 28, 
+    29, 30, 31, 31, 32, 31, 31, 31, 31, 31, 31, 31, 33, 34, 35, 31, 
+    36, 37, 31, 31,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1, 38,  1,  1,  1,  1,  1,  1,  1,  1,  1, 39, 
+     1,  1,  1,  1, 40,  1, 41, 42, 43, 44, 45, 46,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 47, 31, 31, 31, 31, 31, 31, 31, 31, 
+    31,  1, 48, 49,  1, 50, 51, 52, 53, 54, 55, 56, 57, 31, 31, 31, 
+    58, 59, 60, 61, 62, 31, 31, 31, 63, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1,  1, 64, 65, 31, 31, 31,  1,  1,  1,  1, 66, 31, 31, 31, 
+     1,  1, 67, 31, 31, 31, 31, 31, 68, 31, 31, 31, 31, 31, 31, 31, 
+    31, 31, 31, 31, 69, 70, 71, 72,  1,  1,  1,  1,  1,  1, 73,  1, 
+     1,  1,  1,  1,  1,  1,  1, 74, 75, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1, 75, 31, 31, 31, 31, 31, 
+};
+
+RE_UINT8 re_alphabetic_stage_4[] = {
+      0,   0,   1,   1,   0,   2,   3,   3,   4,   4,   4,   4,   4,   4,   4,   4, 
+      4,   4,   4,   4,   4,   4,   5,   6,   0,   0,   7,   8,   9,  10,   4,  11, 
+      4,   4,   4,   4,  12,   4,   4,   4,   4,  13,  14,  15,  16,  17,  18,  19, 
+     20,   4,  21,  22,   4,   4,  23,  24,  25,   4,  26,   4,   4,  27,  28,  29, 
+     30,  31,  32,   0,   0,   0,   0,   0,   4,  33,  34,  35,  36,  37,  38,  39, 
+     40,  41,  42,  43,  44,  45,  46,  47,  36,  45,  48,  49,  50,  51,  52,   0, 
+     53,  54,  55,  47,  56,  54,  57,  58,  56,  59,  60,  61,  62,  63,  64,  65, 
+     15,  66,  67,   0,  68,  69,  70,   0,  71,   0,  72,  73,  74,  75,   0,   0, 
+      4,  76,  25,  77,  78,   4,  79,  80,   4,   4,  81,   4,  82,  83,  84,   4, 
+     85,   4,  86,   0,  87,   4,   4,  88,  15,   4,   4,   4,   4,   4,   4,   4, 
+      4,   4,   4,  89,   1,   4,   4,  90,  91,  92,  92,  93,   4,  94,  95,   0, 
+      0,   4,   4,  96,   4,  97,   4,  98,  75,  99,  25, 100,   4, 101, 102,   0, 
+    103,   4, 104, 105,   0, 106,   0,   0,   4, 107, 108,   0,   4, 109,   4, 110, 
+      4,  98, 111, 112,   0,   0,   0, 113,   4,   4,   4,   4,   4,   4,   0,   0, 
+    114,   4, 115, 112,   4, 116, 117, 118,   0,   0,   0, 119, 120,   0,   0,   0, 
+    121, 122, 123,   4, 124,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0, 125,   4, 102,   4, 126, 104,   4,   4,   4,   4, 127, 
+      4,  79,   4, 128, 129, 130, 130,   4,   0, 131,   0,   0,   0,   0,   0,   0, 
+    132, 133,  15,   4, 134,  15,   4, 135, 136, 137,   4,   4, 138,  66,   0,  25, 
+      4,   4,   4,   4,   4,  98,   0,   0,   4,   4,   4,   4,   4,   4, 139,   0, 
+      4,   4,   4,   4,  31,   0,  25, 112, 140, 141,   4, 142,  96,   4,   4,  87, 
+    143, 144,   4,   4, 145, 102,   0, 146, 147,  16,   4,  92,   4,   4,  47, 148, 
+     28,  97, 149,  75,   4, 150, 131,   0,   4, 129, 151, 152,   4, 104, 153,   0, 
+    154, 155,   0,   0,   0,   0,   4, 156,   4,   4,   4,   4,   4, 157, 158, 103, 
+      4, 159,   4, 159,   4,   4, 160,   0, 161, 162, 163,   4,   4,  27, 164,   4, 
+      4, 112,  25,   4, 165,   4,  16, 166,   0,   0,   0, 167,   4,   4,   4,  75, 
+      0,   1,   1, 168,   4, 104, 169,   0, 170, 171, 172,   0,   4,   4,   4,  66, 
+      0,   0,   4,  88,   0,   0,   0,   0,   0,   0,   0,   0,  75,   4, 173,   0, 
+    104,  25, 156,   0, 112,   4, 174,   0,   4,   4,   4,   4, 112,   0,   0,   0, 
+    175, 176,  98,   0,   0,   0,   0,   0,  98, 160,   0,   0,   0,   0,   0,   0, 
+    177,  92,   0,  75,   0,   0,   0,   0,   4,  98,  98, 149,   0,   0,   0,   0, 
+      4,   4, 124,   0,   0,   0,   0,   0,   4,   4, 178,   0, 144,  32,   0,   0, 
+      4,   4,   4, 138,   0,   0,   0,   0,   4,   4,   4, 179,   0,   0,   0,   0, 
+      4, 138,   0,   0,   0,   0,   0,   0,   4,  32,   0,   0,   0,   0,   0,   0, 
+    180,   0,   0,   0,   0,   0,   0,   0,   4,   4, 181,   4, 182, 183, 184,   4, 
+    185, 186, 187,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 188, 189, 135, 
+    181, 181, 126, 126, 190, 190, 191,   0,   4,   4,   4,   4,   4,   4, 129,   0, 
+      4,  88,   4,   4,   4,   4,   4,   4, 112,   0,   0,   0,   0,   0,   0,   0, 
+};
+
+RE_UINT8 re_alphabetic_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4, 255, 255, 127, 255, 
+    255, 255, 255, 255, 195, 255,   3,   0,  31,  80,   0,   0,  32,   0,   0,   0, 
+      0,   0, 223,  60,  64, 215, 255, 255, 251, 255, 255, 255, 255, 255, 191, 255, 
+      3, 252, 255, 255, 255,   0, 254, 255, 255, 255, 127,   2, 254, 255, 255, 255, 
+    255,   0,   0,   0,   0,   0, 255, 191, 182,   0, 255, 255, 255,   7,   7,   0, 
+      0,   0, 255,   7, 255, 255, 255, 254,   0, 192, 255, 255, 255, 255, 239,  31, 
+    254, 225,   0, 156,   0,   0, 255, 255,   0, 224, 255, 255, 255, 255,   3,   0, 
+      0, 252, 255, 255, 255,   7,  48,   4, 255, 255, 255, 252, 255,  31,   0,   0, 
+    255, 255, 255,   1, 255, 255, 255, 239, 255, 223, 225, 255,  15,   0, 254, 254, 
+    238, 159, 249, 255, 255, 253, 197, 227, 159,  89, 128, 176,  15,   0,   3,   0, 
+    238, 135, 249, 255, 255, 253, 109, 195, 135,  25,   2,  94,   0,   0,  63,   0, 
+    238, 191, 251, 255, 255, 253, 237, 227, 191,  27,   1,   0,  15,   0,   0,   0, 
+    159,  25, 192, 176,  15,   0,   2,   0, 236, 199,  61, 214,  24, 199, 255, 195, 
+    199,  29, 129,   0, 238, 223, 253, 255, 255, 253, 239, 227, 223,  29,  96,   3, 
+    236, 223, 253, 255, 223,  29,  96,  64,  15,   0,   6,   0, 255, 255, 255, 231, 
+    223,  93, 128,   0,  15,   0,   0, 252, 236, 255, 127, 252, 255, 255, 251,  47, 
+    127, 128,  95, 255,   0,   0,  12,   0, 255, 255, 255,   7, 127,  32,   0,   0, 
+    150,  37, 240, 254, 174, 236, 255,  59,  95,  32,   0,  48,   1,   0,   0,   0, 
+    255, 254, 255, 255, 255,  31, 254, 255,   3, 255, 255, 254, 255, 255, 255,  31, 
+    255, 255, 127, 249, 231, 193, 255, 255, 127,  64,   0,  48,  63,   0, 255, 255, 
+    255, 255, 255,  23, 255,  61, 127,  61, 255,  61, 255, 255, 255, 255,  61, 127, 
+     61, 255, 127, 255, 255, 255,  61, 255, 255, 255, 255, 135, 255, 255,   0,   0, 
+    255, 255,  31,   0, 255, 159, 255, 255, 255, 199,   1,   0, 255, 223,  15,   0, 
+    255, 255,  15,   0, 255, 223,  13,   0, 255, 255, 207, 255, 255,   1, 128,  16, 
+    255, 255, 255,   0, 255,   7, 255, 255, 255, 255,  63,   0, 255,  15, 255,   1, 
+    255,  63,  31,   0, 255,  15, 255, 255, 255,   3,   0,   0, 255, 255, 255,  15, 
+    255, 255, 255, 127, 254, 255,  31,   0, 128,   0,   0,   0, 255, 255, 239, 255, 
+    239,  15,   0,   0, 255, 195,   0,   0, 191, 255,   3,   0,   0, 224,   0, 252, 
+    255, 255, 255,  63,   0, 222,   7,   0, 255, 255,  63,  63,  63,  63, 255, 170, 
+    255, 255, 223,  95, 220,  31, 207,  15, 255,  31, 220,  31,   0,   0,   2, 128, 
+      0,   0, 255,  31, 132, 252,  47,  62,  80, 189, 255, 243, 224,  67,   0,   0, 
+    255,   1,   0,   0,   0,   0, 192, 255, 255, 127, 255, 255,  31, 120,   0,   0, 
+     63, 128,   0,   0, 255, 255, 127,   0, 127, 127, 127, 127,   0, 128,   0,   0, 
+    224,   0,   0,   0, 254,   3,  62,  31, 255, 255, 127, 224, 255, 255, 255, 247, 
+    224, 255, 255, 255, 255,  63, 254, 255, 255, 127,   0,   0, 255,  15,   0,   0, 
+    255,  31, 255, 255,   0,  12,   0,   0, 255, 127,   0, 128,   0,   0, 128, 255, 
+    252, 255, 255, 255, 255, 121,   3,   0,   0,   0,   0, 252, 187, 247, 255, 255, 
+      0,   0, 252,   8, 255, 255,   7,   0, 255, 255, 247, 255, 255,  63,   0,   0, 
+    255, 255, 127,   4,   5,   0,   0,  56, 126, 126, 126,   0, 127, 127,   0,   0, 
+    255,   7,   0,   0,  15,   0, 255, 255, 127, 248, 255, 255, 255,  63, 255, 255, 
+    255, 255, 255,   3, 127,   0, 248, 224, 255, 253, 127,  95, 219, 255, 255, 255, 
+      0,   0, 248, 255, 255, 255, 252, 255,   0,   0, 255,  15,   0,   0, 223, 255, 
+    192, 255, 255, 255, 252, 252, 252,  28, 255, 239, 255, 255, 127, 255, 255, 183, 
+    255,  63, 255,  63, 255, 255,   1,   0,  15, 255,  62,   0,  63, 253, 255, 255, 
+    255, 255, 191, 145, 111, 240, 239, 254,  63,   0,   0,   0,   7,   0,   0,   0, 
+      3,   0,   0,   0, 255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 
+    239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255, 
+     63, 255, 255, 255, 253, 255, 255, 247, 255, 253, 255, 255, 247,  15,   0,   0, 
+};
+
+/* Alphabetic: 1737 bytes. */
+
+RE_UINT32 re_get_alphabetic(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_alphabetic_stage_1[f] << 5);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_alphabetic_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_alphabetic_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_alphabetic_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_alphabetic_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Lowercase. */
+
+RE_UINT8 re_lowercase_stage_1[] = {
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 
+};
+
+RE_UINT8 re_lowercase_stage_2[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 5, 
+    6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 7, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+};
+
+RE_UINT8 re_lowercase_stage_3[] = {
+     0,  1,  2,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,  5, 
+     6,  3,  7,  3,  3,  3,  8,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3, 10,  3, 11, 
+     3,  3, 12,  3,  3,  3,  3,  3,  3,  3, 13, 14,  3,  3,  3,  3, 
+};
+
+RE_UINT8 re_lowercase_stage_4[] = {
+     0,  0,  0,  1,  0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 
+     5, 13, 14, 15, 16, 17, 18, 19,  0,  0, 20, 21, 22, 23, 24, 25, 
+     0, 26, 15,  5, 27,  5, 28,  5,  5, 29,  0, 30, 31,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0, 15, 15, 15, 15, 15, 15,  0,  0, 
+     5,  5,  5,  5, 32,  5,  5,  5, 33, 34, 35, 36, 34, 37, 38, 39, 
+     0,  0,  0,  0, 40,  0,  0,  0, 41, 42, 43, 26, 44,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0, 26, 45,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0, 26, 46, 47,  5,  5,  5, 48, 15, 49,  0,  0,  0,  0,  0,  0, 
+     0,  0,  5, 50, 51,  0,  0,  0,  0, 52,  5, 53, 54, 55,  0, 56, 
+     0,  0,  0,  0,  0,  0,  0,  0, 57,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0, 
+     0, 58, 59,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+    60, 61, 62, 31, 63, 64, 65, 66, 67, 68, 69, 70, 71, 60, 61, 72, 
+    31, 63, 73, 59, 66, 49, 74, 75, 76, 73, 77, 26, 78, 66, 79,  0, 
+};
+
+RE_UINT8 re_lowercase_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4,   0,   0,   0, 128, 
+    255, 255, 127, 255, 170, 170, 170, 170, 170, 170, 170,  85,  85, 171, 170, 170, 
+    170, 170, 170, 212,  41,  49,  36,  78,  42,  45,  81, 230,  64,  82,  85, 181, 
+    170, 170,  41, 170, 170, 170, 250, 147, 133, 170, 255, 255, 255, 255, 255, 255, 
+    255, 255, 239, 255, 255, 255, 255,   1,   3,   0,   0,   0,  31,   0,   0,   0, 
+     32,   0,   0,   0,   0,   0, 138,  60,   0,   0,   1,   0,   0, 240, 255, 255, 
+    255, 127, 227, 170, 170, 170,  47,  25,   0,   0, 255, 255,   2, 168, 170, 170, 
+     84, 213, 170, 170, 170,   0,   0,   0, 254, 255, 255, 255, 255,   0,   0,   0, 
+    170, 170, 234, 191, 255,   0,  63,   0, 255,   0, 255,   0,  63,   0, 255,   0, 
+    255,   0, 255,  63, 255,   0, 223,  64, 220,   0, 207,   0, 255,   0, 220,   0, 
+      0,   0,  31,   0,   0, 196,   8,   0,   0, 128,  16,  50, 192,  67,   0,   0, 
+     16,   0,   0,   0, 255,   3,   0,   0, 255, 255, 255, 127,  98,  21, 218,  63, 
+     26,  80,   0,   0,  63,   0,   0,   0, 170,  42,   0,   0, 170, 170, 170,   0, 
+    168, 170, 171, 170, 170, 170, 255, 149, 170,  80,   2,   0, 170,   2,   0,   0, 
+      0,   0,   0,   4, 127,   0, 248,   0,   0, 255, 255, 255, 255, 255,   0,   0, 
+      0,   0,   0, 252, 255, 255,  15,   0,   0, 192, 223, 255, 252, 255, 255,  15, 
+      0,   0, 192, 235, 239, 255,   0,   0,   0, 252, 255, 255,  15,   0,   0, 192, 
+    255, 255, 255,   0,   0,   0, 252, 255, 255,  15,   0,   0, 192, 255, 255, 255, 
+      0, 192, 255, 255,   0,   0, 192, 255, 252, 255, 255, 247,   3,   0,   0, 240, 
+    255, 255, 223,  15, 255, 127,  63,   0, 255, 253,   0,   0, 247,  11,   0,   0, 
+};
+
+/* Lowercase: 689 bytes. */
+
+RE_UINT32 re_get_lowercase(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_lowercase_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_lowercase_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_lowercase_stage_3[pos + f] << 4);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_lowercase_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_lowercase_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Uppercase. */
+
+RE_UINT8 re_uppercase_stage_1[] = {
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 
+};
+
+RE_UINT8 re_uppercase_stage_2[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 5, 
+    6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 7, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+};
+
+RE_UINT8 re_uppercase_stage_3[] = {
+     0,  1,  2,  3,  3,  3,  3,  3,  4,  3,  3,  3,  3,  3,  3,  5, 
+     6,  3,  7,  3,  3,  3,  8,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 10, 
+     3,  3, 11,  3,  3,  3,  3,  3,  3,  3, 12, 13,  3,  3,  3,  3, 
+};
+
+RE_UINT8 re_uppercase_stage_4[] = {
+     0,  0,  1,  0,  0,  0,  2,  0,  3,  4,  5,  6,  7,  8,  9, 10, 
+     3, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0, 13, 14, 15, 16, 17, 
+    18, 19,  0,  3, 20,  3, 21,  3,  3, 22, 23,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0, 18, 24,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     3,  3,  3,  3, 25,  3,  3,  3, 26, 27, 28, 29,  0, 30, 31, 32, 
+     0,  0,  0,  0,  0,  0,  0,  0, 33, 34, 35, 19, 36,  0,  0,  0, 
+     0,  0,  0,  0,  0, 37, 19,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+    18, 38,  0, 39,  3,  3,  3, 40,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  3, 41, 42,  0,  0,  0,  0, 43,  3, 44, 45, 46,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0, 
+    18, 47,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+    48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 24, 48, 49, 50, 
+    51, 60, 61, 54, 55, 51, 62, 63, 64, 65, 37, 38, 54, 66, 67,  0, 
+};
+
+RE_UINT8 re_uppercase_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7, 255, 255, 127, 127,  85,  85,  85,  85, 
+     85,  85,  85, 170, 170,  84,  85,  85,  85,  85,  85,  43, 214, 206, 219, 177, 
+    213, 210, 174,  17, 144, 164, 170,  74,  85,  85, 210,  85,  85,  85,   5, 108, 
+    122,  85,   0,   0,   0,   0,  69,   0,  64, 215, 254, 255, 251,  15,   0,   0, 
+      0, 128,  28,  85,  85,  85, 144, 230, 255, 255, 255, 255, 255, 255,   0,   0, 
+      1,  84,  85,  85, 171,  42,  85,  85,  85,   0, 254, 255, 255, 255, 127,   0, 
+     63,   0,   0,   0,  85,  85,  21,  64,   0, 255,   0,  63,   0, 255,   0, 255, 
+      0,  63,   0, 170,   0, 255,   0,   0,   0,   0,   0,  15,   0,  15,   0,  15, 
+      0,  31,   0,  15, 132,  56,  39,  62,  80,  61,  15, 192,  32,   0,   0,   0, 
+      8,   0,   0,   0,   0,   0, 192, 255, 255, 127,   0,   0, 157, 234,  37, 192, 
+      5,  40,   0,   0,  85,  21,   0,   0,  85,  85,  85,   0,  84,  85,  84,  85, 
+     85,  85,   0, 106,  85,  40,   1,   0,  85,   1,   0,   0, 255,   0,   0,   0, 
+    255, 255, 255,   3,   0,   0, 240, 255, 255,  63,   0,   0,   0, 255, 255, 255, 
+      3,   0,   0, 208, 100, 222,  63,   0,   0,   0, 255, 255, 255,   3,   0,   0, 
+    176, 231, 223,  31,   0,   0,   0, 123,  95, 252,   1,   0,   0, 240, 255, 255, 
+      3,   0,   0, 240, 255, 255,  63,   0,   1,   0,   0,   0, 252, 255, 255,   7, 
+      0,   0,   0, 240, 255, 255,  31,   0, 255,   1,   0,   0,   0,   4,   0,   0, 
+};
+
+/* Uppercase: 625 bytes. */
+
+RE_UINT32 re_get_uppercase(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_uppercase_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_uppercase_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_uppercase_stage_3[pos + f] << 4);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_uppercase_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_uppercase_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Cased. */
+
+RE_UINT8 re_cased_stage_1[] = {
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 
+};
+
+RE_UINT8 re_cased_stage_2[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 5, 
+    6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 7, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+};
+
+RE_UINT8 re_cased_stage_3[] = {
+     0,  1,  2,  3,  3,  3,  3,  3,  4,  3,  3,  3,  3,  3,  5,  6, 
+     7,  3,  8,  3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3, 10,  3,  3,  3,  3,  3,  3,  3,  3,  3, 11,  3, 12, 
+     3,  3, 13,  3,  3,  3,  3,  3,  3,  3, 14, 15,  3,  3,  3,  3, 
+};
+
+RE_UINT8 re_cased_stage_4[] = {
+     0,  0,  1,  1,  0,  2,  3,  3,  4,  4,  4,  4,  4,  5,  6,  4, 
+     4,  4,  4,  4,  7,  8,  9, 10,  0,  0, 11, 12, 13, 14,  4, 15, 
+     4,  4,  4,  4, 16,  4,  4,  4,  4, 17, 18, 19, 20,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  4, 21,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  4,  4,  4,  4,  4,  4,  0,  0, 
+     4,  4,  4,  4,  4,  4,  4,  4, 22,  4, 23, 24,  4, 25, 26, 27, 
+     0,  0,  0,  0, 28,  0,  0,  0, 29, 30, 31,  4, 32,  0,  0,  0, 
+     0,  0,  0,  0,  0, 33,  4, 34,  0,  0,  0,  0,  0,  0,  0,  0, 
+     4, 35, 36,  4,  4,  4,  4, 37,  4, 21,  0,  0,  0,  0,  0,  0, 
+     0,  0,  4, 38, 39,  0,  0,  0,  0, 40,  4,  4, 41, 34,  0, 42, 
+     0,  0,  0,  0,  0,  0,  0,  0, 43,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  0,  0,  0,  0,  0, 
+     4,  4, 44,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     4,  4, 45,  4, 46, 47, 48,  4, 49, 50, 51,  4,  4,  4,  4,  4, 
+     4,  4,  4,  4,  4, 52, 53,  5, 45, 45, 35, 35, 54, 54, 55,  0, 
+};
+
+RE_UINT8 re_cased_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4, 255, 255, 127, 255, 
+    255, 255, 255, 255, 255, 255, 255, 247, 240, 255, 255, 255, 255, 255, 239, 255, 
+    255, 255, 255,   1,   3,   0,   0,   0,  31,   0,   0,   0,  32,   0,   0,   0, 
+      0,   0, 207,  60,  64, 215, 255, 255, 251, 255, 255, 255, 255, 255, 191, 255, 
+      3, 252, 255, 255, 255,   0, 254, 255, 255, 255, 127,   0, 254, 255, 255, 255, 
+    255,   0,   0,   0,  63,   0,   0,   0, 255, 255,  63,  63,  63,  63, 255, 170, 
+    255, 255, 255,  63, 255, 255, 223,  95, 220,  31, 207,  15, 255,  31, 220,  31, 
+      0,   0,  31,   0, 132, 252,  47,  62,  80, 189,  31, 242, 224,  67,   0,   0, 
+     24,   0,   0,   0,   0,   0, 192, 255, 255,   3,   0,   0, 255, 127, 255, 255, 
+    255, 255, 255, 127,  31, 120,   0,   0, 255,  63,   0,   0, 255, 255, 255,   0, 
+    252, 255, 255, 255, 255, 120,   3,   0,   0,   0,   0,   4, 127,   0, 248,   0, 
+    255, 255,   0,   0, 255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 
+    239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255, 
+     63, 255, 255, 255, 253, 255, 255, 247, 255, 253, 255, 255, 247,  15,   0,   0, 
+};
+
+/* Cased: 609 bytes. */
+
+RE_UINT32 re_get_cased(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_cased_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_cased_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_cased_stage_3[pos + f] << 4);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_cased_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_cased_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Case_Ignorable. */
+
+RE_UINT8 re_case_ignorable_stage_1[] = {
+    0, 1, 2, 3, 4, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 
+};
+
+RE_UINT8 re_case_ignorable_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  8,  9,  7,  7,  7,  7,  7,  7,  7,  7,  7, 10, 
+    11, 12, 13,  7,  7,  7,  7,  7,  7,  7, 14,  7,  7,  7,  7,  7, 
+    15,  7,  7,  7,  7,  7,  7,  7, 
+};
+
+RE_UINT8 re_case_ignorable_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16,  1,  1, 17,  1,  1,  1, 18, 19, 20, 21, 22, 23, 24,  1, 25, 
+    26,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27, 28, 29,  1, 
+    30,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+    31,  1,  1,  1, 32,  1, 33, 34, 35, 36, 37, 38,  1,  1,  1,  1, 
+     1,  1,  1, 39,  1,  1, 40, 41,  1, 42,  1,  1,  1,  1,  1,  1, 
+     1,  1, 43,  1,  1,  1,  1,  1, 44,  1,  1,  1,  1,  1,  1,  1, 
+     1, 45, 46,  1,  1,  1,  1,  1, 47, 48,  1,  1,  1,  1,  1,  1, 
+};
+
+RE_UINT8 re_case_ignorable_stage_4[] = {
+      0,   1,   2,   3,   0,   4,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   5,   6,   6,   6,   6,   6,   7,   8,   0,   0,   0, 
+      0,   0,   0,   0,   9,   0,   0,   0,   0,   0,  10,   0,  11,  12,  13,  14, 
+     15,   0,  16,  17,   0,   0,  18,  19,  20,   5,  21,   0,   0,  22,   0,  23, 
+     24,  25,  26,   0,   0,   0,   0,   0,  27,  28,  29,  30,  31,  32,  33,  34, 
+     35,  32,  36,  37,  35,  32,  38,  34,  31,  39,  40,  34,  41,   0,  42,   0, 
+      0,  43,  44,  34,   0,  39,  45,  34,   0,   0,  33,  34,   0,   0,  46,   0, 
+      0,  47,  48,   0,   0,  49,  50,   0,  51,  52,   0,  53,  54,  55,  56,   0, 
+      0,  57,  58,  59,  60,   0,   0,  32,   0,   0,  61,   0,   0,   0,   0,   0, 
+     62,  62,  63,  63,   0,  64,  65,   0,  66,   0,  67,   0,   0,  68,   0,   0, 
+      0,  69,   0,   0,   0,   0,   0,   0,  70,   0,  71,  72,   0,  73,   0,   0, 
+     74,  75,  41,  76,  77,  78,   0,  79,   0,  80,   0,  81,   0,   0,  82,  83, 
+      0,  84,   6,  85,  86,   6,   6,  87,   0,   0,   0,   0,   0,  88,  89,  90, 
+     91,  92,   0,  93,  94,   0,   5,  95,   0,   0,   0,  96,   0,   0,   0,  97, 
+      0,   0,   0,  98,   0,   0,   0,   6,   0,  99,   0,   0,   0,   0,   0,   0, 
+    100, 101,   0,   0, 102,   0,   0, 103, 104,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,  81, 105,   0,   0, 106,   0,   0,   0, 107, 
+      6,  77,   0,  17, 108,   0,   0,   0, 109, 110,   0,   0,   0,   0, 111, 112, 
+      0, 113, 114,   0,  27, 115,  99,   0,   0, 116, 117,  17,   0, 118, 119,   0, 
+      0,   0,   0,   0,   0,   0,   0, 120,   2,   0,   0,   0,   0, 121,  77,   0, 
+    122, 123, 124,   0,   0,   0,   0, 125,   1,   2,   3,  17,  43,   0,   0, 126, 
+      0,   0,   0,   0,   0,   0,   0,  96, 127, 128,   0,   0,   0,   0,   0,   0, 
+     31, 129, 123,   0,  77, 130,   0,   0,   0,   0,   0, 131, 132, 133,   0,   0, 
+      0,   0, 134,   0,   0,   0,   0,   0,  31,   6,   6,   6,   0,   0,   0,   0, 
+      6,   6,   6,   6,   6,   6,   6, 135, 
+};
+
+RE_UINT8 re_case_ignorable_stage_5[] = {
+      0,   0,   0,   0, 128,  64,   0,   4,   0,   0,   0,  64,   1,   0,   0,   0, 
+      0, 161, 144,   1,   0,   0, 255, 255, 255, 255, 255, 255, 255, 255,  48,   4, 
+    176,   0,   0,   0, 248,   3,   0,   0,   0,   0,   0,   2,   0,   0, 254, 255, 
+    255, 255, 255, 191, 182,   0,   0,   0,   0,   0,  16,   0,  15,   0, 255,   7, 
+      1, 248, 255, 255,   0,   0,   1,   0,   0,   0, 192, 191, 255,  61,   0,   0, 
+      0, 128,   2,   0, 255,   7,   0,   0, 192, 255,   1,   0,   0, 248,  63,   4, 
+      0,   0, 192, 255, 255,  63,   0,   0,   0,   0,   0,  14,   7,   0,   0,   0, 
+      0,   0,   0,  20, 254,  33, 254,   0,  12,   0,   2,   0,   2,   0,   0,   0, 
+      0,   0,   0,  16,  30,  32,   0,   0,  12,   0,   0,   0,   6,   0,   0,   0, 
+    134,  57,   2,   0,   0,   0,  35,   0, 190,  33,   0,   0,   0,   0,   0, 144, 
+     30,  32,  64,   0,   4,   0,   0,   0,   1,  32,   0,   0,   0,   0,   0, 192, 
+    193,  61,  96,   0,  64,  48,   0,   0,   0,   4,  92,   0,   0,   0, 242,   7, 
+    192, 127,   0,   0,   0,   0, 242,  27,  64,  63,   0,   0,   0,   0,   0,   3, 
+      0,   0, 160,   2,   0,   0, 254, 127, 223, 224, 255, 254, 255, 255, 255,  31, 
+     64,   0,   0,   0,   0, 224, 253, 102,   0,   0,   0, 195,   1,   0,  30,   0, 
+    100,  32,   0,  32,   0,   0,   0, 224,   0,   0,  28,   0,   0,   0,  12,   0, 
+      0,   0, 176,  63,  64, 254, 143,  32,   0,  56,   0,   0,   8,   0,   0,   0, 
+      0,   2,   0,   0, 135,   1,   4,  14,   0,   0, 128,   1,   0,   0,  64, 127, 
+    229,  31, 248, 159, 128,   0,   0,   0,  15,   0,   0,   0,   0,   0, 208,  23, 
+      0, 248,  15,   0,   3,   0,   0,   0,  60,   3,   0,   0,  64, 163,   3,   0, 
+      0, 240, 207,   0,   0,   0,   0,  63,   0,   0, 247, 255, 253,  33,   0,   0, 
+      0, 240, 255, 255,   3,   0,   0,   1,   0,   0,   0, 248, 127,   0,   0, 240, 
+      0,   0,   0, 160,   3, 224,   0, 224,   0, 224,   0,  96,   0, 248,   0,   3, 
+    144, 124,   0,   0,  31, 252,   2, 128,   0,   0, 255,  31, 255, 255,   1,   0, 
+      0,   0,   0,  32,   0, 128,   3,   0,   0, 128,   0, 128,   0, 128,   0,   0, 
+     32,   0,   0,   0,   0, 252,  62,   8,   0,   0,   0, 126,   0,   0,   0, 112, 
+      0,   0,  32,   0,   0,  16,   0,   0,   0, 128,   7, 176,   0,   0,   3,   0, 
+      0,   7,   0,   0,  68,   8,   0,   0,  96,   0,   0,   0,  16,   0,   0,   0, 
+    255, 255,   3,   0, 192,  63,   0,   0, 128, 255,   3,   0,   0,   0, 200,  19, 
+      0, 126, 102,   0,   8,  16,   0,   0,   0,   0, 157, 193,   2,   0,   0,  32, 
+     32,  33,   0,   0,   0,   0, 252, 255, 255, 255,   8,   0, 127,   0,   0,   0, 
+      0,   0,  36,   0,   0,   0,   0, 128,   8,   0,   0,  14, 110, 240,   0,   0, 
+      0,   0,   0, 135,   0,   0,   0, 255,   0,   0, 120,  38, 128,   3, 248, 255, 
+    231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0, 255, 255,   0,   0, 
+};
+
+/* Case_Ignorable: 1188 bytes. */
+
+RE_UINT32 re_get_case_ignorable(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 14;
+    code = ch ^ (f << 14);
+    pos = ((RE_UINT32)re_case_ignorable_stage_1[f] << 3);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_case_ignorable_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_case_ignorable_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_case_ignorable_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_case_ignorable_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Changes_When_Lowercased. */
+
+RE_UINT8 re_changes_when_lowercased_stage_1[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 
+};
+
+RE_UINT8 re_changes_when_lowercased_stage_2[] = {
+    0, 1, 2, 3, 4, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 
+    8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_changes_when_lowercased_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+     7,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  8,  9, 
+     6, 10,  6,  6, 11,  6,  6,  6,  6,  6,  6,  6, 12,  6,  6,  6, 
+     6,  6,  6,  6,  6,  6, 13, 14,  6,  6,  6,  6,  6,  6,  6, 15, 
+     6,  6,  6,  6, 16,  6,  6,  6, 
+};
+
+RE_UINT8 re_changes_when_lowercased_stage_4[] = {
+     0,  0,  1,  0,  0,  0,  2,  0,  3,  4,  5,  6,  7,  8,  9, 10, 
+     3, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0, 13, 14, 15, 16, 17, 
+    18, 19,  0,  3, 20,  3, 21,  3,  3, 22, 23,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 18, 24,  0, 
+     3,  3,  3,  3, 25,  3,  3,  3, 26, 27, 28, 29, 27, 30, 31, 32, 
+     0, 33,  0, 19, 34,  0,  0,  0,  0,  0,  0,  0,  0, 35, 19,  0, 
+    18, 36,  0, 37,  3,  3,  3, 38,  0,  0,  3, 39, 40,  0,  0,  0, 
+     0, 41,  3, 42, 43, 44,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0, 
+    18, 45,  0,  0,  0,  0,  0,  0, 
+};
+
+RE_UINT8 re_changes_when_lowercased_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7, 255, 255, 127, 127,  85,  85,  85,  85, 
+     85,  85,  85, 170, 170,  84,  85,  85,  85,  85,  85,  43, 214, 206, 219, 177, 
+    213, 210, 174,  17, 176, 173, 170,  74,  85,  85, 214,  85,  85,  85,   5, 108, 
+    122,  85,   0,   0,   0,   0,  69,   0,  64, 215, 254, 255, 251,  15,   0,   0, 
+      0, 128,   0,  85,  85,  85, 144, 230, 255, 255, 255, 255, 255, 255,   0,   0, 
+      1,  84,  85,  85, 171,  42,  85,  85,  85,   0, 254, 255, 255, 255, 127,   0, 
+     63,   0,   0,   0,  85,  85,  21,  64,   0, 255,   0,  63,   0, 255,   0, 255, 
+      0,  63,   0, 170,   0, 255,   0,   0,   0, 255,   0,  31,   0,  31,   0,  15, 
+      0,  31,   0,  31,  64,  12,   4,   0,   8,   0,   0,   0,   0,   0, 192, 255, 
+    255, 127,   0,   0, 157, 234,  37, 192,   5,  40,   0,   0,  85,  21,   0,   0, 
+     85,  85,  85,   0,  84,  85,  84,  85,  85,  85,   0, 106,  85,  40,   1,   0, 
+     85,   1,   0,   0, 255,   0,   0,   0, 
+};
+
+/* Changes_When_Lowercased: 490 bytes. */
+
+RE_UINT32 re_get_changes_when_lowercased(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_changes_when_lowercased_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_changes_when_lowercased_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_changes_when_lowercased_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_changes_when_lowercased_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_changes_when_lowercased_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Changes_When_Uppercased. */
+
+RE_UINT8 re_changes_when_uppercased_stage_1[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 
+};
+
+RE_UINT8 re_changes_when_uppercased_stage_2[] = {
+    0, 1, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 
+    7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_changes_when_uppercased_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+     6,  6,  6,  6,  6,  7,  8,  9,  6, 10,  6,  6, 11,  6,  6,  6, 
+     6,  6,  6,  6, 12, 13,  6,  6,  6,  6,  6,  6,  6,  6, 14, 15, 
+     6,  6,  6, 16,  6,  6,  6, 17,  6,  6,  6,  6, 18,  6,  6,  6, 
+};
+
+RE_UINT8 re_changes_when_uppercased_stage_4[] = {
+     0,  0,  0,  1,  0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 
+     5, 13, 14, 15, 16,  0,  0,  0,  0,  0, 17, 18, 19, 20, 21, 22, 
+     0, 23, 24,  5, 25,  5, 26,  5,  5, 27,  0, 28, 29,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 30,  0,  0,  0,  0, 
+     5,  5,  5,  5, 31,  5,  5,  5, 32, 33, 34, 35, 24, 36, 37, 38, 
+     0,  0, 39, 23, 40,  0,  0,  0,  0,  0,  0,  0,  0,  0, 23, 41, 
+     0, 23, 42, 43,  5,  5,  5, 44, 24, 45,  0,  0,  0,  0,  0,  0, 
+     0,  0,  5, 46, 47,  0,  0,  0,  0, 48,  5, 49, 50, 51,  0,  0, 
+    52,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0, 
+     0, 53, 54,  0,  0,  0,  0,  0, 
+};
+
+RE_UINT8 re_changes_when_uppercased_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7,   0,   0,  32,   0,   0,   0,   0, 128, 
+    255, 255, 127, 255, 170, 170, 170, 170, 170, 170, 170,  84,  85, 171, 170, 170, 
+    170, 170, 170, 212,  41,  17,  36,  70,  42,  33,  81, 162,  96,  91,  85, 181, 
+    170, 170,  45, 170, 168, 170,  10, 144, 133, 170, 223,  10,  41, 139,  38,  32, 
+      9,  31,   4,   0,  32,   0,   0,   0,   0,   0, 138,  56,   0,   0,   1,   0, 
+      0, 240, 255, 255, 255, 127, 227, 170, 170, 170,  39,   9,   0,   0, 255, 255, 
+    255, 255, 255, 255,   2, 168, 170, 170,  84, 213, 170, 170, 170,   0,   0,   0, 
+    254, 255, 255, 255, 255,   0,   0,   0,   0,   0,   0,  34, 170, 170, 234,  15, 
+    255,   0,  63,   0, 255,   0, 255,   0,  63,   0, 255,   0, 255,   0, 255,  63, 
+    255, 255, 223,  80, 220,  16, 207,   0, 255,   0, 220,  16,   0,  64,   0,   0, 
+     16,   0,   0,   0, 255,   3,   0,   0, 255, 255, 255, 127,  98,  21,  72,   0, 
+     10,  80,   0,   0,  63,   0,   0,   0, 170,  42,   0,   0, 170, 170, 170,   0, 
+    168, 170, 168, 170, 170, 170,   0, 148, 170,  16,   2,   0, 170,   2,   0,   0, 
+    127,   0, 248,   0,   0, 255, 255, 255, 255, 255,   0,   0, 
+};
+
+/* Changes_When_Uppercased: 534 bytes. */
+
+RE_UINT32 re_get_changes_when_uppercased(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_changes_when_uppercased_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_changes_when_uppercased_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_changes_when_uppercased_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_changes_when_uppercased_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_changes_when_uppercased_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -3178,43 +5237,39 @@ RE_UINT32 re_get_grapheme_break(RE_UINT32 ch) {
 /* Changes_When_Titlecased. */
 
 RE_UINT8 re_changes_when_titlecased_stage_1[] = {
-    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 
 };
 
 RE_UINT8 re_changes_when_titlecased_stage_2[] = {
-     0,  1,  2,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,  5, 
-     6,  3,  7,  3,  3,  3,  8,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 10,  3, 11, 
-     3,  3, 12,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+    0, 1, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 
+    7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 };
 
 RE_UINT8 re_changes_when_titlecased_stage_3[] = {
-     0,  0,  0,  1,  0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 
-     5, 13, 14, 15, 16,  0,  0,  0,  0,  0, 17, 18, 19, 20, 21, 22, 
-     0, 23, 24,  5, 25,  5, 26,  5,  5, 27,  0, 28, 29,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 30,  0,  0,  0,  0, 
-     5,  5,  5,  5, 31,  5,  5,  5, 32, 33, 34, 35, 33, 36, 37, 38, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 39, 23, 40,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0, 23, 41,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0, 23, 42, 43,  5,  5,  5, 44, 24, 45,  0,  0,  0,  0,  0,  0, 
-     0,  0,  5, 46, 47,  0,  0,  0,  0, 48,  5, 49, 50, 51,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0, 52,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0, 
-     0, 53, 54,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  1,  2,  3,  4,  5,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+     6,  6,  6,  6,  6,  7,  8,  9,  6, 10,  6,  6, 11,  6,  6,  6, 
+     6,  6,  6,  6, 12, 13,  6,  6,  6,  6,  6,  6,  6,  6, 14, 15, 
+     6,  6,  6, 16,  6,  6,  6, 17,  6,  6,  6,  6, 18,  6,  6,  6, 
 };
 
 RE_UINT8 re_changes_when_titlecased_stage_4[] = {
+     0,  0,  0,  1,  0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 
+     5, 13, 14, 15, 16,  0,  0,  0,  0,  0, 17, 18, 19, 20, 21, 22, 
+     0, 23, 24,  5, 25,  5, 26,  5,  5, 27,  0, 28, 29,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 30,  0,  0,  0,  0, 
+     5,  5,  5,  5, 31,  5,  5,  5, 32, 33, 34, 35, 33, 36, 37, 38, 
+     0,  0, 39, 23, 40,  0,  0,  0,  0,  0,  0,  0,  0,  0, 23, 41, 
+     0, 23, 42, 43,  5,  5,  5, 44, 24, 45,  0,  0,  0,  0,  0,  0, 
+     0,  0,  5, 46, 47,  0,  0,  0,  0, 48,  5, 49, 50, 51,  0,  0, 
+    52,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0, 
+     0, 53, 54,  0,  0,  0,  0,  0, 
+};
+
+RE_UINT8 re_changes_when_titlecased_stage_5[] = {
       0,   0,   0,   0, 254, 255, 255,   7,   0,   0,  32,   0,   0,   0,   0, 128, 
     255, 255, 127, 255, 170, 170, 170, 170, 170, 170, 170,  84,  85, 171, 170, 170, 
     170, 170, 170, 212,  41,  17,  36,  70,  42,  33,  81, 162, 208,  86,  85, 181, 
@@ -3231,7 +5286,7 @@ RE_UINT8 re_changes_when_titlecased_stage_4[] = {
     127,   0, 248,   0,   0, 255, 255, 255, 255, 255,   0,   0, 
 };
 
-/* Changes_When_Titlecased: 656 bytes. */
+/* Changes_When_Titlecased: 534 bytes. */
 
 RE_UINT32 re_get_changes_when_titlecased(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -3239,17 +5294,858 @@ RE_UINT32 re_get_changes_when_titlecased(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_changes_when_titlecased_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_changes_when_titlecased_stage_2[pos + f] << 4);
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_changes_when_titlecased_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_changes_when_titlecased_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_changes_when_titlecased_stage_3[pos + f] << 3);
     f = code >> 5;
     code ^= (f << 5);
-    pos = ((RE_UINT32)re_changes_when_titlecased_stage_3[pos + f] << 5);
+    pos = ((RE_UINT32)re_changes_when_titlecased_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_changes_when_titlecased_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_changes_when_titlecased_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Changes_When_Casefolded. */
+
+RE_UINT8 re_changes_when_casefolded_stage_1[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 
+};
+
+RE_UINT8 re_changes_when_casefolded_stage_2[] = {
+    0, 1, 2, 3, 4, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 
+    8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_changes_when_casefolded_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+     7,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  8,  9, 
+     6, 10,  6,  6, 11,  6,  6,  6,  6,  6,  6,  6, 12,  6,  6,  6, 
+     6,  6,  6,  6,  6,  6, 13, 14,  6,  6,  6, 15,  6,  6,  6, 16, 
+     6,  6,  6,  6, 17,  6,  6,  6, 
+};
+
+RE_UINT8 re_changes_when_casefolded_stage_4[] = {
+     0,  0,  1,  0,  0,  2,  3,  0,  4,  5,  6,  7,  8,  9, 10, 11, 
+     4, 12, 13,  0,  0,  0,  0,  0,  0,  0, 14, 15, 16, 17, 18, 19, 
+    20, 21,  0,  4, 22,  4, 23,  4,  4, 24, 25,  0, 26,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 20, 27,  0, 
+     4,  4,  4,  4, 28,  4,  4,  4, 29, 30, 31, 32, 20, 33, 34, 35, 
+     0, 36,  0, 21, 37,  0,  0,  0,  0,  0,  0,  0,  0, 38, 21,  0, 
+    20, 39,  0, 40,  4,  4,  4, 41,  0,  0,  4, 42, 43,  0,  0,  0, 
+     0, 44,  4, 45, 46, 47,  0,  0, 48,  0,  0,  0,  0,  0,  0,  0, 
+     0,  1,  0,  0,  0,  0,  0,  0, 20, 49,  0,  0,  0,  0,  0,  0, 
+};
+
+RE_UINT8 re_changes_when_casefolded_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7,   0,   0,  32,   0, 255, 255, 127, 255, 
+     85,  85,  85,  85,  85,  85,  85, 170, 170,  86,  85,  85,  85,  85,  85, 171, 
+    214, 206, 219, 177, 213, 210, 174,  17, 176, 173, 170,  74,  85,  85, 214,  85, 
+     85,  85,   5, 108, 122,  85,   0,   0,  32,   0,   0,   0,   0,   0,  69,   0, 
+     64, 215, 254, 255, 251,  15,   0,   0,   4, 128,  99,  85,  85,  85, 179, 230, 
+    255, 255, 255, 255, 255, 255,   0,   0,   1,  84,  85,  85, 171,  42,  85,  85, 
+     85,   0, 254, 255, 255, 255, 127,   0, 128,   0,   0,   0,  63,   0,   0,   0, 
+     85,  85,  21,  76,   0, 255,   0,  63,   0, 255,   0, 255,   0,  63,   0, 170, 
+      0, 255,   0,   0, 255, 255, 156,  31, 156,  31,   0,  15,   0,  31, 156,  31, 
+     64,  12,   4,   0,   8,   0,   0,   0,   0,   0, 192, 255, 255, 127,   0,   0, 
+    157, 234,  37, 192,   5,  40,   0,   0,  85,  21,   0,   0,  85,  85,  85,   0, 
+     84,  85,  84,  85,  85,  85,   0, 106,  85,  40,   1,   0,  85,   1,   0,   0, 
+    127,   0, 248,   0, 255,   0,   0,   0, 
+};
+
+/* Changes_When_Casefolded: 514 bytes. */
+
+RE_UINT32 re_get_changes_when_casefolded(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_changes_when_casefolded_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_changes_when_casefolded_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_changes_when_casefolded_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_changes_when_casefolded_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_changes_when_casefolded_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Changes_When_Casemapped. */
+
+RE_UINT8 re_changes_when_casemapped_stage_1[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 
+};
+
+RE_UINT8 re_changes_when_casemapped_stage_2[] = {
+    0, 1, 2, 3, 4, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 
+    8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_changes_when_casemapped_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+     7,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  8,  9, 10, 
+     6, 11,  6,  6, 12,  6,  6,  6,  6,  6,  6,  6, 13, 14,  6,  6, 
+     6,  6,  6,  6,  6,  6, 15, 16,  6,  6,  6, 17,  6,  6,  6, 18, 
+     6,  6,  6,  6, 19,  6,  6,  6, 
+};
+
+RE_UINT8 re_changes_when_casemapped_stage_4[] = {
+     0,  0,  1,  1,  0,  2,  3,  3,  4,  5,  4,  4,  6,  7,  8,  4, 
+     4,  9, 10, 11, 12,  0,  0,  0,  0,  0, 13, 14, 15, 16, 17, 18, 
+     4,  4,  4,  4, 19,  4,  4,  4,  4, 20, 21, 22, 23,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4, 24,  0, 
+     0,  0,  0, 25,  0,  0,  0,  0,  4,  4,  4,  4, 26,  4,  4,  4, 
+    27,  4, 28, 29,  4, 30, 31, 32,  0, 33, 34,  4, 35,  0,  0,  0, 
+     0,  0,  0,  0,  0, 36,  4, 37,  4, 38, 39, 40,  4,  4,  4, 41, 
+     4, 24,  0,  0,  0,  0,  0,  0,  0,  0,  4, 42, 43,  0,  0,  0, 
+     0, 44,  4, 45, 46, 37,  0,  0, 47,  0,  0,  0,  0,  0,  0,  0, 
+     0,  1,  1,  0,  0,  0,  0,  0,  4,  4, 48,  0,  0,  0,  0,  0, 
+};
+
+RE_UINT8 re_changes_when_casemapped_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7,   0,   0,  32,   0, 255, 255, 127, 255, 
+    255, 255, 255, 255, 255, 255, 255, 254, 255, 223, 255, 247, 255, 243, 255, 179, 
+    240, 255, 255, 255, 253, 255,  15, 252, 255, 255, 223,  10,  41, 139,  38,  32, 
+      9,  31,   4,   0,  32,   0,   0,   0,   0,   0, 207,  56,  64, 215, 255, 255, 
+    251, 255, 255, 255, 255, 255, 227, 255, 255, 255, 183, 239,   3, 252, 255, 255, 
+    255,   0, 254, 255, 255, 255, 127,   0, 254, 255, 255, 255, 255,   0,   0,   0, 
+     63,   0,   0,   0,   0,   0,   0,  34, 255, 255, 255,  79, 255, 255,  63,  63, 
+     63,  63, 255, 170, 255, 255, 255,  63, 255, 255, 223,  95, 220,  31, 207,  15, 
+    255,  31, 220,  31,  64,  12,   4,   0,   0,  64,   0,   0,  24,   0,   0,   0, 
+      0,   0, 192, 255, 255,   3,   0,   0, 255, 127, 255, 255, 255, 255, 255, 127, 
+    255, 255, 109, 192,  15, 120,   0,   0, 255,  63,   0,   0, 255, 255, 255,   0, 
+    252, 255, 252, 255, 255, 255,   0, 254, 255,  56,   3,   0, 127,   0, 248,   0, 
+    255, 255,   0,   0, 
+};
+
+/* Changes_When_Casemapped: 526 bytes. */
+
+RE_UINT32 re_get_changes_when_casemapped(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_changes_when_casemapped_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_changes_when_casemapped_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_changes_when_casemapped_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_changes_when_casemapped_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_changes_when_casemapped_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* ID_Start. */
+
+RE_UINT8 re_id_start_stage_1[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 
+};
+
+RE_UINT8 re_id_start_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 13, 13, 13, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 13, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 23,  7, 24, 25, 13, 13, 13, 13, 13, 13, 13, 26, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+};
+
+RE_UINT8 re_id_start_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16,  1, 17, 18, 19,  1, 20, 21, 22, 23, 24, 25, 26, 27,  1, 28, 
+    29, 30, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 32, 33, 31, 31, 
+    34, 35, 31, 31,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1, 36,  1,  1,  1,  1,  1,  1,  1,  1,  1, 37, 
+     1,  1,  1,  1, 38,  1, 39, 40, 41, 42, 43, 44,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 45, 31, 31, 31, 31, 31, 31, 31, 31, 
+    31,  1, 46, 47,  1, 48, 49, 50, 51, 52, 53, 54, 55, 31, 31, 31, 
+    56, 57, 58, 59, 60, 31, 31, 31, 61, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1,  1, 62, 63, 31, 31, 31,  1,  1,  1,  1, 64, 31, 31, 31, 
+     1,  1, 65, 31, 31, 31, 31, 31, 66, 31, 31, 31, 31, 31, 31, 31, 
+    31, 31, 31, 31, 67, 68, 69, 70,  1,  1,  1,  1,  1,  1, 71,  1, 
+     1,  1,  1,  1,  1,  1,  1, 72, 73, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1, 73, 31, 31, 31, 31, 31, 
+};
+
+RE_UINT8 re_id_start_stage_4[] = {
+      0,   0,   1,   1,   0,   2,   3,   3,   4,   4,   4,   4,   4,   4,   4,   4, 
+      4,   4,   4,   4,   4,   4,   5,   6,   0,   0,   0,   7,   8,   9,   4,  10, 
+      4,   4,   4,   4,  11,   4,   4,   4,   4,  12,  13,  14,  15,   0,  16,  17, 
+      0,   4,  18,  19,   4,   4,  20,  21,  22,  23,  24,   4,   4,  25,  26,  27, 
+     28,  29,  30,   0,   0,   0,   0,   0,  31,  32,  33,  34,  35,  36,  37,  38, 
+     39,  40,  41,  42,  43,  44,  45,  46,  35,  44,  47,  48,  49,  50,  45,   0, 
+     51,  52,  53,  46,  51,  52,  54,  55,  51,  56,  57,  58,  59,  60,  61,   0, 
+     14,  62,  61,   0,  63,  64,  65,   0,  66,   0,  67,  68,  69,   0,   0,   0, 
+      4,  70,  71,  72,  73,   4,  74,  75,   4,   4,  76,   4,  77,  78,  79,   4, 
+     80,   4,  81,   0,  23,   4,   4,  82,  14,   4,   4,   4,   4,   4,   4,   4, 
+      4,   4,   4,  83,   1,   4,   4,  84,  85,  86,  86,  87,   4,  88,  89,   0, 
+      0,   4,   4,  90,   4,  91,   4,  92,  93,   0,  16,  94,   4,  95,  96,   0, 
+     97,   4,  82,   0,   0,  98,   0,   0,  99,  88, 100,   0, 101, 102,   4, 103, 
+      4, 104, 105, 106,   0,   0,   0, 107,   4,   4,   4,   4,   4,   4,   0,   0, 
+    108,   4, 109, 106,   4, 110, 111, 112,   0,   0,   0, 113, 114,   0,   0,   0, 
+    115, 116, 117,   4, 118,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      4, 119, 120,   4,   4,   4,   4, 121,   4,  74,   4, 122,  97, 123, 123,   0, 
+    124, 125,  14,   4, 126,  14,   4, 127,  99, 128,   4,   4, 129,  81,   0,  16, 
+      4,   4,   4,   4,   4,  92,   0,   0,   4,   4,   4,   4,   4,   4,  95,   0, 
+      4,   4,   4,   4,  68,   0,  16, 106, 130, 131,   4, 132,  90,   4,   4,  23, 
+    133, 134,   4,   4, 135, 136,   0, 137, 138, 139,   4,  88, 134,  88,   0, 140, 
+     26,  74,  61,  93,  31, 141, 142,   0,   4, 118, 143, 144,   4, 145, 146,   0, 
+    147, 148,   0,   0,   0,   0,   4, 139,   4,   4,   4,   4,   4, 149, 150, 151, 
+      4, 152,   4, 152,   4,   4, 153,   0, 154, 155, 156,   4,   4,  86, 157,   4, 
+      4, 106,  16,   4, 158,   4,  15, 159,   0,   0,   0, 160,   4,   4,   4,  93, 
+      0,   1,   1, 161,   4, 120, 162,   0, 163, 164, 165,   0,   4,   4,   4,  81, 
+      0,   0,   4,  82,   0,   0,   0,   0,   0,   0,   0,   0,  93,   4, 166,   0, 
+    120,  16,  18,   0, 106,   4, 167,   0,   4,   4,   4,   4, 106,   0,   0,   0, 
+    168, 169,  92,   0,   0,   0,   0,   0,  92, 153,   0,   0,   0,   0,   0,   0, 
+    170,  88,   0,  93,   0,   0,   0,   0,   4,  92,  92, 141,   0,   0,   0,   0, 
+      4,   4, 118,   0,   0,   0,   0,   0, 101,  90,   0,   0, 101,  23,   0,   0, 
+      4,   4,   4, 129,   0,   0,   0,   0,   4,   4,   4, 139,   0,   0,   0,   0, 
+      4, 129,   0,   0,   0,   0,   0,   0,   4,  30,   0,   0,   0,   0,   0,   0, 
+     46,   0,   0,   0,   0,   0,   0,   0,   4,   4, 171,   4, 172, 173, 174,   4, 
+    175, 176, 177,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 178, 179, 127, 
+    171, 171, 119, 119, 180, 180, 143,   0,   4,   4,   4,   4,   4,   4,  97,   0, 
+      4,  82,   4,   4,   4,   4,   4,   4, 106,   0,   0,   0,   0,   0,   0,   0, 
+};
+
+RE_UINT8 re_id_start_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4, 255, 255, 127, 255, 
+    255, 255, 255, 255, 195, 255,   3,   0,  31,  80,   0,   0,   0,   0, 223,  60, 
+     64, 215, 255, 255, 251, 255, 255, 255, 255, 255, 191, 255,   3, 252, 255, 255, 
+    255,   0, 254, 255, 255, 255, 127,   2, 254, 255, 255, 255, 255,   0,   0,   0, 
+      0,   0, 255, 255, 255,   7,   7,   0, 255,   7,   0,   0,   0, 192, 254, 255, 
+    255, 255,  47,   0,  96, 192,   0, 156,   0,   0, 253, 255, 255, 255,   0,   0, 
+      0, 224, 255, 255,  63,   0,   2,   0,   0, 252, 255, 255, 255,   7,  48,   4, 
+    255, 255,  63,   4,  16,   1,   0,   0, 255, 255, 255,   1, 240, 255, 255, 255, 
+    255, 255, 255,  35,   0,   0,   1, 255,   3,   0, 254, 254, 224, 159, 249, 255, 
+    255, 253, 197,  35,   0,  64,   0, 176,   3,   0,   3,   0, 224, 135, 249, 255, 
+    255, 253, 109,   3,   0,   0,   0,  94,   0,   0,  28,   0, 224, 191, 251, 255, 
+    255, 253, 237,  35,   0,   0,   1,   0,   3,   0,   0,   0,   0,   0,   0, 176, 
+      3,   0,   2,   0, 232, 199,  61, 214,  24, 199, 255,   3, 224, 223, 253, 255, 
+    255, 253, 239,  35,   0,   0,   0,   3,   0,   0,   0,  64,   3,   0,   6,   0, 
+    255, 255, 255,  39,   0,  64,   0,   0,   3,   0,   0, 252, 224, 255, 127, 252, 
+    255, 255, 251,  47, 127,   0,   0,   0, 255, 255,  13,   0, 150,  37, 240, 254, 
+    174, 236,  13,  32,  95,   0,   0,  48,   1,   0,   0,   0, 255, 254, 255, 255, 
+    255,  31,   0,   0,   0,  31,   0,   0, 255,   7,   0, 128,   0,   0,  63,  60, 
+     98, 192, 225, 255,   3,  64,   0,   0,  63,   0, 255, 255, 255, 255, 255,  23, 
+    255,  61, 127,  61, 255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 
+    255, 255,  61, 255, 255, 255, 255,   7, 255, 255,  31,   0, 255, 159, 255, 255, 
+    255, 199,   1,   0, 255, 223,   3,   0, 255, 255,   3,   0, 255, 223,   1,   0, 
+    255, 255,  15,   0,   0,   0, 128,  16, 255, 255, 255,   0, 255,   5, 255, 255, 
+    255, 255,  63,   0, 255, 255, 255,  31, 255,  63,  31,   0, 255,  15,   0,   0, 
+    254,   0,   0,   0, 255, 255, 127,   0, 128,   0,   0,   0, 224, 255, 255, 255, 
+    224,  15,   0,   0, 248, 255, 255, 255,   1, 192,   0,   0,  63,   0,   0,   0, 
+     15,   0,   0,   0,   0, 224,   0, 252, 255, 255, 255,  63,   0, 222,   3,   0, 
+    255, 255,  63,  63,  63,  63, 255, 170, 255, 255, 223,  95, 220,  31, 207,  15, 
+    255,  31, 220,  31,   0,   0,   2, 128,   0,   0, 255,  31, 132, 252,  47,  63, 
+     80, 253, 255, 243, 224,  67,   0,   0, 255,   1,   0,   0, 255, 127, 255, 255, 
+    255, 255, 255, 127,  31, 120,   0,   0,  63, 128,   0,   0, 127, 127, 127, 127, 
+    224,   0,   0,   0, 254,   3,  62,  31, 255, 255, 127, 248, 255, 255, 255, 247, 
+    255,  63, 254, 255, 255, 127,   0,   0, 255,  31, 255, 255,   0,  12,   0,   0, 
+    255, 127,   0, 128,   0,   0, 128, 255, 252, 255, 255, 255, 255, 121,   3,   0, 
+    255,   3,   0,   0,   0,   0,   0, 252, 187, 247, 255, 255,   7,   0,   0,   0, 
+      0,   0, 252,   8, 255, 255,   7,   0,   0, 128,   0,   0, 247,  15,   0,   0, 
+    255, 255, 127,   4, 255, 255,  98,  62,   5,   0,   0,  56, 126, 126, 126,   0, 
+    127, 127,   0,   0,  15,   0, 255, 255, 127, 248, 255, 255, 255, 255, 255,  15, 
+    255,  63, 255, 255, 255, 255, 255,   3, 127,   0, 248, 160, 255, 253, 127,  95, 
+    219, 255, 255, 255,   0,   0, 248, 255, 255, 255, 252, 255,   0,   0, 255,  15, 
+      0,   0, 223, 255, 192, 255, 255, 255, 252, 252, 252,  28, 255, 239, 255, 255, 
+    127, 255, 255, 183, 255,  63, 255,  63, 255, 255,   1,   0,  15, 255,  62,   0, 
+     63, 253, 255, 255, 255, 255, 191, 145,   1,   0, 239, 254, 255, 255, 223, 255, 
+    255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 
+    255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247, 
+    255, 253, 255, 255, 
+};
+
+/* ID_Start: 1677 bytes. */
+
+RE_UINT32 re_get_id_start(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_id_start_stage_1[f] << 5);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_id_start_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_id_start_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_id_start_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_id_start_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* ID_Continue. */
+
+RE_UINT8 re_id_continue_stage_1[] = {
+    0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 6, 6, 6, 
+    6, 6, 
+};
+
+RE_UINT8 re_id_continue_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 13, 13, 13, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 13, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 23,  7, 24, 25, 13, 13, 13, 13, 13, 13, 13, 26, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    27, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+};
+
+RE_UINT8 re_id_continue_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16,  1, 17, 18, 19,  1, 20, 21, 22, 23, 24, 25, 26, 27,  1, 28, 
+    29, 30, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 32, 33, 31, 31, 
+    34, 35, 31, 31,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1, 36,  1,  1,  1,  1,  1,  1,  1,  1,  1, 37, 
+     1,  1,  1,  1, 38,  1, 39, 40, 41, 42, 43, 44,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 45, 31, 31, 31, 31, 31, 31, 31, 31, 
+    31,  1, 46, 47,  1, 48, 49, 50, 51, 52, 53, 54, 55, 31, 31, 31, 
+    56, 57, 58, 59, 60, 31, 31, 31, 61, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1,  1, 62, 63, 31, 31, 31,  1,  1,  1,  1, 64, 31, 31, 31, 
+     1,  1, 65, 31, 31, 31, 31, 31, 66, 31, 31, 31, 31, 31, 31, 31, 
+    31, 67, 68, 31, 69, 70, 71, 72,  1,  1,  1,  1,  1,  1, 73,  1, 
+     1,  1,  1,  1,  1,  1,  1, 74, 75, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1, 75, 31, 31, 31, 31, 31, 31, 76, 31, 31, 31, 31, 31, 31, 
+};
+
+RE_UINT8 re_id_continue_stage_4[] = {
+      0,   1,   2,   3,   0,   4,   5,   5,   6,   6,   6,   6,   6,   6,   6,   6, 
+      6,   6,   6,   6,   6,   6,   7,   8,   6,   6,   6,   9,  10,  11,   6,  12, 
+      6,   6,   6,   6,  13,   6,   6,   6,   6,  14,  15,  16,  14,  17,  18,  19, 
+     20,   6,   6,  21,   6,   6,  22,  23,  24,   6,  25,   6,   6,  26,   6,  27, 
+      6,  28,  29,   0,   0,   0,   0,   0,   6,   6,   6,  30,  31,  32,  33,  34, 
+     35,  36,  37,  38,  39,  40,  41,  42,  31,  40,  43,  44,  45,  46,  47,  48, 
+     49,  50,  51,  42,  52,  53,  54,  55,  52,  56,  57,  58,  59,  60,  61,  62, 
+     16,  63,  64,   0,  65,  66,  67,   0,  68,  69,  70,  71,  72,  73,  74,   0, 
+      6,   6,  75,   6,  76,   6,  77,  78,   6,   6,  79,   6,  80,  81,  82,   6, 
+     83,   6,  56,  84,  85,   6,   6,  86,  16,   6,   6,   6,   6,   6,   6,   6, 
+      6,   6,   6,  87,   3,   6,   6,  88,  89,  86,  90,  91,   6,  92,  93,  94, 
+     95,   6,   6,  96,   6,  97,   6,  98,  73,  99, 100, 101,   6, 102, 103,   0, 
+     29,   6, 104, 105, 106, 107,   0,   0,   6,   6, 108, 109,   6, 110,   6,  90, 
+      6,  96, 111,  76,   0,   0, 112, 113,   6,   6,   6,   6,   6,   6,   6, 114, 
+    115,   6, 116,  76,   6, 117, 118, 119,   0, 120, 121, 122, 123,   0, 123, 124, 
+    125, 126, 127,   6, 128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      6, 129, 104,   6,   6,   6,   6, 130,   6,  77,   6, 131, 132, 133, 133,   6, 
+    134, 135,  16,   6, 136,  16,   6, 137, 138, 139,   6,   6, 140,  63,   0,  24, 
+      6,   6,   6,   6,   6,  98,   0,   0,   6,   6,   6,   6,   6,   6, 141,   0, 
+      6,   6,   6,   6, 142,   0,  24,  76, 143, 141,   6, 144,  96,   6,   6,  26, 
+    145, 146,   6,   6, 147,  94,   0, 148,   6, 149,   6,  90,   6,   6, 150, 151, 
+      6, 152,  90,  73,   6,   6, 153,   0,   6, 132, 154, 155,   6,   6, 156,   0, 
+    157, 158,   0,   0,   0,   0,   6, 159,   6,   6,   6,   6,   6, 160, 161,  29, 
+      6, 152,   6, 152,   6,   6, 162,   0, 163, 164, 165,   6,   6,  26, 166,   6, 
+      6,  76,  24,   6, 167,   6, 149, 168,  85, 169, 170, 171,   6,   6,   6,  73, 
+      1,   2,   3, 100,   6, 104, 172,   0, 173, 174, 175,   0,   6,   6,   6,  63, 
+      0,   0,   6,  86,   0,   0,   0, 176,   0,   0,   0,   0,  73,   6, 177,   0, 
+    104,  24, 178,   0,  76,   6, 179,   0,   6,   6,   6,   6,  76,  94,   0,   0, 
+    180, 181,  98,   0,   0,   0,   0,   0,  98, 162,   0,   0,   0,   0,   0,   0, 
+    182, 183,   0,  73,   0,   0,   0,   0,   6,  98,  98, 113,   0,   0,   0,   0, 
+      6,   6, 128,   0,   0,   0,   0,   0,   6,   6, 184,  48,   6,  63,   0,   0, 
+      6,   6,   6, 140,   0,   0,   0,   0,   6,   6,   6, 185,   0,   0,   0,   0, 
+      6, 140,   0,   0,   0,   0,   0,   0,   6, 186,   0,   0,   0,   0,   0,   0, 
+    187,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 188, 189, 190,   0,   0, 
+      0,   0, 191,   0,   0,   0,   0,   0,   6,   6, 192,   6, 193, 194, 195,   6, 
+    196, 197, 198,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 199, 200, 137, 
+    192, 192, 129, 129, 201, 201, 202,   6,   6,   6,   6,   6,   6,   6, 132,   0, 
+      6,  86,   6,   6,   6,   6,   6,   6,  76,   0,   0,   0,   0,   0,   0,   0, 
+      6,   6,   6,   6,   6,   6,   6,  85, 
+};
+
+RE_UINT8 re_id_continue_stage_5[] = {
+      0,   0,   0,   0,   0,   0, 255,   3, 254, 255, 255, 135, 254, 255, 255,   7, 
+      0,   4, 160,   4, 255, 255, 127, 255, 255, 255, 255, 255, 195, 255,   3,   0, 
+     31,  80,   0,   0, 255, 255, 223,  60, 192, 215, 255, 255, 251, 255, 255, 255, 
+    255, 255, 191, 255, 251, 252, 255, 255, 255,   0, 254, 255, 255, 255, 127,   2, 
+    254, 255, 255, 255, 255, 255, 255, 191, 182,   0, 255, 255, 255,   7,   7,   0, 
+      0,   0, 255,   7, 255, 195, 255, 255, 255, 255, 239, 159, 255, 253, 255, 159, 
+      0,   0, 255, 255, 255, 231, 255, 255, 255, 255,   3,   0, 255, 255,  63,   4, 
+    255,  63,   0,   0, 255, 255, 255,  15, 207, 255, 254, 254, 238, 159, 249, 255, 
+    255, 253, 197, 243, 159, 121, 128, 176, 207, 255,   3,   0, 238, 135, 249, 255, 
+    255, 253, 109, 211, 135,  57,   2,  94, 192, 255,  63,   0, 238, 191, 251, 255, 
+    255, 253, 237, 243, 191,  59,   1,   0, 207, 255,   0,   0, 159,  57, 192, 176, 
+    207, 255,   2,   0, 236, 199,  61, 214,  24, 199, 255, 195, 199,  61, 129,   0, 
+    192, 255,   0,   0, 238, 223, 253, 255, 255, 253, 239, 227, 223,  61,  96,   3, 
+    236, 223, 253, 255, 255, 253, 239, 243, 223,  61,  96,  64, 207, 255,   6,   0, 
+    255, 255, 255, 231, 223, 125, 128,   0, 207, 255,   0, 252, 236, 255, 127, 252, 
+    255, 255, 251,  47, 127, 132,  95, 255,   0,   0,  12,   0, 255, 255, 255,   7, 
+    255, 127, 255,   3, 150,  37, 240, 254, 174, 236, 255,  59,  95,  63, 255,  51, 
+      1,   0,   0,   3, 255,   3, 160, 194, 255, 254, 255, 255, 255,  31, 254, 255, 
+    223, 255, 255, 254, 255, 255, 255,  31,  64,   0,   0,   0, 255,   3, 255, 255, 
+    255, 255, 255,  63,  63,   0, 255, 255, 255, 255, 255,  23, 255,  61, 127,  61, 
+    255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 255, 255,  61, 255, 
+      0, 254,   3,   0, 255, 255,   0,   0, 255, 255,  31,   0, 255, 159, 255, 255, 
+    255, 199,   1,   0, 255, 223,  31,   0, 255, 255,  15,   0, 255, 223,  13,   0, 
+    255, 255, 207, 255, 255, 255, 143,  48, 255,   3,   0,   0,   0,  56, 255,   3, 
+    255, 255, 255,   0, 255,   7, 255, 255, 255, 255,  63,   0, 255,  15, 255,  15, 
+    192, 255, 255, 255, 255,  63,  31,   0, 255,  15, 255, 255, 255,   3, 255,   7, 
+    255, 255, 255, 127, 255, 255, 255, 159, 255,   3, 255,   3, 128,   0,   0,   0, 
+    255,  15, 255,   3,   0, 248,  15,   0, 255, 199, 255,   3, 255, 227, 255, 255, 
+      0,   0, 247, 255, 255, 255,   7,   0, 127,   0,   0, 240, 255, 255,  63,  63, 
+     63,  63, 255, 170, 255, 255, 223,  95, 220,  31, 207,  15, 255,  31, 220,  31, 
+      0,   0,   0, 128,   1,   0,  16,   0,   0,   0,   2, 128,   0,   0, 255,  31, 
+    226, 255,   1,   0, 132, 252,  47,  63,  80, 253, 255, 243, 224,  67,   0,   0, 
+    255,   1,   0,   0, 255, 127, 255, 255,  31, 248,   3,   0,  63, 128,   0, 128, 
+    255, 255, 127,   0, 127, 127, 127, 127, 224,   0,   0,   0, 254, 255,  62,  31, 
+    255, 255, 127, 254, 255, 255, 255, 247, 224, 255, 255, 255, 255,  63, 254, 255, 
+    255, 127,   0,   0, 255,  15,   0,   0, 255,  31,   0,   0, 255,  31, 255, 255, 
+    255, 255,   0, 176,   0,   0, 128, 255, 252, 255, 255, 255, 255, 121,   3,   0, 
+      0,   0,   0, 252, 255,   0,   0,   0,  31,   0, 255,   3, 255, 255, 255,   8, 
+    255,  63, 255, 255,   1, 128, 255,   3, 255,  63, 255,   3, 255, 255, 127,  12, 
+      7,   0,   0,  56, 126, 126, 126,   0, 127, 127,   0,   0, 255,  55, 255,   3, 
+     15,   0, 255, 255, 127, 248, 255, 255, 255, 255, 255,   3, 127,   0, 248, 224, 
+    255, 253, 127,  95, 219, 255, 255, 255,   0,   0, 248, 255, 255, 255, 252, 255, 
+      0,   0, 255,  15, 127,   0,  24,   0,   0, 224,   0,   0,   0,   0, 223, 255, 
+    252, 252, 252,  28, 255, 239, 255, 255, 127, 255, 255, 183, 255,  63, 255,  63, 
+      0,   0,   0,  32, 255, 255,   1,   0, 255,   7,   0,   0,  15, 255,  62,   0, 
+     63, 253, 255, 255, 255, 255, 191, 145, 111, 240, 239, 254, 255, 255,  15, 135, 
+    127,   0,   0,   0,   7,   0,   0,   0, 255, 255, 255,   1,   3,   0,   0,   0, 
+    224, 227,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0, 
+    255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 
+    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 
+    253, 255, 255, 247, 255, 253, 255, 255, 247, 207, 255, 255, 
+};
+
+/* ID_Continue: 1814 bytes. */
+
+RE_UINT32 re_get_id_continue(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_id_continue_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_id_continue_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_id_continue_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_id_continue_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_id_continue_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* XID_Start. */
+
+RE_UINT8 re_xid_start_stage_1[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 
+};
+
+RE_UINT8 re_xid_start_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 13, 13, 13, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 13, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 23,  7, 24, 25, 13, 13, 13, 13, 13, 13, 13, 26, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+};
+
+RE_UINT8 re_xid_start_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16,  1, 17, 18, 19,  1, 20, 21, 22, 23, 24, 25, 26, 27,  1, 28, 
+    29, 30, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 32, 33, 31, 31, 
+    34, 35, 31, 31,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1, 36,  1,  1,  1,  1,  1,  1,  1,  1,  1, 37, 
+     1,  1,  1,  1, 38,  1, 39, 40, 41, 42, 43, 44,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 45, 31, 31, 31, 31, 31, 31, 31, 31, 
+    31,  1, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 31, 31, 31, 
+    57, 58, 59, 60, 61, 31, 31, 31, 62, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1,  1, 63, 64, 31, 31, 31,  1,  1,  1,  1, 65, 31, 31, 31, 
+     1,  1, 66, 31, 31, 31, 31, 31, 67, 31, 31, 31, 31, 31, 31, 31, 
+    31, 31, 31, 31, 68, 69, 70, 71,  1,  1,  1,  1,  1,  1, 72,  1, 
+     1,  1,  1,  1,  1,  1,  1, 73, 74, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1, 74, 31, 31, 31, 31, 31, 
+};
+
+RE_UINT8 re_xid_start_stage_4[] = {
+      0,   0,   1,   1,   0,   2,   3,   3,   4,   4,   4,   4,   4,   4,   4,   4, 
+      4,   4,   4,   4,   4,   4,   5,   6,   0,   0,   0,   7,   8,   9,   4,  10, 
+      4,   4,   4,   4,  11,   4,   4,   4,   4,  12,  13,  14,  15,   0,  16,  17, 
+      0,   4,  18,  19,   4,   4,  20,  21,  22,  23,  24,   4,   4,  25,  26,  27, 
+     28,  29,  30,   0,   0,   0,   0,   0,  31,  32,  33,  34,  35,  36,  37,  38, 
+     39,  40,  41,  42,  43,  44,  45,  46,  35,  44,  47,  48,  49,  50,  45,   0, 
+     51,  52,  53,  46,  51,  52,  54,  55,  51,  56,  57,  58,  59,  60,  61,   0, 
+     14,  62,  61,   0,  63,  64,  65,   0,  66,   0,  67,  68,  69,   0,   0,   0, 
+      4,  70,  71,  72,  73,   4,  74,  75,   4,   4,  76,   4,  77,  78,  79,   4, 
+     80,   4,  81,   0,  23,   4,   4,  82,  14,   4,   4,   4,   4,   4,   4,   4, 
+      4,   4,   4,  83,   1,   4,   4,  84,  85,  86,  86,  87,   4,  88,  89,   0, 
+      0,   4,   4,  90,   4,  91,   4,  92,  93,   0,  16,  94,   4,  95,  96,   0, 
+     97,   4,  82,   0,   0,  98,   0,   0,  99,  88, 100,   0, 101, 102,   4, 103, 
+      4, 104, 105, 106,   0,   0,   0, 107,   4,   4,   4,   4,   4,   4,   0,   0, 
+    108,   4, 109, 106,   4, 110, 111, 112,   0,   0,   0, 113, 114,   0,   0,   0, 
+    115, 116, 117,   4, 118,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      4, 119, 120,   4,   4,   4,   4, 121,   4,  74,   4, 122,  97, 123, 123,   0, 
+    124, 125,  14,   4, 126,  14,   4, 127,  99, 128,   4,   4, 129,  81,   0,  16, 
+      4,   4,   4,   4,   4,  92,   0,   0,   4,   4,   4,   4,   4,   4,  95,   0, 
+      4,   4,   4,   4,  68,   0,  16, 106, 130, 131,   4, 132,  90,   4,   4,  23, 
+    133, 134,   4,   4, 135, 136,   0, 137, 138, 139,   4,  88, 134,  88,   0, 140, 
+     26,  74,  61,  93,  31, 141, 142,   0,   4, 118, 143, 144,   4, 145, 146,   0, 
+    147, 148,   0,   0,   0,   0,   4, 139,   4,   4,   4,   4,   4, 149, 150, 151, 
+      4, 152,   4, 152,   4,   4, 153,   0, 154, 155, 156,   4,   4,  86, 157,   4, 
+      4,   4, 106,  31,   4,   4,   4,   4,   4, 106,  16,   4, 158,   4,  15, 159, 
+      0,   0,   0, 160,   4,   4,   4,  93,   0,   1,   1, 161, 106, 120, 162,   0, 
+    163, 164, 165,   0,   4,   4,   4,  81,   0,   0,   4,  82,   0,   0,   0,   0, 
+      0,   0,   0,   0,  93,   4, 166,   0, 120,  16,  18,   0, 106,   4, 167,   0, 
+      4,   4,   4,   4, 106,   0,   0,   0, 168, 169,  92,   0,   0,   0,   0,   0, 
+     92, 153,   0,   0,   0,   0,   0,   0, 170,  88,   0,  93,   0,   0,   0,   0, 
+      4,  92,  92, 141,   0,   0,   0,   0,   4,   4, 118,   0,   0,   0,   0,   0, 
+    101,  90,   0,   0, 101,  23,   0,   0,   4,   4,   4, 129,   0,   0,   0,   0, 
+      4,   4,   4, 139,   0,   0,   0,   0,   4, 129,   0,   0,   0,   0,   0,   0, 
+      4,  30,   0,   0,   0,   0,   0,   0,  46,   0,   0,   0,   0,   0,   0,   0, 
+      4,   4, 171,   4, 172, 173, 174,   4, 175, 176, 177,   4,   4,   4,   4,   4, 
+      4,   4,   4,   4,   4, 178, 179, 127, 171, 171, 119, 119, 180, 180, 143,   0, 
+      4,   4,   4,   4,   4,   4,  97,   0,   4,  82,   4,   4,   4,   4,   4,   4, 
+    106,   0,   0,   0,   0,   0,   0,   0, 
+};
+
+RE_UINT8 re_xid_start_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4, 255, 255, 127, 255, 
+    255, 255, 255, 255, 195, 255,   3,   0,  31,  80,   0,   0,   0,   0, 223,  56, 
+     64, 215, 255, 255, 251, 255, 255, 255, 255, 255, 191, 255,   3, 252, 255, 255, 
+    255,   0, 254, 255, 255, 255, 127,   2, 254, 255, 255, 255, 255,   0,   0,   0, 
+      0,   0, 255, 255, 255,   7,   7,   0, 255,   7,   0,   0,   0, 192, 254, 255, 
+    255, 255,  47,   0,  96, 192,   0, 156,   0,   0, 253, 255, 255, 255,   0,   0, 
+      0, 224, 255, 255,  63,   0,   2,   0,   0, 252, 255, 255, 255,   7,  48,   4, 
+    255, 255,  63,   4,  16,   1,   0,   0, 255, 255, 255,   1, 240, 255, 255, 255, 
+    255, 255, 255,  35,   0,   0,   1, 255,   3,   0, 254, 254, 224, 159, 249, 255, 
+    255, 253, 197,  35,   0,  64,   0, 176,   3,   0,   3,   0, 224, 135, 249, 255, 
+    255, 253, 109,   3,   0,   0,   0,  94,   0,   0,  28,   0, 224, 191, 251, 255, 
+    255, 253, 237,  35,   0,   0,   1,   0,   3,   0,   0,   0,   0,   0,   0, 176, 
+      3,   0,   2,   0, 232, 199,  61, 214,  24, 199, 255,   3, 224, 223, 253, 255, 
+    255, 253, 239,  35,   0,   0,   0,   3,   0,   0,   0,  64,   3,   0,   6,   0, 
+    255, 255, 255,  39,   0,  64,   0,   0,   3,   0,   0, 252, 224, 255, 127, 252, 
+    255, 255, 251,  47, 127,   0,   0,   0, 255, 255,   5,   0, 150,  37, 240, 254, 
+    174, 236,   5,  32,  95,   0,   0,  48,   1,   0,   0,   0, 255, 254, 255, 255, 
+    255,  31,   0,   0,   0,  31,   0,   0, 255,   7,   0, 128,   0,   0,  63,  60, 
+     98, 192, 225, 255,   3,  64,   0,   0,  63,   0, 255, 255, 255, 255, 255,  23, 
+    255,  61, 127,  61, 255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 
+    255, 255,  61, 255, 255, 255, 255,   7, 255, 255,  31,   0, 255, 159, 255, 255, 
+    255, 199,   1,   0, 255, 223,   3,   0, 255, 255,   3,   0, 255, 223,   1,   0, 
+    255, 255,  15,   0,   0,   0, 128,  16, 255, 255, 255,   0, 255,   5, 255, 255, 
+    255, 255,  63,   0, 255, 255, 255,  31, 255,  63,  31,   0, 255,  15,   0,   0, 
+    254,   0,   0,   0, 255, 255, 127,   0, 128,   0,   0,   0, 224, 255, 255, 255, 
+    224,  15,   0,   0, 248, 255, 255, 255,   1, 192,   0,   0,  63,   0,   0,   0, 
+     15,   0,   0,   0,   0, 224,   0, 252, 255, 255, 255,  63,   0, 222,   3,   0, 
+    255, 255,  63,  63,  63,  63, 255, 170, 255, 255, 223,  95, 220,  31, 207,  15, 
+    255,  31, 220,  31,   0,   0,   2, 128,   0,   0, 255,  31, 132, 252,  47,  63, 
+     80, 253, 255, 243, 224,  67,   0,   0, 255,   1,   0,   0, 255, 127, 255, 255, 
+    255, 255, 255, 127,  31, 120,   0,   0,  63, 128,   0,   0, 127, 127, 127, 127, 
+    224,   0,   0,   0, 254,   3,  62,  31, 255, 255, 127, 224, 255, 255, 255, 247, 
+    255,  63, 254, 255, 255, 127,   0,   0, 255,  31, 255, 255,   0,  12,   0,   0, 
+    255, 127,   0, 128,   0,   0, 128, 255, 252, 255, 255, 255, 255, 121,   3,   0, 
+    255,   3,   0,   0,   0,   0,   0, 252, 187, 247, 255, 255,   7,   0,   0,   0, 
+      0,   0, 252,   8, 255, 255,   7,   0,   0, 128,   0,   0, 247,  15,   0,   0, 
+    255, 255, 127,   4, 255, 255,  98,  62,   5,   0,   0,  56, 126, 126, 126,   0, 
+    127, 127,   0,   0,  15,   0, 255, 255, 127, 248, 255, 255, 255, 255, 255,  15, 
+    255,  63, 255, 255, 255, 255, 255,   3, 127,   0, 248, 160, 255, 253, 127,  95, 
+    219, 255, 255, 255,   0,   0, 248, 255, 255, 255, 252, 255,   0,   0, 255,   3, 
+      0,   0, 138, 170, 192, 255, 255, 255, 252, 252, 252,  28, 255, 239, 255, 255, 
+    127, 255, 255, 183, 255,  63, 255,  63, 255, 255,   1,   0,  15, 255,  62,   0, 
+     63, 253, 255, 255, 255, 255, 191, 145,   1,   0, 239, 254, 255, 255, 223, 255, 
+    255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 
+    255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247, 
+    255, 253, 255, 255, 
+};
+
+/* XID_Start: 1685 bytes. */
+
+RE_UINT32 re_get_xid_start(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_xid_start_stage_1[f] << 5);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_xid_start_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_xid_start_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_xid_start_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_xid_start_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* XID_Continue. */
+
+RE_UINT8 re_xid_continue_stage_1[] = {
+    0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 6, 6, 6, 
+    6, 6, 
+};
+
+RE_UINT8 re_xid_continue_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 13, 13, 13, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 13, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 23,  7, 24, 25, 13, 13, 13, 13, 13, 13, 13, 26, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    27, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+};
+
+RE_UINT8 re_xid_continue_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16,  1, 17, 18, 19,  1, 20, 21, 22, 23, 24, 25, 26, 27,  1, 28, 
+    29, 30, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 32, 33, 31, 31, 
+    34, 35, 31, 31,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1, 36,  1,  1,  1,  1,  1,  1,  1,  1,  1, 37, 
+     1,  1,  1,  1, 38,  1, 39, 40, 41, 42, 43, 44,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 45, 31, 31, 31, 31, 31, 31, 31, 31, 
+    31,  1, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 31, 31, 31, 
+    57, 58, 59, 60, 61, 31, 31, 31, 62, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1,  1, 63, 64, 31, 31, 31,  1,  1,  1,  1, 65, 31, 31, 31, 
+     1,  1, 66, 31, 31, 31, 31, 31, 67, 31, 31, 31, 31, 31, 31, 31, 
+    31, 68, 69, 31, 70, 71, 72, 73,  1,  1,  1,  1,  1,  1, 74,  1, 
+     1,  1,  1,  1,  1,  1,  1, 75, 76, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1, 76, 31, 31, 31, 31, 31, 31, 77, 31, 31, 31, 31, 31, 31, 
+};
+
+RE_UINT8 re_xid_continue_stage_4[] = {
+      0,   1,   2,   3,   0,   4,   5,   5,   6,   6,   6,   6,   6,   6,   6,   6, 
+      6,   6,   6,   6,   6,   6,   7,   8,   6,   6,   6,   9,  10,  11,   6,  12, 
+      6,   6,   6,   6,  13,   6,   6,   6,   6,  14,  15,  16,  14,  17,  18,  19, 
+     20,   6,   6,  21,   6,   6,  22,  23,  24,   6,  25,   6,   6,  26,   6,  27, 
+      6,  28,  29,   0,   0,   0,   0,   0,   6,   6,   6,  30,  31,  32,  33,  34, 
+     35,  36,  37,  38,  39,  40,  41,  42,  31,  40,  43,  44,  45,  46,  47,  48, 
+     49,  50,  51,  42,  52,  53,  54,  55,  52,  56,  57,  58,  59,  60,  61,  62, 
+     16,  63,  64,   0,  65,  66,  67,   0,  68,  69,  70,  71,  72,  73,  74,   0, 
+      6,   6,  75,   6,  76,   6,  77,  78,   6,   6,  79,   6,  80,  81,  82,   6, 
+     83,   6,  56,  84,  85,   6,   6,  86,  16,   6,   6,   6,   6,   6,   6,   6, 
+      6,   6,   6,  87,   3,   6,   6,  88,  89,  86,  90,  91,   6,  92,  93,  94, 
+     95,   6,   6,  96,   6,  97,   6,  98,  73,  99, 100, 101,   6, 102, 103,   0, 
+     29,   6, 104, 105, 106, 107,   0,   0,   6,   6, 108, 109,   6, 110,   6,  90, 
+      6,  96, 111,  76,   0,   0, 112, 113,   6,   6,   6,   6,   6,   6,   6, 114, 
+    115,   6, 116,  76,   6, 117, 118, 119,   0, 120, 121, 122, 123,   0, 123, 124, 
+    125, 126, 127,   6, 128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      6, 129, 104,   6,   6,   6,   6, 130,   6,  77,   6, 131, 132, 133, 133,   6, 
+    134, 135,  16,   6, 136,  16,   6, 137, 138, 139,   6,   6, 140,  63,   0,  24, 
+      6,   6,   6,   6,   6,  98,   0,   0,   6,   6,   6,   6,   6,   6, 141,   0, 
+      6,   6,   6,   6, 142,   0,  24,  76, 143, 141,   6, 144,  96,   6,   6,  26, 
+    145, 146,   6,   6, 147,  94,   0, 148,   6, 149,   6,  90,   6,   6, 150, 151, 
+      6, 152,  90,  73,   6,   6, 153,   0,   6, 132, 154, 155,   6,   6, 156,   0, 
+    157, 158,   0,   0,   0,   0,   6, 159,   6,   6,   6,   6,   6, 160, 161,  29, 
+      6, 152,   6, 152,   6,   6, 162,   0, 163, 164, 165,   6,   6,  26, 166,   6, 
+      6,   6,  76, 167,   6,   6,   6,   6,   6,  76,  24,   6, 168,   6, 149,   1, 
+     85, 169, 170, 171,   6,   6,   6,  73,   1,   2,   3, 100,   6, 104, 172,   0, 
+    173, 174, 175,   0,   6,   6,   6,  63,   0,   0,   6,  86,   0,   0,   0, 176, 
+      0,   0,   0,   0,  73,   6, 177,   0, 104,  24, 178,   0,  76,   6, 179,   0, 
+      6,   6,   6,   6,  76,  94,   0,   0, 180, 181,  98,   0,   0,   0,   0,   0, 
+     98, 162,   0,   0,   0,   0,   0,   0, 182, 183,   0,  73,   0,   0,   0,   0, 
+      6,  98,  98, 113,   0,   0,   0,   0,   6,   6, 128,   0,   0,   0,   0,   0, 
+      6,   6, 184,  48,   6,  63,   0,   0,   6,   6,   6, 140,   0,   0,   0,   0, 
+      6,   6,   6, 185,   0,   0,   0,   0,   6, 140,   0,   0,   0,   0,   0,   0, 
+      6, 186,   0,   0,   0,   0,   0,   0, 187,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0, 188, 189, 190,   0,   0,   0,   0, 191,   0,   0,   0,   0,   0, 
+      6,   6, 192,   6, 193, 194, 195,   6, 196, 197, 198,   6,   6,   6,   6,   6, 
+      6,   6,   6,   6,   6, 199, 200, 137, 192, 192, 129, 129, 201, 201, 202,   6, 
+      6,   6,   6,   6,   6,   6, 132,   0,   6,  86,   6,   6,   6,   6,   6,   6, 
+     76,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   6,   6,   6,   6,  85, 
+};
+
+RE_UINT8 re_xid_continue_stage_5[] = {
+      0,   0,   0,   0,   0,   0, 255,   3, 254, 255, 255, 135, 254, 255, 255,   7, 
+      0,   4, 160,   4, 255, 255, 127, 255, 255, 255, 255, 255, 195, 255,   3,   0, 
+     31,  80,   0,   0, 255, 255, 223,  56, 192, 215, 255, 255, 251, 255, 255, 255, 
+    255, 255, 191, 255, 251, 252, 255, 255, 255,   0, 254, 255, 255, 255, 127,   2, 
+    254, 255, 255, 255, 255, 255, 255, 191, 182,   0, 255, 255, 255,   7,   7,   0, 
+      0,   0, 255,   7, 255, 195, 255, 255, 255, 255, 239, 159, 255, 253, 255, 159, 
+      0,   0, 255, 255, 255, 231, 255, 255, 255, 255,   3,   0, 255, 255,  63,   4, 
+    255,  63,   0,   0, 255, 255, 255,  15, 207, 255, 254, 254, 238, 159, 249, 255, 
+    255, 253, 197, 243, 159, 121, 128, 176, 207, 255,   3,   0, 238, 135, 249, 255, 
+    255, 253, 109, 211, 135,  57,   2,  94, 192, 255,  63,   0, 238, 191, 251, 255, 
+    255, 253, 237, 243, 191,  59,   1,   0, 207, 255,   0,   0, 159,  57, 192, 176, 
+    207, 255,   2,   0, 236, 199,  61, 214,  24, 199, 255, 195, 199,  61, 129,   0, 
+    192, 255,   0,   0, 238, 223, 253, 255, 255, 253, 239, 227, 223,  61,  96,   3, 
+    236, 223, 253, 255, 255, 253, 239, 243, 223,  61,  96,  64, 207, 255,   6,   0, 
+    255, 255, 255, 231, 223, 125, 128,   0, 207, 255,   0, 252, 236, 255, 127, 252, 
+    255, 255, 251,  47, 127, 132,  95, 255,   0,   0,  12,   0, 255, 255, 255,   7, 
+    255, 127, 255,   3, 150,  37, 240, 254, 174, 236, 255,  59,  95,  63, 255,  51, 
+      1,   0,   0,   3, 255,   3, 160, 194, 255, 254, 255, 255, 255,  31, 254, 255, 
+    223, 255, 255, 254, 255, 255, 255,  31,  64,   0,   0,   0, 255,   3, 255, 255, 
+    255, 255, 255,  63,  63,   0, 255, 255, 255, 255, 255,  23, 255,  61, 127,  61, 
+    255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 255, 255,  61, 255, 
+      0, 254,   3,   0, 255, 255,   0,   0, 255, 255,  31,   0, 255, 159, 255, 255, 
+    255, 199,   1,   0, 255, 223,  31,   0, 255, 255,  15,   0, 255, 223,  13,   0, 
+    255, 255, 207, 255, 255, 255, 143,  48, 255,   3,   0,   0,   0,  56, 255,   3, 
+    255, 255, 255,   0, 255,   7, 255, 255, 255, 255,  63,   0, 255,  15, 255,  15, 
+    192, 255, 255, 255, 255,  63,  31,   0, 255,  15, 255, 255, 255,   3, 255,   7, 
+    255, 255, 255, 127, 255, 255, 255, 159, 255,   3, 255,   3, 128,   0,   0,   0, 
+    255,  15, 255,   3,   0, 248,  15,   0, 255, 199, 255,   3, 255, 227, 255, 255, 
+      0,   0, 247, 255, 255, 255,   7,   0, 127,   0,   0, 240, 255, 255,  63,  63, 
+     63,  63, 255, 170, 255, 255, 223,  95, 220,  31, 207,  15, 255,  31, 220,  31, 
+      0,   0,   0, 128,   1,   0,  16,   0,   0,   0,   2, 128,   0,   0, 255,  31, 
+    226, 255,   1,   0, 132, 252,  47,  63,  80, 253, 255, 243, 224,  67,   0,   0, 
+    255,   1,   0,   0, 255, 127, 255, 255,  31, 248,   3,   0,  63, 128,   0, 128, 
+    255, 255, 127,   0, 127, 127, 127, 127, 224,   0,   0,   0, 254, 255,  62,  31, 
+    255, 255, 127, 230, 255, 255, 255, 247, 224, 255, 255, 255, 255,  63, 254, 255, 
+    255, 127,   0,   0, 255,  15,   0,   0, 255,  31,   0,   0, 255,  31, 255, 255, 
+    255, 255,   0, 176,   0,   0, 128, 255, 252, 255, 255, 255, 255, 121,   3,   0, 
+      0,   0,   0, 252, 255,   0,   0,   0,  31,   0, 255,   3, 255, 255, 255,   8, 
+    255,  63, 255, 255,   1, 128, 255,   3, 255,  63, 255,   3, 255, 255, 127,  12, 
+      7,   0,   0,  56, 126, 126, 126,   0, 127, 127,   0,   0, 255,  55, 255,   3, 
+     15,   0, 255, 255, 127, 248, 255, 255, 255, 255, 255,   3, 127,   0, 248, 224, 
+    255, 253, 127,  95, 219, 255, 255, 255,   0,   0, 248, 255, 240, 255, 255, 255, 
+    255, 255, 252, 255, 127,   0,  24,   0,   0, 224,   0,   0,   0,   0, 138, 170, 
+    252, 252, 252,  28, 255, 239, 255, 255, 127, 255, 255, 183, 255,  63, 255,  63, 
+      0,   0,   0,  32, 255, 255,   1,   0, 255,   7,   0,   0,  15, 255,  62,   0, 
+     63, 253, 255, 255, 255, 255, 191, 145, 111, 240, 239, 254, 255, 255,  15, 135, 
+    127,   0,   0,   0,   7,   0,   0,   0, 255, 255, 255,   1,   3,   0,   0,   0, 
+    224, 227,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0, 
+    255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 
+    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 
+    253, 255, 255, 247, 255, 253, 255, 255, 247, 207, 255, 255, 
+};
+
+/* XID_Continue: 1822 bytes. */
+
+RE_UINT32 re_get_xid_continue(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_xid_continue_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_xid_continue_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_xid_continue_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_xid_continue_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_xid_continue_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Default_Ignorable_Code_Point. */
+
+RE_UINT8 re_default_ignorable_code_point_stage_1[] = {
+    0, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 
+};
+
+RE_UINT8 re_default_ignorable_code_point_stage_2[] = {
+    0, 1, 2, 3, 4, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 7, 1, 1, 1, 1, 1, 
+    8, 8, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_default_ignorable_code_point_stage_3[] = {
+     0,  1,  1,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  3,  1,  1,  1,  1,  1,  4,  5,  1,  1,  1,  1,  1,  1,  1, 
+     6,  1,  1,  1,  1,  1,  1,  1,  1,  7,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  8,  9,  1, 10,  1,  1,  1,  1,  1,  1, 
+    11, 11, 11, 11, 11, 11, 11, 11, 
+};
+
+RE_UINT8 re_default_ignorable_code_point_stage_4[] = {
+     0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  3,  4,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  5,  0,  0,  6,  0,  0,  0,  0,  0,  0,  0, 
+     7,  8,  0,  9,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0, 
+     9,  0,  0,  0,  0,  0,  0,  3,  0,  0,  0,  0,  0,  4,  0, 11, 
+     0,  0,  0, 12,  0,  0,  0,  0, 13, 13, 13, 13, 13, 13, 13, 13, 
+};
+
+RE_UINT8 re_default_ignorable_code_point_stage_5[] = {
+      0,   0,   0,   0,   0,  32,   0,   0,   0, 128,   0,   0,   0,   0,   0, 128, 
+      1,   0,   0,   0,   0,   0,  48,   0,   0,  56,   0,   0,   0, 248,   0,   0, 
+      0, 124,   0,   0, 255, 255,   0,   0,  16,   0,   0,   0,   0,   0, 255,   1, 
+      0,   0, 248,   7, 255, 255, 255, 255, 
+};
+
+/* Default_Ignorable_Code_Point: 332 bytes. */
+
+RE_UINT32 re_get_default_ignorable_code_point(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 14;
+    code = ch ^ (f << 14);
+    pos = ((RE_UINT32)re_default_ignorable_code_point_stage_1[f] << 3);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_default_ignorable_code_point_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_default_ignorable_code_point_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_default_ignorable_code_point_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_default_ignorable_code_point_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -3257,30 +6153,32 @@ RE_UINT32 re_get_changes_when_titlecased(RE_UINT32 ch) {
 /* Grapheme_Extend. */
 
 RE_UINT8 re_grapheme_extend_stage_1[] = {
-    0, 1, 2, 2, 2, 3, 2, 4, 5, 2, 2, 2, 2, 2, 6, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    7, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 
+    0, 1, 2, 3, 4, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 
 };
 
 RE_UINT8 re_grapheme_extend_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  0, 10, 11, 12, 13,  0, 
-    14,  0,  0,  0,  0,  0, 15,  0, 16,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0, 17, 18, 19,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 20,  0, 21, 
-    22,  0,  0,  0,  0, 23,  0,  0, 24,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0, 25, 26,  0,  0,  0,  0,  0,  0, 
-    27,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  8,  9,  7,  7,  7,  7,  7,  7,  7,  7,  7, 10, 
+    11, 12, 13,  7,  7,  7,  7,  7,  7,  7, 14,  7,  7,  7,  7,  7, 
+    15,  7,  7,  7,  7,  7,  7,  7, 
 };
 
 RE_UINT8 re_grapheme_extend_stage_3[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+     0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 
+    14,  0,  0, 15,  0,  0,  0, 16, 17, 18, 19, 20, 21, 22,  0,  0, 
+    23,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 24, 25,  0,  0, 
+    26,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0, 27,  0, 28, 29, 30, 31,  0,  0,  0,  0, 
+     0,  0,  0, 32,  0,  0, 33, 34,  0, 35,  0,  0,  0,  0,  0,  0, 
+     0,  0, 36,  0,  0,  0,  0,  0, 37,  0,  0,  0,  0,  0,  0,  0, 
+     0, 38, 39,  0,  0,  0,  0,  0,  0, 40,  0,  0,  0,  0,  0,  0, 
+};
+
+RE_UINT8 re_grapheme_extend_stage_4[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   2,   0,   0,   0,   0, 
       0,   0,   0,   0,   3,   0,   0,   0,   0,   0,   0,   0,   4,   5,   6,   0, 
       7,   0,   8,   9,   0,   0,  10,  11,  12,  13,  14,   0,   0,  15,   0,  16, 
@@ -3288,29 +6186,23 @@ RE_UINT8 re_grapheme_extend_stage_3[] = {
      27,  28,  29,  30,  27,  28,  31,  23,  24,  32,  33,  23,  34,  35,  36,   0, 
       0,  37,  38,  23,   0,  39,  40,  23,   0,  35,  26,  23,   0,   0,  41,   0, 
       0,  42,  43,   0,   0,  44,  45,   0,  46,  47,   0,  48,  49,  50,  51,   0, 
-      0,  52,  53,  54,  55,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  56,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,  57,  57,  58,  58,   0,  59,  60,   0, 
-     61,   0,   0,   0,   0,  62,   0,   0,   0,  63,   0,   0,   0,   0,   0,   0, 
-     64,   0,  65,  66,   0,   0,   0,   0,  67,  68,  34,  16,  69,  70,   0,  71, 
-      0,  72,   0,   0,   0,   0,  73,  74,   0,   0,   0,   0,   0,   0,   1,  75, 
-     76,   0,   0,   0,   0,   0,  13,  77,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,  52,  53,  54,  55,   0,   0,   0,   0,   0,  56,   0,   0,   0,   0,   0, 
+     57,  57,  58,  58,   0,  59,  60,   0,  61,   0,   0,   0,   0,  62,   0,   0, 
+      0,  63,   0,   0,   0,   0,   0,   0,  64,   0,  65,  66,   0,   0,   0,   0, 
+     67,  68,  34,  16,  69,  70,   0,  71,   0,  72,   0,   0,   0,   0,  73,  74, 
+      0,   0,   0,   0,   0,   0,   1,  75,  76,   0,   0,   0,   0,   0,  13,  77, 
       0,   0,   0,   0,   0,   0,   0,  78,   0,   0,   0,  79,   0,   0,   0,   1, 
-      0,  80,   0,   0,  81,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,  82,   0,   0,   0,  83,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,  80,   0,   0,  81,   0,   0,   0,   0,   0,   0,  82,   0,   0,   0,  83, 
      84,  85,   0,   0,   0,   0,  86,  87,   0,  88,  89,   0,  20,  90,   0,   0, 
       0,  91,  92,   0,   0,  93,  24,   0,   0,   0,   0,   0,   0,   0,   0,  94, 
-      0,   0,   0,   0,   0,   0,   0,   0,  35,   0,   0,   0,   0,   0,   0,   0, 
-      2,  95,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  37,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  96, 
-     97,  98,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-     24,  99,  95,   0,  69, 100,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 101, 102, 103,   0,   0, 
-      0,   0, 104,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   2, 
+     35,   0,   0,   0,   0,   0,   0,   0,   2,  95,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,  37,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  96, 
+     97,  98,   0,   0,   0,   0,   0,   0,  24,  99,  95,   0,  69, 100,   0,   0, 
+      0,   0,   0, 101, 102, 103,   0,   0,   0,   0, 104,   0,   0,   0,   0,   0, 
+      1,   1,   1,   1,   1,   1,   1,   2, 
 };
 
-RE_UINT8 re_grapheme_extend_stage_4[] = {
+RE_UINT8 re_grapheme_extend_stage_5[] = {
       0,   0,   0,   0, 255, 255, 255, 255, 255, 255,   0,   0, 248,   3,   0,   0, 
       0,   0, 254, 255, 255, 255, 255, 191, 182,   0,   0,   0,   0,   0, 255,   7, 
       0, 248, 255, 255,   0,   0,   1,   0,   0,   0, 192, 159, 159,  61,   0,   0, 
@@ -3340,7 +6232,7 @@ RE_UINT8 re_grapheme_extend_stage_4[] = {
      28,   0,   0,   0, 
 };
 
-/* Grapheme_Extend: 1132 bytes. */
+/* Grapheme_Extend: 1000 bytes. */
 
 RE_UINT32 re_get_grapheme_extend(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -3348,105 +6240,20 @@ RE_UINT32 re_get_grapheme_extend(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_grapheme_extend_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_grapheme_extend_stage_2[pos + f] << 4);
+    f = ch >> 14;
+    code = ch ^ (f << 14);
+    pos = ((RE_UINT32)re_grapheme_extend_stage_1[f] << 3);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_grapheme_extend_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_grapheme_extend_stage_3[pos + f] << 3);
     f = code >> 5;
     code ^= (f << 5);
-    pos = ((RE_UINT32)re_grapheme_extend_stage_3[pos + f] << 5);
+    pos = ((RE_UINT32)re_grapheme_extend_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_grapheme_extend_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Lowercase. */
-
-RE_UINT8 re_lowercase_stage_1[] = {
-    0, 1, 2, 2, 2, 3, 2, 4, 5, 2, 2, 2, 2, 2, 6, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 
-};
-
-RE_UINT8 re_lowercase_stage_2[] = {
-     0,  1,  2,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,  5, 
-     6,  3,  7,  3,  3,  3,  8,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 10,  3, 11, 
-     3,  3, 12,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 13, 14,  3,  3,  3,  3, 
-};
-
-RE_UINT8 re_lowercase_stage_3[] = {
-     0,  0,  0,  1,  0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 
-     5, 13, 14, 15, 16, 17, 18, 19,  0,  0, 20, 21, 22, 23, 24, 25, 
-     0, 26, 15,  5, 27,  5, 28,  5,  5, 29,  0, 30, 31,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0, 15, 15, 15, 15, 15, 15,  0,  0, 
-     5,  5,  5,  5, 32,  5,  5,  5, 33, 34, 35, 36, 34, 37, 38, 39, 
-     0,  0,  0,  0, 40,  0,  0,  0, 41, 42, 43, 26, 44,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0, 26, 45,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0, 26, 46, 47,  5,  5,  5, 48, 15, 49,  0,  0,  0,  0,  0,  0, 
-     0,  0,  5, 50, 51,  0,  0,  0,  0, 52,  5, 53, 54, 55,  0, 56, 
-     0,  0,  0,  0,  0,  0,  0,  0, 57,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0, 
-     0, 58, 59,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    60, 61, 62, 31, 63, 64, 65, 66, 67, 68, 69, 70, 71, 60, 61, 72, 
-    31, 63, 73, 59, 66, 49, 74, 75, 76, 73, 77, 26, 78, 66, 79,  0, 
-};
-
-RE_UINT8 re_lowercase_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4,   0,   0,   0, 128, 
-    255, 255, 127, 255, 170, 170, 170, 170, 170, 170, 170,  85,  85, 171, 170, 170, 
-    170, 170, 170, 212,  41,  49,  36,  78,  42,  45,  81, 230,  64,  82,  85, 181, 
-    170, 170,  41, 170, 170, 170, 250, 147, 133, 170, 255, 255, 255, 255, 255, 255, 
-    255, 255, 239, 255, 255, 255, 255,   1,   3,   0,   0,   0,  31,   0,   0,   0, 
-     32,   0,   0,   0,   0,   0, 138,  60,   0,   0,   1,   0,   0, 240, 255, 255, 
-    255, 127, 227, 170, 170, 170,  47,  25,   0,   0, 255, 255,   2, 168, 170, 170, 
-     84, 213, 170, 170, 170,   0,   0,   0, 254, 255, 255, 255, 255,   0,   0,   0, 
-    170, 170, 234, 191, 255,   0,  63,   0, 255,   0, 255,   0,  63,   0, 255,   0, 
-    255,   0, 255,  63, 255,   0, 223,  64, 220,   0, 207,   0, 255,   0, 220,   0, 
-      0,   0,  31,   0,   0, 196,   8,   0,   0, 128,  16,  50, 192,  67,   0,   0, 
-     16,   0,   0,   0, 255,   3,   0,   0, 255, 255, 255, 127,  98,  21, 218,  63, 
-     26,  80,   0,   0,  63,   0,   0,   0, 170,  42,   0,   0, 170, 170, 170,   0, 
-    168, 170, 171, 170, 170, 170, 255, 149, 170,  80,   2,   0, 170,   2,   0,   0, 
-      0,   0,   0,   4, 127,   0, 248,   0,   0, 255, 255, 255, 255, 255,   0,   0, 
-      0,   0,   0, 252, 255, 255,  15,   0,   0, 192, 223, 255, 252, 255, 255,  15, 
-      0,   0, 192, 235, 239, 255,   0,   0,   0, 252, 255, 255,  15,   0,   0, 192, 
-    255, 255, 255,   0,   0,   0, 252, 255, 255,  15,   0,   0, 192, 255, 255, 255, 
-      0, 192, 255, 255,   0,   0, 192, 255, 252, 255, 255, 247,   3,   0,   0, 240, 
-    255, 255, 223,  15, 255, 127,  63,   0, 255, 253,   0,   0, 247,  11,   0,   0, 
-};
-
-/* Lowercase: 808 bytes. */
-
-RE_UINT32 re_get_lowercase(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_lowercase_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_lowercase_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_lowercase_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_lowercase_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_grapheme_extend_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -3454,51 +6261,39 @@ RE_UINT32 re_get_lowercase(RE_UINT32 ch) {
 /* Grapheme_Base. */
 
 RE_UINT8 re_grapheme_base_stage_1[] = {
-     0,  1,  2,  3,  4,  5,  5,  5,  5,  6,  7,  5,  5,  8,  9, 10, 
-    11, 12, 13, 14,  9,  9, 15,  9,  9,  9,  9, 16,  9, 17,  9, 18, 
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 19, 20,  9,  9,  9, 21, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 
 };
 
 RE_UINT8 re_grapheme_base_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 13, 13, 13, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 23, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 24,  7, 25, 26, 13, 13, 13, 13, 13, 13, 13, 27, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+};
+
+RE_UINT8 re_grapheme_base_stage_3[] = {
      0,  1,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 
     15,  1, 16, 17,  1,  1, 18, 19, 20, 21, 22, 23, 24, 25,  1, 26, 
     27, 28,  1, 29, 30,  1,  1, 31,  1,  1,  1, 32, 33, 34, 35, 36, 
     37, 38, 39,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 40,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 41, 
+     1,  1,  1,  1,  1, 40,  1,  1,  1,  1,  1,  1,  1,  1,  1, 41, 
      1,  1,  1,  1, 42,  1, 43, 44, 45, 46, 47, 48,  1,  1,  1,  1, 
      1,  1,  1,  1,  1,  1,  1, 49, 50, 50, 50, 50, 50, 50, 50, 50, 
-    50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 
-    50, 50, 50, 50, 50, 50, 50, 50, 50,  1, 51, 52,  1, 53, 54, 55, 
-    56, 57, 58, 59, 60, 50, 50, 50, 61, 62, 63, 64, 65, 50, 66, 50, 
-    67, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 
-     1,  1,  1, 68, 69, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 
-     1,  1,  1,  1, 70, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 
-    50, 50, 50, 50, 50, 50, 50, 50,  1,  1, 71, 50, 50, 50, 50, 50, 
-    72, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 
-    73, 74, 75, 76, 77, 78, 79, 80, 50, 50, 50, 50, 50, 50, 50, 50, 
-    81, 82, 83, 84, 85, 86, 87, 88, 50, 50, 50, 50, 50, 50, 50, 50, 
-     1,  1,  1,  1,  1,  1, 89,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1, 90, 91, 50, 50, 50, 50, 50, 50, 50, 
-    50, 50, 50, 50, 50, 50, 50, 50,  1,  1, 91, 50, 50, 50, 50, 50, 
+    50,  1, 51, 52,  1, 53, 54, 55, 56, 57, 58, 59, 60, 50, 50, 50, 
+    61, 62, 63, 64, 65, 50, 66, 50, 67, 50, 50, 50, 50, 50, 50, 50, 
+     1,  1,  1, 68, 69, 50, 50, 50,  1,  1,  1,  1, 70, 50, 50, 50, 
+     1,  1, 71, 50, 50, 50, 50, 50, 72, 50, 50, 50, 50, 50, 50, 50, 
+    73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 
+     1,  1,  1,  1,  1,  1, 89,  1,  1,  1,  1,  1,  1,  1,  1, 90, 
+    91, 50, 50, 50, 50, 50, 50, 50,  1,  1, 91, 50, 50, 50, 50, 50, 
 };
 
-RE_UINT8 re_grapheme_base_stage_3[] = {
+RE_UINT8 re_grapheme_base_stage_4[] = {
       0,   1,   1,   2,   0,   3,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
       0,   0,   0,   4,   5,   6,   1,   1,   1,   1,   1,   1,   7,   1,   1,   1, 
       1,   8,   9,  10,  11,  12,  13,  14,  15,   1,  16,  17,   1,   1,  18,  19, 
@@ -3547,7 +6342,7 @@ RE_UINT8 re_grapheme_base_stage_3[] = {
       1,  91,   1,   1,   1,   1,   1,   1, 126,   0,   0,   0,   0,   0,   0,   0, 
 };
 
-RE_UINT8 re_grapheme_base_stage_4[] = {
+RE_UINT8 re_grapheme_base_stage_5[] = {
       0,   0,   0,   0, 255, 255, 255, 255, 255, 255, 255, 127, 255, 223, 255, 255, 
       0,   0, 255, 124, 240, 215, 255, 255, 251, 255, 255, 255,   7, 252, 255, 255, 
     255,   0, 254, 255, 255, 255, 127, 254, 254, 255, 255, 255, 255,   6,   0,   0, 
@@ -3611,7 +6406,7 @@ RE_UINT8 re_grapheme_base_stage_4[] = {
      63,   0,   0,   0, 
 };
 
-/* Grapheme_Base: 2324 bytes. */
+/* Grapheme_Base: 2069 bytes. */
 
 RE_UINT32 re_get_grapheme_base(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -3619,337 +6414,20 @@ RE_UINT32 re_get_grapheme_base(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 12;
-    code = ch ^ (f << 12);
-    pos = ((RE_UINT32)re_grapheme_base_stage_1[f] << 4);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_grapheme_base_stage_1[f] << 5);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_grapheme_base_stage_2[pos + f] << 3);
     f = code >> 8;
     code ^= (f << 8);
-    pos = ((RE_UINT32)re_grapheme_base_stage_2[pos + f] << 3);
+    pos = ((RE_UINT32)re_grapheme_base_stage_3[pos + f] << 3);
     f = code >> 5;
     code ^= (f << 5);
-    pos = ((RE_UINT32)re_grapheme_base_stage_3[pos + f] << 5);
+    pos = ((RE_UINT32)re_grapheme_base_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_grapheme_base_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Changes_When_Uppercased. */
-
-RE_UINT8 re_changes_when_uppercased_stage_1[] = {
-    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_changes_when_uppercased_stage_2[] = {
-     0,  1,  2,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,  5, 
-     6,  3,  7,  3,  3,  3,  8,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 10,  3, 11, 
-     3,  3, 12,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-};
-
-RE_UINT8 re_changes_when_uppercased_stage_3[] = {
-     0,  0,  0,  1,  0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 
-     5, 13, 14, 15, 16,  0,  0,  0,  0,  0, 17, 18, 19, 20, 21, 22, 
-     0, 23, 24,  5, 25,  5, 26,  5,  5, 27,  0, 28, 29,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 30,  0,  0,  0,  0, 
-     5,  5,  5,  5, 31,  5,  5,  5, 32, 33, 34, 35, 24, 36, 37, 38, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 39, 23, 40,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0, 23, 41,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0, 23, 42, 43,  5,  5,  5, 44, 24, 45,  0,  0,  0,  0,  0,  0, 
-     0,  0,  5, 46, 47,  0,  0,  0,  0, 48,  5, 49, 50, 51,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0, 52,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0, 
-     0, 53, 54,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-};
-
-RE_UINT8 re_changes_when_uppercased_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7,   0,   0,  32,   0,   0,   0,   0, 128, 
-    255, 255, 127, 255, 170, 170, 170, 170, 170, 170, 170,  84,  85, 171, 170, 170, 
-    170, 170, 170, 212,  41,  17,  36,  70,  42,  33,  81, 162,  96,  91,  85, 181, 
-    170, 170,  45, 170, 168, 170,  10, 144, 133, 170, 223,  10,  41, 139,  38,  32, 
-      9,  31,   4,   0,  32,   0,   0,   0,   0,   0, 138,  56,   0,   0,   1,   0, 
-      0, 240, 255, 255, 255, 127, 227, 170, 170, 170,  39,   9,   0,   0, 255, 255, 
-    255, 255, 255, 255,   2, 168, 170, 170,  84, 213, 170, 170, 170,   0,   0,   0, 
-    254, 255, 255, 255, 255,   0,   0,   0,   0,   0,   0,  34, 170, 170, 234,  15, 
-    255,   0,  63,   0, 255,   0, 255,   0,  63,   0, 255,   0, 255,   0, 255,  63, 
-    255, 255, 223,  80, 220,  16, 207,   0, 255,   0, 220,  16,   0,  64,   0,   0, 
-     16,   0,   0,   0, 255,   3,   0,   0, 255, 255, 255, 127,  98,  21,  72,   0, 
-     10,  80,   0,   0,  63,   0,   0,   0, 170,  42,   0,   0, 170, 170, 170,   0, 
-    168, 170, 168, 170, 170, 170,   0, 148, 170,  16,   2,   0, 170,   2,   0,   0, 
-    127,   0, 248,   0,   0, 255, 255, 255, 255, 255,   0,   0, 
-};
-
-/* Changes_When_Uppercased: 656 bytes. */
-
-RE_UINT32 re_get_changes_when_uppercased(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_changes_when_uppercased_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_changes_when_uppercased_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_changes_when_uppercased_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_changes_when_uppercased_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Uppercase. */
-
-RE_UINT8 re_uppercase_stage_1[] = {
-    0, 1, 2, 2, 2, 3, 2, 4, 5, 2, 2, 2, 2, 2, 6, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 
-};
-
-RE_UINT8 re_uppercase_stage_2[] = {
-     0,  1,  2,  3,  3,  3,  3,  3,  4,  3,  3,  3,  3,  3,  3,  5, 
-     6,  3,  7,  3,  3,  3,  8,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 10, 
-     3,  3, 11,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 12, 13,  3,  3,  3,  3, 
-};
-
-RE_UINT8 re_uppercase_stage_3[] = {
-     0,  0,  1,  0,  0,  0,  2,  0,  3,  4,  5,  6,  7,  8,  9, 10, 
-     3, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0, 13, 14, 15, 16, 17, 
-    18, 19,  0,  3, 20,  3, 21,  3,  3, 22, 23,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0, 18, 24,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     3,  3,  3,  3, 25,  3,  3,  3, 26, 27, 28, 29,  0, 30, 31, 32, 
-     0,  0,  0,  0,  0,  0,  0,  0, 33, 34, 35, 19, 36,  0,  0,  0, 
-     0,  0,  0,  0,  0, 37, 19,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    18, 38,  0, 39,  3,  3,  3, 40,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  3, 41, 42,  0,  0,  0,  0, 43,  3, 44, 45, 46,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0, 
-    18, 47,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 24, 48, 49, 50, 
-    51, 60, 61, 54, 55, 51, 62, 63, 64, 65, 37, 38, 54, 66, 67,  0, 
-};
-
-RE_UINT8 re_uppercase_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7, 255, 255, 127, 127,  85,  85,  85,  85, 
-     85,  85,  85, 170, 170,  84,  85,  85,  85,  85,  85,  43, 214, 206, 219, 177, 
-    213, 210, 174,  17, 144, 164, 170,  74,  85,  85, 210,  85,  85,  85,   5, 108, 
-    122,  85,   0,   0,   0,   0,  69,   0,  64, 215, 254, 255, 251,  15,   0,   0, 
-      0, 128,  28,  85,  85,  85, 144, 230, 255, 255, 255, 255, 255, 255,   0,   0, 
-      1,  84,  85,  85, 171,  42,  85,  85,  85,   0, 254, 255, 255, 255, 127,   0, 
-     63,   0,   0,   0,  85,  85,  21,  64,   0, 255,   0,  63,   0, 255,   0, 255, 
-      0,  63,   0, 170,   0, 255,   0,   0,   0,   0,   0,  15,   0,  15,   0,  15, 
-      0,  31,   0,  15, 132,  56,  39,  62,  80,  61,  15, 192,  32,   0,   0,   0, 
-      8,   0,   0,   0,   0,   0, 192, 255, 255, 127,   0,   0, 157, 234,  37, 192, 
-      5,  40,   0,   0,  85,  21,   0,   0,  85,  85,  85,   0,  84,  85,  84,  85, 
-     85,  85,   0, 106,  85,  40,   1,   0,  85,   1,   0,   0, 255,   0,   0,   0, 
-    255, 255, 255,   3,   0,   0, 240, 255, 255,  63,   0,   0,   0, 255, 255, 255, 
-      3,   0,   0, 208, 100, 222,  63,   0,   0,   0, 255, 255, 255,   3,   0,   0, 
-    176, 231, 223,  31,   0,   0,   0, 123,  95, 252,   1,   0,   0, 240, 255, 255, 
-      3,   0,   0, 240, 255, 255,  63,   0,   1,   0,   0,   0, 252, 255, 255,   7, 
-      0,   0,   0, 240, 255, 255,  31,   0, 255,   1,   0,   0,   0,   4,   0,   0, 
-};
-
-/* Uppercase: 744 bytes. */
-
-RE_UINT32 re_get_uppercase(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_uppercase_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_uppercase_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_uppercase_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_uppercase_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* ID_Start. */
-
-RE_UINT8 re_id_start_stage_1[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 10, 12, 13, 10, 
-     3,  3,  3,  3,  3, 14, 10, 15, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 
-};
-
-RE_UINT8 re_id_start_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
-    16, 17, 17, 17, 17, 17, 18, 17, 19, 17, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 21, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 22, 
-    20, 20, 23, 24, 25, 26, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 27, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 28, 29, 30, 31, 
-    32, 33, 34, 17, 35, 36, 37, 17, 38, 17, 17, 17, 17, 17, 17, 17, 
-    20, 39, 40, 17, 17, 17, 17, 17, 20, 20, 41, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 20, 42, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 43, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 44, 45, 17, 17, 17, 17, 
-    20, 20, 20, 46, 20, 20, 20, 20, 20, 20, 20, 47, 48, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20, 48, 17, 17, 
-};
-
-RE_UINT8 re_id_start_stage_3[] = {
-      0,   0,   1,   1,   0,   2,   3,   3,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4,   4,   5,   6,   0,   0,   0,   7,   8,   9,   4,  10, 
-      4,   4,   4,   4,  11,   4,   4,   4,   4,  12,  13,  14,  15,   0,  16,  17, 
-      0,   4,  18,  19,   4,   4,  20,  21,  22,  23,  24,   4,   4,  25,  26,  27, 
-     28,  29,  30,   0,   0,   0,   0,   0,  31,  32,  33,  34,  35,  36,  37,  38, 
-     39,  40,  41,  42,  43,  44,  45,  46,  35,  44,  47,  48,  49,  50,  45,   0, 
-     51,  52,  53,  46,  51,  52,  54,  55,  51,  56,  57,  58,  59,  60,  61,   0, 
-     14,  62,  61,   0,  63,  64,  65,   0,  66,   0,  67,  68,  69,   0,   0,   0, 
-      4,  70,  71,  72,  73,   4,  74,  75,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,  76,   4,  77,  78,  79,   4,  80,   4,  81,   0,  23,   4,   4,  82, 
-     14,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,  83,   1,   4,   4,  84,  85,  86,  86,  87,   4,  88,  89,   0, 
-      0,   4,   4,  90,   4,  91,   4,  92,  93,   0,  16,  94,   4,  95,  96,   0, 
-     97,   4,  82,   0,   0,  98,   0,   0,  99,  88, 100,   0, 101, 102,   4, 103, 
-      4, 104, 105, 106,   0,   0,   0, 107,   4,   4,   4,   4,   4,   4,   0,   0, 
-      4,   4,   4,   4,   4,   4,   4,   4, 108,   4, 109, 106,   4, 110, 111, 112, 
-      0,   0,   0, 113, 114,   0,   0,   0, 115, 116, 117,   4, 118,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4, 119, 120,   4,   4,   4,   4, 121,   4,  74,   4, 122,  97, 123, 123,   0, 
-    124, 125,  14,   4, 126,  14,   4, 127,  99, 128,   4,   4, 129,  81,   0,  16, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  92,   0,   0, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  95,   0, 
-      4,   4,   4,   4,  68,   0,  16, 106,   4,   4,   4,   4,   4,   4,   4,   4, 
-    130, 131,   4, 132,  90,   4,   4,  23, 133, 134,   4,   4, 135, 136,   0, 137, 
-    138, 139,   4,  88, 134,  88,   0, 140,  26,  74,  61,  93,  31, 141, 142,   0, 
-      4, 118, 143, 144,   4, 145, 146,   0, 147, 148,   0,   0,   0,   0,   4, 139, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 149, 150, 151, 
-      0,   0,   0,   0,   0,   0,   0,   0,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4, 152,   4, 152,   4,   4, 153,   0, 154, 155, 156,   4,   4,  86, 157,   4, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4, 106,  16,   4, 158,   4,  15, 159, 
-      0,   0,   0, 160,   4,   4,   4,  93,   0,   1,   1, 161,   4, 120, 162,   0, 
-    163, 164, 165,   0,   4,   4,   4,  81,   0,   0,   4,  82,   0,   0,   0,   0, 
-      0,   0,   0,   0,  93,   4, 166,   0, 120,  16,  18,   0, 106,   4, 167,   0, 
-      4,   4,   4,   4, 106,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    168, 169,  92,   0,   0,   0,   0,   0,  92, 153,   0,   0,   0,   0,   0,   0, 
-    170,  88,   0,  93,   0,   0,   0,   0,   4,  92,  92, 141,   0,   0,   0,   0, 
-      4,   4, 118,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    101,  90,   0,   0, 101,  23,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 129,   0,   0,   0,   0, 
-      4,   4,   4, 139,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4, 129,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,  30,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-     46,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,   4, 171,   4, 172, 173, 174,   4, 175, 176, 177,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4, 178, 179, 127, 171, 171, 119, 119, 180, 180, 143,   0, 
-      4,   4,   4,   4,   4,   4,  97,   0,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,  82,   4,   4,   4,   4,   4,   4, 
-    106,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-};
-
-RE_UINT8 re_id_start_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4, 255, 255, 127, 255, 
-    255, 255, 255, 255, 195, 255,   3,   0,  31,  80,   0,   0,   0,   0, 223,  60, 
-     64, 215, 255, 255, 251, 255, 255, 255, 255, 255, 191, 255,   3, 252, 255, 255, 
-    255,   0, 254, 255, 255, 255, 127,   2, 254, 255, 255, 255, 255,   0,   0,   0, 
-      0,   0, 255, 255, 255,   7,   7,   0, 255,   7,   0,   0,   0, 192, 254, 255, 
-    255, 255,  47,   0,  96, 192,   0, 156,   0,   0, 253, 255, 255, 255,   0,   0, 
-      0, 224, 255, 255,  63,   0,   2,   0,   0, 252, 255, 255, 255,   7,  48,   4, 
-    255, 255,  63,   4,  16,   1,   0,   0, 255, 255, 255,   1, 240, 255, 255, 255, 
-    255, 255, 255,  35,   0,   0,   1, 255,   3,   0, 254, 254, 224, 159, 249, 255, 
-    255, 253, 197,  35,   0,  64,   0, 176,   3,   0,   3,   0, 224, 135, 249, 255, 
-    255, 253, 109,   3,   0,   0,   0,  94,   0,   0,  28,   0, 224, 191, 251, 255, 
-    255, 253, 237,  35,   0,   0,   1,   0,   3,   0,   0,   0,   0,   0,   0, 176, 
-      3,   0,   2,   0, 232, 199,  61, 214,  24, 199, 255,   3, 224, 223, 253, 255, 
-    255, 253, 239,  35,   0,   0,   0,   3,   0,   0,   0,  64,   3,   0,   6,   0, 
-    255, 255, 255,  39,   0,  64,   0,   0,   3,   0,   0, 252, 224, 255, 127, 252, 
-    255, 255, 251,  47, 127,   0,   0,   0, 255, 255,  13,   0, 150,  37, 240, 254, 
-    174, 236,  13,  32,  95,   0,   0,  48,   1,   0,   0,   0, 255, 254, 255, 255, 
-    255,  31,   0,   0,   0,  31,   0,   0, 255,   7,   0, 128,   0,   0,  63,  60, 
-     98, 192, 225, 255,   3,  64,   0,   0,  63,   0, 255, 255, 255, 255, 255,  23, 
-    255,  61, 127,  61, 255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 
-    255, 255,  61, 255, 255, 255, 255,   7, 255, 255,  31,   0, 255, 159, 255, 255, 
-    255, 199,   1,   0, 255, 223,   3,   0, 255, 255,   3,   0, 255, 223,   1,   0, 
-    255, 255,  15,   0,   0,   0, 128,  16, 255, 255, 255,   0, 255,   5, 255, 255, 
-    255, 255,  63,   0, 255, 255, 255,  31, 255,  63,  31,   0, 255,  15,   0,   0, 
-    254,   0,   0,   0, 255, 255, 127,   0, 128,   0,   0,   0, 224, 255, 255, 255, 
-    224,  15,   0,   0, 248, 255, 255, 255,   1, 192,   0,   0,  63,   0,   0,   0, 
-     15,   0,   0,   0,   0, 224,   0, 252, 255, 255, 255,  63,   0, 222,   3,   0, 
-    255, 255,  63,  63,  63,  63, 255, 170, 255, 255, 223,  95, 220,  31, 207,  15, 
-    255,  31, 220,  31,   0,   0,   2, 128,   0,   0, 255,  31, 132, 252,  47,  63, 
-     80, 253, 255, 243, 224,  67,   0,   0, 255,   1,   0,   0, 255, 127, 255, 255, 
-    255, 255, 255, 127,  31, 120,   0,   0,  63, 128,   0,   0, 127, 127, 127, 127, 
-    224,   0,   0,   0, 254,   3,  62,  31, 255, 255, 127, 248, 255, 255, 255, 247, 
-    255,  63, 254, 255, 255, 127,   0,   0, 255,  31, 255, 255,   0,  12,   0,   0, 
-    255, 127,   0, 128,   0,   0, 128, 255, 252, 255, 255, 255, 255, 121,   3,   0, 
-    255,   3,   0,   0,   0,   0,   0, 252, 187, 247, 255, 255,   7,   0,   0,   0, 
-      0,   0, 252,   8, 255, 255,   7,   0,   0, 128,   0,   0, 247,  15,   0,   0, 
-    255, 255, 127,   4, 255, 255,  98,  62,   5,   0,   0,  56, 126, 126, 126,   0, 
-    127, 127,   0,   0,  15,   0, 255, 255, 127, 248, 255, 255, 255, 255, 255,  15, 
-    255,  63, 255, 255, 255, 255, 255,   3, 127,   0, 248, 160, 255, 253, 127,  95, 
-    219, 255, 255, 255,   0,   0, 248, 255, 255, 255, 252, 255,   0,   0, 255,  15, 
-      0,   0, 223, 255, 192, 255, 255, 255, 252, 252, 252,  28, 255, 239, 255, 255, 
-    127, 255, 255, 183, 255,  63, 255,  63, 255, 255,   1,   0,  15, 255,  62,   0, 
-     63, 253, 255, 255, 255, 255, 191, 145,   1,   0, 239, 254, 255, 255, 223, 255, 
-    255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 
-    255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247, 
-    255, 253, 255, 255, 
-};
-
-/* ID_Start: 1900 bytes. */
-
-RE_UINT32 re_get_id_start(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_id_start_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_id_start_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_id_start_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_id_start_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_grapheme_base_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -3957,46 +6435,44 @@ RE_UINT32 re_get_id_start(RE_UINT32 ch) {
 /* Grapheme_Link. */
 
 RE_UINT8 re_grapheme_link_stage_1[] = {
-    0, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 
 };
 
 RE_UINT8 re_grapheme_link_stage_2[] = {
-    0, 0, 1, 2, 3, 4, 5, 0, 0, 0, 0, 6, 0, 0, 0, 0, 
+    0, 1, 2, 3, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 
-    0, 0, 8, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 };
 
 RE_UINT8 re_grapheme_link_stage_3[] = {
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1, 
-     0,  1,  0,  1,  0,  1,  0,  2,  3,  0,  0,  0,  0,  0,  4,  0, 
-     5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  6,  0,  0,  7, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  8,  0,  0,  0,  4,  9, 10, 
-     0,  0,  0,  0,  0, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    12,  0,  0,  4,  0, 13,  0, 14,  0,  0,  0,  0,  0,  0,  0, 15, 
-     0,  0,  0,  0,  0,  0,  0,  0, 11,  0,  0,  0,  0,  0,  0,  0, 
-     0, 12, 16,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  3,  4, 
+     5,  0,  0,  0,  0,  0,  0,  6,  0,  0,  7,  8,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  9,  0,  0, 10, 11,  0, 12,  0,  0,  0,  0, 
+     0,  0, 13,  0,  0,  0,  0,  0, 14,  0,  0,  0,  0,  0,  0,  0, 
 };
 
 RE_UINT8 re_grapheme_link_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0, 
-      0,   4,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   4, 
-     16,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6, 
-      0,   0,  16,   0,   0,   0,  16,   0,   0,   0,   4,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   4,   0,   0, 
-      0,   0,   0,   0,   0,   0,  12,   0,   0,   0,   0,   0,   0,   0,   0, 128, 
-     64,   0,   0,   0,   0,   0,   0,   0,   0,   0,   8,   0,   0,   0,   0,   0, 
-      1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  32,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   2, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  1,  0, 
+     0,  0,  1,  0,  0,  0,  2,  0,  0,  3,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  4,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0, 
+     6,  6,  0,  0,  0,  0,  7,  0,  0,  0,  0,  8,  0,  0,  0,  0, 
+     0,  0,  4,  0,  0,  2,  0,  9,  0,  0,  0, 10,  0,  0,  0,  0, 
+    11,  0,  0,  0,  0,  0,  4,  0,  0,  0, 12,  0,  0,  0,  8,  0, 
+     0,  0,  0,  0,  0,  0,  0,  1,  0, 10,  0,  0,  0,  0,  0,  0, 
+     0,  0, 11,  0,  0, 13,  0,  0, 
 };
 
-/* Grapheme_Link: 428 bytes. */
+RE_UINT8 re_grapheme_link_stage_5[] = {
+      0,   0,   0,   0,   0,  32,   0,   0,   0,   4,   0,   0,   0,   0,   0,   4, 
+     16,   0,   0,   0,   0,   0,   0,   6,   0,   0,  16,   0,   0,   0,   4,   0, 
+      1,   0,   0,   0,   0,   0,  12,   0,   0,   0,   0, 128,  64,   0,   0,   0, 
+      0,   0,   8,   0,   0,   0,   0,   2, 
+};
+
+/* Grapheme_Link: 338 bytes. */
 
 RE_UINT32 re_get_grapheme_link(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -4004,1735 +6480,76 @@ RE_UINT32 re_get_grapheme_link(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 14;
-    code = ch ^ (f << 14);
+    f = ch >> 15;
+    code = ch ^ (f << 15);
     pos = ((RE_UINT32)re_grapheme_link_stage_1[f] << 4);
-    f = code >> 10;
-    code ^= (f << 10);
-    pos = ((RE_UINT32)re_grapheme_link_stage_2[pos + f] << 4);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_grapheme_link_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_grapheme_link_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Cased. */
-
-RE_UINT8 re_cased_stage_1[] = {
-    0, 1, 2, 2, 2, 3, 2, 4, 5, 2, 2, 2, 2, 2, 6, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 
-};
-
-RE_UINT8 re_cased_stage_2[] = {
-     0,  1,  2,  3,  3,  3,  3,  3,  4,  3,  3,  3,  3,  3,  5,  6, 
-     7,  3,  8,  3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3, 10,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 11,  3, 12, 
-     3,  3, 13,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 14, 15,  3,  3,  3,  3, 
-};
-
-RE_UINT8 re_cased_stage_3[] = {
-     0,  0,  1,  1,  0,  2,  3,  3,  4,  4,  4,  4,  4,  5,  6,  4, 
-     4,  4,  4,  4,  7,  8,  9, 10,  0,  0, 11, 12, 13, 14,  4, 15, 
-     4,  4,  4,  4, 16,  4,  4,  4,  4, 17, 18, 19, 20,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  4, 21,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  4,  4,  4,  4,  4,  4,  0,  0, 
-     4,  4,  4,  4,  4,  4,  4,  4, 22,  4, 23, 24,  4, 25, 26, 27, 
-     0,  0,  0,  0, 28,  0,  0,  0, 29, 30, 31,  4, 32,  0,  0,  0, 
-     0,  0,  0,  0,  0, 33,  4, 34,  0,  0,  0,  0,  0,  0,  0,  0, 
-     4, 35, 36,  4,  4,  4,  4, 37,  4, 21,  0,  0,  0,  0,  0,  0, 
-     0,  0,  4, 38, 39,  0,  0,  0,  0, 40,  4,  4, 41, 34,  0, 42, 
-     0,  0,  0,  0,  0,  0,  0,  0, 43,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  0,  0,  0,  0,  0, 
-     4,  4, 44,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     4,  4, 45,  4, 46, 47, 48,  4, 49, 50, 51,  4,  4,  4,  4,  4, 
-     4,  4,  4,  4,  4, 52, 53,  5, 45, 45, 35, 35, 54, 54, 55,  0, 
-};
-
-RE_UINT8 re_cased_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4, 255, 255, 127, 255, 
-    255, 255, 255, 255, 255, 255, 255, 247, 240, 255, 255, 255, 255, 255, 239, 255, 
-    255, 255, 255,   1,   3,   0,   0,   0,  31,   0,   0,   0,  32,   0,   0,   0, 
-      0,   0, 207,  60,  64, 215, 255, 255, 251, 255, 255, 255, 255, 255, 191, 255, 
-      3, 252, 255, 255, 255,   0, 254, 255, 255, 255, 127,   0, 254, 255, 255, 255, 
-    255,   0,   0,   0,  63,   0,   0,   0, 255, 255,  63,  63,  63,  63, 255, 170, 
-    255, 255, 255,  63, 255, 255, 223,  95, 220,  31, 207,  15, 255,  31, 220,  31, 
-      0,   0,  31,   0, 132, 252,  47,  62,  80, 189,  31, 242, 224,  67,   0,   0, 
-     24,   0,   0,   0,   0,   0, 192, 255, 255,   3,   0,   0, 255, 127, 255, 255, 
-    255, 255, 255, 127,  31, 120,   0,   0, 255,  63,   0,   0, 255, 255, 255,   0, 
-    252, 255, 255, 255, 255, 120,   3,   0,   0,   0,   0,   4, 127,   0, 248,   0, 
-    255, 255,   0,   0, 255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 
-    239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255, 
-     63, 255, 255, 255, 253, 255, 255, 247, 255, 253, 255, 255, 247,  15,   0,   0, 
-};
-
-/* Cased: 728 bytes. */
-
-RE_UINT32 re_get_cased(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_cased_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_cased_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_cased_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_cased_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* ID_Continue. */
-
-RE_UINT8 re_id_continue_stage_1[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 10, 12, 13, 10, 
-     3,  3,  3,  3,  3, 14, 10, 15, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    16, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 
-};
-
-RE_UINT8 re_id_continue_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
-    16, 17, 17, 17, 17, 17, 18, 17, 19, 17, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 21, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 22, 
-    20, 20, 23, 24, 25, 26, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 27, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 28, 29, 30, 31, 
-    32, 33, 34, 17, 35, 36, 37, 17, 38, 17, 17, 17, 17, 17, 17, 17, 
-    20, 39, 40, 17, 17, 17, 17, 17, 20, 20, 41, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 20, 42, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 43, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 44, 45, 46, 47, 17, 17, 17, 17, 
-    20, 20, 20, 48, 20, 20, 20, 20, 20, 20, 20, 49, 50, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20, 50, 17, 17, 
-    51, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-};
-
-RE_UINT8 re_id_continue_stage_3[] = {
-      0,   1,   2,   3,   0,   4,   5,   5,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,   6,   6,   6,   6,   7,   8,   6,   6,   6,   9,  10,  11,   6,  12, 
-      6,   6,   6,   6,  13,   6,   6,   6,   6,  14,  15,  16,  14,  17,  18,  19, 
-     20,   6,   6,  21,   6,   6,  22,  23,  24,   6,  25,   6,   6,  26,   6,  27, 
-      6,  28,  29,   0,   0,   0,   0,   0,   6,   6,   6,  30,  31,  32,  33,  34, 
-     35,  36,  37,  38,  39,  40,  41,  42,  31,  40,  43,  44,  45,  46,  47,  48, 
-     49,  50,  51,  42,  52,  53,  54,  55,  52,  56,  57,  58,  59,  60,  61,  62, 
-     16,  63,  64,   0,  65,  66,  67,   0,  68,  69,  70,  71,  72,  73,  74,   0, 
-      6,   6,  75,   6,  76,   6,  77,  78,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,  79,   6,  80,  81,  82,   6,  83,   6,  56,  84,  85,   6,   6,  86, 
-     16,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,   6,  87,   3,   6,   6,  88,  89,  86,  90,  91,   6,  92,  93,  94, 
-     95,   6,   6,  96,   6,  97,   6,  98,  73,  99, 100, 101,   6, 102, 103,   0, 
-     29,   6, 104, 105, 106, 107,   0,   0,   6,   6, 108, 109,   6, 110,   6,  90, 
-      6,  96, 111,  76,   0,   0, 112, 113,   6,   6,   6,   6,   6,   6,   6, 114, 
-      6,   6,   6,   6,   6,   6,   6,   6, 115,   6, 116,  76,   6, 117, 118, 119, 
-      0, 120, 121, 122, 123,   0, 123, 124, 125, 126, 127,   6, 128,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6, 129, 104,   6,   6,   6,   6, 130,   6,  77,   6, 131, 132, 133, 133,   6, 
-    134, 135,  16,   6, 136,  16,   6, 137, 138, 139,   6,   6, 140,  63,   0,  24, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  98,   0,   0, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 141,   0, 
-      6,   6,   6,   6, 142,   0,  24,  76,   6,   6,   6,   6,   6,   6,   6,   6, 
-    143, 141,   6, 144,  96,   6,   6,  26, 145, 146,   6,   6, 147,  94,   0, 148, 
-      6, 149,   6,  90,   6,   6, 150, 151,   6, 152,  90,  73,   6,   6, 153,   0, 
-      6, 132, 154, 155,   6,   6, 156,   0, 157, 158,   0,   0,   0,   0,   6, 159, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 160, 161,  29, 
-      0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6, 152,   6, 152,   6,   6, 162,   0, 163, 164, 165,   6,   6,  26, 166,   6, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,  76,  24,   6, 167,   6, 149, 168, 
-     85, 169, 170, 171,   6,   6,   6,  73,   1,   2,   3, 100,   6, 104, 172,   0, 
-    173, 174, 175,   0,   6,   6,   6,  63,   0,   0,   6,  86,   0,   0,   0, 176, 
-      0,   0,   0,   0,  73,   6, 177,   0, 104,  24, 178,   0,  76,   6, 179,   0, 
-      6,   6,   6,   6,  76,  94,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    180, 181,  98,   0,   0,   0,   0,   0,  98, 162,   0,   0,   0,   0,   0,   0, 
-    182, 183,   0,  73,   0,   0,   0,   0,   6,  98,  98, 113,   0,   0,   0,   0, 
-      6,   6, 128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6,   6, 184,  48,   6,  63,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 140,   0,   0,   0,   0, 
-      6,   6,   6, 185,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6, 140,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6, 186,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    187,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 188, 189, 190,   0,   0, 
-      0,   0, 191,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6,   6, 192,   6, 193, 194, 195,   6, 196, 197, 198,   6,   6,   6,   6,   6, 
-      6,   6,   6,   6,   6, 199, 200, 137, 192, 192, 129, 129, 201, 201, 202,   6, 
-      6,   6,   6,   6,   6,   6, 132,   0,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,  86,   6,   6,   6,   6,   6,   6, 
-     76,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   6,   6,   6,   6,  85, 
-};
-
-RE_UINT8 re_id_continue_stage_4[] = {
-      0,   0,   0,   0,   0,   0, 255,   3, 254, 255, 255, 135, 254, 255, 255,   7, 
-      0,   4, 160,   4, 255, 255, 127, 255, 255, 255, 255, 255, 195, 255,   3,   0, 
-     31,  80,   0,   0, 255, 255, 223,  60, 192, 215, 255, 255, 251, 255, 255, 255, 
-    255, 255, 191, 255, 251, 252, 255, 255, 255,   0, 254, 255, 255, 255, 127,   2, 
-    254, 255, 255, 255, 255, 255, 255, 191, 182,   0, 255, 255, 255,   7,   7,   0, 
-      0,   0, 255,   7, 255, 195, 255, 255, 255, 255, 239, 159, 255, 253, 255, 159, 
-      0,   0, 255, 255, 255, 231, 255, 255, 255, 255,   3,   0, 255, 255,  63,   4, 
-    255,  63,   0,   0, 255, 255, 255,  15, 207, 255, 254, 254, 238, 159, 249, 255, 
-    255, 253, 197, 243, 159, 121, 128, 176, 207, 255,   3,   0, 238, 135, 249, 255, 
-    255, 253, 109, 211, 135,  57,   2,  94, 192, 255,  63,   0, 238, 191, 251, 255, 
-    255, 253, 237, 243, 191,  59,   1,   0, 207, 255,   0,   0, 159,  57, 192, 176, 
-    207, 255,   2,   0, 236, 199,  61, 214,  24, 199, 255, 195, 199,  61, 129,   0, 
-    192, 255,   0,   0, 238, 223, 253, 255, 255, 253, 239, 227, 223,  61,  96,   3, 
-    236, 223, 253, 255, 255, 253, 239, 243, 223,  61,  96,  64, 207, 255,   6,   0, 
-    255, 255, 255, 231, 223, 125, 128,   0, 207, 255,   0, 252, 236, 255, 127, 252, 
-    255, 255, 251,  47, 127, 132,  95, 255,   0,   0,  12,   0, 255, 255, 255,   7, 
-    255, 127, 255,   3, 150,  37, 240, 254, 174, 236, 255,  59,  95,  63, 255,  51, 
-      1,   0,   0,   3, 255,   3, 160, 194, 255, 254, 255, 255, 255,  31, 254, 255, 
-    223, 255, 255, 254, 255, 255, 255,  31,  64,   0,   0,   0, 255,   3, 255, 255, 
-    255, 255, 255,  63,  63,   0, 255, 255, 255, 255, 255,  23, 255,  61, 127,  61, 
-    255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 255, 255,  61, 255, 
-      0, 254,   3,   0, 255, 255,   0,   0, 255, 255,  31,   0, 255, 159, 255, 255, 
-    255, 199,   1,   0, 255, 223,  31,   0, 255, 255,  15,   0, 255, 223,  13,   0, 
-    255, 255, 207, 255, 255, 255, 143,  48, 255,   3,   0,   0,   0,  56, 255,   3, 
-    255, 255, 255,   0, 255,   7, 255, 255, 255, 255,  63,   0, 255,  15, 255,  15, 
-    192, 255, 255, 255, 255,  63,  31,   0, 255,  15, 255, 255, 255,   3, 255,   7, 
-    255, 255, 255, 127, 255, 255, 255, 159, 255,   3, 255,   3, 128,   0,   0,   0, 
-    255,  15, 255,   3,   0, 248,  15,   0, 255, 199, 255,   3, 255, 227, 255, 255, 
-      0,   0, 247, 255, 255, 255,   7,   0, 127,   0,   0, 240, 255, 255,  63,  63, 
-     63,  63, 255, 170, 255, 255, 223,  95, 220,  31, 207,  15, 255,  31, 220,  31, 
-      0,   0,   0, 128,   1,   0,  16,   0,   0,   0,   2, 128,   0,   0, 255,  31, 
-    226, 255,   1,   0, 132, 252,  47,  63,  80, 253, 255, 243, 224,  67,   0,   0, 
-    255,   1,   0,   0, 255, 127, 255, 255,  31, 248,   3,   0,  63, 128,   0, 128, 
-    255, 255, 127,   0, 127, 127, 127, 127, 224,   0,   0,   0, 254, 255,  62,  31, 
-    255, 255, 127, 254, 255, 255, 255, 247, 224, 255, 255, 255, 255,  63, 254, 255, 
-    255, 127,   0,   0, 255,  15,   0,   0, 255,  31,   0,   0, 255,  31, 255, 255, 
-    255, 255,   0, 176,   0,   0, 128, 255, 252, 255, 255, 255, 255, 121,   3,   0, 
-      0,   0,   0, 252, 255,   0,   0,   0,  31,   0, 255,   3, 255, 255, 255,   8, 
-    255,  63, 255, 255,   1, 128, 255,   3, 255,  63, 255,   3, 255, 255, 127,  12, 
-      7,   0,   0,  56, 126, 126, 126,   0, 127, 127,   0,   0, 255,  55, 255,   3, 
-     15,   0, 255, 255, 127, 248, 255, 255, 255, 255, 255,   3, 127,   0, 248, 224, 
-    255, 253, 127,  95, 219, 255, 255, 255,   0,   0, 248, 255, 255, 255, 252, 255, 
-      0,   0, 255,  15, 127,   0,  24,   0,   0, 224,   0,   0,   0,   0, 223, 255, 
-    252, 252, 252,  28, 255, 239, 255, 255, 127, 255, 255, 183, 255,  63, 255,  63, 
-      0,   0,   0,  32, 255, 255,   1,   0, 255,   7,   0,   0,  15, 255,  62,   0, 
-     63, 253, 255, 255, 255, 255, 191, 145, 111, 240, 239, 254, 255, 255,  15, 135, 
-    127,   0,   0,   0,   7,   0,   0,   0, 255, 255, 255,   1,   3,   0,   0,   0, 
-    224, 227,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0, 
-    255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 
-    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 
-    253, 255, 255, 247, 255, 253, 255, 255, 247, 207, 255, 255, 
-};
-
-/* ID_Continue: 2052 bytes. */
-
-RE_UINT32 re_get_id_continue(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_id_continue_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_id_continue_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_id_continue_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_id_continue_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* XID_Continue. */
-
-RE_UINT8 re_xid_continue_stage_1[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 10, 12, 13, 10, 
-     3,  3,  3,  3,  3, 14, 10, 15, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    16, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 
-};
-
-RE_UINT8 re_xid_continue_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
-    16, 17, 17, 17, 17, 17, 18, 17, 19, 17, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 21, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 22, 
-    20, 20, 23, 24, 25, 26, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 27, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 28, 29, 30, 31, 
-    32, 33, 34, 17, 35, 36, 37, 17, 38, 17, 17, 17, 17, 17, 17, 17, 
-    20, 39, 40, 17, 17, 17, 17, 17, 20, 20, 41, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 20, 42, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 43, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 44, 45, 46, 47, 17, 17, 17, 17, 
-    20, 20, 20, 48, 20, 20, 20, 20, 20, 20, 20, 49, 50, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20, 50, 17, 17, 
-    51, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-};
-
-RE_UINT8 re_xid_continue_stage_3[] = {
-      0,   1,   2,   3,   0,   4,   5,   5,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,   6,   6,   6,   6,   7,   8,   6,   6,   6,   9,  10,  11,   6,  12, 
-      6,   6,   6,   6,  13,   6,   6,   6,   6,  14,  15,  16,  14,  17,  18,  19, 
-     20,   6,   6,  21,   6,   6,  22,  23,  24,   6,  25,   6,   6,  26,   6,  27, 
-      6,  28,  29,   0,   0,   0,   0,   0,   6,   6,   6,  30,  31,  32,  33,  34, 
-     35,  36,  37,  38,  39,  40,  41,  42,  31,  40,  43,  44,  45,  46,  47,  48, 
-     49,  50,  51,  42,  52,  53,  54,  55,  52,  56,  57,  58,  59,  60,  61,  62, 
-     16,  63,  64,   0,  65,  66,  67,   0,  68,  69,  70,  71,  72,  73,  74,   0, 
-      6,   6,  75,   6,  76,   6,  77,  78,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,  79,   6,  80,  81,  82,   6,  83,   6,  56,  84,  85,   6,   6,  86, 
-     16,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,   6,  87,   3,   6,   6,  88,  89,  86,  90,  91,   6,  92,  93,  94, 
-     95,   6,   6,  96,   6,  97,   6,  98,  73,  99, 100, 101,   6, 102, 103,   0, 
-     29,   6, 104, 105, 106, 107,   0,   0,   6,   6, 108, 109,   6, 110,   6,  90, 
-      6,  96, 111,  76,   0,   0, 112, 113,   6,   6,   6,   6,   6,   6,   6, 114, 
-      6,   6,   6,   6,   6,   6,   6,   6, 115,   6, 116,  76,   6, 117, 118, 119, 
-      0, 120, 121, 122, 123,   0, 123, 124, 125, 126, 127,   6, 128,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6, 129, 104,   6,   6,   6,   6, 130,   6,  77,   6, 131, 132, 133, 133,   6, 
-    134, 135,  16,   6, 136,  16,   6, 137, 138, 139,   6,   6, 140,  63,   0,  24, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  98,   0,   0, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 141,   0, 
-      6,   6,   6,   6, 142,   0,  24,  76,   6,   6,   6,   6,   6,   6,   6,   6, 
-    143, 141,   6, 144,  96,   6,   6,  26, 145, 146,   6,   6, 147,  94,   0, 148, 
-      6, 149,   6,  90,   6,   6, 150, 151,   6, 152,  90,  73,   6,   6, 153,   0, 
-      6, 132, 154, 155,   6,   6, 156,   0, 157, 158,   0,   0,   0,   0,   6, 159, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 160, 161,  29, 
-      0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6, 152,   6, 152,   6,   6, 162,   0, 163, 164, 165,   6,   6,  26, 166,   6, 
-      6,   6,  76, 167,   6,   6,   6,   6,   6,  76,  24,   6, 168,   6, 149,   1, 
-     85, 169, 170, 171,   6,   6,   6,  73,   1,   2,   3, 100,   6, 104, 172,   0, 
-    173, 174, 175,   0,   6,   6,   6,  63,   0,   0,   6,  86,   0,   0,   0, 176, 
-      0,   0,   0,   0,  73,   6, 177,   0, 104,  24, 178,   0,  76,   6, 179,   0, 
-      6,   6,   6,   6,  76,  94,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    180, 181,  98,   0,   0,   0,   0,   0,  98, 162,   0,   0,   0,   0,   0,   0, 
-    182, 183,   0,  73,   0,   0,   0,   0,   6,  98,  98, 113,   0,   0,   0,   0, 
-      6,   6, 128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6,   6, 184,  48,   6,  63,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 140,   0,   0,   0,   0, 
-      6,   6,   6, 185,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6, 140,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6, 186,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    187,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 188, 189, 190,   0,   0, 
-      0,   0, 191,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      6,   6, 192,   6, 193, 194, 195,   6, 196, 197, 198,   6,   6,   6,   6,   6, 
-      6,   6,   6,   6,   6, 199, 200, 137, 192, 192, 129, 129, 201, 201, 202,   6, 
-      6,   6,   6,   6,   6,   6, 132,   0,   6,   6,   6,   6,   6,   6,   6,   6, 
-      6,   6,   6,   6,   6,   6,   6,   6,   6,  86,   6,   6,   6,   6,   6,   6, 
-     76,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   6,   6,   6,   6,  85, 
-};
-
-RE_UINT8 re_xid_continue_stage_4[] = {
-      0,   0,   0,   0,   0,   0, 255,   3, 254, 255, 255, 135, 254, 255, 255,   7, 
-      0,   4, 160,   4, 255, 255, 127, 255, 255, 255, 255, 255, 195, 255,   3,   0, 
-     31,  80,   0,   0, 255, 255, 223,  56, 192, 215, 255, 255, 251, 255, 255, 255, 
-    255, 255, 191, 255, 251, 252, 255, 255, 255,   0, 254, 255, 255, 255, 127,   2, 
-    254, 255, 255, 255, 255, 255, 255, 191, 182,   0, 255, 255, 255,   7,   7,   0, 
-      0,   0, 255,   7, 255, 195, 255, 255, 255, 255, 239, 159, 255, 253, 255, 159, 
-      0,   0, 255, 255, 255, 231, 255, 255, 255, 255,   3,   0, 255, 255,  63,   4, 
-    255,  63,   0,   0, 255, 255, 255,  15, 207, 255, 254, 254, 238, 159, 249, 255, 
-    255, 253, 197, 243, 159, 121, 128, 176, 207, 255,   3,   0, 238, 135, 249, 255, 
-    255, 253, 109, 211, 135,  57,   2,  94, 192, 255,  63,   0, 238, 191, 251, 255, 
-    255, 253, 237, 243, 191,  59,   1,   0, 207, 255,   0,   0, 159,  57, 192, 176, 
-    207, 255,   2,   0, 236, 199,  61, 214,  24, 199, 255, 195, 199,  61, 129,   0, 
-    192, 255,   0,   0, 238, 223, 253, 255, 255, 253, 239, 227, 223,  61,  96,   3, 
-    236, 223, 253, 255, 255, 253, 239, 243, 223,  61,  96,  64, 207, 255,   6,   0, 
-    255, 255, 255, 231, 223, 125, 128,   0, 207, 255,   0, 252, 236, 255, 127, 252, 
-    255, 255, 251,  47, 127, 132,  95, 255,   0,   0,  12,   0, 255, 255, 255,   7, 
-    255, 127, 255,   3, 150,  37, 240, 254, 174, 236, 255,  59,  95,  63, 255,  51, 
-      1,   0,   0,   3, 255,   3, 160, 194, 255, 254, 255, 255, 255,  31, 254, 255, 
-    223, 255, 255, 254, 255, 255, 255,  31,  64,   0,   0,   0, 255,   3, 255, 255, 
-    255, 255, 255,  63,  63,   0, 255, 255, 255, 255, 255,  23, 255,  61, 127,  61, 
-    255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 255, 255,  61, 255, 
-      0, 254,   3,   0, 255, 255,   0,   0, 255, 255,  31,   0, 255, 159, 255, 255, 
-    255, 199,   1,   0, 255, 223,  31,   0, 255, 255,  15,   0, 255, 223,  13,   0, 
-    255, 255, 207, 255, 255, 255, 143,  48, 255,   3,   0,   0,   0,  56, 255,   3, 
-    255, 255, 255,   0, 255,   7, 255, 255, 255, 255,  63,   0, 255,  15, 255,  15, 
-    192, 255, 255, 255, 255,  63,  31,   0, 255,  15, 255, 255, 255,   3, 255,   7, 
-    255, 255, 255, 127, 255, 255, 255, 159, 255,   3, 255,   3, 128,   0,   0,   0, 
-    255,  15, 255,   3,   0, 248,  15,   0, 255, 199, 255,   3, 255, 227, 255, 255, 
-      0,   0, 247, 255, 255, 255,   7,   0, 127,   0,   0, 240, 255, 255,  63,  63, 
-     63,  63, 255, 170, 255, 255, 223,  95, 220,  31, 207,  15, 255,  31, 220,  31, 
-      0,   0,   0, 128,   1,   0,  16,   0,   0,   0,   2, 128,   0,   0, 255,  31, 
-    226, 255,   1,   0, 132, 252,  47,  63,  80, 253, 255, 243, 224,  67,   0,   0, 
-    255,   1,   0,   0, 255, 127, 255, 255,  31, 248,   3,   0,  63, 128,   0, 128, 
-    255, 255, 127,   0, 127, 127, 127, 127, 224,   0,   0,   0, 254, 255,  62,  31, 
-    255, 255, 127, 230, 255, 255, 255, 247, 224, 255, 255, 255, 255,  63, 254, 255, 
-    255, 127,   0,   0, 255,  15,   0,   0, 255,  31,   0,   0, 255,  31, 255, 255, 
-    255, 255,   0, 176,   0,   0, 128, 255, 252, 255, 255, 255, 255, 121,   3,   0, 
-      0,   0,   0, 252, 255,   0,   0,   0,  31,   0, 255,   3, 255, 255, 255,   8, 
-    255,  63, 255, 255,   1, 128, 255,   3, 255,  63, 255,   3, 255, 255, 127,  12, 
-      7,   0,   0,  56, 126, 126, 126,   0, 127, 127,   0,   0, 255,  55, 255,   3, 
-     15,   0, 255, 255, 127, 248, 255, 255, 255, 255, 255,   3, 127,   0, 248, 224, 
-    255, 253, 127,  95, 219, 255, 255, 255,   0,   0, 248, 255, 240, 255, 255, 255, 
-    255, 255, 252, 255, 127,   0,  24,   0,   0, 224,   0,   0,   0,   0, 138, 170, 
-    252, 252, 252,  28, 255, 239, 255, 255, 127, 255, 255, 183, 255,  63, 255,  63, 
-      0,   0,   0,  32, 255, 255,   1,   0, 255,   7,   0,   0,  15, 255,  62,   0, 
-     63, 253, 255, 255, 255, 255, 191, 145, 111, 240, 239, 254, 255, 255,  15, 135, 
-    127,   0,   0,   0,   7,   0,   0,   0, 255, 255, 255,   1,   3,   0,   0,   0, 
-    224, 227,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0, 
-    255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 
-    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 
-    253, 255, 255, 247, 255, 253, 255, 255, 247, 207, 255, 255, 
-};
-
-/* XID_Continue: 2052 bytes. */
-
-RE_UINT32 re_get_xid_continue(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_xid_continue_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_xid_continue_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_xid_continue_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_xid_continue_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Changes_When_Lowercased. */
-
-RE_UINT8 re_changes_when_lowercased_stage_1[] = {
-    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_changes_when_lowercased_stage_2[] = {
-     0,  1,  2,  3,  3,  3,  3,  3,  4,  3,  3,  3,  3,  3,  3,  5, 
-     6,  3,  7,  3,  3,  3,  8,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 10, 
-     3,  3, 11,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-};
-
-RE_UINT8 re_changes_when_lowercased_stage_3[] = {
-     0,  0,  1,  0,  0,  0,  2,  0,  3,  4,  5,  6,  7,  8,  9, 10, 
-     3, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0, 13, 14, 15, 16, 17, 
-    18, 19,  0,  3, 20,  3, 21,  3,  3, 22, 23,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0, 18, 24,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     3,  3,  3,  3, 25,  3,  3,  3, 26, 27, 28, 29, 27, 30, 31, 32, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 33,  0, 19, 34,  0,  0,  0, 
-     0,  0,  0,  0,  0, 35, 19,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    18, 36,  0, 37,  3,  3,  3, 38,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  3, 39, 40,  0,  0,  0,  0, 41,  3, 42, 43, 44,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0, 
-    18, 45,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-};
-
-RE_UINT8 re_changes_when_lowercased_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7, 255, 255, 127, 127,  85,  85,  85,  85, 
-     85,  85,  85, 170, 170,  84,  85,  85,  85,  85,  85,  43, 214, 206, 219, 177, 
-    213, 210, 174,  17, 176, 173, 170,  74,  85,  85, 214,  85,  85,  85,   5, 108, 
-    122,  85,   0,   0,   0,   0,  69,   0,  64, 215, 254, 255, 251,  15,   0,   0, 
-      0, 128,   0,  85,  85,  85, 144, 230, 255, 255, 255, 255, 255, 255,   0,   0, 
-      1,  84,  85,  85, 171,  42,  85,  85,  85,   0, 254, 255, 255, 255, 127,   0, 
-     63,   0,   0,   0,  85,  85,  21,  64,   0, 255,   0,  63,   0, 255,   0, 255, 
-      0,  63,   0, 170,   0, 255,   0,   0,   0, 255,   0,  31,   0,  31,   0,  15, 
-      0,  31,   0,  31,  64,  12,   4,   0,   8,   0,   0,   0,   0,   0, 192, 255, 
-    255, 127,   0,   0, 157, 234,  37, 192,   5,  40,   0,   0,  85,  21,   0,   0, 
-     85,  85,  85,   0,  84,  85,  84,  85,  85,  85,   0, 106,  85,  40,   1,   0, 
-     85,   1,   0,   0, 255,   0,   0,   0, 
-};
-
-/* Changes_When_Lowercased: 604 bytes. */
-
-RE_UINT32 re_get_changes_when_lowercased(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_changes_when_lowercased_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_changes_when_lowercased_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_changes_when_lowercased_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_changes_when_lowercased_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Changes_When_Casefolded. */
-
-RE_UINT8 re_changes_when_casefolded_stage_1[] = {
-    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_changes_when_casefolded_stage_2[] = {
-     0,  1,  2,  3,  3,  3,  3,  3,  4,  3,  3,  3,  3,  3,  3,  5, 
-     6,  3,  7,  3,  3,  3,  8,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 10,  3, 11, 
-     3,  3, 12,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-};
-
-RE_UINT8 re_changes_when_casefolded_stage_3[] = {
-     0,  0,  1,  0,  0,  2,  3,  0,  4,  5,  6,  7,  8,  9, 10, 11, 
-     4, 12, 13,  0,  0,  0,  0,  0,  0,  0, 14, 15, 16, 17, 18, 19, 
-    20, 21,  0,  4, 22,  4, 23,  4,  4, 24, 25,  0, 26,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0, 20, 27,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     4,  4,  4,  4, 28,  4,  4,  4, 29, 30, 31, 32, 20, 33, 34, 35, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 36,  0, 21, 37,  0,  0,  0, 
-     0,  0,  0,  0,  0, 38, 21,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    20, 39,  0, 40,  4,  4,  4, 41,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  4, 42, 43,  0,  0,  0,  0, 44,  4, 45, 46, 47,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0, 48,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0, 
-    20, 49,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-};
-
-RE_UINT8 re_changes_when_casefolded_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7,   0,   0,  32,   0, 255, 255, 127, 255, 
-     85,  85,  85,  85,  85,  85,  85, 170, 170,  86,  85,  85,  85,  85,  85, 171, 
-    214, 206, 219, 177, 213, 210, 174,  17, 176, 173, 170,  74,  85,  85, 214,  85, 
-     85,  85,   5, 108, 122,  85,   0,   0,  32,   0,   0,   0,   0,   0,  69,   0, 
-     64, 215, 254, 255, 251,  15,   0,   0,   4, 128,  99,  85,  85,  85, 179, 230, 
-    255, 255, 255, 255, 255, 255,   0,   0,   1,  84,  85,  85, 171,  42,  85,  85, 
-     85,   0, 254, 255, 255, 255, 127,   0, 128,   0,   0,   0,  63,   0,   0,   0, 
-     85,  85,  21,  76,   0, 255,   0,  63,   0, 255,   0, 255,   0,  63,   0, 170, 
-      0, 255,   0,   0, 255, 255, 156,  31, 156,  31,   0,  15,   0,  31, 156,  31, 
-     64,  12,   4,   0,   8,   0,   0,   0,   0,   0, 192, 255, 255, 127,   0,   0, 
-    157, 234,  37, 192,   5,  40,   0,   0,  85,  21,   0,   0,  85,  85,  85,   0, 
-     84,  85,  84,  85,  85,  85,   0, 106,  85,  40,   1,   0,  85,   1,   0,   0, 
-    127,   0, 248,   0, 255,   0,   0,   0, 
-};
-
-/* Changes_When_Casefolded: 636 bytes. */
-
-RE_UINT32 re_get_changes_when_casefolded(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_changes_when_casefolded_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_changes_when_casefolded_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_changes_when_casefolded_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_changes_when_casefolded_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Math. */
-
-RE_UINT8 re_math_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_math_stage_2[] = {
-    0, 1, 2, 2, 2, 2, 2, 2, 3, 4, 5, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 7, 
-    2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-};
-
-RE_UINT8 re_math_stage_3[] = {
-     0,  1,  2,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5, 
-     4,  4,  4,  4,  4,  4,  4,  4,  6,  4,  4,  4,  4,  4,  4,  4, 
-     4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 
-     7,  8,  9, 10, 11, 12, 13, 14, 15, 15, 15, 15, 16, 17, 18, 19, 
-     4,  4,  4,  4,  4,  4, 20, 21, 22, 23,  4,  4,  4,  4,  4, 24, 
-     4,  4,  4,  4, 15, 15, 15, 15, 15, 15, 15, 15, 25, 26,  4,  4, 
-     4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 27,  4,  4,  4, 
-     4,  4,  4,  4,  4,  4,  4,  4,  4, 28,  4,  4, 29, 30,  4, 31, 
-    15, 32, 33, 34, 35, 36, 15, 15, 15, 15, 37, 15, 15, 15, 15, 38, 
-};
-
-RE_UINT8 re_math_stage_4[] = {
-      0,   0,   0,   0,   0,   8,   0, 112,   0,   0,   0,  64,   0,   0,   0,  80, 
-      0,   0,   0,   0,   0,  16,   2,   0,   0,   0, 128,   0,   0,   0, 128,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  39,   0,   0,   0, 115,   0, 
-    192,   1,   0,   0,   0,   0,   0,   0,   0,   0,  64,   0,   0,   0,  28,   0, 
-     17,   0,   4,   0,  30,   0,   0, 124,   0, 124,   0,   0,   0,   0,   0,   0, 
-      0,   0, 255,  31,  98, 248,   0,   0, 132, 252,  47,  63,  16, 179, 251, 241, 
-    255,  11,   0,   0,   0,   0,   0,   0,   0,   0, 255, 255, 255, 126, 195, 240, 
-    255, 255, 255,  47,  48,   0, 240, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
-      0,  15,   0,   0,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  16, 
-      0,   0,   0, 248, 255, 255, 191,   0,   0,   0,   1, 240,   7,   0,   0,   0, 
-      0,   0,   0,   0,   3, 192, 255, 240, 195, 140,  15,   0, 148,  31,   0, 255, 
-     96,   0,   0,   0,   0,   0,   0,   0,   5,   0,   0,   0,  15, 224,   0,   0, 
-    255, 215, 255, 255, 255, 255, 255, 255,   0,   0,   0,   0,   0,   0, 255, 255, 
-    159,  31,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   2,   0,   0, 
-      0,   0,   0,   0, 126,   1,   0,   0,   0,   8,   0, 112,   0,   0,   0,  80, 
-      0,   0,   0,  80,   0,   0,   0,   0,   0,   0,   0,   0,   4,  30,   0,   0, 
-    255, 255, 223, 255, 255, 255, 255, 255, 255, 255, 255, 223, 100, 222, 255, 235, 
-    239, 255, 255, 255, 255, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123, 
-     95, 252, 253, 255, 255, 255, 255, 255, 255, 255, 255, 255,  63, 255, 255, 255, 
-    255, 207, 255, 255, 255, 255, 255, 255, 
-};
-
-/* Math: 588 bytes. */
-
-RE_UINT32 re_get_math(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_math_stage_1[f] << 4);
-    f = code >> 10;
-    code ^= (f << 10);
-    pos = ((RE_UINT32)re_math_stage_2[pos + f] << 4);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_math_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_math_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Alphabetic. */
-
-RE_UINT8 re_alphabetic_stage_1[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 10, 12, 13, 10, 
-     3,  3,  3,  3,  3, 14, 10, 15, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 
-};
-
-RE_UINT8 re_alphabetic_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
-    16, 17, 18, 17, 17, 17, 19, 20, 21, 17, 22, 22, 22, 22, 22, 22, 
-    22, 22, 22, 22, 22, 22, 23, 22, 22, 22, 22, 22, 22, 22, 22, 22, 
-    22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 
-    22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 24, 
-    22, 22, 25, 26, 27, 28, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 
-    22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 29, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 30, 31, 32, 33, 
-    34, 35, 36, 17, 37, 38, 39, 17, 40, 17, 17, 17, 17, 17, 17, 17, 
-    22, 41, 42, 17, 17, 17, 17, 17, 22, 22, 43, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 22, 44, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 45, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 46, 47, 17, 17, 17, 17, 
-    22, 22, 22, 48, 22, 22, 22, 22, 22, 22, 22, 49, 50, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 22, 50, 17, 17, 
-};
-
-RE_UINT8 re_alphabetic_stage_3[] = {
-      0,   0,   1,   1,   0,   2,   3,   3,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4,   4,   5,   6,   0,   0,   7,   8,   9,  10,   4,  11, 
-      4,   4,   4,   4,  12,   4,   4,   4,   4,  13,  14,  15,  16,  17,  18,  19, 
-     20,   4,  21,  22,   4,   4,  23,  24,  25,   4,  26,   4,   4,  27,  28,  29, 
-     30,  31,  32,   0,   0,   0,   0,   0,   4,  33,  34,  35,  36,  37,  38,  39, 
-     40,  41,  42,  43,  44,  45,  46,  47,  36,  45,  48,  49,  50,  51,  52,   0, 
-     53,  54,  55,  47,  56,  54,  57,  58,  56,  59,  60,  61,  62,  63,  64,  65, 
-     15,  66,  67,   0,  68,  69,  70,   0,  71,   0,  72,  73,  74,  75,   0,   0, 
-      4,  76,  25,  77,  78,   4,  79,  80,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,  81,   4,  82,  83,  84,   4,  85,   4,  86,   0,  87,   4,   4,  88, 
-     15,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,  89,   1,   4,   4,  90,  91,  92,  92,  93,   4,  94,  95,   0, 
-      0,   4,   4,  96,   4,  97,   4,  98,  75,  99,  25, 100,   4, 101, 102,   0, 
-    103,   4, 104, 105,   0, 106,   0,   0,   4, 107, 108,   0,   4, 109,   4, 110, 
-      4,  98, 111, 112,   0,   0,   0, 113,   4,   4,   4,   4,   4,   4,   0,   0, 
-      4,   4,   4,   4,   4,   4,   4,   4, 114,   4, 115, 112,   4, 116, 117, 118, 
-      0,   0,   0, 119, 120,   0,   0,   0, 121, 122, 123,   4, 124,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0, 125,   4, 102,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4, 126, 104,   4,   4,   4,   4, 127,   4,  79,   4, 128, 129, 130, 130,   4, 
-      0, 131,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    132, 133,  15,   4, 134,  15,   4, 135, 136, 137,   4,   4, 138,  66,   0,  25, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  98,   0,   0, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 139,   0, 
-      4,   4,   4,   4,  31,   0,  25, 112,   4,   4,   4,   4,   4,   4,   4,   4, 
-    140, 141,   4, 142,  96,   4,   4,  87, 143, 144,   4,   4, 145, 102,   0, 146, 
-    147,  16,   4,  92,   4,   4,  47, 148,  28,  97, 149,  75,   4, 150, 131,   0, 
-      4, 129, 151, 152,   4, 104, 153,   0, 154, 155,   0,   0,   0,   0,   4, 156, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 157, 158, 103, 
-      0,   0,   0,   0,   0,   0,   0,   0,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4, 159,   4, 159,   4,   4, 160,   0, 161, 162, 163,   4,   4,  27, 164,   4, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4, 112,  25,   4, 165,   4,  16, 166, 
-      0,   0,   0, 167,   4,   4,   4,  75,   0,   1,   1, 168,   4, 104, 169,   0, 
-    170, 171, 172,   0,   4,   4,   4,  66,   0,   0,   4,  88,   0,   0,   0,   0, 
-      0,   0,   0,   0,  75,   4, 173,   0, 104,  25, 156,   0, 112,   4, 174,   0, 
-      4,   4,   4,   4, 112,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    175, 176,  98,   0,   0,   0,   0,   0,  98, 160,   0,   0,   0,   0,   0,   0, 
-    177,  92,   0,  75,   0,   0,   0,   0,   4,  98,  98, 149,   0,   0,   0,   0, 
-      4,   4, 124,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,   4, 178,   0, 144,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 138,   0,   0,   0,   0, 
-      4,   4,   4, 179,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4, 138,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    180,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,   4, 181,   4, 182, 183, 184,   4, 185, 186, 187,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4, 188, 189, 135, 181, 181, 126, 126, 190, 190, 191,   0, 
-      4,   4,   4,   4,   4,   4, 129,   0,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,  88,   4,   4,   4,   4,   4,   4, 
-    112,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-};
-
-RE_UINT8 re_alphabetic_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4, 255, 255, 127, 255, 
-    255, 255, 255, 255, 195, 255,   3,   0,  31,  80,   0,   0,  32,   0,   0,   0, 
-      0,   0, 223,  60,  64, 215, 255, 255, 251, 255, 255, 255, 255, 255, 191, 255, 
-      3, 252, 255, 255, 255,   0, 254, 255, 255, 255, 127,   2, 254, 255, 255, 255, 
-    255,   0,   0,   0,   0,   0, 255, 191, 182,   0, 255, 255, 255,   7,   7,   0, 
-      0,   0, 255,   7, 255, 255, 255, 254,   0, 192, 255, 255, 255, 255, 239,  31, 
-    254, 225,   0, 156,   0,   0, 255, 255,   0, 224, 255, 255, 255, 255,   3,   0, 
-      0, 252, 255, 255, 255,   7,  48,   4, 255, 255, 255, 252, 255,  31,   0,   0, 
-    255, 255, 255,   1, 255, 255, 255, 239, 255, 223, 225, 255,  15,   0, 254, 254, 
-    238, 159, 249, 255, 255, 253, 197, 227, 159,  89, 128, 176,  15,   0,   3,   0, 
-    238, 135, 249, 255, 255, 253, 109, 195, 135,  25,   2,  94,   0,   0,  63,   0, 
-    238, 191, 251, 255, 255, 253, 237, 227, 191,  27,   1,   0,  15,   0,   0,   0, 
-    159,  25, 192, 176,  15,   0,   2,   0, 236, 199,  61, 214,  24, 199, 255, 195, 
-    199,  29, 129,   0, 238, 223, 253, 255, 255, 253, 239, 227, 223,  29,  96,   3, 
-    236, 223, 253, 255, 223,  29,  96,  64,  15,   0,   6,   0, 255, 255, 255, 231, 
-    223,  93, 128,   0,  15,   0,   0, 252, 236, 255, 127, 252, 255, 255, 251,  47, 
-    127, 128,  95, 255,   0,   0,  12,   0, 255, 255, 255,   7, 127,  32,   0,   0, 
-    150,  37, 240, 254, 174, 236, 255,  59,  95,  32,   0,  48,   1,   0,   0,   0, 
-    255, 254, 255, 255, 255,  31, 254, 255,   3, 255, 255, 254, 255, 255, 255,  31, 
-    255, 255, 127, 249, 231, 193, 255, 255, 127,  64,   0,  48,  63,   0, 255, 255, 
-    255, 255, 255,  23, 255,  61, 127,  61, 255,  61, 255, 255, 255, 255,  61, 127, 
-     61, 255, 127, 255, 255, 255,  61, 255, 255, 255, 255, 135, 255, 255,   0,   0, 
-    255, 255,  31,   0, 255, 159, 255, 255, 255, 199,   1,   0, 255, 223,  15,   0, 
-    255, 255,  15,   0, 255, 223,  13,   0, 255, 255, 207, 255, 255,   1, 128,  16, 
-    255, 255, 255,   0, 255,   7, 255, 255, 255, 255,  63,   0, 255,  15, 255,   1, 
-    255,  63,  31,   0, 255,  15, 255, 255, 255,   3,   0,   0, 255, 255, 255,  15, 
-    255, 255, 255, 127, 254, 255,  31,   0, 128,   0,   0,   0, 255, 255, 239, 255, 
-    239,  15,   0,   0, 255, 195,   0,   0, 191, 255,   3,   0,   0, 224,   0, 252, 
-    255, 255, 255,  63,   0, 222,   7,   0, 255, 255,  63,  63,  63,  63, 255, 170, 
-    255, 255, 223,  95, 220,  31, 207,  15, 255,  31, 220,  31,   0,   0,   2, 128, 
-      0,   0, 255,  31, 132, 252,  47,  62,  80, 189, 255, 243, 224,  67,   0,   0, 
-    255,   1,   0,   0,   0,   0, 192, 255, 255, 127, 255, 255,  31, 120,   0,   0, 
-     63, 128,   0,   0, 255, 255, 127,   0, 127, 127, 127, 127,   0, 128,   0,   0, 
-    224,   0,   0,   0, 254,   3,  62,  31, 255, 255, 127, 224, 255, 255, 255, 247, 
-    224, 255, 255, 255, 255,  63, 254, 255, 255, 127,   0,   0, 255,  15,   0,   0, 
-    255,  31, 255, 255,   0,  12,   0,   0, 255, 127,   0, 128,   0,   0, 128, 255, 
-    252, 255, 255, 255, 255, 121,   3,   0,   0,   0,   0, 252, 187, 247, 255, 255, 
-      0,   0, 252,   8, 255, 255,   7,   0, 255, 255, 247, 255, 255,  63,   0,   0, 
-    255, 255, 127,   4,   5,   0,   0,  56, 126, 126, 126,   0, 127, 127,   0,   0, 
-    255,   7,   0,   0,  15,   0, 255, 255, 127, 248, 255, 255, 255,  63, 255, 255, 
-    255, 255, 255,   3, 127,   0, 248, 224, 255, 253, 127,  95, 219, 255, 255, 255, 
-      0,   0, 248, 255, 255, 255, 252, 255,   0,   0, 255,  15,   0,   0, 223, 255, 
-    192, 255, 255, 255, 252, 252, 252,  28, 255, 239, 255, 255, 127, 255, 255, 183, 
-    255,  63, 255,  63, 255, 255,   1,   0,  15, 255,  62,   0,  63, 253, 255, 255, 
-    255, 255, 191, 145, 111, 240, 239, 254,  63,   0,   0,   0,   7,   0,   0,   0, 
-      3,   0,   0,   0, 255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 
-    239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255, 
-     63, 255, 255, 255, 253, 255, 255, 247, 255, 253, 255, 255, 247,  15,   0,   0, 
-};
-
-/* Alphabetic: 1976 bytes. */
-
-RE_UINT32 re_get_alphabetic(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_alphabetic_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_alphabetic_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_alphabetic_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_alphabetic_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* XID_Start. */
-
-RE_UINT8 re_xid_start_stage_1[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 10, 12, 13, 10, 
-     3,  3,  3,  3,  3, 14, 10, 15, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 
-};
-
-RE_UINT8 re_xid_start_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
-    16, 17, 17, 17, 17, 17, 18, 17, 19, 17, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 21, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 22, 
-    20, 20, 23, 24, 25, 26, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 27, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 28, 29, 30, 31, 
-    32, 33, 34, 17, 35, 36, 37, 17, 38, 17, 17, 17, 17, 17, 17, 17, 
-    20, 39, 40, 17, 17, 17, 17, 17, 20, 20, 41, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 20, 42, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 43, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 44, 45, 17, 17, 17, 17, 
-    20, 20, 20, 46, 20, 20, 20, 20, 20, 20, 20, 47, 48, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20, 48, 17, 17, 
-};
-
-RE_UINT8 re_xid_start_stage_3[] = {
-      0,   0,   1,   1,   0,   2,   3,   3,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4,   4,   5,   6,   0,   0,   0,   7,   8,   9,   4,  10, 
-      4,   4,   4,   4,  11,   4,   4,   4,   4,  12,  13,  14,  15,   0,  16,  17, 
-      0,   4,  18,  19,   4,   4,  20,  21,  22,  23,  24,   4,   4,  25,  26,  27, 
-     28,  29,  30,   0,   0,   0,   0,   0,  31,  32,  33,  34,  35,  36,  37,  38, 
-     39,  40,  41,  42,  43,  44,  45,  46,  35,  44,  47,  48,  49,  50,  45,   0, 
-     51,  52,  53,  46,  51,  52,  54,  55,  51,  56,  57,  58,  59,  60,  61,   0, 
-     14,  62,  61,   0,  63,  64,  65,   0,  66,   0,  67,  68,  69,   0,   0,   0, 
-      4,  70,  71,  72,  73,   4,  74,  75,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,  76,   4,  77,  78,  79,   4,  80,   4,  81,   0,  23,   4,   4,  82, 
-     14,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,  83,   1,   4,   4,  84,  85,  86,  86,  87,   4,  88,  89,   0, 
-      0,   4,   4,  90,   4,  91,   4,  92,  93,   0,  16,  94,   4,  95,  96,   0, 
-     97,   4,  82,   0,   0,  98,   0,   0,  99,  88, 100,   0, 101, 102,   4, 103, 
-      4, 104, 105, 106,   0,   0,   0, 107,   4,   4,   4,   4,   4,   4,   0,   0, 
-      4,   4,   4,   4,   4,   4,   4,   4, 108,   4, 109, 106,   4, 110, 111, 112, 
-      0,   0,   0, 113, 114,   0,   0,   0, 115, 116, 117,   4, 118,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4, 119, 120,   4,   4,   4,   4, 121,   4,  74,   4, 122,  97, 123, 123,   0, 
-    124, 125,  14,   4, 126,  14,   4, 127,  99, 128,   4,   4, 129,  81,   0,  16, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  92,   0,   0, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  95,   0, 
-      4,   4,   4,   4,  68,   0,  16, 106,   4,   4,   4,   4,   4,   4,   4,   4, 
-    130, 131,   4, 132,  90,   4,   4,  23, 133, 134,   4,   4, 135, 136,   0, 137, 
-    138, 139,   4,  88, 134,  88,   0, 140,  26,  74,  61,  93,  31, 141, 142,   0, 
-      4, 118, 143, 144,   4, 145, 146,   0, 147, 148,   0,   0,   0,   0,   4, 139, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 149, 150, 151, 
-      0,   0,   0,   0,   0,   0,   0,   0,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4, 152,   4, 152,   4,   4, 153,   0, 154, 155, 156,   4,   4,  86, 157,   4, 
-      4,   4, 106,  31,   4,   4,   4,   4,   4, 106,  16,   4, 158,   4,  15, 159, 
-      0,   0,   0, 160,   4,   4,   4,  93,   0,   1,   1, 161, 106, 120, 162,   0, 
-    163, 164, 165,   0,   4,   4,   4,  81,   0,   0,   4,  82,   0,   0,   0,   0, 
-      0,   0,   0,   0,  93,   4, 166,   0, 120,  16,  18,   0, 106,   4, 167,   0, 
-      4,   4,   4,   4, 106,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    168, 169,  92,   0,   0,   0,   0,   0,  92, 153,   0,   0,   0,   0,   0,   0, 
-    170,  88,   0,  93,   0,   0,   0,   0,   4,  92,  92, 141,   0,   0,   0,   0, 
-      4,   4, 118,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    101,  90,   0,   0, 101,  23,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 129,   0,   0,   0,   0, 
-      4,   4,   4, 139,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4, 129,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,  30,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-     46,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      4,   4, 171,   4, 172, 173, 174,   4, 175, 176, 177,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4, 178, 179, 127, 171, 171, 119, 119, 180, 180, 143,   0, 
-      4,   4,   4,   4,   4,   4,  97,   0,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   4,   4,   4,   4,   4,   4,  82,   4,   4,   4,   4,   4,   4, 
-    106,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-};
-
-RE_UINT8 re_xid_start_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7,   0,   4,  32,   4, 255, 255, 127, 255, 
-    255, 255, 255, 255, 195, 255,   3,   0,  31,  80,   0,   0,   0,   0, 223,  56, 
-     64, 215, 255, 255, 251, 255, 255, 255, 255, 255, 191, 255,   3, 252, 255, 255, 
-    255,   0, 254, 255, 255, 255, 127,   2, 254, 255, 255, 255, 255,   0,   0,   0, 
-      0,   0, 255, 255, 255,   7,   7,   0, 255,   7,   0,   0,   0, 192, 254, 255, 
-    255, 255,  47,   0,  96, 192,   0, 156,   0,   0, 253, 255, 255, 255,   0,   0, 
-      0, 224, 255, 255,  63,   0,   2,   0,   0, 252, 255, 255, 255,   7,  48,   4, 
-    255, 255,  63,   4,  16,   1,   0,   0, 255, 255, 255,   1, 240, 255, 255, 255, 
-    255, 255, 255,  35,   0,   0,   1, 255,   3,   0, 254, 254, 224, 159, 249, 255, 
-    255, 253, 197,  35,   0,  64,   0, 176,   3,   0,   3,   0, 224, 135, 249, 255, 
-    255, 253, 109,   3,   0,   0,   0,  94,   0,   0,  28,   0, 224, 191, 251, 255, 
-    255, 253, 237,  35,   0,   0,   1,   0,   3,   0,   0,   0,   0,   0,   0, 176, 
-      3,   0,   2,   0, 232, 199,  61, 214,  24, 199, 255,   3, 224, 223, 253, 255, 
-    255, 253, 239,  35,   0,   0,   0,   3,   0,   0,   0,  64,   3,   0,   6,   0, 
-    255, 255, 255,  39,   0,  64,   0,   0,   3,   0,   0, 252, 224, 255, 127, 252, 
-    255, 255, 251,  47, 127,   0,   0,   0, 255, 255,   5,   0, 150,  37, 240, 254, 
-    174, 236,   5,  32,  95,   0,   0,  48,   1,   0,   0,   0, 255, 254, 255, 255, 
-    255,  31,   0,   0,   0,  31,   0,   0, 255,   7,   0, 128,   0,   0,  63,  60, 
-     98, 192, 225, 255,   3,  64,   0,   0,  63,   0, 255, 255, 255, 255, 255,  23, 
-    255,  61, 127,  61, 255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 
-    255, 255,  61, 255, 255, 255, 255,   7, 255, 255,  31,   0, 255, 159, 255, 255, 
-    255, 199,   1,   0, 255, 223,   3,   0, 255, 255,   3,   0, 255, 223,   1,   0, 
-    255, 255,  15,   0,   0,   0, 128,  16, 255, 255, 255,   0, 255,   5, 255, 255, 
-    255, 255,  63,   0, 255, 255, 255,  31, 255,  63,  31,   0, 255,  15,   0,   0, 
-    254,   0,   0,   0, 255, 255, 127,   0, 128,   0,   0,   0, 224, 255, 255, 255, 
-    224,  15,   0,   0, 248, 255, 255, 255,   1, 192,   0,   0,  63,   0,   0,   0, 
-     15,   0,   0,   0,   0, 224,   0, 252, 255, 255, 255,  63,   0, 222,   3,   0, 
-    255, 255,  63,  63,  63,  63, 255, 170, 255, 255, 223,  95, 220,  31, 207,  15, 
-    255,  31, 220,  31,   0,   0,   2, 128,   0,   0, 255,  31, 132, 252,  47,  63, 
-     80, 253, 255, 243, 224,  67,   0,   0, 255,   1,   0,   0, 255, 127, 255, 255, 
-    255, 255, 255, 127,  31, 120,   0,   0,  63, 128,   0,   0, 127, 127, 127, 127, 
-    224,   0,   0,   0, 254,   3,  62,  31, 255, 255, 127, 224, 255, 255, 255, 247, 
-    255,  63, 254, 255, 255, 127,   0,   0, 255,  31, 255, 255,   0,  12,   0,   0, 
-    255, 127,   0, 128,   0,   0, 128, 255, 252, 255, 255, 255, 255, 121,   3,   0, 
-    255,   3,   0,   0,   0,   0,   0, 252, 187, 247, 255, 255,   7,   0,   0,   0, 
-      0,   0, 252,   8, 255, 255,   7,   0,   0, 128,   0,   0, 247,  15,   0,   0, 
-    255, 255, 127,   4, 255, 255,  98,  62,   5,   0,   0,  56, 126, 126, 126,   0, 
-    127, 127,   0,   0,  15,   0, 255, 255, 127, 248, 255, 255, 255, 255, 255,  15, 
-    255,  63, 255, 255, 255, 255, 255,   3, 127,   0, 248, 160, 255, 253, 127,  95, 
-    219, 255, 255, 255,   0,   0, 248, 255, 255, 255, 252, 255,   0,   0, 255,   3, 
-      0,   0, 138, 170, 192, 255, 255, 255, 252, 252, 252,  28, 255, 239, 255, 255, 
-    127, 255, 255, 183, 255,  63, 255,  63, 255, 255,   1,   0,  15, 255,  62,   0, 
-     63, 253, 255, 255, 255, 255, 191, 145,   1,   0, 239, 254, 255, 255, 223, 255, 
-    255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 
-    255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247, 
-    255, 253, 255, 255, 
-};
-
-/* XID_Start: 1900 bytes. */
-
-RE_UINT32 re_get_xid_start(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_xid_start_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_xid_start_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_xid_start_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_xid_start_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Default_Ignorable_Code_Point. */
-
-RE_UINT8 re_default_ignorable_code_point_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_default_ignorable_code_point_stage_2[] = {
-    0, 1, 1, 1, 2, 3, 4, 1, 5, 1, 1, 1, 6, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 
-    1, 1, 1, 1, 8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    9, 9, 9, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-};
-
-RE_UINT8 re_default_ignorable_code_point_stage_3[] = {
-     0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  0, 
-     5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     6,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  8,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  9,  0,  0, 10,  0,  0, 11, 12, 
-     0,  0,  0,  0,  0, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
-};
-
-RE_UINT8 re_default_ignorable_code_point_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  32,   0,   0, 
-      0, 128,   0,   0,   0,   0,   0,   0,   0,   0,   0, 128,   1,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,  48,   0,   0,  56,   0,   0,   0,   0,   0,   0, 
-      0, 248,   0,   0,   0, 124,   0,   0,   0,   0,   0,   0, 255, 255,   0,   0, 
-      0,   0,   0,   0,  16,   0,   0,   0, 255, 255,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0, 128,   0,   0,   0,   0,   1,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0, 255,   1,   0,   0,   0,   0,   0,   0, 248,   7, 
-    255, 255, 255, 255, 255, 255, 255, 255, 
-};
-
-/* Default_Ignorable_Code_Point: 428 bytes. */
-
-RE_UINT32 re_get_default_ignorable_code_point(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_default_ignorable_code_point_stage_1[f] << 4);
-    f = code >> 10;
-    code ^= (f << 10);
-    pos = ((RE_UINT32)re_default_ignorable_code_point_stage_2[pos + f] << 4);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_default_ignorable_code_point_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_default_ignorable_code_point_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Case_Ignorable. */
-
-RE_UINT8 re_case_ignorable_stage_1[] = {
-    0, 1, 2, 2, 2, 3, 2, 4, 5, 2, 2, 2, 2, 2, 6, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    7, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 
-};
-
-RE_UINT8 re_case_ignorable_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
-    16,  1,  1, 17,  1,  1,  1, 18, 19, 20, 21, 22, 23, 24,  1, 25, 
-    26,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27, 28, 29,  1, 
-    30,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-    31,  1,  1,  1, 32,  1, 33, 34, 35, 36, 37, 38,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 39,  1,  1, 40, 41, 
-     1, 42,  1,  1,  1,  1,  1,  1,  1,  1, 43,  1,  1,  1,  1,  1, 
-    44,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1, 45, 46,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-    47, 48,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-};
-
-RE_UINT8 re_case_ignorable_stage_3[] = {
-      0,   1,   2,   3,   0,   4,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   5,   6,   6,   6,   6,   6,   7,   8,   0,   0,   0, 
-      0,   0,   0,   0,   9,   0,   0,   0,   0,   0,  10,   0,  11,  12,  13,  14, 
-     15,   0,  16,  17,   0,   0,  18,  19,  20,   5,  21,   0,   0,  22,   0,  23, 
-     24,  25,  26,   0,   0,   0,   0,   0,  27,  28,  29,  30,  31,  32,  33,  34, 
-     35,  32,  36,  37,  35,  32,  38,  34,  31,  39,  40,  34,  41,   0,  42,   0, 
-      0,  43,  44,  34,   0,  39,  45,  34,   0,   0,  33,  34,   0,   0,  46,   0, 
-      0,  47,  48,   0,   0,  49,  50,   0,  51,  52,   0,  53,  54,  55,  56,   0, 
-      0,  57,  58,  59,  60,   0,   0,  32,   0,   0,  61,   0,   0,   0,   0,   0, 
-     62,  62,  63,  63,   0,  64,  65,   0,  66,   0,  67,   0,   0,  68,   0,   0, 
-      0,  69,   0,   0,   0,   0,   0,   0,  70,   0,  71,  72,   0,  73,   0,   0, 
-     74,  75,  41,  76,  77,  78,   0,  79,   0,  80,   0,  81,   0,   0,  82,  83, 
-      0,  84,   6,  85,  86,   6,   6,  87,   0,   0,   0,   0,   0,  88,  89,  90, 
-     91,  92,   0,  93,  94,   0,   5,  95,   0,   0,   0,  96,   0,   0,   0,  97, 
-      0,   0,   0,  98,   0,   0,   0,   6,   0,  99,   0,   0,   0,   0,   0,   0, 
-    100, 101,   0,   0, 102,   0,   0, 103, 104,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,  81, 105,   0,   0, 106,   0,   0,   0, 107, 
-      6,  77,   0,  17, 108,   0,   0,   0, 109, 110,   0,   0,   0,   0, 111, 112, 
-      0, 113, 114,   0,  27, 115,  99,   0,   0, 116, 117,  17,   0, 118, 119,   0, 
-      0,   0,   0,   0,   0,   0,   0, 120,   2,   0,   0,   0,   0, 121,  77,   0, 
-    122, 123, 124,   0,   0,   0,   0, 125,   1,   2,   3,  17,  43,   0,   0, 126, 
-      0,   0,   0,   0,   0,   0,   0,  96, 127, 128,   0,   0,   0,   0,   0,   0, 
-     31, 129, 123,   0,  77, 130,   0,   0,   0,   0,   0, 131, 132, 133,   0,   0, 
-      0,   0, 134,   0,   0,   0,   0,   0,  31,   6,   6,   6,   0,   0,   0,   0, 
-      6,   6,   6,   6,   6,   6,   6, 135, 
-};
-
-RE_UINT8 re_case_ignorable_stage_4[] = {
-      0,   0,   0,   0, 128,  64,   0,   4,   0,   0,   0,  64,   1,   0,   0,   0, 
-      0, 161, 144,   1,   0,   0, 255, 255, 255, 255, 255, 255, 255, 255,  48,   4, 
-    176,   0,   0,   0, 248,   3,   0,   0,   0,   0,   0,   2,   0,   0, 254, 255, 
-    255, 255, 255, 191, 182,   0,   0,   0,   0,   0,  16,   0,  15,   0, 255,   7, 
-      1, 248, 255, 255,   0,   0,   1,   0,   0,   0, 192, 191, 255,  61,   0,   0, 
-      0, 128,   2,   0, 255,   7,   0,   0, 192, 255,   1,   0,   0, 248,  63,   4, 
-      0,   0, 192, 255, 255,  63,   0,   0,   0,   0,   0,  14,   7,   0,   0,   0, 
-      0,   0,   0,  20, 254,  33, 254,   0,  12,   0,   2,   0,   2,   0,   0,   0, 
-      0,   0,   0,  16,  30,  32,   0,   0,  12,   0,   0,   0,   6,   0,   0,   0, 
-    134,  57,   2,   0,   0,   0,  35,   0, 190,  33,   0,   0,   0,   0,   0, 144, 
-     30,  32,  64,   0,   4,   0,   0,   0,   1,  32,   0,   0,   0,   0,   0, 192, 
-    193,  61,  96,   0,  64,  48,   0,   0,   0,   4,  92,   0,   0,   0, 242,   7, 
-    192, 127,   0,   0,   0,   0, 242,  27,  64,  63,   0,   0,   0,   0,   0,   3, 
-      0,   0, 160,   2,   0,   0, 254, 127, 223, 224, 255, 254, 255, 255, 255,  31, 
-     64,   0,   0,   0,   0, 224, 253, 102,   0,   0,   0, 195,   1,   0,  30,   0, 
-    100,  32,   0,  32,   0,   0,   0, 224,   0,   0,  28,   0,   0,   0,  12,   0, 
-      0,   0, 176,  63,  64, 254, 143,  32,   0,  56,   0,   0,   8,   0,   0,   0, 
-      0,   2,   0,   0, 135,   1,   4,  14,   0,   0, 128,   1,   0,   0,  64, 127, 
-    229,  31, 248, 159, 128,   0,   0,   0,  15,   0,   0,   0,   0,   0, 208,  23, 
-      0, 248,  15,   0,   3,   0,   0,   0,  60,   3,   0,   0,  64, 163,   3,   0, 
-      0, 240, 207,   0,   0,   0,   0,  63,   0,   0, 247, 255, 253,  33,   0,   0, 
-      0, 240, 255, 255,   3,   0,   0,   1,   0,   0,   0, 248, 127,   0,   0, 240, 
-      0,   0,   0, 160,   3, 224,   0, 224,   0, 224,   0,  96,   0, 248,   0,   3, 
-    144, 124,   0,   0,  31, 252,   2, 128,   0,   0, 255,  31, 255, 255,   1,   0, 
-      0,   0,   0,  32,   0, 128,   3,   0,   0, 128,   0, 128,   0, 128,   0,   0, 
-     32,   0,   0,   0,   0, 252,  62,   8,   0,   0,   0, 126,   0,   0,   0, 112, 
-      0,   0,  32,   0,   0,  16,   0,   0,   0, 128,   7, 176,   0,   0,   3,   0, 
-      0,   7,   0,   0,  68,   8,   0,   0,  96,   0,   0,   0,  16,   0,   0,   0, 
-    255, 255,   3,   0, 192,  63,   0,   0, 128, 255,   3,   0,   0,   0, 200,  19, 
-      0, 126, 102,   0,   8,  16,   0,   0,   0,   0, 157, 193,   2,   0,   0,  32, 
-     32,  33,   0,   0,   0,   0, 252, 255, 255, 255,   8,   0, 127,   0,   0,   0, 
-      0,   0,  36,   0,   0,   0,   0, 128,   8,   0,   0,  14, 110, 240,   0,   0, 
-      0,   0,   0, 135,   0,   0,   0, 255,   0,   0, 120,  38, 128,   3, 248, 255, 
-    231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0, 255, 255,   0,   0, 
-};
-
-/* Case_Ignorable: 1328 bytes. */
-
-RE_UINT32 re_get_case_ignorable(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_case_ignorable_stage_1[f] << 5);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_grapheme_link_stage_2[pos + f] << 3);
     f = code >> 8;
     code ^= (f << 8);
-    pos = ((RE_UINT32)re_case_ignorable_stage_2[pos + f] << 3);
+    pos = ((RE_UINT32)re_grapheme_link_stage_3[pos + f] << 3);
     f = code >> 5;
     code ^= (f << 5);
-    pos = ((RE_UINT32)re_case_ignorable_stage_3[pos + f] << 5);
+    pos = ((RE_UINT32)re_grapheme_link_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_case_ignorable_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_grapheme_link_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
 
-/* Changes_When_Casemapped. */
+/* White_Space. */
 
-RE_UINT8 re_changes_when_casemapped_stage_1[] = {
-    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_changes_when_casemapped_stage_2[] = {
-     0,  1,  2,  3,  3,  3,  3,  3,  4,  3,  3,  3,  3,  3,  5,  6, 
-     7,  3,  8,  3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3, 10,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 11,  3, 12, 
-     3,  3, 13,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
-};
-
-RE_UINT8 re_changes_when_casemapped_stage_3[] = {
-     0,  0,  1,  1,  0,  2,  3,  3,  4,  5,  4,  4,  6,  7,  8,  4, 
-     4,  9, 10, 11, 12,  0,  0,  0,  0,  0, 13, 14, 15, 16, 17, 18, 
-     4,  4,  4,  4, 19,  4,  4,  4,  4, 20, 21, 22, 23,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  4, 24,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0,  0, 
-     4,  4,  4,  4, 26,  4,  4,  4, 27,  4, 28, 29,  4, 30, 31, 32, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 33, 34,  4, 35,  0,  0,  0, 
-     0,  0,  0,  0,  0, 36,  4, 37,  0,  0,  0,  0,  0,  0,  0,  0, 
-     4, 38, 39, 40,  4,  4,  4, 41,  4, 24,  0,  0,  0,  0,  0,  0, 
-     0,  0,  4, 42, 43,  0,  0,  0,  0, 44,  4, 45, 46, 37,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0, 47,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  0,  0,  0,  0,  0, 
-     4,  4, 48,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-};
-
-RE_UINT8 re_changes_when_casemapped_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255,   7,   0,   0,  32,   0, 255, 255, 127, 255, 
-    255, 255, 255, 255, 255, 255, 255, 254, 255, 223, 255, 247, 255, 243, 255, 179, 
-    240, 255, 255, 255, 253, 255,  15, 252, 255, 255, 223,  10,  41, 139,  38,  32, 
-      9,  31,   4,   0,  32,   0,   0,   0,   0,   0, 207,  56,  64, 215, 255, 255, 
-    251, 255, 255, 255, 255, 255, 227, 255, 255, 255, 183, 239,   3, 252, 255, 255, 
-    255,   0, 254, 255, 255, 255, 127,   0, 254, 255, 255, 255, 255,   0,   0,   0, 
-     63,   0,   0,   0,   0,   0,   0,  34, 255, 255, 255,  79, 255, 255,  63,  63, 
-     63,  63, 255, 170, 255, 255, 255,  63, 255, 255, 223,  95, 220,  31, 207,  15, 
-    255,  31, 220,  31,  64,  12,   4,   0,   0,  64,   0,   0,  24,   0,   0,   0, 
-      0,   0, 192, 255, 255,   3,   0,   0, 255, 127, 255, 255, 255, 255, 255, 127, 
-    255, 255, 109, 192,  15, 120,   0,   0, 255,  63,   0,   0, 255, 255, 255,   0, 
-    252, 255, 252, 255, 255, 255,   0, 254, 255,  56,   3,   0, 127,   0, 248,   0, 
-    255, 255,   0,   0, 
-};
-
-/* Changes_When_Casemapped: 648 bytes. */
-
-RE_UINT32 re_get_changes_when_casemapped(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_changes_when_casemapped_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_changes_when_casemapped_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_changes_when_casemapped_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_changes_when_casemapped_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Pattern_White_Space. */
-
-RE_UINT8 re_pattern_white_space_stage_1[] = {
+RE_UINT8 re_white_space_stage_1[] = {
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
+    1, 
 };
 
-RE_UINT8 re_pattern_white_space_stage_2[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+RE_UINT8 re_white_space_stage_2[] = {
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+};
+
+RE_UINT8 re_white_space_stage_3[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 
+    4, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 };
 
-RE_UINT8 re_pattern_white_space_stage_3[] = {
+RE_UINT8 re_white_space_stage_4[] = {
     0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 3, 1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 
+    5, 6, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 
 };
 
-RE_UINT8 re_pattern_white_space_stage_4[] = {
+RE_UINT8 re_white_space_stage_5[] = {
       0,  62,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-     32,   0,   0,   0,   0,   0,   0,   0,   0, 192,   0,   0,   0,   3,   0,   0, 
+     32,   0,   0,   0,   1,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0, 
+      0,  64,   0,   0,   0,   0,   0,   0, 255,   7,   0,   0,   0, 131,   0,   0, 
+      0,   0,   0, 128,   0,   0,   0,   0, 
 };
 
-/* Pattern_White_Space: 178 bytes. */
+/* White_Space: 185 bytes. */
 
-RE_UINT32 re_get_pattern_white_space(RE_UINT32 ch) {
+RE_UINT32 re_get_white_space(RE_UINT32 ch) {
     RE_UINT32 code;
     RE_UINT32 f;
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_pattern_white_space_stage_1[f] << 5);
-    f = code >> 10;
-    code ^= (f << 10);
-    pos = ((RE_UINT32)re_pattern_white_space_stage_2[pos + f] << 4);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_pattern_white_space_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_pattern_white_space_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Other_Default_Ignorable_Code_Point. */
-
-RE_UINT8 re_other_default_ignorable_code_point_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_other_default_ignorable_code_point_stage_2[] = {
-    0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 
-    3, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 
-    6, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_other_default_ignorable_code_point_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
-    0, 0, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 
-    7, 0, 8, 8, 0, 0, 0, 9, 8, 8, 8, 8, 8, 8, 8, 8, 
-};
-
-RE_UINT8 re_other_default_ignorable_code_point_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0, 128,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0, 128,   1,   0,   0,   0,   0,   0,   0,   0, 224,   3,   0,   0, 
-      0,   0,   0,   0,  16,   0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0, 255,   1, 253, 255, 255, 255,   0,   0,   0,   0, 
-    255, 255, 255, 255, 255, 255, 255, 255,   0,   0,   0,   0,   0,   0, 255, 255, 
-};
-
-/* Other_Default_Ignorable_Code_Point: 340 bytes. */
-
-RE_UINT32 re_get_other_default_ignorable_code_point(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_other_default_ignorable_code_point_stage_1[f] << 5);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_white_space_stage_1[f] << 3);
+    f = code >> 13;
+    code ^= (f << 13);
+    pos = ((RE_UINT32)re_white_space_stage_2[pos + f] << 4);
     f = code >> 9;
     code ^= (f << 9);
-    pos = ((RE_UINT32)re_other_default_ignorable_code_point_stage_2[pos + f] << 3);
+    pos = ((RE_UINT32)re_white_space_stage_3[pos + f] << 3);
     f = code >> 6;
     code ^= (f << 6);
-    pos = ((RE_UINT32)re_other_default_ignorable_code_point_stage_3[pos + f] << 6);
+    pos = ((RE_UINT32)re_white_space_stage_4[pos + f] << 6);
     pos += code;
-    value = (re_other_default_ignorable_code_point_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Pattern_Syntax. */
-
-RE_UINT8 re_pattern_syntax_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_pattern_syntax_stage_2[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    2, 3, 4, 5, 3, 3, 1, 6, 7, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8, 9, 
-};
-
-RE_UINT8 re_pattern_syntax_stage_3[] = {
-     0,  1,  2,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 
-     5,  6,  4,  4,  4,  4,  7,  8,  8,  8,  8,  8,  8,  8,  8,  8, 
-     8,  9,  4,  4,  8,  8,  8,  8,  8,  8,  8,  8,  8, 10, 11,  8, 
-     8,  8,  4,  4,  4,  4,  4,  4, 12,  4,  4,  4,  4,  4,  4,  4, 
-     4,  4,  4,  4, 13,  4,  4,  4,  4, 14,  4,  4,  4,  4,  4,  4, 
-};
-
-RE_UINT8 re_pattern_syntax_stage_4[] = {
-      0,   0,   0,   0, 254, 255,   0, 252,   1,   0,   0, 120,   1,   0,   0, 120, 
-      0,   0,   0,   0, 254,  90,  67, 136,   0,   0, 128,   0,   0,   0, 128,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255, 255, 255,   0, 255, 127, 
-    254, 255, 239, 127,   0,   0,   0,   0,   0,   0, 255, 255, 255, 255, 255, 255, 
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0,   0,   0, 
-    255, 255, 255, 255, 255, 255,  63,   0,   0,   0, 240, 255, 255, 255, 255, 255, 
-     14, 255, 255, 255,   1,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0, 192, 
-     96,   0,   0,   0,   0,   0,   0,   0, 
-};
-
-/* Pattern_Syntax: 364 bytes. */
-
-RE_UINT32 re_get_pattern_syntax(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_pattern_syntax_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_pattern_syntax_stage_2[pos + f] << 3);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_pattern_syntax_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_pattern_syntax_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* IDS_Binary_Operator. */
-
-RE_UINT8 re_ids_binary_operator_stage_1[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
-};
-
-RE_UINT8 re_ids_binary_operator_stage_2[] = {
-    0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_ids_binary_operator_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
-};
-
-RE_UINT8 re_ids_binary_operator_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 243,  15, 
-};
-
-/* IDS_Binary_Operator: 130 bytes. */
-
-RE_UINT32 re_get_ids_binary_operator(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_ids_binary_operator_stage_1[f] << 4);
-    f = code >> 11;
-    code ^= (f << 11);
-    pos = ((RE_UINT32)re_ids_binary_operator_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_ids_binary_operator_stage_3[pos + f] << 7);
-    pos += code;
-    value = (re_ids_binary_operator_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* STerm. */
-
-RE_UINT8 re_sterm_stage_1[] = {
-    0, 1, 2, 2, 2, 3, 2, 4, 5, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 
-};
-
-RE_UINT8 re_sterm_stage_2[] = {
-     0,  1,  1,  1,  1,  2,  3,  4,  1,  5,  1,  1,  1,  1,  1,  1, 
-     6,  1,  1,  7,  1,  1,  8,  9, 10, 11, 12, 13, 14,  1,  1,  1, 
-    15,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  1, 
-    17,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1, 18,  1, 19,  1, 20, 21, 22, 23,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 24, 25, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 26,  1,  1,  1,  1,  1, 
-    27,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-};
-
-RE_UINT8 re_sterm_stage_3[] = {
-     0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  2,  0,  3,  0,  0,  0,  4,  0,  0,  0,  0,  0,  5,  0, 
-     6,  0,  0,  0,  0,  0,  0,  7,  0,  0,  0,  8,  0,  0,  0,  0, 
-     0,  0,  9,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0, 
-     0,  0,  0, 11,  0,  0,  0,  0,  0, 12,  0,  0,  0,  0,  0,  0, 
-    13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  8,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0, 14,  0,  0,  0,  0, 15,  0,  0,  0,  0,  0, 
-     0, 16,  0, 17,  0,  0,  0,  0,  0, 18, 19,  0,  0,  0,  0,  0, 
-     0, 11,  0,  0,  0,  0,  0,  0, 20,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  4, 21,  0,  0,  0,  0,  0,  0, 22, 
-     0,  0,  0, 23,  0,  0, 21,  0,  0, 24,  0,  0,  0,  0, 25,  0, 
-     0,  0, 26,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 27, 
-     0,  0, 28,  0,  0,  0,  0,  0,  1,  0,  0, 29,  0,  0,  0,  0, 
-     0,  0, 23,  0,  0,  0,  0,  0,  0,  0, 30,  0,  0, 17, 31,  0, 
-};
-
-RE_UINT8 re_sterm_stage_4[] = {
-      0,   0,   0,   0,   2,  64,   0, 128,   0,   0,   0,  80,   0,   2,   0,   0, 
-      0,   0,   0, 128,   0,   0,  16,   0,   7,   0,   0,   0,   0,   0,   0,   2, 
-     48,   0,   0,   0,   0,  12,   0,   0, 132,   1,   0,   0,   0,  64,   0,   0, 
-      0,   0,  96,   0,   8,   2,   0,   0,   0,  15,   0,   0,   0,   0,   0, 204, 
-      0,   0,   0,  24,   0,   0,   0, 192,   0,   0,   0,  48, 128,   3,   0,   0, 
-      4,   0,   0,   0,   0, 192,   0,   0,   0,   0, 136,   0,   0,   0, 192,   0, 
-      0, 128,   0,   0,   0,   3,   0,   0,   0,   0,   0, 224,   0,   8,   0,   0, 
-      0,   0, 196,   0,   2,   0,   0,   0, 128,   1,   0,   0,   3,   0,   0,   0, 
-};
-
-/* STerm: 680 bytes. */
-
-RE_UINT32 re_get_sterm(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_sterm_stage_1[f] << 5);
-    f = code >> 8;
-    code ^= (f << 8);
-    pos = ((RE_UINT32)re_sterm_stage_2[pos + f] << 3);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_sterm_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_sterm_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Other_Lowercase. */
-
-RE_UINT8 re_other_lowercase_stage_1[] = {
-    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_other_lowercase_stage_2[] = {
-    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 
-    3, 0, 4, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_other_lowercase_stage_3[] = {
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  0,  3,  0,  0, 
-     0,  0,  0,  0,  4,  5,  6,  0,  0,  0,  7,  0,  0,  8,  0,  0, 
-     0,  0,  0,  9,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0, 11,  0,  0, 
-};
-
-RE_UINT8 re_other_lowercase_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255,   1, 
-      3,   0,   0,   0,  31,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   4, 
-      0,   0,   0,   0,   0, 240, 255, 255, 255, 255, 255, 255,   3,   0,   0,   1, 
-      0,   0,   0, 248, 255, 255, 255, 255,   0,   0,  31,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0, 255, 255,   0,   0, 255, 255, 255,   3,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   1,   0, 
-};
-
-/* Other_Lowercase: 316 bytes. */
-
-RE_UINT32 re_get_other_lowercase(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_other_lowercase_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_other_lowercase_stage_2[pos + f] << 3);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_other_lowercase_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_other_lowercase_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Other_Alphabetic. */
-
-RE_UINT8 re_other_alphabetic_stage_1[] = {
-    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_other_alphabetic_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  0, 10, 11, 12, 13,  0, 
-     0,  0, 14,  0,  0,  0, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0, 16, 17,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 18,  0,  0, 
-     0,  0,  0,  0,  0, 19,  0,  0, 20,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-};
-
-RE_UINT8 re_other_alphabetic_stage_3[] = {
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  3,  0, 
-     4,  0,  5,  6,  0,  0,  7,  8,  9, 10,  0,  0,  0, 11,  0,  0, 
-    12, 13,  0,  0,  0,  0,  0,  0, 14, 15, 16, 17, 18, 19, 20, 17, 
-    18, 19, 21, 22, 18, 19, 23, 17, 18, 19, 24, 17, 25, 19, 26,  0, 
-    18, 19, 27, 17, 17, 19, 27, 17, 17, 19, 28, 17, 17,  0, 29, 30, 
-     0, 31, 32,  0,  0, 33, 32,  0,  0,  0,  0, 34, 35, 36,  0,  0, 
-     0, 37, 38, 39, 40,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 41,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0, 30, 30, 30, 30,  0, 42, 43,  0, 
-     0,  0,  0,  0,  0, 44,  0,  0,  0, 45,  0,  0,  0, 10, 46,  0, 
-    47,  0, 48, 49,  0,  0,  0,  0, 50, 51, 14,  0, 52, 53,  0, 54, 
-     0, 55,  0,  0,  0,  0,  0, 56,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0, 42, 57, 58,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 57, 
-     0, 59,  0,  0, 60, 61, 14,  0,  0, 62, 63,  0, 14, 61,  0,  0, 
-     0, 64, 65,  0,  0, 66,  0,  0,  0,  0,  0,  0,  0,  0,  0, 67, 
-     0,  0,  0,  0,  0,  0,  0,  0, 68,  0,  0,  0,  0,  0,  0,  0, 
-    69,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    52, 70, 71,  0, 25, 72,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-};
-
-RE_UINT8 re_other_alphabetic_stage_4[] = {
-      0,   0,   0,   0,  32,   0,   0,   0,   0,   0, 255, 191, 182,   0,   0,   0, 
-      0,   0, 255,   7,   0, 248, 255, 254,   0,   0,   1,   0,   0,   0, 192,  31, 
-    158,  33,   0,   0,   0,   0,   2,   0,   0,   0, 255, 255, 192, 255,   1,   0, 
-      0,   0, 192, 248, 239,  30,   0,   0,  15,   0,   0,   0,   0,   0,   0, 204, 
-    255, 223, 224,   0,  12,   0,   0,   0,  14,   0,   0,   0,   0,   0,   0, 192, 
-    159,  25, 128,   0, 135,  25,   2,   0,   0,   0,  35,   0, 191,  27,   0,   0, 
-    159,  25, 192,   0,   4,   0,   0,   0, 199,  29, 128,   0, 223,  29,  96,   0, 
-    223,  29, 128,   0,   0, 128,  95, 255,   0,   0,  12,   0,   0,   0, 242,   7, 
-      0,  32,   0,   0,   0,   0, 242,  27,   0,   0, 254, 255,   3, 224, 255, 254, 
-    255, 255, 255,  31,   0, 248, 127, 121,   0,   0, 192, 195, 133,   1,  30,   0, 
-    124,   0,   0,  48,   0,   0,   0, 128,   0,   0, 192, 255, 255,   1,   0,   0, 
-      0,   2,   0,   0, 255,  15, 255,   1,   1,   3,   0,   0,   0,   0, 128,  15, 
-      0,   0, 224, 127, 254, 255,  31,   0,  31,   0,   0,   0,   0,   0, 224, 255, 
-      7,   0,   0,   0, 254,   3,   0,   0, 128, 255,   3,   0, 240, 255,  63,   0, 
-      0,   0,   4,   0, 255, 255, 255, 255, 255,   3,   0,   0, 248,   0,   0,   0, 
-      3,   0,   0,   0,   0,   0, 240, 255, 192,   7,   0,   0, 128, 255,   7,   0, 
-      0, 254, 127,   0,   8,  48,   0,   0,   0,   0, 157,  65, 248,   7,   0,   0, 
-      0,   0,   0,  64, 110, 240,   0,   0,   0,   0,   0, 255,  63,   0,   0,   0, 
-      0,   0, 255,   1, 
-};
-
-/* Other_Alphabetic: 856 bytes. */
-
-RE_UINT32 re_get_other_alphabetic(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_other_alphabetic_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_other_alphabetic_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_other_alphabetic_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_other_alphabetic_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* IDS_Trinary_Operator. */
-
-RE_UINT8 re_ids_trinary_operator_stage_1[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
-};
-
-RE_UINT8 re_ids_trinary_operator_stage_2[] = {
-    0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_ids_trinary_operator_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
-};
-
-RE_UINT8 re_ids_trinary_operator_stage_4[] = {
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 12,  0, 
-};
-
-/* IDS_Trinary_Operator: 130 bytes. */
-
-RE_UINT32 re_get_ids_trinary_operator(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_ids_trinary_operator_stage_1[f] << 4);
-    f = code >> 11;
-    code ^= (f << 11);
-    pos = ((RE_UINT32)re_ids_trinary_operator_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_ids_trinary_operator_stage_3[pos + f] << 7);
-    pos += code;
-    value = (re_ids_trinary_operator_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_white_space_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -5741,26 +6558,27 @@ RE_UINT32 re_get_ids_trinary_operator(RE_UINT32 ch) {
 
 RE_UINT8 re_bidi_control_stage_1[] = {
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
+    1, 
 };
 
 RE_UINT8 re_bidi_control_stage_2[] = {
-    0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 };
 
 RE_UINT8 re_bidi_control_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
 };
 
 RE_UINT8 re_bidi_control_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0, 192,   0,   0,   0, 124,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
 };
 
-/* Bidi_Control: 130 bytes. */
+RE_UINT8 re_bidi_control_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0, 192,   0,   0,   0, 124,   0,   0, 
+};
+
+/* Bidi_Control: 97 bytes. */
 
 RE_UINT32 re_get_bidi_control(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -5768,277 +6586,316 @@ RE_UINT32 re_get_bidi_control(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 15;
-    code = ch ^ (f << 15);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
     pos = ((RE_UINT32)re_bidi_control_stage_1[f] << 4);
-    f = code >> 11;
-    code ^= (f << 11);
-    pos = ((RE_UINT32)re_bidi_control_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_bidi_control_stage_3[pos + f] << 7);
-    pos += code;
-    value = (re_bidi_control_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* ASCII_Hex_Digit. */
-
-RE_UINT8 re_ascii_hex_digit_stage_1[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
-};
-
-RE_UINT8 re_ascii_hex_digit_stage_2[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-};
-
-RE_UINT8 re_ascii_hex_digit_stage_3[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-};
-
-RE_UINT8 re_ascii_hex_digit_stage_4[] = {
-      0,   0,   0,   0,   0,   0, 255,   3, 126,   0,   0,   0, 126,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-};
-
-/* ASCII_Hex_Digit: 130 bytes. */
-
-RE_UINT32 re_get_ascii_hex_digit(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_ascii_hex_digit_stage_1[f] << 4);
-    f = code >> 11;
-    code ^= (f << 11);
-    pos = ((RE_UINT32)re_ascii_hex_digit_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_ascii_hex_digit_stage_3[pos + f] << 7);
-    pos += code;
-    value = (re_ascii_hex_digit_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Other_ID_Continue. */
-
-RE_UINT8 re_other_id_continue_stage_1[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
-};
-
-RE_UINT8 re_other_id_continue_stage_2[] = {
-    0, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-};
-
-RE_UINT8 re_other_id_continue_stage_3[] = {
-    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_other_id_continue_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 128,   0, 
-    128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 254,   3,   0, 
-      0,   0,   0,   4,   0,   0,   0,   0, 
-};
-
-/* Other_ID_Continue: 202 bytes. */
-
-RE_UINT32 re_get_other_id_continue(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_other_id_continue_stage_1[f] << 5);
-    f = code >> 10;
-    code ^= (f << 10);
-    pos = ((RE_UINT32)re_other_id_continue_stage_2[pos + f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_bidi_control_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_bidi_control_stage_3[pos + f] << 3);
     f = code >> 6;
     code ^= (f << 6);
-    pos = ((RE_UINT32)re_other_id_continue_stage_3[pos + f] << 6);
+    pos = ((RE_UINT32)re_bidi_control_stage_4[pos + f] << 6);
     pos += code;
-    value = (re_other_id_continue_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_bidi_control_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
 
-/* Other_Grapheme_Extend. */
+/* Join_Control. */
 
-RE_UINT8 re_other_grapheme_extend_stage_1[] = {
-    0, 1, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 
+RE_UINT8 re_join_control_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
 };
 
-RE_UINT8 re_other_grapheme_extend_stage_2[] = {
-    0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 
+RE_UINT8 re_join_control_stage_2[] = {
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 
 };
 
-RE_UINT8 re_other_grapheme_extend_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 1, 0, 0, 1, 1, 0, 2, 1, 3, 0, 0, 0, 0, 
-    4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 
-    0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+RE_UINT8 re_join_control_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
 };
 
-RE_UINT8 re_other_grapheme_extend_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,  64,   0,   0, 128,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   4,   0,  96,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0, 128,   0, 128,   0,   0,   0,   0, 
-      0,  48,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0, 192,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  32, 192,   7,   0, 
+RE_UINT8 re_join_control_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
 };
 
-/* Other_Grapheme_Extend: 290 bytes. */
+RE_UINT8 re_join_control_stage_5[] = {
+     0,  0,  0,  0,  0,  0,  0,  0,  0, 48,  0,  0,  0,  0,  0,  0, 
+};
 
-RE_UINT32 re_get_other_grapheme_extend(RE_UINT32 ch) {
+/* Join_Control: 97 bytes. */
+
+RE_UINT32 re_get_join_control(RE_UINT32 ch) {
     RE_UINT32 code;
     RE_UINT32 f;
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_other_grapheme_extend_stage_1[f] << 4);
-    f = code >> 11;
-    code ^= (f << 11);
-    pos = ((RE_UINT32)re_other_grapheme_extend_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_other_grapheme_extend_stage_3[pos + f] << 7);
-    pos += code;
-    value = (re_other_grapheme_extend_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Extender. */
-
-RE_UINT8 re_extender_stage_1[] = {
-    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 
-};
-
-RE_UINT8 re_extender_stage_2[] = {
-     0,  1,  2,  3,  2,  2,  4,  5,  2,  2,  2,  2,  6,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  7,  8,  9,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 10, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-};
-
-RE_UINT8 re_extender_stage_3[] = {
-     0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  0,  0,  0,  0,  0,  4, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  5,  0,  0,  0,  0, 
-     0,  6,  0,  0,  0,  0,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0, 
-     8,  9,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    10,  0, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-    13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0, 14,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0, 15,  0, 16,  0, 17,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 16,  0,  0, 
-};
-
-RE_UINT8 re_extender_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 128,   0, 
-      0,   0,   3,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   4,  64,   0,   0,   0,   0,   0,   0,   0, 
-      8,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 128,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,  64,   0,   0,   0,   0,   0,   0,   0,   0,   8, 
-     32,   0,   0,   0,   0,   0,  62,   0,   0,   0,   0,  96,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0, 112,   0,   0,  32,   0,   0,   0,   0,   0, 
-      0,  16,   0,   0,   0,   0,   0,   0,   0, 128,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,  32,   0,   0,   0,   0, 
-};
-
-/* Extender: 450 bytes. */
-
-RE_UINT32 re_get_extender(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_extender_stage_1[f] << 5);
-    f = code >> 10;
-    code ^= (f << 10);
-    pos = ((RE_UINT32)re_extender_stage_2[pos + f] << 4);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_join_control_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_join_control_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_join_control_stage_3[pos + f] << 3);
     f = code >> 6;
     code ^= (f << 6);
-    pos = ((RE_UINT32)re_extender_stage_3[pos + f] << 6);
+    pos = ((RE_UINT32)re_join_control_stage_4[pos + f] << 6);
     pos += code;
-    value = (re_extender_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_join_control_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
 
-/* Deprecated. */
+/* Dash. */
 
-RE_UINT8 re_deprecated_stage_1[] = {
+RE_UINT8 re_dash_stage_1[] = {
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_dash_stage_2[] = {
+    0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 
+};
+
+RE_UINT8 re_dash_stage_3[] = {
+    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 4, 1, 1, 1, 
+    5, 6, 1, 1, 1, 1, 1, 7, 8, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 
+};
+
+RE_UINT8 re_dash_stage_4[] = {
+     0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  2,  1,  3,  1,  1,  1,  1,  1,  1,  1, 
+     4,  1,  1,  1,  1,  1,  1,  1,  5,  6,  7,  1,  1,  1,  1,  1, 
+     8,  1,  1,  1,  1,  1,  1,  1,  9,  1,  1,  1,  1,  1,  1,  1, 
+    10,  1, 11,  1,  1,  1,  1,  1, 12, 13,  1,  1, 14,  1,  1,  1, 
+};
+
+RE_UINT8 re_dash_stage_5[] = {
+      0,   0,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   4,   0,   0,   0,   0,   0,  64,   1,   0,   0,   0,   0,   0,   0,   0, 
+     64,   0,   0,   0,   0,   0,   0,   0,   0,   0,  63,   0,   0,   0,   0,   0, 
+      0,   0,   8,   0,   0,   0,   0,   8,   0,   8,   0,   0,   0,   0,   0,   0, 
+      0,   0,   4,   0,   0,   0,   0,   0,   0,   0, 128,   4,   0,   0,   0,   0, 
+      0,   0,   0,  16,   0,   0,   1,   0,   0,   0,   0,   0,   1,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   6,   0,   0,   0,   0,   1,   8,   0,   0,   0, 
+      0,  32,   0,   0,   0,   0,   0,   0, 
+};
+
+/* Dash: 297 bytes. */
+
+RE_UINT32 re_get_dash(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_dash_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_dash_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_dash_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_dash_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_dash_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Hyphen. */
+
+RE_UINT8 re_hyphen_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_hyphen_stage_2[] = {
+    0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 
+};
+
+RE_UINT8 re_hyphen_stage_3[] = {
+    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 
+    4, 1, 1, 1, 1, 1, 1, 5, 6, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 
+};
+
+RE_UINT8 re_hyphen_stage_4[] = {
+    0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 
+    4, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 6, 1, 1, 1, 1, 1, 7, 1, 1, 8, 9, 1, 1, 
+};
+
+RE_UINT8 re_hyphen_stage_5[] = {
+      0,   0,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   4,   0,   0,   0,   0,   0,   0,  64,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   3,   0,   0,   0,   0,   0,   0,   0, 128,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   8,   0,   0,   0,   0,   8,   0,   0,   0, 
+      0,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  32,   0,   0,   0, 
+};
+
+/* Hyphen: 241 bytes. */
+
+RE_UINT32 re_get_hyphen(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_hyphen_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_hyphen_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_hyphen_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_hyphen_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_hyphen_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Quotation_Mark. */
+
+RE_UINT8 re_quotation_mark_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_quotation_mark_stage_2[] = {
+    0, 1, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_quotation_mark_stage_3[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 4, 
+};
+
+RE_UINT8 re_quotation_mark_stage_4[] = {
+    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    3, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 
+    1, 5, 1, 1, 6, 7, 1, 1, 
+};
+
+RE_UINT8 re_quotation_mark_stage_5[] = {
+      0,   0,   0,   0, 132,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   8,   0,   8,   0,   0,   0, 255,   0,   0,   0,   6, 
+      0, 240,   0, 224,   0,   0,   0,   0,  30,   0,   0,   0,   0,   0,   0,   0, 
+    132,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  12,   0,   0,   0, 
+};
+
+/* Quotation_Mark: 193 bytes. */
+
+RE_UINT32 re_get_quotation_mark(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_quotation_mark_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_quotation_mark_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_quotation_mark_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_quotation_mark_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_quotation_mark_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Terminal_Punctuation. */
+
+RE_UINT8 re_terminal_punctuation_stage_1[] = {
+    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 1, 1, 
 };
 
-RE_UINT8 re_deprecated_stage_2[] = {
-    0, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 4, 1, 1, 1, 1, 
-    5, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+RE_UINT8 re_terminal_punctuation_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  9, 10, 11,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9, 12, 13,  9,  9,  9,  9,  9, 
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 14, 
+    15,  9, 16,  9, 17,  9,  9,  9,  9, 18,  9,  9,  9,  9,  9,  9, 
 };
 
-RE_UINT8 re_deprecated_stage_3[] = {
-    0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 
-    0, 0, 0, 0, 0, 0, 4, 0, 0, 5, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 6, 0, 0, 0, 7, 8, 0, 0, 0, 0, 0, 0, 
+RE_UINT8 re_terminal_punctuation_stage_3[] = {
+     0,  1,  1,  1,  1,  1,  2,  3,  1,  1,  1,  4,  5,  6,  7,  8, 
+     9,  1, 10,  1,  1,  1,  1,  1,  1,  1,  1,  1, 11,  1, 12,  1, 
+    13,  1,  1,  1,  1,  1, 14,  1,  1,  1,  1,  1, 15, 16,  1, 17, 
+    18,  1, 19,  1,  1, 20, 21,  1, 22,  1,  1,  1,  1,  1,  1,  1, 
+    23,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1, 24,  1,  1,  1, 25,  1,  1,  1,  1,  1,  1,  1, 
+     1, 26,  1,  1, 27, 28,  1,  1, 29, 30, 31, 32, 33, 34,  1, 35, 
+     1,  1,  1,  1, 36,  1, 37,  1,  1,  1,  1,  1,  1,  1,  1, 38, 
+    39,  1, 40,  1,  1,  1, 41,  1, 42, 43,  1,  1,  1,  1,  1,  1, 
+    44,  1,  1,  1,  1,  1,  1,  1, 
 };
 
-RE_UINT8 re_deprecated_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   2,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   8,   0,   0,   0,   0,   0,   0,   0, 128,   2, 
-      0,   0,   0,   0,  24,   0,   0,   0,   0,   0,   0,   0,   0, 252,   0,   0, 
-      0,   0,   0,   0,   0,   6,   0,   0,   2,   0,   0,   0, 255, 255, 255, 255, 
-    255, 255, 255, 255, 255, 255, 255, 255, 
+RE_UINT8 re_terminal_punctuation_stage_4[] = {
+     0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  3,  0,  0,  0, 
+     4,  0,  5,  0,  6,  0,  0,  0,  0,  0,  7,  0,  8,  0,  0,  0, 
+     0,  0,  0,  9,  0, 10,  2,  0,  0,  0,  0, 11,  0,  0, 12,  0, 
+    13,  0,  0,  0,  0,  0, 14,  0,  0,  0,  0, 15,  0,  0,  0, 16, 
+     0,  0,  0, 17,  0,  0, 18,  0, 19,  0,  0,  0,  0,  0, 11,  0, 
+     0, 20,  0,  0,  0,  0, 21,  0,  0, 22,  0, 23,  0, 24, 25,  0, 
+     0, 26,  0,  0, 27,  0,  0,  0,  0,  0,  0, 23, 28,  0,  0,  0, 
+     0,  0,  0, 29,  0,  0,  0, 30,  0,  0, 31,  0,  0, 32,  0,  0, 
+     0,  0, 25,  0,  0,  0, 33,  0,  0,  0, 34,  0,  0,  0,  0, 35, 
+     0,  0, 36,  0,  1,  0,  0, 37, 34,  0, 38,  0,  0,  0, 39,  0, 
+    34,  0,  0,  0,  0, 40,  0,  0,  0,  0, 41,  0,  0, 23, 42,  0, 
+     0,  0,  0, 43, 
 };
 
-/* Deprecated: 300 bytes. */
+RE_UINT8 re_terminal_punctuation_stage_5[] = {
+      0,   0,   0,   0,   2,  80,   0, 140,   0,   0,   0,  64, 128,   0,   0,   0, 
+      0,   2,   0,   0,   8,   0,   0,   0,   0,  16,   0, 136,   0,   0,  16,   0, 
+    255,  23,   0,   0,   0,   0,   0,   3,   0,   0, 255, 127,  48,   0,   0,   0, 
+      0,   0,   0,  12,   0, 225,   7,   0,   0,  12,   0,   0, 254,   1,   0,   0, 
+      0,  96,   0,   0,   0,  56,   0,   0,   0,   0, 112,   4,  60,   3,   0,   0, 
+      0,  15,   0,   0,   0,   0,   0, 236,   0,   0,   0, 248,   0,   0,   0, 192, 
+      0,   0,   0,  48, 128,   3,   0,   0,   0,  64,   0,   0,   6,   0,   0,   0, 
+      0, 224,   0,   0,   0,   0, 248,   0,   0,   0, 192,   0,   0, 192,   0,   0, 
+      0, 128,   0,   0,   0,   0,   0, 224,   0,   0,   0, 128,   0,   8,   0,   0, 
+      0,   0, 247,   0,  18,   0,   0,   0,   0,   0,   1,   0,   0,   0, 128,   0, 
+      0,   0,   0, 252, 128,  63,   0,   0,   3,   0,   0,   0,   0,   0,  15,   0, 
+};
 
-RE_UINT32 re_get_deprecated(RE_UINT32 ch) {
+/* Terminal_Punctuation: 656 bytes. */
+
+RE_UINT32 re_get_terminal_punctuation(RE_UINT32 ch) {
     RE_UINT32 code;
     RE_UINT32 f;
     RE_UINT32 pos;
@@ -6046,144 +6903,18 @@ RE_UINT32 re_get_deprecated(RE_UINT32 ch) {
 
     f = ch >> 14;
     code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_deprecated_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_deprecated_stage_2[pos + f] << 3);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_deprecated_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_deprecated_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Soft_Dotted. */
-
-RE_UINT8 re_soft_dotted_stage_1[] = {
-    0, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_soft_dotted_stage_2[] = {
-    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 5, 
-    6, 3, 3, 3, 3, 3, 7, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 8, 9, 3, 3, 3, 3, 
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
-};
-
-RE_UINT8 re_soft_dotted_stage_3[] = {
-     0,  0,  0,  1,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0, 
-     0,  0,  3,  4,  5,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7, 
-     0,  0,  8,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9, 10, 11,  0,  0, 
-     0, 12,  0,  0,  0,  0, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0, 14,  0,  0,  0,  0,  0,  0, 15,  0,  0,  0,  0,  0, 
-     0,  0,  0, 16,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0, 17, 18,  0, 19, 20,  0, 21,  0, 22, 23,  0, 24,  0, 17, 18, 
-     0, 19, 20,  0, 21,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-};
-
-RE_UINT8 re_soft_dotted_stage_4[] = {
-      0,   0,   0,   0,   0,   6,   0,   0,   0, 128,   0,   0,   0,   2,   0,   0, 
-      0,   1,   0,   0,   0,   0,   0,  32,   0,   0,   4,   0,   0,   0,   8,   0, 
-      0,   0,  64,   1,   4,   0,   0,   0,   0,   0,  64,   0,  16,   1,   0,   0, 
-      0,  32,   0,   0,   0,   8,   0,   0,   0,   0,   2,   0,   0,   3,   0,   0, 
-      0,   0,   0,  16,  12,   0,   0,   0,   0,   0, 192,   0,   0,  12,   0,   0, 
-      0,   0,   0, 192,   0,   0,  12,   0, 192,   0,   0,   0,   0,   0,   0,  12, 
-      0, 192,   0,   0, 
-};
-
-/* Soft_Dotted: 424 bytes. */
-
-RE_UINT32 re_get_soft_dotted(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_soft_dotted_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_soft_dotted_stage_2[pos + f] << 4);
+    pos = ((RE_UINT32)re_terminal_punctuation_stage_1[f] << 4);
+    f = code >> 10;
+    code ^= (f << 10);
+    pos = ((RE_UINT32)re_terminal_punctuation_stage_2[pos + f] << 3);
+    f = code >> 7;
+    code ^= (f << 7);
+    pos = ((RE_UINT32)re_terminal_punctuation_stage_3[pos + f] << 2);
     f = code >> 5;
     code ^= (f << 5);
-    pos = ((RE_UINT32)re_soft_dotted_stage_3[pos + f] << 5);
+    pos = ((RE_UINT32)re_terminal_punctuation_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_soft_dotted_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Ideographic. */
-
-RE_UINT8 re_ideographic_stage_1[] = {
-    0, 1, 2, 3, 4, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 
-    3, 3, 3, 3, 3, 6, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_ideographic_stage_2[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 0, 0, 
-    2, 2, 2, 7, 2, 2, 2, 2, 2, 2, 2, 8, 9, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 9, 0, 0, 
-};
-
-RE_UINT8 re_ideographic_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 0, 
-    2, 2, 2, 2, 2, 2, 2, 4, 0, 0, 0, 0, 2, 2, 2, 2, 
-    5, 5, 2, 6, 0, 0, 0, 0, 2, 2, 2, 7, 2, 2, 2, 2, 
-    2, 2, 2, 2, 8, 2, 2, 2, 9, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_ideographic_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0, 192,   0,   0,   0, 254,   3,   0,   7, 
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  63,   0, 
-    255,  15,   0,   0,   0,   0,   0,   0, 255, 255, 255, 255, 255,  63, 255, 255, 
-    255, 255, 255,   3,   0,   0,   0,   0, 255, 255, 127,   0,   0,   0,   0,   0, 
-    255, 255, 255, 255, 255, 255,  31,   0, 255, 255, 255,  63,   0,   0,   0,   0, 
-};
-
-/* Ideographic: 424 bytes. */
-
-RE_UINT32 re_get_ideographic(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_ideographic_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_ideographic_stage_2[pos + f] << 3);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_ideographic_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_ideographic_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_terminal_punctuation_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -6206,36 +6937,37 @@ RE_UINT8 re_other_math_stage_2[] = {
 };
 
 RE_UINT8 re_other_math_stage_3[] = {
-     0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     3,  4,  5,  6,  7,  8,  9, 10,  0,  0,  0,  0,  0,  0, 11, 12, 
-     0,  0,  0,  0,  0,  0, 13, 14, 15, 16,  0,  0,  0,  0,  0, 17, 
-     0,  0,  0,  0,  0,  0, 18, 19,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 20,  0,  0, 21,  0,  0,  0, 
-    22, 23, 24, 25, 26, 27, 22, 22, 22, 22, 28, 29, 30, 31, 32, 33, 
+     0,  1,  1,  1,  1,  1,  1,  2,  1,  1,  1,  1,  1,  1,  1,  1, 
+     3,  4,  5,  6,  1,  1,  1,  7,  1,  1,  1,  8,  9,  1,  1, 10, 
+     1,  1,  1, 11,  1,  1,  1,  1,  1,  1,  1,  1, 12,  1, 13,  1, 
+    14, 15, 16, 17, 17, 18, 19, 20, 
 };
 
 RE_UINT8 re_other_math_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  64,   0,   0,   0,   0, 
-      0,   0,  39,   0,   0,   0,  51,   0,   0,   0,  64,   0,   0,   0,  28,   0, 
-      1,   0,   0,   0,  30,   0,   0,  96,   0,  96,   0,   0,   0,   0,   0,   0, 
-      0,   0, 255,  31,  98, 248,   0,   0, 132, 252,  47,  62,  16, 179, 251, 241, 
-    224,   3,   0,   0,   0,   0,   0,   0,   0,   0, 224, 243, 182,  62, 195, 240, 
-    255,  63, 235,  47,  48,   0,   0,   0,   0,   0,   0,   0,   0,   0, 176,   0, 
-      0,   0,   1,   0,   4,   0,   0,   0,   0,   0,   0,   0,   3, 192, 127, 240, 
-    193, 140,  15,   0, 148,  31,   0,   0,  96,   0,   0,   0,   0,   0,   0,   0, 
-      5,   0,   0,   0,  15,  96,   0,   0,  96,   0,   0,   0, 192, 255,   0,   0, 
-    248, 255, 255,   1,   0,   0,   0,   0,   0,   0,   0,  15,   0,   0,   0,  48, 
-      0,   0,   0,   0,  10,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,  80, 
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 223, 255, 255, 255, 255, 255, 
-    255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 255, 255, 255, 255, 
-    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255, 255, 255, 255, 255, 
-    255, 255, 255, 255,  63, 255, 255, 255, 253, 255, 255, 247, 255, 255, 255, 247, 
-    255, 255, 223, 255, 255, 255, 223, 255, 255, 127, 255, 255, 255, 127, 255, 255, 
-    255, 253, 255, 255, 255, 253, 255, 255, 247, 207, 255, 255, 255, 255, 255, 255, 
+     0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  2,  3,  4,  5,  6,  7, 
+     8,  0,  9, 10, 11, 12, 13,  0, 14, 15, 16, 17,  0, 18, 19, 20, 
+     0, 21, 22, 23, 24,  0, 25, 26,  0,  0, 24, 27, 28,  0, 29, 30, 
+     0,  0,  0, 31,  0, 32,  0,  0, 33, 33, 34, 33, 35, 36, 37, 33, 
+    38, 39, 40, 33, 33, 33, 33, 33, 33, 41, 42, 43, 34, 34, 44, 44, 
+    45, 45, 46, 33, 
 };
 
-/* Other_Math: 516 bytes. */
+RE_UINT8 re_other_math_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,  64,   0,   0,  39,   0,   0,   0,  51,   0, 
+      0,   0,  64,   0,   0,   0,  28,   0,   1,   0,   0,   0,  30,   0,   0,  96, 
+      0,  96,   0,   0,   0,   0, 255,  31,  98, 248,   0,   0, 132, 252,  47,  62, 
+     16, 179, 251, 241, 224,   3,   0,   0,   0,   0, 224, 243, 182,  62, 195, 240, 
+    255,  63, 235,  47,  48,   0,   0,   0,   0,   0, 176,   0,   0,   0,   1,   0, 
+      4,   0,   0,   0,   3, 192, 127, 240, 193, 140,  15,   0, 148,  31,   0,   0, 
+     96,   0,   0,   0,   5,   0,   0,   0,  15,  96,   0,   0, 192, 255,   0,   0, 
+    248, 255, 255,   1,   0,   0,   0,  15,   0,   0,   0,  48,  10,   1,   0,   0, 
+      0,   0,   0,  80, 255, 255, 255, 255, 255, 255, 223, 255, 255, 255, 255, 223, 
+    100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123, 
+     95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247, 255, 255, 255, 247, 
+    255, 127, 255, 255, 255, 253, 255, 255, 247, 207, 255, 255, 
+};
+
+/* Other_Math: 460 bytes. */
 
 RE_UINT32 re_get_other_math(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -6248,234 +6980,49 @@ RE_UINT32 re_get_other_math(RE_UINT32 ch) {
     pos = ((RE_UINT32)re_other_math_stage_1[f] << 4);
     f = code >> 10;
     code ^= (f << 10);
-    pos = ((RE_UINT32)re_other_math_stage_2[pos + f] << 4);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_other_math_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_other_math_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Join_Control. */
-
-RE_UINT8 re_join_control_stage_1[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
-};
-
-RE_UINT8 re_join_control_stage_2[] = {
-    0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_join_control_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_join_control_stage_4[] = {
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0, 48,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-};
-
-/* Join_Control: 130 bytes. */
-
-RE_UINT32 re_get_join_control(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_join_control_stage_1[f] << 4);
-    f = code >> 11;
-    code ^= (f << 11);
-    pos = ((RE_UINT32)re_join_control_stage_2[pos + f] << 4);
+    pos = ((RE_UINT32)re_other_math_stage_2[pos + f] << 3);
     f = code >> 7;
     code ^= (f << 7);
-    pos = ((RE_UINT32)re_join_control_stage_3[pos + f] << 7);
+    pos = ((RE_UINT32)re_other_math_stage_3[pos + f] << 2);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_other_math_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_join_control_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_other_math_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
 
-/* Quotation_Mark. */
+/* Hex_Digit. */
 
-RE_UINT8 re_quotation_mark_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_quotation_mark_stage_2[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 
-};
-
-RE_UINT8 re_quotation_mark_stage_3[] = {
-    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 6, 7, 1, 1, 
-};
-
-RE_UINT8 re_quotation_mark_stage_4[] = {
-      0,   0,   0,   0, 132,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   8,   0,   8,   0,   0,   0, 255,   0,   0,   0,   6, 
-      0, 240,   0, 224,   0,   0,   0,   0,  30,   0,   0,   0,   0,   0,   0,   0, 
-    132,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  12,   0,   0,   0, 
-};
-
-/* Quotation_Mark: 260 bytes. */
-
-RE_UINT32 re_get_quotation_mark(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_quotation_mark_stage_1[f] << 4);
-    f = code >> 10;
-    code ^= (f << 10);
-    pos = ((RE_UINT32)re_quotation_mark_stage_2[pos + f] << 4);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_quotation_mark_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_quotation_mark_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Terminal_Punctuation. */
-
-RE_UINT8 re_terminal_punctuation_stage_1[] = {
-    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_terminal_punctuation_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  5,  6,  7,  8,  5,  9, 10, 11, 12,  5, 
-    13,  5,  5,  5,  5,  5,  5, 14, 15,  5,  5,  5,  5,  5,  5,  5, 
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 
-     5,  5, 16, 17, 18, 19,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 20, 
-     5, 21,  5,  5, 22, 23,  5,  5, 24,  5,  5,  5,  5,  5,  5,  5, 
-     5,  5, 25,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 
-};
-
-RE_UINT8 re_terminal_punctuation_stage_3[] = {
-     0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  3,  1, 
-     1,  1,  1,  1,  1,  1,  4,  5,  6,  1,  1,  7,  8,  1,  1,  9, 
-    10, 11,  1,  1,  1, 12,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1, 13,  1,  1, 14,  1,  1,  1,  1, 15,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1, 16,  1,  1,  1, 17,  1, 18,  1,  1,  1, 19, 
-    20,  1,  1,  1,  1, 21,  1,  1,  1,  1, 22,  1,  1, 23,  1,  1, 
-    24, 25,  1,  1,  1,  1,  1,  1, 26, 27,  1,  1,  1,  1,  1,  1, 
-    28,  1,  1,  1,  1,  1,  1,  1, 29,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1, 25,  1,  1,  1,  1, 30,  1,  1, 31,  1,  1,  1,  1, 
-     1, 32,  1, 33, 34,  1,  1, 27,  1, 35,  1, 36,  1,  1,  1, 37, 
-     1, 38,  1,  1, 39, 40,  1,  1,  1,  1,  1,  1,  1,  1, 36, 41, 
-     1, 42,  1,  1, 36,  1,  1,  1,  1,  1,  1,  1, 43,  1,  1,  1, 
-     1, 44, 25, 45,  1,  1,  1,  1,  1, 46,  1,  1,  1,  1,  1,  1, 
-};
-
-RE_UINT8 re_terminal_punctuation_stage_4[] = {
-      0,   0,   0,   0,   2,  80,   0, 140,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,  64, 128,   0,   0,   0,   0,   0,   0,   0, 
-      0,   2,   0,   0,   0,   0,   0,   0,   8,   0,   0,   0,   0,   0,   0,   0, 
-      0,  16,   0, 136,   0,   0,   0,   0,   0,   0,  16,   0,   0,   0,   0,   0, 
-    255,  23,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   3, 
-      0,   0,   0,   0,   0,   0, 255, 127,   0,   0,   0,  64,   0,   0,   0,   0, 
-      0,   0,   0,   0,  48,   0,   0,   0,   0,   0,   0,  12,   0,   0,   0,   0, 
-      0, 225,   7,   0,   0,   0,   0,   0,   0,  12,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0, 254,   1,   0,   0,   0,   0,   0,   0,   0,  96,   0,   0, 
-      0,   0,   0,   0,   0,  56,   0,   0,   0,   0, 112,   4,   0,   0,   0,   0, 
-     60,   3,   0,   0,   0,   0,   0,   0,  48,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,  15,   0,   0,   0,   0,   0, 236,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0, 248,   0,   0,   0,   0,   0,   0,   0, 192, 
-      0,   0,   0,   0,   0,   0,   0,  48, 128,   3,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,  64,   0,   0,   6,   0,   0,   0,   0,   0,   0,   0, 
-      0, 224,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 248,   0, 
-      0,   0,   0,   0,   0,   0, 192,   0,   0, 192,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0, 128,   0,   0,   0,   0,   0, 224,   0,   0,   0,   0, 
-      0,   0,   0, 128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   8,   0,   0, 
-      0,   0, 247,   0,   0,   0,   0,   0,   2,  80,   0, 140,   0,   0,   0,   0, 
-      0,   0,   0,   0,  18,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0, 
-      0,   0, 128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 252, 
-    128,  63,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,  15,   0, 
-};
-
-/* Terminal_Punctuation: 812 bytes. */
-
-RE_UINT32 re_get_terminal_punctuation(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_terminal_punctuation_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_terminal_punctuation_stage_2[pos + f] << 3);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_terminal_punctuation_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_terminal_punctuation_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Logical_Order_Exception. */
-
-RE_UINT8 re_logical_order_exception_stage_1[] = {
+RE_UINT8 re_hex_digit_stage_1[] = {
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 
 };
 
-RE_UINT8 re_logical_order_exception_stage_2[] = {
-    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+RE_UINT8 re_hex_digit_stage_2[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 };
 
-RE_UINT8 re_logical_order_exception_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 
-    0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+RE_UINT8 re_hex_digit_stage_3[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 
 };
 
-RE_UINT8 re_logical_order_exception_stage_4[] = {
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0, 31,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0, 96, 26,  0,  0,  0,  0,  0,  0,  0,  0, 
+RE_UINT8 re_hex_digit_stage_4[] = {
+    0, 1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    1, 2, 2, 0, 0, 0, 0, 0, 
 };
 
-/* Logical_Order_Exception: 177 bytes. */
+RE_UINT8 re_hex_digit_stage_5[] = {
+      0,   0,   0,   0,   0,   0, 255,   3, 126,   0,   0,   0, 
+};
 
-RE_UINT32 re_get_logical_order_exception(RE_UINT32 ch) {
+/* Hex_Digit: 133 bytes. */
+
+RE_UINT32 re_get_hex_digit(RE_UINT32 ch) {
     RE_UINT32 code;
     RE_UINT32 f;
     RE_UINT32 pos;
@@ -6483,68 +7030,221 @@ RE_UINT32 re_get_logical_order_exception(RE_UINT32 ch) {
 
     f = ch >> 16;
     code = ch ^ (f << 16);
-    pos = ((RE_UINT32)re_logical_order_exception_stage_1[f] << 5);
-    f = code >> 11;
-    code ^= (f << 11);
-    pos = ((RE_UINT32)re_logical_order_exception_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_logical_order_exception_stage_3[pos + f] << 7);
+    pos = ((RE_UINT32)re_hex_digit_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_hex_digit_stage_2[pos + f] << 4);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_hex_digit_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_hex_digit_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_logical_order_exception_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_hex_digit_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
 
-/* Variation_Selector. */
+/* ASCII_Hex_Digit. */
 
-RE_UINT8 re_variation_selector_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
+RE_UINT8 re_ascii_hex_digit_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
 };
 
-RE_UINT8 re_variation_selector_stage_2[] = {
-    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+RE_UINT8 re_ascii_hex_digit_stage_2[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 };
 
-RE_UINT8 re_variation_selector_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 3, 3, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 
+RE_UINT8 re_ascii_hex_digit_stage_3[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 };
 
-RE_UINT8 re_variation_selector_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,  56,   0,   0,   0,   0,   0,   0, 
-    255, 255,   0,   0,   0,   0,   0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 
-    255, 255, 255, 255, 255, 255,   0,   0, 
+RE_UINT8 re_ascii_hex_digit_stage_4[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 };
 
-/* Variation_Selector: 236 bytes. */
+RE_UINT8 re_ascii_hex_digit_stage_5[] = {
+      0,   0,   0,   0,   0,   0, 255,   3, 126,   0,   0,   0, 126,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+};
 
-RE_UINT32 re_get_variation_selector(RE_UINT32 ch) {
+/* ASCII_Hex_Digit: 97 bytes. */
+
+RE_UINT32 re_get_ascii_hex_digit(RE_UINT32 ch) {
     RE_UINT32 code;
     RE_UINT32 f;
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_variation_selector_stage_1[f] << 4);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_ascii_hex_digit_stage_1[f] << 3);
+    f = code >> 13;
+    code ^= (f << 13);
+    pos = ((RE_UINT32)re_ascii_hex_digit_stage_2[pos + f] << 3);
     f = code >> 10;
     code ^= (f << 10);
-    pos = ((RE_UINT32)re_variation_selector_stage_2[pos + f] << 4);
+    pos = ((RE_UINT32)re_ascii_hex_digit_stage_3[pos + f] << 3);
+    f = code >> 7;
+    code ^= (f << 7);
+    pos = ((RE_UINT32)re_ascii_hex_digit_stage_4[pos + f] << 7);
+    pos += code;
+    value = (re_ascii_hex_digit_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Other_Alphabetic. */
+
+RE_UINT8 re_other_alphabetic_stage_1[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 
+};
+
+RE_UINT8 re_other_alphabetic_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+     6,  6,  6,  6,  6,  7,  6,  6,  6,  6,  6,  6,  6,  6,  6,  8, 
+     6,  9, 10,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+};
+
+RE_UINT8 re_other_alphabetic_stage_3[] = {
+     0,  0,  0,  1,  0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 
+    13,  0,  0, 14,  0,  0,  0, 15, 16, 17, 18, 19, 20,  0,  0,  0, 
+     0,  0,  0,  0, 21,  0,  0,  0,  0,  0,  0,  0,  0, 22,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0, 23, 24, 25, 26,  0,  0,  0,  0, 
+     0,  0,  0, 27,  0,  0,  0,  0,  0,  0, 28,  0,  0,  0,  0,  0, 
+    29,  0,  0,  0,  0,  0,  0,  0, 
+};
+
+RE_UINT8 re_other_alphabetic_stage_4[] = {
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  2,  3,  0,  4,  0,  5,  6,  0,  0,  7,  8, 
+     9, 10,  0,  0,  0, 11,  0,  0, 12, 13,  0,  0,  0,  0,  0,  0, 
+    14, 15, 16, 17, 18, 19, 20, 17, 18, 19, 21, 22, 18, 19, 23, 17, 
+    18, 19, 24, 17, 25, 19, 26,  0, 18, 19, 27, 17, 17, 19, 27, 17, 
+    17, 19, 28, 17, 17,  0, 29, 30,  0, 31, 32,  0,  0, 33, 32,  0, 
+     0,  0,  0, 34, 35, 36,  0,  0,  0, 37, 38, 39, 40,  0,  0,  0, 
+     0,  0, 41,  0,  0,  0,  0,  0, 30, 30, 30, 30,  0, 42, 43,  0, 
+     0,  0,  0,  0,  0, 44,  0,  0,  0, 45,  0,  0,  0, 10, 46,  0, 
+    47,  0, 48, 49,  0,  0,  0,  0, 50, 51, 14,  0, 52, 53,  0, 54, 
+     0, 55,  0,  0,  0,  0,  0, 56,  0,  0,  0,  0,  0, 42, 57, 58, 
+     0,  0,  0,  0,  0,  0,  0, 57,  0, 59,  0,  0, 60, 61, 14,  0, 
+     0, 62, 63,  0, 14, 61,  0,  0,  0, 64, 65,  0,  0, 66,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0, 67, 68,  0,  0,  0,  0,  0,  0,  0, 
+    69,  0,  0,  0,  0,  0,  0,  0, 52, 70, 71,  0, 25, 72,  0,  0, 
+};
+
+RE_UINT8 re_other_alphabetic_stage_5[] = {
+      0,   0,   0,   0,  32,   0,   0,   0,   0,   0, 255, 191, 182,   0,   0,   0, 
+      0,   0, 255,   7,   0, 248, 255, 254,   0,   0,   1,   0,   0,   0, 192,  31, 
+    158,  33,   0,   0,   0,   0,   2,   0,   0,   0, 255, 255, 192, 255,   1,   0, 
+      0,   0, 192, 248, 239,  30,   0,   0,  15,   0,   0,   0,   0,   0,   0, 204, 
+    255, 223, 224,   0,  12,   0,   0,   0,  14,   0,   0,   0,   0,   0,   0, 192, 
+    159,  25, 128,   0, 135,  25,   2,   0,   0,   0,  35,   0, 191,  27,   0,   0, 
+    159,  25, 192,   0,   4,   0,   0,   0, 199,  29, 128,   0, 223,  29,  96,   0, 
+    223,  29, 128,   0,   0, 128,  95, 255,   0,   0,  12,   0,   0,   0, 242,   7, 
+      0,  32,   0,   0,   0,   0, 242,  27,   0,   0, 254, 255,   3, 224, 255, 254, 
+    255, 255, 255,  31,   0, 248, 127, 121,   0,   0, 192, 195, 133,   1,  30,   0, 
+    124,   0,   0,  48,   0,   0,   0, 128,   0,   0, 192, 255, 255,   1,   0,   0, 
+      0,   2,   0,   0, 255,  15, 255,   1,   1,   3,   0,   0,   0,   0, 128,  15, 
+      0,   0, 224, 127, 254, 255,  31,   0,  31,   0,   0,   0,   0,   0, 224, 255, 
+      7,   0,   0,   0, 254,   3,   0,   0, 128, 255,   3,   0, 240, 255,  63,   0, 
+      0,   0,   4,   0, 255, 255, 255, 255, 255,   3,   0,   0, 248,   0,   0,   0, 
+      3,   0,   0,   0,   0,   0, 240, 255, 192,   7,   0,   0, 128, 255,   7,   0, 
+      0, 254, 127,   0,   8,  48,   0,   0,   0,   0, 157,  65, 248,   7,   0,   0, 
+      0,   0,   0,  64, 110, 240,   0,   0,   0,   0,   0, 255,  63,   0,   0,   0, 
+      0,   0, 255,   1, 
+};
+
+/* Other_Alphabetic: 718 bytes. */
+
+RE_UINT32 re_get_other_alphabetic(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_other_alphabetic_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_other_alphabetic_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_other_alphabetic_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_other_alphabetic_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_other_alphabetic_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Ideographic. */
+
+RE_UINT8 re_ideographic_stage_1[] = {
+    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_ideographic_stage_2[] = {
+    0, 0, 0, 1, 2, 3, 3, 3, 3, 4, 0, 0, 0, 0, 0, 5, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 6, 7, 0, 0, 0, 8, 
+};
+
+RE_UINT8 re_ideographic_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 4, 0, 0, 0, 0, 5, 6, 0, 0, 
+    2, 2, 2, 7, 2, 2, 2, 2, 2, 2, 2, 8, 9, 0, 0, 0, 
+    0, 0, 0, 0, 2, 9, 0, 0, 
+};
+
+RE_UINT8 re_ideographic_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 0, 
+    2, 2, 2, 2, 2, 2, 2, 4, 0, 0, 0, 0, 2, 2, 2, 2, 
+    5, 5, 2, 6, 0, 0, 0, 0, 2, 2, 2, 7, 2, 2, 2, 2, 
+    2, 2, 2, 2, 8, 2, 2, 2, 9, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_ideographic_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0, 192,   0,   0,   0, 254,   3,   0,   7, 
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  63,   0, 
+    255,  15,   0,   0,   0,   0,   0,   0, 255, 255, 255, 255, 255,  63, 255, 255, 
+    255, 255, 255,   3,   0,   0,   0,   0, 255, 255, 127,   0,   0,   0,   0,   0, 
+    255, 255, 255, 255, 255, 255,  31,   0, 255, 255, 255,  63,   0,   0,   0,   0, 
+};
+
+/* Ideographic: 297 bytes. */
+
+RE_UINT32 re_get_ideographic(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_ideographic_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_ideographic_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_ideographic_stage_3[pos + f] << 3);
     f = code >> 6;
     code ^= (f << 6);
-    pos = ((RE_UINT32)re_variation_selector_stage_3[pos + f] << 6);
+    pos = ((RE_UINT32)re_ideographic_stage_4[pos + f] << 6);
     pos += code;
-    value = (re_variation_selector_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_ideographic_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -6552,28 +7252,29 @@ RE_UINT32 re_get_variation_selector(RE_UINT32 ch) {
 /* Diacritic. */
 
 RE_UINT8 re_diacritic_stage_1[] = {
-    0, 1, 2, 2, 2, 3, 2, 4, 5, 2, 2, 2, 2, 2, 6, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 
 };
 
 RE_UINT8 re_diacritic_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  9, 10, 11, 12, 13, 14, 
-     9,  9,  9,  9,  9,  9, 15, 16, 17,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9, 18, 19, 20,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 21,  9, 22, 
-     9,  9,  9,  9,  9,  9,  9,  9, 23,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9, 24,  9,  9,  9,  9,  9,  9,  9, 
+     0,  1,  2,  3,  4,  5,  6,  4,  4,  4,  4,  4,  4,  4,  4,  4, 
+     4,  4,  4,  4,  7,  8,  4,  4,  4,  4,  4,  4,  4,  4,  4,  9, 
+     4,  4, 10,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 
+     4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 11,  4,  4,  4,  4,  4, 
+     4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 
+     4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 
 };
 
 RE_UINT8 re_diacritic_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16,  1,  1,  1,  1,  1,  1, 17,  1, 18, 19, 20, 21, 22,  1, 23, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 24,  1, 25,  1, 
+    26,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27, 28, 
+    29, 30, 31, 32,  1,  1,  1,  1,  1,  1,  1, 33,  1,  1, 34, 35, 
+    36,  1,  1,  1,  1,  1,  1,  1,  1, 37,  1,  1,  1,  1,  1,  1, 
+};
+
+RE_UINT8 re_diacritic_stage_4[] = {
      0,  0,  1,  2,  0,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
      0,  0,  0,  0,  0,  4,  5,  5,  5,  5,  6,  7,  8,  0,  0,  0, 
      0,  0,  0,  0,  9,  0,  0,  0,  0,  0, 10,  0, 11, 12, 13,  0, 
@@ -6582,26 +7283,20 @@ RE_UINT8 re_diacritic_stage_3[] = {
      0, 21, 24,  0,  0, 21, 24,  0,  0, 21, 24,  0,  0,  0, 24,  0, 
      0,  0, 24,  0,  0, 21, 24,  0,  0,  0, 24,  0,  0,  0, 25,  0, 
      0,  0, 26,  0,  0,  0, 27,  0, 20, 28,  0,  0, 29,  0, 30,  0, 
-     0, 31,  0,  0, 32,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 33,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 34,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0, 35,  0,  0,  0,  0,  0, 36, 37, 38,  0, 25,  0,  0, 
-     0, 39,  0, 40,  0,  0,  4, 41,  0, 42,  5, 17,  0,  0, 43, 44, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 45, 46, 47, 
-     0,  0,  0,  0,  0,  0,  0, 48,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0, 49,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0, 50,  0,  0, 51,  0,  0, 21,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0, 52,  0,  0,  0, 53, 54, 55,  0,  0, 56,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0, 37, 57,  0, 58, 59,  0,  0, 59,  2,  0, 
-     0,  0,  0, 60,  0, 15, 61,  0,  0,  0,  0,  0,  0,  0,  0, 62, 
-     0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0, 
+     0, 31,  0,  0, 32,  0,  0,  0,  0,  0,  0,  0,  0,  0, 33,  0, 
+     0, 34,  0,  0,  0,  0,  0,  0,  0,  0,  0, 35,  0,  0,  0,  0, 
+     0, 36, 37, 38,  0, 25,  0,  0,  0, 39,  0, 40,  0,  0,  4, 41, 
+     0, 42,  5, 17,  0,  0, 43, 44,  0,  0,  0,  0,  0, 45, 46, 47, 
+     0,  0,  0,  0,  0,  0,  0, 48,  0, 49,  0,  0,  0,  0,  0,  0, 
+     0, 50,  0,  0, 51,  0,  0, 21,  0,  0,  0, 52,  0,  0,  0, 53, 
+    54, 55,  0,  0, 56,  0,  0,  0,  0,  0,  0,  0,  0,  0, 37, 57, 
+     0, 58, 59,  0,  0, 59,  2,  0,  0,  0,  0, 60,  0, 15, 61,  0, 
+     0,  0,  0,  0,  0,  0,  0, 62,  1,  0,  0,  0,  0,  0,  0,  0, 
      0, 63,  0,  0,  0,  0,  0,  0,  0,  1,  2, 64, 65,  0,  0, 66, 
-     0,  0,  0,  0,  0, 67,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 68, 69, 70,  0,  0, 
+     0,  0,  0,  0,  0, 67,  0,  0,  0,  0,  0, 68, 69, 70,  0,  0, 
 };
 
-RE_UINT8 re_diacritic_stage_4[] = {
+RE_UINT8 re_diacritic_stage_5[] = {
       0,   0,   0,   0,   0,   0,   0,  64,   1,   0,   0,   0,   0, 129, 144,   1, 
       0,   0, 255, 255, 255, 255, 255, 255, 255, 127, 255, 224,   7,   0,  48,   4, 
      48,   0,   0,   0, 248,   0,   0,   0,   0,   0,   0,   2,   0,   0, 254, 255, 
@@ -6622,7 +7317,7 @@ RE_UINT8 re_diacritic_stage_4[] = {
     128, 227,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0, 
 };
 
-/* Diacritic: 932 bytes. */
+/* Diacritic: 797 bytes. */
 
 RE_UINT32 re_get_diacritic(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -6630,277 +7325,67 @@ RE_UINT32 re_get_diacritic(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_diacritic_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_diacritic_stage_2[pos + f] << 4);
-    f = code >> 5;
-    code ^= (f << 5);
-    pos = ((RE_UINT32)re_diacritic_stage_3[pos + f] << 5);
-    pos += code;
-    value = (re_diacritic_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Radical. */
-
-RE_UINT8 re_radical_stage_1[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
-};
-
-RE_UINT8 re_radical_stage_2[] = {
-    0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_radical_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 
-};
-
-RE_UINT8 re_radical_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    255, 255, 255, 251, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  15,   0, 
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,  63,   0,   0,   0,   0,   0, 
-};
-
-/* Radical: 162 bytes. */
-
-RE_UINT32 re_get_radical(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_radical_stage_1[f] << 4);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_diacritic_stage_1[f] << 5);
     f = code >> 11;
     code ^= (f << 11);
-    pos = ((RE_UINT32)re_radical_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_radical_stage_3[pos + f] << 7);
+    pos = ((RE_UINT32)re_diacritic_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_diacritic_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_diacritic_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_radical_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_diacritic_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
 
-/* Hyphen. */
+/* Extender. */
 
-RE_UINT8 re_hyphen_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_hyphen_stage_2[] = {
-    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 
-    4, 1, 1, 1, 1, 1, 1, 5, 6, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 
-};
-
-RE_UINT8 re_hyphen_stage_3[] = {
-    0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 
-    4, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 6, 1, 1, 1, 1, 1, 7, 1, 1, 8, 9, 1, 1, 
-};
-
-RE_UINT8 re_hyphen_stage_4[] = {
-      0,   0,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   4,   0,   0,   0,   0,   0,   0,  64,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   3,   0,   0,   0,   0,   0,   0,   0, 128,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   8,   0,   0,   0,   0,   8,   0,   0,   0, 
-      0,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  32,   0,   0,   0, 
-};
-
-/* Hyphen: 308 bytes. */
-
-RE_UINT32 re_get_hyphen(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_hyphen_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_hyphen_stage_2[pos + f] << 3);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_hyphen_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_hyphen_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Unified_Ideograph. */
-
-RE_UINT8 re_unified_ideograph_stage_1[] = {
-    0, 1, 2, 3, 4, 4, 4, 4, 5, 5, 6, 4, 4, 4, 4, 4, 
-    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 
-    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 
-    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 
-    4, 4, 4, 4, 
-};
-
-RE_UINT8 re_unified_ideograph_stage_2[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 
-    1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 6, 7, 0, 
-};
-
-RE_UINT8 re_unified_ideograph_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 
-    0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 1, 
-    7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-};
-
-RE_UINT8 re_unified_ideograph_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 
-    255, 255, 255, 255, 255, 255,  63,   0, 255,  15,   0,   0,   0,   0,   0,   0, 
-      0, 192,  26, 128, 154,   3,   0,   0, 255, 255, 127,   0,   0,   0,   0,   0, 
-    255, 255, 255, 255, 255, 255,  31,   0, 255, 255, 255,  63,   0,   0,   0,   0, 
-};
-
-/* Unified_Ideograph: 372 bytes. */
-
-RE_UINT32 re_get_unified_ideograph(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_unified_ideograph_stage_1[f] << 4);
-    f = code >> 10;
-    code ^= (f << 10);
-    pos = ((RE_UINT32)re_unified_ideograph_stage_2[pos + f] << 4);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_unified_ideograph_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_unified_ideograph_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Dash. */
-
-RE_UINT8 re_dash_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
-};
-
-RE_UINT8 re_dash_stage_2[] = {
-    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 4, 1, 1, 1, 
-    5, 6, 1, 1, 1, 1, 1, 7, 8, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 
-};
-
-RE_UINT8 re_dash_stage_3[] = {
-     0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  2,  1,  3,  1,  1,  1,  1,  1,  1,  1, 
-     4,  1,  1,  1,  1,  1,  1,  1,  5,  6,  7,  1,  1,  1,  1,  1, 
-     8,  1,  1,  1,  1,  1,  1,  1,  9,  1,  1,  1,  1,  1,  1,  1, 
-    10,  1, 11,  1,  1,  1,  1,  1, 12, 13,  1,  1, 14,  1,  1,  1, 
-};
-
-RE_UINT8 re_dash_stage_4[] = {
-      0,   0,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   4,   0,   0,   0,   0,   0,  64,   1,   0,   0,   0,   0,   0,   0,   0, 
-     64,   0,   0,   0,   0,   0,   0,   0,   0,   0,  63,   0,   0,   0,   0,   0, 
-      0,   0,   8,   0,   0,   0,   0,   8,   0,   8,   0,   0,   0,   0,   0,   0, 
-      0,   0,   4,   0,   0,   0,   0,   0,   0,   0, 128,   4,   0,   0,   0,   0, 
-      0,   0,   0,  16,   0,   0,   1,   0,   0,   0,   0,   0,   1,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   6,   0,   0,   0,   0,   1,   8,   0,   0,   0, 
-      0,  32,   0,   0,   0,   0,   0,   0, 
-};
-
-/* Dash: 364 bytes. */
-
-RE_UINT32 re_get_dash(RE_UINT32 ch) {
-    RE_UINT32 code;
-    RE_UINT32 f;
-    RE_UINT32 pos;
-    RE_UINT32 value;
-
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_dash_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_dash_stage_2[pos + f] << 3);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_dash_stage_3[pos + f] << 6);
-    pos += code;
-    value = (re_dash_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
-
-    return value;
-}
-
-/* Hex_Digit. */
-
-RE_UINT8 re_hex_digit_stage_1[] = {
+RE_UINT8 re_extender_stage_1[] = {
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 
 };
 
-RE_UINT8 re_hex_digit_stage_2[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+RE_UINT8 re_extender_stage_2[] = {
+    0, 1, 2, 3, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 5, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
 };
 
-RE_UINT8 re_hex_digit_stage_3[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 
+RE_UINT8 re_extender_stage_3[] = {
+     0,  1,  2,  1,  1,  1,  3,  4,  1,  1,  1,  1,  1,  1,  5,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  6,  1,  7,  1,  8,  1,  1,  1, 
+     9,  1,  1,  1,  1,  1,  1,  1, 10,  1,  1,  1,  1,  1, 11,  1, 
+     1, 12, 13,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 14, 
 };
 
-RE_UINT8 re_hex_digit_stage_4[] = {
-      0,   0,   0,   0,   0,   0, 255,   3, 126,   0,   0,   0, 126,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0, 255,   3, 126,   0,   0,   0, 126,   0,   0,   0,   0,   0,   0,   0, 
+RE_UINT8 re_extender_stage_4[] = {
+     0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  3,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  4,  0,  0,  5,  0,  0,  0,  5,  0, 
+     0,  0,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  0,  0, 
+     0,  8,  0,  9,  0,  0,  0,  0, 10, 11,  0,  0, 12,  0,  0, 13, 
+    14,  0,  0,  0,  0,  0,  0,  0, 15,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0, 16,  0,  0,  0,  0, 17,  0,  0, 18,  0, 
+     0,  0,  0, 17,  0,  0,  0,  0, 
 };
 
-/* Hex_Digit: 177 bytes. */
+RE_UINT8 re_extender_stage_5[] = {
+      0,   0,   0,   0,   0,   0, 128,   0,   0,   0,   3,   0,   1,   0,   0,   0, 
+      0,   0,   0,   4,  64,   0,   0,   0,   8,   0,   0,   0, 128,   0,   0,   0, 
+      0,   0,  64,   0,   0,   0,   0,   8,  32,   0,   0,   0,   0,   0,  62,   0, 
+      0,   0,   0,  96,   0,   0,   0, 112,   0,   0,  32,   0,   0,  16,   0,   0, 
+      0, 128,   0,   0,   0,   0,   1,   0,   0,   0,   0,  32, 
+};
 
-RE_UINT32 re_get_hex_digit(RE_UINT32 ch) {
+/* Extender: 341 bytes. */
+
+RE_UINT32 re_get_extender(RE_UINT32 ch) {
     RE_UINT32 code;
     RE_UINT32 f;
     RE_UINT32 pos;
@@ -6908,15 +7393,130 @@ RE_UINT32 re_get_hex_digit(RE_UINT32 ch) {
 
     f = ch >> 16;
     code = ch ^ (f << 16);
-    pos = ((RE_UINT32)re_hex_digit_stage_1[f] << 5);
+    pos = ((RE_UINT32)re_extender_stage_1[f] << 5);
     f = code >> 11;
     code ^= (f << 11);
-    pos = ((RE_UINT32)re_hex_digit_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_hex_digit_stage_3[pos + f] << 7);
+    pos = ((RE_UINT32)re_extender_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_extender_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_extender_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_hex_digit_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_extender_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Other_Lowercase. */
+
+RE_UINT8 re_other_lowercase_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_other_lowercase_stage_2[] = {
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+};
+
+RE_UINT8 re_other_lowercase_stage_3[] = {
+    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 
+    3, 0, 4, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 6, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_other_lowercase_stage_4[] = {
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  0,  3,  0,  0, 
+     0,  0,  0,  0,  4,  5,  6,  0,  0,  0,  7,  0,  0,  8,  0,  0, 
+     0,  0,  0,  9,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0, 11,  0,  0, 
+};
+
+RE_UINT8 re_other_lowercase_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255,   1, 
+      3,   0,   0,   0,  31,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   4, 
+      0,   0,   0,   0,   0, 240, 255, 255, 255, 255, 255, 255,   3,   0,   0,   1, 
+      0,   0,   0, 248, 255, 255, 255, 255,   0,   0,  31,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0, 255, 255,   0,   0, 255, 255, 255,   3,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   1,   0, 
+};
+
+/* Other_Lowercase: 241 bytes. */
+
+RE_UINT32 re_get_other_lowercase(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_other_lowercase_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_other_lowercase_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_other_lowercase_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_other_lowercase_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_other_lowercase_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Other_Uppercase. */
+
+RE_UINT8 re_other_uppercase_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_other_uppercase_stage_2[] = {
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_other_uppercase_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_other_uppercase_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 2, 1, 0, 
+};
+
+RE_UINT8 re_other_uppercase_stage_5[] = {
+      0,   0,   0,   0, 255, 255,   0,   0,   0,   0, 192, 255, 
+};
+
+/* Other_Uppercase: 117 bytes. */
+
+RE_UINT32 re_get_other_uppercase(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_other_uppercase_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_other_uppercase_stage_2[pos + f] << 4);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_other_uppercase_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_other_uppercase_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_other_uppercase_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -6929,25 +7529,26 @@ RE_UINT8 re_noncharacter_code_point_stage_1[] = {
 };
 
 RE_UINT8 re_noncharacter_code_point_stage_2[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
 };
 
 RE_UINT8 re_noncharacter_code_point_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 
+    0, 0, 0, 0, 0, 0, 0, 2, 
 };
 
 RE_UINT8 re_noncharacter_code_point_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255, 255, 255, 255,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 192, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
+    0, 0, 0, 0, 0, 0, 0, 2, 
 };
 
-/* Noncharacter_Code_Point: 177 bytes. */
+RE_UINT8 re_noncharacter_code_point_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255, 255, 255, 255,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0, 192, 
+};
+
+/* Noncharacter_Code_Point: 121 bytes. */
 
 RE_UINT32 re_get_noncharacter_code_point(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -6957,15 +7558,528 @@ RE_UINT32 re_get_noncharacter_code_point(RE_UINT32 ch) {
 
     f = ch >> 16;
     code = ch ^ (f << 16);
-    pos = ((RE_UINT32)re_noncharacter_code_point_stage_1[f] << 5);
+    pos = ((RE_UINT32)re_noncharacter_code_point_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_noncharacter_code_point_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_noncharacter_code_point_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_noncharacter_code_point_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_noncharacter_code_point_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Other_Grapheme_Extend. */
+
+RE_UINT8 re_other_grapheme_extend_stage_1[] = {
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 
+};
+
+RE_UINT8 re_other_grapheme_extend_stage_2[] = {
+    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_other_grapheme_extend_stage_3[] = {
+    0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 
+    6, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_other_grapheme_extend_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 
+    0, 0, 0, 0, 1, 2, 1, 2, 0, 0, 0, 3, 1, 2, 0, 4, 
+    5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 
+    0, 0, 0, 0, 0, 7, 0, 0, 
+};
+
+RE_UINT8 re_other_grapheme_extend_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  64, 
+      0,   0, 128,   0,   0,   0,   0,   0,   4,   0,  96,   0,   0,   0,   0,   0, 
+      0, 128,   0, 128,   0,   0,   0,   0,   0,  48,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0, 192,   0,   0,   0,   0,   0,   0,   0,   0,  32, 192,   7,   0, 
+};
+
+/* Other_Grapheme_Extend: 225 bytes. */
+
+RE_UINT32 re_get_other_grapheme_extend(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_other_grapheme_extend_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_other_grapheme_extend_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_other_grapheme_extend_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_other_grapheme_extend_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_other_grapheme_extend_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* IDS_Binary_Operator. */
+
+RE_UINT8 re_ids_binary_operator_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_ids_binary_operator_stage_2[] = {
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_ids_binary_operator_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
+};
+
+RE_UINT8 re_ids_binary_operator_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
+};
+
+RE_UINT8 re_ids_binary_operator_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 243,  15, 
+};
+
+/* IDS_Binary_Operator: 97 bytes. */
+
+RE_UINT32 re_get_ids_binary_operator(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_ids_binary_operator_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_ids_binary_operator_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_ids_binary_operator_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_ids_binary_operator_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_ids_binary_operator_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* IDS_Trinary_Operator. */
+
+RE_UINT8 re_ids_trinary_operator_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_ids_trinary_operator_stage_2[] = {
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_ids_trinary_operator_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
+};
+
+RE_UINT8 re_ids_trinary_operator_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
+};
+
+RE_UINT8 re_ids_trinary_operator_stage_5[] = {
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 12,  0, 
+};
+
+/* IDS_Trinary_Operator: 97 bytes. */
+
+RE_UINT32 re_get_ids_trinary_operator(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_ids_trinary_operator_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_ids_trinary_operator_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_ids_trinary_operator_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_ids_trinary_operator_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_ids_trinary_operator_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Radical. */
+
+RE_UINT8 re_radical_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_radical_stage_2[] = {
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_radical_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
+};
+
+RE_UINT8 re_radical_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 1, 2, 2, 3, 2, 2, 2, 2, 2, 2, 4, 0, 
+};
+
+RE_UINT8 re_radical_stage_5[] = {
+      0,   0,   0,   0, 255, 255, 255, 251, 255, 255, 255, 255, 255, 255,  15,   0, 
+    255, 255,  63,   0, 
+};
+
+/* Radical: 117 bytes. */
+
+RE_UINT32 re_get_radical(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_radical_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_radical_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_radical_stage_3[pos + f] << 4);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_radical_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_radical_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Unified_Ideograph. */
+
+RE_UINT8 re_unified_ideograph_stage_1[] = {
+    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_unified_ideograph_stage_2[] = {
+    0, 0, 0, 1, 2, 3, 3, 3, 3, 4, 0, 0, 0, 0, 0, 5, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 6, 7, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_unified_ideograph_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 3, 0, 0, 0, 0, 0, 4, 0, 0, 
+    1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 6, 7, 0, 0, 0, 
+};
+
+RE_UINT8 re_unified_ideograph_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 2, 0, 1, 1, 1, 1, 1, 1, 1, 3, 
+    4, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 5, 1, 1, 1, 1, 
+    1, 1, 1, 1, 6, 1, 1, 1, 7, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_unified_ideograph_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 
+    255, 255, 255, 255, 255, 255,  63,   0, 255,  15,   0,   0,   0,   0,   0,   0, 
+      0, 192,  26, 128, 154,   3,   0,   0, 255, 255, 127,   0,   0,   0,   0,   0, 
+    255, 255, 255, 255, 255, 255,  31,   0, 255, 255, 255,  63,   0,   0,   0,   0, 
+};
+
+/* Unified_Ideograph: 257 bytes. */
+
+RE_UINT32 re_get_unified_ideograph(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_unified_ideograph_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_unified_ideograph_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_unified_ideograph_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_unified_ideograph_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_unified_ideograph_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Other_Default_Ignorable_Code_Point. */
+
+RE_UINT8 re_other_default_ignorable_code_point_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 
+    1, 
+};
+
+RE_UINT8 re_other_default_ignorable_code_point_stage_2[] = {
+    0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 
+    6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 
+};
+
+RE_UINT8 re_other_default_ignorable_code_point_stage_3[] = {
+    0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 
+    3, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 
+    6, 7, 7, 7, 7, 7, 7, 7, 
+};
+
+RE_UINT8 re_other_default_ignorable_code_point_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
+    0, 0, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 
+    7, 0, 8, 8, 0, 0, 0, 9, 8, 8, 8, 8, 8, 8, 8, 8, 
+};
+
+RE_UINT8 re_other_default_ignorable_code_point_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0, 128,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0, 128,   1,   0,   0,   0,   0,   0,   0,   0, 224,   3,   0,   0, 
+      0,   0,   0,   0,  16,   0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0, 255,   1, 253, 255, 255, 255,   0,   0,   0,   0, 
+    255, 255, 255, 255, 255, 255, 255, 255,   0,   0,   0,   0,   0,   0, 255, 255, 
+};
+
+/* Other_Default_Ignorable_Code_Point: 265 bytes. */
+
+RE_UINT32 re_get_other_default_ignorable_code_point(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_other_default_ignorable_code_point_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_other_default_ignorable_code_point_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_other_default_ignorable_code_point_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_other_default_ignorable_code_point_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_other_default_ignorable_code_point_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Deprecated. */
+
+RE_UINT8 re_deprecated_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 
+    1, 1, 
+};
+
+RE_UINT8 re_deprecated_stage_2[] = {
+    0, 1, 2, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+};
+
+RE_UINT8 re_deprecated_stage_3[] = {
+    0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 
+    0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 
+    5, 0, 0, 6, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_deprecated_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
+    0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 
+    0, 6, 0, 0, 0, 0, 0, 0, 7, 8, 8, 8, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_deprecated_stage_5[] = {
+      0,   0,   0,   0,   0,   2,   0,   0,   0,   0,   8,   0,   0,   0, 128,   2, 
+     24,   0,   0,   0,   0, 252,   0,   0,   0,   6,   0,   0,   2,   0,   0,   0, 
+    255, 255, 255, 255, 
+};
+
+/* Deprecated: 230 bytes. */
+
+RE_UINT32 re_get_deprecated(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_deprecated_stage_1[f] << 4);
     f = code >> 11;
     code ^= (f << 11);
-    pos = ((RE_UINT32)re_noncharacter_code_point_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_noncharacter_code_point_stage_3[pos + f] << 7);
+    pos = ((RE_UINT32)re_deprecated_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_deprecated_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_deprecated_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_noncharacter_code_point_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_deprecated_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Soft_Dotted. */
+
+RE_UINT8 re_soft_dotted_stage_1[] = {
+    0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 
+};
+
+RE_UINT8 re_soft_dotted_stage_2[] = {
+    0, 1, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_soft_dotted_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 
+     5,  5,  5,  5,  5,  6,  7,  5,  8,  9,  5,  5,  5,  5,  5,  5, 
+     5,  5,  5,  5, 10,  5,  5,  5,  5,  5,  5,  5, 11, 12, 13,  5, 
+};
+
+RE_UINT8 re_soft_dotted_stage_4[] = {
+     0,  0,  0,  1,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0, 
+     0,  0,  3,  4,  5,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7, 
+     0,  0,  8,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  9, 10, 11,  0,  0,  0, 12,  0,  0,  0,  0, 13,  0, 
+     0,  0,  0, 14,  0,  0,  0,  0,  0,  0, 15,  0,  0,  0,  0,  0, 
+     0,  0,  0, 16,  0,  0,  0,  0,  0, 17, 18,  0, 19, 20,  0, 21, 
+     0, 22, 23,  0, 24,  0, 17, 18,  0, 19, 20,  0, 21,  0,  0,  0, 
+};
+
+RE_UINT8 re_soft_dotted_stage_5[] = {
+      0,   0,   0,   0,   0,   6,   0,   0,   0, 128,   0,   0,   0,   2,   0,   0, 
+      0,   1,   0,   0,   0,   0,   0,  32,   0,   0,   4,   0,   0,   0,   8,   0, 
+      0,   0,  64,   1,   4,   0,   0,   0,   0,   0,  64,   0,  16,   1,   0,   0, 
+      0,  32,   0,   0,   0,   8,   0,   0,   0,   0,   2,   0,   0,   3,   0,   0, 
+      0,   0,   0,  16,  12,   0,   0,   0,   0,   0, 192,   0,   0,  12,   0,   0, 
+      0,   0,   0, 192,   0,   0,  12,   0, 192,   0,   0,   0,   0,   0,   0,  12, 
+      0, 192,   0,   0, 
+};
+
+/* Soft_Dotted: 342 bytes. */
+
+RE_UINT32 re_get_soft_dotted(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_soft_dotted_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_soft_dotted_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_soft_dotted_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_soft_dotted_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_soft_dotted_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Logical_Order_Exception. */
+
+RE_UINT8 re_logical_order_exception_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_logical_order_exception_stage_2[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_logical_order_exception_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 2, 0, 0, 
+};
+
+RE_UINT8 re_logical_order_exception_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 
+    0, 0, 2, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_logical_order_exception_stage_5[] = {
+     0,  0,  0,  0,  0,  0,  0,  0, 31,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0, 96, 26, 
+};
+
+/* Logical_Order_Exception: 121 bytes. */
+
+RE_UINT32 re_get_logical_order_exception(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_logical_order_exception_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_logical_order_exception_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_logical_order_exception_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_logical_order_exception_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_logical_order_exception_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -6974,28 +8088,29 @@ RE_UINT32 re_get_noncharacter_code_point(RE_UINT32 ch) {
 
 RE_UINT8 re_other_id_start_stage_1[] = {
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
+    1, 
 };
 
 RE_UINT8 re_other_id_start_stage_2[] = {
-    0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 };
 
 RE_UINT8 re_other_id_start_stage_3[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 
 };
 
 RE_UINT8 re_other_id_start_stage_4[] = {
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  1,  0, 64,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0, 24,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 
+    0, 0, 2, 0, 0, 0, 0, 0, 
 };
 
-/* Other_ID_Start: 162 bytes. */
+RE_UINT8 re_other_id_start_stage_5[] = {
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0, 64,  0,  0, 
+     0,  0,  0, 24,  0,  0,  0,  0, 
+};
+
+/* Other_ID_Start: 113 bytes. */
 
 RE_UINT32 re_get_other_id_start(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -7003,101 +8118,133 @@ RE_UINT32 re_get_other_id_start(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_other_id_start_stage_1[f] << 4);
-    f = code >> 11;
-    code ^= (f << 11);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_other_id_start_stage_1[f] << 3);
+    f = code >> 13;
+    code ^= (f << 13);
     pos = ((RE_UINT32)re_other_id_start_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_other_id_start_stage_3[pos + f] << 7);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_other_id_start_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_other_id_start_stage_4[pos + f] << 6);
     pos += code;
-    value = (re_other_id_start_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_other_id_start_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
 
-/* Other_Uppercase. */
+/* Other_ID_Continue. */
 
-RE_UINT8 re_other_uppercase_stage_1[] = {
+RE_UINT8 re_other_id_continue_stage_1[] = {
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 
+    1, 
 };
 
-RE_UINT8 re_other_uppercase_stage_2[] = {
-    0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+RE_UINT8 re_other_id_continue_stage_2[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 };
 
-RE_UINT8 re_other_uppercase_stage_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 
+RE_UINT8 re_other_id_continue_stage_3[] = {
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 4, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
 };
 
-RE_UINT8 re_other_uppercase_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255, 255,   0,   0, 
-      0,   0,   0,   0,   0,   0, 192, 255, 255, 255,   0,   0,   0,   0,   0,   0, 
+RE_UINT8 re_other_id_continue_stage_4[] = {
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 4, 
 };
 
-/* Other_Uppercase: 146 bytes. */
+RE_UINT8 re_other_id_continue_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 128,   0, 
+    128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 254,   3,   0, 
+      0,   0,   0,   4,   0,   0,   0,   0, 
+};
 
-RE_UINT32 re_get_other_uppercase(RE_UINT32 ch) {
+/* Other_ID_Continue: 145 bytes. */
+
+RE_UINT32 re_get_other_id_continue(RE_UINT32 ch) {
     RE_UINT32 code;
     RE_UINT32 f;
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 15;
-    code = ch ^ (f << 15);
-    pos = ((RE_UINT32)re_other_uppercase_stage_1[f] << 4);
-    f = code >> 11;
-    code ^= (f << 11);
-    pos = ((RE_UINT32)re_other_uppercase_stage_2[pos + f] << 4);
-    f = code >> 7;
-    code ^= (f << 7);
-    pos = ((RE_UINT32)re_other_uppercase_stage_3[pos + f] << 7);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_other_id_continue_stage_1[f] << 3);
+    f = code >> 13;
+    code ^= (f << 13);
+    pos = ((RE_UINT32)re_other_id_continue_stage_2[pos + f] << 4);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_other_id_continue_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_other_id_continue_stage_4[pos + f] << 6);
     pos += code;
-    value = (re_other_uppercase_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_other_id_continue_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
 
-/* White_Space. */
+/* STerm. */
 
-RE_UINT8 re_white_space_stage_1[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+RE_UINT8 re_sterm_stage_1[] = {
+    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 1, 1, 
 };
 
-RE_UINT8 re_white_space_stage_2[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 
-    4, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+RE_UINT8 re_sterm_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  3,  3,  9, 10,  3,  3,  3, 
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3,  3,  3,  3,  3,  3,  3, 11, 12,  3,  3,  3,  3,  3, 
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 13, 
+     3,  3, 14,  3, 15,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
 };
 
-RE_UINT8 re_white_space_stage_3[] = {
-    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 3, 1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 
-    5, 6, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 
+RE_UINT8 re_sterm_stage_3[] = {
+     0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  3,  4,  5,  6,  7, 
+     1,  1,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     9,  1,  1,  1,  1,  1, 10,  1,  1,  1,  1,  1, 11,  1, 12,  1, 
+    13,  1, 14,  1,  1, 15, 16,  1, 17,  1,  1,  1,  1,  1,  1,  1, 
+    18,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 19,  1,  1,  1, 
+    20,  1,  1,  1,  1,  1,  1,  1,  1, 21,  1,  1, 22, 23,  1,  1, 
+    24, 25, 26, 27, 28,  1,  1, 29,  1,  1,  1,  1, 30,  1, 31,  1, 
+     1,  1,  1,  1, 32,  1,  1,  1, 33, 34,  1,  1,  1,  1,  1,  1, 
 };
 
-RE_UINT8 re_white_space_stage_4[] = {
-      0,  62,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-     32,   0,   0,   0,   1,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0, 
-      0,  64,   0,   0,   0,   0,   0,   0, 255,   7,   0,   0,   0, 131,   0,   0, 
-      0,   0,   0, 128,   0,   0,   0,   0, 
+RE_UINT8 re_sterm_stage_4[] = {
+     0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  3,  0,  0,  0, 
+     4,  0,  0,  0,  0,  0,  5,  0,  6,  0,  0,  0,  0,  0,  0,  7, 
+     0,  0,  0,  8,  0,  0,  9,  0,  0,  0,  0, 10,  0,  0,  0, 11, 
+     0, 12,  0,  0, 13,  0,  0,  0,  0,  0,  8,  0,  0, 14,  0,  0, 
+     0,  0, 15,  0,  0, 16,  0, 17,  0, 18, 19,  0,  0, 11,  0,  0, 
+    20,  0,  0,  0,  0,  0,  0,  4, 21,  0,  0,  0,  0,  0,  0, 22, 
+     0,  0,  0, 23,  0,  0, 21,  0,  0, 24,  0,  0,  0,  0, 25,  0, 
+     0,  0, 26,  0,  0,  0,  0, 27,  0,  0, 28,  0,  1,  0,  0, 29, 
+     0,  0, 23,  0,  0,  0, 30,  0,  0, 17, 31,  0, 
 };
 
-/* White_Space: 236 bytes. */
+RE_UINT8 re_sterm_stage_5[] = {
+      0,   0,   0,   0,   2,  64,   0, 128,   0,   0,   0,  80,   0,   2,   0,   0, 
+      0,   0,   0, 128,   0,   0,  16,   0,   7,   0,   0,   0,   0,   0,   0,   2, 
+     48,   0,   0,   0,   0,  12,   0,   0, 132,   1,   0,   0,   0,  64,   0,   0, 
+      0,   0,  96,   0,   8,   2,   0,   0,   0,  15,   0,   0,   0,   0,   0, 204, 
+      0,   0,   0,  24,   0,   0,   0, 192,   0,   0,   0,  48, 128,   3,   0,   0, 
+      4,   0,   0,   0,   0, 192,   0,   0,   0,   0, 136,   0,   0,   0, 192,   0, 
+      0, 128,   0,   0,   0,   3,   0,   0,   0,   0,   0, 224,   0,   8,   0,   0, 
+      0,   0, 196,   0,   2,   0,   0,   0, 128,   1,   0,   0,   3,   0,   0,   0, 
+};
 
-RE_UINT32 re_get_white_space(RE_UINT32 ch) {
+/* STerm: 544 bytes. */
+
+RE_UINT32 re_get_sterm(RE_UINT32 ch) {
     RE_UINT32 code;
     RE_UINT32 f;
     RE_UINT32 pos;
@@ -7105,15 +8252,2329 @@ RE_UINT32 re_get_white_space(RE_UINT32 ch) {
 
     f = ch >> 14;
     code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_white_space_stage_1[f] << 5);
+    pos = ((RE_UINT32)re_sterm_stage_1[f] << 4);
+    f = code >> 10;
+    code ^= (f << 10);
+    pos = ((RE_UINT32)re_sterm_stage_2[pos + f] << 3);
+    f = code >> 7;
+    code ^= (f << 7);
+    pos = ((RE_UINT32)re_sterm_stage_3[pos + f] << 2);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_sterm_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_sterm_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Variation_Selector. */
+
+RE_UINT8 re_variation_selector_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 
+    1, 
+};
+
+RE_UINT8 re_variation_selector_stage_2[] = {
+    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_variation_selector_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_variation_selector_stage_4[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
+    2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 4, 
+};
+
+RE_UINT8 re_variation_selector_stage_5[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,  56,   0,   0,   0,   0,   0,   0, 
+    255, 255,   0,   0,   0,   0,   0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 
+    255, 255, 255, 255, 255, 255,   0,   0, 
+};
+
+/* Variation_Selector: 169 bytes. */
+
+RE_UINT32 re_get_variation_selector(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_variation_selector_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_variation_selector_stage_2[pos + f] << 3);
     f = code >> 9;
     code ^= (f << 9);
-    pos = ((RE_UINT32)re_white_space_stage_2[pos + f] << 3);
+    pos = ((RE_UINT32)re_variation_selector_stage_3[pos + f] << 3);
     f = code >> 6;
     code ^= (f << 6);
-    pos = ((RE_UINT32)re_white_space_stage_3[pos + f] << 6);
+    pos = ((RE_UINT32)re_variation_selector_stage_4[pos + f] << 6);
     pos += code;
-    value = (re_white_space_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_variation_selector_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Pattern_White_Space. */
+
+RE_UINT8 re_pattern_white_space_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_pattern_white_space_stage_2[] = {
+    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_pattern_white_space_stage_3[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    2, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_pattern_white_space_stage_4[] = {
+    0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    3, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_pattern_white_space_stage_5[] = {
+      0,  62,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+     32,   0,   0,   0,   0,   0,   0,   0,   0, 192,   0,   0,   0,   3,   0,   0, 
+};
+
+/* Pattern_White_Space: 129 bytes. */
+
+RE_UINT32 re_get_pattern_white_space(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_pattern_white_space_stage_1[f] << 4);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_pattern_white_space_stage_2[pos + f] << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_pattern_white_space_stage_3[pos + f] << 3);
+    f = code >> 6;
+    code ^= (f << 6);
+    pos = ((RE_UINT32)re_pattern_white_space_stage_4[pos + f] << 6);
+    pos += code;
+    value = (re_pattern_white_space_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Pattern_Syntax. */
+
+RE_UINT8 re_pattern_syntax_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_pattern_syntax_stage_2[] = {
+    0, 1, 1, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_pattern_syntax_stage_3[] = {
+     0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     2,  3,  4,  4,  5,  4,  4,  6,  4,  4,  4,  4,  1,  1,  7,  1, 
+     8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  9, 10,  1, 
+};
+
+RE_UINT8 re_pattern_syntax_stage_4[] = {
+     0,  1,  2,  2,  0,  3,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0, 
+     5,  6,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  8,  8,  8, 
+     8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  0,  0,  0,  0,  0, 
+     8,  8,  8,  9, 10,  8,  8,  8,  8,  8,  8,  8,  0,  0,  0,  0, 
+    11, 12,  0,  0,  0,  0,  0,  0,  0, 13,  0,  0,  0,  0,  0,  0, 
+     0,  0, 14,  0,  0,  0,  0,  0, 
+};
+
+RE_UINT8 re_pattern_syntax_stage_5[] = {
+      0,   0,   0,   0, 254, 255,   0, 252,   1,   0,   0, 120, 254,  90,  67, 136, 
+      0,   0, 128,   0,   0,   0, 255, 255, 255,   0, 255, 127, 254, 255, 239, 127, 
+    255, 255, 255, 255, 255, 255,  63,   0,   0,   0, 240, 255,  14, 255, 255, 255, 
+      1,   0,   1,   0,   0,   0,   0, 192,  96,   0,   0,   0, 
+};
+
+/* Pattern_Syntax: 277 bytes. */
+
+RE_UINT32 re_get_pattern_syntax(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_pattern_syntax_stage_1[f] << 5);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_pattern_syntax_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_pattern_syntax_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_pattern_syntax_stage_4[pos + f] << 5);
+    pos += code;
+    value = (re_pattern_syntax_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
+
+    return value;
+}
+
+/* Hangul_Syllable_Type. */
+
+RE_UINT8 re_hangul_syllable_type_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 
+};
+
+RE_UINT8 re_hangul_syllable_type_stage_2[] = {
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_hangul_syllable_type_stage_3[] = {
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  1,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  3,  0,  0,  0,  0,  0,  4,  5,  6,  7,  8,  9, 10,  4, 
+     5,  6,  7,  8,  9, 10,  4,  5,  6,  7,  8,  9, 10,  4,  5,  6, 
+     7,  8,  9, 10,  4,  5,  6,  7,  8,  9, 10,  4,  5,  6,  7,  8, 
+     9, 10,  4,  5,  6,  7,  8,  9, 10,  4,  5,  6,  7,  8,  9, 10, 
+     4,  5,  6,  7,  8,  9, 10,  4,  5,  6,  7,  8,  9, 10,  4,  5, 
+     6,  7,  8,  9, 10,  4,  5,  6,  7,  8,  9, 10,  4,  5,  6, 11, 
+};
+
+RE_UINT8 re_hangul_syllable_type_stage_4[] = {
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2, 
+     2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  4, 
+     5,  6,  6,  7,  6,  6,  6,  5,  6,  6,  7,  6,  6,  6,  5,  6, 
+     6,  7,  6,  6,  6,  5,  6,  6,  7,  6,  6,  6,  5,  6,  6,  7, 
+     6,  6,  6,  5,  6,  6,  7,  6,  6,  6,  5,  6,  6,  7,  6,  6, 
+     6,  5,  6,  6,  7,  6,  6,  6,  5,  6,  6,  7,  6,  6,  6,  5, 
+     6,  6,  7,  6,  6,  6,  5,  6,  6,  7,  6,  6,  6,  5,  6,  6, 
+     7,  6,  6,  6,  5,  6,  6,  7,  6,  6,  6,  5,  6,  6,  7,  6, 
+     6,  6,  5,  6,  6,  7,  6,  6,  6,  5,  6,  6,  7,  6,  6,  6, 
+     6,  5,  6,  6,  8,  0,  2,  2,  9, 10,  3,  3,  3,  3,  3, 11, 
+};
+
+RE_UINT8 re_hangul_syllable_type_stage_5[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 
+    2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 
+    1, 1, 1, 1, 1, 0, 0, 0, 4, 5, 5, 5, 5, 5, 5, 5, 
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 5, 5, 
+    5, 5, 5, 5, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 
+    0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 
+};
+
+/* Hangul_Syllable_Type: 497 bytes. */
+
+RE_UINT32 re_get_hangul_syllable_type(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_hangul_syllable_type_stage_1[f] << 5);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_hangul_syllable_type_stage_2[pos + f] << 4);
+    f = code >> 7;
+    code ^= (f << 7);
+    pos = ((RE_UINT32)re_hangul_syllable_type_stage_3[pos + f] << 4);
+    f = code >> 3;
+    code ^= (f << 3);
+    pos = ((RE_UINT32)re_hangul_syllable_type_stage_4[pos + f] << 3);
+    value = re_hangul_syllable_type_stage_5[pos + code];
+
+    return value;
+}
+
+/* Bidi_Class. */
+
+RE_UINT8 re_bidi_class_stage_1[] = {
+     0,  1,  2,  3,  4,  5,  5,  5,  5,  6,  7,  5,  5,  8,  5,  9, 
+    10, 11, 12, 13, 14, 14, 15, 14, 14, 14, 14, 16, 14, 17, 18, 19, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 20, 21, 14, 14, 14, 22, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+    24, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 23, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 25, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 25, 
+};
+
+RE_UINT8 re_bidi_class_stage_2[] = {
+      0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15, 
+     16,   1,  17,  18,  19,   1,  20,  21,  22,  23,  24,  25,  26,  27,   1,  28, 
+     29,  30,  31,  32,  33,  34,  35,  36,   1,  34,  34,  37,  38,  39,  40,  41, 
+     42,  43,  44,  45,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  46,   1,   1, 
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  47, 
+      1,   1,   1,   1,  48,   1,  49,  50,  51,  52,  53,  54,   1,   1,   1,   1, 
+      1,   1,   1,   1,   1,   1,   1,  55,  56,  56,  56,  56,  56,  56,  56,  56, 
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  57,  58,  59,  60,  61,  62, 
+     63,  64,  65,  66,  67,  56,  56,  56,  68,  69,  70,  71,  68,  68,  72,  68, 
+     73,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56, 
+      1,   1,   1,  74,  75,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56, 
+      1,   1,   1,   1,  76,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56, 
+     56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56, 
+     56,  56,  56,  56,  56,  56,  56,  56,   1,   1,  77,  56,  56,  56,  56,  56, 
+     78,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56, 
+     79,  80,  81,  82,  83,  84,  85,  86,  56,  56,  56,  56,  56,  56,  56,  56, 
+     56,  56,  56,  56,  56,  56,  56,  56,  68,  68,  68,  68,  68,  68,  68,  68, 
+     87,  88,  89,  90,  91,  92,  93,  94,  56,  56,  56,  56,  56,  56,  56,  95, 
+      1,   1,   1,   1,   1,   1,  96,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
+      1,   1,   1,   1,   1,   1,   1,  97,  98,  56,  56,  56,  56,  56,  56,  56, 
+     56,  56,  56,  56,  56,  56,  56,  56,   1,   1,  98,  56,  56,  56,  56,  95, 
+     56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  95, 
+     99, 100,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 101, 
+};
+
+RE_UINT16 re_bidi_class_stage_3[] = {
+      0,   1,   2,   3,   4,   5,   6,   6,   7,   7,   7,   7,   7,   7,   7,   7, 
+      7,   7,   7,   7,   7,   8,   9,  10,  11,  11,  11,  12,  13,  14,   7,  15, 
+      7,   7,   7,   7,  16,   7,   7,   7,   7,  17,  18,  19,  20,  21,  22,  23, 
+     24,  25,  26,  27,  25,  25,  28,  29,  30,  31,  32,  25,  25,  33,  23,  34, 
+     35,  36,  37,  23,  23,  23,  23,  23,  38,  39,  40,  41,  42,  43,  44,  45, 
+     46,  47,  48,  49,  50,  51,  52,  53,  42,  54,  55,  56,  57,  58,  59,  60, 
+     61,  62,  63,  64,  65,  66,  67,  68,  65,  69,  70,  71,  72,  73,  74,  75, 
+     19,  76,  77,  78,  79,  80,  81,  78,  82,  83,  84,  85,  86,  87,  88,  78, 
+      7,  89,  90,  91,  92,   7,  93,  94,   7,   7,  95,   7,  96,  97,  98,   7, 
+     99,   7, 100,  94, 101,   7,   7, 102, 103,   7,   7,   7,   7,   7,   7,   7, 
+      7,   7,   7,   7, 104,   7,   7, 105, 106, 107, 108, 109,   7, 110, 111, 112, 
+    113,   7,   7, 114,   7, 115,   7, 116,  94, 117, 118, 119,   7, 120, 121, 122, 
+    123,   7, 124, 125, 126, 127,  78,  78, 128, 129, 130, 131, 132, 133,   7, 134, 
+      7, 135, 136,   7,  78,  78, 137, 138,   7,   7,   7,   7,   7,   7,  11, 139, 
+    140,   7, 141, 142,   7, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 
+    154, 155, 156,   7, 157, 122, 122, 122, 158, 122, 122, 122, 122, 122, 122, 122, 
+    122, 159,   7, 160, 161, 122, 122, 162, 122, 163, 164, 122, 165,   7,   7, 166, 
+    122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 167, 122, 122, 
+    168, 122, 122, 122, 122, 122, 169, 122, 122, 122, 170,  78,  78,  78,  78,  78, 
+      7, 171, 172,   7,   7,   7,   7, 173,   7,  93,   7, 174, 175, 176, 176,  11, 
+    122, 177,  78,  78, 178, 122, 122, 162, 122, 122, 122, 122, 122, 122, 179, 180, 
+    181, 182,  19,   7, 183, 103,   7, 184, 185, 186,   7,   7, 171, 187, 122, 188, 
+    189,   7, 190, 191,   7, 192, 193, 172,   7,   7,   7, 194,   7,   7, 195, 196, 
+      7,   7,   7,   7,   7, 116, 122, 122,   7,   7,   7,   7,   7,   7, 197,  78, 
+      7,   7,   7,   7, 198, 122, 199,   7, 200, 197,   7, 201, 114,   7,   7, 202, 
+    122, 203,   7,   7, 204, 205,  78, 206, 207, 208,   7, 209,   7,   7, 210, 211, 
+      7, 212, 213,  94,  38, 214, 215,  78,   7, 216, 217, 218,   7, 219, 220,  78, 
+    221, 222,  78,  78,  78,  78,   7, 223,   7,   7,   7,   7,   7, 224, 225, 218, 
+     78,  78,  78,  78,  78,  78,  78,  78,   7, 226,   7, 226,   7,   7, 227,  78, 
+    228, 229, 230,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25, 
+     25, 231,  25,  25,  25,  25, 232, 233, 234, 235, 236, 237,  25,  25,  25, 238, 
+    239,   2,   2, 240,   7, 172, 241, 242, 243, 244, 245,  78,   7,   7,   7, 187, 
+    246, 247, 122, 122, 248,  78, 249, 250,  78,  78,  78,  78,  94,   7, 105,  78, 
+    172, 224, 251,  78, 252,   7, 253,  78,   7,   7,   7,   7, 142, 205,  78,  78, 
+     23,  23,  23,  23,  23,  23,  23,  23, 254,  23,  23,  23,  23,  23,  23,  23, 
+    255, 256,  23,  23,  23,  23,  23,  23,  23, 257,  23,  23,  23,  23,  23,  23, 
+     23,  23,  23, 258,  23,  23,  23,  23, 259, 260, 261, 262, 132, 263, 264,  78, 
+      7,   7,   7, 265,  78,  78,  78,  78,   7,   7,   7, 266,  78,  78,  78,  78, 
+      7, 265,  78,  78,  78,  78,  78,  78,   7, 267,  78,  78,  78,  78,  78,  78, 
+    264,  78,  78,  78,  78,  78,  78,  78,   7,   7,   7,   7,   7,   7,   7, 116, 
+      7, 268,   7, 269, 270, 271, 142,  78, 122, 122, 272,  78,  78,  78,  78,  78, 
+    122, 122, 273, 274,  78,  78,  78,  78,   7,   7, 275,   7, 276, 277, 278,   7, 
+    279, 280, 281,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 282, 184,   7, 
+    283,   7, 284,   7, 285,   7, 286, 287, 122, 288, 122, 122, 162, 289, 290,  78, 
+    291, 171,   7, 292, 187,  78,  78, 293, 294, 187, 295,  78,  78,  78,  78,  78, 
+    122, 296, 122, 297, 162, 122, 298, 299, 122, 300, 301, 122, 167, 122, 122, 302, 
+    122, 303, 304, 305,  78,  78,  78, 306, 307, 308, 309,  78, 122, 122, 310,  78, 
+    122, 122, 122, 162,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 311, 
+      7,   7,   7,   7,   7,   7, 175,  78,   7, 102,   7,   7,   7,   7,   7,   7, 
+    142,  78,  78,  78,  78,  78,  78,  78, 312, 312, 312, 312, 312, 312, 312, 312, 
+     11,  11,  11,  11,  11,  11,  11, 313,   7,   7,   7,   7,   7,   7,   7, 314, 
+};
+
+RE_UINT8 re_bidi_class_stage_4[] = {
+      0,   0,   1,   2,   0,   0,   0,   3,   4,   5,   6,   7,   8,   8,   9,  10, 
+     11,  12,  12,  12,  12,  12,  13,  10,  11,  12,  12,  12,  12,  12,  13,  14, 
+      0,  15,   0,   0,   0,   0,   0,   0,  16,   5,  17,  18,  19,  20,  21,  10, 
+     12,  12,  12,  12,  12,  13,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12, 
+     12,  12,  12,  12,  12,  12,  22,  12,  23,  10,  10,  10,  23,  10,  10,  10, 
+     12,  24,  10,  17,  10,  10,  10,  10,  25,  25,  25,  25,  25,  25,  25,  25, 
+     25,  25,  25,  25,  12,  26,  27,  28,  29,  17,  30,  31,  12,  12,  12,  12, 
+     32,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  33,  12,  12, 
+     34,  25,  35,  12,  12,  12,  12,  12,  12,  12,  29,  29,  36,  12,  12,  12, 
+     12,  12,  12,  12,  12,  30,  36,  12,  36,  12,  12,  12,  12,  12,  12,  12, 
+     12,  12,  37,  29,  38,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  39, 
+     40,  39,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41, 
+     42,  43,  44,  45,  25,  25,  46,  47,  47,  47,  47,  47,  47,  47,  47,  47, 
+     47,  47,  48,  25,  25,  25,  25,  25,  42,  42,  49,  50,  51,  47,  47,  47, 
+     47,  47,  47,  47,  47,  52,  25,  53,  25,  54,  55,  56,   8,   8,  57,  47, 
+     47,  47,  47,  58,  59,  47,  47,  47,  47,  47,  47,  47,  25,  25,  25,  25, 
+     25,  25,  46,  47,  47,  47,  47,  47,  47,  52,  25,  25,  51,  47,  47,  47, 
+     41,  41,  60,  25,  25,  61,  62,  41,  41,  41,  41,  41,  41,  63,  39,  25, 
+     25,  38,  38,  64,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  38,  41, 
+     65,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  66,  67, 
+     68,  25,  67,  69,  68,  25,  12,  12,  70,  12,  12,  12,  12,  12,  36,  12, 
+     71,  36,  12,  72,  72,  12,  12,  12,  12,  12,  31,  12,  73,  27,  74,  67, 
+     68,  75,  72,  76,  29,  77,  29,  32,  70,  27,  12,  12,  78,  12,  79,  29, 
+     80,  36,  30,  77,  72,  12,  12,  12,  12,  12,  31,  12,  31,  81,  74,  82, 
+     83,  84,  85,  86,  87,  29,  36,  73,  29,  27,  12,  12,  35,  88,  29,  29, 
+     80,  36,  12,  32,  32,  12,  12,  12,  12,  12,  31,  12,  31,  36,  74,  67, 
+     68,  89,  90,  88,  91,  29,  29,  29,  70,  27,  12,  12,  92,  29,  29,  29, 
+     12,  12,  31,  12,  31,  36,  74,  93,  68,  75,  72,  88,  29,  94,  29,  32, 
+     70,  27,  12,  12,  12,  12,  29,  29,  94,  36,  30,  27,  31,  74,  81,  31, 
+     77,  91,  30,  27,  12,  12,  74,  27,  95,  27,  31,  88,  91,  77,  29,  29, 
+     29,  27,  12,  12,  13,  10,  96,  29,  36,  36,  12,  31,  31,  12,  12,  12, 
+     12,  12,  31,  12,  12,  36,  74,  97,  67,  98,  99,  86,  29, 100,  74,  29, 
+     70,  27,  12,  12,  29,  29,  10, 101,  27,  36,  12,  31,  31,  12,  12,  12, 
+     12,  12,  31,  12,  12,  36,  74,  67,  12,  31,  31,  86,  29,  81,  29, 102, 
+     70,  27,  12,  12,  81,  29,  29,  29,  12,  12,  12,  12,  12,  12,  30,  36, 
+     68,  82,  31,  76,  29,  77,  29,  29,  70,  27,  12,  12,  12,  74,  36,  12, 
+     27,  36,  12,  12,  12,  30,  27,  12,  12,  12,  12,  12,  32,  12,  12, 103, 
+     12,  30, 104,  77,  70, 105,  12,  12,  29,  29,  29,  29,  27,  91,  29,  29, 
+     12,  12,  12,  12,  69,  25, 106, 107,  12,  34,  25,  65,  12,  12,  12,  29, 
+     29,  29,  29,  29,  29,  29,  29,  29,  81,  72,  73, 103,  29,  12,  36,  12, 
+     36, 108,  27,  36,  69,  25,  89, 109,  12,  73,  25,  86,  12,  12,  74,  74, 
+     12,  12,  12,  12,  12,  12,  35,  12,  12,  12,  12,  12,  12, 110, 111,  26, 
+     12,  12,  36,  12,  12,  12,  12,  12,  12,  12,  12,  91, 112,  25,  25,  65, 
+     25, 113,  12,  68,  25,  25, 112,  25,  25,  25,  25,  25,  25,  25,  25,  82, 
+     12,  66,  12,  31,  12,  12,  30,  29,  12,  12,  12,  68, 113,  25, 114, 114, 
+     12,  12,  12,  12,  12,  12,  35,  70,  67,  12,  12,  12,  68,  67,  12,  12, 
+     66, 114,  12,  69,  12,  12,  12,  69,  12,  74,  29,  29,  12,  12,  12,  12, 
+     12,  12,  12,  12,  12,  12,  12,  91,  12,  12,  31,  74,  12,  30,  31,  74, 
+     12,  12,  31,  74,  12,  12,  12,  12,  12,  12,  12,  12,  31,  74,  12,  30, 
+     31,  74,  12,  12,  12,  30,  12,  12,  12,  12,  12,  12,  31,  74,  12,  12, 
+     12,  12,  12,  12,  12,  12,  30, 112,  12,  12,  12,  12,  10,  10, 115,  29, 
+     12,  12,  12,  12,  12,  91,  29,  29,  11,  12,  12,  12,  12,  12,  12,  12, 
+    116,  12,  12,  12,  12,  12,  13, 117,  12,  12,  12,  12,  91,  29,  29,  29, 
+     12,  12,  12,  31,  70, 118,  29,  29,  12,  12,  12,  12,  70,  95,  29,  29, 
+     12,  12,  12,  12,  70,  29,  29,  29,  12,  12,  12,  31,  98,  29,  29,  29, 
+     12,  12,  12,  12,  12,  34,  25,  35,  12,  66,  68,  25,  25,  12,  79,  88, 
+     12,  12,  74,  29,  10,  10, 115,  29,  10,  10, 119, 120,  12,  12,  74,  29, 
+     12,  12,  12,  12,  12,  12,  29,  29,  12,  12,  76,  29,  12,  12,  12,  12, 
+     12,  12,  12,  12,  12,  74,  29,  29,  65,  34,  67,  29,  66,  12,  68,  29, 
+    117,  26,  12,  12,  12,  12,  12,  12,  12,  12,  12,  74,  12,  91,  29,  29, 
+     12,  12,  12,  29,  12,  12,  12,  12,  12,  12,  74,  29,  12,  12,  30, 121, 
+     10,  10,  10,  10,  10,  10,  10,  10,  12,  12,  12,  12,  12,  34,  67,  27, 
+     12,  12,  12,  12,  12,  66,  25, 106, 122,  68,  25,  67,  34,  25,  25,  85, 
+     12,  12,  74,  29,  12,  12,  74,  29,  12,  12,  12,  74,  29,  29,  29,  29, 
+     25,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12, 113,  65,  67, 
+     66,  12,  12,  29,  12,  12,  12,  12,  12,  12,  34,  25,  25,  12,  12,  91, 
+     35,  12,  12,  12,  12,  12,  12,  12,  70,  35, 123,  27,  12,  12,  74,  29, 
+     12,  66,  35, 110,  35,  29,  29,  12,  12,  12,  12,  25,  25,  70,  77,  12, 
+     12,  12,  74,  36,  12,  12,  12,  12,  29,  29,  29,  29,  65,  25,  25,  25, 
+    113,  25,  67,  69,  30,  29,  29,  29,  25, 106,  29,  29,  29,  29,  29,  25, 
+     12,  12,  12,  12,  12,  74,  12,  74,  12,  74,  12,  74,  12,  12, 108, 108, 
+     12,  12,  12,  12,  12,  12,  12,  74,  12,  12,  12,  12,  12,  31,  12, 124, 
+     26,  31,  12,  24,  12,  27,  12, 125,  12,  12,  12,  24,  27,  31,  12, 126, 
+    127, 127, 128, 129,  10,  10,  10,  10,  10,  10, 130, 131, 132, 133,  10,  10, 
+     10, 134,  10,  10,  10,  10,  10, 135,   0,   0,   0,   0, 136,   8, 137, 101, 
+      8,   8, 137, 138,  12,  12,  12,  91, 132, 132, 132, 132, 132, 132, 139,  29, 
+     29,  29,  29,  29,  25,  25,  25,  25,  25,  25,  25,  25, 118,  29,  29,  29, 
+     17, 101,  26,  12,  12,  20,  11,  23,  10, 124, 140, 141,  12,  12,  23,  12, 
+     10,  11,  23,  26,  10,  10,  10,  10,  12,  12, 142,  29,  10,  10,  10,  10, 
+     10,  10,  10,  10, 143,  10,  10,  10,  10,  10,  10,  10,  10,  26,  12,  12, 
+     12,  12,  12,  12,  12,  12,  13,  10,  10,  10,  10,  10,  10,  20,  10,  10, 
+     10,  10,  10,  10,  10,  29,  29,  29,  10, 138,  29,  29,  29,  29,  29,  29, 
+     10,  10, 138,  29,  29,  29,  29,  29,  10,  10,   8,   8,   8,   8,   8,  12, 
+     12,  12,  23,  10,  10,  10,  10,  10,  10,  10,  10,  24,  10,  10,  10,  10, 
+    125,  10,  10,  10,  10,  10,  10,  10,  10,  10, 138, 144,  10,  10,  10,  10, 
+     10,  10,  10, 117,  10,  10, 115,  29,  12,  12,  12,  30,  12,  12,  12,  12, 
+     12,  12,  12,  12,  12,  12,  12,  30,  12,  24, 101,  34,  86,  29, 125,  10, 
+     12,  74,  29,  77,  91,  29,  29,  84,  12,  12,  12,  12,  12,  30,  29,  29, 
+     12,  30,  12,  30,  12,  30,  12,  30,  10,  10,  10,  10, 115,  29,  29,  29, 
+     10,  10,  10,  10,  10,  10, 145,  10,  10,  10,  10,  10,  10, 115,  29,  29, 
+     29,  29,  29,  29,  10,  10,  10,  29, 146,  11,  10,  10,  10,  10,  10,  10, 
+     11,  12,  70,  25,  11,  23,  12,  24,  12,  12,  12,  12,  12,  30, 147,  11, 
+     12,  12,  12,  12,  12,  12,  13,  12,  29,  36,  12,  12,  12,  12,  12,  12, 
+     12,  12,  12,  74,  36,  12,  12,  12,  12,  12,  12,  12,  12,  12,  30,  29, 
+     10,  29,  29,  29,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12, 126, 
+     12,  12,  12,  12,  10,  10,  10,  10,  12,  12,  12,  12,  12,  12,  12, 101, 
+     12,  12,  12,  12,  24,  10,  10,  10,  12,  12,  12,  10,  12,  12,  12,  12, 
+     12,  12,  12,  12,  12,  13, 101,  12,  12,  12,  12,  12,  12,  12,  12,  23, 
+     12,  12,  12,  12,  12,  12,  12,  13,  12,  12,  12,  29,  29,  29,  29,  29, 
+     12,  12,  12,  91,  10,  10,  10,  10,  10, 138,  29,  29,  12,  12,  12,  12, 
+     12,  12,  12,  24,  12,  12,  12,  12,  12,  12,  12,  34, 148,  29,  29, 149, 
+     12,  12,  12,  12,  35,  12,  29,  29,  26,  12,  12,  12,  12,  12,  12,  12, 
+     12,  12,  11,  30,  74,  29,  29,  29,  12,  12,  74,  29,  29,  29,  29,  29, 
+     29,  29,  29,  29,  29,  29,  27,  12,  66,  66,  34,  12,  12,  12,  12,  12, 
+     12, 114,  10,  29,  12,  12, 139,  29,  12,  12,  12,  12,  12,  10,  29,  29, 
+     12, 118,  29,  27,  12,  12,  74,  29,  25,  25,  25,  25,  35,  12,  12,  29, 
+     12,  70,  25,  35,  12,  12,  12,  12,  12,  34,  25,  25,  35,  29,  29,  77, 
+     12,  12,  12,  12,  34,  70,  35,  67,  12,  12,  12,  32,  12,  12,  74,  27, 
+     12,  12,  68,  65, 114,  83,  29,  29,  34,  12,  12, 109,  12,  12,  74,  12, 
+     12,  12,  12,  12,  12,  12,  12,  29,  12,  12,  12,  12, 113,  93,  67,  70, 
+     76,  29,  29,  29,  29,  29,  77,  12,  36,  30,  36,  30,  36,  30,  29,  29, 
+     12,  30,  12,  30,  29,  29,  29,  29,  12,  69,  67,  88,  12,  12,  74,  29, 
+     12,  29,  29,  29,  12,  12,  12,  12,  12,  30,  77,  12,  12,  12,  12,  12, 
+     12,  12,  12,  74,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  74,  29, 
+     12,  30,  29,  29,  77,  12,  29, 150,  41,  41, 151,  41,  41,  41,  41,  41, 
+     41,  41,  41,  41,  47,  47,  47,  47,  47,  47,  47,  47,  47,  47,  47,  43, 
+     47,  47,  47,  47,   0,   0,   0,   0,   0,   0,   0,   0,  47,  47,  47, 152, 
+     25,  25,  25,  25,  10,  10, 115,  29,  25, 106,  29,  29,  10,  10,  10,  10, 
+     10,  10,  10,  10, 153, 154,  10, 155, 156, 138, 157,  29,  47,  47,  47,  47, 
+     47,  47,  47,  47,  47,  47,  47, 158, 159,   5,   6,   7,   8,   8,   9,  10, 
+     10,  26,  12,  12,  12,  12,  12,  12,  27,  12,  27,  12,  27,  12,  27,  91, 
+      5, 160,  10, 138,   0,   0, 161, 162,  12,  12,  12,  36,  12,  12,  12,  12, 
+     12,  30,  12,  12,  12,  12,  30,  32,  12,  12,  12,  74,  12,  12,  12,  74, 
+    163,  77,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  77,  12,  12, 
+     10,  10, 138,  29,  10,  10,  10,  29,  29,  29,  29,  29,  12,  12,  12,  12, 
+     12,  12,  12,  12,  12,  12,  12,  88,  12,  12,  30,  29,  29,  29,  29,  29, 
+     12,  12,  12,  12,  12,  12,  12,  32,  12,  29,  12,  12,  12,  74,  29,  29, 
+     41,  41,  41,  41,  41,  41,  41, 164,  38,  40,  41,  25,  41,  41,  41,  41, 
+     41,  41,  41,  41,  41,  41, 165,  60,  41,  41,  41,  41,  41,  41, 166,  10, 
+     42,  42,  42,  42,  42,  42,  42, 167,  69,  12,  12,  12,  12,  12,  12,  12, 
+     12,  12,  12,  12,  12,  12,  25,  25,  25,  65,  12,  74, 121,  10,  10,  10, 
+     10,  26,  12,  12,  29,  29,  29,  29,  12,  12,  12,  12,  34,  65, 114,  12, 
+     74,  29,  29,  29,  29,  29,  29,  29,  12,  12,  12,  30,  29,  29,  29,  29, 
+     30,  29,  29,  29,  12,  29,  29,  29,  12,  12,  12,  12,  12,  12,  91,  29, 
+     12,  30,  36,  12,  12,  12,  12,  12,  12,  34,  35,  12, 168,   0, 169,  25, 
+     65,  68,  25,  12,  12,  12,  12,  12,  12,  12,  70,  35,  12,  12,  12,  12, 
+    170, 171,  29,  29,  29,  29,  29,  29,  10,  10,  10,  10,  10, 138,  29,  29, 
+     12,  12,  12,  12,  74,  29,  29,  29,  12,  12,  12,  12,  12,  31,  12,  12, 
+     12,  12,  12,  12,  12,  12,  12,  31, 102,  81,  36,  31,  12,  12,  32,  36, 
+     12,  36,  12,  12,  12,  12,  12,  12,  12,  32,  30,  36,  12,  31,  12,  31, 
+     12,  12,  12,  12,  12,  12,  32,  30,  12,  73,  27,  12,  31,  12,  12,  12, 
+     12,  74,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12,  12, 140,  12,  12, 
+     12,  12,  12,  13,  12,  12,  12,  12,  12,  12, 140,  12,  12,  12,  12,  12, 
+     13,  12,  12, 172,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8, 
+     10,  10,  10,  29,  10,  10,  10,  10,  10,  10,  10, 138, 125,  10,  10, 138, 
+    125,  10,  10,  10, 125,  10,  10,  10,   8,   8, 173,  29,  12,  12,  12,  12, 
+     12,  12,  74,  29,  12,  12,  12,  12,  29,  27,  12,  12,  12,  12,  12,  12, 
+     30,  29,  29,  29,  12,  12,  12,  12,  12,  12,  91,  29,  74,  29,  29,  29, 
+    117,  29,  29,  29,  10, 145,  10,  10,  10,  10,  10,  10,  10,  10,  10, 117, 
+     10, 144, 138,  29,  29,  29,  29,  29,  10,  10,  10,  10, 117,  29,  29,  29, 
+     10,  10,  10,  10,  10,  10,  10, 138, 144,  10,  10,  10,  10,  10,  10,  10, 
+     10,  10,  10,  10,  10,  10, 125, 117,  10,  24,  10,  10,  10,  10,  10, 115, 
+     29,  29,  29,  29,  10,  10,  10,  10,  10,  10,  29,  29,  29,  29,  29,  29, 
+     29,  29,  29,  29,  29,  29, 174,  10, 125,  10,  10,  10, 144, 175, 175, 138, 
+     10, 115,  10, 176,  10, 125,  10,  10, 117, 125,  10,  10,  29,  29,  29,  29, 
+     10, 115,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29, 177, 
+      0,   0,   0,   0,   0,   0,   0,   0,  25,  25,  25,  25,   0,   0,   0,   0, 
+     12,  12,  12,  12,  12,  12,  12, 178, 
+};
+
+RE_UINT8 re_bidi_class_stage_5[] = {
+    12, 12, 12, 12, 12,  9,  8,  9, 10,  8, 12, 12,  8,  8,  8,  9, 
+    10, 11, 11,  5,  5,  5, 11, 11, 11, 11, 11,  4,  7,  4,  7,  7, 
+     3,  3,  3,  3,  3,  3,  7, 11, 11, 11, 11, 11, 11,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 11, 11, 11, 11, 12, 12,  8, 12, 12, 
+     7, 11,  5,  5, 11, 11,  1, 11, 11, 12, 11, 11,  5,  5,  3,  3, 
+    11,  1, 11, 11, 11,  3,  1, 11,  1, 11, 11,  1,  1,  1, 11, 11, 
+     1, 11, 11, 11, 13, 13, 13, 13, 11, 11,  1,  1,  0,  0,  1,  1, 
+     1,  1, 11,  0,  0,  0,  0,  0,  1,  1,  1,  0,  1,  0,  1,  1, 
+     1,  1,  0,  1,  1,  1, 11,  1,  1,  1,  1, 13, 13, 13,  1,  1, 
+     0,  1,  1,  1,  0,  1, 11,  0,  2, 13, 13, 13, 13, 13,  2, 13, 
+     2, 13, 13,  2,  2,  2,  2,  2,  6,  6,  6,  6, 14, 14, 11, 11, 
+    14,  5,  5, 14,  7, 14, 11, 11, 13, 13, 13, 14, 14, 14, 14, 14, 
+    14, 14, 14, 13,  6,  6,  5,  6,  6, 14, 14, 14, 13, 14, 14, 14, 
+    14, 14, 13, 13, 13,  6, 11, 13, 13, 14, 14, 13, 13, 11, 13, 13, 
+    13, 13, 14, 14,  3,  3, 14, 14, 14, 14, 14,  6, 14, 13, 14, 14, 
+     2,  2,  2, 13,  2,  2, 11, 11, 11, 11,  2,  2,  2,  2, 13, 13, 
+    13, 13,  2,  2, 13, 13, 13,  1,  1,  1, 13,  1, 13,  1,  1,  1, 
+     1, 13, 13, 13,  1, 13,  1,  1,  1,  1, 13, 13,  0, 13,  1,  1, 
+     1,  0,  0,  1,  1,  0,  1,  0,  1,  1,  0,  0, 13,  0,  0,  1, 
+     1, 13,  1,  0,  0,  0,  0,  1,  1,  1,  5,  5,  1,  1,  1,  5, 
+     0, 13, 13,  1,  0,  1,  1,  0, 13,  0,  1,  1,  1, 13, 13,  0, 
+     0,  0,  0, 13, 13,  0,  0, 13, 13, 13,  0,  0,  0, 13,  0,  0, 
+     1, 13,  0,  0, 13, 13,  0, 13, 13,  1,  0,  1,  1,  0,  0,  0, 
+     0,  5,  0,  0, 13,  1,  1, 13,  0,  0, 13,  1, 13,  1,  1,  0, 
+    11,  5, 11,  0,  0,  1, 13, 13,  1,  0, 13, 13, 13,  0, 13, 13, 
+     0, 13, 13,  0, 11, 11, 11,  1,  0,  0,  1,  0,  0,  1,  0,  0, 
+     0,  0, 13,  0, 13,  0, 13,  0, 13, 13, 13,  0,  0,  0,  0,  5, 
+     0,  1,  0,  1, 13,  1,  0,  0,  1, 13,  1, 13,  1, 13, 11, 11, 
+     0, 13, 13, 13, 13,  1, 13, 13,  1, 13, 13,  1, 11, 11,  0,  0, 
+    10,  1,  1,  1, 11,  0,  0,  0, 13,  0,  0,  0, 11, 11, 11, 13, 
+    13, 13, 10,  0,  0,  0, 11, 11, 13,  1, 13,  1, 13, 13,  1,  0, 
+     1, 11,  1, 11,  0, 11, 11, 11,  1, 11, 11,  0, 10, 10, 10, 10, 
+    10, 10, 10, 12, 12, 12,  1,  2, 10,  8, 17, 18, 19, 15, 16,  7, 
+     5,  5,  5,  5,  5, 11, 11, 11,  7, 11, 11, 11, 11, 11, 11, 10, 
+     3,  1,  0,  0,  3,  3,  4,  4, 11, 11, 11,  0,  5,  5,  0,  0, 
+     1, 11,  1,  1,  1,  1,  5,  1,  1, 11,  0,  0, 11, 11,  4,  5, 
+    11,  0, 11, 11, 11, 11,  0, 11, 10, 11, 11, 11,  0, 13, 13, 11, 
+    13, 13, 13, 11, 13, 13, 11, 11,  0,  2, 13,  2,  2,  4,  2,  2, 
+    14, 11, 14, 14,  7, 11,  7,  0, 11,  7, 11, 11, 11, 11, 11,  5, 
+    11, 11,  4,  4, 11,  5,  5, 11, 14, 14, 14, 12,  0, 11, 11,  5, 
+    11,  5,  5,  0, 12, 11, 11, 11, 11, 11, 12, 12,  1, 11,  1,  0, 
+     2,  2,  2, 11, 13, 13, 13,  2,  2, 11, 11, 11,  6,  6,  6,  2, 
+     1,  1,  1, 12, 12, 12, 12, 13, 11, 11, 13, 13, 13, 11,  0,  0, 
+     0,  0,  3,  3,  3,  3,  3,  0,  0,  0,  0, 11, 11,  0, 11,  0, 
+     0, 11,  0,  0,  0,  0, 12, 12,  1,  1, 12, 12, 
+};
+
+/* Bidi_Class: 5556 bytes. */
+
+RE_UINT32 re_get_bidi_class(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 12;
+    code = ch ^ (f << 12);
+    pos = ((RE_UINT32)re_bidi_class_stage_1[f] << 4);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_bidi_class_stage_2[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_bidi_class_stage_3[pos + f] << 3);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_bidi_class_stage_4[pos + f] << 2);
+    value = re_bidi_class_stage_5[pos + code];
+
+    return value;
+}
+
+/* Canonical_Combining_Class. */
+
+RE_UINT8 re_canonical_combining_class_stage_1[] = {
+     0,  1,  2,  3,  4,  5,  5,  5,  5,  6,  7,  5,  5,  8,  5,  9, 
+    10, 11, 12, 13, 14, 14, 15, 14, 14, 14, 14, 16, 14, 17, 14, 18, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 19, 20, 14, 14, 14, 21, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    22, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 23, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 23, 
+};
+
+RE_UINT8 re_canonical_combining_class_stage_2[] = {
+     0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 
+    14,  0, 15, 16,  0,  0, 17, 18, 19, 20, 21, 22, 23, 24,  0, 25, 
+    26, 27,  0, 28, 29,  0,  0, 30,  0,  0,  0, 31, 32, 33, 34, 35, 
+    36, 37, 38,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 39,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 40, 
+     0,  0,  0,  0, 41,  0, 42, 43, 44, 45, 46, 47,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0, 48, 49, 49, 49, 49, 49, 49, 49, 49, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 50, 51,  0, 52, 53, 54, 
+    55, 56, 57, 58, 59, 49, 49, 49, 60, 61, 62, 63, 64, 49, 65, 49, 
+    66, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 
+     0,  0,  0, 67, 68, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 
+     0,  0,  0,  0, 69, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 
+    49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 
+    49, 49, 49, 49, 49, 49, 49, 49,  0,  0, 70, 49, 49, 49, 49, 49, 
+    71, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 
+    72, 73, 74, 75, 76, 77, 78, 79, 49, 49, 49, 49, 49, 49, 49, 49, 
+    80, 81, 82, 83, 84, 85, 86, 87, 49, 49, 49, 49, 49, 49, 49, 49, 
+     0,  0,  0,  0,  0,  0, 88,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0, 89, 90, 49, 49, 49, 49, 49, 49, 49, 
+    49, 49, 49, 49, 49, 49, 49, 49,  0,  0, 90, 49, 49, 49, 49, 49, 
+    91, 92, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 93, 
+};
+
+RE_UINT8 re_canonical_combining_class_stage_3[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      1,   2,   3,   4,   5,   6,   7,   8,   9,   0,  10,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,  11,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,  12,  13,   0,  14,  13,   0,  15,  16,  17,  18,  19,   0,  20,  21, 
+     22,  23,   0,   0,  24,  25,   0,  26,   0,   0,   0,   0,   0,  27,  28,   0, 
+     29,  30,   0,  31,  32,   0,   0,   0,   0,   0,   0,  33,   0,   0,  34,  35, 
+      0,  36,  37,  38,   0,  39,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,  41,  42,  43,   0,  44,  45,  46,  47,  48,  49,  50,  22,  51, 
+     52,  46,  47,  53,  54,  55,  56,  57,  58,  10,  47,  59,  60,  61,  22,  62, 
+     45,  46,  47,  59,  63,  64,  22,  12,  65,  66,  67,  68,  69,  70,  56,  20, 
+     71,  72,  47,  73,  74,  75,  22,  76,  77,  72,  47,  78,  74,  79,  22,  80, 
+     77,  72,   0,  81,  82,  83,  22,  84,  85,  86,   0,  87,  88,  89,  40,  90, 
+     13,   0,   0,  91,  92,  51,  40,  40,  93,  94,  95,  96,  97,  98,  40,  40, 
+      0,  99,   0, 100,  44,   0, 101, 102, 103,  44,   0, 104, 105,  20,  40,  40, 
+      0,   0,   0, 106,   0,   0,   0,   0, 107,   0,   0,   0,  57,   0,   0, 101, 
+      0,   0,   0,   0, 108, 109,   0,   0, 108,   0,   0, 110, 111, 112,   0,   0, 
+      0, 111,   0,   0,   0, 113,   0, 101,   0, 114,   0,   0,   0,   0,   0,  21, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0, 101,   0,   0,   0,   0,   0,  61, 
+    104, 115,   0, 116,   0, 117, 104, 118,   0,   0,   0,   0,   0, 119, 114, 114, 
+     38, 114,   0,   0,   0,   0,   0,  12,   0,   0, 120,   0,   0,   0,   0,  57, 
+      0, 101,  51, 121, 122,   0, 123,  21,   0,   0,  51,   0, 114, 124,   0,   0, 
+      0, 125,   0,   0,   0,  38, 126, 127, 114, 114, 123,  40,  40,  40,  40,  40, 
+      0,   0,   0, 128, 129,   0, 130, 131,   0,   0, 132, 114,   0,   0, 133, 134, 
+      0,   0,   0, 135, 136,   0,   0,   0,  40,  40,  40,  40,  40, 137, 138, 139, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 140, 141, 142, 143, 
+      0, 144,   0,   0, 144, 145,   0, 123,   0,   0,   0, 146, 146, 147,   0, 148, 
+      0,   0,   0,   0,   0,   0, 149, 150,  38, 101,   0, 114,  40, 151, 152, 153, 
+      0,   0,   0,   0,   0,   0,   0,   0, 114,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 117, 
+      0,   0, 154,  40,  20,  40,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+     13,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 155,   0,   0,   0, 
+      0,   0,   0,   0, 101, 114,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,  38,   0,   0,  38,   0,   0,   0,   0,   0,   0,   0,   0, 156, 157, 
+      0,   0,  57,   0,   0,   0, 158, 159,   0, 154, 160, 160, 160, 160,   1,   1, 
+      0,   0,   0,  33,  40,  40,  40,  40,   0, 161,   0,   0,   0,   0,   0, 117, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  57,  40,  51, 
+      0,   0, 162,   0,  13,   0,   0,   0,   0, 163,   0,   0,   0,   0,   0,   0, 
+    164,   0, 123,  13,   0,   0,   0,   0,  38,   0,   0,  20,   0,   0, 117,   0, 
+      0,  38,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  38, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  57,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  51,  40,  40,  40, 
+      0,   0,   0,   0,   0,   0,   0,   0, 101,   0,   0,   0, 154,   0,   0,   0, 
+      0,   0,  51,  40,   0,   0, 156, 165,   0,  12,   0,   0,   0,   0,   0, 166, 
+      0,   0,   0,   0,   0,   0,   0,   0,  38,  33, 114,  40,  40,  40,  40, 167, 
+    168,   0,  51, 114,   0,   0,   0,  12,   0,   0,   0,   0, 169, 114,   1, 170, 
+      0,   0, 171,   0,   0, 172,   0, 101,   0,   0,   0, 173, 174,  68,  40,  40, 
+      0,   0,   0, 154, 123, 175,   0,  51,   0,   0,   0, 176, 177, 178,  40,  40, 
+    179, 180, 160,  40,  40,  40,  40,  40,  40,  40,  40,  40,   0,   0, 181, 114, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 117,   0, 182,   0,   0,  51, 
+     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0, 123,   0,   0,   0, 123,   0,   0,   0,   0,   0,   0, 114,  40,  40, 
+    154, 183,   0, 184, 185,   0,   0,   0,   0,   0,   0,   0,  33, 186,   0,   0, 
+      0,   0,   0,   0,  40,   0,   0,   0,   0, 187,   0,   0,  12,  40,  40, 123, 
+      0, 114, 142,   0,   0, 188, 189, 146,   0,   0,   0,   0,   0,   0,   0, 190, 
+     13,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  38, 191, 192, 160, 193, 
+    194,   0, 112, 195, 123, 123,  40,  40,   0,   0,   0,   0,   0,   0,   0,  20, 
+    196,   0,   0, 197,   0,   0,   0,   0,  20,  51,  40,  40,  40,   0,   0, 198, 
+     40,  40,  40,  40,  40,  40,  40,  40,   0, 101,   0,   0,   0,  61,  40,  40, 
+      0,  38, 117,   0,  20,  40,  40,  40,   0,  29,   0,   0, 199,  57,  40,  40, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0, 123, 114,  40,  40,  40,  40,  40, 
+    200,   0,   0, 201,   0, 202,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0, 203,   0, 204,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+    205, 206,   0, 207,  12, 208,   0,   0,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,  84,   0, 209,   0, 210,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,   0, 208,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+     40,  40,  40,  40,  40,  40,   0,  38,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,   0, 211, 187,   0,  40,   0,   0,   0, 212,  33,  40,  40,  40, 
+      0,   0,   0,   0,   0,   0,  38,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,   0,   0,   0, 139, 117,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,  38,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0, 208,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+     33,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  57, 
+      0,   0,  14,   0,   0,   0, 213, 214, 215,   0, 216,   0,   0, 123,  40,  40, 
+      0,   0,   0,   0, 217,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,   0,   0, 154,   0,  33,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,   0,   0, 146,   0,   0,   0, 104, 218, 219, 220,   0,   0,   0, 
+    221, 222,   0, 223, 224,  72,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 209,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 225,   0,   0,   0, 
+      0,   0,  51,   0,   0,   0,   0,   0,   0, 117,  38, 226,  13,  13,  40,  40, 
+     20,   0,  38,   0,   0,   0, 114,   0,   0,  20,  40,  40,  40,  40,  56,   0, 
+    139,   0,   0,  20, 208,  33,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,  61, 202,   0,   0,   0, 101,   0, 117,   0,   0, 227,  40,   0,  61, 
+      0,   0,   0,  38,  72,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 228, 
+      0,   0,   0, 123,  40,   0,  12,  40,  40,  40,  40,  40,  40,  40,  40, 178, 
+     13, 229, 230, 220, 231,  40,  40,  40,   0,   0,   0,   0,  57,  40,  40,  40, 
+      0,   0,   0,   0,   0,   0,   0, 117,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 154,  40,  40, 
+      0,   0,   0,  21,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0, 123,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 
+     62,  40,   0,   0,   0,   0,   0,   0,  40,  40,  40,  40,  40,  40,  40,  40, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  40, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 123, 
+};
+
+RE_UINT8 re_canonical_combining_class_stage_4[] = {
+      0,   0,   0,   0,   1,   1,   1,   1,   1,   2,   3,   4,   5,   6,   7,   4, 
+      4,   8,   9,  10,   1,  11,  12,  13,  14,  15,  16,  17,  18,   1,   1,   1, 
+      0,   0,  19,  20,  21,   0,  20,  22,  23,   0,   0,   0,  24,   1,   0,   0, 
+      0,   0,  21,  21,  25,   0,   0,   0,   0,  20,  25,   0,   0,   0,  26,  21, 
+     27,  28,  29,   1,  30,   4,  28,  31,  32,  33,  34,  35,  36,  37,  21,  21, 
+      0,   0,  20,  21,   0,  38,  21,  21,   0,  19,   0,   0,   1,   1,  39,  19, 
+      0,   0,  40,  41,  42,  43,   1,  44,  45,   0,   0,   0,   0,  46,   1,  47, 
+     14,  47,  48,  49,   0,   0,   0,  23,  50,   0,   0,   0,  51,  44,  52,  53, 
+     28,  53,  54,  25,  55,  21,  21,  21,   0,   0,  24,   1,  28,   0,  20,  21, 
+      0,  46,  56,   1,   1,  57,  57,  58,   0,   0,   0,  20,   0,   0,  59,  60, 
+     21,  21,  21,  21,   0,   0,   0,  61,   0,   0,   0,  62,  63,  64,   0,   0, 
+      0,   0,  25,   0,  25,  25,   0,  65,  65,   0,   0,   0,   0,   0,  22,   0, 
+     66,  19,  55,  61,   0,  65,  65,  67,  21,  68,  21,  23,   0,   0,   0,  21, 
+     25,  25,  20,  68,  22,  26,  55,  69,  20,  68,  65,  70,  71,  21,  25,  66, 
+     21,  19,   0,   0,   0,  55,  21,  21,  25,  25,   0,  23,  22,  25,  55,  61, 
+      0,  23,  23,  70,  38,  21,  21,  21,  71,  21,  21,  21,   0,  65,  65,  70, 
+     21,  19,  21,  23,  19,  25,  20,  19,  22,  55,  26,  22,  68,  38,  20,  19, 
+      0,   0,  55,  19,  20,  19,  22,  70,  38,  68,  21,  21,  25,  25,   0,  22, 
+     22,   0,   0,   0,   0,  25,  55,  25,   0,  22,  22,  70,  21,  72,  55,  21, 
+     21,  21,   0,   0,  19,  25,   0,  22,   0,  25,  55,  61,  21,  26,  21,  60, 
+     26,  21,  21,  21,   0,   0,  20,  25,   0,  22,  22,  67,  21,  68,  21,  21, 
+      0,  55,  25,   0,  19,  25,   0,   0,   0,  20,  19,   0,  23,   0,   0,  71, 
+      0,  20,  73,  68,   0,  66,   0,   0,  19,  38,  21,  21,   0,   0,  74,  68, 
+      0,   0,  75,   0,  26,  65,  66,  71,  21,   0,  25,   0,  25,  76,  19,  25, 
+      0,   0,  77,  55,   0,  66,  78,  55,   0,   0,  55,  55,   0,   0,  79,   0, 
+      0,  80,  81,   0,   0,   0,   0,  38,  82,  83,  84,  85,  86,  87,   0,   0, 
+      0,   0,   0,  22,   0,  88,   0,  22,   0,  89,  90,   0,   0,   0,   0,  91, 
+      0,   0,  22,  55,   0,  20,  22,  55,  22,  55,   0,  20,  22,  55,   0,   0, 
+      0,  20,   0,   0,   0,   0,  20,  92,   0,   0,  55,  21,   0,  93,  21,  21, 
+      0,  94,  21,  21,   0,  21,  21,  21,  22,  21,  21,  21,  95,   0,   0,  96, 
+      0,   0,  97,  21,   0,   0,  98,  21,  38,   0,   0,   0,   0,   0,   0,  55, 
+      0,   0,  20,  19,   0,  24,  99,  19, 100,   0,   0,   0,   0,  57,   1, 101, 
+      0,  61,   0,   0,   0, 100,   0,  21,   0,   0,  24,  10,   1,   0,   0,  38, 
+      0,   0, 102,  19,   0, 103,   0,   0, 104,  21,  21,   0,   0,  89,  68,   0, 
+      0,   0,  55,  25, 105,   9,  12,   4, 106,   8, 107,  91,  20,  21,  21,  21, 
+     28,   1,  28, 108, 109,   1,   1,   1,   1, 110,  21,  21,  21,  21,  21, 111, 
+      0,  55,   0,  55,   0,   0,  76,  76,   0,  22,   0,   0,   0,  19,   0,  25, 
+     19,  22,   0,  20,   0,  38,  19,   0,  55,   0,   0,   0, 112,   1, 113,  64, 
+    114, 115, 116,   4, 117,  21,  21,  21,   0,  20,  21,  21,   0,   0,  20,  22, 
+      0,   0,   0,  24,  58,  21,  25,   0,   0,  55,  21,  68,  38,  21,  21, 118, 
+      0,  20,   0,  20,   0,   0,  23,   0,   0,   0, 119, 120,   0,  20, 121,   0, 
+     21,  25,   0,   0,   0,  21,  21, 122, 122,   0,  21,  21,  21,  21,  19,   0, 
+      0,  95,   0,   0,   0,  93,  21,  19, 122,   0,   0,  21,   0,   0, 123,  79, 
+    124,  21,  21,  68,  89,   0,   0,   0, 100,   0,   0,  23,   0,   0,  55,   0, 
+    125, 126,  64,  46, 127,  21,  21,  21,  21,  21,  68,   0,  25,  20,  25,  20, 
+     25,  20,  21,  21,   0,   0,   0,  70,   0,  20,  68,   0,  68,   0,  21, 128, 
+      0,  20,   0,  66,  23,  22,   0,   0,  68,   0,   0,   0,  19,   0,   0,   0, 
+     20,   0,   0,   0,   0,  20,   0,  21,   0,   0,   0,  65,  19,   0,  19,   0, 
+     19,   0,  19,  38,  21,  21,  25,  55,   0,   0,   0,  25,   0,   0,  20,  23, 
+     20,  68,   0,   0,   0,  68,   0,   0,   0,   0,   0, 129,   0,  21,   0,   0, 
+      0,  55,  22,   0,   0,  23,  38,  65,   0,  23,   0,   0,   0,   0,   0,  68, 
+      0,   0,  55,  68,   0,  26,  21, 130,   0,  25,  25,   0,   0,  21, 131, 118, 
+      0,   0,  38,  21,   0,  55,   0,   0,  20,  21,   0,   0,   0,  95,   0,  55, 
+      0,   0, 132,   0,   0, 133, 134, 135, 136,   0, 123,   4, 137,  57,  30,   0, 
+      0,   0,  46, 122,  46, 138,  21,  21,  60,  26,  25,  22,   0,   0,  23,  25, 
+      0,  25,   0,   0,   0,  23,  20,  25,   0,  22,   0,  22,   0,   0,  23,  20, 
+      0,  66,  19,   0,   0,   0,   0,  19,  25,   0,   0,  20,   0,  22,  20,  21, 
+      0,   0,  25,  38,  22,  66,  66,  20,   0,  55,   0,  71,  38,  25,   0,   0, 
+};
+
+RE_UINT8 re_canonical_combining_class_stage_5[] = {
+     1,  1,  1,  1, 51, 51, 51, 51, 51, 52, 46, 46, 46, 46, 52, 44, 
+    46, 46, 46, 46, 46, 42, 42, 46, 46, 46, 46, 42, 42, 46, 46, 46, 
+     2,  2,  2,  2,  2, 46, 46, 46, 46, 51, 51, 51, 51, 55, 51, 46, 
+    46, 46, 51, 51, 51, 46, 46,  1, 51, 51, 51, 46, 46, 46, 46, 51, 
+    52, 46, 46, 51, 53, 54, 54, 53, 54, 54, 53, 51,  0,  0,  1,  1, 
+     1,  1,  1,  0,  0,  0,  0,  0,  1,  0,  1,  1,  1,  1,  0,  1, 
+     1,  1,  1, 51,  0,  1,  1,  1,  0,  1,  1,  0,  0, 46, 51, 51, 
+    51, 51, 46, 51, 51, 51, 47, 46, 51, 51, 46, 46, 51, 47, 50, 51, 
+     6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 15, 16, 17, 18,  1, 19, 
+     1, 20, 21,  1, 51, 46,  1, 14,  1,  0,  0,  0, 26, 27, 28,  1, 
+     1,  1,  1, 23, 24, 25, 26, 27, 28, 29, 30, 51, 51, 46, 46, 51, 
+    46, 51, 51, 46, 31,  1,  1,  1,  1,  1, 51, 51, 51,  1,  1, 51, 
+    51,  1, 46, 51, 51, 46,  1,  1,  1, 32,  1,  1, 51, 46, 51, 51, 
+    46, 46, 51, 46, 46, 51, 46, 51, 46, 51, 51,  0,  1,  1,  0,  0, 
+    51, 51,  1, 51,  1, 51, 51, 51, 51, 51,  0,  0,  1, 46, 46, 46, 
+     0,  0,  1,  0,  3,  1,  1,  1,  1,  5,  1,  1,  1, 51, 46, 51, 
+    51,  1,  1,  1,  1,  0,  0,  1,  1,  0,  1,  0,  1,  5,  1,  0, 
+     0,  0,  0,  1,  3,  0,  1,  1,  1,  5,  0,  0,  0,  1,  0,  0, 
+     0, 33, 34,  0,  0,  0,  5,  0, 35, 35,  5,  0, 36, 36, 36, 36, 
+     0,  1,  0,  1, 37, 37,  0,  1, 38, 38, 38, 38, 46, 46,  1,  1, 
+     1, 46,  1, 46,  1, 44,  1,  1,  0, 39, 40,  1, 41,  1,  1,  1, 
+     1,  1, 40, 40, 40, 40,  1,  1, 40,  1, 51, 51,  5,  1, 51, 51, 
+     1,  1, 46,  1,  1,  1,  1,  3,  1,  5,  5,  1,  1, 46,  1,  1, 
+     0, 51, 51, 51,  5,  0,  0,  0,  5,  1,  1,  0,  1,  1,  5,  1, 
+     1, 51,  0,  0,  1, 50,  1,  0,  1, 47, 51, 46, 46,  1,  1,  1, 
+     5,  1,  1,  1, 51,  0,  0, 46,  1,  1,  5,  0,  1,  1,  3,  1, 
+     1,  1,  5,  5, 51, 51, 51,  1, 51,  1,  2,  2,  2,  1,  1,  1, 
+    51, 54, 43, 46, 42, 51, 51, 51, 51, 51, 51,  0, 53, 46, 51, 46, 
+    51, 51,  2,  2,  2,  2,  2, 51,  1, 51,  1,  1,  1,  2,  2, 51, 
+    46, 51,  2,  2, 51,  0,  0,  0,  0,  0,  0,  5,  1,  1, 45, 50, 
+    52, 47, 48, 48,  0,  4,  4,  1, 51, 51,  1,  1,  1,  1,  1, 46, 
+     1,  1,  1,  5, 51,  1, 51, 51, 46,  1,  1, 51,  1, 51,  1,  0, 
+     0,  1, 22,  1,  1, 46,  0,  0,  1, 46,  1, 51, 51,  2, 46,  0, 
+     1,  5,  3,  1,  1, 44, 44,  2,  2,  2,  1,  1,  1, 49, 44, 44, 
+    44, 44, 44,  1, 46, 46, 46,  1, 51,  1,  0,  0, 
+};
+
+/* Canonical_Combining_Class: 3644 bytes. */
+
+RE_UINT32 re_get_canonical_combining_class(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 12;
+    code = ch ^ (f << 12);
+    pos = ((RE_UINT32)re_canonical_combining_class_stage_1[f] << 4);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_canonical_combining_class_stage_2[pos + f] << 4);
+    f = code >> 4;
+    code ^= (f << 4);
+    pos = ((RE_UINT32)re_canonical_combining_class_stage_3[pos + f] << 2);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_canonical_combining_class_stage_4[pos + f] << 2);
+    value = re_canonical_combining_class_stage_5[pos + code];
+
+    return value;
+}
+
+/* Decomposition_Type. */
+
+RE_UINT8 re_decomposition_type_stage_1[] = {
+    0, 1, 2, 2, 2, 3, 4, 5, 6, 2, 2, 2, 2, 2, 7, 8, 
+    2, 2, 2, 2, 2, 2, 2, 9, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 
+};
+
+RE_UINT8 re_decomposition_type_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  9, 10, 11, 12, 13, 14, 
+    15,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 16,  7, 17, 18, 19, 
+    20, 21, 22, 23, 24,  7,  7,  7,  7,  7, 25,  7, 26, 27, 28, 29, 
+    30, 31, 32, 33,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7, 34,  7,  7,  7,  7, 35, 35, 35, 35, 
+    35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 
+    35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 
+    35, 35, 35, 35, 35, 35, 35, 36,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7, 35, 37, 38, 39, 40, 41, 42, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+    43,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7, 44,  7,  7, 45, 46, 47, 48,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7, 49, 50,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7,  7,  7,  7,  7, 35, 35, 51,  7,  7,  7,  7,  7, 
+};
+
+RE_UINT8 re_decomposition_type_stage_3[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   2,   3,   4,   3,   5, 
+      6,   7,   8,   9,  10,  11,   8,  12,   0,   0,  13,  14,  15,  16,  17,  18, 
+      6,  19,  20,  21,   0,   0,   0,   0,   0,   0,   0,  22,   0,  23,  24,   0, 
+      0,   0,   0,   0,  25,   0,   0,  26,  27,  14,  28,  14,  29,  30,   0,  31, 
+     32,  33,   0,  33,   0,  32,   0,  34,   0,   0,   0,   0,  35,  36,  37,  38, 
+      0,   0,   0,   0,   0,   0,   0,   0,  39,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,  40,   0,   0,   0,   0,  41,   0,   0,   0,   0,  42,  43,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,  33,  44,   0,  45,   0,   0,   0,   0,   0,   0,  46,  47,   0,   0, 
+      0,   0,   0,  48,   0,  49,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,  50,  51,   0,   0,   0,  52,   0,   0,  53,   0,   0,   0, 
+      0,   0,   0,   0,  54,   0,   0,   0,   0,   0,   0,   0,  55,   0,   0,   0, 
+      0,   0,   0,   0,  53,   0,   0,   0,   0,   0,   0,   0,   0,  56,   0,   0, 
+      0,   0,   0,  57,   0,   0,   0,   0,   0,   0,   0,  57,   0,  58,   0,   0, 
+     59,   0,   0,   0,  60,  61,  33,  62,  63,  60,  61,  33,   0,   0,   0,   0, 
+      0,   0,  64,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  65, 
+     66,  67,   0,  68,  69,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,  70,  71,  72,  73,  74,  75,   0,  76,  73,  73,   0,   0,   0,   0, 
+      6,   6,   6,   6,   6,   6,   6,   6,   6,  77,   6,   6,   6,   6,   6,  78, 
+      6,  79,   6,   6,  79,  80,   6,  81,   6,   6,   6,  82,  83,  84,   6,  85, 
+     86,  87,  88,  89,  90,  91,   0,  92,  93,  94,  95,   0,   0,   0,   0,   0, 
+     96,  97,  98,  99, 100, 101, 102, 102, 103, 104, 105,   0, 106,   0,   0,   0, 
+    107,   0, 108, 109, 110,   0, 111, 112, 112,   0, 113,   0,   0,   0, 114,   0, 
+      0,   0, 115,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0, 116, 117, 102, 102, 102, 118, 116, 116, 119,   0, 
+    120,   0,   0,   0,   0,   0,   0, 121,   0,   0,   0,   0,   0, 122,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0, 123,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0, 124,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0, 125,   0,   0,   0,   0,   0,  57, 
+    102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 126,   0,   0, 
+    127,   0,   0, 128, 129, 130, 131, 132,   0, 133, 129, 130, 131, 132,   0, 134, 
+      0,   0,   0, 135, 102, 102, 102, 102, 136, 137,   0,   0,   0,   0,   0,   0, 
+    102, 136, 102, 102, 138, 139, 116, 140, 116, 116, 116, 116, 141, 116, 116, 140, 
+    142, 142, 142, 142, 142, 143, 102, 144, 142, 142, 142, 142, 142, 142, 102, 145, 
+      0,   0,   0,   0,   0,   0,   0, 146,   0,   0,   0,   0,   0,   0,   0,   0, 
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  21,   0,   0,   0,   0,   0, 
+     81, 147, 148,   6,   6,   6,  81,   6,   6,   6,   6,   6,   6,  78,   0,   0, 
+    149, 150, 151, 152, 153, 154, 155, 155, 156, 155, 157, 158,   0, 159, 160, 161, 
+    162, 162, 162, 162, 162, 162, 163, 164, 164, 165, 166, 166, 166, 167, 168, 169, 
+    162, 170, 171, 172,   0, 173, 174, 175, 176, 177, 164, 178, 179,   0,   0, 180, 
+      0, 181,   0, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 191, 192, 193, 
+    194, 195, 195, 195, 195, 195, 196, 197, 197, 197, 197, 198, 199, 200, 201,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0, 202, 203,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0, 204, 205,   0,   0,   0,   0, 206,  14,   0,   0,   0, 
+    207, 207, 207, 207, 207, 208, 207, 207, 207, 209, 210, 211, 212, 207, 207, 207, 
+    213, 214, 207, 215, 216, 217, 207, 207, 207, 207, 207, 207, 207, 207, 207, 207, 
+    207, 207, 207, 207, 207, 207, 207, 207, 207, 207, 218, 207, 207, 207, 207, 207, 
+    207, 207, 207, 207, 207, 207, 207, 207, 207, 207, 207, 207, 219, 207, 207, 207, 
+    220, 102, 221, 142, 142,   0,   0,   0,   0, 222,   0,   0,   0,   0,   0,   0, 
+    223, 142, 142, 224, 225, 226,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      6,  81,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+};
+
+RE_UINT8 re_decomposition_type_stage_4[] = {
+      0,   0,   0,   0,   1,   0,   2,   3,   4,   5,   6,   7,   8,   9,   8,   8, 
+     10,  11,  10,  12,  10,  11,  10,   9,   8,   8,   8,   8,  13,   8,   8,   8, 
+      8,  12,   8,   8,  14,   8,  10,  15,  16,   8,  17,   8,  12,   8,   8,   8, 
+      8,   8,   8,  15,  12,   0,   0,  18,  19,   0,   0,   0,   0,  20,  20,  21, 
+      8,   8,   8,  22,   8,  13,   8,   8,  23,  12,   8,   8,   8,   8,   8,  13, 
+      0,  13,   8,   8,   8,   0,   0,   0,  24,  24,  25,   0,   0,   0,  20,   5, 
+     24,  25,   0,   0,   9,  19,   0,   0,   0,  19,  26,  27,   0,  21,  11,  22, 
+      0,   0,  13,   8,   0,   0,  13,  11,  28,  29,   0,   0,  30,   5,  31,   0, 
+      9,  18,   0,  11,   0,   0,  32,   0,   0,  13,   0,   0,  33,   0,   0,   0, 
+      8,  13,  13,   8,  13,   8,  13,   8,   8,  12,  12,   0,   0,   3,   0,   0, 
+     13,  11,   0,   0,   0,  34,  35,   0,  36,   0,   0,   0,  18,   0,   0,   0, 
+     32,  19,   0,   0,   0,   0,   8,   8,   0,   0,  18,  19,   0,   0,   0,   9, 
+     18,  27,   0,   0,   0,   0,  10,  27,   0,   0,  37,  19,   0,   0,   0,  12, 
+      0,  19,   0,   0,   0,   0,  13,  19,   0,   0,  19,   0,  19,  18,  22,   0, 
+      0,   0,  27,  11,   3,   0,   0,   0,   0,   0,   0,   5,   0,   0,   0,   1, 
+     18,   0,   0,  32,  27,  18,   0,  19,  18,  38,  17,   0,  32,   0,   0,   0, 
+      0,  27,   0,   0,   0,   0,   0,  25,   0,  27,  36,  36,  27,   0,   0,   0, 
+      0,   0,  18,  32,   9,   0,   0,   0,   0,   0,   0,  39,  24,  24,  39,  24, 
+     24,  24,  24,  40,  24,  24,  24,  24,  41,  42,  43,   0,   0,   0,  25,   0, 
+      0,   0,  44,  24,   8,   8,  45,   0,   8,   8,  12,   0,   8,  12,   8,  12, 
+      8,   8,  46,  46,   8,   8,   8,  12,   8,  22,   8,  47,  21,  22,   8,   8, 
+      8,  13,   8,  10,  13,  22,   8,  48,  49,  50,  30,   0,  51,   3,   0,   0, 
+      0,  30,   0,  52,   3,  53,   0,  54,   0,   3,   5,   0,   0,   3,   0,   3, 
+     55,  24,  24,  24,  42,  42,  42,  43,  42,  42,  42,  56,   0,   0,  35,   0, 
+     57,  34,  58,  59,  59,  60,  61,  62,  63,  64,  65,  66,  66,  67,  68,  59, 
+     69,  61,  62,   0,  70,  70,  70,  70,  20,  20,  20,  20,   0,   0,  71,   0, 
+      0,   0,  13,   0,   0,   0,   0,  27,   0,   0,   0,  10,   0,  19,  32,  19, 
+      0,  36,   0,  72,  35,   0,   0,   0,  32,  37,  32,   0,  36,   0,   0,  10, 
+     12,  12,  12,   0,   0,   0,   0,   8,   8,   0,  13,  12,   0,   0,  33,   0, 
+     73,  73,  73,  73,  73,  20,  20,  20,  20,  74,  73,  73,  73,  73,  75,   0, 
+      0,   0,   0,  35,   0,  30,   0,   0,   0,   0,   0,  19,   0,   0,   0,  76, 
+      0,   0,   0,  44,   0,   0,   0,   3,  20,   5,   0,   0,  77,   0,   0,   0, 
+      0,  26,  30,   0,   0,   0,   0,  36,  36,  36,  36,  36,  36,  46,  32,   0, 
+      9,  22,  33,  12,   0,  19,   3,  78,   0,  37,  11,  79,  34,  20,  20,  20, 
+     20,  20,  20,  30,   4,  24,  24,  24,  20,  73,   0,   0,  80,  73,  73,  73, 
+     73,  73,  73,  75,  20,  20,  20,  81,  81,  81,  81,  81,  81,  81,  20,  20, 
+     82,  81,  81,  81,  20,  20,  20,  83,  25,   0,   0,   0,  36,  10,   8,  11, 
+     36,  33,  13,  12,  20,  30,   0,   0,   3,  20,   0,  46,  59,  59,  84,   8, 
+      8,  11,   8,  36,   9,  22,   8,  15,  85,  86,  86,  86,  86,  86,  86,  86, 
+     86,  85,  85,  85,  87,  85,  86,  86,  88,   0,   0,   0,  89,  90,  91,  92, 
+     85,  87,  86,  85,  85,  85,  93,  87,  94,  94,  94,  94,  94,  95,  95,  95, 
+     95,  95,  95,  95,  95,  96,  97,  97,  97,  97,  97,  97,  97,  97,  97,  98, 
+     99,  99,  99,  99,  99, 100,  94,  94, 101,  95,  95,  95,  95,  95,  95, 102, 
+     97,  99,  99, 103, 104,  97, 105, 106, 107, 105, 108, 105, 104,  96,  95, 105, 
+     96, 109, 110,  97, 111, 106, 112, 105,  95, 106, 113,  95,  96, 106,   0,   0, 
+     94,  94,  94, 114, 115, 115, 116,   0, 115, 115, 115, 115, 115, 117, 118,  20, 
+    119, 120, 120, 120, 120, 119, 120,   0, 121, 122, 123, 123, 124,  91, 125, 126, 
+     90, 125, 127, 127, 127, 127, 126,  91, 125, 127, 127, 127, 127, 127, 127, 127, 
+    127, 127, 127, 126, 125, 126,  91, 128, 129, 130, 130, 130, 130, 130, 130, 130, 
+    131, 132, 132, 132, 132, 132, 132, 132, 132, 132, 132, 133, 134, 132, 134, 132, 
+    134, 132, 134, 135, 130, 136, 132, 133,   0,   0,  27,  19,   0,   0,  18,   0, 
+      0,   0,   0,  13,   8,  19,   0,   0,   0,   0,  18,   8,  59,  59,  59,  59, 
+     59, 137,  59,  59,  59,  59,  59, 137, 138, 139,  61, 137,  59,  59,  66,  61, 
+     59,  61,  59,  59,  59,  66, 140,  61,  59, 137,  59, 137,  59,  59,  66, 140, 
+     59, 141, 142,  59, 137,  59,  59,  59,  59,  62,  59,  59,  59,  59,  59, 142, 
+     20,  20,  30,   0,  20,  20, 143,  75, 144,   0,   0,   0, 145,   0,   0,   0, 
+     81,  81, 145,   0,  20,  20,  35,   0, 146,   0,   0,   0, 
+};
+
+RE_UINT8 re_decomposition_type_stage_5[] = {
+     0,  0,  0,  0,  4,  0,  0,  0,  2,  0, 10,  0,  0,  0,  0,  2, 
+     0,  0, 10, 10,  2,  2,  0,  0,  2, 10, 10,  0, 17, 17, 17,  0, 
+     1,  1,  1,  1,  1,  1,  0,  1,  0,  1,  1,  1,  1,  1,  1,  0, 
+     1,  1,  0,  0,  0,  0,  1,  1,  1,  0,  2,  2,  1,  1,  1,  2, 
+     2,  0,  0,  1,  1,  2,  0,  0,  0,  0,  0,  1,  1,  0,  0,  0, 
+     2,  2,  2,  2,  2,  1,  1,  1,  1,  0,  1,  1,  1,  2,  2,  2, 
+    10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  2,  0,  0,  0,  1,  0, 
+     2,  2,  2,  1,  1,  2,  2,  0,  2,  2,  2,  0,  0,  2,  0,  0, 
+     0,  1,  0,  0,  0,  1,  1,  0,  0,  2,  2,  2,  2,  0,  0,  0, 
+     1,  0,  1,  0,  1,  0,  0,  1,  0,  1,  1,  2, 10, 10, 10,  0, 
+    10, 10,  0, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0, 
+     0,  0,  0, 10,  1,  1,  2,  1,  0,  1,  0,  1,  1,  2,  1,  2, 
+     1,  1,  2,  0,  1,  1,  2,  2,  2,  2,  2,  4,  0,  4,  0,  0, 
+     0,  0,  0,  4,  2,  0,  2,  2,  2,  0,  2,  0, 10, 10,  0,  0, 
+    11,  0,  0,  0,  2,  2,  3,  2,  0,  2,  3,  3,  3,  3,  3,  3, 
+     0,  3,  2,  0,  0,  3,  3,  3,  3,  3,  0,  0, 10,  2, 10,  0, 
+     3,  0,  1,  0,  3,  0,  1,  1,  3,  3,  0,  3,  3,  2,  2,  2, 
+     2,  3,  0,  2,  3,  0,  0,  0, 17, 17, 17, 17,  0, 17,  0,  0, 
+     2,  2,  0,  2,  9,  9,  9,  9,  2,  2,  9,  9,  9,  9,  9,  0, 
+    11, 10,  0,  0, 13,  0,  0,  0,  2,  0,  1, 12,  0,  0,  1, 12, 
+    16,  9,  9,  9, 16, 16, 16, 16,  2, 16, 16, 16,  2,  2,  2, 16, 
+     3,  3,  1,  1,  8,  7,  8,  7,  5,  6,  8,  7,  8,  7,  5,  6, 
+     8,  7,  0,  0,  0,  0,  0,  8,  7,  5,  6,  8,  7,  8,  7,  8, 
+     7,  8,  8,  7,  5,  8,  7,  5,  8,  8,  8,  8,  7,  7,  7,  7, 
+     7,  7,  7,  5,  5,  5,  5,  5,  5,  5,  5,  6,  6,  6,  6,  6, 
+     6,  8,  8,  8,  8,  7,  7,  7,  7,  5,  5,  5,  7,  8,  0,  0, 
+     5,  7,  5,  5,  7,  5,  7,  7,  5,  5,  7,  7,  5,  5,  7,  5, 
+     5,  7,  7,  5,  7,  7,  5,  7,  5,  5,  5,  7,  0,  0,  5,  5, 
+     5,  7,  7,  7,  5,  7,  5,  7,  8,  0,  0,  0, 12, 12, 12, 12, 
+    12, 12,  0,  0, 12,  0,  0, 12, 12,  2,  2,  2, 15, 15, 15,  0, 
+    15, 15, 15, 15,  8,  6,  8,  0,  8,  0,  8,  6,  8,  6,  8,  6, 
+     8,  8,  7,  8,  7,  8,  7,  5,  6,  8,  7,  8,  6,  8,  7,  5, 
+     7,  0,  0,  0,  0, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14,  0,  0,  0, 14, 14, 14,  0,  0,  0, 
+    13, 13, 13,  0,  3,  0,  3,  3,  0,  0,  3,  0,  0,  3,  3,  0, 
+     3,  3,  3,  0,  3,  0,  3,  0,  0,  0,  3,  3,  2,  2,  2,  9, 
+    16,  0,  0,  0, 16, 16, 16,  0,  9,  9,  0,  0, 
+};
+
+/* Decomposition_Type: 2784 bytes. */
+
+RE_UINT32 re_get_decomposition_type(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 13;
+    code = ch ^ (f << 13);
+    pos = ((RE_UINT32)re_decomposition_type_stage_1[f] << 5);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_decomposition_type_stage_2[pos + f] << 4);
+    f = code >> 4;
+    code ^= (f << 4);
+    pos = ((RE_UINT32)re_decomposition_type_stage_3[pos + f] << 2);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_decomposition_type_stage_4[pos + f] << 2);
+    value = re_decomposition_type_stage_5[pos + code];
+
+    return value;
+}
+
+/* East_Asian_Width. */
+
+RE_UINT8 re_east_asian_width_stage_1[] = {
+     0,  1,  2,  3,  4,  5,  5,  5,  5,  5,  6,  5,  5,  7,  8,  9, 
+    10, 11, 12, 13, 14, 14, 15, 14, 14, 14, 14, 16, 14, 17, 14, 18, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 19, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 19, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+    20, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
+     8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 21, 
+     8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 21, 
+};
+
+RE_UINT8 re_east_asian_width_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16, 17, 18, 19, 20, 20, 21, 22, 23, 24, 25, 26, 27, 28, 20, 29, 
+    30, 31, 32, 33, 34, 35, 36, 37, 20, 38, 20, 39, 40, 41, 42, 43, 
+    44, 45, 46, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 
+    47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 48, 47, 47, 
+    47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 
+    47, 47, 47, 47, 49, 20, 50, 51, 52, 53, 54, 55, 47, 47, 47, 47, 
+    47, 47, 47, 47, 47, 47, 47, 56, 57, 57, 57, 57, 57, 57, 57, 57, 
+    58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 
+    58, 58, 58, 58, 58, 58, 58, 58, 58, 47, 47, 59, 20, 60, 61, 62, 
+    63, 64, 65, 66, 67, 57, 57, 57, 68, 69, 70, 71, 72, 57, 73, 57, 
+    74, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 
+    20, 20, 20, 75, 76, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 
+    20, 20, 20, 20, 77, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 
+    57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 
+    57, 57, 57, 57, 57, 57, 57, 57, 20, 20, 78, 57, 57, 57, 57, 57, 
+    79, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 
+    80, 81, 82, 83, 84, 85, 86, 87, 57, 57, 57, 57, 57, 57, 57, 57, 
+    88, 89, 90, 91, 92, 93, 94, 95, 57, 57, 57, 57, 57, 57, 57, 57, 
+    47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 96, 
+    97, 98, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 
+    58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 99, 
+};
+
+RE_UINT8 re_east_asian_width_stage_3[] = {
+      0,   0,   1,   1,   1,   1,   1,   2,   0,   0,   3,   4,   5,   6,   7,   8, 
+      9,  10,  11,  12,  13,  14,  11,   0,   0,   0,   0,   0,  15,  16,   0,   0, 
+      0,   0,   0,   0,   0,   9,   9,   0,   0,   0,   0,   0,  17,  18,   0,   0, 
+     19,  19,  19,  19,  19,  19,  19,  20,  21,  22,  23,  22,  24,   0,   0,   0, 
+      9,  19,  19,  19,  19,   9,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,  25,  26,   0,  27,  26,   0,  28,  26,   0,   0,  25,   0,  29,  30, 
+     31,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+     33,   0,   0,   0,  34,   0,   0,   0,   0,   0,   0,  35,   0,   0,   0,  29, 
+      0,   0,  36,  37,   0,  38,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,   0,   0,   0,   0,   0,  40,  41,  42,  43,  44,  45,  46,  31,  47, 
+     48,  42,  43,  49,  50,  51,  52,  53,  54,  55,  43,  56,  57,  58,  31,  59, 
+     41,  42,  43,  56,  60,  61,  31,  25,  62,  63,  64,  65,  66,  67,  52,  29, 
+     68,  69,  43,  70,  71,  72,  31,  73,  74,  69,  43,  75,  71,  76,  31,  77, 
+     74,  69,   0,  34,  78,  79,  31,  80,  81,  82,   0,  83,  84,  85,  39,  86, 
+     26,   0,   0,  87,   0,  47,  39,  39,  88,  89,  90,  91,  92,  93,  39,  39, 
+      0,   0,   0,   0,  40,   0,  94,  26,   0,  40,   0,  95,  95,  29,  39,  39, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  53,   0,   0,  94, 
+     96,  96,  96,  96,  96,  96,   0,   0,   0,   0,  97,   0,   0,   0,   0,  98, 
+      0,   0,   0,   0,  99, 100,   0,   0,  99,   0,   0, 101, 102, 103,   0,   0, 
+      0, 102,   0,   0,   0,  34,   0,  94,   0, 104,   0,   0,   0,   0,   0,  30, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,  94,   0,   0,   0,   0,   0,  58, 
+     95,  30,   0, 105,   0, 106,  95, 107,   0,   0,   0,   0,   0,  36, 104, 104, 
+     37, 104,   0,   0,   0,   0,   0,  25,   0,   0,  29,   0,   0,   0,   0,  53, 
+      0,  94,  47,  47, 108,   0,  36,  30,   0,   0,  47,   0, 104, 109,   0,   0, 
+      0,  32,   0,   0,   0,  37,   0, 110, 104, 104,  36,  39,  39,  39,  39,  39, 
+      0,   0,   0,   0,  47,   0,   0,  94,   0,   0, 109, 104,   0,   0,   0, 111, 
+      0,   0,   0, 112, 113,   0,   0,   0,  39,  39,  39,  39,  39,   0,   0, 114, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 105, 115, 
+      0, 116,   0,   0, 116, 117,   0,  36,   0,   0,   0, 118, 118, 119,   0, 120, 
+      0, 121, 122, 123,   0,   0, 124, 125, 126,  94, 127, 104,  39,   0,   0,  58, 
+    128, 129, 130,   0,   0, 131, 132, 133, 134, 133,   0, 135,   0, 136, 137,   0, 
+    138, 139, 140, 141, 142, 143, 144,   0, 145, 146, 147, 148,   0,   0,   0,   0, 
+      0, 143, 149,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 106, 
+      0,   0, 105,  39,  29,  39,  19,  19,  19,  19,  19,  19,  19,  19, 150,  19, 
+     19,  19,  19,  19, 132,  19,  19, 151,  19, 152,  24, 153, 154, 155, 156,   0, 
+    157, 158,   0,   0, 159,   0, 160,   0,   0, 161,   0, 161, 162,  19, 163,  19, 
+     26,   0,   0, 164,   0, 137,   0, 165,   0,   0,   0,   0, 166,   0, 167,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0, 168,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,  94, 169,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,  37,   0,   0,  37,   0,   0,   0,   0,   0,   0,   0,   0,   0, 170, 
+      0,   0,  53,   0,   0,   0, 171, 172,   0, 105, 173, 173, 173, 173,   0,   0, 
+      0,   0,   0,  35,  39,  39,  39,  39,  96, 174,  96,  96,  96,  96,  96, 175, 
+     96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96, 176,  39, 177, 
+    178,  96,  96, 179, 180,  96,  96,  96,  96, 181,  96,  96,  96,  96,  96,  96, 
+    182,  96, 183, 180,  96,  96,  96,  96, 184,  96,  96, 185,  96,  96, 175,  96, 
+     96, 184,  96,  96, 186,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96, 184, 
+     96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96, 
+     96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,   0,   0,   0,   0, 
+     96,  96,  96,  96,  96,  96,  96,  96, 187,  96,  96,  96, 188,   0,   0,   0, 
+      0,   0,  47,  39,   0,   0,   0, 111,   0,  25,   0,   0,   0,   0,   0,  25, 
+      0,   0,   0,   0,   0,   0,   0,   0,  37,  35, 104,  39,  39,  39,  39, 189, 
+      0,   0,  47, 104,   0,   0,   0,  25,   0,   0,   0,   0, 190, 104,   0,  47, 
+      0,   0,   0,   0,   0, 191,  96, 187,   0,   0,   0,   0,  33,  65,  39,  39, 
+      0,   0,   0, 105,  36, 192,   0,  47,   0,   0,   0,   0, 114, 193,  39,  39, 
+    194, 195, 173,  39,  39,  39,  39,  39,  39,  39,  39,  39,   0,   0,  36, 104, 
+     96,  96,  96,  96,  96,  96,  96,  96,  96,  96, 175,  96, 196,  96,  96, 177, 
+     39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+     19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19, 
+    105, 197,   0, 198, 199,   0,   0,   0,   0,   0,   0,   0,  35, 200,   0,   0, 
+      0,   0,   0,   0,  39,   0,   0,   0,   0, 201,   0,   0,  25,  39,  39,  36, 
+     19, 202, 105,  96,  96, 203, 204, 118,   0,   0,   0,   0,   0,   0,   0, 110, 
+    205, 206, 206, 206, 206, 206, 207, 208, 208, 208, 208, 209, 210, 211, 212, 213, 
+    214,   0, 103, 215,  36,  36,  39,  39,   0,   0,   0,   0,   0,   0,   0,  29, 
+    216,   0,   0, 217,   0,   0,   0,   0,  29,  47,  39,  39,  39,   0,   0,  36, 
+     39,  39,  39,  39,  39,  39,  39,  39,   0,  94,   0,   0,   0,  58,  39,  39, 
+      0,  37, 106,   0,  29,  39,  39,  39,   0,  33,   0,   0, 218,  53,  39,  39, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,  36, 104,  39,  39,  39,  39,  39, 
+    219,   0,   0, 220,   0, 221,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0, 222,   0, 223,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+    224, 225,   0, 226,  25, 227,   0,   0,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,   0,  80,   0, 228,   0, 229,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,   0,   0, 227,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+     39,  39,  39,  39,  39,  39,   0,  37,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,   0,   0,  36, 201,   0,  39,   0,   0,   0,   0,  35,  39,  39,  39, 
+      0,   0,   0,   0,   0,   0,  37,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,   0,   0,   0,   0, 114, 106,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,  37,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,   0, 227,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+    230,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  53, 
+      0,   0,  27,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  36,  39,  39, 
+      0,   0,   0,   0,  53,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,   0,   0,   0, 105,   0,  35,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,   0,   0,   0, 118,   0,   0,   0,  95, 231, 232, 233,   0,   0,   0, 
+    234, 235,   0, 236, 237,  69,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 228,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  32,   0,   0,   0, 
+      0,   0,  47,   0,   0,   0,   0,   0,   0, 106,  37, 238,  26,  26,  39,  39, 
+    239,  19, 240,  19,  19,  19, 241,  19,  19, 239,  39,  39,  39,  39,  52,   0, 
+    242,  96,  96, 185, 243, 230,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 
+      0,   0,  58, 221,   0,   0,   0,  94,   0, 106,   0,   0, 244,  39,   0,  58, 
+      0,   0,   0,  37,  69,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 245, 
+      0,   0,   0,  36,  39,   0,  25,  39,  39,  39,  39,  39,  39,  39,  39, 193, 
+     26, 246, 247, 233, 248,  39,  39,  39,   0,   0,   0,   0,  53,  39,  39,  39, 
+      0,   0,   0,   0,   0,   0,   0, 106,  39,  39,  39,  39,  39,  39,  39,  39, 
+     96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96,  96, 183, 
+     59,  39,   0,   0,   0,   0,   0,   0,  39,  39,  39,  39,  39,  39,  39,  39, 
+     19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  39, 
+     19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19, 249, 
+};
+
+RE_UINT8 re_east_asian_width_stage_4[] = {
+     0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  2,  3,  4,  5,  6, 
+     7,  8,  9,  7,  0, 10,  0,  0, 11, 12, 11, 13, 14, 10,  9, 14, 
+     8, 12,  9,  5, 15,  0,  0,  0, 16,  0, 12,  0,  0, 13, 12,  0, 
+    17,  0, 11, 12,  9, 11,  7, 15, 13,  0,  0,  0,  0,  0,  0, 10, 
+     5,  5,  5, 11,  0, 18, 17, 15, 11,  0,  7, 16,  7,  7,  7,  7, 
+     0,  0, 19, 20, 21,  0, 20, 22, 17,  7,  7,  7, 23,  7, 14,  0, 
+    24,  7, 14,  0,  0,  0, 21, 21, 25,  0,  0,  0,  0, 20, 25,  0, 
+     0,  0, 26, 21,  0,  0, 20, 21,  0, 27, 21, 21,  0, 19,  0,  0, 
+     0,  0,  0, 19,  0,  0,  0, 28,  0,  0, 20, 25, 29, 21, 21, 21, 
+     0,  0,  0, 29,  0,  0,  0, 20,  0,  0,  0, 30, 21, 21, 21, 21, 
+     0,  0, 25,  0, 25, 25,  0, 31, 31,  0,  0,  0,  0,  0, 22,  0, 
+    32, 19, 29,  0,  0, 31, 31, 20, 21, 33, 21, 28,  0,  0,  0, 21, 
+    25, 25, 20, 33, 22, 26, 29, 22, 20, 33, 31, 29, 34, 21, 25, 32, 
+    21, 19,  0,  0,  0, 29, 21, 21, 25, 25,  0, 28, 28,  0,  0,  0, 
+    22, 25, 29,  0,  0, 28, 28, 29, 27, 21, 21, 21, 34, 21, 21, 21, 
+     0, 31, 31, 29, 21, 19, 21, 28, 19, 25, 20, 19, 22, 29, 26, 22, 
+    33, 27, 20, 19,  0,  0, 29, 19, 20, 19, 22, 29, 27, 33, 21, 21, 
+    25, 25,  0, 22, 22,  0,  0,  0,  0, 25, 29, 25,  0, 22, 22, 29, 
+    21, 26, 29, 21, 21, 21,  0,  0, 19, 25,  0, 22,  0, 25, 29,  0, 
+    21, 26, 21, 30, 26, 21, 21, 21,  0, 22, 22, 20, 21, 33, 21, 21, 
+     0, 29, 25,  0, 19, 25,  0,  0,  0, 20, 19,  0, 28,  0,  0, 34, 
+     0, 20, 30, 33,  0, 32,  0,  0, 19, 27, 21, 21,  0,  0, 20, 33, 
+    26, 31, 32, 34, 21,  0, 25,  0, 25, 35, 19, 25,  0,  0, 28, 29, 
+     0, 32,  0, 29,  0,  0, 29, 29,  0,  0,  0, 27,  0,  0,  0, 22, 
+    36, 36, 36, 36, 37, 36,  0,  0,  0,  0, 38, 36,  0,  0, 22, 29, 
+     0, 20, 22, 29, 22, 29,  0, 20, 22, 29,  0,  0,  0, 20,  0,  0, 
+     0,  0, 29, 21,  0, 20, 21, 21,  0, 21, 21, 21, 22, 21, 21, 21, 
+    27,  0,  0,  0,  0,  0, 20, 19,  0,  0,  0, 31,  0, 21, 21,  0, 
+     0,  0, 33,  0,  0,  0, 29, 25, 20, 21, 21, 21, 21, 21, 21,  0, 
+     0, 29,  0, 29,  0,  0, 35, 35,  0, 22,  0,  0,  0, 19,  0, 25, 
+    19, 22,  0, 20, 18,  9, 14, 14,  9,  7,  0,  0,  8, 15, 12, 10, 
+     0, 27, 19,  0, 29, 11,  0, 12, 17, 11,  0, 20,  0,  0, 39, 11, 
+    12, 15, 15,  0, 12, 10,  0,  0, 40, 10, 12,  0, 12, 11, 12,  9, 
+     7,  7,  7,  0,  7,  7, 14,  0,  0,  0, 41, 21,  0,  0, 14,  0, 
+    10, 11,  0,  0,  0, 12,  0,  0,  8, 12, 18, 12, 15, 15, 10, 17, 
+    18, 16,  7,  5,  0,  7,  0, 14,  0,  0, 11, 11, 10,  0,  0,  0, 
+    14,  7, 13, 13, 13, 13,  0,  0,  0, 15, 15,  0,  0, 15,  0,  0, 
+     0,  0,  0, 12,  0,  0, 42,  0,  7,  7, 24,  7,  7,  0,  0,  0, 
+    13, 14,  0,  0, 13, 13,  0, 14, 14, 13, 18, 13, 14,  0,  0,  0, 
+    13, 14,  0, 12,  0, 40, 15, 13,  0, 14,  0,  5,  5,  0,  0,  0, 
+    24, 24,  9, 24,  0,  0,  0, 13,  0,  7,  7, 24, 24,  0,  7,  7, 
+     0,  0,  0, 15,  0, 13,  7,  7,  0,  0, 20, 22,  0, 43,  1, 44, 
+     0, 45,  0,  0,  0, 17, 46, 21, 29, 21, 25,  0,  0, 29, 21, 33, 
+    27, 21, 21, 33,  0, 20,  0, 20, 36, 36, 47, 36, 36, 21, 21, 21, 
+    36, 48, 21, 21, 36, 36, 36, 21, 49, 36, 36, 36, 36, 36, 36, 50, 
+    51, 36, 36, 36, 36, 52, 51, 36, 21, 51, 36, 36, 36, 36, 36, 48, 
+    36, 36, 36, 52, 36, 36, 52, 21, 36, 36,  7,  7, 36, 36, 36, 53, 
+    36, 52, 21, 21, 21, 21, 19,  0,  0, 27, 21, 19,  0, 21, 21, 33, 
+     0,  0, 29,  0, 21, 21, 33,  0, 25, 20, 25, 20, 25, 20, 21, 21, 
+    36, 52, 54, 36, 33,  0, 21, 25,  0, 20,  0, 32, 28, 22,  0,  0, 
+    33,  0,  0,  0, 19,  0,  0,  0, 36, 36, 48, 21, 52, 36, 36, 36, 
+    36, 52, 36, 21, 55, 56, 56, 56, 56, 56, 56, 56, 57, 58, 58, 58, 
+    58, 58, 58, 58, 58, 58, 58, 59, 60, 58, 60, 58, 60, 58, 60, 61, 
+    56, 62, 58, 59, 21, 21, 25, 41,  0,  0,  0, 25,  0,  0, 20, 28, 
+    20, 33,  0,  0,  0, 33,  0,  0,  0, 21,  0,  0,  0, 29, 22,  0, 
+     0, 28, 27, 31,  0, 28,  0,  0,  0,  0,  0, 33,  0,  0, 29, 33, 
+     0, 26, 21,  0,  0, 25, 25,  0,  0, 21, 20, 33,  0,  0, 27, 21, 
+     0, 29,  0,  0, 20, 21,  0,  0, 48, 21, 21, 21, 30, 26, 25, 22, 
+     0,  0, 28, 25,  0, 25,  0,  0,  0, 28, 20, 25,  0, 22,  0, 22, 
+     0,  0, 28, 20,  0, 32, 19,  0, 25,  0,  0, 20,  7,  7, 63, 21, 
+     7,  7,  7, 64,  7,  7, 46, 21, 52, 21, 21, 21, 36, 36, 53, 21, 
+     0, 22, 20, 21,  0,  0, 25, 27, 22, 32, 32, 20,  0, 29,  0, 34, 
+    27, 25,  0,  0,  7,  7,  7, 46, 
+};
+
+RE_UINT8 re_east_asian_width_stage_5[] = {
+    1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 1, 1, 2, 6, 6, 
+    2, 6, 6, 2, 2, 1, 2, 1, 6, 2, 2, 6, 2, 2, 2, 2, 
+    2, 1, 2, 2, 2, 2, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 
+    1, 1, 1, 2, 1, 1, 2, 2, 2, 2, 1, 1, 1, 2, 1, 1, 
+    1, 2, 1, 2, 1, 2, 2, 2, 2, 1, 1, 2, 0, 0, 1, 1, 
+    1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 
+    2, 2, 1, 2, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 
+    1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 
+    1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 
+    4, 4, 4, 4, 1, 1, 1, 4, 1, 1, 4, 4, 1, 3, 1, 1, 
+    1, 2, 2, 1, 1, 2, 0, 0, 1, 4, 4, 1, 1, 1, 6, 6, 
+    6, 6, 1, 1, 1, 6, 6, 1, 2, 2, 0, 0, 4, 4, 0, 4, 
+    4, 4, 0, 0, 5, 4, 4, 4, 4, 4, 4, 1, 0, 4, 4, 4, 
+    4, 4, 4, 0, 4, 0, 0, 0, 0, 0, 0, 4, 0, 5, 5, 5, 
+    5, 5, 5, 5, 5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 
+    0, 0, 3, 3, 3, 0, 0, 0, 5, 5, 5, 0, 2, 2, 2, 0, 
+    2, 2, 1, 0, 
+};
+
+/* East_Asian_Width: 3484 bytes. */
+
+RE_UINT32 re_get_east_asian_width(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 12;
+    code = ch ^ (f << 12);
+    pos = ((RE_UINT32)re_east_asian_width_stage_1[f] << 4);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_east_asian_width_stage_2[pos + f] << 4);
+    f = code >> 4;
+    code ^= (f << 4);
+    pos = ((RE_UINT32)re_east_asian_width_stage_3[pos + f] << 2);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_east_asian_width_stage_4[pos + f] << 2);
+    value = re_east_asian_width_stage_5[pos + code];
+
+    return value;
+}
+
+/* Joining_Group. */
+
+RE_UINT8 re_joining_group_stage_1[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 
+};
+
+RE_UINT8 re_joining_group_stage_2[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_joining_group_stage_3[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+
+RE_UINT8 re_joining_group_stage_4[] = {
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  0,  0,  0,  7,  8,  9, 
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,  0,  0, 21,  0, 22, 
+     0,  0, 23, 24, 25, 26,  0,  0,  0, 27, 28, 29, 30, 31, 32, 33, 
+};
+
+RE_UINT8 re_joining_group_stage_5[] = {
+     0,  0,  0,  0,  0,  0,  0,  0, 45,  0,  3,  3, 43,  3, 45,  3, 
+     4, 41,  4,  4, 13, 13, 13,  6,  6, 31, 31, 35, 35, 33, 33, 39, 
+    39,  1,  1, 11, 11, 55, 55, 55,  0,  9, 29, 19, 22, 24, 26, 16, 
+    43, 45, 45,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4, 29, 
+     0,  3,  3,  3,  0,  3, 43, 43, 45,  4,  4,  4,  4,  4,  4,  4, 
+     4, 13, 13, 13, 13, 13, 13, 13,  6,  6,  6,  6,  6,  6,  6,  6, 
+     6, 31, 31, 31, 31, 31, 31, 31, 31, 31, 35, 35, 35, 33, 33, 39, 
+     1,  9,  9,  9,  9,  9,  9, 29, 29, 11, 38, 11, 19, 19, 19, 11, 
+    11, 11, 11, 11, 11, 22, 22, 22, 22, 26, 26, 26, 26, 56, 21, 13, 
+    41, 17, 17, 14, 43, 43, 43, 43, 43, 43, 43, 43, 55, 47, 55, 43, 
+    45, 45, 46, 46,  0, 41,  0,  0,  0,  0,  0,  0,  0,  0,  6, 31, 
+     0,  0, 35, 33,  1,  0,  0, 21,  2,  0,  5, 12, 12,  7,  7, 15, 
+    44, 50, 18, 42, 42, 48, 49, 20, 23, 25, 27, 36, 10,  8, 28, 32, 
+    34, 30,  7, 37, 40,  5, 12,  7,  0,  0,  0,  0,  0, 51, 52, 53, 
+     4,  4,  4,  4,  4,  4,  4, 13, 13,  6,  6, 31, 35,  1,  1,  1, 
+     9,  9, 11, 11, 11, 24, 24, 26, 26, 26, 22, 31, 31, 35, 13, 13, 
+    35, 31, 13,  3,  3, 55, 55, 45, 43, 43, 54, 54, 13, 35, 35, 19, 
+};
+
+/* Joining_Group: 434 bytes. */
+
+RE_UINT32 re_get_joining_group(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_joining_group_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_joining_group_stage_2[pos + f] << 4);
+    f = code >> 7;
+    code ^= (f << 7);
+    pos = ((RE_UINT32)re_joining_group_stage_3[pos + f] << 4);
+    f = code >> 3;
+    code ^= (f << 3);
+    pos = ((RE_UINT32)re_joining_group_stage_4[pos + f] << 3);
+    value = re_joining_group_stage_5[pos + code];
+
+    return value;
+}
+
+/* Joining_Type. */
+
+RE_UINT8 re_joining_type_stage_1[] = {
+    0, 1, 2, 2, 2, 3, 2, 4, 5, 2, 2, 2, 2, 2, 6, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    7, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 
+};
+
+RE_UINT8 re_joining_type_stage_2[] = {
+     0,  1,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 
+    15,  1,  1, 16,  1,  1,  1, 17, 18, 19, 20, 21, 22, 23,  1,  1, 
+    24,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 25, 26,  1,  1, 
+    27,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1, 28,  1, 29, 30, 31, 32,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 33,  1,  1, 34, 35, 
+     1, 36,  1,  1,  1,  1,  1,  1,  1,  1, 37,  1,  1,  1,  1,  1, 
+    38,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1, 39, 40,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+    41, 42,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+};
+
+RE_UINT8 re_joining_type_stage_3[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      2,   2,   2,   2,   2,   2,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   4,   2,   5,   6,   0,   0,   0, 
+      0,   7,   8,   9,  10,   2,  11,  12,  13,  14,  15,  15,  16,  17,  18,  19, 
+     20,  21,  22,   2,  23,  24,  25,  26,   0,   0,  27,  28,  29,  15,  30,  31, 
+      0,  32,  33,   0,   0,  34,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+     35,   0,   0,  36,  37,  38,  39,   0,  40,   0,   0,  41,  42,   0,  39,   0, 
+     43,   0,   0,  41,  44,  40,   0,  45,  43,   0,   0,  41,  46,   0,  39,   0, 
+     40,   0,   0,  47,  42,  48,  39,   0,  49,   0,   0,   0,  50,   0,   0,   0, 
+      0,   0,   0,  51,  52,  53,  39,   0,   0,   0,   0,  47,  54,   0,  39,   0, 
+      0,   0,   0,   0,  42,   0,  39,   0,   0,   0,   0,   0,  55,  56,   0,   0, 
+      0,   0,   0,  57,  58,   0,   0,   0,   0,   0,   0,  59,  60,   0,   0,   0, 
+      0,  61,   0,  62,   0,   0,   0,  63,  64,  65,   2,  66,  48,   0,   0,   0, 
+      0,   0,  67,  68,   0,  69,  28,  70,  71,   1,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,  67,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,  72,   0,  72,   0,  39,   0,  39,   0,   0,   0,  73,  74,  75,   0,   0, 
+     76,   0,   0,   0,   0,   0,   0,   0,   0,   0,  77,   0,   0,   0,   0,   0, 
+      0,   0,  78,  79,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,  80,   0,   0,   0,  81,  82,  83,   0,   0,   0,   0,   0,   0,   0,   0, 
+     84,   0,   0,  85,  49,   0,  86,  84,  87,   0,  88,   0,   0,   0,  89,  87, 
+      0,   0,  90,  91,   0,   0,   0,   0,   0,   0,   0,   0,   0,  92,  93,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   2,   2,  94,  90, 
+     95,   0,  96,   0,   0,   0,  97,   0,   0,   0,   0,   0,   0,   2,   2,  28, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  20,  87, 
+      0,   0,   0,   0,   0,   0,   0,  20,   0,   0,   0,   0,   0,   0,   2,   2, 
+      0,   0,  98,   0,   0,   0,   0,   0,   0,  99,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,  20, 100,   0,   0,   0,   0,   0,   0,   0,  87, 
+    101,   0,  53,   0,   0,   0,   0,   0,   0,   0,   0,   0, 102,   0,   2,  87, 
+      0,   0, 103,   0, 104,  87,   0,   0,  35,   0,   0, 105,   0,   0,   0,   0, 
+      0,   0, 106, 107, 108,   0,   0,   0,   0,   0,   0, 109,  40,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 110,   0, 
+      0, 111,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      2,   0,  94,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  20, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  34, 
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1, 
+    112,   0,   0, 113,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+     40,   0,   0, 114,  94,   0,   0,   0,  87,   0,   0, 115,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0, 116, 117, 118,   0, 119,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,  72,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+     40,   0,   2,   2,   2,   2,   2,   2,   0,   0,   0,   0,   0,   0,   0,   0, 
+      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   0, 
+};
+
+RE_UINT8 re_joining_type_stage_4[] = {
+     0,  0,  0,  0,  0,  0,  0,  1,  2,  2,  2,  2,  3,  2,  4,  0, 
+     5,  2,  2,  2,  2,  2,  2,  6,  7,  6,  0,  0,  2,  2,  8,  0, 
+     9, 10, 11, 12, 13, 14, 14, 14, 15, 14, 16,  2,  0,  0,  0, 17, 
+    18, 19, 14, 14, 14, 14, 20, 20, 20, 20, 21, 14, 14, 14, 14, 14, 
+    22, 20, 20, 23, 24, 25,  2, 26,  2, 26, 27, 28,  0,  0, 17, 29, 
+     0,  0,  0,  3, 30, 31, 21, 32, 14, 14, 33, 22,  2,  2,  8, 34, 
+    14, 14, 31, 14, 14, 14, 12, 35, 23, 35, 21, 14,  0, 36,  2,  2, 
+    37,  0,  0,  0,  0,  0, 17, 14, 14, 14, 38,  2,  2,  0, 39,  0, 
+     0, 36,  6,  2,  2,  5,  5,  4,  0,  0,  5,  0,  8,  0,  0,  0, 
+     0,  0, 40, 37,  5,  2, 37,  1,  5,  2,  0,  0, 36,  0,  0,  0, 
+     1,  0,  0,  0,  0,  0,  0, 37,  5, 37,  0,  1,  7,  0,  0,  0, 
+     7,  3, 26,  4,  4,  1,  0,  0,  5,  6, 37,  1,  0,  0,  0, 26, 
+     0, 40,  0,  0, 40,  0,  0,  0, 37,  0,  0,  1,  0,  0,  0, 36, 
+    37, 36, 27,  4,  0,  7,  0,  0,  0, 40,  0,  4,  0,  0, 40,  0, 
+    36, 41,  0,  0,  1,  2,  8,  0,  0,  3,  2,  8,  1,  2,  6, 37, 
+     0,  0,  2,  4,  0,  0,  4,  0,  0, 42,  1,  0,  5,  2,  2,  8, 
+     2, 27,  0,  5,  2,  2,  5,  2,  2,  2,  2, 37,  0,  0,  0,  5, 
+    27,  2,  7,  7,  0,  0,  4, 36,  5, 37,  0,  0, 40,  7,  0,  1, 
+    36, 37,  0,  0,  0,  6,  2,  4,  0, 40,  5,  2,  2,  0,  0,  1, 
+     0,  0,  3,  4,  0,  0,  1,  0,  8,  3, 37,  0, 40,  0,  5,  0, 
+     0,  3, 37,  0,  0, 40,  2,  8, 41,  5,  2, 37,  3,  2,  2, 26, 
+     2,  0,  0,  0,  0, 27,  8, 37,  0,  0,  3,  2,  4,  0,  0,  0, 
+    36,  4,  4,  0,  0, 40,  4, 42,  0,  0,  0,  2,  2, 36,  0,  0, 
+     8,  2,  2,  2, 27,  2, 37,  1,  2,  8,  0,  0,  0,  0,  3, 43, 
+     0,  0, 36,  8,  2, 37, 36,  2,  0,  0, 36,  2,  0,  0,  7,  0, 
+     8,  0,  0,  4, 40, 40,  3,  0,  0, 37,  0,  0,  0, 36,  2,  4, 
+     0,  3,  2,  2,  3, 36,  4, 37,  0,  0,  5,  8,  7,  7,  0,  0, 
+     3,  0,  0, 37, 27, 26, 37, 36,  0,  1, 37,  1,  0,  0,  0, 40, 
+     5,  7,  0,  2,  0,  0,  8,  3,  0,  0,  2,  2,  3,  8,  7,  1, 
+     0,  3,  4,  0,  3,  2,  2,  2,  8,  5,  2,  0,  0,  0, 36,  4, 
+};
+
+RE_UINT8 re_joining_type_stage_5[] = {
+    0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 4, 4, 0, 0, 0, 4, 
+    4, 4, 0, 0, 0, 4, 4, 4, 4, 4, 0, 4, 0, 4, 4, 0, 
+    4, 4, 4, 0, 2, 0, 3, 3, 3, 3, 2, 3, 2, 3, 2, 2, 
+    2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 2, 1, 2, 2, 2, 
+    3, 2, 2, 4, 0, 0, 2, 2, 4, 3, 3, 3, 0, 3, 3, 3, 
+    3, 3, 3, 3, 3, 3, 2, 2, 3, 2, 2, 3, 2, 3, 2, 3, 
+    2, 2, 3, 3, 0, 3, 4, 4, 4, 0, 0, 4, 4, 0, 4, 4, 
+    4, 4, 3, 3, 2, 0, 0, 2, 3, 4, 2, 2, 2, 3, 3, 3, 
+    2, 2, 3, 2, 3, 2, 3, 2, 0, 3, 2, 2, 3, 2, 2, 2, 
+    0, 0, 4, 4, 4, 0, 0, 0, 2, 2, 2, 4, 0, 0, 1, 0, 
+    0, 0, 4, 0, 4, 0, 4, 0, 0, 4, 0, 4, 0, 1, 4, 4, 
+};
+
+/* Joining_Type: 1736 bytes. */
+
+RE_UINT32 re_get_joining_type(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 13;
+    code = ch ^ (f << 13);
+    pos = ((RE_UINT32)re_joining_type_stage_1[f] << 5);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_joining_type_stage_2[pos + f] << 4);
+    f = code >> 4;
+    code ^= (f << 4);
+    pos = ((RE_UINT32)re_joining_type_stage_3[pos + f] << 2);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_joining_type_stage_4[pos + f] << 2);
+    value = re_joining_type_stage_5[pos + code];
+
+    return value;
+}
+
+/* Line_Break. */
+
+RE_UINT8 re_line_break_stage_1[] = {
+     0,  1,  2,  3,  4,  5,  5,  5,  5,  5,  6,  7,  8,  9, 10, 11, 
+    12, 13, 14, 15, 16, 16, 17, 16, 16, 16, 16, 18, 16, 19, 16, 20, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 21, 
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 21, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    22, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 23, 
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 23, 
+};
+
+RE_UINT8 re_line_break_stage_2[] = {
+      0,   1,   2,   2,   2,   3,   4,   5,   2,   6,   7,   8,   9,  10,  11,  12, 
+     13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28, 
+     29,  30,  31,  32,  33,  34,  35,  36,  37,   2,   2,   2,   2,  38,  39,  40, 
+     41,  42,  43,  44,  45,  46,  47,  48,  49,  50,   2,  51,   2,   2,  52,  53, 
+     54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69, 
+      2,   2,   2,  70,   2,   2,  71,  14,  72,  73,  74,  75,  76,  77,  78,  79, 
+     80,  81,  82,  83,  84,  85,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  86,  78,  78,  78,  78, 
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 
+     87,  78,  78,  78,  78,  78,  78,  78,  78,  88,   2,   2,  89,  90,   2,  91, 
+     92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 100, 
+    101, 102, 103, 104, 105, 106, 100, 101, 102, 103, 104, 105, 106, 100, 101, 102, 
+    103, 104, 105, 106, 100, 101, 102, 103, 104, 105, 106, 100, 101, 102, 103, 104, 
+    105, 106, 100, 101, 102, 103, 104, 105, 106, 100, 101, 102, 103, 104, 105, 106, 
+    100, 101, 102, 103, 104, 105, 106, 100, 101, 102, 103, 104, 105, 106, 100, 101, 
+    102, 103, 104, 105, 106, 100, 101, 102, 103, 104, 105, 106, 100, 101, 102, 107, 
+    108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 
+    109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 
+    109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 
+    109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 
+    109, 109,  78,  78,  78,  78, 110, 111,   2,   2, 112, 113, 114, 115, 116, 117, 
+    118, 119, 120, 121,  14, 122, 123, 124,   2, 125,  14,  14,  14,  14,  14,  14, 
+    126,  14, 127,  14, 128,  14, 129,  14, 130,  14,  14,  14, 131,  14,  14,  14, 
+    132, 133,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+      2,   2,   2,   2,   2,   2, 134,  14, 135,  14,  14,  14,  14,  14,  14,  14, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+      2,   2,   2,   2, 136, 137, 138,   2, 139,  14,  14,  14,  14,  14,  14,  14, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+      2,   2,   2,   2, 140,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+    141,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+      2, 142, 143, 144, 145,  14, 146,  14, 147, 148, 149,   2,   2, 150,   2, 151, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+    152, 153, 154, 155, 156,  14, 157, 158, 159, 160, 161, 162, 163, 164,  61,  14, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 165, 
+    166,  14, 167, 168,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 
+    109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 
+    109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 169, 
+};
+
+RE_UINT16 re_line_break_stage_3[] = {
+      0,   1,   2,   3,   4,   5,   4,   6,   7,   1,   8,   9,   4,  10,   4,  10, 
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  11,  12,   4,   4, 
+      1,   1,   1,   1,  13,  14,  15,  16,  17,   4,  18,   4,   4,   4,   4,   4, 
+     19,   4,   4,   4,   4,   4,   4,   4,   4,   4,  20,  21,   4,  22,  21,   4, 
+     23,  24,   1,  25,  26,   4,  27,  28,  29,  30,   4,   4,  31,   1,  32,  33, 
+      4,   4,   4,   4,   4,  34,  35,  36,  37,  38,   4,   1,  39,   4,   4,   4, 
+      4,   4,  40,  41,  36,   4,  31,  42,   4,  43,  44,  45,   4,  46,  47,  47, 
+     47,  47,  47,  47,  47,  47,  47,  47,  48,   4,   4,  49,   1,  50,  51,  52, 
+     53,  54,  55,  56,  57,  58,  59,  60,  61,  54,  55,  62,  63,  64,  65,  66, 
+     67,  18,  55,  68,  69,  70,  59,  71,  53,  54,  55,  68,  72,  73,  59,  20, 
+     74,  75,  76,  77,  78,  79,  65,  80,  81,  82,  55,  83,  84,  85,  59,  86, 
+     87,  82,  55,  88,  84,  89,  59,  90,  87,  82,   4,  91,  92,  93,  59,  94, 
+     95,  96,   4,  97,  98,  99,  47, 100, 101, 102, 102, 103, 104, 105,  47,  47, 
+    106, 107, 108, 109, 110, 111,  47,  47, 112, 113,  36, 114,  52,   4, 115, 116, 
+    117, 118,   1, 119, 120, 121,  47,  47, 102, 102, 102, 102, 122, 102, 102, 102, 
+    102, 123,   4,   4, 124,   4,   4, 115, 125, 125, 125, 125, 125, 125, 126, 126, 
+    126, 126, 127, 128, 128, 128, 128, 128,   4,   4,   4,   4, 129, 130,   4,   4, 
+    129,   4,   4, 131, 132, 133,   4,   4,   4, 132,   4,   4,   4, 134, 135, 115, 
+      4, 136,   4,   4,   4,   4,   4,  28, 137,   4,   4,   4,   4,   4,   4,   4, 
+    137, 138,   4,   4,   4,   4, 139,  70, 140, 141,   4, 142,   4, 143, 140, 144, 
+    102, 102, 102, 102, 102, 145, 146, 136, 147, 146,   4,   4,   4,   4,   4,  20, 
+      4,   4, 148,   4,   4,   4,   4, 124,   4, 115, 149, 149, 150, 102, 151, 152, 
+    102, 102, 153, 102, 154, 155,   4,   4,   4, 156, 102, 102, 102, 157, 102, 158, 
+    146, 146, 151,  47,  47,  47,  47,  47, 159,   4,   4, 160, 161, 162, 163, 164, 
+    165,   4, 166, 146,   4,   4,  40, 167,   4,   4, 160, 168, 169,  36,   4, 170, 
+     47,  47,  47,  47,  47, 171, 172, 173,   4,   4,   4,   4,   1,   1, 174, 175, 
+      4, 176,   4,   4, 176, 177,   4, 178,   4,   4,   4, 179, 179, 180,   4, 181, 
+    182, 183, 184, 185, 186, 187, 188, 189, 190, 115, 191, 192,  47,   1,   1, 193, 
+    194, 195, 196,   4,   4, 197, 198, 199, 200, 199,   4,   4,   4, 201,   4,   4, 
+    202, 203, 204, 205, 206, 207, 208,   4, 209, 210, 211, 212,   4,   4,   4,   4, 
+      4, 207, 213,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 214, 
+      4,   4, 215,  47,  27,  47, 216, 216, 216, 216, 216, 216, 216, 216, 216, 217, 
+    216, 216, 216, 216, 198, 216, 216, 218, 216, 219, 220, 221, 222, 223, 224,   4, 
+    225, 226,   4,   4, 227,   4, 228,   4,   4, 229,   4, 229, 230, 216, 231, 216, 
+     21,   4,   4,   4,   4, 232, 233, 234, 216, 235,   4,   4, 236,   4, 237,   4, 
+    238, 239,   4,   4,   4, 240,   4, 241,   4,   4,   4,   4, 115, 242,  47,  47, 
+      4,   4,  45,   4,   4,  45,   4,   4,   4,   4,   4,   4,   4,   4, 243, 244, 
+      4,   4, 124,   4,   4,   4, 245, 246,   4, 215, 247, 247, 247, 247,   1,   1, 
+    248, 249, 250, 251,  47,  47,  47,  47, 252, 253, 252, 252, 252, 252, 252, 254, 
+    252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 255,  47, 256, 
+    257, 258, 259, 260, 261, 252, 262, 252, 263, 264, 265, 252, 262, 252, 263, 266, 
+    267, 252, 268, 269, 252, 252, 252, 252, 270, 252, 252, 271, 252, 252, 254, 272, 
+    252, 270, 252, 252, 273, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 270, 
+    252, 252, 252, 252,   4,   4,   4,   4, 252, 274, 252, 252, 252, 252, 252, 252, 
+    275, 252, 252, 252, 276,   4,   4, 170, 277,   4, 278,  47,   4,   4, 243, 279, 
+      4,  20,   4,   4,   4,   4,   4, 280,  45, 281, 136,  47,  47,  47,  47, 282, 
+    283,   4, 284, 285,   4,   4,   4, 286, 287,   4,   4, 160, 288, 146,   1, 289, 
+     36,   4, 290,   4, 291, 292, 125, 293,  48,   4,   4, 294, 295, 296,  47,  47, 
+      4,   4, 297, 174, 298, 299, 102, 153, 102, 102, 102, 102, 300, 301,  47,  47, 
+    302, 303, 247,  47,  47,  47,  47,  47,  47,  47,  47,  47,   4,   4, 304, 146, 
+    305, 306, 307, 308, 307, 309, 307, 305, 306, 307, 308, 307, 309, 307, 305, 306, 
+    307, 308, 307, 309, 307, 305, 306, 307, 308, 307, 309, 307, 305, 306, 307, 308, 
+    307, 309, 307, 305, 306, 307, 308, 307, 309, 307, 305, 306, 307, 308, 307, 309, 
+    307, 305, 306, 307, 308, 307, 309, 307, 308, 307, 310, 126, 311, 128, 128, 312, 
+    313, 313, 313, 313, 313, 313, 313, 313, 314, 314, 314, 314, 314, 314, 314, 314, 
+    215, 315,   4, 316, 317,   4,   4,   4,   4,   4,   4,   4, 281, 318,   4,   4, 
+      4,   4,   4, 319,  47,   4,   4,   4,   4, 320,   4,   4,  20,  47,  47, 321, 
+      1, 322, 174, 323, 324, 325, 326, 179,   4,   4,   4,   4,   4,   4,   4, 327, 
+    328, 329, 252, 330, 252, 331, 332, 333,   4, 334,   4,  45, 335, 336, 337, 338, 
+    339,   4, 133, 340, 178, 178,  47,  47,   4,   4,   4,   4,   4,   4,   4,  27, 
+    341,   4,   4, 342,   4,   4,   4,   4,  27, 343,  47,  47,  47,   4,   4, 344, 
+      4, 115,   4,   4,   4,  70,  47,  47,   4,  45, 214,   4,  27,  47,  47,  47, 
+      4, 345,   4,   4, 346, 347,  47,  47,   4, 178, 146,  47,  47,  47,  47,  47, 
+    348,   4,   4, 349,   4, 350,  47,  47,   4, 351,   4, 352,  47,  47,  47,  47, 
+    353, 354,   4, 355,  20, 356,   4,   4,   4,   4,   4, 357,   4, 358,   4, 359, 
+      4,   4,   4,   4, 360,  47,  47,  47,  47,  47,  47,  47,  47,  47,   4,  45, 
+    165,   4,   4, 361, 362, 320, 363,  47, 165,   4,   4, 364, 251,  47,  47,  47, 
+      4,   4,   4,   4,   4,   4,  45,  47,   4,   4,   4,   4,   4,   4, 365, 366, 
+      4,   4,   4,   4,   4, 367,   4,   4, 368,   4,   4,   4,   4,   4,   4,   4, 
+      4,   4,   4,   4,   4,   4,   4, 369,   4,   4,  45,  47,  47,  47,  47,  47, 
+      4,   4,   4, 360,  47,  47,  47,  47, 370,  47,  47,  47,  47,  47,  47,  47, 
+      4,   4,   4,   4,   4,   4,   4, 124,   4,   4,  22,   4,   4,   4, 371,   1, 
+    372,   4, 373,   4,   4, 178,  47,  47,   4,   4,   4,   4, 374,  47,  47,  47, 
+      4,   4,   4,   4,   4, 215,   4, 281,   4,   4,   4,   4,   4, 179,   4,   4, 
+      4, 140, 375, 376, 377,   4,   4,   4, 378, 379,   4, 380, 381,  82,   4,   4, 
+      4,   4, 358,   4,   4,   4,   4,   4,   4,   4,   4,   4, 382, 383, 383, 383, 
+      4,   4, 343,   4,   4,   4,   4,   4,   4, 214,  45, 384,  21,  21,  47,  47, 
+    385, 216, 386, 216, 216, 216, 387, 216, 216, 385,  47,  47,  47,  47, 388,   4, 
+    389, 252, 252, 271, 390, 370,  47,  47,   4,   4,  70, 391,   4,   4,   4, 115, 
+      4, 214,   4,   4, 392,  47,   4,  70,   4,   4,   4,  45,  82,   4,   4,   4, 
+      4,   4,   4,   4,   4,   4,   4, 393,   4,   4,   4, 178,  47,   4,  20,  47, 
+     47,  47,  47,  47,  47,  47,  47, 394,  21, 395, 396, 377, 397,  47,  47,  47, 
+      4,   4,   4,   4, 124,  47,  47,  47, 252, 252, 252, 252, 252, 252, 252, 268, 
+    398,  47,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
+      1,   1,   1,   1,   1,   1,   1,  47, 314, 314, 314, 314, 314, 314, 314, 399, 
+};
+
+RE_UINT16 re_line_break_stage_4[] = {
+      0,   0,   1,   2,   0,   0,   0,   0,   3,   4,   5,   6,   7,   7,   8,   9, 
+     10,  10,  10,  10,  10,  10,  11,  12,  10,  10,  11,  13,   0,  14,   0,   0, 
+     15,  16,  17,  18,  19,  20,  21,  22,  10,  23,  10,  10,  10,  23,  24,  25, 
+     26,  10,  27,  28,   0,   0,   0,  29,   0,   0,   0,  30,  31,   0,   0,   0, 
+     10,  10,  32,  33,  34,  10,  35,  36,  37,  10,  10,  10,  38,   0,  39,  10, 
+     10,  10,  34,  34,  40,  10,  10,  10,  10,  35,  40,  10,  10,  10,  41,  34, 
+     42,   0,   0,   0,   0,   0,   0,  43,  44,  45,  34,  34,  10,  10,  35,  34, 
+     10,  46,  34,  34,  10,  32,  47,  48,   0,   0,  49,  50,  10,  10,  38,   0, 
+      7,   7,  51,  52,  53,  10,  10,  10,  10,  54,   0,  55,   0,  55,  56,  39, 
+      7,   7,  57,  10,  10,  10,  10,  37,  58,  10,  10,  10,   0,   0,  59,  40, 
+     10,  60,   0,   0,  61,  34,  34,  34,   0,  10,  62,  34,  10,  60,  63,   0, 
+      0,  64,  64,  65,  10,  10,  10,  35,  10,  10,  64,  66,  34,  34,  34,  34, 
+      0,  10,  10,  10,  10,  10,  60,  56,  64,   0,  10,  10,  60,  67,   7,   7, 
+     10,  10,  40,  10,  42,  40,  10,  68,  68,  10,  10,  10,  10,  10,  36,  10, 
+     69,  32,  70,  56,   0,  71,  71,  72,  34,  73,  34,  37,  60,  74,   7,   7, 
+     75,  10,  76,  34,  42,  40,  35,  77,  36,  78,  70,  79,  59,  73,  71,  65, 
+     80,  34,  40,  69,  34,  74,   7,   7,  39,  81,  34,  34,  42,  40,  10,  37, 
+     36,  40,  70,  56,   0,  82,  82,  65,  46,  34,  34,  34,  83,  34,  34,  34, 
+      0,  71,  71,  65,  34,  84,  34,  37,  85,  40,  35,  32,  36,  70,  78,  36, 
+     77,  46,  35,  32,  10,  10,  70,  84,  59,  84,  79,  65,  46,  73,  34,  34, 
+     10,  10,  86,  34,  42,  40,  10,  36,  36,  10,  10,  10,  10,  40,  70,  87, 
+      0,  79,  79,  65,  34,  88,  70,  34,  34,  34,  10,  10,  84,  40,  10,  36, 
+     10,  40,  70,  56,  34,  88,  34,  66,  78,  34,  34,  34,  10,  10,  35,  87, 
+      0,  79,  79,  72,  34,  73,  34,  34,  10,  70,  89,  10,  84,  40,  10,  10, 
+     10,  35,  32,  10,  37,  10,  10,  90,  10,  35,  91,  73,   0,  92,   0,   0, 
+     84,  46,  34,  34,  93,  94,  94,  94,  94,  94,  94,  94,  94,  94,  95,  96, 
+     94,  94,  94,  97,   7,   7,  98,  34,  99, 100, 101, 102,  34,  94,  93,  94, 
+     93, 103, 104,  93,  94,  94, 105, 106,  94, 101,  94, 106,   7,   7, 107, 106, 
+    108, 109, 110, 111, 112, 113,  39,  10,  10, 114, 115, 116,  10,  10,  10,  46, 
+     42,   0,   0, 117,   0, 118,  10,  64,   0,   0,  42,   0,   0,   0,   0, 119, 
+     10, 120,  10,  36, 121,  10, 122,  34,   7,   7,  98,  10,   7,   7, 123,  94, 
+     10,  70,  34,  34, 124, 124, 124, 124, 125, 125, 125, 125, 125, 125, 126, 126, 
+    126, 126, 126, 126,  10,  10,  36,  70,  10,  35,  36,  70,  36,  70,  10,  35, 
+     36,  70,  10,  10,  10,  35,  10,  10,  10,  10,  35,  42,  18,  10,  10,  10, 
+     10,  10,  70,  34, 127,  10,  10,  10,  10,  10,  11, 128,  10,  10, 129, 130, 
+     10,  10,  10,  36,  60, 131,  34,  34,  60, 132,  34,  34,  60,  34,  34,  34, 
+    133,  34,  34,  34,  94, 134, 135, 106,   7,   7, 107,  34, 136, 137, 138, 139, 
+     10,  10, 140,  34,   0,   0,   0,  34,  46, 141,   7,   7,  94,  94,  94, 106, 
+     94, 142,  34,  34,  94,  94,  94,  34,  94,  94, 106,  34,   7,   7, 143, 104, 
+     10,  38,   0,  32,  94,  94,  94,  95,  94,  94,  94, 144,   0,  53,  10,  10, 
+     10,   0,   0,   0,   0,  53,  10,  34,   7,   7,  98, 145, 127,  10,  38,   0, 
+      0,  10,  10,  46, 146,  10,  10,  10,  64,   0,  59,  32,   0,  34,  34,  10, 
+      0,   0, 147, 148,   7,   7, 107,  40,  10,  10,  10, 149, 146,   0,   0,   0, 
+      0,   0,  53,  58, 150,  34,  34,  34,   0,  59,  34,  34,  34,  34,  34,   0, 
+     10,  70,  10,  70,  10,  10, 151, 151,  10,  10,  10,  70,  10,  36,  10,  10, 
+     10,  32,  10,  40,  32,  36,  10, 152, 148, 153, 154,   0, 155, 156, 157, 157, 
+    158, 159, 160,  29, 161, 161, 162, 163,  10, 164, 163,  10,  10, 165, 148, 145, 
+    166,  46,  84,   0,  70,  26,  10, 167, 168,  26,  10, 169, 170, 171, 170, 170, 
+    170, 172, 173,  34, 131,  34,  34,  34, 174, 175, 176,  10,  23, 177,  10,  10, 
+    178,  10,  23,  10,  10, 158,  23, 179,  27,  27,  27,  10,  27,  27, 158,  10, 
+     10,  10, 180,  34, 179,  26,  10,  10, 181,  23, 182,  23, 183, 175, 179, 168, 
+    182, 184,  27, 185,  10,  27,  10, 158,  10,  10,  26,  26, 179,  10,  10,  10, 
+    158,  27, 186, 186, 186, 186,  10,  10,  10, 175, 175,  10,  10, 175,  10,  10, 
+     10,  10,  10,  23,  10,  10, 187,  10,  10,  34,  34,  34,  10,  35,  34,  34, 
+     27,  27,  27,  27,  27,  27,  27, 188,  27,  26,  10,  10, 186, 158,  10,  10, 
+    189,  27, 158,  10, 186, 186,  10, 158, 158, 186, 182, 186, 158,  10,  10,  10, 
+    186, 158,  10,  23,  10, 178, 175, 186,  10,  27,  10, 185, 185,  10,  10,  10, 
+    189, 189, 188, 189,  10,  10,  10, 186,  10,  27,  27, 189, 189,  10,  27,  27, 
+     10,  23, 190, 191, 136,  10, 192, 192, 192, 193,  27,  27,  27,  10,  10,  10, 
+     10, 187,  35,  36,  10, 194, 192, 192,  11, 195, 195, 195, 195, 195, 196,  10, 
+     10,  10, 192,  10,  10,  10,  10, 197,  10, 168, 198,  34,  10,  10,  10,  38, 
+     65,  34, 199, 200,  10,  70,  34,  77, 201,  34,  34,  73,  10,  35,  10,  35, 
+    202, 202, 202, 203, 148, 204, 205, 206, 207, 192, 208, 209, 210,  34,  34,  34, 
+    211, 211, 211, 211, 211, 211, 212, 211, 211,  34,  34,  34, 211, 213,  34,  34, 
+    211, 211, 211,  34, 214, 215, 192, 192, 216, 192, 192, 217, 211, 211, 218,   0, 
+    211, 211, 219, 220, 221, 222, 215, 211, 219, 211, 211, 211, 219, 222, 211, 223, 
+    211, 224, 225, 226, 227, 222, 215, 211, 211, 228, 219, 226,  34, 229, 211, 211, 
+    211, 211, 211, 213, 229, 211, 211, 211, 211, 211, 211, 230, 211, 211, 230,  34, 
+    231, 231, 231, 231, 211, 211,  27,  27, 211, 215, 211, 211, 211, 211, 211, 232, 
+    211, 230,  34,  34,  10,  10,  10, 233,   7,   7,  57,  34, 146,  34,  34,  39, 
+    234, 148,  34,  34,  70,  34,  34,  34,  34,  34,  32,  10, 120, 120,  38,  10, 
+     38,   0,  10,  34,  10,  10, 235,  34,  10, 236,  34,  34,  39,  10,  10,  10, 
+      0, 131,  34, 237,  39,  10,  10,  34,  10,  60,   0, 238,  10,  38,   0,   0, 
+      0,  34,  34,  77, 124, 124, 124, 239,  38,   0,   0,   0,  53, 129, 130,  37, 
+      7,   7, 107,  32,  10,  10,  64,   0,  38,  10,  10,  65,   7,   7, 107, 145, 
+     95,  34,  34,  34,  34,  34, 240,  94,  40,  35,  40,  35,  40,  35,  34,  34, 
+     38,   0, 117,  65, 241, 242, 242, 242, 242, 242, 242, 241, 242, 242, 242, 242, 
+    242, 242, 241, 242, 242, 241, 242, 242, 242,  34,  34,  34, 125, 243, 244, 126, 
+    126, 126, 126,  34, 245, 245, 245, 245, 246, 246, 246, 246,  77,  10,  34, 247, 
+     10,  35,  10,  69,  37,  36,  10,  10,  77,  10,  10,  10,  10,  10,  10, 194, 
+     32,  10,  10,  10,  10,  10,  10, 235, 248, 249, 250,  34, 211, 251, 195, 195, 
+    195, 252, 253, 211, 254, 255, 251, 256, 211, 230, 257,  34,  10,  10,  10, 258, 
+    259, 260, 216, 261, 211, 211, 262, 263, 211, 211, 264, 265, 211, 211, 264, 266, 
+    267, 268, 231, 231, 269,  10,  10,  10,  10,  10,  10, 270,  32,  10,  32,  10, 
+     32,  10,  32,  46, 271, 272,  10,  35,  34,  34,  42, 273,  10,  10,  10,  40, 
+     10,  10,  35,  37, 274,  77,  10,  10,  10,  77,  10,  10,  10,  10,  10,  34, 
+     10,  10,  10,  81,  10,  10,  10, 275,  10,  34,  10,  10, 127,  70,  34,  34, 
+     10,  70,  36,  10,  10,  37,  46,  68,  10, 275,  10,  10,  10,  10,  10, 147, 
+     10,  10,  70,  77,  64,  88,  34,   0,  10,  40,  40,  10,  10,  34,  59,  73, 
+    148, 148,  46,  34,  10,  70, 276, 148,  10,  70,  10,  10,  35,  34,  10,  10, 
+     10,  10,  46,  34,  10,  10,   0,   0,   0, 117, 127,  70,  10, 277,   7,   7, 
+      0,   0, 146, 149,  35,  34,  34,  34, 148,  34,  34,  34,  10,  10, 278, 279, 
+    280, 194, 197,  10,  10,  10, 281,  10, 213,  34,  34,  34,  10,  64,  39,  64, 
+    146,  64,   0,  10,  10,  10,  60,  39,  60,  61,  34,  34,  66,  78,  40,  36, 
+     10,  10,  37,  40,  10,  40,  10,  10,  10,  37,  35,  40,  10,  36,  10,  36, 
+     10,  10,  37,  35,  10,  69,  32,  10,  10,  10,  10,  74,   7,   7,   7,   7, 
+     40,  10,  10,  35,  27,  27, 282,  34,  27,  27,  27, 283,  27,  27, 198,  34, 
+     34,  32,  10,  10, 230,  34,  34,  34, 211, 211, 232,  34,  10,  37,  10,  10, 
+     10,  36,  35,  34,  10,  10,  40,  46,  34,  34,  77,  10,  36,  69,  69,  35, 
+     10,  70,  10,  90,  46,  40,  10,  10,  80,  34,  34,  34, 246, 246, 246, 284, 
+};
+
+RE_UINT8 re_line_break_stage_5[] = {
+    17, 17, 17, 17, 17, 19, 23, 21, 21, 22, 17, 17, 20,  7,  4, 13, 
+    10, 11, 13,  4,  2, 37, 13, 10,  9, 16,  9,  8, 12, 12, 12, 12, 
+    12, 12,  9,  9, 13, 13, 13,  7, 13, 13, 13, 13, 13, 13, 13,  2, 
+    10, 37, 13, 13, 19,  3, 13, 17, 17, 30, 17, 17,  5,  2, 11, 10, 
+    10, 10, 13, 26, 26, 13, 26,  4, 13, 19, 13, 13, 11, 10, 26, 26, 
+    18, 13, 26, 26, 26, 26, 26,  4, 26, 26, 26,  2, 13, 13, 13, 26, 
+    18, 26, 26, 26, 18, 26, 13, 13, 26, 13, 13, 13, 26, 26, 26, 26, 
+    13, 26, 13, 18, 17, 17, 17,  5,  5,  5,  5,  5,  5,  5,  5, 17, 
+     0,  0, 13, 13, 13, 13,  9,  0,  0,  0,  0,  0, 13, 13, 13,  0, 
+    13,  0, 13, 13, 13, 13,  0, 13, 13, 13, 13, 17, 17, 17, 13, 13, 
+     0, 13, 13, 13,  0,  9, 19,  0,  0, 17, 17, 17, 17, 17, 19, 17, 
+    13, 17, 17, 13, 17, 17,  7, 17, 13,  0,  0,  0, 13, 11, 11, 11, 
+     9,  9, 13, 13, 17, 17, 17,  7,  0,  0,  7,  7, 12, 12, 11, 12, 
+    12, 13, 13, 13, 17, 13, 13, 13,  7, 13, 17, 17, 17, 13, 13, 17, 
+    17, 13, 17, 17, 12, 12, 13, 13, 13, 17, 13, 13, 17, 17, 17,  0, 
+    13, 13, 17, 17, 17, 13,  0,  0,  9,  7, 13,  0, 17, 17, 13, 17, 
+    13, 17, 17, 17, 17, 17,  0,  0,  0,  0, 13,  0, 19, 19, 12, 12, 
+    13,  0,  0, 13, 13,  0, 13,  0, 13, 13,  0,  0, 17,  0,  0, 17, 
+    17, 17, 13,  0,  0,  0,  0, 17,  0,  0, 12, 12, 13, 13, 11, 11, 
+    13, 11, 13, 10,  0,  0,  0, 13,  0, 13, 13,  0, 17,  0, 17, 17, 
+     0, 17,  0,  0, 13, 17,  0,  0, 17, 17,  0, 17,  0, 10,  0,  0, 
+     0,  0, 17, 17,  0,  0, 17, 13, 13, 10, 13,  0,  0, 13, 17, 17, 
+     0, 17, 17,  0,  0, 11, 13, 13,  0, 13,  0,  0,  0,  0, 17,  0, 
+    17,  0, 17,  0,  0, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25,  0, 
+     0,  0,  0, 10, 25, 25, 25, 13, 12, 12, 19, 19,  0, 25, 25,  0, 
+    25,  0,  0, 25, 25,  0, 25,  0,  0, 25,  0,  0,  0, 25,  0, 25, 
+     0,  0, 25, 25, 25, 25,  0, 25, 25, 25,  0,  0, 12, 12,  0,  0, 
+    13, 18, 18, 18, 18, 13, 18, 18,  5, 18, 18, 19,  5,  7,  7,  7, 
+     7,  7,  5, 13,  7, 13, 13, 13, 19, 17, 13, 17, 13, 17,  2,  3, 
+     2,  3, 17, 17, 17, 17, 17, 19, 17, 19, 17, 17, 17,  0, 19, 19, 
+    13, 13, 17, 13, 18, 18, 19, 18, 13,  5,  5,  0, 12, 12, 25, 25, 
+    32, 32, 32, 32, 33, 33, 33, 33, 34, 34, 34, 34, 19, 13, 13, 13, 
+     3,  0,  0,  0, 13, 13, 13, 19, 19, 19, 13, 13, 17,  0,  0,  0, 
+    17, 19, 19,  0, 13,  0, 17, 17, 19, 19,  6, 25, 19, 13, 19, 10, 
+    13, 13,  7,  7, 19, 19, 18, 13,  7,  7, 13, 17, 17, 17,  5,  0, 
+    13, 17, 13,  0,  7,  7, 12, 12, 25,  0,  0,  0, 12, 12, 25,  0, 
+    25,  0,  0, 17, 13, 19, 19, 19, 17, 17, 17, 13,  0,  0,  0, 19, 
+    19, 19, 19, 19, 13, 13, 19, 19, 13, 13, 17,  0,  0, 13,  0, 13, 
+    13, 18, 13,  0, 19, 19, 19,  5, 19, 19, 19, 29, 19,  5, 19, 19, 
+    27, 26, 26, 13,  4,  4,  2,  4, 26, 26, 13, 13, 15, 15, 15, 19, 
+    21, 21, 17, 17, 11, 11, 11, 11, 13,  4,  4, 26,  6,  6, 13, 13, 
+     9,  2,  3,  6, 13, 13, 19, 13, 31, 13, 13, 13, 13,  2,  3, 26, 
+    13, 26, 26, 26, 13,  2,  3,  0, 10, 10, 10, 10, 10, 10, 10, 11, 
+    10, 10, 11, 10, 10, 10,  0,  0, 13, 13, 13, 11, 13, 26, 13, 13, 
+    13, 11, 13, 13, 13, 13, 10, 13, 13, 26, 26, 13, 13, 13, 26, 13, 
+    13, 26,  0,  0, 26, 13, 26, 26, 26, 13, 13, 26, 13, 26, 10, 10, 
+    13, 26, 13, 26, 26, 13, 26, 13, 13, 13, 26, 26, 13,  2,  3, 13, 
+    26, 26, 26, 13, 26, 26, 13, 26, 13, 13, 13,  4,  4,  4,  4, 13, 
+     2,  3,  2,  3,  2,  3, 26, 26, 13, 13,  2,  3,  3,  2,  3,  2, 
+     3, 13, 13, 13,  2,  3, 13, 13, 26, 26,  0,  0,  0,  7, 19, 19, 
+    19, 13,  7, 19, 19,  0,  0,  0,  4,  4,  4,  4,  4,  4, 19, 19, 
+    19, 19, 13, 19,  2, 19, 13, 13,  4,  4, 13, 13,  4,  4,  2,  3, 
+     2,  3, 19, 19, 19, 19,  7, 13, 19, 19,  0,  0, 14, 14, 14, 14, 
+    14, 14,  0, 14, 14, 14,  0,  0, 14,  3,  3, 14, 14,  6, 14, 14, 
+     2,  3, 14, 14,  6,  2,  3,  3, 14, 14, 17, 17, 14, 14, 14,  6, 
+     6, 14, 14, 14,  0,  6, 14,  6, 14,  6, 14,  6, 14, 14,  6, 14, 
+    14,  6,  6,  0,  0, 17, 17,  6,  6,  6,  6, 14,  6,  6, 14,  6, 
+    14,  6,  6, 14,  0, 14, 14, 14, 14, 14, 14,  0,  6,  6,  6,  6, 
+    14,  0,  0,  0, 13, 19,  7, 19, 17, 17, 13, 19, 11, 13,  0,  0, 
+    18, 18,  7,  7,  0,  0, 19, 19, 17, 17, 19, 19, 32,  0,  0,  0, 
+     0,  0,  0, 25, 35, 36, 36, 36, 36, 36, 36, 36, 33, 33, 33,  0, 
+     0,  0,  0, 34, 28, 28, 28, 28,  1,  1,  1,  1,  0, 13, 17, 13, 
+     9,  3,  3,  9,  9,  7,  7,  2,  3, 15,  0,  0, 14,  2,  3,  2, 
+     3, 14, 14,  2,  3, 14, 14, 14,  3, 14,  3,  0,  6,  6,  7,  7, 
+     3,  2,  3, 14, 14, 10, 11, 14, 13,  0,  0, 31,  0,  7, 14, 14, 
+    10, 11, 14, 14,  3, 14,  3, 14, 14, 14,  6,  6, 14, 14, 14,  7, 
+    14, 14, 14,  2, 14,  3, 14, 14, 14,  3, 14,  2,  3,  3,  2,  3, 
+     3,  6, 13,  6,  6, 13, 13, 13, 13, 13,  6,  6, 11, 10, 14, 14, 
+    14, 10, 10,  0, 24, 26,  0,  0, 19, 19, 19,  0, 13, 13,  0, 19, 
+     0, 19, 19, 19, 13, 13, 12, 12,  2,  2,  2,  3,  3,  3, 13, 13, 
+    13, 13,  3, 13, 13,  2,  3,  3, 26, 26, 26,  0, 26, 26, 13,  0, 
+     1,  1,  0,  0, 
+};
+
+/* Line_Break: 8100 bytes. */
+
+RE_UINT32 re_get_line_break(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 12;
+    code = ch ^ (f << 12);
+    pos = ((RE_UINT32)re_line_break_stage_1[f] << 5);
+    f = code >> 7;
+    code ^= (f << 7);
+    pos = ((RE_UINT32)re_line_break_stage_2[pos + f] << 3);
+    f = code >> 4;
+    code ^= (f << 4);
+    pos = ((RE_UINT32)re_line_break_stage_3[pos + f] << 2);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_line_break_stage_4[pos + f] << 2);
+    value = re_line_break_stage_5[pos + code];
+
+    return value;
+}
+
+/* Numeric_Type. */
+
+RE_UINT8 re_numeric_type_stage_1[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 11, 11, 11, 12, 
+    13, 14, 15, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 16, 11, 17, 
+    18, 11, 19, 20, 11, 11, 21, 11, 11, 11, 11, 11, 11, 11, 11, 22, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+};
+
+RE_UINT8 re_numeric_type_stage_2[] = {
+     0,  1,  1,  1,  1,  1,  2,  3,  1,  4,  5,  6,  7,  8,  9, 10, 
+    11,  1,  1, 12,  1,  1, 13, 14, 15, 16, 17, 18, 19,  1,  1,  1, 
+    20, 21,  1,  1, 22,  1,  1, 23,  1,  1,  1,  1, 24,  1,  1,  1, 
+    25, 26, 27,  1, 28,  1,  1,  1, 29,  1,  1, 30,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 31, 32, 
+     1, 33,  1, 34,  1,  1, 35,  1, 36,  1,  1,  1,  1,  1, 37, 38, 
+     1,  1, 39, 40,  1,  1,  1, 41,  1,  1,  1,  1,  1,  1,  1, 42, 
+     1,  1,  1, 43,  1,  1, 44,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+    45,  1,  1,  1, 46,  1,  1,  1,  1,  1,  1,  1, 47, 48,  1,  1, 
+     1,  1,  1,  1,  1,  1, 49,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1, 50,  1, 51, 52, 53, 54,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1, 55,  1,  1,  1,  1,  1, 15, 
+     1, 56,  1, 57, 58,  1,  1,  1, 59, 60, 61, 62,  1,  1, 63,  1, 
+    64,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1, 65,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1, 66,  1,  1,  1, 67,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1, 68,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+    69, 70,  1,  1,  1,  1,  1,  1,  1, 71, 72, 73,  1,  1,  1,  1, 
+     1,  1,  1, 74,  1,  1,  1,  1,  1, 75,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 76,  1,  1,  1,  1, 
+     1,  1, 77,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1, 74,  1,  1,  1,  1,  1,  1,  1, 
+};
+
+RE_UINT8 re_numeric_type_stage_3[] = {
+     0,  1,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  3,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  3,  0, 
+     0,  0,  0,  4,  0,  0,  0,  5,  0,  0,  0,  4,  0,  0,  0,  4, 
+     0,  0,  0,  6,  0,  0,  0,  7,  0,  0,  0,  8,  0,  0,  0,  4, 
+     0,  0,  0,  9,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  1,  0, 
+     0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  3,  0,  1,  0,  0,  0, 
+     0,  0,  0, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 12, 
+     0,  0,  0,  0,  0,  0,  0, 13,  1,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  4,  0,  0,  0, 14,  0,  0,  0,  0,  0, 15,  0,  0,  0, 
+     0,  0,  1,  0,  0,  1,  0,  0,  0,  0, 15,  0,  0,  0,  0,  0, 
+     0,  0,  0, 16, 17,  0,  0,  0,  0,  0, 18, 19, 20,  0,  0,  0, 
+     0,  0,  0, 21, 22,  0,  0, 23,  0,  0,  0, 24, 25,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0, 26, 27, 28,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0, 29,  0,  0,  0,  0, 30, 31,  0, 30, 31,  0,  0, 
+    32,  0,  0,  0, 33,  0,  0,  0,  0, 34,  0,  0,  0,  0,  0,  0, 
+     0,  0, 35,  0,  0,  0,  0,  0, 36,  0, 26,  0, 37, 38, 39, 40, 
+    35,  0,  0, 41,  0,  0,  0,  0, 42,  0, 43, 44,  0,  0,  0,  0, 
+     0,  0, 45,  0,  0,  0, 46,  0,  0,  0,  0,  0,  0,  0, 47,  0, 
+     0,  0,  0,  0,  0,  0,  0, 48,  0,  0,  0, 49,  0,  0,  0, 50, 
+    51,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 52, 
+     0,  0, 53,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 54,  0, 
+    43,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 55,  0,  0,  0, 
+     0,  0,  0, 52,  0,  0,  0,  0,  0,  0,  0,  0, 43,  0,  0,  0, 
+     0, 53,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 56,  0,  0, 
+     0, 41,  0,  0,  0,  0,  0,  0,  0, 57, 58, 59,  0,  0,  0, 55, 
+     0,  3,  0,  0,  0,  0,  0, 60,  0, 61,  0,  0,  0,  0,  1,  0, 
+     3,  0,  0,  0,  0,  0,  1,  0,  0,  0,  1,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0, 62,  0, 54, 63, 26, 
+    64, 65, 19, 66, 34,  0,  0,  0,  0, 67, 68,  0,  0,  0, 69,  0, 
+     0,  0,  0,  0,  0,  3,  0,  0,  0,  0, 70,  0,  0,  0,  0,  0, 
+    71,  0,  0,  0,  0,  0,  0,  0,  0,  0, 72, 73,  0,  0,  0,  0, 
+     0,  0, 70, 70,  0,  0,  0,  0,  0,  0,  0, 74,  0,  0,  0,  0, 
+     0,  0, 75, 76,  0,  0,  0,  0, 19, 77, 78, 79,  0,  0,  0,  0, 
+     0,  0,  0, 80,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 81, 82, 
+    83,  0,  0,  0,  0,  0,  0,  0, 57,  0,  0, 42,  0,  0,  0, 84, 
+     0, 57,  0,  0,  0,  0,  0,  0,  0, 34,  0,  0, 85,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0, 86, 87,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0, 41,  0,  0,  0,  0,  0,  0,  0, 59,  0,  0,  0, 
+    47,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 35,  0,  0,  0,  0, 
+};
+
+RE_UINT8 re_numeric_type_stage_4[] = {
+     0,  0,  0,  0,  0,  0,  1,  2,  0,  0,  3,  4,  1,  2,  0,  0, 
+     5,  1,  0,  0,  5,  1,  6,  7,  5,  1,  8,  0,  5,  1,  9,  0, 
+     5,  1,  0, 10,  5,  1, 11,  0,  1, 12, 13,  0,  0, 14, 15, 16, 
+     0, 17, 18,  0,  1,  2, 19,  7,  0,  0,  1, 20,  1,  2,  1,  2, 
+     0,  0, 21, 22, 23, 22,  0,  0,  0,  0, 19, 19, 19, 19, 19, 19, 
+    24,  7,  0,  0, 23, 25, 26, 27, 19, 23, 25, 13,  0, 28, 29, 30, 
+     0,  0, 31, 32, 23, 33, 34,  0,  0,  0,  0, 35, 36,  0,  0,  0, 
+    37,  7,  0,  9,  0,  0, 38,  0, 19,  7,  0,  0,  0,  0, 37, 19, 
+    35,  0,  0,  0, 39,  0,  0,  0,  0, 40,  0,  0,  0, 35,  0,  0, 
+    41, 42,  0,  0,  0, 43, 44,  0,  0,  0,  0, 36, 18,  0,  0, 36, 
+     0, 18,  0,  0,  0,  0, 18,  0, 43,  0,  0,  0, 45,  0,  0,  0, 
+     0, 46,  0,  0, 47, 43,  0,  0, 48,  0,  0,  0,  0,  0,  0, 39, 
+     0,  0, 42, 42,  0,  0,  0, 40,  0,  0,  0, 17,  0, 49, 18,  0, 
+     0,  0,  0, 45,  0, 43,  0,  0,  0,  0, 40,  0,  0,  0, 45,  0, 
+     0, 45, 39,  0, 42,  0,  0,  0, 45, 43,  0,  0,  0,  0,  0, 18, 
+    17, 19,  0,  0,  0,  0, 11,  0,  0, 39, 39, 18,  0,  0, 50,  0, 
+    36, 19, 19, 19, 19, 19, 13,  0, 19, 19, 19, 18, 13,  0,  0,  0, 
+    42, 40,  0,  0,  0,  0, 51,  0,  0,  0,  0, 19,  0,  0, 17, 13, 
+    52,  0,  0,  0,  0,  0,  0, 53, 23, 25, 19, 10,  0,  0, 54, 55, 
+    56,  1,  0,  0, 19, 19, 57, 19, 19, 19, 11, 19,  9,  0,  0,  0, 
+    19, 19,  7,  0,  0,  5,  1,  1,  1,  1,  1,  1, 23, 58,  0,  0, 
+    40,  0,  0,  0, 39, 43,  0, 43,  0, 40,  0, 35,  0,  0,  0, 42, 
+};
+
+RE_UINT8 re_numeric_type_stage_5[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 
+    0, 2, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 3, 3, 
+    0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 
+    0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 
+    3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 
+    0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 
+    1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 
+    3, 3, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 2, 2, 2, 
+    2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 
+    1, 1, 1, 0, 0, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 
+    0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 
+    2, 2, 2, 2, 2, 2, 1, 2, 0, 0, 0, 0, 0, 0, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 
+    2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 
+    0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 
+    0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 
+    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 
+    0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 
+    0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 
+    0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 
+    0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 
+    2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 
+    0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 0, 0, 1, 1, 1, 1, 
+    2, 2, 2, 0, 0, 0, 0, 0, 
+};
+
+/* Numeric_Type: 2088 bytes. */
+
+RE_UINT32 re_get_numeric_type(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 12;
+    code = ch ^ (f << 12);
+    pos = ((RE_UINT32)re_numeric_type_stage_1[f] << 4);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_numeric_type_stage_2[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_numeric_type_stage_3[pos + f] << 2);
+    f = code >> 3;
+    code ^= (f << 3);
+    pos = ((RE_UINT32)re_numeric_type_stage_4[pos + f] << 3);
+    value = re_numeric_type_stage_5[pos + code];
+
+    return value;
+}
+
+/* Numeric_Value. */
+
+RE_UINT8 re_numeric_value_stage_1[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 11, 11, 11, 12, 
+    13, 14, 15, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 16, 11, 17, 
+    18, 11, 19, 20, 11, 11, 21, 11, 11, 11, 11, 11, 11, 11, 11, 22, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+};
+
+RE_UINT8 re_numeric_value_stage_2[] = {
+     0,  1,  1,  1,  1,  1,  2,  3,  1,  4,  5,  6,  7,  8,  9, 10, 
+    11,  1,  1, 12,  1,  1, 13, 14, 15, 16, 17, 18, 19,  1,  1,  1, 
+    20, 21,  1,  1, 22,  1,  1, 23,  1,  1,  1,  1, 24,  1,  1,  1, 
+    25, 26, 27,  1, 28,  1,  1,  1, 29,  1,  1, 30,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 31, 32, 
+     1, 33,  1, 34,  1,  1, 35,  1, 36,  1,  1,  1,  1,  1, 37, 38, 
+     1,  1, 39, 40,  1,  1,  1, 41,  1,  1,  1,  1,  1,  1,  1, 42, 
+     1,  1,  1, 43,  1,  1, 44,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+    45,  1,  1,  1, 46,  1,  1,  1,  1,  1,  1,  1, 47, 48,  1,  1, 
+     1,  1,  1,  1,  1,  1, 49,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1, 50,  1, 51, 52, 53, 54,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1, 55,  1,  1,  1,  1,  1, 15, 
+     1, 56,  1, 57, 58,  1,  1,  1, 59, 60, 61, 62,  1,  1, 63,  1, 
+    64,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1, 65,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1, 66,  1,  1,  1, 67,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1, 68,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+    69, 70,  1,  1,  1,  1,  1,  1,  1, 71, 72, 73,  1,  1,  1,  1, 
+     1,  1,  1, 74,  1,  1,  1,  1,  1, 75,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 76,  1,  1,  1,  1, 
+     1,  1, 77,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1, 78,  1,  1,  1,  1,  1,  1,  1, 
+};
+
+RE_UINT8 re_numeric_value_stage_3[] = {
+      0,   1,   0,   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   3,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   3,   0, 
+      0,   0,   0,   4,   0,   0,   0,   5,   0,   0,   0,   4,   0,   0,   0,   4, 
+      0,   0,   0,   6,   0,   0,   0,   7,   0,   0,   0,   8,   0,   0,   0,   4, 
+      0,   0,   0,   9,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,   1,   0, 
+      0,  10,   0,   0,   0,   0,   0,   0,   0,   0,   3,   0,   1,   0,   0,   0, 
+      0,   0,   0,  11,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  12, 
+      0,   0,   0,   0,   0,   0,   0,  13,   1,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   4,   0,   0,   0,  14,   0,   0,   0,   0,   0,  13,   0,   0,   0, 
+      0,   0,   1,   0,   0,   1,   0,   0,   0,   0,  13,   0,   0,   0,   0,   0, 
+      0,   0,   0,  15,   3,   0,   0,   0,   0,   0,  16,  17,  18,   0,   0,   0, 
+      0,   0,   0,  19,  20,   0,   0,  21,   0,   0,   0,  22,  23,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,  24,  25,  26,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,  27,   0,   0,   0,   0,  28,  29,   0,  28,  30,   0,   0, 
+     31,   0,   0,   0,  32,   0,   0,   0,   0,  33,   0,   0,   0,   0,   0,   0, 
+      0,   0,  34,   0,   0,   0,   0,   0,  35,   0,  36,   0,  37,  38,  39,  40, 
+     41,   0,   0,  42,   0,   0,   0,   0,  43,   0,  44,  45,   0,   0,   0,   0, 
+      0,   0,  46,   0,   0,   0,  47,   0,   0,   0,   0,   0,   0,   0,  48,   0, 
+      0,   0,   0,   0,   0,   0,   0,  49,   0,   0,   0,  50,   0,   0,   0,  51, 
+     52,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  53, 
+      0,   0,  54,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  55,   0, 
+     56,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  57,   0,   0,   0, 
+      0,   0,   0,  58,   0,   0,   0,   0,   0,   0,   0,   0,  59,   0,   0,   0, 
+      0,  60,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  61,   0,   0, 
+      0,  62,   0,   0,   0,   0,   0,   0,   0,  63,  64,  65,   0,   0,   0,  66, 
+      0,   3,   0,   0,   0,   0,   0,  67,   0,  68,   0,   0,   0,   0,   1,   0, 
+      3,   0,   0,   0,   0,   0,   1,   0,   0,   0,   1,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,  69,   0,  70,  71,  72, 
+     73,  74,  75,  76,  77,   0,   0,   0,   0,  78,  79,   0,   0,   0,  80,   0, 
+      0,   0,   0,   0,   0,   3,   0,   0,   0,   0,  81,   0,   0,   0,   0,   0, 
+     82,   0,   0,   0,   0,   0,   0,   0,   0,   0,  83,  84,   0,   0,   0,   0, 
+      0,   0,  85,  85,   0,   0,   0,   0,   0,   0,   0,  86,   0,   0,   0,   0, 
+      0,   0,  87,  88,   0,   0,   0,   0,  89,  90,  91,  92,   0,   0,   0,   0, 
+      0,   0,   0,  93,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  94,  95, 
+     96,   0,   0,   0,   0,   0,   0,   0,  97,   0,   0,  98,   0,   0,   0,  99, 
+      0, 100,   0,   0,   0,   0,   0,   0,   0, 101,   0,   0, 102,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0, 103, 104,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,  62,   0,   0,   0,   0,   0,   0,   0, 105,   0,   0,   0, 
+    106,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 107,   0,   0,   0,   0, 
+      0,   0,   0,   0, 108,   0,   0,   0, 
+};
+
+RE_UINT8 re_numeric_value_stage_4[] = {
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   2,   3,   0, 
+      0,   0,   0,   0,   4,   0,   5,   6,   1,   2,   3,   0,   0,   0,   0,   0, 
+      0,   7,   8,   9,   0,   0,   0,   0,   0,   7,   8,   9,   0,  10,  11,   0, 
+      0,   7,   8,   9,  12,  13,   0,   0,   0,   7,   8,   9,  14,   0,   0,   0, 
+      0,   7,   8,   9,   0,   0,   1,  15,   0,   7,   8,   9,  16,  17,   0,   0, 
+      1,   2,  18,  19,  20,   0,   0,   0,   0,   0,  21,   2,  22,  23,  24,  25, 
+      0,   0,   0,  26,  27,   0,   0,   0,   1,   2,   3,   0,   1,   2,   3,   0, 
+      0,   0,   0,   0,   1,   2,  28,   0,   0,   0,   0,   0,  29,   2,   3,   0, 
+      0,   0,   0,   0,  30,  31,  32,  33,  34,  35,  36,  37,  34,  35,  36,  37, 
+     38,  39,  40,   0,   0,   0,   0,   0,  34,  35,  36,  41,  42,  34,  35,  36, 
+     41,  42,  34,  35,  36,  41,  42,   0,   0,   0,  43,  44,  45,  46,   2,  47, 
+      0,   0,   0,   0,   0,  48,  49,  50,  34,  35,  51,  49,  50,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,  52,   0,  53,   0,   0,   0,   0,   0,   0, 
+     21,   2,   3,   0,   0,   0,  54,   0,   0,   0,   0,   0,  48,  55,   0,   0, 
+     34,  35,  56,   0,   0,   0,   0,   0,   0,   0,   0,   0,  57,  58,  59,  60, 
+      0,   0,   0,   0,  61,  62,  63,  64,   0,  65,   0,   0,   0,   0,   0,   0, 
+     66,   0,   0,   0,   0,   0,   0,   0,   0,   0,  67,   0,   0,   0,   0,   0, 
+      0,   0,   0,  68,   0,   0,   0,   0,  69,  70,  71,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,  72,   0,   0,   0,  73,   0,  74,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,  75,  76,   0,   0,   0,   0,   0,   0,  77, 
+      0,   0,  78,   0,   0,   0,   0,   0,   0,   0,   0,  65,   0,   0,   0,   0, 
+      0,   0,   0,   0,  79,   0,   0,   0,   0,  80,   0,   0,   0,   0,   0,   0, 
+      0,  81,   0,   0,   0,   0,   0,   0,   0,   0,  82,  83,   0,   0,   0,   0, 
+     84,  85,   0,  86,   0,   0,   0,   0,  87,  78,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,  88,   0,   0,   0,   0,   0,   5,   0,   5,   0, 
+      0,   0,   0,   0,   0,   0,  89,   0,   0,   0,   0,   0,   0,   0,   0,  90, 
+      0,   0,   0,  15,  73,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  91, 
+      0,   0,   0,  92,   0,   0,   0,   0,   0,   0,   0,   0,  93,   0,   0,   0, 
+      0,  93,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  94,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0,  95,   0,  96,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,  25,   0,   0,   0,   0,   0,   0,   0,  97,  66,   0,   0,   0, 
+      0,   0,   0,   0,  73,   0,   0,   0,  98,   0,   0,   0,   0,   0,   0,   0, 
+      0,  99,   0,  79,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 100,   0, 
+      0,   0,   0,   0,   0, 101,   0,   0,   0,  48,  49, 102,   0,   0,   0,   0, 
+      0,   0,   0,   0, 103, 104,   0,   0,   0,   0, 105,   0, 106,   0,  73,   0, 
+      0,   0,   0,   0, 101,   0,   0,   0,   0,   0,   0,   0, 107,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0, 108,   0, 109,   8,   9, 110, 111, 112, 113, 
+    114, 115, 116, 117, 118,   0,   0,   0, 119, 120, 121, 122, 123, 124, 125, 126, 
+    127, 128, 129, 130, 122, 131, 132,   0,   0,   0, 101,   0,   0,   0,   0,   0, 
+    133,   0,   0,   0,   0,   0,   0,   0, 134,   0, 135,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0, 136, 137,   0,   0,   0,   0,   0,   0,   0,   0, 138, 139, 
+      0,   0,   0,   0,   0, 140, 141,   0,  34, 142,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0,   0,   0, 143,   0,   0,   0,   0,   0,   0,  34, 142, 
+     34,  35, 144, 145, 146, 147, 148, 149,   0,   0,   0,   0,  48,  49,  50, 150, 
+    151, 152,   8,   9,   0,   0,   0,   0,   8,   9,  49, 153,  35, 154,   2, 155, 
+    156, 157,   9, 158, 159, 158, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 
+    170,   0,   0,   0,   0,   0,   0,   0,  34,  35, 144, 145, 171,   0,   0,   0, 
+      0,   0,   0,   7,   8,   9,   1,   2, 172,   8,   9,   1,   2, 172,   8,   9, 
+    173,  49, 174,   0,   0,   0,   0,   0,  68,   0,   0,   0,   0,   0,   0,   0, 
+      0, 175,   0,   0,   0,   0,   0,   0,  96,   0,   0,   0,   0,   0,   0,   0, 
+     65,   0,   0,   0,   0,   0,   0,   0,   0,   0,  89,   0,   0,   0,   0,   0, 
+    176,   0,   0,  86,   0,   0,   0,  86,   0,   0,  99,   0,   0,   0,   0,  71, 
+      0,   0,   0,   0,   0,   0,  71,   0,   0,   0,   0,   0,   0,   0,  78,   0, 
+      0,   0,   0,   0,   0,   0, 105,   0,   0,   0,   0, 177,   0,   0,   0,   0, 
+      0,   0,   0,   0, 178,   0,   0,   0, 
+};
+
+RE_UINT8 re_numeric_value_stage_5[] = {
+      0,   0,   0,   0,   2,  23,  25,  27,  29,  31,  33,  35,  37,  39,   0,   0, 
+      0,   0,  25,  27,   0,  23,   0,   0,  11,  15,  19,   0,   0,   0,   2,  23, 
+     25,  27,  29,  31,  33,  35,  37,  39,   3,   6,   9,  11,  19,  46,   0,   0, 
+      0,   0,  11,  15,  19,   3,   6,   9,  40,  85,  94,   0,  23,  25,  27,   0, 
+     40,  85,  94,  11,  15,  19,   0,   0,  37,  39,  15,  24,  26,  28,  30,  32, 
+     34,  36,  38,   1,   0,  23,  25,  27,  37,  39,  40,  50,  60,  70,  80,  81, 
+     82,  83,  84,  85, 103,   0,   0,   0,   0,   0,  47,  48,  49,   0,   0,   0, 
+     37,  39,  23,   0,   2,   0,   0,   0,   7,   5,   4,  12,  18,  10,  14,  16, 
+     20,   8,  21,   6,  13,  17,  22,  23,  23,  25,  27,  29,  31,  33,  35,  37, 
+     39,  40,  41,  42,  80,  85,  89,  94,  94,  98, 103,   0,   0,  33,  80, 107, 
+    112,   2,   0,   0,  43,  44,  45,  46,  47,  48,  49,  50,   0,   0,   2,  41, 
+     42,  43,  44,  45,  46,  47,  48,  49,  50,  23,  25,  27,  37,  39,  40,   2, 
+      0,   0,  23,  25,  27,  29,  31,  33,  35,  37,  39,  40,  39,  40,  23,  25, 
+      0,  15,   0,   0,   0,   0,   0,   2,  40,  50,  60,   0,  27,  29,   0,   0, 
+     39,  40,   0,   0,   0,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61, 
+     62,  63,  64,  65,   0,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76, 
+     77,  78,  79,  80,   0,  31,   0,   0,   0,   0,   0,  25,   0,   0,  31,   0, 
+      0,  35,   0,   0,  23,   0,   0,  35,   0,   0,   0, 103,   0,  27,   0,   0, 
+      0,  39,   0,   0,  25,   0,   0,   0,  31,   0,  29,   0,   0,   0,   0, 113, 
+     40,   0,   0,   0,   0,   0,   0,  94,  27,   0,   0,   0,  85,   0,   0,   0, 
+    113,   0,   0,   0,   0,   0, 114,   0,   0,  25,   0,  37,   0,  33,   0,   0, 
+      0,  40,   0,  94,  50,  60,   0,   0,  70,   0,   0,   0,   0,  27,  27,  27, 
+      0,   0,   0,  29,   0,   0,  23,   0,   0,   0,  39,  50,   0,   0,  40,   0, 
+     37,   0,   0,   0,   0,   0,  35,   0,   0,   0,  39,   0,   0,   0,  85,   0, 
+      0,   0,  29,   0,   0,   0,  25,   0,   0,  94,   0,   0,   0,   0,  33,   0, 
+     33,   0,   0,   0,   0,   0,   2,   0,  35,  37,  39,   2,  11,  15,  19,   3, 
+      6,   9,   0,   0,   0,   0,   0,  27,   0,   0,   0,  40,   0,  33,   0,  33, 
+      0,  40,   0,   0,   0,   0,   0,  23,  40,  50,  60,  70,  80,  81,  82,  83, 
+     84,  85,  86,  87,  88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 
+    100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,  11,  15,  23,  31, 
+     80,  89,  98, 107,  31,  40,  80,  85,  89,  94,  98,  31,  40,  80,  85,  89, 
+     94, 103, 107,  40,  23,  23,  23,  25,  25,  25,  25,  31,  40,  40,  40,  40, 
+     40,  60,  80,  80,  80,  80,  85,  87,  89,  89,  89,  89,  80,  15,  15,  18, 
+     19,   0,   0,   0,  23,  31,  40,  80,   0,  84,   0,   0,   0,   0,  93,   0, 
+      0,  23,  25,  40,  50,  85,   0,   0,  23,  25,  27,  40,  50,  85,  94, 103, 
+      0,   0,  23,  40,  50,  85,  25,  27,  40,  50,  85,  94,   0,  23,  80,   0, 
+     39,  40,  50,  60,  70,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90, 
+     91,  92,  93,  15,  11,  12,  18,   0,  50,  60,  70,  80,  81,  82,  83,  84, 
+     85,  94,   2,  23,  35,  37,  39,  29,  39,  23,  25,  27,  37,  39,  23,  25, 
+     27,  29,  31,  25,  27,  27,  29,  31,  23,  25,  27,  27,  29,  31,   0,   0, 
+     29,  31,  27,  27,  29,  29,  29,  29,  33,  35,  35,  35,  37,  37,  39,  39, 
+     39,  39,  25,  27,  29,  31,  33,  23,  25,  27,  29,  29,  31,  31,   0,   0, 
+     23,  25,  12,  18,  21,  12,  18,   6,  11,   8,  11,   0,  83,  84,   0,   0, 
+     37,  39,   2,  23,   2,   2,  23,  25,  35,  37,  39,   0,  29,   0,   0,   0, 
+      0,   0,   0,  60,   0,  29,   0,   0,  39,   0,   0,   0, 
+};
+
+/* Numeric_Value: 2860 bytes. */
+
+RE_UINT32 re_get_numeric_value(RE_UINT32 ch) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+
+    f = ch >> 12;
+    code = ch ^ (f << 12);
+    pos = ((RE_UINT32)re_numeric_value_stage_1[f] << 4);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_numeric_value_stage_2[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_numeric_value_stage_3[pos + f] << 3);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_numeric_value_stage_4[pos + f] << 2);
+    value = re_numeric_value_stage_5[pos + code];
 
     return value;
 }
@@ -7121,37 +10582,39 @@ RE_UINT32 re_get_white_space(RE_UINT32 ch) {
 /* Alphanumeric. */
 
 RE_UINT8 re_alphanumeric_stage_1[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 10, 12, 13, 10, 
-     3,  3,  3,  3,  3, 14, 10, 15, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 
-    10, 10, 10, 10, 10, 10, 10, 10, 
+    0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+    3, 
 };
 
 RE_UINT8 re_alphanumeric_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
-    16, 17, 18, 17, 17, 17, 19, 20, 21, 17, 22, 22, 22, 22, 22, 22, 
-    22, 22, 22, 22, 22, 22, 23, 22, 22, 22, 22, 22, 22, 22, 22, 22, 
-    22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 
-    22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 24, 
-    22, 22, 25, 26, 27, 28, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 
-    22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 29, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 30, 31, 32, 33, 
-    34, 35, 36, 17, 37, 38, 39, 17, 40, 17, 17, 17, 17, 17, 17, 17, 
-    22, 41, 42, 17, 17, 17, 17, 17, 22, 22, 43, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 22, 44, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 45, 17, 17, 17, 17, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 46, 47, 17, 17, 17, 17, 
-    22, 22, 22, 48, 22, 22, 22, 22, 22, 22, 22, 49, 50, 17, 17, 17, 
-    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 22, 50, 17, 17, 
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 13, 13, 13, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 13, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 23,  7, 24, 25, 13, 13, 13, 13, 13, 13, 13, 26, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
 };
 
 RE_UINT8 re_alphanumeric_stage_3[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
+    16,  1, 17, 18, 19,  1, 20, 21, 22, 23, 24, 25, 26, 27,  1, 28, 
+    29, 30, 31, 31, 32, 31, 31, 31, 31, 31, 31, 31, 33, 34, 35, 31, 
+    36, 37, 31, 31,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1, 38,  1,  1,  1,  1,  1,  1,  1,  1,  1, 39, 
+     1,  1,  1,  1, 40,  1, 41, 42, 43, 44, 45, 46,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 47, 31, 31, 31, 31, 31, 31, 31, 31, 
+    31,  1, 48, 49,  1, 50, 51, 52, 53, 54, 55, 56, 57, 31, 31, 31, 
+    58, 59, 60, 61, 62, 31, 31, 31, 63, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1,  1, 64, 65, 31, 31, 31,  1,  1,  1,  1, 66, 31, 31, 31, 
+     1,  1, 67, 31, 31, 31, 31, 31, 68, 31, 31, 31, 31, 31, 31, 31, 
+    31, 31, 31, 31, 69, 70, 71, 72,  1,  1,  1,  1,  1,  1, 73,  1, 
+     1,  1,  1,  1,  1,  1,  1, 74, 75, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1, 75, 31, 31, 31, 31, 31, 
+};
+
+RE_UINT8 re_alphanumeric_stage_4[] = {
       0,   1,   2,   2,   0,   3,   4,   4,   5,   5,   5,   5,   5,   5,   5,   5, 
       5,   5,   5,   5,   5,   5,   6,   7,   0,   0,   8,   9,  10,  11,   5,  12, 
       5,   5,   5,   5,  13,   5,   5,   5,   5,  14,  15,  16,  17,  18,  19,  20, 
@@ -7160,52 +10623,39 @@ RE_UINT8 re_alphanumeric_stage_3[] = {
      40,  41,  42,  43,  44,  45,  46,  47,  36,  45,  48,  49,  50,  51,  52,  53, 
      54,  55,  56,  47,  57,  55,  58,  59,  57,  60,  61,  62,  63,  64,  65,  66, 
      16,  67,  68,   0,  69,  70,  71,   0,  72,  73,  74,  75,  76,  77,   0,   0, 
-      5,  78,  79,  80,  81,   5,  82,  83,   5,   5,   5,   5,   5,   5,   5,   5, 
-      5,   5,  84,   5,  85,  86,  87,   5,  88,   5,  89,   0,  90,   5,   5,  91, 
-     16,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 
+      5,  78,  79,  80,  81,   5,  82,  83,   5,   5,  84,   5,  85,  86,  87,   5, 
+     88,   5,  89,   0,  90,   5,   5,  91,  16,   5,   5,   5,   5,   5,   5,   5, 
       5,   5,   5,  92,   2,   5,   5,  93,  94,  95,  95,  96,   5,  97,  98,  73, 
       1,   5,   5,  99,   5, 100,   5, 101,  77, 102, 103, 104,   5, 105, 106,   0, 
     107,   5, 108, 109, 106, 110,   0,   0,   5, 111, 112,   0,   5, 113,   5, 114, 
       5, 101, 115, 116,   0,   0,   0, 117,   5,   5,   5,   5,   5,   5,   0,   0, 
-      5,   5,   5,   5,   5,   5,   5,   5, 118,   5, 119, 116,   5, 120, 121, 122, 
-      0,   0,   0, 123, 124,   0,   0,   0, 125, 126, 127,   5, 128,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0, 129,   5,  73,   0,   0,   0,   0,   0,   0,   0,   0, 
-      5, 130, 108,   5,   5,   5,   5, 131,   5,  82,   5, 132, 133, 134, 134,   5, 
-      0, 135,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+    118,   5, 119, 116,   5, 120, 121, 122,   0,   0,   0, 123, 124,   0,   0,   0, 
+    125, 126, 127,   5, 128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      0,   0,   0,   0,   0, 129,   5,  73,   5, 130, 108,   5,   5,   5,   5, 131, 
+      5,  82,   5, 132, 133, 134, 134,   5,   0, 135,   0,   0,   0,   0,   0,   0, 
     136, 137,  16,   5, 138,  16,   5, 139, 140, 141,   5,   5, 142,  67,   0,  26, 
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 101,   0,   0, 
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 143,   0, 
-      5,   5,   5,   5,  31,   0,  26, 116,   5,   5,   5,   5,   5,   5,   5,   5, 
-    144, 143,   5, 145,  99,   5,   5,  90, 146, 147,   5,   5, 148,  73,   0, 149, 
-    150,  17,   5,  95,   5,   5, 151, 152,   5, 100, 153,  77,   5, 154, 155,   0, 
-      5, 133, 156, 157,   5, 108, 158,   0, 159, 160,   0,   0,   0,   0,   5, 161, 
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 162, 163, 107, 
-      0,   0,   0,   0,   0,   0,   0,   0,   5,   5,   5,   5,   5,   5,   5,   5, 
+      5,   5,   5,   5,   5, 101,   0,   0,   5,   5,   5,   5,   5,   5, 143,   0, 
+      5,   5,   5,   5,  31,   0,  26, 116, 144, 143,   5, 145,  99,   5,   5,  90, 
+    146, 147,   5,   5, 148,  73,   0, 149, 150,  17,   5,  95,   5,   5, 151, 152, 
+      5, 100, 153,  77,   5, 154, 155,   0,   5, 133, 156, 157,   5, 108, 158,   0, 
+    159, 160,   0,   0,   0,   0,   5, 161,   5,   5,   5,   5,   5, 162, 163, 107, 
       5, 164,   5, 164,   5,   5, 165,   0, 166, 167, 168,   5,   5,  28, 169,   5, 
-      5,   5,   5,   5,   5,   5,   5,   5,   5, 116,  26,   5, 170,   5,  17, 171, 
-      0,   0,   0, 172,   5,   5,   5,  77,   1,   2,   2, 103,   5, 108, 173,   0, 
-    174, 175, 176,   0,   5,   5,   5,  67,   0,   0,   5,  91,   0,   0,   0,   0, 
-      0,   0,   0,   0,  77,   5, 177,   0, 108,  26, 178,   0, 116,   5, 179,   0, 
-      5,   5,   5,   5, 116,  73,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      5, 116,  26,   5, 170,   5,  17, 171,   0,   0,   0, 172,   5,   5,   5,  77, 
+      1,   2,   2, 103,   5, 108, 173,   0, 174, 175, 176,   0,   5,   5,   5,  67, 
+      0,   0,   5,  91,   0,   0,   0,   0,   0,   0,   0,   0,  77,   5, 177,   0, 
+    108,  26, 178,   0, 116,   5, 179,   0,   5,   5,   5,   5, 116,  73,   0,   0, 
     180, 181, 101,   0,   0,   0,   0,   0, 101, 165,   0,   0,   0,   0,   0,   0, 
     182,  95,   0,  77,   0,   0,   0,   0,   5, 101, 101, 153,   0,   0,   0,   0, 
-      5,   5, 128,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      5,   5, 183,  53, 147,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 142,   0,   0,   0,   0, 
-      5,   5,   5, 184,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      5, 142,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      5,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    185,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      5,   5, 186,   5, 187, 188, 189,   5, 190, 191, 192,   5,   5,   5,   5,   5, 
-      5,   5,   5,   5,   5, 193, 194, 139, 186, 186, 130, 130, 195, 195, 196,   5, 
-      5,   5,   5,   5,   5,   5, 133,   0,   5,   5,   5,   5,   5,   5,   5,   5, 
-      5,   5,   5,   5,   5,   5,   5,   5,   5,  91,   5,   5,   5,   5,   5,   5, 
-    116,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+      5,   5, 128,   0,   0,   0,   0,   0,   5,   5, 183,  53, 147,  32,   0,   0, 
+      5,   5,   5, 142,   0,   0,   0,   0,   5,   5,   5, 184,   0,   0,   0,   0, 
+      5, 142,   0,   0,   0,   0,   0,   0,   5,  32,   0,   0,   0,   0,   0,   0, 
+    185,   0,   0,   0,   0,   0,   0,   0,   5,   5, 186,   5, 187, 188, 189,   5, 
+    190, 191, 192,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 193, 194, 139, 
+    186, 186, 130, 130, 195, 195, 196,   5,   5,   5,   5,   5,   5,   5, 133,   0, 
+      5,  91,   5,   5,   5,   5,   5,   5, 116,   0,   0,   0,   0,   0,   0,   0, 
 };
 
-RE_UINT8 re_alphanumeric_stage_4[] = {
+RE_UINT8 re_alphanumeric_stage_5[] = {
       0,   0,   0,   0,   0,   0, 255,   3, 254, 255, 255,   7,   0,   4,  32,   4, 
     255, 255, 127, 255, 255, 255, 255, 255, 195, 255,   3,   0,  31,  80,   0,   0, 
      32,   0,   0,   0,   0,   0, 223,  60,  64, 215, 255, 255, 251, 255, 255, 255, 
@@ -7258,7 +10708,7 @@ RE_UINT8 re_alphanumeric_stage_4[] = {
     247, 207, 255, 255, 
 };
 
-/* Alphanumeric: 1996 bytes. */
+/* Alphanumeric: 1757 bytes. */
 
 RE_UINT32 re_get_alphanumeric(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -7266,17 +10716,20 @@ RE_UINT32 re_get_alphanumeric(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 13;
-    code = ch ^ (f << 13);
-    pos = ((RE_UINT32)re_alphanumeric_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_alphanumeric_stage_2[pos + f] << 4);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_alphanumeric_stage_1[f] << 5);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_alphanumeric_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_alphanumeric_stage_3[pos + f] << 3);
     f = code >> 5;
     code ^= (f << 5);
-    pos = ((RE_UINT32)re_alphanumeric_stage_3[pos + f] << 5);
+    pos = ((RE_UINT32)re_alphanumeric_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_alphanumeric_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_alphanumeric_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -7289,33 +10742,33 @@ RE_UINT32 re_get_ascii(RE_UINT32 ch) {
 
 RE_UINT8 re_blank_stage_1[] = {
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
+    1, 
 };
 
 RE_UINT8 re_blank_stage_2[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 
-    4, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
 };
 
 RE_UINT8 re_blank_stage_3[] = {
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 
+    4, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+};
+
+RE_UINT8 re_blank_stage_4[] = {
     0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 3, 1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 
     5, 6, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 
 };
 
-RE_UINT8 re_blank_stage_4[] = {
+RE_UINT8 re_blank_stage_5[] = {
       0,   2,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
       0,   0,   0,   0,   1,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0, 
       0,  64,   0,   0,   0,   0,   0,   0, 255,   7,   0,   0,   0, 128,   0,   0, 
       0,   0,   0, 128,   0,   0,   0,   0, 
 };
 
-/* Blank: 236 bytes. */
+/* Blank: 185 bytes. */
 
 RE_UINT32 re_get_blank(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -7323,17 +10776,20 @@ RE_UINT32 re_get_blank(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_blank_stage_1[f] << 5);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
+    pos = ((RE_UINT32)re_blank_stage_1[f] << 3);
+    f = code >> 13;
+    code ^= (f << 13);
+    pos = ((RE_UINT32)re_blank_stage_2[pos + f] << 4);
     f = code >> 9;
     code ^= (f << 9);
-    pos = ((RE_UINT32)re_blank_stage_2[pos + f] << 3);
+    pos = ((RE_UINT32)re_blank_stage_3[pos + f] << 3);
     f = code >> 6;
     code ^= (f << 6);
-    pos = ((RE_UINT32)re_blank_stage_3[pos + f] << 6);
+    pos = ((RE_UINT32)re_blank_stage_4[pos + f] << 6);
     pos += code;
-    value = (re_blank_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_blank_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -7341,37 +10797,145 @@ RE_UINT32 re_get_blank(RE_UINT32 ch) {
 /* Graph. */
 
 RE_UINT8 re_graph_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
+    0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 6, 4, 8, 
+    4, 8, 
 };
 
 RE_UINT8 re_graph_stage_2[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 
-    4, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 6, 5, 7, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13,  7,  7,  7, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 23, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 24,  7, 25, 26, 13, 13, 13, 13, 13, 13, 13, 27, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    28, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 29, 
 };
 
 RE_UINT8 re_graph_stage_3[] = {
-    0, 1, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 3, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 
-    5, 6, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 1, 3, 1, 2, 2, 2, 2, 2, 2, 2, 1, 
+     0,  1,  1,  2,  1,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 
+    14,  1, 15, 16,  1,  1, 17, 18, 19, 20, 21, 22, 23, 24,  1, 25, 
+    26, 27,  1, 28, 29,  1,  1, 30,  1,  1,  1, 31, 32, 33, 34, 35, 
+    36, 37, 38,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1, 39,  1,  1,  1,  1,  1,  1,  1,  1,  1, 40, 
+     1,  1,  1,  1, 41,  1, 42, 43, 44, 45, 46, 47,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 48, 49, 49, 49, 49, 49, 49, 49, 49, 
+     1,  1, 50, 51,  1, 52, 53, 54, 55, 56, 57, 58, 59, 49, 49, 49, 
+    60, 61, 62, 63, 64, 49, 65, 49, 66, 49, 49, 49, 49, 49, 49, 49, 
+     1,  1,  1, 67, 68, 49, 49, 49,  1,  1,  1,  1, 69, 49, 49, 49, 
+     1,  1, 70, 49, 49, 49, 49, 49, 71, 49, 49, 49, 49, 49, 49, 49, 
+    72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 
+     1,  1,  1,  1,  1,  1, 88,  1,  1,  1,  1,  1,  1,  1,  1, 89, 
+    90, 49, 49, 49, 49, 49, 49, 49,  1,  1, 90, 49, 49, 49, 49, 49, 
+    91, 92, 49, 49, 49, 49, 49, 49,  1,  1,  1,  1,  1,  1,  1, 93, 
 };
 
 RE_UINT8 re_graph_stage_4[] = {
-      0,   0,   0,   0, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 127, 
-    255, 255, 255, 255, 255, 255, 255, 255, 254, 255, 255, 255, 255, 255, 255, 255, 
-    255, 191, 255, 255, 255, 255, 255, 255,   0, 248, 255, 255, 255, 124, 255, 255, 
-    255, 255, 255, 127, 255, 255, 255, 255, 
+      0,   1,   2,   3,   0,   1,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 
+      2,   2,   2,   4,   5,   6,   2,   2,   2,   7,   8,   1,   9,   2,  10,  11, 
+     12,   2,   2,   2,   2,   2,   2,   2,  13,   2,  14,   2,   2,  15,   2,  16, 
+      2,  17,  18,   0,   0,   0,   0,   0,   2,   2,   2,  19,  20,  21,  22,  23, 
+     24,  25,  26,  27,  28,  29,  30,  31,  20,  29,  32,  33,  34,  35,  36,  37, 
+     38,  39,  40,  41,  42,  43,  44,  45,  42,  46,  47,  48,  49,  50,  51,  52, 
+      1,  53,  54,   0,  55,  56,  57,   0,   2,   2,  58,  59,  19,  60,  61,   0, 
+      2,   2,   2,   2,   2,   2,  62,  63,   2,   2,  64,   2,  65,  66,  67,   2, 
+     68,   2,  46,  63,  69,   2,   2,  70,   2,   2,   2,   2,  71,   2,   2,  72, 
+     73,  74,  75,  76,   2,   2,  77,  78,  79,   2,   2,  80,   2,  81,   2,  82, 
+     63,  83,  84,  85,   2,  86,  87,   2,  88,   2,   3,  89,  78,  90,   0,   0, 
+      2,   2,  86,  63,   2,  91,   2,  92,   2,  93,  94,   2,   0,   0,  95,  96, 
+      2,   2,   2,   2,   2,   2,   2,  97,  98,   2,  99,  77,   2, 100, 101, 102, 
+    103, 104,   3, 105, 106,  69,  95,  72,   2,   2,   2,   2, 107,   2,   2,   2, 
+      2,   2,   2,   2,   2,   2,   2,  75,   2, 108, 109,   2,   2,   2,   2,   2, 
+      1,   2,   2,   2,   2,   2, 110,   2,   2,   2, 111,   0,   0,   0,   0,   0, 
+      2, 112,   3,   2,   2,   2,   2, 113,   2,  62,   2, 114,  74, 115, 115,   2, 
+      2,  15,   0,   0, 116,   2,   2,  75,   2,   2,   2,   2,   2,   2,  82, 117, 
+      1,   2,   1,   2,   8,   2,   2,   2, 118, 119,   2,   2, 112,  16,   2, 120, 
+      3,   2,   2,   2,   2,   2,   2,   3,   2,   2,   2,   2,   2,  82,   2,   2, 
+      2,   2,   2,   2,   2,   2, 121,   0,   2,   2,   2,   2, 122,   2, 123,   2, 
+      2, 121,   2,  92,  80,   2,   2,  80,   2,   2,   2,   2, 124, 125,   0, 126, 
+      2, 127,   2,  80,   2,   2, 128,  54,   2,   2, 129,  63,   2,   2, 130,   0, 
+      2,  74, 131,  54,   2,   2, 132,   0, 133, 134,   0,   0,   0,   0,   2,  79, 
+      2,   2,   2,   2,   2, 120, 135,  54,   0,   0,   0,   0,   0,   0,   0,   0, 
+      2, 136,   2, 136,   2,   2,  69,   0, 137, 138, 139,   2,   2,   2, 140,   2, 
+      2,   2,  95,   2, 141,   2, 142, 143,  69, 123, 144, 145,   2,   2,   2,  89, 
+      1,   2,   2,   2,   2,   3, 146, 147, 148, 149, 150,   0,   2,   2,   2,  16, 
+    151, 152,   2,   2, 153,   0,  95,  77,   0,   0,   0,   0,  63,   2,  72,   0, 
+      3, 120, 109,   0, 154,   2, 155,   0,   2,   2,   2,   2,  77, 125,   0,   0, 
+    156, 157, 158,   0,   0,   0,   0,   0, 159, 160,   0,   0,   0,   0,   0,   0, 
+    161, 162, 163,   2,   0,   0,   0,   0,   2, 164, 165, 166,   0,   0,   0,   0, 
+      2,   2, 167,   0,   0,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0,   0, 
+      2,   2, 168, 169,   2,   2, 170,   0,   2,   2,   2, 171,   0,   0,   0,   0, 
+      2,   2,   2, 172,   0,   0,   0,   0,   2, 171,   0,   0,   0,   0,   0,   0, 
+      2, 173,   0,   0,   0,   0,   0,   0, 170,   0,   0,   0,   0,   0,   0,   0, 
+      2,   2,   2,   2,   2,   2,   2,  82,   2, 174,   2,   2,   2,   2,  77,   0, 
+      2,   2, 175,   0,   0,   0,   0,   0,   2,   2,  74,  15,   0,   0,   0,   0, 
+      2,   2, 100,   2,  60, 176, 177,   2, 178, 179, 180,   2,   2,   2,   2,   2, 
+      2,   2,   2,   2,   2, 181,   2,   2,   2,   2,   2,   2,   2,   2, 182,   2, 
+      2,  86,   2,   2,  75, 183, 184,   0,  81, 112,   2, 107,  16,   0,   0, 185, 
+    186,  16, 187,   0,   0,   0,   0,   0,   2, 188,   2,  63,  75,   2, 189,  72, 
+      2,   3, 190,   2,   2,   2,   2, 191,   2,  77,  95, 142,   0,   0,   0, 192, 
+    193, 194, 195,   0,   2,   2, 175,   0,   2,   2,   2,  75,   0,   0,   0,   0, 
+      2,   2,   2,   2,   2,   2,  74,   0,   2,  70,   2,   2,   2,   2,   2,   2, 
+     77,   0,   0,   0,   0,   0,   0,   0, 196,   2,   2,   2,   0,   0,   0,   0, 
+      2,   2,   2,   2,   2,   2,   2, 169,   2,   2,   2,   2,   2,   2,   2,  77, 
 };
 
-/* Graph: 284 bytes. */
+RE_UINT8 re_graph_stage_5[] = {
+      0,   0,   0,   0, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 127, 
+    255, 255, 255, 124, 240, 215, 255, 255, 251, 255, 255, 255, 255,   0, 254, 255, 
+    255, 255, 127, 254, 255,   6, 254, 255, 255,   0, 255, 255, 255,   7,  31,   0, 
+    207, 255, 255, 207, 255, 191, 255, 255, 255, 231, 255, 255, 255, 255,   3,   0, 
+    255, 255, 255,   7, 255,  63, 255, 127, 255, 255, 255,  79, 255, 255, 255, 254, 
+    238, 159, 249, 255, 255, 253, 197, 243, 159, 121, 128, 176, 207, 255, 255,  15, 
+    238, 135, 249, 255, 255, 253, 109, 211, 135,  57,   2,  94, 192, 255,  63,   0, 
+    238, 191, 251, 255, 255, 253, 237, 243, 191,  59,   1,   0, 207, 255,   2,   0, 
+    159,  57, 192, 176, 207, 255, 255,   0, 236, 199,  61, 214,  24, 199, 255, 195, 
+    199,  61, 129,   0, 192, 255, 255,   7, 238, 223, 253, 255, 255, 253, 239, 227, 
+    223,  61,  96,   3, 207, 255,   0, 255, 236, 223, 253, 255, 255, 253, 239, 243, 
+    223,  61,  96,  64, 207, 255,   6,   0, 255, 255, 255, 231, 223, 125, 128,   0, 
+    207, 255,  63, 254, 236, 255, 127, 252, 255, 255, 251,  47, 127, 132,  95, 255, 
+      0,   0,  28,   0, 255, 255, 255, 135, 255, 255, 255,  15, 150,  37, 240, 254, 
+    174, 236, 255,  59,  95,  63, 255,  51, 255, 254, 255, 255, 255,  31, 254, 255, 
+    255, 255, 255, 223, 255, 223, 255,   7,  63,   0, 255, 255, 255, 255, 255,  31, 
+    255,  61, 127,  61, 255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 
+    255, 255,  61, 255, 255, 255, 255,   3, 255, 255,  31,   0, 254, 255, 255,  31, 
+    255, 255,   1,   0, 255, 223,  31,   0, 255, 255, 127,   0, 255, 255,  15,   0, 
+    255, 223,  13,   0, 255, 255, 255,  63, 255,   3, 255,   3, 255,  63, 255,   3, 
+    255, 255, 255,   0, 255,   7, 255, 255, 255, 255,  63,   0, 255,  15, 255,  15, 
+    241, 255, 255, 255, 255,  63,  31,   0, 255,  15, 255, 255, 255,   3, 255, 199, 
+    255, 255, 255, 207, 255, 255, 255, 159, 255,  63,   0,   0, 255, 199, 255,   3, 
+    255, 255,  15, 240, 255, 255, 255, 248, 255, 227, 255, 255,   0,   0, 255, 255, 
+    255, 255,   7,   0, 127,   0,   0, 240, 255, 255,  63,  63,  63,  63, 255, 170, 
+    255, 255, 223, 255, 223, 255, 207, 239, 255, 255, 220, 127,   0, 248, 255, 255, 
+    255, 124, 255, 255,  31, 252, 243, 255, 255, 127, 255,  31, 255,   3, 255, 255, 
+    127,   0,   0,   0, 255,   7,   0,   0, 255, 215, 255, 255, 255,  31, 255,   3, 
+    255, 127, 255, 255, 255, 255,   3, 254,  63, 128,   1, 128, 127, 127, 127, 127, 
+    255, 255, 255, 251,   0,   0, 255,  15, 224, 255, 255, 255, 255,  63, 254, 255, 
+     15,   0, 255, 255, 255,  15,   0,   0, 255,  31, 255, 255, 127,   0, 255, 255, 
+    255, 127,   3,   0, 255,   3,   0,   0,   0,   0,   0, 252, 255,  15, 255,   3, 
+     31, 192, 255,   3, 255, 255,  15, 128, 255, 191, 255, 195, 255,  63, 255, 243, 
+      7,   0,   0, 248, 126, 126, 126,   0, 127, 127,   0,   0, 127, 248, 255, 255, 
+    255,  63, 255, 255, 127,   0, 248, 224, 255, 255, 127,  95, 219, 255, 255, 255, 
+      3,   0, 248, 255, 255, 255, 252, 255, 255,   0,   0,   0,   0,   0, 255,  63, 
+    255, 255, 247, 255, 127,  15, 223, 255, 252, 252, 252,  28, 127, 127,   0,  62, 
+    255, 239, 255, 255, 127, 255, 255, 183, 255,  63, 255,  63, 135, 255, 255, 255, 
+    255, 255, 143, 255, 255,   7, 255,  15, 255, 255, 255, 191,  15, 255,  63,   0, 
+     63, 253, 255, 255, 255, 255, 191, 145, 255, 255, 191, 255, 255, 255, 255, 143, 
+    255, 255, 255, 131, 111, 240, 239, 254, 255, 255,  15, 135, 255,   0, 255,   1, 
+    255, 255,  63, 254, 255, 255,  63, 255, 255, 255,   7, 255, 255,   1,   0,   0, 
+    255,  63, 252, 255, 255, 255,   0,   0,   3,   0,   0,   0, 255, 127,   0,   0, 
+      7,   0,  15,   0, 255, 255, 255,   1, 127, 254, 255, 255,  63,   0,   0,   0, 
+    100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123, 
+     95, 252, 253, 255,  63, 255, 255, 255, 255, 207, 255, 255, 255, 127, 254, 127, 
+    254, 255, 254, 255, 192, 255, 255, 255,   7,   0, 255, 255, 255,   1,   3,   0, 
+      1,   0, 191, 255, 223,   7,   0,   0, 253, 255, 255, 255, 255, 255, 255,  30, 
+      0,   0,   0, 248, 254, 255,  93, 117,  63,  47, 239, 255, 225, 255,   0,   0, 
+      2,   0,   0,   0, 
+};
+
+/* Graph: 1958 bytes. */
 
 RE_UINT32 re_get_graph(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -7379,17 +10943,20 @@ RE_UINT32 re_get_graph(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 14;
-    code = ch ^ (f << 14);
-    pos = ((RE_UINT32)re_graph_stage_1[f] << 5);
-    f = code >> 9;
-    code ^= (f << 9);
+    f = ch >> 15;
+    code = ch ^ (f << 15);
+    pos = ((RE_UINT32)re_graph_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
     pos = ((RE_UINT32)re_graph_stage_2[pos + f] << 3);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_graph_stage_3[pos + f] << 6);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_graph_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_graph_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_graph_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_graph_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -7397,34 +10964,144 @@ RE_UINT32 re_get_graph(RE_UINT32 ch) {
 /* Print. */
 
 RE_UINT8 re_print_stage_1[] = {
-    0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 
+    0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 6, 4, 8, 
+    4, 8, 
 };
 
 RE_UINT8 re_print_stage_2[] = {
-    0, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13,  7,  7,  7, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 23, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 24,  7, 25, 26, 13, 13, 13, 13, 13, 13, 13, 27, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    28, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 29, 
 };
 
 RE_UINT8 re_print_stage_3[] = {
-    0, 1, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 4, 1, 
-    4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 
+     0,  1,  1,  2,  1,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 
+    14,  1, 15, 16,  1,  1, 17, 18, 19, 20, 21, 22, 23, 24,  1, 25, 
+    26, 27,  1, 28, 29,  1,  1, 30,  1,  1,  1, 31, 32, 33, 34, 35, 
+    36, 37, 38,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1, 39,  1,  1,  1,  1,  1,  1,  1,  1,  1, 40, 
+     1,  1,  1,  1, 41,  1, 42, 43, 44, 45, 46, 47,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 48, 49, 49, 49, 49, 49, 49, 49, 49, 
+     1,  1, 50, 51,  1, 52, 53, 54, 55, 56, 57, 58, 59, 49, 49, 49, 
+    60, 61, 62, 63, 64, 49, 65, 49, 66, 49, 49, 49, 49, 49, 49, 49, 
+     1,  1,  1, 67, 68, 49, 49, 49,  1,  1,  1,  1, 69, 49, 49, 49, 
+     1,  1, 70, 49, 49, 49, 49, 49, 71, 49, 49, 49, 49, 49, 49, 49, 
+    72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 
+     1,  1,  1,  1,  1,  1, 88,  1,  1,  1,  1,  1,  1,  1,  1, 89, 
+    90, 49, 49, 49, 49, 49, 49, 49,  1,  1, 90, 49, 49, 49, 49, 49, 
+    91, 92, 49, 49, 49, 49, 49, 49,  1,  1,  1,  1,  1,  1,  1, 93, 
 };
 
 RE_UINT8 re_print_stage_4[] = {
-      0,   0,   0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 127, 
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 252, 255, 255, 
-    254, 255, 255, 255, 255, 255, 255, 255, 
+      0,   1,   1,   2,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 
+      1,   1,   1,   3,   4,   5,   1,   1,   1,   6,   7,   8,   9,   1,  10,  11, 
+     12,   1,   1,   1,   1,   1,   1,   1,  13,   1,  14,   1,   1,  15,   1,  16, 
+      1,  17,  18,   0,   0,   0,   0,   0,   1,   1,   1,  19,  20,  21,  22,  23, 
+     24,  25,  26,  27,  28,  29,  30,  31,  20,  29,  32,  33,  34,  35,  36,  37, 
+     38,  39,  40,  41,  42,  43,  44,  45,  42,  46,  47,  48,  49,  50,  51,  52, 
+      8,  53,  54,   0,  55,  56,  57,   0,   1,   1,  58,  59,  19,  60,  61,   0, 
+      1,   1,   1,   1,   1,   1,  62,  63,   1,   1,  64,   1,  65,  66,  67,   1, 
+     68,   1,  46,  63,  69,   1,   1,  70,   1,   1,   1,   1,  63,   1,   1,  71, 
+     72,  73,  74,  75,   1,   1,  76,  77,  78,   1,   1,  79,   1,  80,   1,  81, 
+     63,  82,  83,  84,   1,  85,  86,   1,  87,   1,   2,  88,  77,  89,   0,   0, 
+      1,   1,  85,  63,   1,  90,   1,  91,   1,  92,  93,   1,   0,   0,  94,  95, 
+      1,   1,   1,   1,   1,   1,   1,  96,  97,   1,  98,  76,   1,  99, 100, 101, 
+      1, 102,   1, 103, 104,  69,  94,  71,   1,   1,   1,   1, 105,   1,   1,   1, 
+      1,   1,   1,   1,   1,   1,   1,  74,   1, 106, 107,   1,   1,   1,   1,   1, 
+      8,   1,   1,   1,   1,   1, 108,   1,   1,   1, 109,   0,   0,   0,   0,   0, 
+      1, 110,   2,   1,   1,   1,   1, 111,   1,  62,   1, 112,  73, 113, 113,   1, 
+      1,  15,   0,   0, 114,   1,   1,  74,   1,   1,   1,   1,   1,   1,  81, 115, 
+      1,   1,   8,   1,   7,   1,   1,   1, 116, 117,   1,   1, 110,  16,   1, 118, 
+      2,   1,   1,   1,   1,   1,   1,   2,   1,   1,   1,   1,   1,  81,   1,   1, 
+      1,   1,   1,   1,   1,   1, 119,   0,   1,   1,   1,   1, 120,   1, 121,   1, 
+      1, 119,   1,  91,  79,   1,   1,  79,   1,   1,   1,   1, 122, 123,   0, 124, 
+      1, 125,   1,  79,   1,   1, 126,  54,   1,   1, 127,  63,   1,   1, 128,   0, 
+      1,  73, 129,  54,   1,   1, 130,   0, 131, 132,   0,   0,   0,   0,   1, 133, 
+      1,   1,   1,   1,   1, 118, 134,  54,   0,   0,   0,   0,   0,   0,   0,   0, 
+      1, 135,   1, 135,   1,   1,  69,   0, 136, 137, 138,   1,   1,   1, 139,   1, 
+      1,   1,  94,   1, 140,   1, 141, 142,  69, 121, 143, 144,   1,   1,   1,  88, 
+      8,   1,   1,   1,   1,   2, 145, 146, 147, 148, 149,   0,   1,   1,   1,  16, 
+    150, 151,   1,   1, 152,   0,  94,  76,   0,   0,   0,   0,  63,   1,  71,   0, 
+      2, 118, 107,   0, 153,   1, 154,   0,   1,   1,   1,   1,  76, 123,   0,   0, 
+    155, 156, 157,   0,   0,   0,   0,   0, 158, 159,   0,   0,   0,   0,   0,   0, 
+    160, 161, 162,   1,   0,   0,   0,   0,   1, 163, 164, 165,   0,   0,   0,   0, 
+      1,   1, 166,   0,   0,   0,   0,   0,   0,   0,   0,   2,   0,   0,   0,   0, 
+      1,   1, 167, 168,   1,   1, 169,   0,   1,   1,   1, 170,   0,   0,   0,   0, 
+      1,   1,   1, 171,   0,   0,   0,   0,   1, 170,   0,   0,   0,   0,   0,   0, 
+      1, 172,   0,   0,   0,   0,   0,   0, 169,   0,   0,   0,   0,   0,   0,   0, 
+      1,   1,   1,   1,   1,   1,   1,  81,   1, 173,   1,   1,   1,   1,  76,   0, 
+      1,   1, 174,   0,   0,   0,   0,   0,   1,   1,  73,  15,   0,   0,   0,   0, 
+      1,   1,  99,   1,  60, 175, 176,   1, 177, 178, 179,   1,   1,   1,   1,   1, 
+      1,   1,   1,   1,   1, 180,   1,   1,   1,   1,   1,   1,   1,   1, 181,   1, 
+      1,  85,   1,   1,  74, 182, 183,   0,  80, 110,   1, 105,  16,   0,   0, 184, 
+    185,  16, 186,   0,   0,   0,   0,   0,   1, 187,   1,  63,  74,   1, 188,  71, 
+      1,   2, 189,   1,   1,   1,   1, 190,   1,  76,  94, 141,   0,   0,   0, 191, 
+    192, 193, 194,   0,   1,   1, 174,   0,   1,   1,   1,  74,   0,   0,   0,   0, 
+      1,   1,   1,   1,   1,   1,  73,   0,   1,  70,   1,   1,   1,   1,   1,   1, 
+     76,   0,   0,   0,   0,   0,   0,   0, 195,   1,   1,   1,   0,   0,   0,   0, 
+      1,   1,   1,   1,   1,   1,   1, 168,   1,   1,   1,   1,   1,   1,   1,  76, 
 };
 
-/* Print: 236 bytes. */
+RE_UINT8 re_print_stage_5[] = {
+      0,   0,   0,   0, 255, 255, 255, 255, 255, 255, 255, 127, 255, 255, 255, 124, 
+    240, 215, 255, 255, 251, 255, 255, 255, 255,   0, 254, 255, 255, 255, 127, 254, 
+    254, 255, 255, 255, 255,   6, 254, 255, 255,   0, 255, 255, 255,   7,  31,   0, 
+    207, 255, 255, 207, 255, 191, 255, 255, 255, 231, 255, 255, 255, 255,   3,   0, 
+    255, 255, 255,   7, 255,  63, 255, 127, 255, 255, 255,  79, 255, 255, 255, 254, 
+    238, 159, 249, 255, 255, 253, 197, 243, 159, 121, 128, 176, 207, 255, 255,  15, 
+    238, 135, 249, 255, 255, 253, 109, 211, 135,  57,   2,  94, 192, 255,  63,   0, 
+    238, 191, 251, 255, 255, 253, 237, 243, 191,  59,   1,   0, 207, 255,   2,   0, 
+    159,  57, 192, 176, 207, 255, 255,   0, 236, 199,  61, 214,  24, 199, 255, 195, 
+    199,  61, 129,   0, 192, 255, 255,   7, 238, 223, 253, 255, 255, 253, 239, 227, 
+    223,  61,  96,   3, 207, 255,   0, 255, 236, 223, 253, 255, 255, 253, 239, 243, 
+    223,  61,  96,  64, 207, 255,   6,   0, 255, 255, 255, 231, 223, 125, 128,   0, 
+    207, 255,  63, 254, 236, 255, 127, 252, 255, 255, 251,  47, 127, 132,  95, 255, 
+      0,   0,  28,   0, 255, 255, 255, 135, 255, 255, 255,  15, 150,  37, 240, 254, 
+    174, 236, 255,  59,  95,  63, 255,  51, 255, 254, 255, 255, 255,  31, 254, 255, 
+    255, 255, 255, 223, 255, 223, 255,   7,  63,   0, 255, 255, 255, 255, 255,  31, 
+    255,  61, 127,  61, 255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 
+    255, 255,  61, 255, 255, 255, 255,   3, 255, 255,  31,   0, 255, 255,   1,   0, 
+    255, 223,  31,   0, 255, 255, 127,   0, 255, 255,  15,   0, 255, 223,  13,   0, 
+    255, 255, 255,  63, 255,   3, 255,   3, 255, 127, 255,   3, 255, 255, 255,   0, 
+    255,   7, 255, 255, 255, 255,  63,   0, 255,  15, 255,  15, 241, 255, 255, 255, 
+    255,  63,  31,   0, 255,  15, 255, 255, 255,   3, 255, 199, 255, 255, 255, 207, 
+    255, 255, 255, 159, 255,  63,   0,   0, 255, 199, 255,   3, 255, 255,  15, 240, 
+    255, 255, 255, 248, 255, 227, 255, 255,   0,   0, 255, 255, 255, 255,   7,   0, 
+    127,   0,   0, 240, 255, 255,  63,  63,  63,  63, 255, 170, 255, 255, 223, 255, 
+    223, 255, 207, 239, 255, 255, 220, 127, 255, 252, 255, 255,  31, 252, 243, 255, 
+    255, 127, 255,  31, 255,   3, 255, 255, 127,   0,   0,   0, 255,   7,   0,   0, 
+    255, 215, 255, 255, 255,  31, 255,   3, 255, 127, 255, 255, 255, 255,   3, 254, 
+     63, 128,   1, 128, 127, 127, 127, 127, 255, 255, 255, 251,   0,   0, 255,  15, 
+    224, 255, 255, 255, 255,  63, 254, 255,  15,   0, 255, 255, 255,  15,   0,   0, 
+    255,  31, 255, 255, 127,   0, 255, 255, 255, 127,   3,   0, 255,   3,   0,   0, 
+      0,   0,   0, 252, 255,  15, 255,   3,  31, 192, 255,   3, 255, 255,  15, 128, 
+    255, 191, 255, 195, 255,  63, 255, 243,   7,   0,   0, 248, 126, 126, 126,   0, 
+    127, 127,   0,   0, 255,  63, 255,   3, 127, 248, 255, 255, 255,  63, 255, 255, 
+    127,   0, 248, 224, 255, 255, 127,  95, 219, 255, 255, 255,   3,   0, 248, 255, 
+    255, 255, 252, 255, 255,   0,   0,   0,   0,   0, 255,  63, 255, 255, 247, 255, 
+    127,  15, 223, 255, 252, 252, 252,  28, 127, 127,   0,  62, 255, 239, 255, 255, 
+    127, 255, 255, 183, 255,  63, 255,  63, 135, 255, 255, 255, 255, 255, 143, 255, 
+    255,   7, 255,  15, 255, 255, 255, 191,  15, 255,  63,   0,  63, 253, 255, 255, 
+    255, 255, 191, 145, 255, 255, 191, 255, 255, 255, 255, 143, 255, 255, 255, 131, 
+    111, 240, 239, 254, 255, 255,  15, 135, 255,   0, 255,   1, 255, 255,  63, 254, 
+    255, 255,  63, 255, 255, 255,   7, 255, 255,   1,   0,   0, 255,  63, 252, 255, 
+    255, 255,   0,   0,   3,   0,   0,   0, 255, 127,   0,   0,   7,   0,  15,   0, 
+    255, 255, 255,   1, 127, 254, 255, 255,  63,   0,   0,   0, 100, 222, 255, 235, 
+    239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255, 
+     63, 255, 255, 255, 255, 207, 255, 255, 255, 127, 254, 127, 254, 255, 254, 255, 
+    192, 255, 255, 255,   7,   0, 255, 255, 255,   1,   3,   0,   1,   0, 191, 255, 
+    223,   7,   0,   0, 253, 255, 255, 255, 255, 255, 255,  30,   0,   0,   0, 248, 
+    254, 255,  93, 117,  63,  47, 239, 255, 225, 255,   0,   0,   2,   0,   0,   0, 
+};
+
+/* Print: 1954 bytes. */
 
 RE_UINT32 re_get_print(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -7432,17 +11109,20 @@ RE_UINT32 re_get_print(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 14;
-    code = ch ^ (f << 14);
+    f = ch >> 15;
+    code = ch ^ (f << 15);
     pos = ((RE_UINT32)re_print_stage_1[f] << 4);
-    f = code >> 10;
-    code ^= (f << 10);
-    pos = ((RE_UINT32)re_print_stage_2[pos + f] << 4);
-    f = code >> 6;
-    code ^= (f << 6);
-    pos = ((RE_UINT32)re_print_stage_3[pos + f] << 6);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_print_stage_2[pos + f] << 3);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_print_stage_3[pos + f] << 3);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_print_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_print_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_print_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -7450,51 +11130,40 @@ RE_UINT32 re_get_print(RE_UINT32 ch) {
 /* Word. */
 
 RE_UINT8 re_word_stage_1[] = {
-     0,  1,  2,  3,  4,  5,  5,  5,  5,  6,  7,  5,  5,  8,  9, 10, 
-    11, 12, 13, 14,  9,  9, 15,  9,  9,  9,  9, 16,  9, 17,  9,  9, 
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 18, 19,  9,  9,  9, 20, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-    21,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 
+    0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 6, 6, 6, 
+    6, 6, 
 };
 
 RE_UINT8 re_word_stage_2[] = {
+     0,  1,  2,  3,  4,  5,  6,  7,  7,  8,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  9, 10, 11,  7,  7,  7,  7, 12, 13, 13, 13, 13, 14, 
+    15, 16, 17, 13, 18, 13, 19, 13, 13, 13, 13, 13, 13, 20, 13, 13, 
+    13, 13, 13, 13, 13, 13, 21, 13, 13, 13, 22, 13, 13, 13, 13, 13, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 
+     7,  7,  7,  7, 23,  7, 24, 25, 13, 13, 13, 13, 13, 13, 13, 26, 
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+    27, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 
+};
+
+RE_UINT8 re_word_stage_3[] = {
      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
     16,  1, 17, 18, 19,  1, 20, 21, 22, 23, 24, 25, 26, 27,  1, 28, 
     29, 30, 31, 31, 32, 31, 31, 31, 31, 31, 31, 31, 33, 34, 35, 31, 
     36, 37, 31, 31,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 38,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 39, 
+     1,  1,  1,  1,  1, 38,  1,  1,  1,  1,  1,  1,  1,  1,  1, 39, 
      1,  1,  1,  1, 40,  1, 41, 42, 43, 44, 45, 46,  1,  1,  1,  1, 
      1,  1,  1,  1,  1,  1,  1, 47, 31, 31, 31, 31, 31, 31, 31, 31, 
-    31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 
-    31, 31, 31, 31, 31, 31, 31, 31, 31,  1, 48, 49,  1, 50, 51, 52, 
-    53, 54, 55, 56, 57, 31, 31, 31, 58, 59, 60, 61, 62, 31, 31, 31, 
-    63, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 
-     1,  1,  1, 64, 65, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 
-     1,  1,  1,  1, 66, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 
-    31, 31, 31, 31, 31, 31, 31, 31,  1,  1, 67, 31, 31, 31, 31, 31, 
-    68, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 
-    31, 69, 70, 31, 71, 72, 73, 74, 31, 31, 31, 31, 31, 31, 31, 31, 
-     1,  1,  1,  1,  1,  1, 75,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+    31,  1, 48, 49,  1, 50, 51, 52, 53, 54, 55, 56, 57, 31, 31, 31, 
+    58, 59, 60, 61, 62, 31, 31, 31, 63, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1,  1, 64, 65, 31, 31, 31,  1,  1,  1,  1, 66, 31, 31, 31, 
+     1,  1, 67, 31, 31, 31, 31, 31, 68, 31, 31, 31, 31, 31, 31, 31, 
+    31, 69, 70, 31, 71, 72, 73, 74,  1,  1,  1,  1,  1,  1, 75,  1, 
      1,  1,  1,  1,  1,  1,  1, 76, 77, 31, 31, 31, 31, 31, 31, 31, 
-    31, 31, 31, 31, 31, 31, 31, 31,  1,  1, 77, 31, 31, 31, 31, 31, 
-    31, 78, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 
+     1,  1, 77, 31, 31, 31, 31, 31, 31, 78, 31, 31, 31, 31, 31, 31, 
 };
 
-RE_UINT8 re_word_stage_3[] = {
+RE_UINT8 re_word_stage_4[] = {
       0,   1,   2,   3,   0,   4,   5,   5,   6,   6,   6,   6,   6,   6,   6,   6, 
       6,   6,   6,   6,   6,   6,   7,   8,   6,   6,   6,   9,  10,  11,   6,  12, 
       6,   6,   6,   6,  11,   6,   6,   6,   6,  13,  14,  15,  13,  16,  17,  18, 
@@ -7537,7 +11206,7 @@ RE_UINT8 re_word_stage_3[] = {
       6,   6,   6,   6,   6,   6,   6,  83, 
 };
 
-RE_UINT8 re_word_stage_4[] = {
+RE_UINT8 re_word_stage_5[] = {
       0,   0,   0,   0,   0,   0, 255,   3, 254, 255, 255, 135, 254, 255, 255,   7, 
       0,   4,  32,   4, 255, 255, 127, 255, 255, 255, 255, 255, 195, 255,   3,   0, 
      31,  80,   0,   0, 255, 255, 223,  60,  64, 215, 255, 255, 251, 255, 255, 255, 
@@ -7591,7 +11260,7 @@ RE_UINT8 re_word_stage_4[] = {
     247, 207, 255, 255, 
 };
 
-/* Word: 2060 bytes. */
+/* Word: 1822 bytes. */
 
 RE_UINT32 re_get_word(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -7599,17 +11268,20 @@ RE_UINT32 re_get_word(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 12;
-    code = ch ^ (f << 12);
+    f = ch >> 15;
+    code = ch ^ (f << 15);
     pos = ((RE_UINT32)re_word_stage_1[f] << 4);
+    f = code >> 11;
+    code ^= (f << 11);
+    pos = ((RE_UINT32)re_word_stage_2[pos + f] << 3);
     f = code >> 8;
     code ^= (f << 8);
-    pos = ((RE_UINT32)re_word_stage_2[pos + f] << 3);
+    pos = ((RE_UINT32)re_word_stage_3[pos + f] << 3);
     f = code >> 5;
     code ^= (f << 5);
-    pos = ((RE_UINT32)re_word_stage_3[pos + f] << 5);
+    pos = ((RE_UINT32)re_word_stage_4[pos + f] << 5);
     pos += code;
-    value = (re_word_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_word_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -7617,40 +11289,37 @@ RE_UINT32 re_get_word(RE_UINT32 ch) {
 /* XDigit. */
 
 RE_UINT8 re_xdigit_stage_1[] = {
-    0, 1, 1, 1, 1, 2, 1, 3, 4, 1, 1, 1, 1, 1, 5, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+    2, 
 };
 
 RE_UINT8 re_xdigit_stage_2[] = {
-     0,  1,  1,  2,  3,  4,  5,  6,  7,  1,  1,  8,  9, 10, 11,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1, 12, 13, 14,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 15, 
-     1,  1, 16,  1,  1,  1,  1,  1, 17,  1,  1,  1,  1,  1,  1,  1, 
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  1,  1,  1,  1, 
+    0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 4, 
+    5, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7, 2, 2, 
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
 };
 
 RE_UINT8 re_xdigit_stage_3[] = {
-     0,  1,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
-     2,  3,  2,  0,  2,  2,  2,  4,  2,  2,  2,  2,  2,  5,  2,  5, 
-     2,  5,  2,  5,  2,  5,  2,  5,  2,  5,  2,  5,  2,  5,  2,  2, 
-     2,  6,  2,  6,  3,  2,  2,  2,  2,  4,  6,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2,  3,  6,  2,  2,  2,  2,  7,  2,  6, 
-     2,  2,  8,  2,  2,  6,  0,  2,  2,  8,  2,  2,  2,  2,  2,  2, 
-     3,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  6,  4,  2,  2,  6, 
-     2,  6,  2,  2,  2,  2,  2,  0,  2,  2,  2,  2,  9, 10,  2,  2, 
-     2,  2,  3,  2,  2,  2,  2,  2,  2,  5,  2,  2,  2,  2,  2,  2, 
-     2,  2,  2,  2,  2,  2,  2, 11, 
+     0,  1,  1,  1,  1,  1,  2,  3,  1,  4,  4,  4,  4,  5,  6,  7, 
+     8,  1,  1,  1,  1,  1,  1,  9, 10, 11, 12, 13, 14,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  7,  1, 15, 16, 17, 18,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 19, 
+     1,  1,  1,  1, 20,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 
+     1,  1,  1,  1,  1,  1,  1, 21,  1,  1,  1,  1,  1,  1,  1,  1, 
 };
 
 RE_UINT8 re_xdigit_stage_4[] = {
+     0,  1,  2,  2,  2,  2,  2,  2,  2,  3,  2,  0,  2,  2,  2,  4, 
+     2,  5,  2,  5,  2,  5,  2,  2,  2,  6,  2,  6,  3,  2,  2,  2, 
+     2,  4,  6,  2,  2,  2,  2,  3,  6,  2,  2,  2,  2,  7,  2,  6, 
+     2,  2,  8,  2,  2,  6,  0,  2,  2,  8,  2,  2,  2,  2,  2,  6, 
+     4,  2,  2,  6,  2,  6,  2,  2,  2,  2,  2,  0,  9, 10,  2,  2, 
+     2,  2,  3,  2,  2,  2,  2, 11, 
+};
+
+RE_UINT8 re_xdigit_stage_5[] = {
       0,   0,   0,   0,   0,   0, 255,   3, 126,   0,   0,   0, 126,   0,   0,   0, 
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255,   3,   0,   0, 
     255,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 192, 255,   0,   0, 
@@ -7659,7 +11328,7 @@ RE_UINT8 re_xdigit_stage_4[] = {
     126,   0,   0,   0,   0,   0,   0,   0,   0, 192, 255, 255, 255, 255, 255, 255, 
 };
 
-/* XDigit: 480 bytes. */
+/* XDigit: 377 bytes. */
 
 RE_UINT32 re_get_xdigit(RE_UINT32 ch) {
     RE_UINT32 code;
@@ -7667,17 +11336,20 @@ RE_UINT32 re_get_xdigit(RE_UINT32 ch) {
     RE_UINT32 pos;
     RE_UINT32 value;
 
-    f = ch >> 13;
-    code = ch ^ (f << 13);
+    f = ch >> 16;
+    code = ch ^ (f << 16);
     pos = ((RE_UINT32)re_xdigit_stage_1[f] << 4);
-    f = code >> 9;
-    code ^= (f << 9);
-    pos = ((RE_UINT32)re_xdigit_stage_2[pos + f] << 3);
+    f = code >> 12;
+    code ^= (f << 12);
+    pos = ((RE_UINT32)re_xdigit_stage_2[pos + f] << 4);
+    f = code >> 8;
+    code ^= (f << 8);
+    pos = ((RE_UINT32)re_xdigit_stage_3[pos + f] << 2);
     f = code >> 6;
     code ^= (f << 6);
-    pos = ((RE_UINT32)re_xdigit_stage_3[pos + f] << 6);
+    pos = ((RE_UINT32)re_xdigit_stage_4[pos + f] << 6);
     pos += code;
-    value = (re_xdigit_stage_4[pos >> 3] >> (pos & 0x7)) & 0x1;
+    value = (re_xdigit_stage_5[pos >> 3] >> (pos & 0x7)) & 0x1;
 
     return value;
 }
@@ -7687,58 +11359,69 @@ RE_GetPropertyFunc re_get_property[] = {
     re_get_block,
     re_get_script,
     re_get_word_break,
-    re_get_grapheme_break,
-    re_get_changes_when_titlecased,
-    re_get_grapheme_extend,
-    re_get_lowercase,
-    re_get_grapheme_base,
-    re_get_changes_when_uppercased,
-    re_get_uppercase,
-    re_get_id_start,
-    re_get_grapheme_link,
-    re_get_cased,
-    re_get_id_continue,
-    re_get_xid_continue,
-    re_get_changes_when_lowercased,
-    re_get_changes_when_casefolded,
+    re_get_grapheme_cluster_break,
+    re_get_sentence_break,
     re_get_math,
     re_get_alphabetic,
-    re_get_xid_start,
-    re_get_default_ignorable_code_point,
+    re_get_lowercase,
+    re_get_uppercase,
+    re_get_cased,
     re_get_case_ignorable,
+    re_get_changes_when_lowercased,
+    re_get_changes_when_uppercased,
+    re_get_changes_when_titlecased,
+    re_get_changes_when_casefolded,
     re_get_changes_when_casemapped,
-    re_get_pattern_white_space,
-    re_get_other_default_ignorable_code_point,
-    re_get_pattern_syntax,
-    re_get_ids_binary_operator,
-    re_get_sterm,
-    re_get_other_lowercase,
-    re_get_other_alphabetic,
-    re_get_ids_trinary_operator,
+    re_get_id_start,
+    re_get_id_continue,
+    re_get_xid_start,
+    re_get_xid_continue,
+    re_get_default_ignorable_code_point,
+    re_get_grapheme_extend,
+    re_get_grapheme_base,
+    re_get_grapheme_link,
+    re_get_white_space,
     re_get_bidi_control,
-    re_get_ascii_hex_digit,
-    re_get_other_id_continue,
-    re_get_other_grapheme_extend,
-    re_get_extender,
-    re_get_deprecated,
-    re_get_soft_dotted,
-    re_get_ideographic,
-    re_get_other_math,
     re_get_join_control,
+    re_get_dash,
+    re_get_hyphen,
     re_get_quotation_mark,
     re_get_terminal_punctuation,
-    re_get_logical_order_exception,
-    re_get_variation_selector,
-    re_get_diacritic,
-    re_get_radical,
-    re_get_hyphen,
-    re_get_unified_ideograph,
-    re_get_dash,
+    re_get_other_math,
     re_get_hex_digit,
-    re_get_noncharacter_code_point,
-    re_get_other_id_start,
+    re_get_ascii_hex_digit,
+    re_get_other_alphabetic,
+    re_get_ideographic,
+    re_get_diacritic,
+    re_get_extender,
+    re_get_other_lowercase,
     re_get_other_uppercase,
-    re_get_white_space,
+    re_get_noncharacter_code_point,
+    re_get_other_grapheme_extend,
+    re_get_ids_binary_operator,
+    re_get_ids_trinary_operator,
+    re_get_radical,
+    re_get_unified_ideograph,
+    re_get_other_default_ignorable_code_point,
+    re_get_deprecated,
+    re_get_soft_dotted,
+    re_get_logical_order_exception,
+    re_get_other_id_start,
+    re_get_other_id_continue,
+    re_get_sterm,
+    re_get_variation_selector,
+    re_get_pattern_white_space,
+    re_get_pattern_syntax,
+    re_get_hangul_syllable_type,
+    re_get_bidi_class,
+    re_get_canonical_combining_class,
+    re_get_decomposition_type,
+    re_get_east_asian_width,
+    re_get_joining_group,
+    re_get_joining_type,
+    re_get_line_break,
+    re_get_numeric_type,
+    re_get_numeric_value,
     re_get_alphanumeric,
     re_get_ascii,
     re_get_blank,
@@ -7913,137 +11596,121 @@ RE_CaseDiffs case_diffs[] = {
 /* cases. */
 
 RE_UINT8 re_cases_stage_1[] = {
-    0, 1, 2, 2, 2, 3, 2, 4, 5, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-    2, 2, 2, 2, 2, 2, 2, 2, 
+    0, 1, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 
 };
 
 RE_UINT8 re_cases_stage_2[] = {
-     0,  1,  2,  3,  4,  5,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
-     7,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  8,  9, 10, 
-     6, 11,  6,  6, 12,  6,  6,  6,  6,  6,  6,  6, 13, 14,  6,  6, 
-     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
-     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
-     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
-     6,  6,  6,  6,  6,  6, 15, 16,  6,  6,  6,  6,  6,  6,  6,  6, 
-     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
-     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
-     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 17, 
-     6,  6,  6,  6, 18,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
-     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+     0,  1,  2,  3,  3,  3,  3,  3,  4,  3,  3,  3,  3,  3,  5,  6, 
+     7,  3,  8,  3,  3,  3,  9,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3, 10,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 11, 
+     3,  3, 12,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 
 };
 
 RE_UINT8 re_cases_stage_3[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   1,   2,   3,   4,   5,   6,   7,   8, 
-      0,   0,   0,   0,   0,   0,   9,   0,  10,  10,  11,  12,  13,   7,  14,  15, 
-     16,  16,  16,  16,  16,  16,  17,  18,  19,  20,  16,  16,  16,  16,  16,  21, 
-     22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  19,  32,  16,  16,  33,  16, 
-     16,  16,  16,  16,  34,  16,  35,  36,  37,  16,  38,  39,  40,  41,  42,  43, 
-     44,  45,  46,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,  47,   0,   0,   0,   0,   0,  48,  49, 
-     50,  51,  52,  53,  54,  55,   5,  56,  57,  58,  59,  16,  16,  16,  60,  61, 
-     62,  62,  10,  10,  10,  10,   7,   7,   7,   7,  63,  63,  16,  16,  16,  16, 
-     64,  65,  16,  16,  16,  16,  16,  16,  66,  67,  16,  16,  16,  16,  16,  16, 
-     16,  16,  16,  16,  16,   0,  68,  69,  69,  69,  70,   0,  71,  72,  72,  72, 
-     73,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,  74,  74,  74,  74,  75,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  76, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-     16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  77,  16,  16,  16, 
-     16,  16,  78,  79,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16, 
-     80,  81,  82,  83,  80,  81,  80,  81,  82,  83,  84,  85,  80,  81,  86,  87, 
-     80,  81,  80,  81,  80,  81,  88,  89,  90,  91,  92,  93,  94,  95,  90,  96, 
-      0,   0,   0,   0,  97,  98,  99,   0,   0, 100,   0,   0, 101, 101, 102, 102, 
-    103,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0, 104, 105, 105, 105, 106, 106, 106, 107,   0,   0, 
-     69,  69,  69,  69,  69,  70,  72,  72,  72,  72,  72,  73, 108, 109, 110, 111, 
-     16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  35, 112,   0,   0, 
-    113, 113, 113, 113, 114,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,  16,  16,  16,  16,  16,  78,   0,   0, 
-     16,  16,  16,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,  65,  16,  65,  16,  16,  16,  16,  16,  16,  16,   0, 115, 
-     16, 116,  64,   0,  16,  64,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   1,  10,  10,   4,   5,   7,   7,   8,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
-    117, 117, 117, 117, 117, 118, 118, 118, 118, 118,   0,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 
+     0,  0,  1,  2,  0,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 
+     6, 14, 15, 16, 17,  0,  0,  0,  0,  0, 18, 19, 20, 21, 22, 23, 
+    24, 25, 26,  6, 27,  6, 28,  6,  6, 29, 30, 31, 32,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0, 33, 34,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 35,  0,  0,  0,  0, 
+     6,  6,  6, 36, 37,  6,  6,  6, 38, 39, 40, 41, 39, 42, 43, 44, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0, 45, 46, 47, 48,  0,  0,  0, 
+     0,  0,  0,  0,  0, 49, 50, 51,  0,  0,  0,  0,  0,  0,  0,  0, 
+    52, 53, 54, 55,  6,  6,  6, 56, 57, 58,  0,  0,  0,  0,  0,  0, 
+     0,  0,  6, 59, 60,  0,  0,  0,  0, 61,  6, 62, 63, 64,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0, 65, 66,  0,  0,  0,  0,  0, 
+    67, 68, 69,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
 };
 
 RE_UINT8 re_cases_stage_4[] = {
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1, 
-      1,   2,   1,   1,   1,   1,   1,   1,   1,   1,   1,   3,   1,   1,   1,   1, 
-      1,   1,   1,   0,   0,   0,   0,   0,   0,   4,   4,   4,   4,   4,   4,   4, 
-      4,   5,   4,   6,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 
-      4,   4,   4,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   7,   0,   0, 
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0, 
-      1,   1,   1,   1,   1,   1,   1,   8,   4,   4,   4,   4,   4,   9,   4,   4, 
-      4,   4,   4,   4,   4,   4,   4,   0,   4,   4,   4,   4,   4,   4,   4,  10, 
-     11,  12,  11,  12,  11,  12,  11,  12,  13,  14,  11,  12,  11,  12,  11,  12, 
-      0,  11,  12,  11,  12,  11,  12,  11,  12,  11,  12,  11,  12,  11,  12,  11, 
-     12,   0,  11,  12,  11,  12,  11,  12,  15,  11,  12,  11,  12,  11,  12,  16, 
-     17,  18,  11,  12,  11,  12,  19,  11,  12,  20,  20,  11,  12,   0,  21,  22, 
-     23,  11,  12,  20,  24,  25,  26,  27,  11,  12,  28,   0,  26,  29,  30,  31, 
-     11,  12,  11,  12,  11,  12,  32,  11,  12,  32,   0,   0,  11,  12,  32,  11, 
-     12,  33,  33,  11,  12,  11,  12,  34,  11,  12,   0,   0,  11,  12,   0,  35, 
-      0,   0,   0,   0,  36,  37,  38,  36,  37,  38,  36,  37,  38,  11,  12,  11, 
-     12,  11,  12,  11,  12,  39,  11,  12,   0,  36,  37,  38,  11,  12,  40,  41, 
-     42,   0,  11,  12,  11,  12,  11,  12,  11,  12,  11,  12,   0,   0,   0,   0, 
-      0,   0,  43,  11,  12,  44,  45,  46,  46,  11,  12,  47,  48,  49,  11,  12, 
-     50,  51,  52,  53,  54,   0,  55,  55,   0,  56,   0,  57,   0,   0,   0,   0, 
-     55,   0,   0,  58,   0,  59,   0,   0,  60,  61,   0,  62,   0,   0,   0,  61, 
-      0,  63,  64,   0,   0,  65,   0,   0,   0,   0,   0,   0,   0,  66,   0,   0, 
-     67,   0,   0,  67,   0,   0,   0,   0,  67,  68,  69,  69,  70,   0,   0,   0, 
-      0,   0,  71,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  72,   0,   0, 
-     11,  12,  11,  12,   0,   0,  11,  12,   0,   0,   0,  30,  30,  30,   0,   0, 
-      0,   0,   0,   0,   0,   0,  73,   0,  74,  74,  74,   0,  75,   0,  76,  76, 
-      0,   1,  77,   1,   1,  78,   1,   1,  79,  80,  81,   1,  82,   1,   1,   1, 
-     83,  84,   0,  85,   1,   1,  86,   1,   1,   1,   1,   1,  87,  88,  88,  88, 
-     89,   4,   4,   4,   4,   4,   4,   4,   4,   4,  90,   4,   4,   4,   4,   4, 
-      4,  91,   4,   4,  92,  93,  93,  94,  95,  96,   0,   0,   0,  97,  98,  99, 
-    100, 101, 102,   0, 103, 104,   0,  11,  12, 105,  11,  12,   0,  42,  42,  42, 
-    106, 106, 106, 106, 106, 106, 106, 106, 101, 101, 101, 101, 101, 101, 101, 101, 
-     11,  12,   0,   0,   0,   0,   0,   0,   0,   0,  11,  12,  11,  12,  11,  12, 
-    107,  11,  12,  11,  12,  11,  12,  11,  12,  11,  12,  11,  12,  11,  12, 108, 
-      0, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 
-    109, 109, 109, 109, 109, 109, 109,   0,   0, 110, 110, 110, 110, 110, 110, 110, 
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,   0, 
-    111, 111, 111, 111, 111, 111, 111, 111, 111, 111, 111, 111, 111, 111,   0,   0, 
-      0, 112,   0,   0,   0, 113,   0,   0, 114,  12,  11,  12,  11,  12,  11,  12, 
-     11,  12,  11,  12,  11,  12,   0,   0,   0,   0,   0, 115,   0,   0, 116,   0, 
-     94,  94,  94,  94,  94,  94,  94,  94,  99,  99,  99,  99,  99,  99,  99,  99, 
-     94,  94,  94,  94,  94,  94,   0,   0,  99,  99,  99,  99,  99,  99,   0,   0, 
-      0,  94,   0,  94,   0,  94,   0,  94,   0,  99,   0,  99,   0,  99,   0,  99, 
-    117, 117, 118, 118, 118, 118, 119, 119, 120, 120, 121, 121, 122, 122,   0,   0, 
-     94,  94,   0, 123,   0,   0,   0,   0,  99,  99, 124, 124, 125,   0, 126,   0, 
-      0,   0,   0, 123,   0,   0,   0,   0, 100, 100, 100, 100, 125,   0,   0,   0, 
-     94,  94,   0,   0,   0,   0,   0,   0,  99,  99, 127, 127,   0,   0,   0,   0, 
-     94,  94,   0,   0,   0, 102,   0,   0,  99,  99, 128, 128, 105,   0,   0,   0, 
-    129, 129, 130, 130, 125,   0,   0,   0,   0,   0,   0,   0,   0,   0, 131,   0, 
-      0,   0, 132, 133,   0,   0,   0,   0,   0,   0, 134,   0,   0,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0, 135,   0, 136, 136, 136, 136, 136, 136, 136, 136, 
-    137, 137, 137, 137, 137, 137, 137, 137,   0,   0,   0,  11,  12,   0,   0,   0, 
-      0,   0,   0,   0,   0,   0, 138, 138, 138, 138, 138, 138, 138, 138, 138, 138, 
-    139, 139, 139, 139, 139, 139, 139, 139, 139, 139,   0,   0,   0,   0,   0,   0, 
-     11,  12, 140, 141, 142, 143, 144,  11,  12,  11,  12,  11,  12, 145, 146, 147, 
-    148,   0,  11,  12,   0,  11,  12,   0,   0,   0,   0,   0,   0,   0, 149, 149, 
-      0,   0,   0,  11,  12,  11,  12,   0, 150, 150, 150, 150, 150, 150, 150, 150, 
-    150, 150, 150, 150, 150, 150,   0,   0,   0,  11,  12,  11,  12, 151,  11,  12, 
-      0,   0,   0,  11,  12, 152,   0,   0, 153, 153, 153, 153, 153, 153, 153, 153, 
-    154, 154, 154, 154, 154, 154, 154, 154, 
+      0,   0,   0,   0,   0,   0,   0,   0,   1,   2,   3,   2,   4,   2,   5,   0, 
+      6,   7,   8,   7,   7,   7,   9,   0,   0,   0,   0,   0,   0,  10,   0,   0, 
+      2,   2,   2,   2,   2,   5,   2,  11,   7,  12,   7,   7,   7,   9,   7,  13, 
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  15,  14,  16,  17, 
+     17,  17,  18,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  19,  20, 
+     21,  22,  23,  24,  25,  26,  27,  28,  14,  29,  30,  29,  31,  32,  33,  34, 
+      0,  35,  36,  37,  17,  17,  17,  38,  14,  14,  14,  14,  39,  40,  14,  14, 
+     41,  14,  14,  14,  14,   0,  42,  43,  44,  45,  14,  14,  46,  47,  48,   0, 
+     49,  50,  51,  52,  53,  54,   0,  55,  56,   0,  57,  58,  59,   0,   0,   0, 
+      0,  60,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  14,  61,  62,  63, 
+      0,  64,  65,  66,  67,  68,  69,  70,  71,  72,   2,  73,   6,   7,  74,   7, 
+     75,   7,  76,  77,  78,  79,  14,  14,  14,  14,  14,  14,  80,  81,  82,  83, 
+     84,  84,  84,  84,   2,   2,   2,   2,   2,   2,   2,   2,   7,   7,   7,   7, 
+      7,   7,   7,   7,  85,  85,  85,  85,  33,   0,  61,  14,  14,  14,  14,  14, 
+     86,  17,  17,  87,  14,  14,  14,  14,  14,  14,   0,   0,  88,  89,  89,  89, 
+     89,  89,  89,  89,  89,  90,   0,   0,  91,  92,  92,  92,  92,  92,  92,  92, 
+     92,  93,   0,   0,   0,   0,   0,   0,  94,  94,  94,  94,  94,  94,  94,  94, 
+     94,  95,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  96,  97, 
+     98,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  33,  99, 100, 
+    101, 101, 102, 102, 101, 103, 102, 104, 101, 101, 102, 102, 101, 101, 102, 102, 
+    101, 103, 102, 104, 105, 105, 106, 106, 101, 101, 102, 102, 107, 108, 109, 110, 
+    101, 101, 102, 102, 111,   0, 112, 113, 114,   0, 115, 116, 103,   0, 117,   0, 
+    103, 118, 119, 120, 114,   0, 121, 116,   0, 122, 123,   0, 124,   0,   0,   0, 
+      0,   0,   0, 125,   0,   0,   0,   0, 126, 126, 126, 126, 127, 127, 127, 127, 
+    128, 129,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 130, 131, 131, 
+    131, 131, 131, 131, 132, 132, 132, 132, 132, 132, 133,   0,   0,   0,   0,   0, 
+     89,  89,  89,  89,  89,  89,  89,  89,  89,  89,  89,  90,  92,  92,  92,  92, 
+     92,  92,  92,  92,  92,  92,  92,  93, 134, 135,  17, 136, 137, 138,   0, 139, 
+     14,   0, 128, 140,   0,   0,   0,   0, 141, 141, 141, 141, 141, 141, 141, 141, 
+    141, 142,   0,   0,   0,   0,   0,   0,  14,  14,  14,  33,   0,   0,   0,   0, 
+     14,  14,  14,  14,  14,  14,   0,   0,  61,  14,  14,  14,  61,  14,  14,  14, 
+     14,  14,  14,  14,   0,   0,  16, 143,  14,  14, 128, 144,  33,   0,   0,   0, 
+     14,  14,  33,   0,   0,   0,   0,   0,   1,   2,   2,   2,   2,   2,   5,   0, 
+      6,   7,   7,   7,   7,   7,   9,   0, 145, 145, 145, 145, 145, 145, 145, 145, 
+    145, 145, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146,   0,   0,   0,   0, 
 };
 
-/* cases: 1888 bytes. */
+RE_UINT8 re_cases_stage_5[] = {
+      0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   2,   1,   1, 
+      1,   1,   1,   3,   1,   1,   1,   0,   0,   4,   4,   4,   4,   4,   4,   4, 
+      4,   5,   4,   6,   4,   4,   4,   0,   0,   7,   0,   0,   1,   1,   1,   8, 
+      4,   9,   4,   4,   4,   4,   4,  10,  11,  12,  11,  12,  13,  14,  11,  12, 
+      0,  11,  12,  11,  12,  11,  12,  11,  12,   0,  11,  12,  15,  11,  12,  11, 
+     12,  11,  12,  16,  17,  18,  11,  12,  11,  12,  19,  11,  12,  20,  20,  11, 
+     12,   0,  21,  22,  23,  11,  12,  20,  24,  25,  26,  27,  11,  12,  28,   0, 
+     26,  29,  30,  31,  11,  12,  32,  11,  12,  32,   0,   0,  12,  33,  33,  11, 
+     12,  11,  12,  34,  11,  12,   0,   0,  11,  12,   0,  35,  36,  37,  38,  36, 
+     37,  38,  36,  37,  38,  11,  12,  11,  12,  39,  11,  12,   0,  36,  37,  38, 
+     11,  12,  40,  41,  42,   0,  11,  12,   0,   0,  43,  11,  12,  44,  45,  46, 
+     46,  11,  12,  47,  48,  49,  11,  12,  50,  51,  52,  53,  54,   0,  55,  55, 
+      0,  56,   0,  57,  55,   0,   0,  58,   0,  59,   0,   0,  60,  61,   0,  62, 
+      0,   0,   0,  61,   0,  63,  64,   0,   0,  65,   0,   0,   0,  66,   0,   0, 
+     67,   0,   0,  67,  67,  68,  69,  69,  70,   0,   0,   0,   0,   0,  71,   0, 
+      0,  72,   0,   0,   0,   0,  11,  12,   0,   0,   0,  30,  30,  30,   0,   0, 
+      0,   0,  73,   0,  74,  74,  74,   0,  75,   0,  76,  76,   0,   1,  77,   1, 
+      1,  78,   1,   1,  79,  80,  81,   1,  82,   1,   1,   1,  83,  84,   0,  85, 
+      1,   1,  86,   1,  87,  88,  88,  88,  89,   4,   4,   4,   4,   4,  90,   4, 
+      4,  91,   4,   4,  92,  93,  93,  94,  95,  96,   0,   0,   0,  97,  98,  99, 
+    100, 101, 102,   0, 103, 104,   0,  11,  12, 105,  11,  12,   0,  42,  42,  42, 
+    106, 106, 106, 106, 101, 101, 101, 101, 107,  11,  12,  11,  12,  11,  12, 108, 
+      0, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109,   0,   0, 110, 110, 110, 
+    110, 110, 110, 110, 110, 110, 110,   0, 111, 111, 111, 111, 111, 111,   0,   0, 
+      0, 112,   0,   0,   0, 113,   0,   0, 114,  12,  11,  12,   0,   0,   0, 115, 
+      0,   0, 116,   0,  94,  94,  94,  94,  99,  99,  99,  99,  94,  94,   0,   0, 
+     99,  99,   0,   0,   0,  94,   0,  94,   0,  99,   0,  99, 117, 117, 118, 118, 
+    118, 118, 119, 119, 120, 120, 121, 121, 122, 122,   0,   0,  94,  94,   0, 123, 
+     99,  99, 124, 124, 125,   0, 126,   0,   0,   0,   0, 123, 100, 100, 100, 100, 
+    125,   0,   0,   0,  99,  99, 127, 127,   0, 102,   0,   0,  99,  99, 128, 128, 
+    105,   0,   0,   0, 129, 129, 130, 130,   0,   0, 131,   0,   0,   0, 132, 133, 
+      0,   0, 134,   0,   0,   0, 135,   0, 136, 136, 136, 136, 137, 137, 137, 137, 
+      0,   0,   0,  11,  12,   0,   0,   0,   0,   0, 138, 138, 138, 138, 138, 138, 
+    139, 139, 139, 139, 139, 139,   0,   0,  11,  12, 140, 141, 142, 143, 144,  11, 
+     12, 145, 146, 147, 148,   0,  11,  12,   0,  11,  12,   0,   0,   0, 149, 149, 
+     12,  11,  12,   0, 150, 150, 150, 150, 150, 150,   0,   0,  12, 151,  11,  12, 
+     12, 152,   0,   0, 153, 153, 153, 153, 154, 154, 154, 154, 
+};
+
+/* cases: 1584 bytes. */
 
 BOOL re_is_same_char_ign(RE_UINT32 ch1, RE_UINT32 ch2) {
     RE_UINT32 code;
@@ -8052,16 +11719,19 @@ BOOL re_is_same_char_ign(RE_UINT32 ch1, RE_UINT32 ch2) {
     RE_UINT32 value;
     RE_INT32* diffs;
 
-    f = ch1 >> 13;
-    code = ch1 ^ (f << 13);
+    f = ch1 >> 14;
+    code = ch1 ^ (f << 14);
     pos = ((RE_UINT32)re_cases_stage_1[f] << 5);
-    f = code >> 8;
-    code ^= (f << 8);
-    pos = ((RE_UINT32)re_cases_stage_2[pos + f] << 5);
-    f = code >> 3;
-    code ^= (f << 3);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_cases_stage_2[pos + f] << 4);
+    f = code >> 5;
+    code ^= (f << 5);
     pos = ((RE_UINT32)re_cases_stage_3[pos + f] << 3);
-    value = re_cases_stage_4[pos + code];
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_cases_stage_4[pos + f] << 2);
+    value = re_cases_stage_5[pos + code];
     diffs = case_diffs[value];
 
     return ch1 == ch2 || ch1 + diffs[0] == ch2 || ch1 + diffs[1] == ch2 || ch1 + diffs[2] == ch2;

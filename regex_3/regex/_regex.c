@@ -950,8 +950,8 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos) {
     text = state->text;
     char_at = state->char_at;
 
-    prop = re_get_grapheme_break(char_at(text, text_pos));
-    prop_m1 = re_get_grapheme_break(char_at(text, text_pos - 1));
+    prop = re_get_grapheme_cluster_break(char_at(text, text_pos));
+    prop_m1 = re_get_grapheme_cluster_break(char_at(text, text_pos - 1));
 
     /* Don't break within CRLF. */
     if (prop_m1 == RE_GBREAK_CR && prop == RE_GBREAK_LF)

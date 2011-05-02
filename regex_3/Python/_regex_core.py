@@ -986,11 +986,44 @@ def _parse_character_class(source, positive, info):
         raise error("unknown character class")
     return prop
 
+def _float_to_rational(flt):
+    "Converts a float to a rational (x/y)."
+    int_part = int(flt)
+    error = flt - int_part
+    if abs(error) < 0.0001:
+        return int_part, 1
+    den, num = _float_to_rational(1.0 / error)
+    return int_part * den + num, den
+
+def _number_to_rational(name):
+    "Converts a numeric name to a rational."
+    if name[0] == "-":
+        sign, name = name[0], name[1 : ]
+    else:
+        sign = ""
+
+    parts = name.split("/")
+    if len(parts) == 2:
+        num, den = _float_to_rational(float(parts[0]) / float(parts[1]))
+    elif len(parts) == 1:
+        num, den = _float_to_rational(float(parts[0]))
+    else:
+        raise ValueError
+
+    format = "{}{}" if den == 1 else "{}{}/{}"
+
+    return format.format(sign, num, den)
+
 def _standardise_name(name):
-    return "".join(ch for ch in name if ch not in "_- ").upper()
+    "Standardises a property or value name."
+    try:
+        return _number_to_rational("".join(name))
+    except ValueError:
+        return "".join(ch for ch in name if ch not in "_- ").upper()
 
 def _lookup_property(property, value, positive):
-    # Normalise the names.
+    "Looks up a property."
+    # Normalise the names (which may still be lists).
     property = _standardise_name(property) if property else None
     value = _standardise_name(value)
     if property:
@@ -1003,8 +1036,8 @@ def _lookup_property(property, value, positive):
                 return _Property((prop_id << 16) | val_id, positive)
         return None
     # Only the value is provided.
-    # It might be the name of a GC, block or script value.
-    for property in ("GC", "BLOCK", "SCRIPT"):
+    # It might be the name of a GC, script or block value.
+    for property in ("GC", "SCRIPT", "BLOCK"):
         prop_id, value_dict = _properties.get(property)
         val_id = value_dict.get(value)
         if val_id is not None:
@@ -1014,8 +1047,14 @@ def _lookup_property(property, value, positive):
     if prop:
         prop_id, value_dict = prop
         return _Property(prop_id << 16, not positive)
-    # It might be the prefixed name of a block or script.
-    for prefix, property in (("IN", "BLOCK"), ("IS", "SCRIPT")):
+    # It might be the name of a binary property.
+    if value.startswith("IS"):
+        prop = _properties.get(value[2 : ])
+        if prop:
+            prop_id, value_dict = prop
+            return _Property(prop_id << 16, not positive)
+    # It might be the prefixed name of a script or block.
+    for prefix, property in (("IS", "SCRIPT"), ("IN", "BLOCK")):
         if value.startswith(prefix):
             prop_id, value_dict = _properties.get(property)
             val_id = value_dict.get(value[2 : ])

@@ -219,25 +219,37 @@ Additional features
 
     ``\N{name}``
 
-    Named characters are supported.
+    Named characters are supported. (Note: only those known by Python's Unicode database are supported.)
 
-* Unicode codepoint properties, including blocks and scripts
+* Unicode codepoint properties, including scripts and blocks
 
     ``\p{property=value}``; ``\P{property=value}``; ``\p{value}`` ; ``\P{value}``
 
     Many Unicode properties are supported, including blocks and scripts. ``\p{property=value}`` or ``\p{property:value}`` matches a character whose property ``property`` has value ``value``. The inverse of ``\p{property=value}`` is ``\P{property=value}`` or ``\p{^property=value}``.
 
-    The short form ``\p{value}`` is also supported for a limited number of properties and values, principally the ``General_Category``, ``Block`` and ``Script`` properties.
-    
-    In order to avoid ambiguity when using the short form, block names should start with ``In`` and script names should start with ``Is``. If a name lacks such a prefix and it could be a block or a script, script will take priority, for example:
+    If the short form ``\p{value}`` is used, the properties are checked in the order: ``General_Category``, ``Script``, ``Block``, binary property:
 
-    1. ``InBasicLatin`` or ``BasicLatin``, the 'BasicLatin' **block** (``Block=BasicLatin``).
+    1. ``Latin``, the 'Latin' script (``Script=Latin``).
 
-    2. ``IsLatin`` or ``Latin``, the 'Latin' **script** (``Script=Latin``).
+    2. ``Cyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
 
-    3. ``InCyrillic``, the 'Cyrillic' **block** (``Block=Cyrillic``).
+    3. ``BasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
 
-    4. ``IsCyrillic`` or ``Cyrillic``, the 'Cyrillic' **script** (``Script=Cyrillic``).
+    4. ``Alphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
+
+    A short form starting with ``Is`` indicates a script or binary property:
+
+    1. ``IsLatin``, the 'Latin' script (``Script=Latin``).
+
+    2. ``IsCyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
+
+    3. ``IsAlphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
+
+    A short form starting with ``In`` indicates a block property:
+
+    1. ``InBasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
+
+    2. ``InCyrillic``, the 'Cyrillic' block (``Block=Cyrillic``).
 
 * POSIX character classes
 
