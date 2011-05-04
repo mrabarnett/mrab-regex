@@ -886,10 +886,7 @@ def _parse_property(source, info, in_set, positive):
         else:
             prop_name = None
         if ch == "}":
-            prop = _lookup_property(prop_name, name, positive != negate)
-            if not prop:
-                raise error("unknown property")
-            return prop
+            return _lookup_property(prop_name, name, positive != negate)
     source.pos = here
     return _char_literal(info, in_set, "p" if positive else "P")
 
@@ -981,10 +978,7 @@ def _parse_character_class(source, positive, info):
         prop_name = None
     if ch != ":" or source.get() != "]":
         raise error("missing :]")
-    prop = _lookup_property(prop_name, name, positive)
-    if not prop:
-        raise error("unknown character class")
-    return prop
+    return _lookup_property(prop_name, name, positive)
 
 def _float_to_rational(flt):
     "Converts a float to a rational (x/y)."
@@ -1029,12 +1023,14 @@ def _lookup_property(property, value, positive):
     if property:
         # Both the property and the value are provided.
         prop = _properties.get(property)
-        if prop:
-            prop_id, value_dict = prop
-            val_id = value_dict.get(value)
-            if val_id is not None:
-                return _Property((prop_id << 16) | val_id, positive)
-        return None
+        if not prop:
+            raise error("unknown property")
+        prop_id, value_dict = prop
+        val_id = value_dict.get(value)
+        if val_id is None:
+            raise error("unknown property value")
+        return _Property((prop_id << 16) | val_id, positive)
+
     # Only the value is provided.
     # It might be the name of a GC, script or block value.
     for property in ("GC", "SCRIPT", "BLOCK"):
@@ -1042,17 +1038,20 @@ def _lookup_property(property, value, positive):
         val_id = value_dict.get(value)
         if val_id is not None:
             return _Property((prop_id << 16) | val_id, positive)
+
     # It might be the name of a property.
     prop = _properties.get(value)
     if prop:
         prop_id, value_dict = prop
         return _Property(prop_id << 16, not positive)
+
     # It might be the name of a binary property.
     if value.startswith("IS"):
         prop = _properties.get(value[2 : ])
         if prop:
             prop_id, value_dict = prop
             return _Property(prop_id << 16, not positive)
+
     # It might be the prefixed name of a script or block.
     for prefix, property in (("IS", "SCRIPT"), ("IN", "BLOCK")):
         if value.startswith(prefix):
@@ -1060,8 +1059,9 @@ def _lookup_property(property, value, positive):
             val_id = value_dict.get(value[2 : ])
             if val_id is not None:
                 return _Property((prop_id << 16) | val_id, positive)
+
     # Unknown property.
-    return None
+    raise error("unknown property")
 
 def _compile_repl_escape(source, pattern):
     "Compiles a replacement template escape sequence."

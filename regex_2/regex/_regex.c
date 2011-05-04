@@ -607,6 +607,9 @@ static BOOL locale_has_property(RE_CODE property, RE_CODE ch) {
         return value == 0;
 
     switch (property >> 16) {
+    case RE_PROP_ANY >> 16:
+        v = 1;
+        break;
     case RE_PROP_ALNUM >> 16:
         v = isalnum(ch) != 0;
         break;
@@ -615,6 +618,9 @@ static BOOL locale_has_property(RE_CODE property, RE_CODE ch) {
         break;
     case RE_PROP_ASCII >> 16:
         v = ch <= RE_ASCII_MAX;
+        break;
+    case RE_PROP_ASSIGNED >> 16:
+        v = ch <= RE_LOCALE_MAX;
         break;
     case RE_PROP_BLANK >> 16:
         v = ch == '\t' || ch == ' ';

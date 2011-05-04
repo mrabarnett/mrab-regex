@@ -1,11 +1,11 @@
-Notes
------
+Introduction
+------------
+
+This new regex implementation is intended eventually to replace Python's current re module implementation.
 
 For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
 
-Please note that certain aspects of this module have changed from those of previous versions to make it conform better to the 're' module.
-
-Please also note that ``matchobject.captures`` and the related methods now return a **list** (or a tuple of lists for the multi-group versions) instead of a tuple as previously.
+Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.2 on 32-bit Windows.
 
 
 Flags
@@ -52,9 +52,10 @@ Unicode
 This module supports Unicode 6.0.0.
 
 
-
 Additional features
 -------------------
+
+The issue numbers relate to the Python bug tracker.
 
 * regex.escape (issue #2650)
 
