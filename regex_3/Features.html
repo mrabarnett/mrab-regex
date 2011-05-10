@@ -350,6 +350,35 @@ ul.auto-toc {
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker.</p>
 <ul>
+<li><p class="first">Unicode line separators</p>
+<blockquote>
+<p>Normally the only line separator is <tt class="docutils literal">\n</tt> (<tt class="docutils literal">\x0A</tt>), but if the <tt class="docutils literal">WORD</tt> flag is turned on then the line separators are the pair <tt class="docutils literal">\x0D\x0A</tt>, and <tt class="docutils literal">\x0A</tt>, <tt class="docutils literal">\x0B</tt>, <tt class="docutils literal">\x0C</tt> and <tt class="docutils literal">\x0D</tt>, plus <tt class="docutils literal">\x85</tt>, <tt class="docutils literal">\u0x2028</tt> and <tt class="docutils literal">\u2029</tt> when working with Unicode.</p>
+<p>This affects the regex dot <tt class="docutils literal">&quot;.&quot;</tt>, which, with <tt class="docutils literal">DOTALL</tt> flag turned off, matches any character except a line separator. It also affects the line anchors <tt class="docutils literal">^</tt> and <tt class="docutils literal">$</tt> (in multiline mode) and <tt class="docutils literal">\Z</tt>.</p>
+</blockquote>
+</li>
+<li><p class="first">Set operators</p>
+<blockquote>
+<p>Set operators have been added, and a set [...] can include nested sets.</p>
+<p>The operators, in order of increasing precedence, are:</p>
+<blockquote>
+<p><tt class="docutils literal">||</tt> for union (&quot;x||y&quot; means &quot;x or y&quot;)</p>
+<p><tt class="docutils literal">~~</tt> (double tilde) for symmetric difference (&quot;x~~y&quot; means &quot;x or y, but not both&quot;)</p>
+<p><tt class="docutils literal">&amp;&amp;</tt> for intersection (&quot;x&amp;&amp;y&quot; means &quot;x and y&quot;)</p>
+<p><tt class="docutils literal"><span class="pre">--</span></tt> (double dash) for difference (&quot;x--y&quot; means &quot;x but not y&quot;)</p>
+</blockquote>
+<p>Implicit union, ie, simple juxtaposition like in <tt class="docutils literal">[ab]</tt>, has the highest precedence. Thus, <tt class="docutils literal"><span class="pre">[ab&amp;&amp;cd]</span></tt> is the same as <tt class="docutils literal"><span class="pre">[[a||b]&amp;&amp;[c||d]]</span></tt>.</p>
+<p>Examples:</p>
+<blockquote>
+<p><tt class="docutils literal">[ab]</tt> # Set containing 'a' and 'b'</p>
+<p><tt class="docutils literal"><span class="pre">[a-z]</span></tt> # Set containing 'a' .. 'z'</p>
+<p><tt class="docutils literal"><span class="pre">[[a-z]--[qw]]</span></tt> # Set containing 'a' .. 'z', but not 'q' or 'w'</p>
+<p><tt class="docutils literal"><span class="pre">[a-z--qw]</span></tt> # Same as above</p>
+<p><tt class="docutils literal"><span class="pre">[\p{L}--QW]</span></tt> # Set containing all letters except 'Q' and 'W'</p>
+<p><tt class="docutils literal"><span class="pre">[\p{N}--[0-9]]</span></tt> # Set containing all numbers except '0' .. '9'</p>
+<p><tt class="docutils literal"><span class="pre">[\p{ASCII}&amp;&amp;\p{Letter}]</span></tt> # Set containing all characters which are ASCII and letter</p>
+</blockquote>
+</blockquote>
+</li>
 <li><p class="first">regex.escape (issue #2650)</p>
 <blockquote>
 <p>regex.escape has an additional keyword parameter <tt class="docutils literal">special_only</tt>. When True, only 'special' regex characters, such as '?', are escaped.</p>

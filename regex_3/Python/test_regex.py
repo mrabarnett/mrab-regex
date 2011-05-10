@@ -1017,11 +1017,11 @@ class Test:
 
         self.expect(lambda: regex.match(r"\X", "\xE0").span(), ascii((0, 1)))
         self.expect(lambda: regex.match(r"\X", "a\u0300").span(), ascii((0, 2)))
-        self.expect(lambda: regex.findall(r"\X", "a\xE0a\u0300e\xE9e\u0301"), 
+        self.expect(lambda: regex.findall(r"\X", "a\xE0a\u0300e\xE9e\u0301"),
           ascii(['a', '\xe0', 'a\u0300', 'e', '\xe9', 'e\u0301']))
         self.expect(lambda: regex.findall(r"\X{3}",
           "a\xE0a\u0300e\xE9e\u0301"), ascii(['a\xe0a\u0300', 'e\xe9e\u0301']))
-        self.expect(lambda: regex.findall(r"\X", "\r\r\n\u0301A\u0301"), 
+        self.expect(lambda: regex.findall(r"\X", "\r\r\n\u0301A\u0301"),
           ascii(['\r', '\r\n', '\u0301', 'A\u0301']))
 
         self.expect(lambda: type(regex.match(r'\p{Ll}', 'a')),
@@ -1455,6 +1455,42 @@ class Test:
         self.expect(lambda: regex.split(r'(?wn)\b', text), ascii(['',
           "can't", ' ', "aujourd'hui", ' ', "l'", 'objectif', '']))
 
+    def test_line_boundary(self):
+        self.expect(lambda: regex.findall(r".+", "Line 1\nLine 2\n"), ascii(["Line 1", "Line 2"]))
+        self.expect(lambda: regex.findall(r".+", "Line 1\rLine 2\r"), ascii(["Line 1\rLine 2\r"]))
+        self.expect(lambda: regex.findall(r".+", "Line 1\r\nLine 2\r\n"), ascii(["Line 1\r", "Line 2\r"]))
+        self.expect(lambda: regex.findall(r"(?w).+", "Line 1\nLine 2\n"), ascii(["Line 1", "Line 2"]))
+        self.expect(lambda: regex.findall(r"(?w).+", "Line 1\rLine 2\r"), ascii(["Line 1", "Line 2"]))
+        self.expect(lambda: regex.findall(r"(?w).+", "Line 1\r\nLine 2\r\n"), ascii(["Line 1", "Line 2"]))
+
+        self.expect(lambda: regex.search(r"^abc", "abc").start(), ascii(0))
+        self.expect(lambda: regex.search(r"^abc", "\nabc"), ascii(None))
+        self.expect(lambda: regex.search(r"^abc", "\rabc"), ascii(None))
+        self.expect(lambda: regex.search(r"(?w)^abc", "abc").start(), ascii(0))
+        self.expect(lambda: regex.search(r"(?w)^abc", "\nabc"), ascii(None))
+        self.expect(lambda: regex.search(r"(?w)^abc", "\rabc"), ascii(None))
+
+        self.expect(lambda: regex.search(r"abc$", "abc").start(), ascii(0))
+        self.expect(lambda: regex.search(r"abc$", "abc\n").start(), ascii(0))
+        self.expect(lambda: regex.search(r"abc$", "abc\r"), ascii(None))
+        self.expect(lambda: regex.search(r"(?w)abc$", "abc").start(), ascii(0))
+        self.expect(lambda: regex.search(r"(?w)abc$", "abc\n").start(), ascii(0))
+        self.expect(lambda: regex.search(r"(?w)abc$", "abc\r").start(), ascii(0))
+
+        self.expect(lambda: regex.search(r"(?m)^abc", "abc").start(), ascii(0))
+        self.expect(lambda: regex.search(r"(?m)^abc", "\nabc").start(), ascii(1))
+        self.expect(lambda: regex.search(r"(?m)^abc", "\rabc"), ascii(None))
+        self.expect(lambda: regex.search(r"(?mw)^abc", "abc").start(), ascii(0))
+        self.expect(lambda: regex.search(r"(?mw)^abc", "\nabc").start(), ascii(1))
+        self.expect(lambda: regex.search(r"(?mw)^abc", "\rabc").start(), ascii(1))
+
+        self.expect(lambda: regex.search(r"(?m)abc$", "abc").start(), ascii(0))
+        self.expect(lambda: regex.search(r"(?m)abc$", "abc\n").start(), ascii(0))
+        self.expect(lambda: regex.search(r"(?m)abc$", "abc\r"), ascii(None))
+        self.expect(lambda: regex.search(r"(?mw)abc$", "abc").start(), ascii(0))
+        self.expect(lambda: regex.search(r"(?mw)abc$", "abc\n").start(), ascii(0))
+        self.expect(lambda: regex.search(r"(?mw)abc$", "abc\r").start(), ascii(0))
+
     def test_branch_reset(self):
         self.expect(lambda: regex.match(r"(?:(a)|(b))(c)", "ac").groups(),
           ascii(('a', None, 'c')))
@@ -1557,6 +1593,36 @@ class Test:
         self.expect(lambda: "".join(regex.findall(r"[^b\S]", "a b")), ascii(' '))
         self.expect(lambda: "".join(regex.findall(r"[^8\d]", "a 1b2")),
           ascii('a b'))
+
+        all_chars = "".join(chr(c) for c in range(0x100))
+        self.expect(lambda: len(regex.findall(r"\p{ASCII}", all_chars)),
+          ascii(128))
+        self.expect(lambda: len(regex.findall(r"\p{Letter}", all_chars)),
+          ascii(117))
+        self.expect(lambda: len(regex.findall(r"\p{Digit}", all_chars)),
+          ascii(10))
+        self.expect(lambda: len(regex.findall(r"[\p{ASCII}&&\p{Letter}]",
+          all_chars)), ascii(52))
+        self.expect(lambda: len(regex.findall(r"[\p{ASCII}&&\p{Alnum}&&\p{Letter}]",
+          all_chars)), ascii(52))
+        self.expect(lambda: len(regex.findall(r"[\p{ASCII}&&\p{Alnum}&&\p{Digit}]",
+          all_chars)), ascii(10))
+        self.expect(lambda: len(regex.findall(r"[\p{ASCII}&&\p{Cc}]",
+          all_chars)), ascii(33))
+        self.expect(lambda: len(regex.findall(r"[\p{ASCII}&&\p{Graph}]",
+          all_chars)), ascii(94))
+        self.expect(lambda: len(regex.findall(r"[\p{ASCII}--\p{Cc}]",
+          all_chars)), ascii(95))
+        self.expect(lambda: len(regex.findall(r"[\p{Letter}\p{Digit}]",
+          all_chars)), ascii(127))
+        self.expect(lambda: len(regex.findall(r"[\p{Letter}||\p{Digit}]",
+          all_chars)), ascii(127))
+        self.expect(lambda: len(regex.findall(r"\p{HexDigit}", all_chars)),
+          ascii(22))
+        self.expect(lambda: len(regex.findall(r"[\p{HexDigit}~~\p{Digit}]",
+          all_chars)), ascii(12))
+        self.expect(lambda: len(regex.findall(r"[\p{Digit}~~\p{HexDigit}]",
+          all_chars)), ascii(12))
 
     def test_various(self):
         tests = [

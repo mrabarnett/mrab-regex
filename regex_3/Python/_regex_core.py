@@ -103,6 +103,8 @@ ANY
 ANY_ALL
 ANY_ALL_REV
 ANY_REV
+ANY_U
+ANY_U_REV
 ATOMIC
 BIG_BITSET
 BIG_BITSET_REV
@@ -118,8 +120,10 @@ END_GREEDY_REPEAT
 END_GROUP
 END_LAZY_REPEAT
 END_OF_LINE
+END_OF_LINE_U
 END_OF_STRING
 END_OF_STRING_LINE
+END_OF_STRING_LINE_U
 GRAPHEME_BOUNDARY
 GREEDY_REPEAT
 GREEDY_REPEAT_ONE
@@ -136,18 +140,24 @@ REF_GROUP_IGN
 REF_GROUP_IGN_REV
 REF_GROUP_REV
 SEARCH_ANCHOR
-SET
-SET_REV
+SET_DIFF
+SET_DIFF_REV
+SET_INTER
+SET_INTER_REV
+SET_SYM_DIFF
+SET_SYM_DIFF_REV
+SET_UNION
+SET_UNION_REV
 SMALL_BITSET
 SMALL_BITSET_REV
 START_GROUP
 START_OF_LINE
+START_OF_LINE_U
 START_OF_STRING
 STRING
 STRING_IGN
 STRING_IGN_REV
 STRING_REV
-TAIL_GUARD
 """
 
 def _define_opcodes(opcodes):
@@ -175,26 +185,30 @@ def _compile_firstset(info, fs):
     if not fs or _VOID_ITEM in fs or None in fs:
         # No firstset.
         return []
-    characters, others = [], []
+    characters, properties = [], []
     for m in fs:
         t = type(m)
-        if t is _Any:
-            others.append(m)
-        elif t is _Character and m.positive:
+        if t is _Character and m.positive:
             characters.append(m.value)
         elif t is _Property:
-            others.append(m)
+            properties.append(m)
         elif t is _CharacterIgn and m.positive:
             ch = info.char_type(m.value)
             characters.extend([m.value, ord(ch.lower()), ord(ch.upper()),
               ord(ch.title())])
-        elif t is _Set and m.positive:
-            characters.extend(m.characters)
-            others.extend(m.others)
+        elif t is _SetUnion and m.positive:
+            for i in m.items:
+                if isinstance(i, _Character):
+                    characters.append(i.value)
+                elif isinstance(i, _Property):
+                    properties.append(i)
+                else:
+                    return []
         else:
             return []
-    if characters or others:
-        fs = _Set(characters, others, zerowidth=True)
+    items = [_Character(c) for c in set(characters)] + list(set(properties))
+    if items:
+        fs = _SetUnion(items, zerowidth=True)
     else:
         # No firstset.
         return []
@@ -359,6 +373,8 @@ def _parse_element(source, info):
                 # Any character.
                 if info.all_flags & DOTALL:
                     return _AnyAll()
+                elif info.all_flags & WORD:
+                    return _AnyU()
                 else:
                     return _Any()
             elif ch == "[":
@@ -367,15 +383,24 @@ def _parse_element(source, info):
             elif ch == "^":
                 # The start of a line or the string.
                 if info.all_flags & MULTILINE:
-                    return _StartOfLine()
+                    if info.all_flags & WORD:
+                        return _StartOfLineU()
+                    else:
+                        return _StartOfLine()
                 else:
                     return _StartOfString()
             elif ch == "$":
                 # The end of a line or the string.
                 if info.all_flags & MULTILINE:
-                    return _EndOfLine()
+                    if info.all_flags & WORD:
+                        return _EndOfLineU()
+                    else:
+                        return _EndOfLine()
                 else:
-                    return _EndOfStringLine()
+                    if info.all_flags & WORD:
+                        return _EndOfStringLineU()
+                    else:
+                        return _EndOfStringLine()
             elif ch == "{":
                 # Looks like a limited quantifier.
                 here2 = source.pos
@@ -728,6 +753,7 @@ def _parse_escape(source, info, in_set):
         # A Unicode property.
         return _parse_property(source, info, in_set, ch == "p")
     elif ch == "X" and not in_set:
+        # A grapheme cluster.
         return _Grapheme()
     elif ch in _ALPHA:
         # An alphabetic escape sequence.
@@ -892,63 +918,122 @@ def _parse_property(source, info, in_set, positive):
 
 def _parse_set(source, info):
     "Parses a character set."
-    # Negative character set?
     saved_ignore = source.ignore_space
     source.ignore_space = False
-    negate = source.match("^")
-    characters, others = [], []
     try:
-        # Parse a set member. It might be a character or range of characters,
-        # expanded to a list, or a property or character class.
-        c, o = _parse_set_member(source, info)
-        characters.extend(c)
-        others.extend(o)
-        while not source.match("]"):
-            c, o = _parse_set_member(source, info)
-            characters.extend(c)
-            others.extend(o)
+        item = _parse_set_union(source, info)
     finally:
         source.ignore_space = saved_ignore
-    if info.all_flags & IGNORECASE:
-        # Expand the list of characters to include all their case-forms.
-        all_characters = []
-        char_type = info.char_type
-        for c in characters:
-            ch = char_type(c)
-            all_characters.extend([c, ord(ch.lower()), ord(ch.upper()),
-              ord(ch.title())])
-        characters = all_characters
-    return _Set(characters, others, positive=not negate)
+    return item
+
+def _parse_set_union(source, info):
+    "Parses a set union ([x||y])."
+    # Negative set?
+    negate = source.match("^")
+    items = [_parse_set_symm_diff(source, info)]
+    while source.match("||"):
+        items.append(_parse_set_symm_diff(source, info))
+    if not source.match("]"):
+        raise error("missing ]")
+    item = _SetUnion(items, positive=not negate)
+    return item
+
+def _parse_set_symm_diff(source, info):
+    "Parses a set symmetric difference ([x~~y])."
+    items = [_parse_set_inter(source, info)]
+    while source.match("~~"):
+        items.append(_parse_set_inter(source, info))
+    return _SetSymDiff(items)
+
+def _parse_set_inter(source, info):
+    "Parses a set intersection ([x&&y])."
+    items = [_parse_set_diff(source, info)]
+    while source.match("&&"):
+        items.append(_parse_set_diff(source, info))
+    return _SetInter(items)
+
+def _parse_set_diff(source, info):
+    "Parses a set difference ([x--y])."
+    items = [_parse_set_imp_union(source, info)]
+    while source.match("--"):
+        items.append(_parse_set_imp_union(source, info))
+    return _SetDiff(items)
+
+_SET_OPS = ("||", "~~", "&&", "--")
+
+def _parse_set_imp_union(source, info):
+    "Parses a set implicit union ([xy])."
+    items = [_parse_set_member(source, info)]
+    while True:
+        here = source.pos
+        if source.match("]") or any(source.match(op) for op in _SET_OPS):
+            break
+        items.append(_parse_set_member(source, info))
+    source.pos = here
+    return _SetUnion(items)
 
 def _parse_set_member(source, info):
     "Parses a member in a character set."
     # Parse a character or property.
     start = _parse_set_item(source, info)
     if not isinstance(start, _Character):
-        # Return only a property.
-        return [], [start]
+        # Not the start of a range.
+        return start
     if not source.match("-"):
-        # Not a range, so return only a character.
-        return [start.value], []
-    # It looks like a range of characters.
+        # Not a range.
+        if info.all_flags & IGNORECASE:
+            # Case-insensitive.
+            characters = [start.value]
+            c = source.char_type(start.value)
+            characters.append(ord(c.lower()))
+            characters.append(ord(c.upper()))
+            characters.append(ord(c.title()))
+            characters = set(characters)
+            # Is it a caseless character?
+            if len(characters) == 1:
+                return start
+            return _SetUnion([_Character(c) for c in characters])
+        return start
+    # It looks like the start of a range of characters.
     here = source.pos
     if source.match("]"):
         # We've reached the end of the set, so return both the character and
-        # the hyphen.
+        # hyphen.
         source.pos = here
-        return [start.value, ord("-")], []
+        characters = [start.value, ord("-")]
+        if info.all_flags & IGNORECASE:
+            # Case-insensitive.
+            c = source.char_type(start.value)
+            characters.append(ord(c.lower()))
+            characters.append(ord(c.upper()))
+            characters.append(ord(c.title()))
+        characters = set(characters)
+        return _SetUnion([_Character(c) for c in characters])
     # Parse a character or property.
     end = _parse_set_item(source, info)
     if not isinstance(end, _Character):
-        # It's a property, so return the character, hyphen and property.
-        return [start, ord("-")], [end]
+        # It's not a range, so return the character, hyphen and property.
+        characters = [start.value, ord("-")]
+        if info.all_flags & IGNORECASE:
+            # Case-insensitive.
+            c = source.char_type(start.value)
+            characters.append(ord(c.lower()))
+            characters.append(ord(c.upper()))
+            characters.append(ord(c.title()))
+        characters = set(characters)
+        return _SetUnion([_Character(c) for c in characters] + [end])
     # It _is_ a range.
     if start.value > end.value:
         raise error("bad character range")
-    # Expand the range to a list of characters.
     characters = list(range(start.value, end.value + 1))
-    # Return the characters.
-    return characters, []
+    if info.all_flags & IGNORECASE:
+        for c in range(start.value, end.value + 1):
+            c = source.char_type(c)
+            characters.append(ord(c.lower()))
+            characters.append(ord(c.upper()))
+            characters.append(ord(c.title()))
+        characters = set(characters)
+    return _SetUnion([_Character(c) for c in characters])
 
 def _parse_set_item(source, info):
     "Parses an item in a character set."
@@ -957,6 +1042,8 @@ def _parse_set_item(source, info):
     if source.match("\\"):
         return _parse_escape(source, info, True)
     ch = source.get()
+    if ch == "[":
+        return _parse_set_union(source, info)
     if not ch:
         raise error("bad set")
     return _Character(ord(ch))
@@ -970,7 +1057,7 @@ def _parse_character_class(source, positive, info):
         prop_name = name
         name = []
         ch = source.get()
-        while ch and (ch.isalnum() or ch.isspace() or ch in "&_-."):
+        while ch and (ch.isalnum() or ch in "&_-. "):
             name.append(ch)
             ch = source.get()
     else:
@@ -981,7 +1068,7 @@ def _parse_character_class(source, positive, info):
     return _lookup_property(prop_name, name, positive)
 
 def _float_to_rational(flt):
-    "Converts a float to a rational (x/y)."
+    "Converts a float to a rational pair."
     int_part = int(flt)
     error = flt - int_part
     if abs(error) < 0.0001:
@@ -989,14 +1076,14 @@ def _float_to_rational(flt):
     den, num = _float_to_rational(1.0 / error)
     return int_part * den + num, den
 
-def _number_to_rational(name):
-    "Converts a numeric name to a rational."
-    if name[0] == "-":
-        sign, name = name[0], name[1 : ]
+def _numeric_to_rational(numeric):
+    "Converts a numeric string to a rational string, if possible."
+    if numeric[0] == "-":
+        sign, numeric = numeric[0], numeric[1 : ]
     else:
         sign = ""
 
-    parts = name.split("/")
+    parts = numeric.split("/")
     if len(parts) == 2:
         num, den = _float_to_rational(float(parts[0]) / float(parts[1]))
     elif len(parts) == 1:
@@ -1011,8 +1098,8 @@ def _number_to_rational(name):
 def _standardise_name(name):
     "Standardises a property or value name."
     try:
-        return _number_to_rational("".join(name))
-    except ValueError:
+        return _numeric_to_rational("".join(name))
+    except (ValueError, ZeroDivisionError):
         return "".join(ch for ch in name if ch not in "_- ").upper()
 
 def _lookup_property(property, value, positive):
@@ -1202,12 +1289,20 @@ class _AnyAll(_Any):
     _opcode = {False: _OP.ANY_ALL, True: _OP.ANY_ALL_REV}
     _op_name = {False: "ANY_ALL", True: "ANY_ALL_REV"}
 
+class _AnyU(_Any):
+    _opcode = {False: _OP.ANY_U, True: _OP.ANY_U_REV}
+    _op_name = {False: "ANY_U", True: "ANY_U_REV"}
+
 class _Atomic(_StructureBase):
     def __init__(self, subpattern):
         self.subpattern = subpattern
+        self._optimised = False
     def fix_groups(self):
         self.subpattern.fix_groups()
     def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
         sequence = self.subpattern.optimise(info)
         prefix, sequence = _Atomic._split_atomic_prefix(sequence)
         suffix, sequence = _Atomic._split_atomic_suffix(sequence)
@@ -1276,10 +1371,14 @@ class _Boundary(_ZeroWidthBase):
 class _Branch(_StructureBase):
     def __init__(self, branches):
         self.branches = branches
+        self._optimised = False
     def fix_groups(self):
         for branch in self.branches:
             branch.fix_groups()
     def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
         branches = _Branch._flatten_branches(info, self.branches)
         prefix, branches = _Branch._split_common_prefix(branches)
         suffix, branches = _Branch._split_common_suffix(branches)
@@ -1398,24 +1497,24 @@ class _Branch(_StructureBase):
     def _reduce_to_set(info, branches):
         # Can the branches be reduced to a set?
         new_branches = []
-        characters, others = [], []
+        members = []
         for branch in branches:
             t = type(branch)
-            if t is _Any:
-                others.append(branch)
-            elif t is _Character and branch.positive:
-                characters.append(branch.value)
+            if t is _Character and branch.positive:
+                members.append(branch)
             elif isinstance(branch, _Property):
-                others.append(branch)
-            elif t is _Set and branch.positive:
-                characters.extend(branch.characters)
-                others.extend(branch.others)
+                members.append(branch)
+            elif t is _SetUnion and branch.positive:
+                for i in branch.items:
+                    if isinstance(i, (_Character, _Property)):
+                        members.append(i)
+                    else:
+                        _Branch._flush_set_members(info, members, new_branches)
             else:
-                _Branch._flush_set_members(info, characters, others,
-                  new_branches)
-                characters, others = [], []
+                _Branch._flush_set_members(info, members, new_branches)
+                members = []
                 new_branches.append(branch)
-        _Branch._flush_set_members(info, characters, others, new_branches)
+        _Branch._flush_set_members(info, members, new_branches)
         return new_branches
     @staticmethod
     def _flush_char_prefix(info, char_type, prefixed, order, new_branches):
@@ -1436,10 +1535,9 @@ class _Branch(_StructureBase):
                 sequence = _Sequence([char_type(value), _Branch(subbranches)])
                 new_branches.append(sequence.optimise(info))
     @staticmethod
-    def _flush_set_members(info, characters, others, new_branches):
-        if characters or others:
-            new_branches.append(_Set(characters, others,
-              positive=True).optimise(info))
+    def _flush_set_members(info, members, new_branches):
+        if members:
+            new_branches.append(_SetUnion(members).optimise(info))
 
 class _Character(_RegexBase):
     _opcode = {False: _OP.CHARACTER, True: _OP.CHARACTER_REV}
@@ -1471,10 +1569,19 @@ class _Character(_RegexBase):
 class _CharacterIgn(_Character):
     _opcode = {False: _OP.CHARACTER_IGN, True: _OP.CHARACTER_IGN_REV}
     _op_name = {False: "CHARACTER_IGN", True: "CHARACTER_IGN_REV"}
+    def __init__(self, ch, positive=True, zerowidth=False):
+        self.value, self.positive, self.zerowidth = ch, bool(positive), \
+          bool(zerowidth)
+        self._key = self.__class__, self.value, self.positive, self.zerowidth
+        self._optimised = False
     def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
         # Case-sensitive matches are faster, so convert to a case-sensitive
         # instance if the character is case-insensitive.
         if self.is_case_sensitive(info):
+            self._optimised = True
             return self
         return _Character(self.value, positive=self.positive,
           zerowidth=self.zerowidth)
@@ -1483,6 +1590,7 @@ class _Conditional(_StructureBase):
     def __init__(self, info, group, yes_item, no_item):
         self.info, self.group, self.yes_item, self.no_item = info, group, \
           yes_item, no_item
+        self._optimised = False
     def fix_groups(self):
         try:
             self.group = int(self.group)
@@ -1499,10 +1607,14 @@ class _Conditional(_StructureBase):
         else:
             self.no_item = _Sequence()
     def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
         if self.yes_item.is_empty() and self.no_item.is_empty():
             return _Sequence()
         self.yes_item = self.yes_item.optimise(info)
         self.no_item = self.no_item.optimise(info)
+        self._optimised = True
         return self
     def pack_characters(self):
         self.yes_item = self.yes_item.pack_characters()
@@ -1556,6 +1668,12 @@ class _EndOfLine(_ZeroWidthBase):
     def dump(self, indent=0, reverse=False):
         print("{}END_OF_LINE".format(_INDENT * indent))
 
+class _EndOfLineU(_EndOfLine):
+    def compile(self, reverse=False):
+        return [(_OP.END_OF_LINE_U, )]
+    def dump(self, indent=0, reverse=False):
+        print("{}END_OF_LINE_U".format(_INDENT * indent))
+
 class _EndOfString(_ZeroWidthBase):
     def compile(self, reverse=False):
         return [(_OP.END_OF_STRING, )]
@@ -1567,6 +1685,12 @@ class _EndOfStringLine(_ZeroWidthBase):
         return [(_OP.END_OF_STRING_LINE, )]
     def dump(self, indent=0, reverse=False):
         print("{}END_OF_STRING_LINE".format(_INDENT * indent))
+
+class _EndOfStringLineU(_EndOfStringLine):
+    def compile(self, reverse=False):
+        return [(_OP.END_OF_STRING_LINE_U, )]
+    def dump(self, indent=0, reverse=False):
+        print("{}END_OF_STRING_LINE_U".format(_INDENT * indent))
 
 class _Grapheme(_RegexBase):
     def __init__(self):
@@ -1586,13 +1710,18 @@ class _GreedyRepeat(_StructureBase):
     def __init__(self, subpattern, min_count, max_count):
         self.subpattern, self.min_count, self.max_count = subpattern, \
           min_count, max_count
+        self._optimised = False
     def fix_groups(self):
         self.subpattern.fix_groups()
     def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
         subpattern = self.subpattern.optimise(info)
         if (self.min_count, self.max_count) == (1, 1) or subpattern.is_empty():
             return subpattern
         self.subpattern = subpattern
+        self._optimised = True
         return self
     def pack_characters(self):
         self.subpattern = self.subpattern.pack_characters()
@@ -1635,10 +1764,15 @@ class _GreedyRepeat(_StructureBase):
 class _Group(_StructureBase):
     def __init__(self, info, group, subpattern):
         self.info, self.group, self.subpattern = info, group, subpattern
+        self._optimised = False
     def fix_groups(self):
         self.subpattern.fix_groups()
     def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
         self.subpattern = self.subpattern.optimise(info)
+        self._optimised = True
         return self
     def pack_characters(self):
         self.subpattern = self.subpattern.pack_characters()
@@ -1675,13 +1809,18 @@ class _LookAround(_StructureBase):
     def __init__(self, behind, positive, subpattern):
         self.behind, self.positive, self.subpattern = bool(behind), \
           bool(positive), subpattern
+        self._optimised = False
     def fix_groups(self):
         self.subpattern.fix_groups()
     def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
         subpattern = self.subpattern.optimise(info)
         if self.positive and subpattern.is_empty():
             return subpattern
         self.subpattern = subpattern
+        self._optimised = True
         return self
     def pack_characters(self):
         self.subpattern = self.subpattern.pack_characters()
@@ -1772,10 +1911,14 @@ class _Sequence(_StructureBase):
         if sequence is None:
             sequence = []
         self.sequence = sequence
+        self._optimised = False
     def fix_groups(self):
         for subpattern in self.sequence:
             subpattern.fix_groups()
     def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
         # Flatten the sequences.
         sequence = []
         for subpattern in self.sequence:
@@ -1787,6 +1930,7 @@ class _Sequence(_StructureBase):
         if len(sequence) == 1:
             return sequence[0]
         self.sequence = sequence
+        self._optimised = True
         return self
     def pack_characters(self):
         sequence = []
@@ -1868,73 +2012,25 @@ class _Sequence(_StructureBase):
             sequence.append(_string_classes[char_type](characters))
 
 class _Set(_RegexBase):
-    _opcode = {False: _OP.SET, True: _OP.SET_REV}
-    _op_name = {False: "SET", True: "SET_REV"}
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
     _big_bitset_opcode = {False: _OP.BIG_BITSET, True: _OP.BIG_BITSET_REV}
     _small_bitset_opcode = {False: _OP.SMALL_BITSET, True: _OP.SMALL_BITSET_REV}
-    def __init__(self, characters, others, positive=True, zerowidth=False):
-        characters = tuple(set(characters))
-        others = tuple(set(others))
-        self.characters, self.others, self.positive, self.zerowidth = \
-          characters, others, bool(positive), zerowidth
-        self._key = self.__class__, self.characters, self.others, \
-          self.positive, self.zerowidth
-    def optimise(self, info):
-        # If the set contains complementary properties then the set itself is
-        # equivalent to _AnyAll.
-        prop = {False: set(), True: set()}
-        for o in self.others:
-            if isinstance(o, _Property):
-                prop[o.positive].add(o.value)
-        if self.positive and (prop[False] & prop[True]) and not self.zerowidth:
-            return _AnyAll()
-
-        # We can simplify if the set contains just a single character.
-        if not self.others and len(self.characters) == 1:
-            return _Character(self.characters[0], positive=self.positive,
-              zerowidth=self.zerowidth)
-
-        # We can simplify if the set contains just a single property (with
-        # certain exceptions).
-        if not self.characters and len(self.others) == 1:
-            o = self.others[0]
-            if type(o) is _Any and self.positive and not self.zerowidth:
-                return o
-            if isinstance(o, _Property):
-                return _Property(o.value, positive=self.positive == o.positive,
-                  zerowidth=self.zerowidth)
-
-        return self
-    def compile(self, reverse=False):
-        # If there are only characters then compile to a character or bitset.
-        if not self.others:
-            if len(self.characters) == 1:
-                return _Character(self.characters[0],
-                  positive=self.positive).compile(reverse)
-            return self._make_bitset(self.characters, self.positive, reverse)
-
-        # If there's one property and no characters then compile to that.
-        if not self.characters and len(self.others) == 1:
-            o = self.others[0]
-            o.positive = o.positive == self.positive
-            o.zerowidth = self.zerowidth
-            return o.compile(reverse)
-
-        # Compile a compound set.
-        flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
-        code = [(self._opcode[reverse], flags)]
-        if self.characters:
-            code.extend(self._make_bitset(self.characters, True, False))
-        for o in self.others:
-            code.extend(o.compile())
-        code.append((_OP.END, ))
-        return code
+    def __init__(self, items, positive=True, zerowidth=False):
+        items = tuple(items)
+        self.items, self.positive, self.zerowidth = items, positive, zerowidth
+        self._key = self.__class__, self.items, self.positive, self.zerowidth
+        self._optimised = False
     def dump(self, indent=0, reverse=False):
-        print("{}{} {}".format(_INDENT * indent, self._op_name[reverse],
-          self._pos_text[self.positive]))
-        if self.characters:
-            characters = sorted(self.characters)
+        print("{}{} {}".format(_INDENT * indent, self._op_name[reverse], self._pos_text[self.positive]))
+        characters, others = [], []
+        for m in self.items:
+            if isinstance(m, _Character):
+                characters.append(m.value)
+            else:
+                others.append(m)
+
+        if characters:
+            characters.sort()
             c = characters[0]
             start, end = c, c - 1
             for c in characters:
@@ -1952,21 +2048,12 @@ class _Set(_RegexBase):
             else:
                 print("{}RANGE {} {}".format(_INDENT * (indent + 1), start,
                   end))
-        for o in self.others:
-            o.dump(indent + 1)
-    def firstset(self):
-        try:
-            return set([self])
-        except TypeError:
-            print("_key of set is {}".format(self._key))
-            raise
-    def has_simple_start(self):
-        return True
+        for m in others:
+            m.dump(indent + 1)
     BITS_PER_INDEX = 16
     INDEXES_PER_CODE = _BITS_PER_CODE // BITS_PER_INDEX
     CODE_MASK = (1 << _BITS_PER_CODE) - 1
     CODES_PER_SUBSET = 256 // _BITS_PER_CODE
-    SUBSET_MASK = (1 << 256) - 1
     def _make_bitset(self, characters, positive, reverse):
         code = []
         # values for big bitset are: max_char indexes... subsets...
@@ -1982,13 +2069,13 @@ class _Set(_RegexBase):
                 subset = bitset_dict.get(top, 0)
                 ind = subset_index.setdefault(subset, len(subset_index))
                 indexes.append(ind)
-            remainder = len(indexes) % self.INDEXES_PER_CODE
+            remainder = len(indexes) % _Set.INDEXES_PER_CODE
             if remainder:
-                indexes.extend([0] * (self.INDEXES_PER_CODE - remainder))
+                indexes.extend([0] * (_Set.INDEXES_PER_CODE - remainder))
             data = []
-            for i in range(0, len(indexes), self.INDEXES_PER_CODE):
+            for i in range(0, len(indexes), _Set.INDEXES_PER_CODE):
                 ind = 0
-                for s in range(self.INDEXES_PER_CODE):
+                for s in range(_Set.INDEXES_PER_CODE):
                     ind |= indexes[i + s] << (_Set.BITS_PER_INDEX * s)
                 data.append(ind)
             for subset, ind in sorted(subset_index.items(), key=lambda pair:
@@ -2012,11 +2099,203 @@ class _Set(_RegexBase):
             bitset >>= _BITS_PER_CODE
         return codes
 
+class _SetDiff(_Set):
+    _opcode = {False: _OP.SET_DIFF, True: _OP.SET_DIFF_REV}
+    _op_name = {False: "SET_DIFF", True: "SET_DIFF_REV"}
+    def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
+        items = []
+        for m in self.items:
+            m = m.optimise(info)
+            if isinstance(m, _SetDiff) and m.positive:
+                if items:
+                    items.append(m)
+                else:
+                    items.extend(m.items)
+            elif isinstance(m, _SetUnion) and m.positive:
+                if items:
+                    items.extend(m.items)
+                else:
+                    items.append(m)
+            else:
+                items.append(m)
+        self.items = items
+        self._optimised = True
+
+        # We can simplify if the set contains just a single member.
+        if len(self.items) == 1:
+            m = self.items[0]
+            if isinstance(m, _Character):
+                return _Character(m.value, positive=self.positive ==
+                  m.positive, zerowidth=self.zerowidth)
+            if isinstance(m, _Property):
+                return _Property(m.value, positive=self.positive == m.positive,
+                  zerowidth=self.zerowidth)
+            if isinstance(m, _Set):
+                return type(m)(m.items, positive=self.positive == m.positive,
+                  zerowidth=self.zerowidth)
+
+        return self
+    def compile(self, reverse=False):
+        flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
+        code = [(self._opcode[reverse], flags)]
+        for m in self.items:
+            code.extend(m.compile())
+        code.append((_OP.END, ))
+        return code
+
+class _SetInter(_Set):
+    _opcode = {False: _OP.SET_INTER, True: _OP.SET_INTER_REV}
+    _op_name = {False: "SET_INTER", True: "SET_INTER_REV"}
+    def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
+        items = []
+        for m in self.items:
+            m = m.optimise(info)
+            if isinstance(m, _SetInter) and m.positive:
+                items.extend(m.items)
+            else:
+                items.append(m)
+        self.items = items
+        self._optimised = True
+
+        # We can simplify if the set contains just a single member.
+        if len(self.items) == 1:
+            m = self.items[0]
+            if isinstance(m, _Character):
+                return _Character(m.value, positive=self.positive ==
+                  m.positive, zerowidth=self.zerowidth)
+            if isinstance(m, _Property):
+                return _Property(m.value, positive=self.positive == m.positive,
+                  zerowidth=self.zerowidth)
+            if isinstance(m, _Set):
+                return type(m)(m.items, positive=self.positive == m.positive,
+                  zerowidth=self.zerowidth)
+
+        return self
+    def compile(self, reverse=False):
+        flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
+        code = [(self._opcode[reverse], flags)]
+        for m in self.items:
+            code.extend(m.compile())
+        code.append((_OP.END, ))
+        return code
+
+class _SetSymDiff(_Set):
+    _opcode = {False: _OP.SET_SYM_DIFF, True: _OP.SET_SYM_DIFF_REV}
+    _op_name = {False: "SET_SYM_DIFF", True: "SET_SYM_DIFF_REV"}
+    def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
+        items = []
+        for m in self.items:
+            m = m.optimise(info)
+            if isinstance(m, _SetSymDiff) and m.positive:
+                items.extend(m.items)
+            else:
+                items.append(m)
+        self.items = items
+        self._optimised = True
+
+        # We can simplify if the set contains just a single member.
+        if len(self.items) == 1:
+            m = self.items[0]
+            if isinstance(m, _Character):
+                return _Character(m.value, positive=self.positive ==
+                  m.positive, zerowidth=self.zerowidth)
+            if isinstance(m, _Property):
+                return _Property(m.value, positive=self.positive == m.positive,
+                  zerowidth=self.zerowidth)
+            if isinstance(m, _Set):
+                return type(m)(m.items, positive=self.positive == m.positive,
+                  zerowidth=self.zerowidth)
+
+        return self
+    def compile(self, reverse=False):
+        flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
+        code = [(self._opcode[reverse], flags)]
+        for m in self.items:
+            code.extend(m.compile())
+        code.append((_OP.END, ))
+        return code
+
+class _SetUnion(_Set):
+    _opcode = {False: _OP.SET_UNION, True: _OP.SET_UNION_REV}
+    _op_name = {False: "SET_UNION", True: "SET_UNION_REV"}
+    def optimise(self, info):
+        if self._optimised:
+            print("***", self, "already optimised", "***")
+            return self
+        items = []
+        for m in self.items:
+            m = m.optimise(info)
+            if isinstance(m, _SetUnion) and m.positive:
+                items.extend(m.items)
+            else:
+                items.append(m)
+        self.items = items
+        self._optimised = True
+
+        # We can simplify if the set contains just a single member.
+        if len(self.items) == 1:
+            m = self.items[0]
+            if isinstance(m, _Character):
+                return _Character(m.value, positive=self.positive ==
+                  m.positive, zerowidth=self.zerowidth)
+            if isinstance(m, _Property):
+                return _Property(m.value, positive=self.positive == m.positive,
+                  zerowidth=self.zerowidth)
+            if isinstance(m, _Set):
+                return type(m)(m.items, positive=self.positive == m.positive,
+                  zerowidth=self.zerowidth)
+
+        return self
+    def compile(self, reverse=False):
+        characters, others = [], []
+        for m in self.items:
+            if isinstance(m, _Character):
+                characters.append(m.value)
+            else:
+                others.append(m)
+
+        # If there are only characters then compile to a character or bitset.
+        if not others:
+            return self._make_bitset(characters, self.positive, reverse)
+
+        # Compile a compound set.
+        flags = int(self.positive) + _ZEROWIDTH_OP * int(self.zerowidth)
+        code = [(self._opcode[reverse], flags)]
+        if characters:
+            code.extend(self._make_bitset(characters, True, False))
+        for m in others:
+            code.extend(m.compile())
+        code.append((_OP.END, ))
+        return code
+    def firstset(self):
+        try:
+            return set([self])
+        except TypeError:
+            print("_key of set is {}".format(self._key))
+            raise
+    def has_simple_start(self):
+        return True
+
 class _StartOfLine(_ZeroWidthBase):
     def compile(self, reverse=False):
         return [(_OP.START_OF_LINE, )]
     def dump(self, indent=0, reverse=False):
         print("{}START_OF_LINE".format(_INDENT * indent))
+
+class _StartOfLineU(_StartOfLine):
+    def compile(self, reverse=False):
+        return [(_OP.START_OF_LINE_U, )]
+    def dump(self, indent=0, reverse=False):
+        print("{}START_OF_LINE_U".format(_INDENT * indent))
 
 class _StartOfString(_ZeroWidthBase):
     def compile(self, reverse=False):

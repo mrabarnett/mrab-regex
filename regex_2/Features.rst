@@ -57,6 +57,44 @@ Additional features
 
 The issue numbers relate to the Python bug tracker.
 
+* Unicode line separators
+
+    Normally the only line separator is ``\n`` (``\x0A``), but if the ``WORD`` flag is turned on then the line separators are the pair ``\x0D\x0A``, and ``\x0A``, ``\x0B``, ``\x0C`` and ``\x0D``, plus ``\x85``, ``\u0x2028`` and ``\u2029`` when working with Unicode.
+
+    This affects the regex dot ``"."``, which, with ``DOTALL`` flag turned off, matches any character except a line separator. It also affects the line anchors ``^`` and ``$`` (in multiline mode) and ``\Z``.
+
+* Set operators
+
+    Set operators have been added, and a set [...] can include nested sets.
+
+    The operators, in order of increasing precedence, are:
+
+        ``||`` for union ("x||y" means "x or y")
+
+        ``~~`` (double tilde) for symmetric difference ("x~~y" means "x or y, but not both")
+
+        ``&&`` for intersection ("x&&y" means "x and y")
+
+        ``--`` (double dash) for difference ("x--y" means "x but not y")
+
+    Implicit union, ie, simple juxtaposition like in ``[ab]``, has the highest precedence. Thus, ``[ab&&cd]`` is the same as ``[[a||b]&&[c||d]]``.
+
+    Examples:
+
+        ``[ab]`` # Set containing 'a' and 'b'
+
+        ``[a-z]`` # Set containing 'a' .. 'z'
+
+        ``[[a-z]--[qw]]`` # Set containing 'a' .. 'z', but not 'q' or 'w'
+
+        ``[a-z--qw]`` # Same as above
+
+        ``[\p{L}--QW]`` # Set containing all letters except 'Q' and 'W'
+
+        ``[\p{N}--[0-9]]`` # Set containing all numbers except '0' .. '9'
+
+        ``[\p{ASCII}&&\p{Letter}]`` # Set containing all characters which are ASCII and letter
+
 * regex.escape (issue #2650)
 
     regex.escape has an additional keyword parameter ``special_only``. When True, only 'special' regex characters, such as '?', are escaped.

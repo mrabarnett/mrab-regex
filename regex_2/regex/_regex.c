@@ -136,6 +136,9 @@ typedef struct RE_EncodingTable {
     BOOL (*at_boundary)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_default_boundary)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_grapheme_boundary)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*is_line_sep)(RE_CODE ch);
+    BOOL (*at_line_start)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*at_line_end)(struct RE_State* state, Py_ssize_t text_pos);
 } RE_EncodingTable;
 
 /* Position with the regex and text. */
@@ -295,6 +298,7 @@ typedef struct RE_State {
     Py_ssize_t match_pos; /* Start position of the match. */
     Py_ssize_t text_pos; /* Current position of the match. */
     Py_ssize_t final_newline; /* Index of newline at end of string, or -1. */
+    Py_ssize_t final_line_sep; /* Index of line separator at end of string, or -1. */
     /* Storage for backtrack info. */
     RE_BacktrackBlock backtrack_block;
     RE_BacktrackBlock* current_backtrack_block;
@@ -581,6 +585,45 @@ static BOOL ascii_at_boundary(RE_State* state, Py_ssize_t text_pos) {
     return before != after;
 }
 
+/* Checks whether a character is a line separator. */
+static BOOL ascii_is_line_sep(RE_CODE ch) {
+    return 0x0A <= ch && ch <= 0x0D;
+}
+
+/* Checks whether the current text position is at the start of a line. */
+static BOOL ascii_at_line_start(RE_State* state, Py_ssize_t text_pos) {
+    RE_CODE ch;
+
+    if (text_pos == 0)
+        return TRUE;
+
+    ch = state->char_at(state->text, text_pos - 1);
+
+    if (ch == 0x0D)
+        /* No line break inside CRLF. */
+        return text_pos >= state->text_length || state->char_at(state->text,
+          text_pos) != 0x0A;
+
+    return 0x0A <= ch && ch <= 0x0D;
+}
+
+/* Checks whether the current text position is at the end of a line. */
+static BOOL ascii_at_line_end(RE_State* state, Py_ssize_t text_pos) {
+    RE_CODE ch;
+
+    if (text_pos >= state->text_length)
+        return TRUE;
+
+    ch = state->char_at(state->text, text_pos);
+
+    if (ch == 0x0A)
+        /* No line break inside CRLF. */
+        return text_pos >= 1 || state->char_at(state->text, text_pos - 1) !=
+          0x0D;
+
+    return 0x0A <= ch && ch <= 0x0D;
+}
+
 /* The handlers for ASCII characters. */
 static RE_EncodingTable ascii_encoding = {
     ascii_has_property,
@@ -591,6 +634,9 @@ static RE_EncodingTable ascii_encoding = {
     ascii_at_boundary,
     ascii_at_boundary, /* No special "default word boundary" for ASCII. */
     at_boundary_always, /* No special "grapheme boundary" for ASCII. */
+    ascii_is_line_sep,
+    ascii_at_line_start,
+    ascii_at_line_end,
 };
 
 /* Locale-specific. */
@@ -737,6 +783,9 @@ static RE_EncodingTable locale_encoding = {
     locale_at_boundary,
     locale_at_boundary, /* No special "default word boundary" for locale. */
     at_boundary_always, /* No special "grapheme boundary" for locale. */
+    ascii_is_line_sep, /* Assume locale line separators are same as ASCII. */
+    ascii_at_line_start, /* Assume locale line separators are same as ASCII. */
+    ascii_at_line_end, /* Assume locale line separators are same as ASCII. */
 };
 
 /* Unicode-specific. */
@@ -995,6 +1044,48 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos) {
     return TRUE;
 }
 
+/* Checks whether a character is a line separator. */
+static BOOL unicode_is_line_sep(RE_CODE ch) {
+    return 0x0A <= ch && ch <= 0x0D || ch == 0x85 || ch == 0x2028 || ch ==
+      0x2029;
+}
+
+/* Checks whether the current text position is at the start of a line. */
+static BOOL unicode_at_line_start(RE_State* state, Py_ssize_t text_pos) {
+    RE_CODE ch;
+
+    if (text_pos == 0)
+        return TRUE;
+
+    ch = state->char_at(state->text, text_pos - 1);
+
+    if (ch == 0x0D)
+        /* No line break inside CRLF. */
+        return text_pos >= state->text_length || state->char_at(state->text,
+          text_pos) != 0x0A;
+
+    return 0x0A <= ch && ch <= 0x0D || ch == 0x85 || ch == 0x2028 || ch ==
+      0x2029;
+}
+
+/* Checks whether the current text position is at the end of a line. */
+static BOOL unicode_at_line_end(RE_State* state, Py_ssize_t text_pos) {
+    RE_CODE ch;
+
+    if (text_pos >= state->text_length)
+        return TRUE;
+
+    ch = state->char_at(state->text, text_pos);
+
+    if (ch == 0x0A)
+        /* No line break inside CRLF. */
+        return text_pos >= 1 || state->char_at(state->text, text_pos - 1) !=
+          0x0D;
+
+    return 0x0A <= ch && ch <= 0x0D || ch == 0x85 || ch == 0x2028 || ch ==
+      0x2029;
+}
+
 /* The handlers for Unicode characters. */
 static RE_EncodingTable unicode_encoding = {
     unicode_has_property,
@@ -1005,6 +1096,9 @@ static RE_EncodingTable unicode_encoding = {
     unicode_at_boundary,
     unicode_at_default_boundary,
     unicode_at_grapheme_boundary,
+    unicode_is_line_sep,
+    unicode_at_line_start,
+    unicode_at_line_end,
 };
 
 /* Sets the error message. */
@@ -1219,9 +1313,138 @@ Py_LOCAL_INLINE(BOOL) in_small_bitset(RE_Node* node, RE_CODE ch) {
     return match == node->match;
 }
 
-/* Checks whether a character is in a set. */
-Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
-  ch) {
+Py_LOCAL_INLINE(BOOL) in_set_diff(RE_EncodingTable* encoding, RE_Node* node,
+  RE_CODE ch);
+Py_LOCAL_INLINE(BOOL) in_set_inter(RE_EncodingTable* encoding, RE_Node* node,
+  RE_CODE ch);
+Py_LOCAL_INLINE(BOOL) in_set_sym_diff(RE_EncodingTable* encoding, RE_Node* node,
+  RE_CODE ch);
+Py_LOCAL_INLINE(BOOL) in_set_union(RE_EncodingTable* encoding, RE_Node* node,
+  RE_CODE ch);
+
+/* Checks whether a character is in a set diff. */
+Py_LOCAL_INLINE(BOOL) in_set_diff(RE_EncodingTable* encoding, RE_Node* node,
+  RE_CODE ch) {
+    RE_Node* member;
+    BOOL (*has_property)(RE_CODE property, RE_CODE ch);
+
+    member = node->nonstring.next_2.node;
+    has_property = encoding->has_property;
+
+    switch (member->op) {
+    case RE_OP_BIG_BITSET:
+        /* values are: size max_char indexes... subsets... */
+        TRACE(("%s\n", re_op_text[member->op]))
+        if (!in_big_bitset(member, ch))
+            return !node->match;
+        break;
+    case RE_OP_CHARACTER:
+        /* values are: char_code */
+        TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+          member->values[0]))
+        if ((ch == member->values[0]) != member->match)
+            return !node->match;
+        break;
+    case RE_OP_PROPERTY:
+        /* values are: property */
+        TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+          member->values[0]))
+        if (has_property(member->values[0], ch) != member->match)
+            return !node->match;
+        break;
+    case RE_OP_SET_DIFF:
+        TRACE(("%s\n", re_op_text[member->op]))
+        if (!in_set_diff(encoding, member, ch))
+            return !node->match;
+        break;
+    case RE_OP_SET_INTER:
+        TRACE(("%s\n", re_op_text[member->op]))
+        if (!in_set_inter(encoding, member, ch))
+            return !node->match;
+        break;
+    case RE_OP_SET_SYM_DIFF:
+        TRACE(("%s\n", re_op_text[member->op]))
+        if (!in_set_sym_diff(encoding, member, ch))
+            return !node->match;
+        break;
+    case RE_OP_SET_UNION:
+        TRACE(("%s\n", re_op_text[member->op]))
+        if (!in_set_union(encoding, member, ch))
+            return !node->match;
+        break;
+    case RE_OP_SMALL_BITSET:
+        /* values are: size top_bits bitset */
+        TRACE(("%s\n", re_op_text[member->op]))
+        if (!in_small_bitset(member, ch))
+            return !node->match;
+        break;
+    default:
+        return FALSE;
+    }
+
+    member = member->next_1.node;
+
+    while (member) {
+        switch (member->op) {
+        case RE_OP_BIG_BITSET:
+            /* values are: size max_char indexes... subsets... */
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_big_bitset(member, ch))
+                return !node->match;
+            break;
+        case RE_OP_CHARACTER:
+            /* values are: char_code */
+            TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+              member->values[0]))
+            if ((ch == member->values[0]) == member->match)
+                return !node->match;
+            break;
+        case RE_OP_PROPERTY:
+            /* values are: property */
+            TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+              member->values[0]))
+            if (has_property(member->values[0], ch) == member->match)
+                return !node->match;
+            break;
+        case RE_OP_SET_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_diff(encoding, member, ch))
+                return !node->match;
+            break;
+        case RE_OP_SET_INTER:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_inter(encoding, member, ch))
+                return !node->match;
+            break;
+        case RE_OP_SET_SYM_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_sym_diff(encoding, member, ch))
+                return !node->match;
+            break;
+        case RE_OP_SET_UNION:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_union(encoding, member, ch))
+                return !node->match;
+            break;
+        case RE_OP_SMALL_BITSET:
+            /* values are: size top_bits bitset */
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_small_bitset(member, ch))
+                return !node->match;
+            break;
+        default:
+            return FALSE;
+        }
+
+        member = member->next_1.node;
+    }
+
+    return node->match;
+}
+
+/* Checks whether a character is in a set inter. */
+Py_LOCAL_INLINE(BOOL) in_set_inter(RE_EncodingTable* encoding, RE_Node* node,
+  RE_CODE ch) {
     RE_Node* member;
     BOOL (*has_property)(RE_CODE property, RE_CODE ch);
 
@@ -1230,11 +1453,143 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
 
     while (member) {
         switch (member->op) {
-        case RE_OP_ANY:
+        case RE_OP_BIG_BITSET:
+            /* values are: size max_char indexes... subsets... */
             TRACE(("%s\n", re_op_text[member->op]))
-            if (ch != '\n')
-                return node->match;
+            if (!in_big_bitset(member, ch))
+                return !node->match;
             break;
+        case RE_OP_CHARACTER:
+            /* values are: char_code */
+            TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+              member->values[0]))
+            if ((ch == member->values[0]) != member->match)
+                return !node->match;
+            break;
+        case RE_OP_PROPERTY:
+            /* values are: property */
+            TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+              member->values[0]))
+            if (has_property(member->values[0], ch) != member->match)
+                return !node->match;
+            break;
+        case RE_OP_SET_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_set_diff(encoding, member, ch))
+                return !node->match;
+            break;
+        case RE_OP_SET_INTER:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_set_inter(encoding, member, ch))
+                return !node->match;
+            break;
+        case RE_OP_SET_SYM_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_set_sym_diff(encoding, member, ch))
+                return !node->match;
+            break;
+        case RE_OP_SET_UNION:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_set_union(encoding, member, ch))
+                return !node->match;
+            break;
+        case RE_OP_SMALL_BITSET:
+            /* values are: size top_bits bitset */
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_small_bitset(member, ch))
+                return !node->match;
+            break;
+        default:
+            return FALSE;
+        }
+
+        member = member->next_1.node;
+    }
+
+    return node->match;
+}
+
+/* Checks whether a character is in a set sym diff. */
+Py_LOCAL_INLINE(BOOL) in_set_sym_diff(RE_EncodingTable* encoding, RE_Node* node,
+  RE_CODE ch) {
+    RE_Node* member;
+    BOOL (*has_property)(RE_CODE property, RE_CODE ch);
+    BOOL result;
+
+    member = node->nonstring.next_2.node;
+    has_property = encoding->has_property;
+
+    result = !node->match;
+
+    while (member) {
+        switch (member->op) {
+        case RE_OP_BIG_BITSET:
+            /* values are: size max_char indexes... subsets... */
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_big_bitset(member, ch))
+                result = !result;
+            break;
+        case RE_OP_CHARACTER:
+            /* values are: char_code */
+            TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+              member->values[0]))
+            if ((ch == member->values[0]) != member->match)
+                result = !result;
+            break;
+        case RE_OP_PROPERTY:
+            /* values are: property */
+            TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+              member->values[0]))
+            if (has_property(member->values[0], ch) != member->match)
+                result = !result;
+            break;
+        case RE_OP_SET_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_set_diff(encoding, member, ch))
+                result = !result;
+            break;
+        case RE_OP_SET_INTER:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_set_inter(encoding, member, ch))
+                result = !result;
+            break;
+        case RE_OP_SET_SYM_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_set_sym_diff(encoding, member, ch))
+                result = !result;
+            break;
+        case RE_OP_SET_UNION:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_set_union(encoding, member, ch))
+                result = !result;
+            break;
+        case RE_OP_SMALL_BITSET:
+            /* values are: size top_bits bitset */
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (!in_small_bitset(member, ch))
+                result = !result;
+            break;
+        default:
+            return FALSE;
+        }
+
+        member = member->next_1.node;
+    }
+
+    return result;
+}
+
+/* Checks whether a character is in a set union. */
+Py_LOCAL_INLINE(BOOL) in_set_union(RE_EncodingTable* encoding, RE_Node* node,
+  RE_CODE ch) {
+    RE_Node* member;
+    BOOL (*has_property)(RE_CODE property, RE_CODE ch);
+
+    member = node->nonstring.next_2.node;
+    has_property = encoding->has_property;
+
+    while (member) {
+        switch (member->op) {
         case RE_OP_BIG_BITSET:
             /* values are: size max_char indexes... subsets... */
             TRACE(("%s\n", re_op_text[member->op]))
@@ -1255,6 +1610,26 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
             if (has_property(member->values[0], ch) == member->match)
                 return node->match;
             break;
+        case RE_OP_SET_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_diff(encoding, member, ch))
+                return node->match;
+            break;
+        case RE_OP_SET_INTER:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_inter(encoding, member, ch))
+                return node->match;
+            break;
+        case RE_OP_SET_SYM_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_sym_diff(encoding, member, ch))
+                return node->match;
+            break;
+        case RE_OP_SET_UNION:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_union(encoding, member, ch))
+                return node->match;
+            break;
         case RE_OP_SMALL_BITSET:
             /* values are: size top_bits bitset */
             TRACE(("%s\n", re_op_text[member->op]))
@@ -1269,6 +1644,23 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
     }
 
     return !node->match;
+}
+
+/* Checks whether a character is in a set. */
+Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
+  ch) {
+    switch (node->op) {
+    case RE_OP_SET_INTER:
+        return in_set_inter(encoding, node, ch);
+    case RE_OP_SET_UNION:
+        return in_set_union(encoding, node, ch);
+    case RE_OP_SET_DIFF:
+        return in_set_diff(encoding, node, ch);
+    case RE_OP_SET_SYM_DIFF:
+        return in_set_sym_diff(encoding, node, ch);
+    }
+
+    return FALSE;
 }
 
 /* Pushes the groups. */
@@ -1550,6 +1942,74 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_REV(RE_State* state, RE_Node* node,
             while (text_ptr > limit_ptr && text_ptr[-1] == '\n')
                 --text_ptr;
         }
+
+        text_pos = text_ptr - (RE_BCHAR*)state->text;
+    }
+
+    return text_pos;
+}
+
+/* Matches many ANY_Us. */
+Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U(RE_State* state, RE_Node* node,
+  Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
+    BOOL (*is_line_sep)(RE_CODE ch);
+
+    is_line_sep = state->encoding->is_line_sep;
+
+    if (state->wide) {
+        RE_UCHAR* text_ptr;
+        RE_UCHAR* limit_ptr;
+
+        text_ptr = (RE_UCHAR*)state->text + text_pos;
+        limit_ptr = (RE_UCHAR*)state->text + limit;
+
+        while (text_ptr < limit_ptr && is_line_sep(text_ptr[0]) != match)
+            ++text_ptr;
+
+        text_pos = text_ptr - (RE_UCHAR*)state->text;
+    } else {
+        RE_BCHAR* text_ptr;
+        RE_BCHAR* limit_ptr;
+
+        text_ptr = (RE_BCHAR*)state->text + text_pos;
+        limit_ptr = (RE_BCHAR*)state->text + limit;
+
+        while (text_ptr < limit_ptr && is_line_sep(text_ptr[0]) != match)
+            ++text_ptr;
+
+        text_pos = text_ptr - (RE_BCHAR*)state->text;
+    }
+
+    return text_pos;
+}
+
+/* Matches many ANY_Us backwards. */
+Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U_REV(RE_State* state, RE_Node* node,
+  Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
+    BOOL (*is_line_sep)(RE_CODE ch);
+
+    is_line_sep = state->encoding->is_line_sep;
+
+    if (state->wide) {
+        RE_UCHAR* text_ptr;
+        RE_UCHAR* limit_ptr;
+
+        text_ptr = (RE_UCHAR*)state->text + text_pos;
+        limit_ptr = (RE_UCHAR*)state->text + limit;
+
+        while (text_ptr > limit_ptr && is_line_sep(text_ptr[-1]) != match)
+            --text_ptr;
+
+        text_pos = text_ptr - (RE_UCHAR*)state->text;
+    } else {
+        RE_BCHAR* text_ptr;
+        RE_BCHAR* limit_ptr;
+
+        text_ptr = (RE_BCHAR*)state->text + text_pos;
+        limit_ptr = (RE_BCHAR*)state->text + limit;
+
+        while (text_ptr > limit_ptr && is_line_sep(text_ptr[-1]) != match)
+            --text_ptr;
 
         text_pos = text_ptr - (RE_BCHAR*)state->text;
     }
@@ -2025,8 +2485,8 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         if (max_count > available)
             max_count = available;
 
-        return match_many_ANY(state, node, text_pos, text_pos + max_count,
-          TRUE) - text_pos;
+        return match_many_ANY(state, node, text_pos, text_pos + max_count, TRUE)
+          - text_pos;
     case RE_OP_ANY_ALL:
         available = state->slice_end - text_pos;
         if (max_count > available)
@@ -2045,6 +2505,20 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
             max_count = available;
 
         return text_pos - match_many_ANY_REV(state, node, text_pos, text_pos -
+          max_count, TRUE);
+    case RE_OP_ANY_U:
+        available = state->slice_end - text_pos;
+        if (max_count > available)
+            max_count = available;
+
+        return match_many_ANY_U(state, node, text_pos, text_pos + max_count,
+          TRUE) - text_pos;
+    case RE_OP_ANY_U_REV:
+        available = text_pos - state->slice_start;
+        if (max_count > available)
+            max_count = available;
+
+        return text_pos - match_many_ANY_U_REV(state, node, text_pos, text_pos -
           max_count, TRUE);
     case RE_OP_BIG_BITSET:
         available = state->slice_end - text_pos;
@@ -2102,14 +2576,20 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
 
         return text_pos - match_many_PROPERTY_REV(state, node, text_pos,
           text_pos - max_count, TRUE);
-    case RE_OP_SET:
+    case RE_OP_SET_DIFF:
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_UNION:
         available = state->slice_end - text_pos;
         if (max_count > available)
             max_count = available;
 
         return match_many_SET(state, node, text_pos, text_pos + max_count,
           TRUE) - text_pos;
-    case RE_OP_SET_REV:
+    case RE_OP_SET_DIFF_REV:
+    case RE_OP_SET_INTER_REV:
+    case RE_OP_SET_SYM_DIFF_REV:
+    case RE_OP_SET_UNION_REV:
         available = text_pos - state->slice_start;
         if (max_count > available)
             max_count = available;
@@ -2154,6 +2634,12 @@ Py_LOCAL_INLINE(BOOL) match_one(RE_State* state, RE_Node* node, Py_ssize_t
     case RE_OP_ANY_REV:
         return text_pos > state->slice_start && char_at(text, text_pos - 1) !=
           '\n';
+    case RE_OP_ANY_U:
+        return text_pos < state->slice_end &&
+          !state->encoding->is_line_sep(char_at(text, text_pos));
+    case RE_OP_ANY_U_REV:
+        return text_pos > state->slice_start &&
+          !state->encoding->is_line_sep(char_at(text, text_pos - 1));
     case RE_OP_BIG_BITSET:
         return text_pos < state->slice_end && in_big_bitset(node, char_at(text,
           text_pos));
@@ -2182,10 +2668,16 @@ Py_LOCAL_INLINE(BOOL) match_one(RE_State* state, RE_Node* node, Py_ssize_t
         return text_pos > state->slice_start &&
           state->encoding->has_property(node->values[0], char_at(text, text_pos
           - 1)) == node->match;
-    case RE_OP_SET:
+    case RE_OP_SET_DIFF:
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_UNION:
         return text_pos < state->slice_end && in_set(state->encoding, node,
           char_at(text, text_pos));
-    case RE_OP_SET_REV:
+    case RE_OP_SET_DIFF_REV:
+    case RE_OP_SET_INTER_REV:
+    case RE_OP_SET_SYM_DIFF_REV:
+    case RE_OP_SET_UNION_REV:
         return text_pos > state->slice_start && in_set(state->encoding, node,
           char_at(text, text_pos - 1));
     case RE_OP_SMALL_BITSET:
@@ -3213,6 +3705,16 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
           '\n')
             return FALSE;
         break;
+    case RE_OP_ANY_U: /* Any character, except a line separator. */
+        if (text_pos >= state->slice_end ||
+          state->encoding->is_line_sep(char_at(text, text_pos)))
+            return FALSE;
+        break;
+    case RE_OP_ANY_U_REV: /* Any character, except a line separator. */
+        if (text_pos <= state->slice_start ||
+          state->encoding->is_line_sep(char_at(text, text_pos - 1)))
+            return FALSE;
+        break;
     case RE_OP_BIG_BITSET: /* Big bitset. */
         if (text_pos >= state->slice_end || !in_big_bitset(test, char_at(text,
           text_pos)))
@@ -3263,12 +3765,20 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         if (text_pos != state->text_length && char_at(text, text_pos) != '\n')
             return FALSE;
         break;
+    case RE_OP_END_OF_LINE_U: /* At the end of a line. */
+        if (!state->encoding->at_line_end(state, text_pos))
+            return FALSE;
+        break;
     case RE_OP_END_OF_STRING: /* At the end of the string. */
         if (text_pos != state->text_length)
             return FALSE;
         break;
     case RE_OP_END_OF_STRING_LINE: /* At end of string or final newline. */
         if (text_pos != state->text_length && text_pos != state->final_newline)
+            return FALSE;
+        break;
+    case RE_OP_END_OF_STRING_LINE_U: /* At end of string or final newline. */
+        if (text_pos != state->text_length && text_pos != state->final_line_sep)
             return FALSE;
         break;
     case RE_OP_GRAPHEME_BOUNDARY: /* At a grapheme boundary. */
@@ -3294,12 +3804,18 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         if (text_pos != state->search_anchor)
             return FALSE;
         break;
-    case RE_OP_SET: /* Character set. */
+    case RE_OP_SET_DIFF: /* Character set. */
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_UNION:
         if (text_pos >= state->slice_end || !in_set(state->encoding, test,
           char_at(text, text_pos)))
             return FALSE;
         break;
-    case RE_OP_SET_REV: /* Character set. */
+    case RE_OP_SET_DIFF_REV: /* Character set. */
+    case RE_OP_SET_INTER_REV:
+    case RE_OP_SET_SYM_DIFF_REV:
+    case RE_OP_SET_UNION_REV:
         if (text_pos <= state->slice_start || !in_set(state->encoding, test,
           char_at(text, text_pos - 1)))
             return FALSE;
@@ -3316,6 +3832,10 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         break;
     case RE_OP_START_OF_LINE: /* At the start of a line. */
         if (text_pos != 0 && char_at(text, text_pos - 1) != '\n')
+            return FALSE;
+        break;
+    case RE_OP_START_OF_LINE_U: /* At the start of a line. */
+        if (!state->encoding->at_line_start(state, text_pos))
             return FALSE;
         break;
     case RE_OP_START_OF_STRING: /* At the start of the string. */
@@ -3693,6 +4213,17 @@ again:
         if (start_pos < limit)
             return FALSE;
         break;
+    case RE_OP_ANY_U: /* Any character, except a line separator. */
+        start_pos = match_many_ANY_U(state, node, start_pos, limit + 1, FALSE);
+        if (start_pos > limit)
+            return FALSE;
+        break;
+    case RE_OP_ANY_U_REV: /* Any character backwards, except a line separator. */
+        start_pos = match_many_ANY_U_REV(state, node, start_pos, limit - 1,
+          FALSE);
+        if (start_pos < limit)
+            return FALSE;
+        break;
     case RE_OP_BIG_BITSET: /* Big bitset. */
         start_pos = match_many_BIG_BITSET(state, test, start_pos, limit + 1,
           FALSE);
@@ -3700,8 +4231,8 @@ again:
             return FALSE;
         break;
     case RE_OP_BIG_BITSET_REV: /* Big bitset backwards. */
-        start_pos = match_many_BIG_BITSET_REV(state, test, start_pos, limit -
-          1, FALSE);
+        start_pos = match_many_BIG_BITSET_REV(state, test, start_pos, limit - 1,
+          FALSE);
         if (start_pos < limit)
             return FALSE;
         break;
@@ -3739,8 +4270,8 @@ again:
         break;
     case RE_OP_CHARACTER_IGN_REV: /* A character literal backwards, ignoring case. */
         limit = state->slice_start + state->min_width - 1;
-        start_pos = match_many_CHARACTER_IGN_REV(state, test, start_pos, limit
-          - 1, FALSE);
+        start_pos = match_many_CHARACTER_IGN_REV(state, test, start_pos, limit -
+          1, FALSE);
         if (start_pos < limit)
             return FALSE;
         break;
@@ -3891,12 +4422,18 @@ again:
 
         start_pos = state->search_anchor;
         break;
-    case RE_OP_SET: /* A set. */
+    case RE_OP_SET_DIFF: /* A set. */
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_UNION:
         start_pos = match_many_SET(state, test, start_pos, limit + 1, FALSE);
         if (start_pos > limit)
             return FALSE;
         break;
-    case RE_OP_SET_REV: /* A set backwards. */
+    case RE_OP_SET_DIFF_REV: /* A set backwards. */
+    case RE_OP_SET_INTER_REV:
+    case RE_OP_SET_SYM_DIFF_REV:
+    case RE_OP_SET_UNION_REV:
         start_pos = match_many_SET_REV(state, test, start_pos, limit - 1,
           FALSE);
         if (start_pos < limit)
@@ -4355,14 +4892,10 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     Py_ssize_t text_pos;
     RE_EncodingTable* encoding;
     BOOL (*same_char_ign)(RE_CODE ch1, RE_CODE ch2);
-    BOOL (*at_boundary)(RE_State* state, Py_ssize_t text_pos);
-    BOOL (*at_default_boundary)(RE_State* state, Py_ssize_t text_pos);
-    BOOL (*at_grapheme_boundary)(RE_State* state, Py_ssize_t text_pos);
     PatternObject* pattern;
     Py_ssize_t text_length;
     RE_NextNode start_pair;
     size_t iterations;
-    Py_ssize_t final_newline;
     void* text;
     RE_CODE (*char_at)(void* text, Py_ssize_t pos);
     BOOL (*has_property)(RE_CODE property, RE_CODE ch);
@@ -4380,9 +4913,6 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
 
     encoding = state->encoding;
     same_char_ign = encoding->same_char_ign;
-    at_boundary = encoding->at_boundary;
-    at_default_boundary = encoding->at_default_boundary;
-    at_grapheme_boundary = encoding->at_grapheme_boundary;
 
     pattern = state->pattern;
 
@@ -4413,7 +4943,6 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     }
 
     iterations = 0;
-    final_newline = state->final_newline;
     text = state->text;
     char_at = state->char_at;
     has_property = encoding->has_property;
@@ -4490,6 +5019,22 @@ advance:
             --text_pos;
             node = node->next_1.node;
             break;
+        case RE_OP_ANY_U: /* Any character, except a line separator. */
+            TRACE(("%s\n", re_op_text[node->op]))
+            if (text_pos >= slice_end ||
+              state->encoding->is_line_sep(char_at(text, text_pos)))
+                goto backtrack;
+            ++text_pos;
+            node = node->next_1.node;
+            break;
+        case RE_OP_ANY_U_REV: /* Any character, except a line separator. */
+            TRACE(("%s\n", re_op_text[node->op]))
+            if (text_pos <= slice_start ||
+              state->encoding->is_line_sep(char_at(text, text_pos - 1) == '\n'))
+                goto backtrack;
+            --text_pos;
+            node = node->next_1.node;
+            break;
         case RE_OP_ATOMIC: /* Atomic subpattern. */
         {
             RE_Info info;
@@ -4543,7 +5088,7 @@ advance:
             break;
         case RE_OP_BOUNDARY: /* At a word boundary. */
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
-            if (at_boundary(state, text_pos) != node->match)
+            if (encoding->at_boundary(state, text_pos) != node->match)
                 goto backtrack;
             node = node->next_1.node;
             break;
@@ -4614,7 +5159,7 @@ advance:
             break;
         case RE_OP_DEFAULT_BOUNDARY: /* At a default word boundary. */
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
-            if (at_default_boundary(state, text_pos) != node->match)
+            if (encoding->at_default_boundary(state, text_pos) != node->match)
                 goto backtrack;
             node = node->next_1.node;
             break;
@@ -4888,6 +5433,12 @@ advance:
                 goto backtrack;
             node = node->next_1.node;
             break;
+        case RE_OP_END_OF_LINE_U: /* At the end of a line. */
+            TRACE(("%s\n", re_op_text[node->op]))
+            if (!encoding->at_line_end(state, text_pos))
+                goto backtrack;
+            node = node->next_1.node;
+            break;
         case RE_OP_END_OF_STRING: /* At the end of the string. */
             TRACE(("%s\n", re_op_text[node->op]))
             if (text_pos != text_length)
@@ -4896,13 +5447,19 @@ advance:
             break;
         case RE_OP_END_OF_STRING_LINE: /* At end of string or final newline. */
             TRACE(("%s\n", re_op_text[node->op]))
-            if (text_pos != text_length && text_pos != final_newline)
+            if (text_pos != text_length && text_pos != state->final_newline)
+                goto backtrack;
+            node = node->next_1.node;
+            break;
+        case RE_OP_END_OF_STRING_LINE_U: /* At end of string or final newline. */
+            TRACE(("%s\n", re_op_text[node->op]))
+            if (text_pos != text_length && text_pos != state->final_line_sep)
                 goto backtrack;
             node = node->next_1.node;
             break;
         case RE_OP_GRAPHEME_BOUNDARY: /* At a grapheme boundary. */
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
-            if (at_grapheme_boundary(state, text_pos) != node->match)
+            if (encoding->at_grapheme_boundary(state, text_pos) != node->match)
                 goto backtrack;
             node = node->next_1.node;
             break;
@@ -5396,7 +5953,10 @@ advance:
                 goto backtrack;
             node = node->next_1.node;
             break;
-        case RE_OP_SET: /* Character set. */
+        case RE_OP_SET_DIFF: /* Character set. */
+        case RE_OP_SET_INTER:
+        case RE_OP_SET_SYM_DIFF:
+        case RE_OP_SET_UNION:
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
             if (text_pos >= slice_end || !in_set(encoding, node, char_at(text,
               text_pos)))
@@ -5404,7 +5964,10 @@ advance:
             text_pos += node->step;
             node = node->next_1.node;
             break;
-        case RE_OP_SET_REV: /* Character set. */
+        case RE_OP_SET_DIFF_REV: /* Character set. */
+        case RE_OP_SET_INTER_REV:
+        case RE_OP_SET_SYM_DIFF_REV:
+        case RE_OP_SET_UNION_REV:
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
             if (text_pos <= slice_start || !in_set(encoding, node,
               char_at(text, text_pos - 1)))
@@ -5456,6 +6019,12 @@ advance:
         case RE_OP_START_OF_LINE: /* At the start of a line. */
             TRACE(("%s\n", re_op_text[node->op]))
             if (text_pos != 0 && char_at(text, text_pos - 1) != '\n')
+                goto backtrack;
+            node = node->next_1.node;
+            break;
+        case RE_OP_START_OF_LINE_U: /* At the start of a line. */
+            TRACE(("%s\n", re_op_text[node->op]))
+            if (!encoding->at_line_start(state, text_pos))
                 goto backtrack;
             node = node->next_1.node;
             break;
@@ -6818,13 +7387,28 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->slice_end = state->text_length;
     state->text_pos = state->reverse ? state->slice_end : state->slice_start;
 
-    /* Point to the final newline if it's at the end of the string, otherwise
-     * just the end of the string.
+    /* Point to the final newline and line separator if it's at the end of the
+     * string, otherwise just -1.
      */
+    state->final_newline = -1;
+    state->final_line_sep = -1;
     final_pos = state->text_length - 1;
-    if (final_pos >= 0 && state->char_at(state->text, final_pos) != '\n')
-        final_pos = -1;
-    state->final_newline = final_pos;
+    if (final_pos >= 0) {
+        RE_CODE ch;
+
+        ch = state->char_at(state->text, final_pos);
+        if (ch == '\n')
+            state->final_newline = final_pos;
+        if (state->encoding->is_line_sep(ch))
+            state->final_line_sep = final_pos;
+
+        if (ch == 0x0A) {
+            --final_pos;
+            if (final_pos >= 0 && state->char_at(state->text, final_pos) ==
+              0x0D)
+                state->final_line_sep = final_pos;
+        }
+    }
 
     /* If the 'new' behaviour is enabled then split correctly on zero-width
      * matches.
@@ -10358,6 +10942,8 @@ Py_LOCAL_INLINE(void) set_test_node(RE_NextNode* next) {
     case RE_OP_ANY_ALL:
     case RE_OP_ANY_ALL_REV:
     case RE_OP_ANY_REV:
+    case RE_OP_ANY_U:
+    case RE_OP_ANY_U_REV:
     case RE_OP_BIG_BITSET:
     case RE_OP_BIG_BITSET_REV:
     case RE_OP_BOUNDARY:
@@ -10367,17 +10953,26 @@ Py_LOCAL_INLINE(void) set_test_node(RE_NextNode* next) {
     case RE_OP_CHARACTER_REV:
     case RE_OP_DEFAULT_BOUNDARY:
     case RE_OP_END_OF_LINE:
+    case RE_OP_END_OF_LINE_U:
     case RE_OP_END_OF_STRING:
     case RE_OP_END_OF_STRING_LINE:
+    case RE_OP_END_OF_STRING_LINE_U:
     case RE_OP_GRAPHEME_BOUNDARY:
     case RE_OP_PROPERTY:
     case RE_OP_PROPERTY_REV:
     case RE_OP_SEARCH_ANCHOR:
-    case RE_OP_SET:
-    case RE_OP_SET_REV:
+    case RE_OP_SET_DIFF:
+    case RE_OP_SET_DIFF_REV:
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_INTER_REV:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_SYM_DIFF_REV:
+    case RE_OP_SET_UNION:
+    case RE_OP_SET_UNION_REV:
     case RE_OP_SMALL_BITSET:
     case RE_OP_SMALL_BITSET_REV:
     case RE_OP_START_OF_LINE:
+    case RE_OP_START_OF_LINE_U:
     case RE_OP_START_OF_STRING:
     case RE_OP_STRING:
     case RE_OP_STRING_IGN:
@@ -10422,21 +11017,32 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
         case RE_OP_ANY_ALL:
         case RE_OP_ANY_ALL_REV:
         case RE_OP_ANY_REV:
+        case RE_OP_ANY_U:
+        case RE_OP_ANY_U_REV:
         case RE_OP_BIG_BITSET:
         case RE_OP_BIG_BITSET_REV:
         case RE_OP_BOUNDARY:
         case RE_OP_DEFAULT_BOUNDARY:
         case RE_OP_END_OF_LINE:
+        case RE_OP_END_OF_LINE_U:
         case RE_OP_END_OF_STRING:
         case RE_OP_END_OF_STRING_LINE:
+        case RE_OP_END_OF_STRING_LINE_U:
         case RE_OP_GRAPHEME_BOUNDARY:
         case RE_OP_PROPERTY:
         case RE_OP_PROPERTY_REV:
-        case RE_OP_SET:
-        case RE_OP_SET_REV:
+        case RE_OP_SET_DIFF:
+        case RE_OP_SET_DIFF_REV:
+        case RE_OP_SET_INTER:
+        case RE_OP_SET_INTER_REV:
+        case RE_OP_SET_SYM_DIFF:
+        case RE_OP_SET_SYM_DIFF_REV:
+        case RE_OP_SET_UNION:
+        case RE_OP_SET_UNION_REV:
         case RE_OP_SMALL_BITSET:
         case RE_OP_SMALL_BITSET_REV:
         case RE_OP_START_OF_LINE:
+        case RE_OP_START_OF_LINE_U:
         case RE_OP_START_OF_STRING:
         case RE_OP_SEARCH_ANCHOR:
             early = FALSE;
@@ -10686,6 +11292,8 @@ Py_LOCAL_INLINE(BOOL) sequence_matches_one(RE_Node* node) {
     case RE_OP_ANY_ALL:
     case RE_OP_ANY_ALL_REV:
     case RE_OP_ANY_REV:
+    case RE_OP_ANY_U:
+    case RE_OP_ANY_U_REV:
     case RE_OP_BIG_BITSET:
     case RE_OP_BIG_BITSET_REV:
     case RE_OP_CHARACTER:
@@ -10694,8 +11302,14 @@ Py_LOCAL_INLINE(BOOL) sequence_matches_one(RE_Node* node) {
     case RE_OP_CHARACTER_REV:
     case RE_OP_PROPERTY:
     case RE_OP_PROPERTY_REV:
-    case RE_OP_SET:
-    case RE_OP_SET_REV:
+    case RE_OP_SET_DIFF:
+    case RE_OP_SET_DIFF_REV:
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_INTER_REV:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_SYM_DIFF_REV:
+    case RE_OP_SET_UNION:
+    case RE_OP_SET_UNION_REV:
     case RE_OP_SMALL_BITSET:
     case RE_OP_SMALL_BITSET_REV:
         return TRUE;
@@ -10741,6 +11355,43 @@ Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, int index, size_t
     return TRUE;
 }
 
+Py_LOCAL_INLINE(Py_ssize_t) get_step(RE_CODE op) {
+    switch (op) {
+    case RE_OP_ANY:
+    case RE_OP_ANY_ALL:
+    case RE_OP_ANY_U:
+    case RE_OP_BIG_BITSET:
+    case RE_OP_CHARACTER:
+    case RE_OP_CHARACTER_IGN:
+    case RE_OP_PROPERTY:
+    case RE_OP_SET_DIFF:
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_UNION:
+    case RE_OP_SMALL_BITSET:
+    case RE_OP_STRING:
+    case RE_OP_STRING_IGN:
+         return 1;
+    case RE_OP_ANY_ALL_REV:
+    case RE_OP_ANY_REV:
+    case RE_OP_ANY_U_REV:
+    case RE_OP_BIG_BITSET_REV:
+    case RE_OP_CHARACTER_IGN_REV:
+    case RE_OP_CHARACTER_REV:
+    case RE_OP_PROPERTY_REV:
+    case RE_OP_SET_DIFF_REV:
+    case RE_OP_SET_INTER_REV:
+    case RE_OP_SET_SYM_DIFF_REV:
+    case RE_OP_SET_UNION_REV:
+    case RE_OP_SMALL_BITSET_REV:
+    case RE_OP_STRING_IGN_REV:
+    case RE_OP_STRING_REV:
+        return -1;
+    }
+
+    return 0;
+}
+
 Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args);
 
 /* Builds ANY. */
@@ -10755,7 +11406,7 @@ Py_LOCAL_INLINE(BOOL) build_ANY(RE_CompileArgs* args) {
 
     op = args->code[0];
 
-    step = op == RE_OP_ANY || op == RE_OP_ANY_ALL ? 1 : -1;
+    step = get_step(op);
 
     /* Create the node. */
     node = create_node(args->pattern, op, TRUE, step, 0);
@@ -10845,7 +11496,7 @@ Py_LOCAL_INLINE(BOOL) build_BIG_BITSET(RE_CompileArgs* args) {
 
     op = args->code[0];
 
-    step = op == RE_OP_BIG_BITSET || op == RE_OP_BIG_BITSET ? 1 : -1;
+    step = get_step(op);
 
     if (flags & RE_ZEROWIDTH_OP)
         step = 0;
@@ -11010,7 +11661,7 @@ Py_LOCAL_INLINE(BOOL) build_CHARACTER(RE_CompileArgs* args) {
 
     op = args->code[0];
 
-    step = op == RE_OP_CHARACTER || op == RE_OP_CHARACTER_IGN ? 1 : -1;
+    step = get_step(op);
 
     if (flags & RE_ZEROWIDTH_OP)
         step = 0;
@@ -11242,7 +11893,7 @@ Py_LOCAL_INLINE(BOOL) build_PROPERTY(RE_CompileArgs* args) {
 
     op = args->code[0];
 
-    step = op == RE_OP_PROPERTY ? 1 : -1;
+    step = get_step(op);
 
     if (flags & RE_ZEROWIDTH_OP)
         step = 0;
@@ -11470,7 +12121,7 @@ Py_LOCAL_INLINE(BOOL) build_SMALL_BITSET(RE_CompileArgs* args) {
 
     op = args->code[0];
 
-    step = op == RE_OP_SMALL_BITSET ? 1 : -1;
+    step = get_step(op);
 
     if (flags & RE_ZEROWIDTH_OP)
         step = 0;
@@ -11511,7 +12162,7 @@ Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args) {
 
     op = args->code[0];
 
-    step = op == RE_OP_STRING || op == RE_OP_STRING_IGN ? 1 : -1;
+    step = get_step(op);
 
     /* Create the node. */
     node = create_node(args->pattern, op, TRUE, step * length, length);
@@ -11548,7 +12199,7 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
 
     op = args->code[0];
 
-    step = op == RE_OP_SET ? 1 : -1;
+    step = get_step(op);
 
     if (flags & RE_ZEROWIDTH_OP)
         step = 0;
@@ -11568,10 +12219,6 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
     /* Compile the character set. */
     do {
         switch (args->code[0]) {
-        case RE_OP_ANY:
-            if (!build_ANY(args))
-                return FALSE;
-            break;
         case RE_OP_BIG_BITSET:
             if (!build_BIG_BITSET(args))
                 return FALSE;
@@ -11582,6 +12229,17 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
             break;
         case RE_OP_PROPERTY:
             if (!build_PROPERTY(args))
+                return FALSE;
+            break;
+        case RE_OP_SET_DIFF:
+        case RE_OP_SET_DIFF_REV:
+        case RE_OP_SET_INTER:
+        case RE_OP_SET_INTER_REV:
+        case RE_OP_SET_SYM_DIFF:
+        case RE_OP_SET_SYM_DIFF_REV:
+        case RE_OP_SET_UNION:
+        case RE_OP_SET_UNION_REV:
+            if (!build_SET(args))
                 return FALSE;
             break;
         case RE_OP_SMALL_BITSET:
@@ -11651,6 +12309,8 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
         case RE_OP_ANY_ALL:
         case RE_OP_ANY_ALL_REV:
         case RE_OP_ANY_REV:
+        case RE_OP_ANY_U:
+        case RE_OP_ANY_U_REV:
             /* A simple opcode with no trailing codewords and width of 1. */
             if (!build_ANY(args))
                 return FALSE;
@@ -11687,10 +12347,13 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
                 return FALSE;
             break;
         case RE_OP_END_OF_LINE:
+        case RE_OP_END_OF_LINE_U:
         case RE_OP_END_OF_STRING:
         case RE_OP_END_OF_STRING_LINE:
+        case RE_OP_END_OF_STRING_LINE_U:
         case RE_OP_SEARCH_ANCHOR:
         case RE_OP_START_OF_LINE:
+        case RE_OP_START_OF_LINE_U:
         case RE_OP_START_OF_STRING:
             /* A simple opcode with no trailing codewords and width of 0. */
             if (!build_zerowidth(args))
@@ -11731,8 +12394,14 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
             if (!build_REF_GROUP(args))
                 return FALSE;
             break;
-        case RE_OP_SET:
-        case RE_OP_SET_REV:
+        case RE_OP_SET_DIFF:
+        case RE_OP_SET_DIFF_REV:
+        case RE_OP_SET_INTER:
+        case RE_OP_SET_INTER_REV:
+        case RE_OP_SET_SYM_DIFF:
+        case RE_OP_SET_SYM_DIFF_REV:
+        case RE_OP_SET_UNION:
+        case RE_OP_SET_UNION_REV:
             /* A character set. */
             if (!build_SET(args))
                 return FALSE;
