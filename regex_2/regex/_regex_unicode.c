@@ -11110,7 +11110,13 @@ BOOL re_is_same_char_ign(RE_UINT32 ch1, RE_UINT32 ch2) {
     RE_UINT32 f;
     RE_UINT32 pos;
     RE_UINT32 value;
+    RE_INT32 diff;
     RE_INT32* diffs;
+
+    if (ch1 == ch2)
+        return TRUE;
+
+    diff = ch2 - ch1;
 
     f = ch1 >> 14;
     code = ch1 ^ (f << 14);
@@ -11127,5 +11133,41 @@ BOOL re_is_same_char_ign(RE_UINT32 ch1, RE_UINT32 ch2) {
     value = re_cases_stage_5[pos + code];
     diffs = case_diffs[value];
 
-    return ch1 == ch2 || ch1 + diffs[0] == ch2 || ch1 + diffs[1] == ch2 || ch1 + diffs[2] == ch2;
+    return diff == diffs[0] || diff == diffs[1] || diff == diffs[2];
+}
+
+int re_get_all_cases(RE_UINT32 ch, RE_UINT32* cases) {
+    RE_UINT32 code;
+    RE_UINT32 f;
+    RE_UINT32 pos;
+    RE_UINT32 value;
+    int count;
+    RE_INT32* diffs;
+    int i;
+
+    count = 0;
+
+    f = ch >> 14;
+    code = ch ^ (f << 14);
+    pos = ((RE_UINT32)re_cases_stage_1[f] << 5);
+    f = code >> 9;
+    code ^= (f << 9);
+    pos = ((RE_UINT32)re_cases_stage_2[pos + f] << 4);
+    f = code >> 5;
+    code ^= (f << 5);
+    pos = ((RE_UINT32)re_cases_stage_3[pos + f] << 3);
+    f = code >> 2;
+    code ^= (f << 2);
+    pos = ((RE_UINT32)re_cases_stage_4[pos + f] << 2);
+    value = re_cases_stage_5[pos + code];
+    diffs = case_diffs[value];
+
+    cases[count++] = ch;
+
+    for (i = 0; i < count; i++) {
+        if (diffs[i] != 0)
+            cases[count++] = ch + diffs[i];
+    }
+
+    return count;
 }

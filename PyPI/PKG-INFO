@@ -1,19 +1,19 @@
 Metadata-Version: 1.0
 Name: regex
-Version: 0.1.20110315
+Version: 0.1.20110510
 Summary: Alternative regular expression module, to replace re.
 Home-page: http://bugs.python.org/issue2636
 Author: Matthew Barnett
 Author-email: regex@mrabarnett.plus.com
 License: Python Software Foundation License
-Description: Notes
-        -----
+Description: Introduction
+        ------------
+        
+        This new regex implementation is intended eventually to replace Python's current re module implementation.
         
         For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
         
-        Please note that certain aspects of this module have changed from those of previous versions to make it conform better to the 're' module.
-        
-        Please also note that ``matchobject.captures`` and the related methods now return a **list** (or a tuple of lists for the multi-group versions) instead of a tuple as previously.
+        Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.2 on 32-bit Windows.
         
         
         Flags
@@ -60,9 +60,48 @@ Description: Notes
         This module supports Unicode 6.0.0.
         
         
-        
         Additional features
         -------------------
+        
+        The issue numbers relate to the Python bug tracker.
+        
+        * Unicode line separators
+        
+            Normally the only line separator is ``\n`` (``\x0A``), but if the ``WORD`` flag is turned on then the line separators are the pair ``\x0D\x0A``, and ``\x0A``, ``\x0B``, ``\x0C`` and ``\x0D``, plus ``\x85``, ``\u0x2028`` and ``\u2029`` when working with Unicode.
+        
+            This affects the regex dot ``"."``, which, with ``DOTALL`` flag turned off, matches any character except a line separator. It also affects the line anchors ``^`` and ``$`` (in multiline mode) and ``\Z``.
+        
+        * Set operators
+        
+            Set operators have been added, and a set [...] can include nested sets.
+        
+            The operators, in order of increasing precedence, are:
+        
+                ``||`` for union ("x||y" means "x or y")
+        
+                ``~~`` (double tilde) for symmetric difference ("x~~y" means "x or y, but not both")
+        
+                ``&&`` for intersection ("x&&y" means "x and y")
+        
+                ``--`` (double dash) for difference ("x--y" means "x but not y")
+        
+            Implicit union, ie, simple juxtaposition like in ``[ab]``, has the highest precedence. Thus, ``[ab&&cd]`` is the same as ``[[a||b]&&[c||d]]``.
+        
+            Examples:
+        
+                ``[ab]`` # Set containing 'a' and 'b'
+        
+                ``[a-z]`` # Set containing 'a' .. 'z'
+        
+                ``[[a-z]--[qw]]`` # Set containing 'a' .. 'z', but not 'q' or 'w'
+        
+                ``[a-z--qw]`` # Same as above
+        
+                ``[\p{L}--QW]`` # Set containing all letters except 'Q' and 'W'
+        
+                ``[\p{N}--[0-9]]`` # Set containing all numbers except '0' .. '9'
+        
+                ``[\p{ASCII}&&\p{Letter}]`` # Set containing all characters which are ASCII and letter
         
         * regex.escape (issue #2650)
         
@@ -145,7 +184,7 @@ Description: Notes
         
         * Definition of 'word' character (issue #1693050)
         
-            The definition of a 'word' character has been expanded for Unicode. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
+            The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
         
         * Groups in lookahead and lookbehind (issue #814253)
         
@@ -227,29 +266,43 @@ Description: Notes
         
             ``\N{name}``
         
-            Named characters are supported.
+            Named characters are supported. (Note: only those known by Python's Unicode database are supported.)
         
-        * Unicode codepoint properties, blocks and scripts
+        * Unicode codepoint properties, including scripts and blocks
         
-            ``\p{name}`` ; ``\P{name}``
+            ``\p{property=value}``; ``\P{property=value}``; ``\p{value}`` ; ``\P{value}``
         
-            Unicode properties, blocks and scripts are supported. ``\p{name}`` matches a character which has property 'name' and ``\P{name}`` matches a character which doesn't have property 'name'.
+            Many Unicode properties are supported, including blocks and scripts. ``\p{property=value}`` or ``\p{property:value}`` matches a character whose property ``property`` has value ``value``. The inverse of ``\p{property=value}`` is ``\P{property=value}`` or ``\p{^property=value}``.
         
-            In order to avoid ambiguity, block names should start with ``In`` and script names should start with ``Is``. If a name lacks such a prefix and it could be a block or a script, script will take priority, for example:
+            If the short form ``\p{value}`` is used, the properties are checked in the order: ``General_Category``, ``Script``, ``Block``, binary property:
         
-            1. ``InBasicLatin`` or ``BasicLatin``, the 'BasicLatin' **block**.
+            1. ``Latin``, the 'Latin' script (``Script=Latin``).
         
-            2. ``IsLatin`` or ``Latin``, the 'Latin' **script**.
+            2. ``Cyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
         
-            3. ``InCyrillic``, the 'Cyrillic' **block**.
+            3. ``BasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
         
-            4. ``IsCyrillic`` or ``Cyrillic``, the 'Cyrillic' **script**.
+            4. ``Alphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
+        
+            A short form starting with ``Is`` indicates a script or binary property:
+        
+            1. ``IsLatin``, the 'Latin' script (``Script=Latin``).
+        
+            2. ``IsCyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
+        
+            3. ``IsAlphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
+        
+            A short form starting with ``In`` indicates a block property:
+        
+            1. ``InBasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
+        
+            2. ``InCyrillic``, the 'Cyrillic' block (``Block=Cyrillic``).
         
         * POSIX character classes
         
-            ``[[:alpha:]]``
+            ``[[:alpha:]]``; ``[[:^alpha:]]``
         
-            POSIX character classes are supported.
+            POSIX character classes are supported. This is actually treated as an alternative form of ``\p{...}``.
         
         * Search anchor
         
@@ -290,7 +343,7 @@ Description: Notes
         
             ``\X``
         
-            The grapheme matcher is supported. It's equivalent to ``\P{M}\p{M}*``.
+            The grapheme matcher is supported. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``.
         
         * Branch reset
         
@@ -301,8 +354,6 @@ Description: Notes
         * Default Unicode word boundary
         
             The ``WORD`` flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to ``\b`` and ``\B``.
-        
-            Please note: I'm unsure whether I've understood the specification correctly, so if you're using this feature I'd be interested in any feedback.
         
         * SRE engine do not release the GIL (issue #1366311)
         

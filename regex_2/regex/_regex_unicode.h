@@ -8,6 +8,7 @@ enum {FALSE, TRUE};
 
 #define RE_ASCII_MAX 0x7F
 #define RE_LOCALE_MAX 0xFF
+#define RE_MAX_CASES 4
 
 typedef struct RE_Property {
     RE_UINT16 name;
@@ -165,3 +166,4 @@ RE_UINT32 re_get_print(RE_UINT32 ch);
 RE_UINT32 re_get_word(RE_UINT32 ch);
 RE_UINT32 re_get_xdigit(RE_UINT32 ch);
 BOOL re_is_same_char_ign(RE_UINT32 ch1, RE_UINT32 ch2);
+int re_get_all_cases(RE_UINT32 ch, RE_UINT32* cases);

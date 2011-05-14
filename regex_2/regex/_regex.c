@@ -8414,19 +8414,17 @@ Py_LOCAL_INLINE(int) add_item(JoinInfo* join_info, PyObject* item) {
      * into a list.
      */
     if (join_info->item) {
-        join_info->list = PyList_New(0);
+        join_info->list = PyList_New(2);
         if (!join_info->list) {
             status = RE_ERROR_MEMORY;
             goto error;
         }
 
-        status = PyList_Append(join_info->list, join_info->item);
-        if (status < 0)
-            goto error;
+        PyList_SET_ITEM(join_info->list, 0, join_info->item);
+        join_info->item = NULL;
 
-        status = PyList_Append(join_info->list, item);
-        if (status < 0)
-            goto error;
+        PyList_SET_ITEM(join_info->list, 1, item);
+        Py_INCREF(item);
 
         return 0;
     }
@@ -8438,10 +8436,8 @@ Py_LOCAL_INLINE(int) add_item(JoinInfo* join_info, PyObject* item) {
     return 0;
 
 error:
-    if (join_info->list)
-        Py_DECREF(join_info->list);
-    if (join_info->item)
-        Py_DECREF(join_info->item);
+    Py_XDECREF(join_info->list);
+    Py_XDECREF(join_info->item);
     return status;
 }
 
@@ -8449,15 +8445,11 @@ error:
 Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info, PyObject*
   string) {
     /* If the list already exists then just do the join. */
-    if (join_info->list) {
-        Py_DECREF(join_info->item);
+    if (join_info->list)
         return join_list(join_info->list, string, join_info->reversed);
-    }
 
     /* If we have only 1 item then we _might_ be able to just return it. */
     if (join_info->item) {
-        int status;
-
         /* We can return the single item only if it's the same type of string
          * as the joiner.
          */
@@ -8467,20 +8459,14 @@ Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info, PyObject*
         /* We'll default to the normal joining method, which requires the item
          * to be in a list.
          */
-        join_info->list = PyList_New(0);
+        join_info->list = PyList_New(1);
         if (!join_info->list) {
             Py_DECREF(join_info->item);
             return NULL;
         }
 
-        status = PyList_Append(join_info->list, join_info->item);
-        if (status < 0) {
-            Py_DECREF(join_info->list);
-            Py_DECREF(join_info->item);
-            return NULL;
-        }
+        PyList_SET_ITEM(join_info->list, 0, join_info->item);
 
-        Py_DECREF(join_info->item);
         return join_list(join_info->list, string, join_info->reversed);
     }
 
@@ -8538,10 +8524,8 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     return join_list_info(&join_info, self->string);
 
 error:
-    if (join_info.list)
-        Py_DECREF(join_info.list);
-    if (join_info.item)
-        Py_DECREF(join_info.item);
+    Py_XDECREF(join_info.list);
+    Py_XDECREF(join_info.item);
     Py_DECREF(replacement);
     return NULL;
 }
@@ -10053,10 +10037,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     return item;
 
 error:
-    if (join_info.list)
-        Py_DECREF(join_info.list);
-    if (join_info.item)
-        Py_DECREF(join_info.item);
+    Py_XDECREF(join_info.list);
+    Py_XDECREF(join_info.item);
     state_fini(&state);
     Py_DECREF(replacement);
     return NULL;
@@ -12628,12 +12610,98 @@ static PyObject* get_properties(PyObject* self_, PyObject* args) {
     return property_dict;
 }
 
+Py_LOCAL_INLINE(int) unicode_get_all_cases(RE_CODE ch, RE_CODE* cases);
+
+Py_LOCAL_INLINE(int) ascii_get_all_cases(RE_CODE ch, RE_CODE* cases) {
+    if (ch <= RE_ASCII_MAX)
+        return unicode_get_all_cases(ch, cases);
+
+    cases[0] = ch;
+
+    return 1;
+}
+
+Py_LOCAL_INLINE(int) locale_get_all_cases(RE_CODE ch, RE_CODE* cases) {
+    int count;
+    RE_CODE other;
+
+    count = 0;
+
+    cases[count++] = ch;
+
+    if (ch > RE_LOCALE_MAX)
+        return count;
+
+    other = toupper(ch);
+    if (other != ch)
+        cases[count++] = other;
+
+    other = tolower(ch);
+    if (other != ch)
+        cases[count++] = other;
+
+    return count;
+}
+
+Py_LOCAL_INLINE(int) unicode_get_all_cases(RE_CODE ch, RE_CODE* cases) {
+    return re_get_all_cases(ch, cases);
+}
+
+/* Gets all the possible cases of a character. */
+static PyObject* get_all_cases(PyObject* self_, PyObject* args) {
+    PyObject* all_cases;
+    int count;
+    int i;
+    RE_CODE cases[RE_MAX_CASES];
+
+    Py_ssize_t flags;
+    Py_ssize_t ch;
+    if (!PyArg_ParseTuple(args, "nn", &flags, &ch))
+        return NULL;
+
+    all_cases = PyList_New(0);
+    if (!all_cases)
+        return NULL;
+
+    if (flags & RE_FLAG_UNICODE)
+        count = unicode_get_all_cases(ch, cases);
+    else if (flags & RE_FLAG_LOCALE)
+        count = locale_get_all_cases(ch, cases);
+    else if (flags & RE_FLAG_ASCII)
+        count = ascii_get_all_cases(ch, cases);
+    else
+        count = ascii_get_all_cases(ch, cases);
+
+    if (count == 0)
+        goto error;
+
+    for (i = 0; i < count; i++) {
+        PyObject* item;
+        int status;
+
+        item = Py_BuildValue("n", cases[i]);
+        if (!item)
+            goto error;
+        status = PyList_Append(all_cases, item);
+        Py_DECREF(item);
+        if (status < 0)
+            goto error;
+    }
+
+    return all_cases;
+
+error:
+    Py_DECREF(all_cases);
+    return NULL;
+}
+
 /* The table of the module's functions. */
 static PyMethodDef _functions[] = {
     {"compile", (PyCFunction)re_compile, METH_VARARGS},
     {"get_code_size", (PyCFunction)get_code_size, METH_NOARGS},
     {"set_exception", (PyCFunction)set_exception, METH_VARARGS},
     {"get_properties", (PyCFunction)get_properties, METH_VARARGS},
+    {"all_cases", (PyCFunction)get_all_cases, METH_VARARGS},
     {NULL, NULL}
 };
 

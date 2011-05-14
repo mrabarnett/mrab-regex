@@ -22,7 +22,7 @@ else:
 
 setup(
     name='regex',
-    version='0.1.20110315',
+    version='0.1.20110510',
     description='Alternate regular expression module, to replace re.',
     long_description=open(os.path.join(SRC_DIR, 'Features.rst')).read(),
 
@@ -54,5 +54,5 @@ setup(
     py_modules = ['regex', '_regex_core'],
     package_dir={'': PKG_BASE},
 
-    ext_modules=[Extension('_regex', [os.path.join(PKG_BASE, '_regex.c')])],
+    ext_modules=[Extension('_regex', [os.path.join(PKG_BASE, '_regex.c'), os.path.join(PKG_BASE, '_regex_unicode.c')])] 
     )

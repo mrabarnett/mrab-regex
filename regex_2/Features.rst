@@ -17,7 +17,7 @@ The scoped flags are: ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``
 
 The global flags are: ``ASCII``, ``LOCALE``, ``NEW``, ``REVERSE``, ``UNICODE``.
 
-If neither the ASCII, LOCALE nor UNICODE flag is specified, the default is UNICODE if the regex pattern is a Unicode string and ASCII if it's a bytestring.
+If neither the ``ASCII``, ``LOCALE`` nor ``UNICODE`` flag is specified, the default is UNICODE if the regex pattern is a Unicode string and ASCII if it's a bytestring.
 
 The ``NEW`` flag turns on the new behaviour of this module, which can differ from that of the 're' module, such as splitting on zero-width matches, inline flags affecting only what follows, and being able to turn inline flags off.
 
@@ -59,13 +59,13 @@ The issue numbers relate to the Python bug tracker.
 
 * Unicode line separators
 
-    Normally the only line separator is ``\n`` (``\x0A``), but if the ``WORD`` flag is turned on then the line separators are the pair ``\x0D\x0A``, and ``\x0A``, ``\x0B``, ``\x0C`` and ``\x0D``, plus ``\x85``, ``\u0x2028`` and ``\u2029`` when working with Unicode.
+    Normally the only line separator is ``\n`` (``\x0A``), but if the ``WORD`` flag is turned on then the line separators are the pair ``\x0D\x0A``, and ``\x0A``, ``\x0B``, ``\x0C`` and ``\x0D``, plus ``\x85``, ``\u2028`` and ``\u2029`` when working with Unicode.
 
-    This affects the regex dot ``"."``, which, with ``DOTALL`` flag turned off, matches any character except a line separator. It also affects the line anchors ``^`` and ``$`` (in multiline mode) and ``\Z``.
+    This affects the regex dot ``"."``, which, with the ``DOTALL`` flag turned off, matches any character except a line separator. It also affects the line anchors ``^`` and ``$`` (in multiline mode).
 
 * Set operators
 
-    Set operators have been added, and a set [...] can include nested sets.
+    Set operators have been added, and a set ``[...]`` can include nested sets.
 
     The operators, in order of increasing precedence, are:
 

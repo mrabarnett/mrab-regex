@@ -180,6 +180,9 @@ _OP = _define_opcodes(_OPCODES)
 _REGEX_FLAGS = {"a": ASCII, "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "n":
   NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE, "w": WORD, "x": VERBOSE}
 
+def _all_cases(info, ch):
+    return _regex.all_cases(info.global_flags, ch)
+
 def _compile_firstset(info, fs):
     "Compiles the firstset for the pattern."
     if not fs or _VOID_ITEM in fs or None in fs:
@@ -193,9 +196,7 @@ def _compile_firstset(info, fs):
         elif t is _Property:
             properties.append(m)
         elif t is _CharacterIgn and m.positive:
-            ch = info.char_type(m.value)
-            characters.extend([m.value, ord(ch.lower()), ord(ch.upper()),
-              ord(ch.title())])
+            characters.extend(_all_cases(info, m.value))
         elif t is _SetUnion and m.positive:
             for i in m.items:
                 if isinstance(i, _Character):
@@ -983,12 +984,7 @@ def _parse_set_member(source, info):
         # Not a range.
         if info.all_flags & IGNORECASE:
             # Case-insensitive.
-            characters = [start.value]
-            c = source.char_type(start.value)
-            characters.append(ord(c.lower()))
-            characters.append(ord(c.upper()))
-            characters.append(ord(c.title()))
-            characters = set(characters)
+            characters = _all_cases(info, start.value)
             # Is it a caseless character?
             if len(characters) == 1:
                 return start
@@ -1000,27 +996,19 @@ def _parse_set_member(source, info):
         # We've reached the end of the set, so return both the character and
         # hyphen.
         source.pos = here
-        characters = [start.value, ord("-")]
+        characters = [ord("-")]
         if info.all_flags & IGNORECASE:
             # Case-insensitive.
-            c = source.char_type(start.value)
-            characters.append(ord(c.lower()))
-            characters.append(ord(c.upper()))
-            characters.append(ord(c.title()))
-        characters = set(characters)
+            characters.extend(_all_cases(info, start.value))
         return _SetUnion([_Character(c) for c in characters])
     # Parse a character or property.
     end = _parse_set_item(source, info)
     if not isinstance(end, _Character):
         # It's not a range, so return the character, hyphen and property.
-        characters = [start.value, ord("-")]
+        characters = [ord("-")]
         if info.all_flags & IGNORECASE:
             # Case-insensitive.
-            c = source.char_type(start.value)
-            characters.append(ord(c.lower()))
-            characters.append(ord(c.upper()))
-            characters.append(ord(c.title()))
-        characters = set(characters)
+            characters.extend(_all_cases(info, start.value))
         return _SetUnion([_Character(c) for c in characters] + [end])
     # It _is_ a range.
     if start.value > end.value:
@@ -1028,11 +1016,7 @@ def _parse_set_member(source, info):
     characters = list(range(start.value, end.value + 1))
     if info.all_flags & IGNORECASE:
         for c in range(start.value, end.value + 1):
-            c = source.char_type(c)
-            characters.append(ord(c.lower()))
-            characters.append(ord(c.upper()))
-            characters.append(ord(c.title()))
-        characters = set(characters)
+            characters.extend(_all_cases(info, c))
     return _SetUnion([_Character(c) for c in characters])
 
 def _parse_set_item(source, info):

@@ -2381,6 +2381,19 @@ xyzabc
         m = regex.search('Derde\s*:', 'aaaaa:\nDerde:')
         self.expect(lambda: m.span(), repr((7, 13)))
 
+    def test_turkish(self):
+        # Turkish has dotted and dotless I/i.
+        chars = u"Ii\u0130\u0131"
+        for c in chars:
+            for r in chars:
+                same = c == r or c in set([r.upper(), r.lower()]) or r in set([c.lower(), c.upper()])
+                char_same = bool(regex.match(r, c, flags=regex.I))
+                set_same = bool(regex.match(u"[%s]" % r, c, flags=regex.I | regex.U))
+                if char_same != same:
+                    self.record_failure("char match failed for {} vs {}".format(repr(c), repr(r)))
+                if set_same != same:
+                    self.record_failure("set match failed for {} vs {}".format(repr(c), repr(r)))
+
     def run(self):
         print "Performing tests"
         print "================"
