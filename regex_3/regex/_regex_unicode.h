@@ -8,7 +8,7 @@ enum {FALSE, TRUE};
 
 #define RE_ASCII_MAX 0x7F
 #define RE_LOCALE_MAX 0xFF
-#define RE_MAX_CASES 4
+#define RE_MAX_CASE_DIFFS 3
 
 typedef struct RE_Property {
     RE_UINT16 name;
@@ -86,7 +86,7 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 
 extern char* re_strings[946];
 extern RE_Property re_properties[140];
-extern RE_PropertyValue re_property_values[1641];
+extern RE_PropertyValue re_property_values[1657];
 extern RE_GetPropertyFunc re_get_property[77];
 
 RE_UINT32 re_get_general_category(RE_UINT32 ch);

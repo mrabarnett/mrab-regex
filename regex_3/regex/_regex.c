@@ -12597,7 +12597,7 @@ static PyObject* get_all_cases(PyObject* self_, PyObject* args) {
     PyObject* all_cases;
     int count;
     int i;
-    RE_CODE cases[RE_MAX_CASES];
+    RE_CODE cases[RE_MAX_CASE_DIFFS + 1];
 
     Py_ssize_t flags;
     Py_ssize_t ch;

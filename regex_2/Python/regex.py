@@ -75,6 +75,14 @@ The special characters are:
                        but reuses capture group numbers across the
                        alternatives.
 
+Set operators are supported, and a set can include nested sets. The set
+operators, in order of increasing precedence, are:
+    ||  Set union ("x||y" means "x or y").
+    ~~  (double tilde) Symmetric set difference ("x~~y" means "x or y, but not
+        both").
+    &&  Set intersection ("x&&y" means "x and y").
+    --  (double dash) Set difference ("x--y" means "x but not y").
+
 The special sequences consist of "\\" and a character from the list
 below.  If the ordinary character is not on the list, then the
 resulting RE will match the second character.

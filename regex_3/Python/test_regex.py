@@ -437,7 +437,8 @@ class Test:
           self.MATCH_CLASS)
 
         self.expect(lambda: regex.match("^x{}$", "xxx"), ascii(None))
-        self.expect(lambda: type(regex.match("^x{}$", "x{}")), self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match("^x{}$", "x{}")),
+          self.MATCH_CLASS)
 
     def test_getattr(self):
         self.expect(lambda: regex.compile("(?i)(a)(b)").pattern,
@@ -566,6 +567,19 @@ class Test:
         # Issue #3511.
         self.expect(lambda: regex.match(r"[Z-a]", "_").span(), ascii((0, 1)))
         self.expect(lambda: regex.match(r"(?i)[Z-a]", "_").span(), ascii((0, 1)))
+
+        self.expect(lambda: type(regex.match(r"(?i)nao", "nAo")),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(r"(?i)n\xE3o", "n\xC3o")),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(r"(?i)n\xE3o", "N\xC3O")),
+          self.MATCH_CLASS)
+        self.expect(lambda: type(regex.match(r"(?i)s", "\u017F")),
+          self.MATCH_CLASS)
+#        self.expect(lambda: type(regex.match(r"(?i)ss", "\xDF")),
+#          self.MATCH_CLASS)
+#        self.expect(lambda: type(regex.match(r"(?i)ffi", "\uFB03")),
+#          self.MATCH_CLASS)
 
     def test_category(self):
         self.expect(lambda: regex.match(r"(\s)", " ")[1], ascii(' '))
@@ -1554,6 +1568,10 @@ class Test:
         self.expect(lambda: regex.match(r"[a-b]", r"a").span(), ascii((0, 1)))
         self.expect(lambda: regex.match(r"(?i)[a-b]", r"A").span(), ascii((0,
           1)))
+
+        self.expect(lambda: regex.sub(r"([\]\[])", r"-", "a[b]c"),
+          ascii("a-b-c"))
+        self.expect(lambda: regex.sub(r"([][])", r"-", "a[b]c"), ascii("a-b-c"))
 
         self.expect(lambda: regex.findall(r"[\p{Alpha}]", "a0"),
           ascii(["a"]))

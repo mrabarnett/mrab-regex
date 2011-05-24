@@ -42,6 +42,10 @@ class _UnscopedFlagSet(Exception):
         Exception.__init__(self)
         self.global_flags = global_flags
 
+# The exception for when parsing fails and we want to try something else.
+class ParseError(Exception):
+    pass
+
 _ALPHA = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 _DIGITS = frozenset("0123456789")
 _ALNUM = _ALPHA | _DIGITS
@@ -891,31 +895,47 @@ def _parse_named_char(source, info, in_set):
 def _parse_property(source, info, in_set, positive):
     "Parses a Unicode property."
     here = source.pos
-    ch = source.get()
-    if ch == "{":
-        name = []
-        ch = source.get()
-        while ch.isspace():
-            ch = source.get()
-        negate = ch == "^"
-        if negate:
-            ch = source.get()
-        while ch and (ch.isalnum() or ch.isspace() or ch in "&_-."):
-            name.append(ch)
-            ch = source.get()
-        if ch in (":" , "="):
-            prop_name = name
-            name = []
-            ch = source.get()
-            while ch and (ch.isalnum() or ch.isspace() or ch in "&_-."):
-                name.append(ch)
-                ch = source.get()
-        else:
-            prop_name = None
-        if ch == "}":
+    if source.match("{"):
+        negate = source.match("^")
+        prop_name, name = _parse_property_name(source)
+        if source.match("}"):
+            # It's correctly delimited.
             return _lookup_property(prop_name, name, positive != negate)
+
+    # Not a property, so treat as a literal "p" or "P".
     source.pos = here
-    return _char_literal(info, in_set, "p" if positive else "P")
+    ch = "p" if positive else "P"
+    return _char_literal(info, in_set, ch)
+
+def _parse_property_name(source):
+    "Parses a property name, which may be qualified."
+    name = []
+    here = source.pos
+    ch = source.get()
+    while ch and (ch in _ALNUM or ch in " &_-."):
+        name.append(ch)
+        here = source.pos
+        ch = source.get()
+
+    here2 = here
+    if ch and ch in ":=":
+        prop_name = name
+        name = []
+        here = source.pos
+        ch = source.get()
+        while ch and (ch in _ALNUM or ch in " &_-."):
+            name.append(ch)
+            here = source.pos
+            ch = source.get()
+        if all(ch == " " for ch in name):
+            # No name after the ":" or "=", so assume it's an unqualified name.
+            prop_name, name = None, prop_name
+            here = here2
+    else:
+        prop_name = None
+
+    source.pos = here
+    return prop_name, name
 
 def _parse_set(source, info):
     "Parses a character set."
@@ -1021,35 +1041,36 @@ def _parse_set_member(source, info):
 
 def _parse_set_item(source, info):
     "Parses an item in a character set."
-    if source.match("[:"):
-        return _parse_character_class(source, not source.match("^"), info)
     if source.match("\\"):
         return _parse_escape(source, info, True)
+    here = source.pos
+    if source.match("[:"):
+        # Looks like a POSIX character class.
+        try:
+            return _parse_posix_class(source, info)
+        except ParseError:
+            # Not a POSIX character class.
+            source.pos = here
     ch = source.get()
     if ch == "[":
-        return _parse_set_union(source, info)
+        # Looks like the start of a nested set.
+        here = source.pos
+        try:
+            return _parse_set_union(source, info)
+        except error:
+            # Failed to parse a nested set, so treat it as a literal.
+            source.pos = here
     if not ch:
         raise error("bad set")
     return _Character(ord(ch))
 
-def _parse_character_class(source, positive, info):
+def _parse_posix_class(source, info):
     "Parses a POSIX character class."
-    name = _parse_name(source)
-    ch = source.get()
-    here = source.pos
-    if ch in (":" , "=") and not source.match("]"):
-        prop_name = name
-        name = []
-        ch = source.get()
-        while ch and (ch.isalnum() or ch in "&_-. "):
-            name.append(ch)
-            ch = source.get()
-    else:
-        source.pos = here
-        prop_name = None
-    if ch != ":" or source.get() != "]":
-        raise error("missing :]")
-    return _lookup_property(prop_name, name, positive)
+    negate = source.match("^")
+    prop_name, name = _parse_property_name(source)
+    if not source.match(":]"):
+        raise ParseError()
+    return _lookup_property(prop_name, name, not negate)
 
 def _float_to_rational(flt):
     "Converts a float to a rational pair."
@@ -1285,7 +1306,6 @@ class _Atomic(_StructureBase):
         self.subpattern.fix_groups()
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         sequence = self.subpattern.optimise(info)
         prefix, sequence = _Atomic._split_atomic_prefix(sequence)
@@ -1361,7 +1381,6 @@ class _Branch(_StructureBase):
             branch.fix_groups()
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         branches = _Branch._flatten_branches(info, self.branches)
         prefix, branches = _Branch._split_common_prefix(branches)
@@ -1560,7 +1579,6 @@ class _CharacterIgn(_Character):
         self._optimised = False
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         # Case-sensitive matches are faster, so convert to a case-sensitive
         # instance if the character is case-insensitive.
@@ -1592,7 +1610,6 @@ class _Conditional(_StructureBase):
             self.no_item = _Sequence()
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         if self.yes_item.is_empty() and self.no_item.is_empty():
             return _Sequence()
@@ -1699,7 +1716,6 @@ class _GreedyRepeat(_StructureBase):
         self.subpattern.fix_groups()
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         subpattern = self.subpattern.optimise(info)
         if (self.min_count, self.max_count) == (1, 1) or subpattern.is_empty():
@@ -1753,7 +1769,6 @@ class _Group(_StructureBase):
         self.subpattern.fix_groups()
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         self.subpattern = self.subpattern.optimise(info)
         self._optimised = True
@@ -1798,7 +1813,6 @@ class _LookAround(_StructureBase):
         self.subpattern.fix_groups()
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         subpattern = self.subpattern.optimise(info)
         if self.positive and subpattern.is_empty():
@@ -1901,7 +1915,6 @@ class _Sequence(_StructureBase):
             subpattern.fix_groups()
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         # Flatten the sequences.
         sequence = []
@@ -2086,7 +2099,6 @@ class _SetDiff(_Set):
     _op_name = {False: "SET_DIFF", True: "SET_DIFF_REV"}
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         items = []
         for m in self.items:
@@ -2133,7 +2145,6 @@ class _SetInter(_Set):
     _op_name = {False: "SET_INTER", True: "SET_INTER_REV"}
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         items = []
         for m in self.items:
@@ -2172,7 +2183,6 @@ class _SetSymDiff(_Set):
     _op_name = {False: "SET_SYM_DIFF", True: "SET_SYM_DIFF_REV"}
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         items = []
         for m in self.items:
@@ -2211,7 +2221,6 @@ class _SetUnion(_Set):
     _op_name = {False: "SET_UNION", True: "SET_UNION_REV"}
     def optimise(self, info):
         if self._optimised:
-            print("***", self, "already optimised", "***")
             return self
         items = []
         for m in self.items:
