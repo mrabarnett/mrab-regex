@@ -13,13 +13,13 @@ enum {FALSE, TRUE};
 typedef struct RE_Property {
     RE_UINT16 name;
     RE_UINT8 id;
-	RE_UINT8 value_set;
+    RE_UINT8 value_set;
 } RE_Property;
 
 typedef struct RE_PropertyValue {
-	RE_UINT16 name;
-	RE_UINT8 value_set;
-	RE_UINT8 id;
+    RE_UINT16 name;
+    RE_UINT8 value_set;
+    RE_UINT8 id;
 } RE_PropertyValue;
 
 typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
@@ -85,9 +85,9 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_GBREAK_LVT 11
 
 extern char* re_strings[946];
-extern RE_Property re_properties[140];
-extern RE_PropertyValue re_property_values[1657];
-extern RE_GetPropertyFunc re_get_property[77];
+extern RE_Property re_properties[141];
+extern RE_PropertyValue re_property_values[1734];
+extern RE_GetPropertyFunc re_get_property[78];
 
 RE_UINT32 re_get_general_category(RE_UINT32 ch);
 RE_UINT32 re_get_block(RE_UINT32 ch);
@@ -167,3 +167,4 @@ RE_UINT32 re_get_word(RE_UINT32 ch);
 RE_UINT32 re_get_xdigit(RE_UINT32 ch);
 BOOL re_is_same_char_ign(RE_UINT32 ch1, RE_UINT32 ch2);
 int re_get_all_cases(RE_UINT32 ch, RE_UINT32* cases);
+RE_UINT32 re_folded_case(RE_UINT32 ch);

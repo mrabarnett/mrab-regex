@@ -55,7 +55,26 @@ This module supports Unicode 6.0.0.
 Additional features
 -------------------
 
-The issue numbers relate to the Python bug tracker.
+The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+
+* Named lists (Hg issue 11) (provisional)
+
+    ``\L<name>``
+
+    There are occasions where you may want to include a list (actually, a set) of options in a regex.
+
+    One way is to build the pattern like this::
+
+        regex.compile(r"first|second|third|fourth|fifth")
+
+    but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character which has a special meaning in a regex.
+
+    The new alternative is to use a named list::
+
+        option_set = set(["first", "second", "third", "fourth", "fifth"])
+        regex.compile(r"\L<options>", options=option_set)
+
+    The order of the items is irrelevant, they are treated as a set.
 
 * Unicode line separators
 

@@ -2404,13 +2404,14 @@ xyzabc
         chars = u"Ii\u0130\u0131"
         for c in chars:
             for r in chars:
+                self.index += 1
                 same = c == r or c in set([r.upper(), r.lower()]) or r in set([c.lower(), c.upper()])
-                char_same = bool(regex.match(r, c, flags=regex.I))
+                char_same = bool(regex.match(r, c, flags=regex.I | regex.U))
                 set_same = bool(regex.match(u"[%s]" % r, c, flags=regex.I | regex.U))
                 if char_same != same:
-                    self.record_failure("char match failed for {} vs {}".format(repr(c), repr(r)))
+                    self.record_failure("char match failed for %s vs %s" % (repr(c), repr(r)))
                 if set_same != same:
-                    self.record_failure("set match failed for {} vs {}".format(repr(c), repr(r)))
+                    self.record_failure("set match failed for %s vs %s" % (repr(c), repr(r)))
 
     def run(self):
         print "Performing tests"

@@ -348,8 +348,25 @@ ul.auto-toc {
 </div>
 <div class="section" id="additional-features">
 <h1>Additional features</h1>
-<p>The issue numbers relate to the Python bug tracker.</p>
+<p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Named lists (Hg issue 11) (provisional)</p>
+<blockquote>
+<p><tt class="docutils literal">\L&lt;name&gt;</tt></p>
+<p>There are occasions where you may want to include a list (actually, a set) of options in a regex.</p>
+<p>One way is to build the pattern like this:</p>
+<pre class="literal-block">
+regex.compile(r&quot;first|second|third|fourth|fifth&quot;)
+</pre>
+<p>but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character which has a special meaning in a regex.</p>
+<p>The new alternative is to use a named list:</p>
+<pre class="literal-block">
+option_set = set([&quot;first&quot;, &quot;second&quot;, &quot;third&quot;, &quot;fourth&quot;, &quot;fifth&quot;])
+regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
+</pre>
+<p>The order of the items is irrelevant, they are treated as a set.</p>
+</blockquote>
+</li>
 <li><p class="first">Unicode line separators</p>
 <blockquote>
 <p>Normally the only line separator is <tt class="docutils literal">\n</tt> (<tt class="docutils literal">\x0A</tt>), but if the <tt class="docutils literal">WORD</tt> flag is turned on then the line separators are the pair <tt class="docutils literal">\x0D\x0A</tt>, and <tt class="docutils literal">\x0A</tt>, <tt class="docutils literal">\x0B</tt>, <tt class="docutils literal">\x0C</tt> and <tt class="docutils literal">\x0D</tt>, plus <tt class="docutils literal">\x85</tt>, <tt class="docutils literal">\u2028</tt> and <tt class="docutils literal">\u2029</tt> when working with Unicode.</p>

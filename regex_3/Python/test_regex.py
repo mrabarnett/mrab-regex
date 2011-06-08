@@ -2405,6 +2405,7 @@ xyzabc
         chars = "Ii\u0130\u0131"
         for c in chars:
             for r in chars:
+                self.index += 1
                 same = c == r or c in {r.upper(), r.lower()} or r in {c.lower(), c.upper()}
                 char_same = bool(regex.match(r, c, flags=regex.I))
                 set_same = bool(regex.match("[{}]".format(r), c, flags=regex.I))

@@ -79,6 +79,10 @@
 #define RE_OP_STRING_IGN 58
 #define RE_OP_STRING_IGN_REV 59
 #define RE_OP_STRING_REV 60
+#define RE_OP_STRING_SET 61
+#define RE_OP_STRING_SET_IGN 62
+#define RE_OP_STRING_SET_IGN_REV 63
+#define RE_OP_STRING_SET_REV 64
 
 char* re_op_text[] = {
     "RE_OP_FAILURE",
@@ -142,6 +146,10 @@ char* re_op_text[] = {
     "RE_OP_STRING_IGN",
     "RE_OP_STRING_IGN_REV",
     "RE_OP_STRING_REV",
+    "RE_OP_STRING_SET",
+    "RE_OP_STRING_SET_IGN",
+    "RE_OP_STRING_SET_IGN_REV",
+    "RE_OP_STRING_SET_REV",
 };
 
 #define RE_FLAG_ASCII 0x80

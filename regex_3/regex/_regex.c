@@ -139,6 +139,9 @@ typedef struct RE_EncodingTable {
     BOOL (*is_line_sep)(RE_CODE ch);
     BOOL (*at_line_start)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_line_end)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*possible_turkic)(RE_CODE ch);
+    RE_CODE (*folded_case)(RE_CODE ch);
+    int (*get_all_cases)(RE_CODE ch, RE_CODE* cases);
 } RE_EncodingTable;
 
 /* Position with the regex and text. */
@@ -350,6 +353,7 @@ typedef struct PatternObject {
     Py_ssize_t group_end_index; /* Number of group closures. */
     PyObject* groupindex;
     PyObject* indexgroup;
+    PyObject* ref_lists;
     /* Storage for the pattern nodes. */
     Py_ssize_t node_capacity;
     Py_ssize_t node_count;
@@ -533,6 +537,8 @@ static BOOL at_boundary_always(RE_State* state, Py_ssize_t text_pos) {
 /* ASCII-specific. */
 
 static BOOL unicode_has_property(RE_CODE property, RE_CODE ch);
+static RE_CODE unicode_folded_case(RE_CODE ch);
+static int unicode_get_all_cases(RE_CODE ch, RE_CODE* cases);
 
 /* Checks whether an ASCII character has the given property. */
 static BOOL ascii_has_property(RE_CODE property, RE_CODE ch) {
@@ -624,6 +630,29 @@ static BOOL ascii_at_line_end(RE_State* state, Py_ssize_t text_pos) {
     return 0x0A <= ch && ch <= 0x0D;
 }
 
+/* Checks whether a character could be Turkic (variants of I/i). For ASCII, it won't be. */
+static BOOL ascii_possible_turkic(RE_CODE ch) {
+    return FALSE;
+}
+
+/* Returns a character with its case folded. */
+static RE_CODE ascii_folded_case(RE_CODE ch) {
+    if (ch > RE_ASCII_MAX)
+        return ch;
+
+    return unicode_folded_case(ch);
+}
+
+/* Gets all the case variants of a character. */
+static int ascii_get_all_cases(RE_CODE ch, RE_CODE* cases) {
+    if (ch <= RE_ASCII_MAX)
+        return unicode_get_all_cases(ch, cases);
+
+    cases[0] = ch;
+
+    return 1;
+}
+
 /* The handlers for ASCII characters. */
 static RE_EncodingTable ascii_encoding = {
     ascii_has_property,
@@ -637,6 +666,9 @@ static RE_EncodingTable ascii_encoding = {
     ascii_is_line_sep,
     ascii_at_line_start,
     ascii_at_line_end,
+    ascii_possible_turkic,
+    ascii_folded_case,
+    ascii_get_all_cases,
 };
 
 /* Locale-specific. */
@@ -773,6 +805,42 @@ static BOOL locale_at_boundary(RE_State* state, Py_ssize_t text_pos) {
     return before != after;
 }
 
+/* Checks whether a character could be Turkic (variants of I/i). */
+static BOOL locale_possible_turkic(RE_CODE ch) {
+    return toupper(ch) == 'I' || tolower(ch) == 'i';
+}
+
+/* Returns a character with its case folded. */
+static RE_CODE locale_folded_case(RE_CODE ch) {
+    if (ch > RE_LOCALE_MAX)
+        return ch;
+
+    return tolower(ch);
+}
+
+/* Gets all the case variants of a character. */
+static int locale_get_all_cases(RE_CODE ch, RE_CODE* cases) {
+    int count;
+    RE_CODE other;
+
+    count = 0;
+
+    cases[count++] = ch;
+
+    if (ch > RE_LOCALE_MAX)
+        return count;
+
+    other = toupper(ch);
+    if (other != ch)
+        cases[count++] = other;
+
+    other = tolower(ch);
+    if (other != ch)
+        cases[count++] = other;
+
+    return count;
+}
+
 /* The handlers for locale characters. */
 static RE_EncodingTable locale_encoding = {
     locale_has_property,
@@ -786,6 +854,9 @@ static RE_EncodingTable locale_encoding = {
     ascii_is_line_sep, /* Assume locale line separators are same as ASCII. */
     ascii_at_line_start, /* Assume locale line separators are same as ASCII. */
     ascii_at_line_end, /* Assume locale line separators are same as ASCII. */
+    locale_possible_turkic,
+    locale_folded_case,
+    locale_get_all_cases,
 };
 
 /* Unicode-specific. */
@@ -1086,6 +1157,21 @@ static BOOL unicode_at_line_end(RE_State* state, Py_ssize_t text_pos) {
       0x2029;
 }
 
+/* Checks whether a character could be Turkic (variants of I/i). */
+static BOOL unicode_possible_turkic(RE_CODE ch) {
+    return ch == 'I' || ch == 'i' || ch == 0x0130 || ch == 0x0131;
+}
+
+/* Returns a character with its case folded. */
+static RE_CODE unicode_folded_case(RE_CODE ch) {
+    return re_folded_case(ch);
+}
+
+/* Gets all the case variants of a character. */
+static int unicode_get_all_cases(RE_CODE ch, RE_CODE* cases) {
+    return re_get_all_cases(ch, cases);
+}
+
 /* The handlers for Unicode characters. */
 static RE_EncodingTable unicode_encoding = {
     unicode_has_property,
@@ -1099,11 +1185,19 @@ static RE_EncodingTable unicode_encoding = {
     unicode_is_line_sep,
     unicode_at_line_start,
     unicode_at_line_end,
+    unicode_possible_turkic,
+    unicode_folded_case,
+    unicode_get_all_cases,
 };
+
+Py_LOCAL_INLINE(PyObject*) get_object(char* module_name, char* object_name);
 
 /* Sets the error message. */
 Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
     TRACE(("<<set_error>>\n"))
+
+    if (!error_exception)
+        error_exception = get_object("_" RE_MODULE "_core", "error");
 
     switch (status) {
     case RE_ERROR_GROUP_INDEX_TYPE:
@@ -2869,7 +2963,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
                     return (text_ptr + length) - (RE_UCHAR*)text;
             }
 
-            --text_pos;
+            --text_ptr;
 
             if (text_ptr < limit_ptr)
                 break;
@@ -2892,7 +2986,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
                     return (text_ptr + length) - (RE_BCHAR*)text;
             }
 
-            --text_pos;
+            --text_ptr;
 
             if (text_ptr < limit_ptr)
                 break;
@@ -2938,7 +3032,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_rev(RE_State* state, RE_Node*
                     return (text_ptr + length) - (RE_UCHAR*)text;
             }
 
-            --text_pos;
+            --text_ptr;
 
             if (text_ptr < limit_ptr)
                 break;
@@ -2961,7 +3055,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_rev(RE_State* state, RE_Node*
                     return (text_ptr + length) - (RE_BCHAR*)text;
             }
 
-            --text_pos;
+            --text_ptr;
 
             if (text_ptr < limit_ptr)
                 break;
@@ -4883,6 +4977,390 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
     }
 }
 
+Py_LOCAL_INLINE(void) fold_string_case_u(RE_UCHAR* buffer, Py_ssize_t len) {
+    Py_ssize_t i;
+
+    for (i = 0; i < len; i++) {
+        if (!unicode_possible_turkic(buffer[i]))
+            buffer[i] = unicode_folded_case(buffer[i]);
+    }
+}
+
+Py_LOCAL_INLINE(void) fold_string_case_b(RE_EncodingTable* encoding, RE_BCHAR*
+  buffer, Py_ssize_t len) {
+    Py_ssize_t i;
+
+    for (i = 0; i < len; i++) {
+        if (!encoding->possible_turkic(buffer[i]))
+            buffer[i] = encoding->folded_case(buffer[i]);
+    }
+}
+
+Py_LOCAL_INLINE(int) look_in_string_set_u(PyObject* string_set, RE_UCHAR*
+  buffer, Py_ssize_t index, Py_ssize_t len) {
+    RE_CODE cases[RE_MAX_CASE_DIFFS + 1];
+    int count;
+    int i;
+
+    while (index < len && !unicode_possible_turkic(buffer[index]))
+        ++index;
+
+    if (index >= len) {
+        PyObject* string;
+        int status;
+
+        string = Py_BuildValue("u#", buffer, len);
+        if (!string)
+            return -1;
+
+        status = PySet_Contains(string_set, string);
+        Py_DECREF(string);
+
+        return status;
+    }
+
+    count = unicode_get_all_cases(buffer[index], cases);
+
+    for (i = 0; i < count; i++) {
+        int status;
+
+        buffer[index] = cases[i];
+
+        status = look_in_string_set_u(string_set, buffer, index + 1, len);
+        if (status != 0)
+            return status;
+    }
+
+    return 0;
+}
+
+Py_LOCAL_INLINE(int) look_in_string_set_b(RE_EncodingTable* encoding, PyObject*
+  string_set, RE_BCHAR* buffer, Py_ssize_t index, Py_ssize_t len) {
+    RE_CODE cases[RE_MAX_CASE_DIFFS + 1];
+    int count;
+    int i;
+
+    while (index < len && !encoding->possible_turkic(buffer[index]))
+        ++index;
+
+    if (index >= len) {
+        PyObject* string;
+        int status;
+
+        string = Py_BuildValue("y#", buffer, len);
+        if (!string)
+            return -1;
+
+        status = PySet_Contains(string_set, string);
+        Py_DECREF(string);
+
+        return status;
+    }
+
+    count = encoding->get_all_cases(buffer[index], cases);
+
+    for (i = 0; i < count; i++) {
+        int status;
+
+        buffer[index] = cases[i];
+
+        status = look_in_string_set_b(encoding, string_set, buffer, index + 1,
+          len);
+        if (status != 0)
+            return status;
+    }
+
+    return 0;
+}
+
+Py_LOCAL_INLINE(int) string_set_contains_ign_u(PyObject* string_set, RE_UCHAR*
+  text_ptr, Py_ssize_t len) {
+    RE_UCHAR* buffer;
+    int status;
+
+    buffer = PyMem_MALLOC(len * sizeof(RE_UCHAR));
+    if (!buffer)
+        return -1;
+
+    memmove(buffer, text_ptr, len * sizeof(RE_UCHAR));
+
+    fold_string_case_u(buffer, len);
+
+    status = look_in_string_set_u(string_set, buffer, 0, len);
+
+    PyMem_FREE(buffer);
+
+    return status;
+}
+
+Py_LOCAL_INLINE(int) string_set_contains_ign_b(RE_EncodingTable* encoding,
+  PyObject* string_set, RE_BCHAR* text_ptr, Py_ssize_t len) {
+    RE_BCHAR* buffer;
+    int status;
+
+    buffer = PyMem_MALLOC(len * sizeof(RE_BCHAR));
+    if (!buffer)
+        return -1;
+
+    memmove(buffer, text_ptr, len * sizeof(RE_BCHAR));
+
+    fold_string_case_b(encoding, buffer, len);
+
+    status = look_in_string_set_b(encoding, string_set, buffer, 0, len);
+
+    PyMem_FREE(buffer);
+
+    return status;
+}
+
+Py_LOCAL_INLINE(BOOL) string_set_match(RE_SafeState* safe_state, RE_Node* node)
+  {
+    Py_ssize_t index;
+    Py_ssize_t min_len;
+    Py_ssize_t max_len;
+    RE_State* state;
+    Py_ssize_t available;
+    PyObject* string_set;
+    int status;
+    Py_ssize_t len;
+
+    index = node->values[0];
+    min_len = node->values[1];
+    max_len = node->values[2];
+
+    state = safe_state->re_state;
+
+    available = state->slice_end - state->text_pos;
+    if (available < min_len)
+        return FALSE;
+
+    if (max_len > available)
+        max_len = available;
+
+    acquire_GIL(safe_state);
+
+    string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
+    if (!string_set)
+        goto error;
+
+    status = 0;
+
+    for (len = max_len; status == 0 && len >= min_len; len--) {
+        PyObject* string;
+
+        if (state->wide) {
+            RE_UCHAR* text_ptr;
+
+            text_ptr = (RE_UCHAR*)state->text + state->text_pos;
+            string = Py_BuildValue("u#", text_ptr, len);
+        } else {
+            RE_BCHAR* text_ptr;
+
+            text_ptr = (RE_BCHAR*)state->text + state->text_pos;
+            string = Py_BuildValue("y#", text_ptr, len);
+        }
+        if (!string)
+            goto error;
+
+        status = PySet_Contains(string_set, string);
+        Py_DECREF(string);
+
+        if (status == 1)
+            state->text_pos += len;
+    }
+
+    release_GIL(safe_state);
+
+    return status == 1;
+
+error:
+    release_GIL(safe_state);
+    return FALSE;
+}
+
+Py_LOCAL_INLINE(BOOL) string_set_match_ign(RE_SafeState* safe_state, RE_Node* node)
+  {
+    Py_ssize_t index;
+    Py_ssize_t min_len;
+    Py_ssize_t max_len;
+    RE_State* state;
+    Py_ssize_t available;
+    PyObject* string_set;
+    int status;
+    Py_ssize_t len;
+
+    index = node->values[0];
+    min_len = node->values[1];
+    max_len = node->values[2];
+
+    state = safe_state->re_state;
+
+    available = state->slice_end - state->text_pos;
+    if (available < min_len)
+        return FALSE;
+
+    if (max_len > available)
+        max_len = available;
+
+    acquire_GIL(safe_state);
+
+    string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
+    if (!string_set)
+        goto error;
+
+    status = 0;
+
+    for (len = max_len; status == 0 && len >= min_len; len--) {
+        if (state->wide) {
+            RE_UCHAR* text_ptr;
+
+            text_ptr = (RE_UCHAR*)state->text + state->text_pos;
+            status = string_set_contains_ign_u(string_set, text_ptr, len);
+        } else {
+            RE_BCHAR* text_ptr;
+
+            text_ptr = (RE_BCHAR*)state->text + state->text_pos;
+            status = string_set_contains_ign_b(state->encoding, string_set,
+              text_ptr, len);
+        }
+
+        if (status == 1)
+            state->text_pos += len;
+    }
+
+    release_GIL(safe_state);
+
+    return status == 1;
+
+error:
+    release_GIL(safe_state);
+    return FALSE;
+}
+
+Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
+  RE_Node* node) {
+    Py_ssize_t index;
+    Py_ssize_t min_len;
+    Py_ssize_t max_len;
+    RE_State* state;
+    Py_ssize_t available;
+    PyObject* string_set;
+    int status;
+    Py_ssize_t len;
+
+    index = node->values[0];
+    min_len = node->values[1];
+    max_len = node->values[2];
+
+    state = safe_state->re_state;
+
+    available = state->text_pos - state->slice_start;
+    if (available < min_len)
+        return FALSE;
+
+    if (max_len > available)
+        max_len = available;
+
+    acquire_GIL(safe_state);
+
+    string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
+    if (!string_set)
+        goto error;
+
+    status = 0;
+
+    for (len = max_len; status == 0 && len >= min_len; len--) {
+        if (state->wide) {
+            RE_UCHAR* text_ptr;
+
+            text_ptr = (RE_UCHAR*)state->text + state->text_pos - len;
+            status = string_set_contains_ign_u(string_set, text_ptr, len);
+        } else {
+            RE_BCHAR* text_ptr;
+
+            text_ptr = (RE_BCHAR*)state->text + state->text_pos - len;
+            status = string_set_contains_ign_b(state->encoding, string_set,
+              text_ptr, len);
+        }
+
+        if (status == 1)
+            state->text_pos -= len;
+    }
+
+    release_GIL(safe_state);
+
+    return status == 1;
+
+error:
+    release_GIL(safe_state);
+    return FALSE;
+}
+
+Py_LOCAL_INLINE(BOOL) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
+  node) {
+    Py_ssize_t index;
+    Py_ssize_t min_len;
+    Py_ssize_t max_len;
+    RE_State* state;
+    Py_ssize_t available;
+    PyObject* string_set;
+    int status;
+    Py_ssize_t len;
+
+    index = node->values[0];
+    min_len = node->values[1];
+    max_len = node->values[2];
+
+    state = safe_state->re_state;
+
+    available = state->text_pos - state->slice_start;
+    if (available < min_len)
+        return FALSE;
+
+    if (max_len > available)
+        max_len = available;
+
+    acquire_GIL(safe_state);
+
+    string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
+    if (!string_set)
+        goto error;
+
+    status = 0;
+
+    for (len = max_len; status == 0 && len >= min_len; len--) {
+        PyObject* string;
+
+        if (state->wide) {
+            RE_UCHAR* text_ptr;
+
+            text_ptr = (RE_UCHAR*)state->text + state->text_pos - len;
+            string = Py_BuildValue("u#", text_ptr, len);
+        } else {
+            RE_BCHAR* text_ptr;
+
+            text_ptr = (RE_BCHAR*)state->text + state->text_pos - len;
+            string = Py_BuildValue("y#", text_ptr, len);
+        }
+        if (!string)
+            goto error;
+
+        status = PySet_Contains(string_set, string);
+        Py_DECREF(string);
+
+        if (status == 1)
+            state->text_pos -= len;
+    }
+
+    release_GIL(safe_state);
+
+    return status == 1;
+
+error:
+    release_GIL(safe_state);
+    return FALSE;
+}
+
 /* Performs a depth-first match or search from the context. */
 Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
   BOOL search) {
@@ -4989,6 +5467,11 @@ advance:
     /* The main matching loop. */
     for (;;) {
         TRACE(("%d|", text_pos))
+
+        /* Should we abort the matching? */
+        ++iterations;
+        if ((iterations & 0xFFFF) == 0 && safe_check_signals(safe_state))
+            return RE_ERROR_INTERRUPTED;
 
         switch (node->op) {
         case RE_OP_ANY: /* Any character, except a newline. */
@@ -6140,6 +6623,38 @@ advance:
             node = node->next_1.node;
             break;
         }
+        case RE_OP_STRING_SET: /* Member of a string set. */
+            TRACE(("%s\n", re_op_text[node->op]))
+            state->text_pos = text_pos;
+            if (!string_set_match(safe_state, node))
+                goto backtrack;
+            text_pos = state->text_pos;
+            node = node->next_1.node;
+            break;
+        case RE_OP_STRING_SET_IGN: /* Member of a string set, ignoring case. */
+            TRACE(("%s\n", re_op_text[node->op]))
+            state->text_pos = text_pos;
+            if (!string_set_match_ign(safe_state, node))
+                goto backtrack;
+            text_pos = state->text_pos;
+            node = node->next_1.node;
+            break;
+        case RE_OP_STRING_SET_REV: /* Member of a string set. */
+            TRACE(("%s\n", re_op_text[node->op]))
+            state->text_pos = text_pos;
+            if (!string_set_match_rev(safe_state, node))
+                goto backtrack;
+            text_pos = state->text_pos;
+            node = node->next_1.node;
+            break;
+        case RE_OP_STRING_SET_IGN_REV: /* Member of a string set, ignoring case. */
+            TRACE(("%s\n", re_op_text[node->op]))
+            state->text_pos = text_pos;
+            if (!string_set_match_ign_rev(safe_state, node))
+                goto backtrack;
+            text_pos = state->text_pos;
+            node = node->next_1.node;
+            break;
         case RE_OP_SUCCESS: /* Success. */
             /* Must the match advance past its start? */
             if (text_pos == state->search_anchor && state->must_advance)
@@ -6149,14 +6664,8 @@ advance:
             return RE_ERROR_SUCCESS;
         default: /* Illegal opcode! */
             TRACE(("UNKNOWN OP %d\n", node->op))
-            set_error(RE_ERROR_ILLEGAL, NULL);
             return RE_ERROR_ILLEGAL;
         }
-
-        /* Should we abort the matching? */
-        ++iterations;
-        if ((iterations & 0xFFFF) == 0 && safe_check_signals(safe_state))
-            return RE_ERROR_INTERRUPTED;
     }
 
 backtrack:
@@ -7145,7 +7654,6 @@ backtrack:
         }
         default:
             TRACE(("UNKNOWN OP %d\n", bt_data->op))
-            set_error(RE_ERROR_ILLEGAL, NULL);
             return RE_ERROR_ILLEGAL;
         }
     }
@@ -7225,6 +7733,9 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
 
     /* Re-acquire the GIL. */
     acquire_GIL(safe_state);
+
+    if (status == RE_ERROR_ILLEGAL)
+        set_error(status, NULL);
 
     return status;
 }
@@ -8276,29 +8787,38 @@ failed:
     return NULL;
 }
 
+/* Gets a Python object by name from a named module. */
+Py_LOCAL_INLINE(PyObject*) get_object(char* module_name, char* object_name) {
+    PyObject* module;
+    PyObject* object;
+
+    module = PyImport_ImportModule(module_name);
+    if (!module)
+        return NULL;
+
+    object = PyObject_GetAttrString(module, object_name);
+    Py_DECREF(module);
+
+    return object;
+}
+
 /* Calls a function in a module. */
-Py_LOCAL_INLINE(PyObject*) call(char* module, char* function, PyObject* args) {
-    PyObject* name;
-    PyObject* mod;
-    PyObject* func;
+Py_LOCAL_INLINE(PyObject*) call(char* module_name, char* function_name,
+  PyObject* args) {
+    PyObject* function;
     PyObject* result;
 
     if (!args)
         return NULL;
-    name = PyUnicode_FromString(module);
-    if (!name)
+
+    function = get_object(module_name, function_name);
+    if (!function)
         return NULL;
-    mod = PyImport_Import(name);
-    Py_DECREF(name);
-    if (!mod)
-        return NULL;
-    func = PyObject_GetAttrString(mod, function);
-    Py_DECREF(mod);
-    if (!func)
-        return NULL;
-    result = PyObject_CallObject(func, args);
-    Py_DECREF(func);
+
+    result = PyObject_CallObject(function, args);
+    Py_DECREF(function);
     Py_DECREF(args);
+
     return result;
 }
 
@@ -8509,7 +9029,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     Py_ssize_t i;
 
     /* Hand the template to the template compiler. */
-    replacement = call(RE_MODULE, "_compile_replacement", PyTuple_Pack(2,
+    replacement = call(RE_MODULE, "compile_replacement", PyTuple_Pack(2,
       self->pattern, str_template));
     if (!replacement)
         return NULL;
@@ -9827,8 +10347,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             /* The template isn't a literal either, so hand it over to the
              * template compiler.
              */
-            replacement = call(RE_MODULE, "_compile_replacement",
-              PyTuple_Pack(2, self, str_template));
+            replacement = call(RE_MODULE, "compile_replacement", PyTuple_Pack(2,
+              self, str_template));
             if (!replacement)
                 return NULL;
         }
@@ -10463,6 +10983,7 @@ static void pattern_dealloc(PatternObject* self) {
     Py_XDECREF(self->pattern);
     Py_XDECREF(self->groupindex);
     Py_XDECREF(self->indexgroup);
+    Py_DECREF(self->ref_lists);
     PyObject_DEL(self);
 }
 
@@ -12074,43 +12595,6 @@ Py_LOCAL_INLINE(BOOL) build_SMALL_BITSET(RE_CompileArgs* args) {
     return TRUE;
 }
 
-/* Builds STRING. */
-Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args) {
-    Py_ssize_t length;
-    BYTE op;
-    Py_ssize_t step;
-    RE_Node* node;
-    Py_ssize_t i;
-
-    /* codes: opcode, length, characters. */
-    length = args->code[1];
-    if (args->code + 2 + length > args->end_code)
-        return FALSE;
-
-    op = args->code[0];
-
-    step = get_step(op);
-
-    /* Create the node. */
-    node = create_node(args->pattern, op, TRUE, step * length, length);
-    if (!node)
-        return FALSE;
-    node->status |= RE_STATUS_STRING;
-
-    for (i = 0; i < length; i++)
-        node->values[i] = args->code[2 + i];
-
-    args->code += 2 + length;
-
-    /* Append the node. */
-    add_node(args->end, node);
-    args->end = node;
-
-    args->min_width += length;
-
-    return TRUE;
-}
-
 /* Builds SET. */
 Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
     RE_CODE flags;
@@ -12198,6 +12682,70 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
 
     if (step != 0)
         ++args->min_width;
+
+    return TRUE;
+}
+
+/* Builds STRING. */
+Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args) {
+    Py_ssize_t length;
+    BYTE op;
+    Py_ssize_t step;
+    RE_Node* node;
+    Py_ssize_t i;
+
+    /* codes: opcode, length, characters. */
+    length = args->code[1];
+    if (args->code + 2 + length > args->end_code)
+        return FALSE;
+
+    op = args->code[0];
+
+    step = get_step(op);
+
+    /* Create the node. */
+    node = create_node(args->pattern, op, TRUE, step * length, length);
+    if (!node)
+        return FALSE;
+    node->status |= RE_STATUS_STRING;
+
+    for (i = 0; i < length; i++)
+        node->values[i] = args->code[2 + i];
+
+    args->code += 2 + length;
+
+    /* Append the node. */
+    add_node(args->end, node);
+    args->end = node;
+
+    args->min_width += length;
+
+    return TRUE;
+}
+
+/* Builds STRING_SET. */
+Py_LOCAL_INLINE(BOOL) build_STRING_SET(RE_CompileArgs* args) {
+    Py_ssize_t index;
+    Py_ssize_t min_len;
+    Py_ssize_t max_len;
+    RE_Node* node;
+
+    /* codes: opcode, index, min_len, max_len. */
+    index = args->code[1];
+    min_len = args->code[2];
+    max_len = args->code[3];
+    node = create_node(args->pattern, args->code[0], FALSE, 0, 3);
+    if (!node)
+        return FALSE;
+
+    node->values[0] = index;
+    node->values[1] = min_len;
+    node->values[2] = max_len;
+    args->code += 4;
+
+    /* Append the reference. */
+    add_node(args->end, node);
+    args->end = node;
 
     return TRUE;
 }
@@ -12321,6 +12869,14 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
             if (!build_REF_GROUP(args))
                 return FALSE;
             break;
+        case RE_OP_STRING_SET:
+        case RE_OP_STRING_SET_IGN:
+        case RE_OP_STRING_SET_IGN_REV:
+        case RE_OP_STRING_SET_REV:
+            /* A reference to a list. */
+            if (!build_STRING_SET(args))
+                return FALSE;
+            break;
         case RE_OP_SET_DIFF:
         case RE_OP_SET_DIFF_REV:
         case RE_OP_SET_INTER:
@@ -12427,6 +12983,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     PyObject* code_list;
     PyObject* groupindex;
     PyObject* indexgroup;
+    PyObject* ref_lists;
     Py_ssize_t code_len;
     RE_CODE* code;
     Py_ssize_t i;
@@ -12436,8 +12993,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     BOOL unicode;
     BOOL ok;
 
-    if (!PyArg_ParseTuple(args, "OnOOO", &pattern, &flags, &code_list,
-      &groupindex, &indexgroup))
+    if (!PyArg_ParseTuple(args, "OnOOOO", &pattern, &flags, &code_list,
+      &groupindex, &indexgroup, &ref_lists))
         return NULL;
 
     /* Read the regular expression code. */
@@ -12478,6 +13035,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->group_end_index = 0;
     self->groupindex = groupindex;
     self->indexgroup = indexgroup;
+    self->ref_lists = ref_lists;
     self->node_capacity = 0;
     self->node_count = 0;
     self->node_list = NULL;
@@ -12492,6 +13050,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     Py_INCREF(self->pattern);
     Py_INCREF(self->groupindex);
     Py_INCREF(self->indexgroup);
+    Py_INCREF(self->ref_lists);
 
     /* Initialise the character encoding. */
     unicode = (flags & RE_FLAG_UNICODE) != 0;
@@ -12537,59 +13096,11 @@ static PyObject* get_code_size(PyObject* self, PyObject* unused) {
     return Py_BuildValue("n", sizeof(RE_CODE));
 }
 
-/* Sets the exception to return on error. */
-static PyObject* set_exception(PyObject* self_, PyObject* args) {
-    if (!PyArg_ParseTuple(args, "O", &error_exception))
-        return NULL;
-
-    Py_INCREF(error_exception);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
 /* Gets the property dict. */
 static PyObject* get_properties(PyObject* self_, PyObject* args) {
     Py_INCREF(property_dict);
 
     return property_dict;
-}
-
-Py_LOCAL_INLINE(int) unicode_get_all_cases(RE_CODE ch, RE_CODE* cases);
-
-Py_LOCAL_INLINE(int) ascii_get_all_cases(RE_CODE ch, RE_CODE* cases) {
-    if (ch <= RE_ASCII_MAX)
-        return unicode_get_all_cases(ch, cases);
-
-    cases[0] = ch;
-
-    return 1;
-}
-
-Py_LOCAL_INLINE(int) locale_get_all_cases(RE_CODE ch, RE_CODE* cases) {
-    int count;
-    RE_CODE other;
-
-    count = 0;
-
-    cases[count++] = ch;
-
-    if (ch > RE_LOCALE_MAX)
-        return count;
-
-    other = toupper(ch);
-    if (other != ch)
-        cases[count++] = other;
-
-    other = tolower(ch);
-    if (other != ch)
-        cases[count++] = other;
-
-    return count;
-}
-
-Py_LOCAL_INLINE(int) unicode_get_all_cases(RE_CODE ch, RE_CODE* cases) {
-    return re_get_all_cases(ch, cases);
 }
 
 /* Gets all the possible cases of a character. */
@@ -12640,13 +13151,32 @@ error:
     return NULL;
 }
 
+/* Folds the case of a character. */
+static PyObject* folded_case(PyObject* self_, PyObject* args) {
+    Py_ssize_t flags;
+    Py_ssize_t ch;
+    if (!PyArg_ParseTuple(args, "nn", &flags, &ch))
+        return NULL;
+
+    if (flags & RE_FLAG_UNICODE)
+        ch = unicode_folded_case(ch);
+    else if (flags & RE_FLAG_LOCALE)
+        ch = locale_folded_case(ch);
+    else if (flags & RE_FLAG_ASCII)
+        ch = ascii_folded_case(ch);
+    else
+        ch = unicode_folded_case(ch);
+
+    return Py_BuildValue("n", ch);
+}
+
 /* The table of the module's functions. */
 static PyMethodDef _functions[] = {
     {"compile", (PyCFunction)re_compile, METH_VARARGS},
     {"get_code_size", (PyCFunction)get_code_size, METH_NOARGS},
-    {"set_exception", (PyCFunction)set_exception, METH_VARARGS},
     {"get_properties", (PyCFunction)get_properties, METH_VARARGS},
     {"all_cases", (PyCFunction)get_all_cases, METH_VARARGS},
+    {"folded_case", (PyCFunction)folded_case, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -12659,7 +13189,8 @@ static BOOL init_property_dict() {
 
     value_set_count = 0;
 
-    for (i = 0; i < sizeof(re_property_values) / sizeof(re_property_values[0]); i++) {
+    for (i = 0; i < sizeof(re_property_values) / sizeof(re_property_values[0]);
+      i++) {
         RE_PropertyValue* value;
 
         value = &re_property_values[i];
@@ -12667,13 +13198,15 @@ static BOOL init_property_dict() {
             value_set_count = value->value_set + 1;
     }
 
-    value_dicts = (PyObject**)PyMem_Malloc(value_set_count * sizeof(value_dicts[0]));
+    value_dicts = (PyObject**)PyMem_Malloc(value_set_count *
+      sizeof(value_dicts[0]));
     if (!value_dicts)
         return FALSE;
 
     memset(value_dicts, 0, value_set_count * sizeof(value_dicts[0]));
 
-    for (i = 0; i < sizeof(re_property_values) / sizeof(re_property_values[0]); i++) {
+    for (i = 0; i < sizeof(re_property_values) / sizeof(re_property_values[0]);
+      i++) {
         RE_PropertyValue* value;
         PyObject* v;
 
@@ -12688,7 +13221,8 @@ static BOOL init_property_dict() {
         if (!v)
             goto error;
 
-        PyDict_SetItemString(value_dicts[value->value_set], re_strings[value->name], v);
+        PyDict_SetItemString(value_dicts[value->value_set],
+          re_strings[value->name], v);
     }
 
     property_dict = PyDict_New();
@@ -12758,7 +13292,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
     if (PyType_Ready(&Splitter_Type) < 0)
         return NULL;
 
-    error_exception = PyExc_RuntimeError;
+    error_exception = NULL;
 
     m = PyModule_Create(&remodule);
     if (!m)
