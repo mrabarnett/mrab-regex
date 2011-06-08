@@ -2784,7 +2784,8 @@ class Scanner:
         # needed by the PatternObject itself. Conversely, global flags like
         # LOCALE _don't_ affect the code generation but _are_ needed by the
         # PatternObject.
-        self.scanner = _regex.compile(None, flags & GLOBAL_FLAGS, code, {}, {})
+        self.scanner = _regex.compile(None, flags & GLOBAL_FLAGS, code, {}, {},
+          {})
 
     def scan(self, string):
         result = []
