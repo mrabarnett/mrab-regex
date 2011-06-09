@@ -68,6 +68,7 @@ enum {RE_CONC_NO, RE_CONC_YES, RE_CONC_DEFAULT};
 #define RE_ERROR_SUCCESS 1 /* Successful match. */
 #define RE_ERROR_FAILURE 0 /* Unsuccessful match. */
 #define RE_ERROR_ILLEGAL -1 /* Illegal opcode. */
+#define RE_ERROR_INTERNAL -2 /* Internal error. */
 #define RE_ERROR_MEMORY -9 /* Out of memory. */
 #define RE_ERROR_INTERRUPTED -10 /* Signal handler raised exception. */
 #define RE_ERROR_REPLACEMENT -11 /* Invalid replacement string. */
@@ -4977,6 +4978,7 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
     }
 }
 
+/* Folds the case of a Unicode string. */
 Py_LOCAL_INLINE(void) fold_string_case_u(RE_UCHAR* buffer, Py_ssize_t len) {
     Py_ssize_t i;
 
@@ -4986,6 +4988,7 @@ Py_LOCAL_INLINE(void) fold_string_case_u(RE_UCHAR* buffer, Py_ssize_t len) {
     }
 }
 
+/* Folds the case of a bytestring. */
 Py_LOCAL_INLINE(void) fold_string_case_b(RE_EncodingTable* encoding, RE_BCHAR*
   buffer, Py_ssize_t len) {
     Py_ssize_t i;
@@ -4996,6 +4999,7 @@ Py_LOCAL_INLINE(void) fold_string_case_b(RE_EncodingTable* encoding, RE_BCHAR*
     }
 }
 
+/* Looks for a Unicode string in a string set. */
 Py_LOCAL_INLINE(int) look_in_string_set_u(PyObject* string_set, RE_UCHAR*
   buffer, Py_ssize_t index, Py_ssize_t len) {
     RE_CODE cases[RE_MAX_CASE_DIFFS + 1];
@@ -5034,6 +5038,7 @@ Py_LOCAL_INLINE(int) look_in_string_set_u(PyObject* string_set, RE_UCHAR*
     return 0;
 }
 
+/* Looks for a bytestring in a string set. */
 Py_LOCAL_INLINE(int) look_in_string_set_b(RE_EncodingTable* encoding, PyObject*
   string_set, RE_BCHAR* buffer, Py_ssize_t index, Py_ssize_t len) {
     RE_CODE cases[RE_MAX_CASE_DIFFS + 1];
@@ -5047,9 +5052,9 @@ Py_LOCAL_INLINE(int) look_in_string_set_b(RE_EncodingTable* encoding, PyObject*
         PyObject* string;
         int status;
 
-        string = Py_BuildValue("y#", buffer, len);
+        string = Py_BuildValue("s#", buffer, len);
         if (!string)
-            return -1;
+            return RE_ERROR_MEMORY;
 
         status = PySet_Contains(string_set, string);
         Py_DECREF(string);
@@ -5073,6 +5078,7 @@ Py_LOCAL_INLINE(int) look_in_string_set_b(RE_EncodingTable* encoding, PyObject*
     return 0;
 }
 
+/* Looks for a Unicode string in a string set, ignoring case. */
 Py_LOCAL_INLINE(int) string_set_contains_ign_u(PyObject* string_set, RE_UCHAR*
   text_ptr, Py_ssize_t len) {
     RE_UCHAR* buffer;
@@ -5080,7 +5086,7 @@ Py_LOCAL_INLINE(int) string_set_contains_ign_u(PyObject* string_set, RE_UCHAR*
 
     buffer = PyMem_MALLOC(len * sizeof(RE_UCHAR));
     if (!buffer)
-        return -1;
+        return RE_ERROR_MEMORY;
 
     memmove(buffer, text_ptr, len * sizeof(RE_UCHAR));
 
@@ -5093,6 +5099,7 @@ Py_LOCAL_INLINE(int) string_set_contains_ign_u(PyObject* string_set, RE_UCHAR*
     return status;
 }
 
+/* Looks for a bytestring in a string set, ignoring case. */
 Py_LOCAL_INLINE(int) string_set_contains_ign_b(RE_EncodingTable* encoding,
   PyObject* string_set, RE_BCHAR* text_ptr, Py_ssize_t len) {
     RE_BCHAR* buffer;
@@ -5100,7 +5107,7 @@ Py_LOCAL_INLINE(int) string_set_contains_ign_b(RE_EncodingTable* encoding,
 
     buffer = PyMem_MALLOC(len * sizeof(RE_BCHAR));
     if (!buffer)
-        return -1;
+        return RE_ERROR_MEMORY;
 
     memmove(buffer, text_ptr, len * sizeof(RE_BCHAR));
 
@@ -5113,8 +5120,10 @@ Py_LOCAL_INLINE(int) string_set_contains_ign_b(RE_EncodingTable* encoding,
     return status;
 }
 
-Py_LOCAL_INLINE(BOOL) string_set_match(RE_SafeState* safe_state, RE_Node* node)
-  {
+/* Tries to match a string at the current position with a member of a string
+ * set.
+ */
+Py_LOCAL_INLINE(int) string_set_match(RE_SafeState* safe_state, RE_Node* node) {
     Py_ssize_t index;
     Py_ssize_t min_len;
     Py_ssize_t max_len;
@@ -5132,19 +5141,22 @@ Py_LOCAL_INLINE(BOOL) string_set_match(RE_SafeState* safe_state, RE_Node* node)
 
     available = state->slice_end - state->text_pos;
     if (available < min_len)
-        return FALSE;
+        /* Too few characters for any match. */
+        return 0;
 
     if (max_len > available)
         max_len = available;
 
     acquire_GIL(safe_state);
 
+    /* Fetch the string set. */
     string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
     if (!string_set)
         goto error;
 
     status = 0;
 
+    /* Attempt matches for a decreasing length. */
     for (len = max_len; status == 0 && len >= min_len; len--) {
         PyObject* string;
 
@@ -5157,7 +5169,7 @@ Py_LOCAL_INLINE(BOOL) string_set_match(RE_SafeState* safe_state, RE_Node* node)
             RE_BCHAR* text_ptr;
 
             text_ptr = (RE_BCHAR*)state->text + state->text_pos;
-            string = Py_BuildValue("y#", text_ptr, len);
+            string = Py_BuildValue("s#", text_ptr, len);
         }
         if (!string)
             goto error;
@@ -5166,20 +5178,25 @@ Py_LOCAL_INLINE(BOOL) string_set_match(RE_SafeState* safe_state, RE_Node* node)
         Py_DECREF(string);
 
         if (status == 1)
+            /* Advance past the match. */
             state->text_pos += len;
     }
 
     release_GIL(safe_state);
 
-    return status == 1;
+    return status;
 
 error:
     release_GIL(safe_state);
-    return FALSE;
+
+    return RE_ERROR_INTERNAL;
 }
 
-Py_LOCAL_INLINE(BOOL) string_set_match_ign(RE_SafeState* safe_state, RE_Node* node)
-  {
+/* Tries to match a string at the current position with a member of a string
+ * set, ignoring case.
+ */
+Py_LOCAL_INLINE(int) string_set_match_ign(RE_SafeState* safe_state, RE_Node*
+  node) {
     Py_ssize_t index;
     Py_ssize_t min_len;
     Py_ssize_t max_len;
@@ -5197,19 +5214,22 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign(RE_SafeState* safe_state, RE_Node* no
 
     available = state->slice_end - state->text_pos;
     if (available < min_len)
-        return FALSE;
+        /* Too few characters for any match. */
+        return 0;
 
     if (max_len > available)
         max_len = available;
 
     acquire_GIL(safe_state);
 
+    /* Fetch the string set. */
     string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
     if (!string_set)
         goto error;
 
     status = 0;
 
+    /* Attempt matches for a decreasing length. */
     for (len = max_len; status == 0 && len >= min_len; len--) {
         if (state->wide) {
             RE_UCHAR* text_ptr;
@@ -5225,18 +5245,23 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign(RE_SafeState* safe_state, RE_Node* no
         }
 
         if (status == 1)
+            /* Advance past the match. */
             state->text_pos += len;
     }
 
     release_GIL(safe_state);
 
-    return status == 1;
+    return status;
 
 error:
     release_GIL(safe_state);
-    return FALSE;
+
+    return RE_ERROR_INTERNAL;
 }
 
+/* Tries to match a string at the current position with a member of a string
+ * set, ignoring case.
+ */
 Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
   RE_Node* node) {
     Py_ssize_t index;
@@ -5256,19 +5281,22 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
 
     available = state->text_pos - state->slice_start;
     if (available < min_len)
-        return FALSE;
+        /* Too few characters for any match. */
+        return 0;
 
     if (max_len > available)
         max_len = available;
 
     acquire_GIL(safe_state);
 
+    /* Fetch the string set. */
     string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
     if (!string_set)
         goto error;
 
     status = 0;
 
+    /* Attempt matches for a decreasing length. */
     for (len = max_len; status == 0 && len >= min_len; len--) {
         if (state->wide) {
             RE_UCHAR* text_ptr;
@@ -5284,18 +5312,23 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
         }
 
         if (status == 1)
+            /* Advance past the match. */
             state->text_pos -= len;
     }
 
     release_GIL(safe_state);
 
-    return status == 1;
+    return status;
 
 error:
     release_GIL(safe_state);
-    return FALSE;
+
+    return RE_ERROR_INTERNAL;
 }
 
+/* Tries to match a string at the current position with a member of a string
+ * set.
+ */
 Py_LOCAL_INLINE(BOOL) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
   node) {
     Py_ssize_t index;
@@ -5315,19 +5348,22 @@ Py_LOCAL_INLINE(BOOL) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
 
     available = state->text_pos - state->slice_start;
     if (available < min_len)
-        return FALSE;
+        /* Too few characters for any match. */
+        return 0;
 
     if (max_len > available)
         max_len = available;
 
     acquire_GIL(safe_state);
 
+    /* Fetch the string set. */
     string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
     if (!string_set)
         goto error;
 
     status = 0;
 
+    /* Attempt matches for a decreasing length. */
     for (len = max_len; status == 0 && len >= min_len; len--) {
         PyObject* string;
 
@@ -5340,7 +5376,7 @@ Py_LOCAL_INLINE(BOOL) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
             RE_BCHAR* text_ptr;
 
             text_ptr = (RE_BCHAR*)state->text + state->text_pos - len;
-            string = Py_BuildValue("y#", text_ptr, len);
+            string = Py_BuildValue("s#", text_ptr, len);
         }
         if (!string)
             goto error;
@@ -5349,16 +5385,18 @@ Py_LOCAL_INLINE(BOOL) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
         Py_DECREF(string);
 
         if (status == 1)
+            /* Advance past the match. */
             state->text_pos -= len;
     }
 
     release_GIL(safe_state);
 
-    return status == 1;
+    return status;
 
 error:
     release_GIL(safe_state);
-    return FALSE;
+
+    return RE_ERROR_INTERNAL;
 }
 
 /* Performs a depth-first match or search from the context. */
@@ -6624,37 +6662,61 @@ advance:
             break;
         }
         case RE_OP_STRING_SET: /* Member of a string set. */
+        {
+            int status;
             TRACE(("%s\n", re_op_text[node->op]))
             state->text_pos = text_pos;
-            if (!string_set_match(safe_state, node))
+            status = string_set_match(safe_state, node);
+            if (status < 0)
+                return status;
+            if (status == 0)
                 goto backtrack;
             text_pos = state->text_pos;
             node = node->next_1.node;
             break;
+        }
         case RE_OP_STRING_SET_IGN: /* Member of a string set, ignoring case. */
+        {
+            int status;
             TRACE(("%s\n", re_op_text[node->op]))
             state->text_pos = text_pos;
-            if (!string_set_match_ign(safe_state, node))
+            status = string_set_match_ign(safe_state, node);
+            if (status < 0)
+                return status;
+            if (status == 0)
                 goto backtrack;
             text_pos = state->text_pos;
             node = node->next_1.node;
             break;
-        case RE_OP_STRING_SET_REV: /* Member of a string set. */
-            TRACE(("%s\n", re_op_text[node->op]))
-            state->text_pos = text_pos;
-            if (!string_set_match_rev(safe_state, node))
-                goto backtrack;
-            text_pos = state->text_pos;
-            node = node->next_1.node;
-            break;
+        }
         case RE_OP_STRING_SET_IGN_REV: /* Member of a string set, ignoring case. */
+        {
+            int status;
             TRACE(("%s\n", re_op_text[node->op]))
             state->text_pos = text_pos;
-            if (!string_set_match_ign_rev(safe_state, node))
+            status = string_set_match_ign_rev(safe_state, node);
+            if (status < 0)
+                return status;
+            if (status == 0)
                 goto backtrack;
             text_pos = state->text_pos;
             node = node->next_1.node;
             break;
+        }
+        case RE_OP_STRING_SET_REV: /* Member of a string set. */
+        {
+            int status;
+            TRACE(("%s\n", re_op_text[node->op]))
+            state->text_pos = text_pos;
+            status = string_set_match_rev(safe_state, node);
+            if (status < 0)
+                return status;
+            if (status == 0)
+                goto backtrack;
+            text_pos = state->text_pos;
+            node = node->next_1.node;
+            break;
+        }
         case RE_OP_SUCCESS: /* Success. */
             /* Must the match advance past its start? */
             if (text_pos == state->search_anchor && state->must_advance)

@@ -2414,6 +2414,15 @@ xyzabc
                 if set_same != same:
                     self.record_failure("set match failed for {} vs {}".format(ascii(c), ascii(r)))
 
+    def test_named_lists(self):
+        options = ["one", "two", "three"]
+        self.expect(lambda: regex.match(r"333\L<bar>444", "333one444", bar=options).group(), ascii("333one444"))
+        self.expect(lambda: regex.match(r"333\L<bar>444", "333four444", bar=options), ascii(None))
+
+        options = [b"one", b"two", b"three"]
+        self.expect(lambda: regex.match(br"333\L<bar>444", b"333one444", bar=options).group(), ascii(b"333one444"))
+        self.expect(lambda: regex.match(br"333\L<bar>444", b"333four444", bar=options), ascii(None))
+
     def run(self):
         print("Performing tests")
         print("================")
