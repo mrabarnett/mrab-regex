@@ -2423,6 +2423,8 @@ xyzabc
         self.expect(lambda: regex.match(br"333\L<bar>444", b"333one444", bar=options).group(), ascii(b"333one444"))
         self.expect(lambda: regex.match(br"333\L<bar>444", b"333four444", bar=options), ascii(None))
 
+        self.expect(lambda: type(regex.compile(r"3\L<bar>4\L<bar>+5", bar=["one", "two", "three"])), self.PATTERN_CLASS)
+
     def run(self):
         print("Performing tests")
         print("================")

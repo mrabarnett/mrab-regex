@@ -2422,6 +2422,8 @@ xyzabc
         self.expect(lambda: regex.match(r"333\L<bar>444", "333one444", bar=options).group(), repr("333one444"))
         self.expect(lambda: regex.match(r"333\L<bar>444", "333four444", bar=options), repr(None))
 
+        self.expect(lambda: type(regex.compile(r"3\L<bar>4\L<bar>+5", bar=["one", "two", "three"])), self.PATTERN_CLASS)
+
     def run(self):
         print "Performing tests"
         print "================"

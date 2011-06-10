@@ -2633,9 +2633,7 @@ class StringSet(RegexBase):
         self._key = self.__class__, self.name
 
         self.set_key = (name, False)
-        try:
-            index, min_len, max_len = info.string_sets[self.set_key]
-        except KeyError:
+        if self.set_key not in info.string_sets:
             items = info.kwargs[name]
 
             index = len(info.string_sets)
@@ -2661,10 +2659,8 @@ class StringSetIgn(StringSet):
         self.info, self.name = info, name
         self._key = self.__class__, self.name
 
-        self.set_key = (name, False)
-        try:
-            index, min_len, max_len = info.string_sets[self.set_key]
-        except KeyError:
+        self.set_key = (name, True)
+        if self.set_key not in info.string_sets:
             items = info.kwargs[name]
 
             index = len(info.string_sets)
