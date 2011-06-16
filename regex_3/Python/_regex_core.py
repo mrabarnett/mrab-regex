@@ -25,11 +25,13 @@ __all__ = ["A", "ASCII", "D", "DEBUG", "I", "IGNORECASE", "L", "LOCALE", "M",
   "WORD", "X", "VERBOSE", "T", "TEMPLATE", "error", "ALNUM", "NONLITERAL",
   "Info", "Source", "FirstSetError", "UnscopedFlagSet", "OP", "Scanner",
   "compile_firstset", "compile_repl_escape", "count_ones", "flatten_code",
-  "parse_pattern", "shrink_cache"]
+  "fold_string_case", "parse_pattern", "shrink_cache"]
 
 # The regex exception.
 class error(Exception):
-   pass
+    def __init__(self, message):
+        Exception.__init__(self, message)
+        self.set_error = False
 
 # The exception for when a positional flag has been turned on in the old
 # behaviour.
@@ -52,7 +54,8 @@ D = DEBUG = 0x200    # Print parsed pattern.
 I = IGNORECASE = 0x2 # Ignore case.
 L = LOCALE = 0x4     # Assume current 8-bit locale.
 M = MULTILINE = 0x8  # Make anchors look for newline.
-N = NEW = 0x100      # Scoped inline flags and correct handling of zero-width matches.
+N = NEW = 0x100      # Scoped inline flags and correct handling of zero-width
+                     # matches.
 R = REVERSE = 0x400  # Search backwards.
 S = DOTALL = 0x10    # Make dot match newline.
 U = UNICODE = 0x20   # Assume Unicode locale.
@@ -886,15 +889,8 @@ def parse_numeric_escape(source, info, ch, in_set):
             # 3 octal digits, so octal escape sequence.
             value = int(digits + ch, 8) & 0xFF
             return char_literal(info, value)
-        else:
-            # 2 digits, so group.
-            source.pos = here
-            if info.is_open_group(digits):
-                raise error("can't refer to an open group")
 
-            return ref_group(info, digits)
-
-    # 1 digit, so group.
+    # Group reference.
     source.pos = here
     if info.is_open_group(digits):
         raise error("can't refer to an open group")
@@ -1121,7 +1117,7 @@ def parse_set_item(source, info):
             source.pos = here
 
     ch = source.get()
-    if ch == "[":
+    if ch == "[" and info.nested_sets:
         # Looks like the start of a nested set.
         here = source.pos
         try:
@@ -1131,7 +1127,9 @@ def parse_set_item(source, info):
             source.pos = here
 
     if not ch:
-        raise error("bad set")
+        e = error("bad set")
+        e.set_error = True
+        raise e
 
     return char_literal(info, ord(ch))
 
@@ -1302,6 +1300,7 @@ def compile_repl_group(source, pattern):
 # node are defined below.
 
 INDENT = "  "
+POSITIVE_OP = 0x1
 ZEROWIDTH_OP = 0x2
 
 # Common base for all nodes.
@@ -1362,6 +1361,23 @@ class RegexBase:
 
 # Base for zero-width nodes.
 class ZeroWidthBase(RegexBase):
+    _pos_text = {False: "NON-MATCH", True: "MATCH"}
+
+    def __init__(self, positive=True):
+        RegexBase.__init__(self)
+        self.positive = bool(positive)
+        self._key = self.__class__, self.positive
+
+    def compile(self, reverse=False):
+        flags = 0
+        if self.positive:
+            flags |= POSITIVE_OP
+        return [(self._opcode, flags)]
+
+    def dump(self, indent=0, reverse=False):
+        print("{}{} {}".format(INDENT * indent, _op_name,
+          self._pos_text[self.positive]))
+
     def firstset(self):
         return set([None])
 
@@ -1387,7 +1403,8 @@ class Any(RegexBase):
     _op_name = {False: "ANY", True: "ANY_REV"}
 
     def compile(self, reverse=False):
-        return [(self._opcode[reverse], )]
+        flags = 0
+        return [(self._opcode[reverse], flags)]
 
     def dump(self, indent=0, reverse=False):
         print("{}{}".format(INDENT * indent, self._op_name[reverse]))
@@ -1411,6 +1428,7 @@ class Atomic(StructureBase):
         return StructureBase.__new__(cls)
 
     def __init__(self, subpattern):
+        StructureBase.__init__(self)
         self.subpattern = subpattern
 
     def fix_groups(self):
@@ -1485,18 +1503,8 @@ class Atomic(StructureBase):
         return suffix, subpattern
 
 class Boundary(ZeroWidthBase):
-    _pos_text = {False: "NON-MATCH", True: "MATCH"}
-
-    def __init__(self, positive=True):
-        self.positive = bool(positive)
-        self._key = self.__class__, self.positive
-
-    def compile(self, reverse=False):
-        return [(OP.BOUNDARY, int(self.positive))]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}BOUNDARY {}".format(INDENT * indent,
-          self._pos_text[self.positive]))
+    _opcode = OP.BOUNDARY
+    _op_name = "BOUNDARY"
 
 class Branch(StructureBase):
     def __new__(cls, branches):
@@ -1509,11 +1517,12 @@ class Branch(StructureBase):
         return StructureBase.__new__(cls)
 
     def __init__(self, branches):
+        StructureBase.__init__(self)
         self.branches = branches
 
     def fix_groups(self):
-        for branch in self.branches:
-            branch.fix_groups()
+        for b in self.branches:
+            b.fix_groups()
 
     def optimise(self, info):
         # Flatten branches within branches.
@@ -1537,20 +1546,19 @@ class Branch(StructureBase):
         return Sequence(prefix + [Branch(branches)] + suffix)
 
     def pack_characters(self, info):
-        self.branches = [branch.pack_characters(info) for branch in
-          self.branches]
+        self.branches = [b.pack_characters(info) for b in self.branches]
         return self
 
     def is_atomic(self):
-        return all(branch.is_atomic() for branch in self.branches)
+        return all(b.is_atomic() for b in self.branches)
 
     def contains_group(self):
-        return any(branch.contains_group() for branch in self.branches)
+        return any(b.contains_group() for b in self.branches)
 
     def compile(self, reverse=False):
         code = [(OP.BRANCH, )]
-        for branch in self.branches:
-            code.extend(branch.compile(reverse))
+        for b in self.branches:
+            code.extend(b.compile(reverse))
             code.append((OP.NEXT, ))
 
         code[-1] = (OP.END, )
@@ -1558,20 +1566,20 @@ class Branch(StructureBase):
         return code
 
     def remove_captures(self):
-        self.branches = [branch.remove_captures() for branch in self.branches]
+        self.branches = [b.remove_captures() for b in self.branches]
         return self
 
     def dump(self, indent=0, reverse=False):
         print("{}BRANCH".format(INDENT * indent))
         self.branches[0].dump(indent + 1, reverse)
-        for branch in self.branches[1 : ]:
+        for b in self.branches[1 : ]:
             print("{}OR".format(INDENT * indent))
-            branch.dump(indent + 1, reverse)
+            b.dump(indent + 1, reverse)
 
     def firstset(self):
         fs = set()
-        for branch in self.branches:
-            fs |= branch.firstset()
+        for b in self.branches:
+            fs |= b.firstset()
 
         return fs or set([None])
 
@@ -1585,12 +1593,12 @@ class Branch(StructureBase):
     def _flatten_branches(info, branches):
         # Flatten the branches so that there aren't branches of branches.
         new_branches = []
-        for branch in branches:
-            branch = branch.optimise(info)
-            if isinstance(branch, Branch):
-                new_branches.extend(branch.branches)
+        for b in branches:
+            b = b.optimise(info)
+            if isinstance(b, Branch):
+                new_branches.extend(b.branches)
             else:
-                new_branches.append(branch)
+                new_branches.append(b)
 
         return new_branches
 
@@ -1602,10 +1610,10 @@ class Branch(StructureBase):
             item = branches[0].get_first()
             if not item:
                 break
-            if any(branch.get_first() != item for branch in branches[1 : ]):
+            if any(b.get_first() != item for b in branches[1 : ]):
                 break
             prefix.append(item)
-            branches = [branch.drop_first() for branch in branches]
+            branches = [b.drop_first() for b in branches]
 
         return prefix, branches
 
@@ -1617,10 +1625,10 @@ class Branch(StructureBase):
             item = branches[0].get_last()
             if not item:
                 break
-            if any(branch.get_last() != item for branch in branches[1 : ]):
+            if any(b.get_last() != item for b in branches[1 : ]):
                 break
             suffix.append(item)
-            branches = [branch.drop_last() for branch in branches]
+            branches = [b.drop_last() for b in branches]
 
         suffix.reverse()
 
@@ -1634,8 +1642,8 @@ class Branch(StructureBase):
         char_prefixes = defaultdict(list)
         order = {}
         new_branches = []
-        for branch in branches:
-            first = branch.get_first()
+        for b in branches:
+            first = b.get_first()
             if isinstance(first, Character) and first.positive:
                 if type(first) is not char_type:
                     if char_prefixes:
@@ -1646,7 +1654,7 @@ class Branch(StructureBase):
 
                     char_type = type(first)
 
-                char_prefixes[first.value].append(branch)
+                char_prefixes[first.value].append(b)
                 order.setdefault(first.value, len(order))
             else:
                 if char_prefixes:
@@ -1656,7 +1664,7 @@ class Branch(StructureBase):
                     order.clear()
 
                 char_type = None
-                new_branches.append(branch)
+                new_branches.append(b)
 
         if char_prefixes:
             Branch._flush_char_prefix(info, char_type, char_prefixes, order,
@@ -1669,29 +1677,30 @@ class Branch(StructureBase):
         # Can the branches be reduced to a set?
         new_branches = []
         members = set()
-        for branch in branches:
-            if isinstance(branch, Character) and branch.positive or \
-              isinstance(branch, Property):
-                members.add(branch)
-            elif isinstance(branch, SetUnion) and branch.positive:
-                for m in branch.items:
+        for b in branches:
+            if isinstance(b, Character) and b.positive or isinstance(b,
+              Property):
+                members.add(b)
+            elif isinstance(b, SetUnion) and b.positive:
+                for m in b.items:
                     if isinstance(m, (Character, Property)):
                         members.add(m)
                     else:
                         Branch._flush_set_members(info, members, new_branches)
                         members.clear()
-                        new_branches.append(branch)
+                        new_branches.append(b)
             else:
                 Branch._flush_set_members(info, members, new_branches)
                 members.clear()
-                new_branches.append(branch)
+                new_branches.append(b)
 
         Branch._flush_set_members(info, members, new_branches)
 
         return new_branches
 
     @staticmethod
-    def _flush_char_prefix(info, char_type, prefixed, order, new_branches):
+    def _flush_char_prefix(info, char_type, prefixed, order,
+       new_branches):
         for value, branches in sorted(prefixed.items(), key=lambda pair:
           order[pair[0]]):
             if len(branches) == 1:
@@ -1699,22 +1708,23 @@ class Branch(StructureBase):
             else:
                 subbranches = []
                 optional = False
-                for branch in branches:
-                    b = branch.drop_first()
+                for b in branches:
+                    b = b.drop_first()
                     if b:
                         subbranches.append(b)
                     elif not optional:
                         subbranches.append(Sequence())
                         optional = True
 
-                sequence = Sequence([char_type(info, value),
-                  Branch(subbranches)])
+                c = char_type(info, value)
+                sequence = Sequence([c, Branch(subbranches)])
                 new_branches.append(sequence.optimise(info))
 
     @staticmethod
     def _flush_set_members(info, members, new_branches):
         if members:
-            new_branches.append(SetUnion(list(members)).optimise(info))
+            s = SetUnion(list(members))
+            new_branches.append(s.optimise(info))
 
 class Character(RegexBase):
     _opcode = {False: OP.CHARACTER, True: OP.CHARACTER_REV}
@@ -1722,12 +1732,17 @@ class Character(RegexBase):
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
 
     def __init__(self, info, ch, positive=True, zerowidth=False):
+        RegexBase.__init__(self)
         self.info, self.value, self.positive, self.zerowidth = info, ch, \
           bool(positive), bool(zerowidth)
         self._key = self.__class__, self.value, self.positive, self.zerowidth
 
     def compile(self, reverse=False):
-        flags = int(self.positive) + ZEROWIDTH_OP * int(self.zerowidth)
+        flags = 0
+        if self.positive:
+            flags |= POSITIVE_OP
+        if self.zerowidth:
+            flags |= ZEROWIDTH_OP
         return [(self._opcode[reverse], flags, self.value)]
 
     def dump(self, indent=0, reverse=False):
@@ -1748,16 +1763,12 @@ class CharacterIgn(Character):
     _opcode = {False: OP.CHARACTER_IGN, True: OP.CHARACTER_IGN_REV}
     _op_name = {False: "CHARACTER_IGN", True: "CHARACTER_IGN_REV"}
 
-    def __init__(self, info, ch, positive=True, zerowidth=False):
-        self.info, self.value, self.positive, self.zerowidth = info, ch, \
-          bool(positive), bool(zerowidth)
-        self._key = self.__class__, self.value, self.positive, self.zerowidth
-
     def optimise(self, info):
         # Case-sensitive matches are faster, so convert to a case-sensitive
         # instance if the character is case-insensitive.
         if len(all_cases(info, self.value)) == 1:
-            return Character(info, self.value, self.positive, self.zerowidth)
+            c = Character(info, self.value, self.positive, self.zerowidth)
+            return c
 
         return self
 
@@ -1769,6 +1780,7 @@ class Conditional(StructureBase):
         return StructureBase.__new__(cls)
 
     def __init__(self, info, group, yes_item, no_item):
+        StructureBase.__init__(self)
         self.info, self.group, self.yes_item, self.no_item = info, group, \
           yes_item, no_item
 
@@ -1838,67 +1850,43 @@ class Conditional(StructureBase):
         return bool(self.yes_item or self.no_item)
 
 class DefaultBoundary(ZeroWidthBase):
-    _pos_text = {False: "NON-MATCH", True: "MATCH"}
-
-    def __init__(self, positive=True):
-        self.positive = bool(positive)
-        self._key = self.__class__, self.positive
-
-    def compile(self, reverse=False):
-        return [(OP.DEFAULT_BOUNDARY, int(self.positive))]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}DEFAULT_BOUNDARY {}".format(INDENT * indent,
-          self._pos_text[self.positive]))
+    _opcode = OP.DEFAULT_BOUNDARY
+    _op_name = "DEFAULT_BOUNDARY"
 
 class EndOfLine(ZeroWidthBase):
-    def compile(self, reverse=False):
-        return [(OP.END_OF_LINE, )]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}END_OF_LINE".format(INDENT * indent))
+    _opcode = OP.END_OF_LINE
+    _op_name = "END_OF_LINE"
 
 class EndOfLineU(EndOfLine):
-    def compile(self, reverse=False):
-        return [(OP.END_OF_LINE_U, )]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}END_OF_LINE_U".format(INDENT * indent))
+    _opcode = OP.END_OF_LINE_U
+    _op_name = "END_OF_LINE_U"
 
 class EndOfString(ZeroWidthBase):
-    def compile(self, reverse=False):
-        return [(OP.END_OF_STRING, )]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}END_OF_STRING".format(INDENT * indent))
+    _opcode = OP.END_OF_STRING
+    _op_name = "END_OF_STRING"
 
 class EndOfStringLine(ZeroWidthBase):
-    def compile(self, reverse=False):
-        return [(OP.END_OF_STRING_LINE, )]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}END_OF_STRING_LINE".format(INDENT * indent))
+    _opcode = OP.END_OF_STRING_LINE
+    _op_name = "END_OF_STRING_LINE"
 
 class EndOfStringLineU(EndOfStringLine):
-    def compile(self, reverse=False):
-        return [(OP.END_OF_STRING_LINE_U, )]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}END_OF_STRING_LINE_U".format(INDENT * indent))
+    _opcode = OP.END_OF_STRING_LINE_U
+    _op_name = "END_OF_STRING_LINE_U"
 
 class Grapheme(RegexBase):
-    def __init__(self):
-        self._key = self.__class__
+    _op_name = {False: "GRAPHEME", True: "GRAPHEME_REV"}
 
     def compile(self, reverse=False):
         # Match at least 1 character until a grapheme boundary is reached.
         # Note that this is the same whether matching forwards or backwards.
-        character_matcher = LazyRepeat(AnyAll(), 1, None).compile(reverse)
+        c = AnyAll()
+        character_matcher = LazyRepeat(c, 1, None).compile(reverse)
         boundary_matcher = [(OP.GRAPHEME_BOUNDARY, 1)]
+
         return character_matcher + boundary_matcher
 
     def dump(self, indent=0, reverse=False):
-        print("{}GRAPHEME".format(INDENT * indent))
+        print("{}{}".format(INDENT * indent, self._op_name[reverse]))
 
 class GreedyRepeat(StructureBase):
     _opcode = OP.GREEDY_REPEAT
@@ -1911,6 +1899,7 @@ class GreedyRepeat(StructureBase):
         return StructureBase.__new__(cls)
 
     def __init__(self, subpattern, min_count, max_count):
+        StructureBase.__init__(self)
         self.subpattern, self.min_count, self.max_count = subpattern, \
           min_count, max_count
 
@@ -1973,6 +1962,7 @@ class GreedyRepeat(StructureBase):
 
 class Group(StructureBase):
     def __init__(self, info, group, subpattern):
+        StructureBase.__init__(self)
         self.info, self.group, self.subpattern = info, group, subpattern
 
     def fix_groups(self):
@@ -2032,6 +2022,7 @@ class LookAround(StructureBase):
         return StructureBase.__new__(cls)
 
     def __init__(self, behind, positive, subpattern):
+        StructureBase.__init__(self)
         self.behind, self.positive, self.subpattern = bool(behind), \
           bool(positive), subpattern
 
@@ -2078,12 +2069,17 @@ class Property(RegexBase):
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
 
     def __init__(self, value, positive=True, zerowidth=False):
+        RegexBase.__init__(self)
         self.value, self.positive, self.zerowidth = value, bool(positive), \
           bool(zerowidth)
         self._key = self.__class__, self.value, self.positive, self.zerowidth
 
     def compile(self, reverse=False):
-        flags = int(self.positive) + ZEROWIDTH_OP * int(self.zerowidth)
+        flags = 0
+        if self.positive:
+            flags |= POSITIVE_OP
+        if self.zerowidth:
+            flags |= ZEROWIDTH_OP
         return [(self._opcode[reverse], flags, self.value)]
 
     def dump(self, indent=0, reverse=False):
@@ -2111,6 +2107,7 @@ class Range(RegexBase):
         return RegexBase.__new__(cls)
 
     def __init__(self, info, lower, upper):
+        RegexBase.__init__(self)
         self.info, self.lower, self.upper = info, lower, upper
         self._key = self.__class__, self.lower, self.upper
 
@@ -2138,6 +2135,7 @@ class RefGroup(RegexBase):
     _op_name = {False: "REF_GROUP", True: "REF_GROUP_REV"}
 
     def __init__(self, info, group):
+        RegexBase.__init__(self)
         self.info, self.group = info, group
         self._key = self.__class__, self.group
 
@@ -2177,44 +2175,46 @@ class Sequence(StructureBase):
         return StructureBase.__new__(cls)
 
     def __init__(self, sequence=None):
+        StructureBase.__init__(self)
         if sequence is None:
             sequence = []
 
         self.sequence = sequence
 
     def fix_groups(self):
-        for subpattern in self.sequence:
-            subpattern.fix_groups()
+        for s in self.sequence:
+            s.fix_groups()
 
     def optimise(self, info):
         # Flatten the sequences.
         sequence = []
-        for subpattern in self.sequence:
-            subpattern = subpattern.optimise(info)
-            if isinstance(subpattern, Sequence):
-                sequence.extend(subpattern.sequence)
+        for s in self.sequence:
+            s = s.optimise(info)
+            if isinstance(s, Sequence):
+                sequence.extend(s.sequence)
             else:
-                sequence.append(subpattern)
+                sequence.append(s)
 
         return Sequence(sequence)
 
     def pack_characters(self, info):
+        "Packs sequences of characters into strings."
         sequence = []
         char_type, characters = Character, []
-        for subpattern in self.sequence:
-            if type(subpattern) is char_type and subpattern.positive:
-                characters.append(subpattern.value)
+        for s in self.sequence:
+            if type(s) is char_type and s.positive:
+                characters.append(s.value)
             else:
                 if characters:
                     Sequence._flush_characters(info, char_type, characters,
                       sequence)
                     characters = []
 
-                if type(subpattern) in ALL_CHAR_TYPES and subpattern.positive:
-                    char_type = type(subpattern)
-                    characters.append(subpattern.value)
+                if type(s) in ALL_CHAR_TYPES and s.positive:
+                    char_type = type(s)
+                    characters.append(s.value)
                 else:
-                    sequence.append(subpattern.pack_characters(info))
+                    sequence.append(s.pack_characters(info))
 
         if characters:
             Sequence._flush_characters(info, char_type, characters, sequence)
@@ -2222,10 +2222,10 @@ class Sequence(StructureBase):
         return Sequence(sequence)
 
     def is_atomic(self):
-        return all(subpattern.is_atomic() for subpattern in self.sequence)
+        return all(s.is_atomic() for s in self.sequence)
 
     def contains_group(self):
-        return any(subpattern.contains_group() for subpattern in self.sequence)
+        return any(s.contains_group() for s in self.sequence)
 
     def get_first(self):
         if self.sequence:
@@ -2258,24 +2258,24 @@ class Sequence(StructureBase):
             seq = self.sequence
 
         code = []
-        for subpattern in seq:
-            code.extend(subpattern.compile(reverse))
+        for s in seq:
+            code.extend(s.compile(reverse))
 
         return code
 
     def remove_captures(self):
-        self.sequence = [subpattern.remove_captures() for subpattern in
+        self.sequence = [s.remove_captures() for s in
           self.sequence]
         return self
 
     def dump(self, indent=0, reverse=False):
-        for subpattern in self.sequence:
-            subpattern.dump(indent, reverse)
+        for s in self.sequence:
+            s.dump(indent, reverse)
 
     def firstset(self):
         fs = set()
-        for subpattern in self.sequence:
-            fs |= subpattern.firstset()
+        for s in self.sequence:
+            fs |= s.firstset()
             if None not in fs:
                 return fs
             fs.discard(None)
@@ -2313,6 +2313,7 @@ class SetBase(RegexBase):
         return RegexBase.__new__(cls)
 
     def __init__(self, items, positive=True, zerowidth=False):
+        RegexBase.__init__(self)
         items = tuple(items)
         self.items, self.positive, self.zerowidth = items, positive, zerowidth
         self._key = self.__class__, self.items, self.positive, self.zerowidth
@@ -2324,7 +2325,11 @@ class SetBase(RegexBase):
             i.dump(indent + 1)
 
     def compile(self, reverse=False):
-        flags = int(self.positive) + ZEROWIDTH_OP * int(self.zerowidth)
+        flags = 0
+        if self.positive:
+            flags |= POSITIVE_OP
+        if self.zerowidth:
+            flags |= ZEROWIDTH_OP
         code = [(self._opcode[reverse], flags)]
         for m in self.items:
             if isinstance(m, Range):
@@ -2340,6 +2345,11 @@ class SetBase(RegexBase):
         return type(self)(self.items, self.positive == positive, self.zerowidth
           or zerowidth)
 
+    def _rebuild(self, items):
+        s = type(self)(items, self.positive, self.zerowidth)
+
+        return s
+
     BITS_PER_INDEX = 16
     INDEXES_PER_CODE = BITS_PER_CODE // BITS_PER_INDEX
     CODE_MASK = (1 << BITS_PER_CODE) - 1
@@ -2352,6 +2362,12 @@ class SetBase(RegexBase):
         bitset_dict = defaultdict(int)
         for c in characters:
             bitset_dict[c >> 8] |= 1 << (c & 0xFF)
+
+        flags = 0
+        if positive:
+            flags |= POSITIVE_OP
+        if self.zerowidth:
+            flags |= ZEROWIDTH_OP
 
         if len(bitset_dict) > 1:
             # Build a big bitset.
@@ -2378,12 +2394,10 @@ class SetBase(RegexBase):
               pair[1]):
                 data.extend(SetBase._bitset_to_codes(subset))
 
-            flags = int(positive) + ZEROWIDTH_OP * int(self.zerowidth)
             code.append((self._big_bitset_opcode[reverse], flags,
               max(characters)) + tuple(data))
         else:
             # Build a small bitset.
-            flags = int(positive) + ZEROWIDTH_OP * int(self.zerowidth)
             top_bits, bitset = list(bitset_dict.items())[0]
             code.append((self._small_bitset_opcode[reverse], flags, top_bits) +
               tuple(SetBase._bitset_to_codes(bitset)))
@@ -2396,6 +2410,7 @@ class SetBase(RegexBase):
         for i in range(SetBase.CODES_PER_SUBSET):
             codes.append(bitset & SetBase.CODE_MASK)
             bitset >>= BITS_PER_CODE
+
         return codes
 
 class SetDiff(SetBase):
@@ -2425,7 +2440,7 @@ class SetDiff(SetBase):
             else:
                 items.append(m)
 
-        return SetDiff(items, self.positive, self.zerowidth)
+        return self._rebuild(items)
 
 class SetInter(SetBase):
     _opcode = {False: OP.SET_INTER, True: OP.SET_INTER_REV}
@@ -2441,7 +2456,7 @@ class SetInter(SetBase):
             else:
                 items.append(m)
 
-        return SetInter(items, self.positive, self.zerowidth)
+        return self._rebuild(items)
 
 class SetSymDiff(SetBase):
     _opcode = {False: OP.SET_SYM_DIFF, True: OP.SET_SYM_DIFF_REV}
@@ -2457,7 +2472,7 @@ class SetSymDiff(SetBase):
             else:
                 items.append(m)
 
-        return SetSymDiff(items, self.positive, self.zerowidth)
+        return self._rebuild(items)
 
 class SetUnion(SetBase):
     _opcode = {False: OP.SET_UNION, True: OP.SET_UNION_REV}
@@ -2473,7 +2488,7 @@ class SetUnion(SetBase):
             else:
                 items.append(m)
 
-        return SetUnion(items, self.positive, self.zerowidth)
+        return self._rebuild(items)
 
     def compile(self, reverse=False):
         characters, others = set(), set()
@@ -2495,7 +2510,11 @@ class SetUnion(SetBase):
             return self._make_bitset(characters, self.positive, reverse)
 
         # Compile a compound set.
-        flags = int(self.positive) + ZEROWIDTH_OP * int(self.zerowidth)
+        flags = 0
+        if self.positive:
+            flags |= POSITIVE_OP
+        if self.zerowidth:
+            flags |= ZEROWIDTH_OP
         code = [(self._opcode[reverse], flags)]
         if characters:
             code.extend(self._make_bitset(characters, True, False))
@@ -2514,25 +2533,16 @@ class SetUnion(SetBase):
         return True
 
 class StartOfLine(ZeroWidthBase):
-    def compile(self, reverse=False):
-        return [(OP.START_OF_LINE, )]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}START_OF_LINE".format(INDENT * indent))
+    _opcode = OP.START_OF_LINE
+    _op_name = "START_OF_LINE"
 
 class StartOfLineU(StartOfLine):
-    def compile(self, reverse=False):
-        return [(OP.START_OF_LINE_U, )]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}START_OF_LINE_U".format(INDENT * indent))
+    _opcode = OP.START_OF_LINE_U
+    _op_name = "START_OF_LINE_U"
 
 class StartOfString(ZeroWidthBase):
-    def compile(self, reverse=False):
-        return [(OP.START_OF_STRING, )]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}START_OF_STRING".format(INDENT * indent))
+    _opcode = OP.START_OF_STRING
+    _op_name = "START_OF_STRING"
 
 class String(RegexBase):
     _opcode = {False: OP.STRING, True: OP.STRING_REV}
@@ -2568,6 +2578,98 @@ class StringIgn(String):
 
     def firstset(self):
         return set([CharacterIgn(self.info, self.characters[0])])
+
+class StringSet(RegexBase):
+    _opcode = {False: OP.STRING_SET, True: OP.STRING_SET_REV}
+    _op_name = {False: "STRING_SET", True: "STRING_SET_REV"}
+
+    def __init__(self, info, name):
+        self.info, self.name = info, name
+        self._key = self.__class__, self.name
+
+        self.set_key = (name, False)
+        if self.set_key not in info.string_sets:
+            info.string_sets[self.set_key] = (len(info.string_sets), None)
+
+    def compile(self, reverse=False):
+        index, items = self.info.string_sets[self.set_key]
+        min_len = min(len(i) for i in items)
+        max_len = max(len(i) for i in items)
+        return [(self._opcode[reverse], index, min_len, max_len)]
+
+    def dump(self, indent=0, reverse=False):
+        print("{}{} {}".format(INDENT * indent, self._op_name[reverse],
+          self.name))
+
+class StringSetIgn(StringSet):
+    _opcode = {False: OP.STRING_SET_IGN, True: OP.STRING_SET_IGN_REV}
+    _op_name = {False: "STRING_SET_IGN", True: "STRING_SET_IGN_REV"}
+
+    def __init__(self, info, name):
+        self.info, self.name = info, name
+        self._key = self.__class__, self.name
+
+        self.set_key = (name, True)
+        if self.set_key not in info.string_sets:
+            info.string_sets[self.set_key] = (len(info.string_sets), None)
+
+class SearchAnchor(ZeroWidthBase):
+    _opcode = OP.SEARCH_ANCHOR
+    _op_name = "SEARCH_ANCHOR"
+
+class Info:
+    "Info about the regular expression."
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+
+    def __init__(self, flags=0, char_type=None, nested_sets=True, kwargs={}):
+        self.global_flags = flags & GLOBAL_FLAGS
+        self.scoped_flags = flags & SCOPED_FLAGS
+        self.all_flags = self.global_flags | self.scoped_flags
+        if not (self.global_flags & NEW):
+            self.global_flags = self.all_flags
+
+        self.kwargs = kwargs
+
+        self.group_count = 0
+        self.group_index = {}
+        self.group_name = {}
+        self.used_groups = set()
+        self.group_state = {}
+        self.char_type = char_type
+        self.string_sets = {}
+        self.nested_sets = nested_sets
+
+    def new_group(self, name=None):
+        group = self.group_index.get(name)
+        if group is not None:
+            if group in self.used_groups:
+                raise error("duplicate group")
+        else:
+            while True:
+                self.group_count += 1
+                if name is None or self.group_count not in self.group_name:
+                    break
+
+            group = self.group_count
+            if name:
+                self.group_index[name] = group
+                self.group_name[group] = name
+
+        self.used_groups.add(group)
+        self.group_state[group] = self.OPEN
+        return group
+
+    def close_group(self, group):
+        self.group_state[group] = self.CLOSED
+
+    def is_open_group(self, name):
+        if name.isdigit():
+            group = int(name)
+        else:
+            group = self.group_index.get(name)
+
+        return self.group_state.get(group) == self.OPEN
 
 class Source:
     "Scanner for the regular expression source string."
@@ -2623,112 +2725,6 @@ class Source:
             return pos >= len(self.string)
         except IndexError:
             return True
-
-class StringSet(RegexBase):
-    _opcode = {False: OP.STRING_SET, True: OP.STRING_SET_REV}
-    _op_name = {False: "STRING_SET", True: "STRING_SET_REV"}
-
-    def __init__(self, info, name):
-        self.info, self.name = info, name
-        self._key = self.__class__, self.name
-
-        self.set_key = (name, False)
-        if self.set_key not in info.string_sets:
-            items = info.kwargs[name]
-
-            index = len(info.string_sets)
-            min_len = min(len(i) for i in items)
-            max_len = max(len(i) for i in items)
-
-            info.string_sets[self.set_key] = index, min_len, max_len, \
-                frozenset(items)
-
-    def compile(self, reverse=False):
-        index, min_len, max_len, items = self.info.string_sets[self.set_key]
-        return [(self._opcode[reverse], index, min_len, max_len)]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}{} {}".format(INDENT * indent, self._op_name[reverse],
-          self.name))
-
-class StringSetIgn(StringSet):
-    _opcode = {False: OP.STRING_SET_IGN, True: OP.STRING_SET_IGN_REV}
-    _op_name = {False: "STRING_SET_IGN", True: "STRING_SET_IGN_REV"}
-
-    def __init__(self, info, name):
-        self.info, self.name = info, name
-        self._key = self.__class__, self.name
-
-        self.set_key = (name, True)
-        if self.set_key not in info.string_sets:
-            items = info.kwargs[name]
-
-            index = len(info.string_sets)
-            min_len = min(len(i) for i in items)
-            max_len = max(len(i) for i in items)
-
-            info.string_sets[self.set_key] = index, min_len, max_len, \
-              frozenset(fold_string_case(info, i) for i in items)
-
-class SearchAnchor(ZeroWidthBase):
-    def compile(self, reverse=False):
-        return [(OP.SEARCH_ANCHOR, )]
-
-    def dump(self, indent=0, reverse=False):
-        print("{}SEARCH_ANCHOR".format(INDENT * indent))
-
-class Info:
-    "Info about the regular expression."
-    OPEN = "OPEN"
-    CLOSED = "CLOSED"
-
-    def __init__(self, flags=0, char_type=None, kwargs={}):
-        self.global_flags = flags & GLOBAL_FLAGS
-        self.scoped_flags = flags & SCOPED_FLAGS
-        self.all_flags = self.global_flags | self.scoped_flags
-        if not (self.global_flags & NEW):
-            self.global_flags = self.all_flags
-
-        self.kwargs = kwargs
-
-        self.group_count = 0
-        self.group_index = {}
-        self.group_name = {}
-        self.used_groups = set()
-        self.group_state = {}
-        self.char_type = char_type
-        self.string_sets = {}
-
-    def new_group(self, name=None):
-        group = self.group_index.get(name)
-        if group is not None:
-            if group in self.used_groups:
-                raise error("duplicate group")
-        else:
-            while True:
-                self.group_count += 1
-                if name is None or self.group_count not in self.group_name:
-                    break
-
-            group = self.group_count
-            if name:
-                self.group_index[name] = group
-                self.group_name[group] = name
-
-        self.used_groups.add(group)
-        self.group_state[group] = self.OPEN
-        return group
-
-    def close_group(self, group):
-        self.group_state[group] = self.CLOSED
-
-    def is_open_group(self, name):
-        if name.isdigit():
-            group = int(name)
-        else:
-            group = self.group_index.get(name)
-
-        return self.group_state.get(group) == self.OPEN
 
 class Scanner:
     def __init__(self, lexicon, flags=0):

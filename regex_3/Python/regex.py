@@ -347,7 +347,8 @@ def _compile(pattern, flags=0, kwargs={}):
         raise TypeError("first argument must be a string or compiled pattern")
 
     # Have we already seen this regular expression?
-    key = pattern, type(pattern), flags
+    kwargs_key = frozenset((k, frozenset(v)) for k, v in kwargs.items())
+    key = pattern, type(pattern), flags, kwargs_key
     p = _cache.get(key)
     if p:
         return p
@@ -362,10 +363,11 @@ def _compile(pattern, flags=0, kwargs={}):
     # inline flags will be global and the pattern will need to be reparsed if a
     # positional flag becomes turned on.
     global_flags = flags
+    nested_sets = True
     while True:
         try:
             source = Source(pattern)
-            info = Info(global_flags, source.char_type, kwargs)
+            info = Info(global_flags, source.char_type, nested_sets, kwargs)
             info.guess_encoding = guess_encoding
             source.ignore_space = bool(info.all_flags & VERBOSE)
             parsed = parse_pattern(source, info)
@@ -373,6 +375,12 @@ def _compile(pattern, flags=0, kwargs={}):
         except UnscopedFlagSet as e:
             # Remember the global flags for the next attempt.
             global_flags = e.global_flags
+        except error as e:
+            if e.set_error and nested_sets:
+                # A problem parsing nested sets. Retry without nested sets.
+                nested_sets = False
+            else:
+                raise
 
     if not source.at_end():
         raise error("trailing characters in pattern")
@@ -393,6 +401,21 @@ def _compile(pattern, flags=0, kwargs={}):
     # Optimise the parsed pattern.
     parsed = parsed.optimise(info)
     parsed = parsed.pack_characters(info)
+
+    # Build the string sets.
+    set_list = [None] * len(info.string_sets)
+    new_string_sets = {}
+    for key, value in info.string_sets.items():
+        name, ignore_case = key
+        index, items = value
+        if ignore_case:
+            items = frozenset(fold_string_case(info, i) for i in kwargs[name])
+        else:
+            items = frozenset(kwargs[name])
+        set_list[index] = items
+        new_string_sets[key] = index, items
+
+    info.string_sets = new_string_sets
 
     reverse = bool(info.global_flags & REVERSE)
 
@@ -418,17 +441,13 @@ def _compile(pattern, flags=0, kwargs={}):
     # The named capture groups.
     index_group = dict((v, n) for n, v in info.group_index.items())
 
-    string_sets = [None] * len(info.string_sets)
-    for name, (index, min_len, max_len, items) in info.string_sets.items():
-        string_sets[index] = items
-
     # Create the PatternObject.
     #
     # Local flags like IGNORECASE affect the code generation, but aren't needed
     # by the PatternObject itself. Conversely, global flags like LOCALE _don't_
     # affect the code generation but _are_ needed by the PatternObject.
     p = _regex.compile(pattern, info.global_flags | info.scoped_flags, code,
-      info.group_index, index_group, string_sets)
+      info.group_index, index_group, set_list)
 
     # Store the compiled pattern.
     if len(_cache) >= _MAXCACHE:

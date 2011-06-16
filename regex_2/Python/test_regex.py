@@ -1640,6 +1640,10 @@ class Test:
         self.expect(lambda: len(regex.findall(ur"(?u)[\p{Digit}~~\p{HexDigit}]",
           all_chars)), repr(12))
 
+        # Old-style sets which look like nested sets.
+        self.expect(lambda: type(regex.compile(r"([][-])")),
+          self.PATTERN_CLASS)
+
     def test_various(self):
         tests = [
             # Test ?P< and ?P= extensions.
@@ -2405,24 +2409,42 @@ xyzabc
         for c in chars:
             for r in chars:
                 self.index += 1
-                same = c == r or c in set([r.upper(), r.lower()]) or r in set([c.lower(), c.upper()])
+                same = c == r or c in set([r.upper(), r.lower()]) or r in \
+                  set([c.lower(), c.upper()])
                 char_same = bool(regex.match(r, c, flags=regex.I | regex.U))
-                set_same = bool(regex.match(u"[%s]" % r, c, flags=regex.I | regex.U))
+                set_same = bool(regex.match(u"[%s]" % r, c, flags=regex.I |
+                  regex.U))
                 if char_same != same:
-                    self.record_failure("char match failed for %s vs %s" % (repr(c), repr(r)))
+                    self.record_failure("char match failed for %s vs %s" %
+                      (repr(c), repr(r)))
                 if set_same != same:
-                    self.record_failure("set match failed for %s vs %s" % (repr(c), repr(r)))
+                    self.record_failure("set match failed for %s vs %s" %
+                      (repr(c), repr(r)))
 
     def test_named_lists(self):
         options = [u"one", u"two", u"three"]
-        self.expect(lambda: regex.match(ur"333\L<bar>444", u"333one444", bar=options).group(), repr(u"333one444"))
-        self.expect(lambda: regex.match(ur"333\L<bar>444", u"333four444", bar=options), repr(None))
+        self.expect(lambda: regex.match(ur"333\L<bar>444", u"333one444",
+          bar=options).group(), repr(u"333one444"))
+        self.expect(lambda: regex.match(ur"(?i)333\L<bar>444", u"333TWO444",
+          bar=options).group(), repr(u"333TWO444"))
+        self.expect(lambda: regex.match(ur"333\L<bar>444", u"333four444",
+          bar=options), repr(None))
 
         options = ["one", "two", "three"]
-        self.expect(lambda: regex.match(r"333\L<bar>444", "333one444", bar=options).group(), repr("333one444"))
-        self.expect(lambda: regex.match(r"333\L<bar>444", "333four444", bar=options), repr(None))
+        self.expect(lambda: regex.match(r"333\L<bar>444", "333one444",
+          bar=options).group(), repr("333one444"))
+        self.expect(lambda: regex.match(r"(?i)333\L<bar>444", "333TWO444",
+          bar=options).group(), repr("333TWO444"))
+        self.expect(lambda: regex.match(r"333\L<bar>444", "333four444",
+          bar=options), repr(None))
 
-        self.expect(lambda: type(regex.compile(r"3\L<bar>4\L<bar>+5", bar=["one", "two", "three"])), self.PATTERN_CLASS)
+        self.expect(lambda: type(regex.compile(r"3\L<bar>4\L<bar>+5",
+          bar=["one", "two", "three"])), self.PATTERN_CLASS)
+
+        self.expect(lambda: regex.findall(r"^\L<options>", "solid QWERT",
+          options=set(['good', 'brilliant', '+s\\ol[i}d'])), repr([]))
+        self.expect(lambda: regex.findall(r"^\L<options>", "+solid QWERT",
+          options=set(['good', 'brilliant', '+solid'])), repr(['+solid']))
 
     def run(self):
         print "Performing tests"
