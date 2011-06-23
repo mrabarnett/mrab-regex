@@ -57,7 +57,7 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
-* Named lists (Hg issue 11) (provisional)
+* Named lists (Hg issue 11)
 
     ``\L<name>``
 

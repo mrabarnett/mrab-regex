@@ -304,6 +304,8 @@ def parse_pattern(source, info):
 
     info.used_groups = all_groups
 
+    if len(branches) == 1:
+        return branches[0]
     return Branch(branches)
 
 def parse_sequence(source, info):
@@ -314,6 +316,8 @@ def parse_sequence(source, info):
         sequence.append(item)
         item = parse_item(source, info)
 
+    if len(sequence) == 1:
+        return sequence[0]
     return Sequence(sequence)
 
 def PossessiveRepeat(element, min_count, max_count):
@@ -344,6 +348,9 @@ def parse_item(source, info):
         # No suffix means that it's a greedy repeat.
         source.pos = here
         repeated = GreedyRepeat
+
+    if not subpattern or min_count == max_count == 1:
+        return subpattern
 
     return repeated(element, min_count, max_count)
 
@@ -689,6 +696,8 @@ def parse_common(source, info):
     info.group_count = final_group_count
     source.expect(")")
 
+    if len(branches) == 1:
+        return branches[0]
     return Branch(branches)
 
 def parse_flags_subpattern(source, info):
@@ -1015,8 +1024,12 @@ def parse_set(source, info):
     "Parses a character set."
     saved_ignore = source.ignore_space
     source.ignore_space = False
+    # Negative set?
+    negate = source.match("^")
     try:
         item = parse_set_union(source, info)
+        if negate:
+            item = SetUnion([item], positive=False)
     finally:
         source.ignore_space = saved_ignore
 
@@ -1024,8 +1037,6 @@ def parse_set(source, info):
 
 def parse_set_union(source, info):
     "Parses a set union ([x||y])."
-    # Negative set?
-    negate = source.match("^")
     items = [parse_set_symm_diff(source, info)]
     while source.match("||"):
         items.append(parse_set_symm_diff(source, info))
@@ -1033,7 +1044,9 @@ def parse_set_union(source, info):
     if not source.match("]"):
         raise error("missing ]")
 
-    return SetUnion(items, positive=not negate)
+    if len(items) == 1:
+        return items[0]
+    return SetUnion(items)
 
 def parse_set_symm_diff(source, info):
     "Parses a set symmetric difference ([x~~y])."
@@ -1041,6 +1054,8 @@ def parse_set_symm_diff(source, info):
     while source.match("~~"):
         items.append(parse_set_inter(source, info))
 
+    if len(items) == 1:
+        return items[0]
     return SetSymDiff(items)
 
 def parse_set_inter(source, info):
@@ -1049,6 +1064,8 @@ def parse_set_inter(source, info):
     while source.match("&&"):
         items.append(parse_set_diff(source, info))
 
+    if len(items) == 1:
+        return items[0]
     return SetInter(items)
 
 def parse_set_diff(source, info):
@@ -1057,6 +1074,8 @@ def parse_set_diff(source, info):
     while source.match("--"):
         items.append(parse_set_imp_union(source, info))
 
+    if len(items) == 1:
+        return items[0]
     return SetDiff(items)
 
 def parse_set_imp_union(source, info):
@@ -1069,6 +1088,9 @@ def parse_set_imp_union(source, info):
         items.append(parse_set_member(source, info))
 
     source.pos = here
+
+    if len(items) == 1:
+        return items[0]
     return SetUnion(items)
 
 def parse_set_member(source, info):
@@ -1421,12 +1443,6 @@ class AnyU(Any):
     _op_name = {False: "ANY_U", True: "ANY_U_REV"}
 
 class Atomic(StructureBase):
-    def __new__(cls, subpattern):
-        if not subpattern:
-            return subpattern
-
-        return StructureBase.__new__(cls)
-
     def __init__(self, subpattern):
         StructureBase.__init__(self)
         self.subpattern = subpattern
@@ -1441,10 +1457,14 @@ class Atomic(StructureBase):
         prefix, subpattern = Atomic._split_atomic_prefix(subpattern)
         suffix, subpattern = Atomic._split_atomic_suffix(subpattern)
 
-        if not subpattern:
-            return Sequence(prefix + suffix)
+        if subpattern:
+            sequence = prefix + [Atomic(subpattern)] + suffix
+        else:
+            sequence = prefix + suffix
 
-        return Sequence(prefix + [Atomic(subpattern)] + suffix)
+        if len(sequence) == 1:
+            return sequence[0]
+        return Sequence(sequence)
 
     def pack_characters(self, info):
         self.subpattern = self.subpattern.pack_characters(info)
@@ -1507,15 +1527,6 @@ class Boundary(ZeroWidthBase):
     _op_name = "BOUNDARY"
 
 class Branch(StructureBase):
-    def __new__(cls, branches):
-        if not branches:
-            return Sequence()
-
-        if len(branches) == 1:
-            return branches[0]
-
-        return StructureBase.__new__(cls)
-
     def __init__(self, branches):
         StructureBase.__init__(self)
         self.branches = branches
@@ -1537,13 +1548,17 @@ class Branch(StructureBase):
         # others starting with that same character.)
         branches = Branch._merge_common_prefixes(info, branches)
 
-        # Can the branch be reduced to a set?
+        # Try to reduce adjacent single-character branches to sets.
         branches = Branch._reduce_to_set(info, branches)
 
-        if not branches:
-            return Sequence(prefix + suffix)
+        if len(branches) > 1:
+            sequence = prefix + [Branch(branches)] + suffix
+        else:
+            sequence = prefix + branches + suffix
 
-        return Sequence(prefix + [Branch(branches)] + suffix)
+        if len(sequence) == 1:
+            return sequence[0]
+        return Sequence(sequence)
 
     def pack_characters(self, info):
         self.branches = [b.pack_characters(info) for b in self.branches]
@@ -1716,15 +1731,17 @@ class Branch(StructureBase):
                         subbranches.append(Sequence())
                         optional = True
 
-                c = char_type(info, value)
-                sequence = Sequence([c, Branch(subbranches)])
-                new_branches.append(sequence.optimise(info))
+                sequence = [char_type(info, value)]
+                if len(subbranches) > 1:
+                    sequence.append(Branch(subbranches))
+                else:
+                    sequence.extend(subbranches)
+                new_branches.append(Sequence(sequence).optimise(info))
 
     @staticmethod
     def _flush_set_members(info, members, new_branches):
         if members:
-            s = SetUnion(list(members))
-            new_branches.append(s.optimise(info))
+            new_branches.append(SetUnion(list(members)).optimise(info))
 
 class Character(RegexBase):
     _opcode = {False: OP.CHARACTER, True: OP.CHARACTER_REV}
@@ -1892,12 +1909,6 @@ class GreedyRepeat(StructureBase):
     _opcode = OP.GREEDY_REPEAT
     _op_name = "GREEDY_REPEAT"
 
-    def __new__(cls, subpattern, min_count, max_count):
-        if not subpattern or min_count == max_count == 1:
-            return subpattern
-
-        return StructureBase.__new__(cls)
-
     def __init__(self, subpattern, min_count, max_count):
         StructureBase.__init__(self)
         self.subpattern, self.min_count, self.max_count = subpattern, \
@@ -2015,7 +2026,7 @@ class LookAround(StructureBase):
     _dir_text = {False: "AHEAD", True: "BEHIND"}
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
 
-    def _new__(cls, behind, positive, subpattern):
+    def __new__(cls, behind, positive, subpattern):
         if positive and not subpattern:
             return subpattern
 
@@ -2168,12 +2179,6 @@ class RefGroupIgn(RefGroup):
     _op_name = {False: "REF_GROUP_IGN", True: "REF_GROUP_IGN_REV"}
 
 class Sequence(StructureBase):
-    def __new__(cls, sequence=None):
-        if sequence and len(sequence) == 1:
-            return sequence[0]
-
-        return StructureBase.__new__(cls)
-
     def __init__(self, sequence=None):
         StructureBase.__init__(self)
         if sequence is None:
@@ -2195,6 +2200,8 @@ class Sequence(StructureBase):
             else:
                 sequence.append(s)
 
+        if len(sequence) == 1:
+            return sequence[0]
         return Sequence(sequence)
 
     def pack_characters(self, info):
@@ -2219,6 +2226,8 @@ class Sequence(StructureBase):
         if characters:
             Sequence._flush_characters(info, char_type, characters, sequence)
 
+        if len(sequence) == 1:
+            return sequence[0]
         return Sequence(sequence)
 
     def is_atomic(self):
@@ -2305,12 +2314,6 @@ class SetBase(RegexBase):
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
     _big_bitset_opcode = {False: OP.BIG_BITSET, True: OP.BIG_BITSET_REV}
     _small_bitset_opcode = {False: OP.SMALL_BITSET, True: OP.SMALL_BITSET_REV}
-
-    def __new__(cls, items, positive=True, zerowidth=False):
-        if len(items) == 1 and not isinstance(items[0], Range):
-            return items[0].change_flags(positive, zerowidth)
-
-        return RegexBase.__new__(cls)
 
     def __init__(self, items, positive=True, zerowidth=False):
         RegexBase.__init__(self)
