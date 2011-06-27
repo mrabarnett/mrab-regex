@@ -165,8 +165,8 @@ these flags can also be set within an RE:
     L  L  LOCALE      Make \w, \W, \b, \B, \d, and \D dependent on the current
                       locale. (One byte per character only.)
     M  m  MULTILINE   "^" matches the beginning of lines (after a newline) as
-                      well as the string. "$" matches the end of lines (before a
-                      newline) as well as the end of the string.
+                      well as the string. "$" matches the end of lines (before
+                      a newline) as well as the end of the string.
     N  n  NEW         Turn on scoped flags and correct handling of zero-width
                       matches.
     R  r  REVERSE     Searches backwards.
@@ -231,14 +231,12 @@ def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
     return _compile(pattern, flags, kwargs).subn(repl, string, count, pos,
       endpos, concurrent)
 
-def split(pattern, string, maxsplit=0, flags=0, concurrent=None,
-  **kwargs):
+def split(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
     """Split the source string by the occurrences of the pattern, returning a
     list containing the resulting substrings."""
     return _compile(pattern, flags, kwargs).split(string, maxsplit, concurrent)
 
-def splititer(pattern, string, maxsplit=0, flags=0, concurrent=None,
-  **kwargs):
+def splititer(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
     "Return an iterator yielding the parts of a split string."
     return _compile(pattern, flags, kwargs).splititer(string, maxsplit,
       concurrent)
@@ -328,6 +326,7 @@ import _regex
 
 # Caches for the patterns and replacements.
 _cache = {}
+_named_args = {}
 
 # Maximum size of the cache.
 _MAXCACHE = 500
@@ -346,12 +345,26 @@ def _compile(pattern, flags=0, kwargs={}):
     else:
         raise TypeError("first argument must be a string or compiled pattern")
 
+    # Do we know what keyword arguments are needed?
+    args_key = pattern, type(pattern), flags
+    if args_key in _named_args:
+        args_needed = _named_args[args_key]
+
+        args = set()
+        for k, v in args_needed:
+            if k not in kwargs:
+                raise error("missing named list")
+            args.add((k, frozenset(kwargs[k])))
+
+        args = frozenset(args)
+    else:
+        args = frozenset()
+
     # Have we already seen this regular expression?
-    kwargs_key = frozenset((k, frozenset(v)) for k, v in kwargs.items())
-    key = pattern, type(pattern), flags, kwargs_key
-    p = _cache.get(key)
-    if p:
-        return p
+    pattern_key = pattern, type(pattern), flags, args
+    compiled_pattern = _cache.get(pattern_key)
+    if compiled_pattern:
+        return compiled_pattern
 
     # Guess the encoding from the class of the pattern string.
     if isinstance(pattern, unicode):
@@ -397,20 +410,19 @@ def _compile(pattern, flags=0, kwargs={}):
     parsed = parsed.optimise(info)
     parsed = parsed.pack_characters(info)
 
-    # Build the string sets.
-    set_list = [None] * len(info.string_sets)
-    new_string_sets = {}
-    for key, value in info.string_sets.items():
+    # Build the named lists.
+    indexed_lists = [None] * len(info.named_lists)
+    args = set()
+    for key, index in info.named_lists.items():
         name, ignore_case = key
-        index, items = value
         if ignore_case:
             items = frozenset(fold_string_case(info, i) for i in kwargs[name])
         else:
             items = frozenset(kwargs[name])
-        set_list[index] = items
-        new_string_sets[key] = index, items
+        indexed_lists[index] = items
+        args.add((name, frozenset(kwargs[name])))
 
-    info.string_sets = new_string_sets
+    args = frozenset(args)
 
     reverse = bool(info.global_flags & REVERSE)
 
@@ -441,15 +453,18 @@ def _compile(pattern, flags=0, kwargs={}):
     # Local flags like IGNORECASE affect the code generation, but aren't needed
     # by the PatternObject itself. Conversely, global flags like LOCALE _don't_
     # affect the code generation but _are_ needed by the PatternObject.
-    p = _regex.compile(pattern, info.global_flags | info.scoped_flags, code,
-      info.group_index, index_group, set_list)
+    compiled_pattern = _regex.compile(pattern, info.global_flags |
+      info.scoped_flags, code, info.group_index, index_group, indexed_lists)
 
     # Store the compiled pattern.
     if len(_cache) >= _MAXCACHE:
-        shrink_cache(_cache, _MAXCACHE)
-    _cache[key] = p
+        shrink_cache(_cache, _named_args, _MAXCACHE)
 
-    return p
+    pattern_key = pattern, type(pattern), flags, args
+    _cache[pattern_key] = compiled_pattern
+    _named_args[args_key] = args
+
+    return compiled_pattern
 
 def compile_replacement(pattern, template):
     "Compiles a replacement template."

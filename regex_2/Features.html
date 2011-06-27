@@ -350,6 +350,45 @@ ul.auto-toc {
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Approximate &quot;fuzzy&quot; matching (Hg issue 12) (experimental)</p>
+<blockquote>
+<blockquote>
+<p>Regex usually attempts an exact match, but sometimes an approximate, or &quot;fuzzy&quot;, match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.</p>
+<p>A fuzzy regex specifies which types of errors are permitted, and, optionally, the maximum permitted number of each type.</p>
+<p>The 3 types of error are:</p>
+<ul class="simple">
+<li>Insertion, indicated by &quot;i&quot;</li>
+<li>Deletion, indicated by &quot;d&quot;</li>
+<li>Substitution, indicated by &quot;s&quot;</li>
+</ul>
+<p>In addition, &quot;e&quot; indicates any type of error.</p>
+<p>The fuzziness of a regex item is specified between &quot;{&quot; and &quot;}&quot; after the item.</p>
+<p>Examples:</p>
+<p><tt class="docutils literal">foo</tt> match &quot;foo&quot; exactly</p>
+<p><tt class="docutils literal"><span class="pre">(?:foo){i}</span></tt> match &quot;foo&quot;, permitting insertions</p>
+<p><tt class="docutils literal"><span class="pre">(?:foo){d}</span></tt> match &quot;foo&quot;, permitting deletions</p>
+<p><tt class="docutils literal"><span class="pre">(?:foo){s}</span></tt> match &quot;foo&quot;, permitting substitutions</p>
+<p><tt class="docutils literal"><span class="pre">(?:foo){i,s}</span></tt> match &quot;foo&quot;, permitting insertions and substitutions</p>
+<p><tt class="docutils literal"><span class="pre">(?:foo){e}</span></tt> match &quot;foo&quot;, permitting errors</p>
+<p>If a certain type of error is specified, then any type not specified will <strong>not</strong> be permitted.</p>
+<p>In the following examples I'll omit the item and write only the fuzziness.</p>
+<p><tt class="docutils literal"><span class="pre">{i&lt;=3}</span></tt> permit at most 3 insertions, but no other types</p>
+<p><tt class="docutils literal"><span class="pre">{d&lt;=3}</span></tt> permit at most 3 deletions, but no other types</p>
+<p><tt class="docutils literal"><span class="pre">{s&lt;=3}</span></tt> permit at most 3 substitutions, but no other types</p>
+<p><tt class="docutils literal"><span class="pre">{i&lt;=1,s&lt;=2}</span></tt> permit at most 1 insertion and 2 substitutions, but no deletions</p>
+<p><tt class="docutils literal"><span class="pre">{e&lt;=3}</span></tt> permit at most 3 errors</p>
+<p><tt class="docutils literal"><span class="pre">{i&lt;=2,d&lt;=2,e&lt;=3}</span></tt> permit at most 2 insertions, 2 deletions, at most 3 errors in total, but no substitutions</p>
+<p>It's also possible to state the costs of each type of error and the maximum permitted total cost.</p>
+<p>Examples:</p>
+<p><tt class="docutils literal"><span class="pre">{2i+2d+1s&lt;=4}</span></tt> each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4</p>
+<p><tt class="docutils literal"><span class="pre">{i&lt;=1,d&lt;=1,s&lt;=1,2i+2d+1s&lt;=4}</span></tt> at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4</p>
+<p>You can also use &quot;&lt;&quot; instead of &quot;&lt;=&quot; if you want an exclusive maximum:</p>
+<p><tt class="docutils literal"><span class="pre">{e&lt;=3}</span></tt> permit up to 3 errors</p>
+<p><tt class="docutils literal">{e&lt;4}</tt> permit fewer than 4 errors</p>
+</blockquote>
+<p><strong>Restriction</strong>: in this release, group references and named lists can't be fuzzy.</p>
+</blockquote>
+</li>
 <li><p class="first">Named lists (Hg issue 11)</p>
 <blockquote>
 <p><tt class="docutils literal">\L&lt;name&gt;</tt></p>

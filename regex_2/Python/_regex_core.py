@@ -111,6 +111,7 @@ CHARACTER_IGN_REV
 CHARACTER_REV
 DEFAULT_BOUNDARY
 END
+END_FUZZY
 END_GREEDY_REPEAT
 END_GROUP
 END_LAZY_REPEAT
@@ -119,6 +120,7 @@ END_OF_LINE_U
 END_OF_STRING
 END_OF_STRING_LINE
 END_OF_STRING_LINE_U
+FUZZY
 GRAPHEME_BOUNDARY
 GREEDY_REPEAT
 GREEDY_REPEAT_ONE
@@ -167,11 +169,12 @@ OP = Namespace()
 for i, op in enumerate(OPCODES.split()):
     setattr(OP, op, i)
 
-def shrink_cache(cache_dict, max_length, divisor=5):
+def shrink_cache(cache_dict, args_dict, max_length, divisor=5):
     """Make room in the given cache.
 
     Args:
         cache_dict: The cache dictionary to modify.
+        args_dict: The dictionary of named list args used by patterns.
         max_length: Maximum # of entries in cache_dict before it is shrunk.
         divisor: Cache will shrink to max_length - 1/divisor*max_length items.
     """
@@ -202,6 +205,11 @@ def shrink_cache(cache_dict, max_length, divisor=5):
         except KeyError:
             # Ignore problems if the cache changed from another thread.
             pass
+
+    # Rebuild the arguments dictionary.
+    args_dict.clear()
+    for pattern, pattern_type, flags, args in cache_dict:
+        args_dict[pattern, pattern_type, flags] = args
 
 def all_cases(info, ch):
     "Gets all the cases of a character."
@@ -329,31 +337,43 @@ def parse_item(source, info):
     "Parses an item, which might be repeated. Returns None if there's no item."
     element = parse_element(source, info)
     counts = parse_quantifier(source, info)
-    if not counts:
-        # No quantifier.
+    if counts:
+        # Is there an element to repeat?
+        if not element or not element.can_repeat():
+            raise error("nothing to repeat")
+
+        min_count, max_count = counts
+        here = source.pos
+        ch = source.get()
+        if ch == "?":
+            # The "?" suffix that means it's a lazy repeat.
+            repeated = LazyRepeat
+        elif ch == "+":
+            # The "+" suffix that means it's a possessive repeat.
+            repeated = PossessiveRepeat
+        else:
+            # No suffix means that it's a greedy repeat.
+            source.pos = here
+            repeated = GreedyRepeat
+
+        if not element or min_count == max_count == 1:
+            return element
+
+        return repeated(element, min_count, max_count)
+
+    # No quantifier, but maybe there's a fuzzy constraint.
+    constraints = parse_fuzzy(source)
+    if not constraints:
+        # No fuzzy constraint.
         return element
 
-    if not element or not element.can_repeat():
-        raise error("nothing to repeat")
+    # If a group is marked as fuzzy then put all of the fuzzy part in the
+    # group.
+    if isinstance(element, Group):
+        element.subpattern = Fuzzy(element.subpattern, constraints)
+        return element
 
-    min_count, max_count = counts
-    here = source.pos
-    ch = source.get()
-    if ch == "?":
-        # The "?" suffix that means it's a lazy repeat.
-        repeated = LazyRepeat
-    elif ch == "+":
-        # The "+" suffix that means it's a possessive repeat.
-        repeated = PossessiveRepeat
-    else:
-        # No suffix means that it's a greedy repeat.
-        source.pos = here
-        repeated = GreedyRepeat
-
-    if not subpattern or min_count == max_count == 1:
-        return subpattern
-
-    return repeated(element, min_count, max_count)
+    return Fuzzy(element, constraints)
 
 def parse_quantifier(source, info):
     "Parses a quantifier."
@@ -370,41 +390,144 @@ def parse_quantifier(source, info):
         return 1, None
     if ch == "{":
         # Looks like a limited repeated element, eg. 'a{2,3}'.
-        min_count = parse_count(source)
-        ch = source.get()
-        if ch == ",":
-            max_count = parse_count(source)
-            if not source.match("}"):
-                # Not a quantifier, so parse it later as a literal.
-                source.pos = here
-                return None
+        try:
+            return parse_limited_quantifier(source)
+        except ParseError:
+            # Not a limited quantifier.
+            pass
 
-            # No minimum means 0 and no maximum means unlimited.
-            min_count = int(min_count) if min_count else 0
-            max_count = int(max_count) if max_count else None
-            if max_count is not None and min_count > max_count:
-                raise error("min repeat greater than max repeat")
-
-            if min_count >= UNLIMITED or max_count is not None and max_count \
-              >= UNLIMITED:
-                raise error("repeat count too big")
-
-            return min_count, max_count
-        if ch == "}":
-            if not min_count:
-                # Not a quantifier, so parse it later as a literal.
-                source.pos = here
-                return None
-
-            min_count = max_count = int(min_count)
-            if min_count >= UNLIMITED:
-                raise error("repeat count too big")
-
-            return min_count, max_count
-
-    # No quantifier.
+    # Parse it later, perhaps as a literal.
     source.pos = here
     return None
+
+def parse_limited_quantifier(source):
+    "Parses a limited quantifier."
+    min_count = parse_count(source)
+    ch = source.get()
+    if ch == ",":
+        max_count = parse_count(source)
+        if not source.match("}"):
+            raise ParseError()
+
+        # No minimum means 0 and no maximum means unlimited.
+        min_count = int(min_count) if min_count else 0
+        max_count = int(max_count) if max_count else None
+        if max_count is not None and min_count > max_count:
+            raise error("min repeat greater than max repeat")
+
+        if min_count >= UNLIMITED or max_count is not None and max_count >= \
+          UNLIMITED:
+            raise error("repeat count too big")
+
+        return min_count, max_count
+
+    if ch != "}":
+        raise ParseError()
+
+    if not min_count:
+        # Not a quantifier.
+        raise ParseError()
+
+    min_count = max_count = int(min_count)
+    if min_count >= UNLIMITED:
+        raise error("repeat count too big")
+
+    return min_count, max_count
+
+def parse_fuzzy(source):
+    "Parses a fuzzy setting, if present."
+    here = source.pos
+    if not source.match("{"):
+        source.pos = here
+        return None
+
+    saved_ignore = source.ignore_space
+    source.ignore_space = True
+
+    constraints = {}
+    try:
+        parse_fuzzy_item(source, constraints)
+        while source.match(","):
+            parse_fuzzy_item(source, constraints)
+    except ParseError:
+        source.pos = here
+
+        return None
+    finally:
+        source.ignore_space = saved_ignore
+
+    if not source.match("}"):
+        raise error("expected }")
+
+    return constraints
+
+def parse_fuzzy_item(source, constraints):
+    "Parses a fuzzy setting item."
+    here = source.pos
+    ch = source.get()
+    if not ch:
+        raise ParseError()
+
+    if ch in "deis":
+        # It's a single error constraint.
+        if ch in constraints:
+            raise error("repeated fuzzy constraint")
+
+        if source.match("<="):
+            try:
+                constraints[ch] = int(parse_count(source))
+            except ValueError:
+                raise error("missing maximum")
+        elif source.match("<"):
+            try:
+                constraints[ch] = max(int(parse_count(source)) - 1, 0)
+            except ValueError:
+                raise error("missing maximum")
+        else:
+            # There's no maximum.
+            constraints[ch] = None
+    else:
+        # It's a cost equation.
+        source.pos = here
+        cost = parse_cost_equation(source)
+        if "cost" in constraints:
+            raise error("more than one cost equation")
+
+        constraints["cost"] = cost
+
+def parse_cost_equation(source):
+    "Parses a cost equation."
+    cost = {}
+    parse_cost_term(source, cost)
+    while source.match("+"):
+        parse_cost_term(source, cost)
+
+    if source.match("<="):
+        try:
+            cost["max"] = int(parse_count(source))
+        except ValueError:
+            raise error("missing maximum")
+    elif source.match("<"):
+        try:
+            cost["max"] = max(int(parse_count(source)) - 1, 0)
+        except ValueError:
+            raise error("missing maximum")
+    else:
+        raise error("missing maximum")
+
+    return cost
+
+def parse_cost_term(source, cost):
+    "Parses a cost equation term."
+    coeff = parse_count(source)
+    ch = source.get()
+    if ch not in "dis":
+        raise ParseError()
+
+    if ch in cost:
+        raise error("repeated cost")
+
+    cost[ch] = int(coeff) if coeff else 1
 
 def parse_count(source):
     "Parses a quantifier's count, which can be empty."
@@ -950,7 +1073,7 @@ def parse_string_set(source, info):
     name = parse_name(source, True)
     source.expect(">")
     if name is None or name not in info.kwargs:
-        raise error("undefined string set")
+        raise error("undefined named list")
 
     return string_set(info, name)
 
@@ -1045,7 +1168,7 @@ def parse_set_union(source, info):
     if not source.match("]"):
         raise error("missing ]")
 
-    if len(items) == 1:
+    if len(items) == 1 and not isinstance(items[0], Range):
         return items[0]
     return SetUnion(items)
 
@@ -1325,6 +1448,8 @@ def compile_repl_group(source, pattern):
 INDENT = "  "
 POSITIVE_OP = 0x1
 ZEROWIDTH_OP = 0x2
+FUZZY_OP = 0x4
+REVERSE_OP = 0x8
 
 # Common base for all nodes.
 class RegexBase(object):
@@ -1389,16 +1514,24 @@ class ZeroWidthBase(RegexBase):
     def __init__(self, positive=True):
         RegexBase.__init__(self)
         self.positive = bool(positive)
+        self.fuzzy = False
         self._key = self.__class__, self.positive
+
+    def make_fuzzy(self):
+        self.fuzzy = True
 
     def compile(self, reverse=False):
         flags = 0
         if self.positive:
             flags |= POSITIVE_OP
+        if self.fuzzy:
+            flags |= FUZZY_OP
+        if reverse:
+            flags |= REVERSE_OP
         return [(self._opcode, flags)]
 
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s" % (INDENT * indent, _op_name,
+        print "%s%s %s" % (INDENT * indent, self._op_name,
           self._pos_text[self.positive])
 
     def firstset(self):
@@ -1425,8 +1558,17 @@ class Any(RegexBase):
     _opcode = {False: OP.ANY, True: OP.ANY_REV}
     _op_name = {False: "ANY", True: "ANY_REV"}
 
+    def __init__(self):
+        RegexBase.__init__(self)
+        self.fuzzy = False
+
+    def make_fuzzy(self):
+        self.fuzzy = True
+
     def compile(self, reverse=False):
         flags = 0
+        if self.fuzzy:
+            flags |= FUZZY_OP
         return [(self._opcode[reverse], flags)]
 
     def dump(self, indent=0, reverse=False):
@@ -1450,6 +1592,9 @@ class Atomic(StructureBase):
 
     def fix_groups(self):
         self.subpattern.fix_groups()
+
+    def make_fuzzy(self):
+        self.subpattern.make_fuzzy()
 
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
@@ -1479,7 +1624,7 @@ class Atomic(StructureBase):
           )]
 
     def dump(self, indent=0, reverse=False):
-        print "%s%s" % (INDENT * indent, "ATOMIC")
+        print "%sATOMIC" % (INDENT * indent)
         self.subpattern.dump(indent + 1, reverse)
 
     def firstset(self):
@@ -1535,6 +1680,10 @@ class Branch(StructureBase):
     def fix_groups(self):
         for b in self.branches:
             b.fix_groups()
+
+    def make_fuzzy(self):
+        for b in self.branches:
+            b.make_fuzzy()
 
     def optimise(self, info):
         # Flatten branches within branches.
@@ -1654,7 +1803,7 @@ class Branch(StructureBase):
     def _merge_common_prefixes(info, branches):
         # Branches with the same character prefix can be grouped together if
         # they are separated only by other branches with a character prefix.
-        char_type = None
+        char_type, fuzzy = None, False
         char_prefixes = defaultdict(list)
         order = {}
         new_branches = []
@@ -1663,19 +1812,19 @@ class Branch(StructureBase):
             if isinstance(first, Character) and first.positive:
                 if type(first) is not char_type:
                     if char_prefixes:
-                        Branch._flush_char_prefix(info, char_type,
+                        Branch._flush_char_prefix(info, char_type, fuzzy,
                           char_prefixes, order, new_branches)
                         char_prefixes.clear()
                         order.clear()
 
-                    char_type = type(first)
+                    char_type, fuzzy = type(first), first.fuzzy
 
                 char_prefixes[first.value].append(b)
                 order.setdefault(first.value, len(order))
             else:
                 if char_prefixes:
-                    Branch._flush_char_prefix(info, char_type, char_prefixes,
-                      order, new_branches)
+                    Branch._flush_char_prefix(info, char_type, fuzzy,
+                      char_prefixes, order, new_branches)
                     char_prefixes.clear()
                     order.clear()
 
@@ -1683,8 +1832,8 @@ class Branch(StructureBase):
                 new_branches.append(b)
 
         if char_prefixes:
-            Branch._flush_char_prefix(info, char_type, char_prefixes, order,
-              new_branches)
+            Branch._flush_char_prefix(info, char_type, fuzzy, char_prefixes,
+              order, new_branches)
 
         return new_branches
 
@@ -1692,30 +1841,33 @@ class Branch(StructureBase):
     def _reduce_to_set(info, branches):
         # Can the branches be reduced to a set?
         new_branches = []
-        members = set()
+        members, fuzzy = set(), False
         for b in branches:
             if isinstance(b, Character) and b.positive or isinstance(b,
               Property):
                 members.add(b)
+                fuzzy = b.fuzzy
             elif isinstance(b, SetUnion) and b.positive:
                 for m in b.items:
                     if isinstance(m, (Character, Property)):
                         members.add(m)
+                        fuzzy = b.fuzzy
                     else:
-                        Branch._flush_set_members(info, members, new_branches)
+                        Branch._flush_set_members(info, members, fuzzy,
+                          new_branches)
                         members.clear()
                         new_branches.append(b)
             else:
-                Branch._flush_set_members(info, members, new_branches)
+                Branch._flush_set_members(info, members, fuzzy, new_branches)
                 members.clear()
                 new_branches.append(b)
 
-        Branch._flush_set_members(info, members, new_branches)
+        Branch._flush_set_members(info, members, fuzzy, new_branches)
 
         return new_branches
 
     @staticmethod
-    def _flush_char_prefix(info, char_type, prefixed, order,
+    def _flush_char_prefix(info, char_type, fuzzy, prefixed, order,
        new_branches):
         for value, branches in sorted(prefixed.items(), key=lambda pair:
           order[pair[0]]):
@@ -1732,7 +1884,11 @@ class Branch(StructureBase):
                         subbranches.append(Sequence())
                         optional = True
 
-                sequence = [char_type(info, value)]
+                c = char_type(info, value)
+                if fuzzy:
+                    c.make_fuzzy()
+
+                sequence = [c]
                 if len(subbranches) > 1:
                     sequence.append(Branch(subbranches))
                 else:
@@ -1740,9 +1896,12 @@ class Branch(StructureBase):
                 new_branches.append(Sequence(sequence).optimise(info))
 
     @staticmethod
-    def _flush_set_members(info, members, new_branches):
+    def _flush_set_members(info, members, fuzzy, new_branches):
         if members:
-            new_branches.append(SetUnion(list(members)).optimise(info))
+            s = SetUnion(list(members))
+            if fuzzy:
+                s.make_fuzzy()
+            new_branches.append(s.optimise(info))
 
 class Character(RegexBase):
     _opcode = {False: OP.CHARACTER, True: OP.CHARACTER_REV}
@@ -1753,7 +1912,11 @@ class Character(RegexBase):
         RegexBase.__init__(self)
         self.info, self.value, self.positive, self.zerowidth = info, ch, \
           bool(positive), bool(zerowidth)
+        self.fuzzy = False
         self._key = self.__class__, self.value, self.positive, self.zerowidth
+
+    def make_fuzzy(self):
+        self.fuzzy = True
 
     def compile(self, reverse=False):
         flags = 0
@@ -1761,6 +1924,8 @@ class Character(RegexBase):
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
+        if self.fuzzy:
+            flags |= FUZZY_OP
         return [(self._opcode[reverse], flags, self.value)]
 
     def dump(self, indent=0, reverse=False):
@@ -1786,6 +1951,7 @@ class CharacterIgn(Character):
         # instance if the character is case-insensitive.
         if len(all_cases(info, self.value)) == 1:
             c = Character(info, self.value, self.positive, self.zerowidth)
+            c.fuzzy = self.fuzzy
             return c
 
         return self
@@ -1816,6 +1982,10 @@ class Conditional(StructureBase):
 
         self.yes_item.fix_groups()
         self.no_item.fix_groups()
+
+    def make_fuzzy(self):
+        self.yes_item.make_fuzzy()
+        self.no_item.make_fuzzy()
 
     def optimise(self, info):
         yes_item = self.yes_item.optimise(info)
@@ -1891,13 +2061,103 @@ class EndOfStringLineU(EndOfStringLine):
     _opcode = OP.END_OF_STRING_LINE_U
     _op_name = "END_OF_STRING_LINE_U"
 
+class Fuzzy(StructureBase):
+    def __init__(self, subpattern, constraints=None):
+        StructureBase.__init__(self)
+        if constraints is None:
+            constraints = {}
+        self.subpattern = subpattern
+        self.constraints = constraints
+        self.subpattern.make_fuzzy()
+
+        # If an error type is mentioned in the cost equation, then its maximum
+        # defaults to unlimited.
+        if "cost" in constraints:
+            for e in "dis":
+                if e in constraints["cost"]:
+                    constraints.setdefault(e, None)
+
+        # If any error type is mentioned then the maxima default to 0,
+        # they default to unlimited.
+        if set(constraints) & set("dis"):
+            for e in "dis":
+                constraints.setdefault(e, 0)
+        else:
+            for e in "dis":
+                constraints.setdefault(e, None)
+
+        # The maximum of the generic error type defaults to unlimited.
+        constraints.setdefault("e", None)
+
+        # The cost equation defaults to equal costs.
+        # Also, the cost of any error type not mentioned in the cost equation
+        # defaults to 0.
+        if "cost" in constraints:
+            for e in "dis":
+                constraints["cost"].setdefault(e, 0)
+        else:
+            constraints["cost"] = {"d": 1, "i": 1, "s": 1, "max":
+              constraints["e"]}
+
+    def fix_groups(self):
+        self.subpattern.fix_groups()
+
+    def contains_group(self):
+        return self.subpattern.contains_group()
+
+    def compile(self, reverse=False):
+        # The individual maxima.
+        arguments = []
+        for e in "dise":
+            v = self.constraints[e]
+            arguments.append(UNLIMITED if v is None else v)
+
+        # The coeffs of the cost equation.
+        for e in "dis":
+            arguments.append(self.constraints["cost"][e])
+
+        # The maximum of the cost equation.
+        v = self.constraints["cost"]["max"]
+        arguments.append(UNLIMITED if v is None else v)
+
+        flags = 0
+        if reverse:
+            flags |= REVERSE_OP
+
+        return [(OP.FUZZY, flags) + tuple(arguments)] + \
+          self.subpattern.compile(reverse) + [(OP.END,)]
+
+    def dump(self, indent=0, reverse=False):
+        print "%sFUZZY" % (INDENT * indent)
+        self.subpattern.dump(indent + 1, reverse)
+
+    def has_simple_start(self):
+        return self.subpattern.has_simple_start()
+
+    def __eq__(self, other):
+        return type(self) is type(other) and self.subpattern == \
+          other.subpattern
+
+    def __nonzero__(self):
+        return bool(self.subpattern)
+
 class Grapheme(RegexBase):
     _op_name = {False: "GRAPHEME", True: "GRAPHEME_REV"}
+
+    def __init__(self):
+        RegexBase.__init__(self)
+        self.fuzzy = False
+
+    def make_fuzzy(self):
+        self.fuzzy = True
 
     def compile(self, reverse=False):
         # Match at least 1 character until a grapheme boundary is reached.
         # Note that this is the same whether matching forwards or backwards.
         c = AnyAll()
+        if self.fuzzy:
+            c.make_fuzzy()
+
         character_matcher = LazyRepeat(c, 1, None).compile(reverse)
         boundary_matcher = [(OP.GRAPHEME_BOUNDARY, 1)]
 
@@ -1917,6 +2177,9 @@ class GreedyRepeat(StructureBase):
 
     def fix_groups(self):
         self.subpattern.fix_groups()
+
+    def make_fuzzy(self):
+        self.subpattern.make_fuzzy()
 
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
@@ -1980,6 +2243,9 @@ class Group(StructureBase):
     def fix_groups(self):
         self.subpattern.fix_groups()
 
+    def make_fuzzy(self):
+        self.subpattern.make_fuzzy()
+
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
 
@@ -2041,6 +2307,9 @@ class LookAround(StructureBase):
     def fix_groups(self):
         self.subpattern.fix_groups()
 
+    def make_fuzzy(self):
+        self.subpattern.make_fuzzy()
+
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
 
@@ -2084,7 +2353,11 @@ class Property(RegexBase):
         RegexBase.__init__(self)
         self.value, self.positive, self.zerowidth = value, bool(positive), \
           bool(zerowidth)
+        self.fuzzy = False
         self._key = self.__class__, self.value, self.positive, self.zerowidth
+
+    def make_fuzzy(self):
+        self.fuzzy = True
 
     def compile(self, reverse=False):
         flags = 0
@@ -2092,6 +2365,8 @@ class Property(RegexBase):
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
+        if self.fuzzy:
+            flags |= FUZZY_OP
         return [(self._opcode[reverse], flags, self.value)]
 
     def dump(self, indent=0, reverse=False):
@@ -2151,6 +2426,9 @@ class RefGroup(RegexBase):
         self.info, self.group = info, group
         self._key = self.__class__, self.group
 
+    def make_fuzzy(self):
+        raise error("group references not compatible with fuzzy matching")
+
     def fix_groups(self):
         try:
             self.group = int(self.group)
@@ -2190,6 +2468,10 @@ class Sequence(StructureBase):
         for s in self.sequence:
             s.fix_groups()
 
+    def make_fuzzy(self):
+        for s in self.sequence:
+            s.make_fuzzy()
+
     def optimise(self, info):
         # Flatten the sequences.
         sequence = []
@@ -2209,7 +2491,7 @@ class Sequence(StructureBase):
         sequence = []
         char_type, characters = Character, []
         for s in self.sequence:
-            if type(s) is char_type and s.positive:
+            if type(s) is char_type and s.positive and not s.fuzzy:
                 characters.append(s.value)
             else:
                 if characters:
@@ -2217,7 +2499,7 @@ class Sequence(StructureBase):
                       sequence)
                     characters = []
 
-                if type(s) in ALL_CHAR_TYPES and s.positive:
+                if type(s) in ALL_CHAR_TYPES and s.positive and not s.fuzzy:
                     char_type = type(s)
                     characters.append(s.value)
                 else:
@@ -2273,8 +2555,7 @@ class Sequence(StructureBase):
         return code
 
     def remove_captures(self):
-        self.sequence = [s.remove_captures() for s in
-          self.sequence]
+        self.sequence = [s.remove_captures() for s in self.sequence]
         return self
 
     def dump(self, indent=0, reverse=False):
@@ -2319,7 +2600,11 @@ class SetBase(RegexBase):
         RegexBase.__init__(self)
         items = tuple(items)
         self.items, self.positive, self.zerowidth = items, positive, zerowidth
+        self.fuzzy = False
         self._key = self.__class__, self.items, self.positive, self.zerowidth
+
+    def make_fuzzy(self):
+        self.fuzzy = True
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s %s" % (INDENT * indent, self._op_name[reverse],
@@ -2333,6 +2618,8 @@ class SetBase(RegexBase):
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
+        if self.fuzzy:
+            flags |= FUZZY_OP
         code = [(self._opcode[reverse], flags)]
         for m in self.items:
             if isinstance(m, Range):
@@ -2350,6 +2637,8 @@ class SetBase(RegexBase):
 
     def _rebuild(self, items):
         s = type(self)(items, self.positive, self.zerowidth)
+        if self.fuzzy:
+            s.make_fuzzy()
 
         return s
 
@@ -2358,7 +2647,7 @@ class SetBase(RegexBase):
     CODE_MASK = (1 << BITS_PER_CODE) - 1
     CODES_PER_SUBSET = 256 // BITS_PER_CODE
 
-    def _make_bitset(self, characters, positive, reverse):
+    def _make_bitset(self, characters, positive, reverse, fuzzy):
         code = []
         # values for big bitset are: max_char indexes... subsets...
         # values for small bitset are: top_bits bitset
@@ -2371,6 +2660,8 @@ class SetBase(RegexBase):
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
+        if self.fuzzy:
+            flags |= FUZZY_OP
 
         if len(bitset_dict) > 1:
             # Build a big bitset.
@@ -2510,7 +2801,8 @@ class SetUnion(SetBase):
 
         # If there are only characters then compile to a bitset.
         if not others:
-            return self._make_bitset(characters, self.positive, reverse)
+            return self._make_bitset(characters, self.positive, reverse,
+              self.fuzzy)
 
         # Compile a compound set.
         flags = 0
@@ -2518,9 +2810,12 @@ class SetUnion(SetBase):
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
+        if self.fuzzy:
+            flags |= FUZZY_OP
         code = [(self._opcode[reverse], flags)]
         if characters:
-            code.extend(self._make_bitset(characters, True, False))
+            code.extend(self._make_bitset(characters, True, False,
+              self.fuzzy))
 
         for m in others:
             code.extend(m.compile())
@@ -2591,11 +2886,15 @@ class StringSet(RegexBase):
         self._key = self.__class__, self.name
 
         self.set_key = (name, False)
-        if self.set_key not in info.string_sets:
-            info.string_sets[self.set_key] = (len(info.string_sets), None)
+        if self.set_key not in info.named_lists:
+            info.named_lists[self.set_key] = len(info.named_lists)
+
+    def make_fuzzy(self):
+        raise error("named lists not compatible with fuzzy matching")
 
     def compile(self, reverse=False):
-        index, items = self.info.string_sets[self.set_key]
+        index = self.info.named_lists[self.set_key]
+        items = self.info.kwargs[self.name]
         min_len = min(len(i) for i in items)
         max_len = max(len(i) for i in items)
         return [(self._opcode[reverse], index, min_len, max_len)]
@@ -2612,8 +2911,8 @@ class StringSetIgn(StringSet):
         self._key = self.__class__, self.name
 
         self.set_key = (name, True)
-        if self.set_key not in info.string_sets:
-            info.string_sets[self.set_key] = (len(info.string_sets), None)
+        if self.set_key not in info.named_lists:
+            info.named_lists[self.set_key] = len(info.named_lists)
 
 class SearchAnchor(ZeroWidthBase):
     _opcode = OP.SEARCH_ANCHOR
@@ -2639,7 +2938,7 @@ class Info(object):
         self.used_groups = set()
         self.group_state = {}
         self.char_type = char_type
-        self.string_sets = {}
+        self.named_lists = {}
         self.nested_sets = nested_sets
 
     def new_group(self, name=None):

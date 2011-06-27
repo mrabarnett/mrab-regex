@@ -57,6 +57,70 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
+* Approximate "fuzzy" matching (Hg issue 12) (experimental)
+
+    Regex usually attempts an exact match, but sometimes an approximate, or "fuzzy", match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.
+
+    A fuzzy regex specifies which types of errors are permitted, and, optionally, the maximum permitted number of each type.
+
+    The 3 types of error are:
+
+    * Insertion, indicated by "i"
+
+    * Deletion, indicated by "d"
+
+    * Substitution, indicated by "s"
+
+    In addition, "e" indicates any type of error.
+
+    The fuzziness of a regex item is specified between "{" and "}" after the item.
+
+    Examples:
+
+    ``foo`` match "foo" exactly
+
+    ``(?:foo){i}`` match "foo", permitting insertions
+
+    ``(?:foo){d}`` match "foo", permitting deletions
+
+    ``(?:foo){s}`` match "foo", permitting substitutions
+
+    ``(?:foo){i,s}`` match "foo", permitting insertions and substitutions
+
+    ``(?:foo){e}`` match "foo", permitting errors
+
+    If a certain type of error is specified, then any type not specified will **not** be permitted.
+
+    In the following examples I'll omit the item and write only the fuzziness.
+
+    ``{i<=3}`` permit at most 3 insertions, but no other types
+
+    ``{d<=3}`` permit at most 3 deletions, but no other types
+
+    ``{s<=3}`` permit at most 3 substitutions, but no other types
+
+    ``{i<=1,s<=2}`` permit at most 1 insertion and 2 substitutions, but no deletions
+
+    ``{e<=3}`` permit at most 3 errors
+
+    ``{i<=2,d<=2,e<=3}`` permit at most 2 insertions, 2 deletions, at most 3 errors in total, but no substitutions
+
+    It's also possible to state the costs of each type of error and the maximum permitted total cost.
+
+    Examples:
+
+    ``{2i+2d+1s<=4}`` each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
+
+    ``{i<=1,d<=1,s<=1,2i+2d+1s<=4}`` at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
+
+    You can also use "<" instead of "<=" if you want an exclusive maximum:
+
+    ``{e<=3}`` permit up to 3 errors
+
+    ``{e<4}`` permit fewer than 4 errors
+
+   **Restriction**: in this release, group references and named lists can't be fuzzy.
+
 * Named lists (Hg issue 11)
 
     ``\L<name>``
