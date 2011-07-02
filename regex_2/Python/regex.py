@@ -16,9 +16,9 @@
 r"""Support for regular expressions (RE).
 
 This module provides regular expression matching operations similar to those
-found in Perl. It supports both 8-bit and Unicode strings; both the pattern and
-the strings being processed can contain null bytes and characters outside the
-US ASCII range.
+found in Perl. It supports both 8-bit and Unicode strings; both the pattern
+and the strings being processed can contain null bytes and characters outside
+the US ASCII range.
 
 Regular expressions can contain both special and ordinary characters. Most
 ordinary characters, like "A", "a", or "0", are the simplest regular
@@ -30,11 +30,11 @@ The special characters are:
     "^"                 Matches the start of the string.
     "$"                 Matches the end of the string or just before the
                         newline at the end of the string.
-    "*"                 Matches 0 or more (greedy) repetitions of the preceding
-                        RE. Greedy means that it will match as many repetitions
-                        as possible.
-    "+"                 Matches 1 or more (greedy) repetitions of the preceding
-                        RE.
+    "*"                 Matches 0 or more (greedy) repetitions of the
+                        preceding RE. Greedy means that it will match as many
+                        repetitions as possible.
+    "+"                 Matches 1 or more (greedy) repetitions of the
+                        preceding RE.
     "?"                 Matches 0 or 1 (greedy) of the preceding RE.
     *?,+?,??            Non-greedy versions of the previous three special
                         characters.
@@ -43,20 +43,21 @@ The special characters are:
     {m,n}               Matches from m to n repetitions of the preceding RE.
     {m,n}?              Non-greedy version of the above.
     {m,n}+              Possessive version of the above.
-    "\\"                Either escapes special characters or signals a special
-                        sequence.
+    {...}               Fuzzy matching constraints.
+    "\\"                Either escapes special characters or signals a
+                        special sequence.
     [...]               Indicates a set of characters. A "^" as the first
                         character indicates a complementing set.
     "|"                 A|B, creates an RE that will match either A or B.
-    (...)               Matches the RE inside the parentheses. The contents are
-                        captured and can be retrieved or matched later in the
-                        string.
+    (...)               Matches the RE inside the parentheses. The contents
+                        are captured and can be retrieved or matched later in
+                        the string.
     (?flags-flags)      Sets/clears the flags for the entire RE, or the
                         remainder of the RE if the 'NEW' flag is set.
     (?:...)             Non-capturing version of regular parentheses.
     (?>...)             Atomic non-capturing version of regular parentheses.
-    (?flags-flags:...)  Non-capturing version of regular parentheses with local
-                        flags.
+    (?flags-flags:...)  Non-capturing version of regular parentheses with
+                        local flags.
     (?P<name>...)       The substring matched by the group is accessible by
                         name.
     (?<name>...)        The substring matched by the group is accessible by
@@ -68,18 +69,30 @@ The special characters are:
                         string.
     (?!...)             Matches if ... doesn't match next.
     (?<=...)            Matches if preceded by ... (must be fixed length).
-    (?<!...)            Matches if not preceded by ... (must be fixed length).
-    (?(id)yes|no)       Matches yes pattern if group id matched, the (optional)
-                        no pattern otherwise.
+    (?<!...)            Matches if not preceded by ... (must be fixed
+                        length).
+    (?(id)yes|no)       Matches yes pattern if group id matched, the
+                        (optional) no pattern otherwise.
     (?|...|...)         (?|A|B), creates an RE that will match either A or B,
                         but reuses capture group numbers across the
                         alternatives.
 
+The fuzzy matching constraints are: "i" to permit insertions, "d" to permit
+deletions, "s" to permit substitutions, "e" to permit any of these. Limits
+are optional with "<=" and "<". If any type of error is provided then any
+type not provided is not permitted.
+
+A cost equation may be provided.
+
+Examples:
+    (?:fuzzy){i<=2}
+    (?:fuzzy){i<=1,s<=2,d<=1,1i+1s+1d<3}
+
 Set operators are supported, and a set can include nested sets. The set
 operators, in order of increasing precedence, are:
     ||  Set union ("x||y" means "x or y").
-    ~~  (double tilde) Symmetric set difference ("x~~y" means "x or y, but not
-        both").
+    ~~  (double tilde) Symmetric set difference ("x~~y" means "x or y, but
+        not both").
     &&  Set intersection ("x&&y" means "x and y").
     --  (double dash) Set difference ("x--y" means "x but not y").
 
@@ -87,21 +100,21 @@ Implicit union, ie, simple juxtaposition like in [ab], has the highest
 precedence.
 
 The special sequences consist of "\\" and a character from the list below. If
-the ordinary character is not on the list, then the resulting RE will match the
-second character.
+the ordinary character is not on the list, then the resulting RE will match
+the second character.
     \number         Matches the contents of the group of the same number if
                     number is no more than 2 digits, otherwise the character
                     with the 3-digit octal code.
     \a              Matches the bell character.
     \A              Matches only at the start of the string.
-    \b              Matches the empty string, but only at the start or end of a
-                    word.
-    \B              Matches the empty string, but not at the start or end of a
-                    word.
-    \d              Matches any decimal digit; equivalent to the set [0-9] when
-                    matching a bytestring or a Unicode string with the ASCII
-                    flag, or the whole range of Unicode digits when matching a
-                    Unicode string.
+    \b              Matches the empty string, but only at the start or end of
+                    a word.
+    \B              Matches the empty string, but not at the start or end of
+                    a word.
+    \d              Matches any decimal digit; equivalent to the set [0-9]
+                    when matching a bytestring or a Unicode string with the
+                    ASCII flag, or the whole range of Unicode digits when
+                    matching a Unicode string.
     \D              Matches any non-digit character; equivalent to [^\d].
     \f              Matches the formfeed character.
     \g<name>        Matches the text matched by the group named name.
@@ -112,23 +125,24 @@ second character.
     \N{name}        Matches the named character.
     \p{name=value}  Matches the character if its property has the specified
                     value.
-    \P{name=value}  Matches the character if its property hasn't the specified
-                    value.
+    \P{name=value}  Matches the character if its property hasn't the
+                    specified value.
     \r              Matches the carriage-return character.
     \s              Matches any whitespace character; equivalent to
                     [ \t\n\r\f\v].
-    \S              Matches any non-whitespace character; equivalent to [^\s].
+    \S              Matches any non-whitespace character; equivalent to
+                    [^\s].
     \t              Matches the tab character.
     \uXXXX          Matches the Unicode codepoint with 4-digit hex code XXXX.
     \UXXXXXXXX      Matches the Unicode codepoint with 8-digit hex code
                     XXXXXXXX.
     \v              Matches the vertical tab character.
     \w              Matches any alphanumeric character; equivalent to
-                    [a-zA-Z0-9_] when matching a bytestring or a Unicode string
-                    with the ASCII flag, or the whole range of Unicode
+                    [a-zA-Z0-9_] when matching a bytestring or a Unicode
+                    string with the ASCII flag, or the whole range of Unicode
                     alphanumeric characters (letters plus digits plus
-                    underscore) when matching a Unicode string. With LOCALE, it
-                    will match the set [0-9_] plus characters defined as
+                    underscore) when matching a Unicode string. With LOCALE,
+                    it will match the set [0-9_] plus characters defined as
                     letters for the current locale.
     \W              Matches the complement of \w; equivalent to [^\w].
     \xXX            Matches the character with 2-digit hex code XX.
@@ -137,7 +151,8 @@ second character.
     \\              Matches a literal backslash.
 
 This module exports the following functions:
-    match      Match a regular expression pattern at the beginning of a string.
+    match      Match a regular expression pattern at the beginning of a
+               string.
     search     Search a string for the presence of a pattern.
     sub        Substitute occurrences of a pattern found in a string.
     subn       Same as sub, but also return the number of substitutions made.
@@ -150,31 +165,34 @@ This module exports the following functions:
     escape     Backslash all non-alphanumerics or special characters in a
                string.
 
-Most of the functions support a concurrent parameter: if True, the GIL will be
-released during matching, allowing other Python threads to run concurrently. If
-the string changes during matching, the behaviour is undefined. This parameter
-is not needed when working on the builtin (immutable) string classes.
+Most of the functions support a concurrent parameter: if True, the GIL will
+be released during matching, allowing other Python threads to run
+concurrently. If the string changes during matching, the behaviour is
+undefined. This parameter is not needed when working on the builtin
+(immutable) string classes.
 
-Some of the functions in this module take flags as optional parameters. Most of
-these flags can also be set within an RE:
+Some of the functions in this module take flags as optional parameters. Most
+of these flags can also be set within an RE:
     A  a  ASCII       Make \w, \W, \b, \B, \d, and \D match the corresponding
                       ASCII character categories. Default when matching a
                       bytestring.
     D     DEBUG       Print the parsed pattern.
     I  i  IGNORECASE  Perform case-insensitive matching.
-    L  L  LOCALE      Make \w, \W, \b, \B, \d, and \D dependent on the current
-                      locale. (One byte per character only.)
+    L  L  LOCALE      Make \w, \W, \b, \B, \d, and \D dependent on the
+                      current locale. (One byte per character only.)
     M  m  MULTILINE   "^" matches the beginning of lines (after a newline) as
-                      well as the string. "$" matches the end of lines (before
-                      a newline) as well as the end of the string.
+                      well as the string. "$" matches the end of lines
+                      (before a newline) as well as the end of the string.
     N  n  NEW         Turn on scoped flags and correct handling of zero-width
                       matches.
     R  r  REVERSE     Searches backwards.
-    S  s  DOTALL      "." matches any character at all, including the newline.
-    U  u  UNICODE     Make \w, \W, \b, \B, \d, and \D dependent on the Unicode
-                      locale. Default when matching a Unicode string.
-    W  w  WORD        Make \b and \B work with default Unicode word breaks and
-                      make ".", "^" and "$" work with Unicode line breaks.
+    S  s  DOTALL      "." matches any character at all, including the
+                      newline.
+    U  u  UNICODE     Make \w, \W, \b, \B, \d, and \D dependent on the
+                      Unicode locale. Default when matching a Unicode string.
+    W  w  WORD        Make \b and \B work with default Unicode word breaks
+                      and make ".", "^" and "$" work with Unicode line
+                      breaks.
     X  x  VERBOSE     Ignore whitespace and comments for nicer looking REs.
 
 There is also NONE which can be used if no flags are set.
@@ -211,23 +229,23 @@ def search(pattern, string, flags=0, pos=None, endpos=None, concurrent=None,
 
 def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
   concurrent=None, **kwargs):
-    """Return the string obtained by replacing the leftmost (or rightmost with
-    a reverse pattern) non-overlapping occurrences of the pattern in string by
-    the replacement repl. repl can be either a string or a callable; if a
-    string, backslash escapes in it are processed; if a callable, it's passed
-    the match object and must return a replacement string to be used."""
+    """Return the string obtained by replacing the leftmost (or rightmost with a
+    reverse pattern) non-overlapping occurrences of the pattern in string by the
+    replacement repl. repl can be either a string or a callable; if a string,
+    backslash escapes in it are processed; if a callable, it's passed the match
+    object and must return a replacement string to be used."""
     return _compile(pattern, flags, kwargs).sub(repl, string, count, pos,
       endpos, concurrent)
 
 def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
   concurrent=None, **kwargs):
-    """Return a 2-tuple containing (new_string, number). new_string is the
-    string obtained by replacing the leftmost (or rightmost with a reverse
-    pattern) non-overlapping occurrences of the pattern in the source string by
-    the replacement repl. number is the number of substitutions that were made.
-    repl can be either a string or a callable; if a string, backslash escapes
-    in it are processed; if a callable, it's passed the match object and must
-    return a replacement string to be used."""
+    """Return a 2-tuple containing (new_string, number). new_string is the string
+    obtained by replacing the leftmost (or rightmost with a reverse pattern)
+    non-overlapping occurrences of the pattern in the source string by the
+    replacement repl. number is the number of substitutions that were made. repl
+    can be either a string or a callable; if a string, backslash escapes in it
+    are processed; if a callable, it's passed the match object and must return a
+    replacement string to be used."""
     return _compile(pattern, flags, kwargs).subn(repl, string, count, pos,
       endpos, concurrent)
 
@@ -243,11 +261,10 @@ def splititer(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
 
 def findall(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
   concurrent=None, **kwargs):
-    """Return a list of all matches in the string. The matches may be
-    overlapped if overlapped is True. If one or more groups are present in the
-    pattern, return a list of groups; this will be a list of tuples if the
-    pattern has more than one group. Empty matches are included in the
-    result."""
+    """Return a list of all matches in the string. The matches may be overlapped
+    if overlapped is True. If one or more groups are present in the pattern,
+    return a list of groups; this will be a list of tuples if the pattern has
+    more than one group. Empty matches are included in the result."""
     return _compile(pattern, flags, kwargs).findall(string, pos, endpos,
       overlapped, concurrent)
 

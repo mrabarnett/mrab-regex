@@ -2662,6 +2662,7 @@ xyzabc
           options=set(['good', 'brilliant', '+solid'])), repr(['+solid']))
 
     def test_fuzzy(self):
+        # Some tests borrowed from TRE library tests.
         # 1..6
         self.expect(lambda: type(regex.compile('(fou){s,e<=1}')),
           self.PATTERN_CLASS)
@@ -2678,56 +2679,58 @@ xyzabc
           type(regex.compile('(anaconda){s<=1,e<=1,1i+1d<1}')),
           self.PATTERN_CLASS)
 
-        # 7..9
-        self.expect(lambda: regex.search('(znacnda){s<=1,e<=3,1i+1d<1}',
-          'molasses anaconda foo bar baz smith anderson '), repr(None))
+        text = 'molasses anaconda foo bar baz smith anderson '
+        # 7..11
+        self.expect(lambda: regex.search('(znacnda){s<=1,e<=3,1i+1d<1}', text),
+          repr(None))
         self.expect(lambda: regex.search('(znacnda){s<=1,e<=3,1i+1d<2}',
-          'molasses anaconda foo bar baz smith anderson ').span(0, 1),
-          repr(((9, 17), (9, 17))))
-        self.expect(lambda: regex.search('(ananda){1i+1d<2}',
-          'molasses anaconda foo bar baz smith anderson '), repr(None))
+          text).span(0, 1), repr(((9, 17), (9, 17))))
+        self.expect(lambda: regex.search('(ananda){1i+1d<2}', text),
+          repr(None))
+        self.expect(lambda: regex.search(r"(?:\bznacnda){e<=2}", text)[0],
+          repr("anaconda"))
+        self.expect(lambda: regex.search(r"(?:\bnacnda){e<=2}", text)[0],
+          repr("anaconda"))
 
-        # 10..12
-        self.expect(lambda: regex.search('(fuu){i<=3,d<=3,e<=5}',
-          'anaconda foo bar baz smith anderson').span(0, 1), repr(((9, 10), (9,
-          10))))
-        self.expect(lambda: regex.search('(fuu){i<=2,d<=2,e<=5}',
-          'anaconda foo bar baz smith anderson').span(0, 1), repr(((9, 10), (9,
-          10))))
-        self.expect(lambda: regex.search('(fuu){i<=3,d<=3,e}',
-          'anaconda foo bar baz smith anderson').span(0, 1), repr(((9, 10), (9,
-          10))))
+        text = 'anaconda foo bar baz smith anderson'
+        # 12..14
+        self.expect(lambda: regex.search('(fuu){i<=3,d<=3,e<=5}', text).span(0,
+          1), repr(((9, 10), (9, 10))))
+        self.expect(lambda: regex.search('(fuu){i<=2,d<=2,e<=5}', text).span(0,
+          1), repr(((9, 10), (9, 10))))
+        self.expect(lambda: regex.search('(fuu){i<=3,d<=3,e}', text).span(0,
+          1), repr(((9, 10), (9, 10))))
 
-        #13
-        self.expect(lambda: type(regex.compile('(laurikari){s<=3,1i+1d<3}')),
+        #15
+        self.expect(lambda: type(regex.compile('(approximate){s<=3,1i+1d<3}')),
           self.PATTERN_CLASS)
 
         # No cost limit.
-        # 14
+        # 16
         self.expect(lambda: regex.search('(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), repr(((11, 16), (11, 16))))
 
         # At most two errors.
-        # 15..16
+        # 17..18
         self.expect(lambda: regex.search('(foobar){e<=2}',
           'xirefoabrzlfd').span(0, 1), repr(((4, 9), (4, 9))))
         self.expect(lambda: regex.search('(foobar){e<=2}', 'xirefoabzlfd'),
           repr(None))
 
         # At most two inserts or substitutions and max two errors total.
-        # 17
+        # 19
         self.expect(lambda: regex.search('(foobar){i<=2,s<=2,e<=2}',
           'oobargoobaploowap').span(0, 1), repr(((5, 11), (5, 11))))
 
         # Find best whole word match for "foobar".
-        # 18..19
+        # 20..21
         self.expect(lambda: regex.search('\\b(foobar){e}\\b',
           'zfoobarz').span(0, 1), repr(((0, 8), (0, 8))))
         self.expect(lambda: regex.search('\\b(foobar){e}\\b',
           'boing zfoobarz goobar woop').span(0, 1), repr(((15, 21), (15, 21))))
 
         # Match whole string, allow only 1 error.
-        # 20..34
+        # 22..36
         self.expect(lambda: regex.search('^(foobar){e<=1}$', 'foobar').span(0,
           1), repr(((0, 6), (0, 6))))
         self.expect(lambda: regex.search('^(foobar){e<=1}$', 'xfoobar').span(0,
@@ -2762,13 +2765,13 @@ xyzabc
         # At most one insert, two deletes, and three substitutions.
         # Additionally, deletes cost two and substitutes one, and total
         # cost must be less than 4.
-        # 35
+        # 37
         self.expect(lambda: regex.search('(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
           '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), repr(((26,
           33), (26, 33))))
 
         # Partially fuzzy matches.
-        # 36..38
+        # 38..40
         self.expect(lambda: regex.search('foo(bar){e<=1}zap',
           'foobarzap').span(0, 1), repr(((0, 9), (3, 6))))
         self.expect(lambda: regex.search('foo(bar){e<=1}zap', 'fobarzap'),
@@ -2776,13 +2779,49 @@ xyzabc
         self.expect(lambda: regex.search('foo(bar){e<=1}zap',
           'foobrzap').span(0, 1), repr(((0, 8), (3, 5))))
 
-        # 39..40
+        # 41..42
         text = ('www.cnn.com 64.236.16.20\nwww.slashdot.org 66.35.250.150\n'
           'For useful information, use www.slashdot.org\nthis is demo data!\n')
         self.expect(lambda: regex.search(r'(?s)^.*(dot.org){e}.*$',
           text).span(0, 1), repr(((0, 120), (93, 100))))
         self.expect(lambda: regex.search(r'^.*(dot.org){e}.*$', text).span(0,
           1), repr(((0, 119), (24, 101))))
+
+        # 43..50
+        # Behaviour is unexpectd, but arguably not wrong. It first finds the
+        # best match, then the best in what follows, etc.
+        self.expect(lambda: regex.findall(r"\b\L<words>{e<=1}\b",
+          " book cot dog desk ", words="cat dog".split()),
+          repr(["dog"]))
+        self.expect(lambda: regex.findall(r"\b\L<words>{e<=1}\b",
+          " book dog cot desk ", words="cat dog".split()),
+          repr(["dog", "cot"]))
+        self.expect(lambda: regex.findall(r"(?r)\b\L<words>{e<=1}\b",
+          " book cot dog desk ", words="cat dog".split()),
+          repr(["dog", "cot"]))
+        self.expect(lambda: regex.findall(r"(?r)\b\L<words>{e<=1}\b",
+          " book dog cot desk ", words="cat dog".split()),
+          repr(["dog"]))
+        self.expect(lambda: regex.findall(ur"\b\L<words>{e<=1}\b",
+          u" book cot dog desk ", words=u"cat dog".split()),
+          repr([u"dog"]))
+        self.expect(lambda: regex.findall(ur"\b\L<words>{e<=1}\b",
+          u" book dog cot desk ", words=u"cat dog".split()),
+          repr([u"dog", u"cot"]))
+        self.expect(lambda: regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
+          u" book cot dog desk ", words=u"cat dog".split()),
+          repr([u"dog", u"cot"]))
+        self.expect(lambda: regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
+          u" book dog cot desk ", words=u"cat dog".split()),
+          repr([u"dog"]))
+
+        # 51..53
+        self.expect(lambda: regex.search(r"(\w+) (\1{e<=1})",
+          "foo fou").groups(), repr(("foo", "fou")))
+        self.expect(lambda: regex.search(r"(?r)(\2{e<=1}) (\w+)",
+          "foo fou").groups(), repr(("foo", "fou")))
+        self.expect(lambda: regex.search(ur"(\w+) (\1{e<=1})",
+          u"foo fou").groups(), repr((u"foo", u"fou")))
 
     def run(self):
         print "Performing tests"

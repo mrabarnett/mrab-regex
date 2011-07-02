@@ -29,9 +29,9 @@ __all__ = ["A", "ASCII", "D", "DEBUG", "I", "IGNORECASE", "L", "LOCALE", "M",
 
 # The regex exception.
 class error(Exception):
-    def __init__(self, message):
+    def __init__(self, message, set_error=False):
         Exception.__init__(self, message)
-        self.set_error = False
+        self.set_error = set_error
 
 # The exception for when a positional flag has been turned on in the old
 # behaviour.
@@ -1273,9 +1273,7 @@ def parse_set_item(source, info):
             source.pos = here
 
     if not ch:
-        e = error("bad set")
-        e.set_error = True
-        raise e
+        raise error("bad set", True)
 
     return char_literal(info, ord(ch))
 
@@ -1514,17 +1512,13 @@ class ZeroWidthBase(RegexBase):
     def __init__(self, positive=True):
         RegexBase.__init__(self)
         self.positive = bool(positive)
-        self.fuzzy = False
         self._key = self.__class__, self.positive
 
-    def make_fuzzy(self):
-        self.fuzzy = True
-
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         flags = 0
         if self.positive:
             flags |= POSITIVE_OP
-        if self.fuzzy:
+        if fuzzy:
             flags |= FUZZY_OP
         if reverse:
             flags |= REVERSE_OP
@@ -1558,16 +1552,9 @@ class Any(RegexBase):
     _opcode = {False: OP.ANY, True: OP.ANY_REV}
     _op_name = {False: "ANY", True: "ANY_REV"}
 
-    def __init__(self):
-        RegexBase.__init__(self)
-        self.fuzzy = False
-
-    def make_fuzzy(self):
-        self.fuzzy = True
-
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         flags = 0
-        if self.fuzzy:
+        if fuzzy:
             flags |= FUZZY_OP
         return [(self._opcode[reverse], flags)]
 
@@ -1593,9 +1580,6 @@ class Atomic(StructureBase):
     def fix_groups(self):
         self.subpattern.fix_groups()
 
-    def make_fuzzy(self):
-        self.subpattern.make_fuzzy()
-
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
 
@@ -1619,9 +1603,9 @@ class Atomic(StructureBase):
     def contains_group(self):
         return self.subpattern.contains_group()
 
-    def compile(self, reverse=False):
-        return [(OP.ATOMIC, )] + self.subpattern.compile(reverse) + [(OP.END,
-          )]
+    def compile(self, reverse=False, fuzzy=False):
+        return [(OP.ATOMIC, )] + self.subpattern.compile(reverse, fuzzy) + \
+          [(OP.END, )]
 
     def dump(self, indent=0, reverse=False):
         print "%sATOMIC" % (INDENT * indent)
@@ -1681,10 +1665,6 @@ class Branch(StructureBase):
         for b in self.branches:
             b.fix_groups()
 
-    def make_fuzzy(self):
-        for b in self.branches:
-            b.make_fuzzy()
-
     def optimise(self, info):
         # Flatten branches within branches.
         branches = Branch._flatten_branches(info, self.branches)
@@ -1720,10 +1700,10 @@ class Branch(StructureBase):
     def contains_group(self):
         return any(b.contains_group() for b in self.branches)
 
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         code = [(OP.BRANCH, )]
         for b in self.branches:
-            code.extend(b.compile(reverse))
+            code.extend(b.compile(reverse, fuzzy))
             code.append((OP.NEXT, ))
 
         code[-1] = (OP.END, )
@@ -1803,7 +1783,7 @@ class Branch(StructureBase):
     def _merge_common_prefixes(info, branches):
         # Branches with the same character prefix can be grouped together if
         # they are separated only by other branches with a character prefix.
-        char_type, fuzzy = None, False
+        char_type = None
         char_prefixes = defaultdict(list)
         order = {}
         new_branches = []
@@ -1812,19 +1792,19 @@ class Branch(StructureBase):
             if isinstance(first, Character) and first.positive:
                 if type(first) is not char_type:
                     if char_prefixes:
-                        Branch._flush_char_prefix(info, char_type, fuzzy,
+                        Branch._flush_char_prefix(info, char_type,
                           char_prefixes, order, new_branches)
                         char_prefixes.clear()
                         order.clear()
 
-                    char_type, fuzzy = type(first), first.fuzzy
+                    char_type = type(first)
 
                 char_prefixes[first.value].append(b)
                 order.setdefault(first.value, len(order))
             else:
                 if char_prefixes:
-                    Branch._flush_char_prefix(info, char_type, fuzzy,
-                      char_prefixes, order, new_branches)
+                    Branch._flush_char_prefix(info, char_type, char_prefixes,
+                      order, new_branches)
                     char_prefixes.clear()
                     order.clear()
 
@@ -1832,8 +1812,8 @@ class Branch(StructureBase):
                 new_branches.append(b)
 
         if char_prefixes:
-            Branch._flush_char_prefix(info, char_type, fuzzy, char_prefixes,
-              order, new_branches)
+            Branch._flush_char_prefix(info, char_type, char_prefixes, order,
+              new_branches)
 
         return new_branches
 
@@ -1841,34 +1821,30 @@ class Branch(StructureBase):
     def _reduce_to_set(info, branches):
         # Can the branches be reduced to a set?
         new_branches = []
-        members, fuzzy = set(), False
+        members = set()
         for b in branches:
             if isinstance(b, Character) and b.positive or isinstance(b,
               Property):
                 members.add(b)
-                fuzzy = b.fuzzy
             elif isinstance(b, SetUnion) and b.positive:
                 for m in b.items:
                     if isinstance(m, (Character, Property)):
                         members.add(m)
-                        fuzzy = b.fuzzy
                     else:
-                        Branch._flush_set_members(info, members, fuzzy,
-                          new_branches)
+                        Branch._flush_set_members(info, members, new_branches)
                         members.clear()
                         new_branches.append(b)
             else:
-                Branch._flush_set_members(info, members, fuzzy, new_branches)
+                Branch._flush_set_members(info, members, new_branches)
                 members.clear()
                 new_branches.append(b)
 
-        Branch._flush_set_members(info, members, fuzzy, new_branches)
+        Branch._flush_set_members(info, members, new_branches)
 
         return new_branches
 
     @staticmethod
-    def _flush_char_prefix(info, char_type, fuzzy, prefixed, order,
-       new_branches):
+    def _flush_char_prefix(info, char_type, prefixed, order, new_branches):
         for value, branches in sorted(prefixed.items(), key=lambda pair:
           order[pair[0]]):
             if len(branches) == 1:
@@ -1884,11 +1860,7 @@ class Branch(StructureBase):
                         subbranches.append(Sequence())
                         optional = True
 
-                c = char_type(info, value)
-                if fuzzy:
-                    c.make_fuzzy()
-
-                sequence = [c]
+                sequence = [char_type(info, value)]
                 if len(subbranches) > 1:
                     sequence.append(Branch(subbranches))
                 else:
@@ -1896,35 +1868,28 @@ class Branch(StructureBase):
                 new_branches.append(Sequence(sequence).optimise(info))
 
     @staticmethod
-    def _flush_set_members(info, members, fuzzy, new_branches):
+    def _flush_set_members(info, members, new_branches):
         if members:
-            s = SetUnion(list(members))
-            if fuzzy:
-                s.make_fuzzy()
-            new_branches.append(s.optimise(info))
+            new_branches.append(SetUnion(list(members)).optimise(info))
 
 class Character(RegexBase):
     _opcode = {False: OP.CHARACTER, True: OP.CHARACTER_REV}
     _op_name = {False: "CHARACTER", True: "CHARACTER_REV"}
     _pos_text = {False: "NON-MATCH", True: "MATCH"}
 
-    def __init__(self, info, ch, positive=True, zerowidth=False):
+    def __init__(self, info, value, positive=True, zerowidth=False):
         RegexBase.__init__(self)
-        self.info, self.value, self.positive, self.zerowidth = info, ch, \
+        self.info, self.value, self.positive, self.zerowidth = info, value, \
           bool(positive), bool(zerowidth)
-        self.fuzzy = False
         self._key = self.__class__, self.value, self.positive, self.zerowidth
 
-    def make_fuzzy(self):
-        self.fuzzy = True
-
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         flags = 0
         if self.positive:
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
-        if self.fuzzy:
+        if fuzzy:
             flags |= FUZZY_OP
         return [(self._opcode[reverse], flags, self.value)]
 
@@ -1950,9 +1915,7 @@ class CharacterIgn(Character):
         # Case-sensitive matches are faster, so convert to a case-sensitive
         # instance if the character is case-insensitive.
         if len(all_cases(info, self.value)) == 1:
-            c = Character(info, self.value, self.positive, self.zerowidth)
-            c.fuzzy = self.fuzzy
-            return c
+            return Character(info, self.value, self.positive, self.zerowidth)
 
         return self
 
@@ -1983,10 +1946,6 @@ class Conditional(StructureBase):
         self.yes_item.fix_groups()
         self.no_item.fix_groups()
 
-    def make_fuzzy(self):
-        self.yes_item.make_fuzzy()
-        self.no_item.make_fuzzy()
-
     def optimise(self, info):
         yes_item = self.yes_item.optimise(info)
         no_item = self.no_item.optimise(info)
@@ -2004,10 +1963,10 @@ class Conditional(StructureBase):
     def contains_group(self):
         return self.yes_item.contains_group() or self.no_item.contains_group()
 
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         code = [(OP.GROUP_EXISTS, self.group)]
-        code.extend(self.yes_item.compile(reverse))
-        add_code = self.no_item.compile(reverse)
+        code.extend(self.yes_item.compile(reverse, fuzzy))
+        add_code = self.no_item.compile(reverse, fuzzy)
         if add_code:
             code.append((OP.NEXT, ))
             code.extend(add_code)
@@ -2068,7 +2027,6 @@ class Fuzzy(StructureBase):
             constraints = {}
         self.subpattern = subpattern
         self.constraints = constraints
-        self.subpattern.make_fuzzy()
 
         # If an error type is mentioned in the cost equation, then its maximum
         # defaults to unlimited.
@@ -2102,10 +2060,14 @@ class Fuzzy(StructureBase):
     def fix_groups(self):
         self.subpattern.fix_groups()
 
+    def pack_characters(self, info):
+        self.subpattern = self.subpattern.pack_characters(info)
+        return self
+
     def contains_group(self):
         return self.subpattern.contains_group()
 
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         # The individual maxima.
         arguments = []
         for e in "dise":
@@ -2125,7 +2087,7 @@ class Fuzzy(StructureBase):
             flags |= REVERSE_OP
 
         return [(OP.FUZZY, flags) + tuple(arguments)] + \
-          self.subpattern.compile(reverse) + [(OP.END,)]
+          self.subpattern.compile(reverse, True) + [(OP.END,)]
 
     def dump(self, indent=0, reverse=False):
         print "%sFUZZY" % (INDENT * indent)
@@ -2144,21 +2106,11 @@ class Fuzzy(StructureBase):
 class Grapheme(RegexBase):
     _op_name = {False: "GRAPHEME", True: "GRAPHEME_REV"}
 
-    def __init__(self):
-        RegexBase.__init__(self)
-        self.fuzzy = False
-
-    def make_fuzzy(self):
-        self.fuzzy = True
-
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         # Match at least 1 character until a grapheme boundary is reached.
         # Note that this is the same whether matching forwards or backwards.
-        c = AnyAll()
-        if self.fuzzy:
-            c.make_fuzzy()
-
-        character_matcher = LazyRepeat(c, 1, None).compile(reverse)
+        character_matcher = LazyRepeat(AnyAll(), 1, None).compile(reverse,
+          fuzzy)
         boundary_matcher = [(OP.GRAPHEME_BOUNDARY, 1)]
 
         return character_matcher + boundary_matcher
@@ -2178,9 +2130,6 @@ class GreedyRepeat(StructureBase):
     def fix_groups(self):
         self.subpattern.fix_groups()
 
-    def make_fuzzy(self):
-        self.subpattern.make_fuzzy()
-
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
 
@@ -2196,15 +2145,15 @@ class GreedyRepeat(StructureBase):
     def contains_group(self):
         return self.subpattern.contains_group()
 
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         repeat = [self._opcode, self.min_count]
         if self.max_count is None:
             repeat.append(UNLIMITED)
         else:
             repeat.append(self.max_count)
 
-        return [tuple(repeat)] + self.subpattern.compile(reverse) + [(OP.END,
-          )]
+        return [tuple(repeat)] + self.subpattern.compile(reverse, fuzzy) + \
+          [(OP.END, )]
 
     def remove_captures(self):
         self.subpattern = self.subpattern.remove_captures()
@@ -2243,9 +2192,6 @@ class Group(StructureBase):
     def fix_groups(self):
         self.subpattern.fix_groups()
 
-    def make_fuzzy(self):
-        self.subpattern.make_fuzzy()
-
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
 
@@ -2261,9 +2207,9 @@ class Group(StructureBase):
     def contains_group(self):
         return True
 
-    def compile(self, reverse=False):
-        return [(OP.GROUP, self.group)] + self.subpattern.compile(reverse) + \
-          [(OP.END, )]
+    def compile(self, reverse=False, fuzzy=False):
+        return [(OP.GROUP, self.group)] + self.subpattern.compile(reverse,
+          fuzzy) + [(OP.END, )]
 
     def remove_captures(self):
         return self.subpattern.remove_captures()
@@ -2307,9 +2253,6 @@ class LookAround(StructureBase):
     def fix_groups(self):
         self.subpattern.fix_groups()
 
-    def make_fuzzy(self):
-        self.subpattern.make_fuzzy()
-
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
 
@@ -2325,7 +2268,7 @@ class LookAround(StructureBase):
     def contains_group(self):
         return self.subpattern.contains_group()
 
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         return [(OP.LOOKAROUND, int(self.positive), int(not self.behind))] + \
           self.subpattern.compile(self.behind) + [(OP.END, )]
 
@@ -2353,19 +2296,15 @@ class Property(RegexBase):
         RegexBase.__init__(self)
         self.value, self.positive, self.zerowidth = value, bool(positive), \
           bool(zerowidth)
-        self.fuzzy = False
         self._key = self.__class__, self.value, self.positive, self.zerowidth
 
-    def make_fuzzy(self):
-        self.fuzzy = True
-
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         flags = 0
         if self.positive:
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
-        if self.fuzzy:
+        if fuzzy:
             flags |= FUZZY_OP
         return [(self._opcode[reverse], flags, self.value)]
 
@@ -2426,9 +2365,6 @@ class RefGroup(RegexBase):
         self.info, self.group = info, group
         self._key = self.__class__, self.group
 
-    def make_fuzzy(self):
-        raise error("group references not compatible with fuzzy matching")
-
     def fix_groups(self):
         try:
             self.group = int(self.group)
@@ -2443,8 +2379,11 @@ class RefGroup(RegexBase):
 
         self._key = self.__class__, self.group
 
-    def compile(self, reverse=False):
-        return [(self._opcode[reverse], self.group)]
+    def compile(self, reverse=False, fuzzy=False):
+        flags = 0
+        if fuzzy:
+            flags |= FUZZY_OP
+        return [(self._opcode[reverse], flags, self.group)]
 
     def remove_captures(self):
         raise error("group reference not allowed")
@@ -2455,6 +2394,64 @@ class RefGroup(RegexBase):
 class RefGroupIgn(RefGroup):
     _opcode = {False: OP.REF_GROUP_IGN, True: OP.REF_GROUP_IGN_REV}
     _op_name = {False: "REF_GROUP_IGN", True: "REF_GROUP_IGN_REV"}
+
+class SearchAnchor(ZeroWidthBase):
+    _opcode = OP.SEARCH_ANCHOR
+    _op_name = "SEARCH_ANCHOR"
+
+class Info(object):
+    "Info about the regular expression."
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+
+    def __init__(self, flags=0, char_type=None, nested_sets=True, kwargs={}):
+        self.global_flags = flags & GLOBAL_FLAGS
+        self.scoped_flags = flags & SCOPED_FLAGS
+        self.all_flags = self.global_flags | self.scoped_flags
+        if not (self.global_flags & NEW):
+            self.global_flags = self.all_flags
+
+        self.kwargs = kwargs
+
+        self.group_count = 0
+        self.group_index = {}
+        self.group_name = {}
+        self.used_groups = set()
+        self.group_state = {}
+        self.char_type = char_type
+        self.named_lists = {}
+        self.nested_sets = nested_sets
+
+    def new_group(self, name=None):
+        group = self.group_index.get(name)
+        if group is not None:
+            if group in self.used_groups:
+                raise error("duplicate group")
+        else:
+            while True:
+                self.group_count += 1
+                if name is None or self.group_count not in self.group_name:
+                    break
+
+            group = self.group_count
+            if name:
+                self.group_index[name] = group
+                self.group_name[group] = name
+
+        self.used_groups.add(group)
+        self.group_state[group] = self.OPEN
+        return group
+
+    def close_group(self, group):
+        self.group_state[group] = self.CLOSED
+
+    def is_open_group(self, name):
+        if name.isdigit():
+            group = int(name)
+        else:
+            group = self.group_index.get(name)
+
+        return self.group_state.get(group) == self.OPEN
 
 class Sequence(StructureBase):
     def __init__(self, sequence=None):
@@ -2467,10 +2464,6 @@ class Sequence(StructureBase):
     def fix_groups(self):
         for s in self.sequence:
             s.fix_groups()
-
-    def make_fuzzy(self):
-        for s in self.sequence:
-            s.make_fuzzy()
 
     def optimise(self, info):
         # Flatten the sequences.
@@ -2491,7 +2484,7 @@ class Sequence(StructureBase):
         sequence = []
         char_type, characters = Character, []
         for s in self.sequence:
-            if type(s) is char_type and s.positive and not s.fuzzy:
+            if type(s) is char_type and s.positive:
                 characters.append(s.value)
             else:
                 if characters:
@@ -2499,7 +2492,7 @@ class Sequence(StructureBase):
                       sequence)
                     characters = []
 
-                if type(s) in ALL_CHAR_TYPES and s.positive and not s.fuzzy:
+                if type(s) in ALL_CHAR_TYPES and s.positive:
                     char_type = type(s)
                     characters.append(s.value)
                 else:
@@ -2542,7 +2535,7 @@ class Sequence(StructureBase):
 
         return Sequence(self.sequence[ : -1])
 
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         if reverse:
             seq = list(reversed(self.sequence))
         else:
@@ -2550,7 +2543,7 @@ class Sequence(StructureBase):
 
         code = []
         for s in seq:
-            code.extend(s.compile(reverse))
+            code.extend(s.compile(reverse, fuzzy))
 
         return code
 
@@ -2600,11 +2593,7 @@ class SetBase(RegexBase):
         RegexBase.__init__(self)
         items = tuple(items)
         self.items, self.positive, self.zerowidth = items, positive, zerowidth
-        self.fuzzy = False
         self._key = self.__class__, self.items, self.positive, self.zerowidth
-
-    def make_fuzzy(self):
-        self.fuzzy = True
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s %s" % (INDENT * indent, self._op_name[reverse],
@@ -2612,13 +2601,13 @@ class SetBase(RegexBase):
         for i in self.items:
             i.dump(indent + 1)
 
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         flags = 0
         if self.positive:
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
-        if self.fuzzy:
+        if fuzzy:
             flags |= FUZZY_OP
         code = [(self._opcode[reverse], flags)]
         for m in self.items:
@@ -2636,11 +2625,7 @@ class SetBase(RegexBase):
           or zerowidth)
 
     def _rebuild(self, items):
-        s = type(self)(items, self.positive, self.zerowidth)
-        if self.fuzzy:
-            s.make_fuzzy()
-
-        return s
+        return type(self)(items, self.positive, self.zerowidth)
 
     BITS_PER_INDEX = 16
     INDEXES_PER_CODE = BITS_PER_CODE // BITS_PER_INDEX
@@ -2660,7 +2645,7 @@ class SetBase(RegexBase):
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
-        if self.fuzzy:
+        if fuzzy:
             flags |= FUZZY_OP
 
         if len(bitset_dict) > 1:
@@ -2784,7 +2769,7 @@ class SetUnion(SetBase):
 
         return self._rebuild(items)
 
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         characters, others = set(), set()
         for m in self.items:
             if type(m) is Character:
@@ -2801,8 +2786,7 @@ class SetUnion(SetBase):
 
         # If there are only characters then compile to a bitset.
         if not others:
-            return self._make_bitset(characters, self.positive, reverse,
-              self.fuzzy)
+            return self._make_bitset(characters, self.positive, reverse, fuzzy)
 
         # Compile a compound set.
         flags = 0
@@ -2810,12 +2794,11 @@ class SetUnion(SetBase):
             flags |= POSITIVE_OP
         if self.zerowidth:
             flags |= ZEROWIDTH_OP
-        if self.fuzzy:
+        if fuzzy:
             flags |= FUZZY_OP
         code = [(self._opcode[reverse], flags)]
         if characters:
-            code.extend(self._make_bitset(characters, True, False,
-              self.fuzzy))
+            code.extend(self._make_bitset(characters, True, False, False))
 
         for m in others:
             code.extend(m.compile())
@@ -2850,8 +2833,11 @@ class String(RegexBase):
         self.info, self.characters = info, characters
         self._key = self.__class__, self.characters
 
-    def compile(self, reverse=False):
-        return [(self._opcode[reverse], len(self.characters)) +
+    def compile(self, reverse=False, fuzzy=False):
+        flags = 0
+        if fuzzy:
+            flags |= FUZZY_OP
+        return [(self._opcode[reverse], flags, len(self.characters)) +
           tuple(self.characters)]
 
     def dump(self, indent=0, reverse=False):
@@ -2881,6 +2867,9 @@ class StringSet(RegexBase):
     _opcode = {False: OP.STRING_SET, True: OP.STRING_SET_REV}
     _op_name = {False: "STRING_SET", True: "STRING_SET_REV"}
 
+    _char_type = Character
+    _str_type = String
+
     def __init__(self, info, name):
         self.info, self.name = info, name
         self._key = self.__class__, self.name
@@ -2889,22 +2878,109 @@ class StringSet(RegexBase):
         if self.set_key not in info.named_lists:
             info.named_lists[self.set_key] = len(info.named_lists)
 
-    def make_fuzzy(self):
-        raise error("named lists not compatible with fuzzy matching")
-
-    def compile(self, reverse=False):
+    def compile(self, reverse=False, fuzzy=False):
         index = self.info.named_lists[self.set_key]
         items = self.info.kwargs[self.name]
-        min_len = min(len(i) for i in items)
-        max_len = max(len(i) for i in items)
-        return [(self._opcode[reverse], index, min_len, max_len)]
+        if fuzzy:
+            strings = []
+            for i in items:
+                strings.append(tuple(ord(c) for c in i))
+            s = self._build_string_set(strings, self._char_type,
+              self._str_type)
+            self._flatten(s, String)
+            return s.compile(reverse, fuzzy)
+        else:
+            min_len = min(len(i) for i in items)
+            max_len = max(len(i) for i in items)
+            return [(self._opcode[reverse], index, min_len, max_len)]
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s" % (INDENT * indent, self._op_name[reverse], self.name)
 
+    def _build_string_set(self, strings, char_type, str_type):
+        # Divide the strings according to their first character.
+        optional = False
+        prefixed = defaultdict(set)
+        for s in strings:
+            try:
+                prefixed[s[0]].add(s)
+            except IndexError:
+                optional = True
+
+        # Collect lone characters and lone strings.
+        char_set = set()
+        string_set = set()
+        others = {}
+        for c, subset in prefixed.items():
+            if len(subset) == 1:
+                s = list(subset)[0]
+                if len(s) == 1:
+                    # It's a lone character.
+                    char_set.add(s[0])
+                else:
+                    # It's a lone string.
+                    string_set.add(s)
+            else:
+                # The 'normal' case.
+                others[c] = self._build_string_set([s[1 : ] for s in subset],
+                  char_type, str_type)
+
+        branches = []
+
+        # Add the character set for the lone characters.
+        if char_set:
+            if len(char_set) == 1:
+                branches.append(char_type(self.info, list(char_set)[0]))
+            else:
+                branches.append(SetUnion([char_type(self.info, c) for c in
+                  char_set]))
+
+        # Add the string subsets, complete with their character prefixes.
+        for c, s in others.items():
+            s = Sequence([char_type(self.info, c), s])
+            branches.append(s)
+
+        # Add the lone strings.
+        for s in string_set:
+            branches.append(str_type(self.info, list(s)))
+
+        # Is this string set optional?
+        if optional:
+            branches.append(Sequence())
+
+        if not branches:
+            return Sequence()
+
+        if len(branches) == 1:
+            return branches[0]
+
+        return Branch(branches)
+
+    def _flatten(self, s, str_type):
+        if isinstance(s, Branch):
+            for b in s.branches:
+                self._flatten(b, str_type)
+        elif isinstance(s, Sequence) and s.sequence:
+            seq = s.sequence
+
+            while isinstance(seq[-1], Sequence):
+                seq[-1 : ] = seq[-1].sequence
+
+            n = 0
+            while n < len(seq) and isinstance(seq[n], Character):
+                n += 1
+
+            if n > 1:
+                seq[ : n] = [str_type(self.info, [c.value for c in seq[ : n]])]
+
+            self._flatten(seq[-1], str_type)
+
 class StringSetIgn(StringSet):
     _opcode = {False: OP.STRING_SET_IGN, True: OP.STRING_SET_IGN_REV}
     _op_name = {False: "STRING_SET_IGN", True: "STRING_SET_IGN_REV"}
+
+    _char_type = CharacterIgn
+    _str_type = StringIgn
 
     def __init__(self, info, name):
         self.info, self.name = info, name
@@ -2913,64 +2989,6 @@ class StringSetIgn(StringSet):
         self.set_key = (name, True)
         if self.set_key not in info.named_lists:
             info.named_lists[self.set_key] = len(info.named_lists)
-
-class SearchAnchor(ZeroWidthBase):
-    _opcode = OP.SEARCH_ANCHOR
-    _op_name = "SEARCH_ANCHOR"
-
-class Info(object):
-    "Info about the regular expression."
-    OPEN = "OPEN"
-    CLOSED = "CLOSED"
-
-    def __init__(self, flags=0, char_type=None, nested_sets=True, kwargs={}):
-        self.global_flags = flags & GLOBAL_FLAGS
-        self.scoped_flags = flags & SCOPED_FLAGS
-        self.all_flags = self.global_flags | self.scoped_flags
-        if not (self.global_flags & NEW):
-            self.global_flags = self.all_flags
-
-        self.kwargs = kwargs
-
-        self.group_count = 0
-        self.group_index = {}
-        self.group_name = {}
-        self.used_groups = set()
-        self.group_state = {}
-        self.char_type = char_type
-        self.named_lists = {}
-        self.nested_sets = nested_sets
-
-    def new_group(self, name=None):
-        group = self.group_index.get(name)
-        if group is not None:
-            if group in self.used_groups:
-                raise error("duplicate group")
-        else:
-            while True:
-                self.group_count += 1
-                if name is None or self.group_count not in self.group_name:
-                    break
-
-            group = self.group_count
-            if name:
-                self.group_index[name] = group
-                self.group_name[group] = name
-
-        self.used_groups.add(group)
-        self.group_state[group] = self.OPEN
-        return group
-
-    def close_group(self, group):
-        self.group_state[group] = self.CLOSED
-
-    def is_open_group(self, name):
-        if name.isdigit():
-            group = int(name)
-        else:
-            group = self.group_index.get(name)
-
-        return self.group_state.get(group) == self.OPEN
 
 class Source(object):
     "Scanner for the regular expression source string."

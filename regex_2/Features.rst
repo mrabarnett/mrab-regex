@@ -57,7 +57,7 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
-* Approximate "fuzzy" matching (Hg issue 12) (experimental)
+* Approximate "fuzzy" matching (Hg issue 12)
 
     Regex usually attempts an exact match, but sometimes an approximate, or "fuzzy", match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.
 
@@ -99,11 +99,11 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     ``{s<=3}`` permit at most 3 substitutions, but no other types
 
-    ``{i<=1,s<=2}`` permit at most 1 insertion and 2 substitutions, but no deletions
+    ``{i<=1,s<=2}`` permit at most 1 insertion and at most 2 substitutions, but no deletions
 
     ``{e<=3}`` permit at most 3 errors
 
-    ``{i<=2,d<=2,e<=3}`` permit at most 2 insertions, 2 deletions, at most 3 errors in total, but no substitutions
+    ``{i<=2,d<=2,e<=3}`` permit at most 2 insertions, at most 2 deletions, at most 3 errors in total, but no substitutions
 
     It's also possible to state the costs of each type of error and the maximum permitted total cost.
 
@@ -118,8 +118,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
     ``{e<=3}`` permit up to 3 errors
 
     ``{e<4}`` permit fewer than 4 errors
-
-   **Restriction**: in this release, group references and named lists can't be fuzzy.
 
 * Named lists (Hg issue 11)
 
