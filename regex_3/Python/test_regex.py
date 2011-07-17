@@ -296,6 +296,14 @@ class Test:
           "xaxbxc")], ascii(['c', 'x', None, 'b', 'x', None, 'a', 'x', None,
           '']))
 
+        # 17..19
+        self.expect(lambda: regex.split(r"(?n)\b", "a b c"), ascii(['', 'a',
+          ' ', 'b', ' ', 'c', '']))
+        self.expect(lambda: regex.split(r"(?n)\m", "a b c"), ascii(['', 'a ',
+          'b ', 'c']))
+        self.expect(lambda: regex.split(r"(?n)\M", "a b c"), ascii(['a', ' b',
+          ' c', '']))
+
     def test_qualified_re_split(self):
         # 1..4
         self.expect(lambda: regex.split(":", ":a:b::c", 2), ascii(['', 'a',
@@ -1840,30 +1848,36 @@ class Test:
     def test_various(self):
         tests = [
             # Test ?P< and ?P= extensions.
+            # 1..4
             ('(?P<foo_123', '', '', self.MISSING_GT),      # Unterminated group identifier.
             ('(?P<1>a)', '', '', self.BAD_GROUP_NAME),     # Begins with a digit.
             ('(?P<!>a)', '', '', self.BAD_GROUP_NAME),     # Begins with an illegal char.
             ('(?P<foo!>a)', '', '', self.MISSING_GT),      # Begins with an illegal char.
 
             # Same tests, for the ?P= form.
+            # 5..8
             ('(?P<foo_123>a)(?P=foo_123', 'aa', '', self.MISSING_RPAREN),
             ('(?P<foo_123>a)(?P=1)', 'aa', '', self.BAD_GROUP_NAME),
             ('(?P<foo_123>a)(?P=!)', 'aa', '', self.BAD_GROUP_NAME),
             ('(?P<foo_123>a)(?P=foo_124)', 'aa', '', self.UNKNOWN_GROUP),  # Backref to undefined group.
 
+            # 9..10
             ('(?P<foo_123>a)', 'a', '1', ascii('a')),
             ('(?P<foo_123>a)(?P=foo_123)', 'aa', '1', ascii('a')),
 
             # Mal-formed \g in pattern treated as literal for compatibility.
+            # 11..14
             (r'(?<foo_123>a)\g<foo_123', 'aa', '', ascii(None)),
             (r'(?<foo_123>a)\g<1>', 'aa', '1', ascii('a')),
             (r'(?<foo_123>a)\g<!>', 'aa', '', ascii(None)),
             (r'(?<foo_123>a)\g<foo_124>', 'aa', '', self.UNKNOWN_GROUP),  # Backref to undefined group.
 
+            # 15..16
             ('(?<foo_123>a)', 'a', '1', ascii('a')),
             (r'(?<foo_123>a)\g<foo_123>', 'aa', '1', ascii('a')),
 
             # Test octal escapes.
+            # 17..21
             ('\\1', 'a', '', self.UNKNOWN_GROUP),    # Backreference.
             ('[\\1]', '\1', '0', "'\\x01'"),  # Character.
             ('\\09', chr(0) + '9', '0', ascii(chr(0) + '9')),
@@ -1872,24 +1886,28 @@ class Test:
               '0,11', ascii(('abcdefghijklk9', 'k'))),
 
             # Test \0 is handled everywhere.
+            # 22..25
             (r'\0', '\0', '0', ascii('\0')),
             (r'[\0a]', '\0', '0', ascii('\0')),
             (r'[a\0]', '\0', '0', ascii('\0')),
             (r'[^a\0]', '\0', '', ascii(None)),
 
             # Test various letter escapes.
+            # 26..29
             (r'\a[\b]\f\n\r\t\v', '\a\b\f\n\r\t\v', '0',
               ascii('\a\b\f\n\r\t\v')),
             (r'[\a][\b][\f][\n][\r][\t][\v]', '\a\b\f\n\r\t\v', '0',
               ascii('\a\b\f\n\r\t\v')),
-            (r'\c\e\g\h\i\j\k\m\o\p\q\y\z', 'ceghijkmopqyz', '0',
-              ascii('ceghijkmopqyz')),
+            (r'\c\e\g\h\i\j\k\o\p\q\y\z', 'ceghijkopqyz', '0',
+              ascii('ceghijkopqyz')),
             (r'\xff', '\377', '0', ascii(chr(255))),
             # New \x semantics.
+            # 30..32
             (r'\x00ffffffffffffff', '\377', '', ascii(None)),
             (r'\x00f', '\017', '', ascii(None)),
             (r'\x00fe', '\376', '', ascii(None)),
 
+            # 33..37
             (r'\x00ff', '\377', '', ascii(None)),
             (r'\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', ascii('\t\n\v\r\f\ag')),
             ('\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', ascii('\t\n\v\r\f\ag')),
@@ -1898,17 +1916,20 @@ class Test:
             (r'[\t][\n][\v][\r][\f][\b]', '\t\n\v\r\f\b', '0',
               ascii('\t\n\v\r\f\b')),
 
+            # 38
             (r"^\w+=(\\[\000-\277]|[^\n\\])*",
               "SRC=eval.c g.c blah blah blah \\\\\n\tapes.c", '0',
               ascii("SRC=eval.c g.c blah blah blah \\\\")),
 
             # Test that . only matches \n in DOTALL mode.
+            # 39..43
             ('a.b', 'acb', '0', ascii('acb')),
             ('a.b', 'a\nb', '', ascii(None)),
             ('a.*b', 'acc\nccb', '', ascii(None)),
             ('a.{4,5}b', 'acc\nccb', '', ascii(None)),
             ('a.b', 'a\rb', '0', ascii('a\rb')),
             # The new behaviour is that the inline flag affects only what follows.
+            # 44..50
             ('a.b(?s)', 'a\nb', '0', ascii('a\nb')),
             ('a.b(?ns)', 'a\nb', '', ascii(None)),
             ('(?s)a.b', 'a\nb', '0', ascii('a\nb')),
@@ -1917,6 +1938,7 @@ class Test:
             ('(?s)a.*b', 'acc\nccb', '0', ascii('acc\nccb')),
             ('(?s)a.{4,5}b', 'acc\nccb', '0', ascii('acc\nccb')),
 
+            # 51..60
             (')', '', '', self.TRAILING_CHARS),           # Unmatched right bracket.
             ('', '', '0', "''"),    # Empty pattern.
             ('abc', 'abc', '0', ascii('abc')),
@@ -1927,6 +1949,8 @@ class Test:
             ('abc', 'ababc', '0', ascii('abc')),
             ('ab*c', 'abc', '0', ascii('abc')),
             ('ab*bc', 'abc', '0', ascii('abc')),
+
+            # 61..70
             ('ab*bc', 'abbc', '0', ascii('abbc')),
             ('ab*bc', 'abbbbc', '0', ascii('abbbbc')),
             ('ab+bc', 'abbc', '0', ascii('abbc')),
@@ -1937,6 +1961,8 @@ class Test:
             ('ab?bc', 'abc', '0', ascii('abc')),
             ('ab?bc', 'abbbbc', '', ascii(None)),
             ('ab?c', 'abc', '0', ascii('abc')),
+
+            # 71..80
             ('^abc$', 'abc', '0', ascii('abc')),
             ('^abc$', 'abcc', '', ascii(None)),
             ('^abc', 'abcc', '0', ascii('abc')),
@@ -1947,6 +1973,8 @@ class Test:
             ('a.c', 'abc', '0', ascii('abc')),
             ('a.c', 'axc', '0', ascii('axc')),
             ('a.*c', 'axyzc', '0', ascii('axyzc')),
+
+            # 81..90
             ('a.*c', 'axyzd', '', ascii(None)),
             ('a[bc]d', 'abc', '', ascii(None)),
             ('a[bc]d', 'abd', '0', ascii('abd')),
@@ -1957,6 +1985,8 @@ class Test:
             ('a[\\-b]', 'a-', '0', ascii('a-')),
             ('a[b-]', 'a-', '0', ascii('a-')),
             ('a[]b', '-', '', self.BAD_SET),
+
+            # 91..100
             ('a[', '-', '', self.BAD_SET),
             ('a\\', '-', '', self.BAD_ESCAPE),
             ('abc)', '-', '', self.TRAILING_CHARS),
@@ -1967,6 +1997,8 @@ class Test:
             ('a[^bc]d', 'aed', '0', ascii('aed')),
             ('a[^bc]d', 'abd', '', ascii(None)),
             ('a[^-b]c', 'adc', '0', ascii('adc')),
+
+            # 101..110
             ('a[^-b]c', 'a-c', '', ascii(None)),
             ('a[^]b]c', 'a]c', '', ascii(None)),
             ('a[^]b]c', 'adc', '0', ascii('adc')),
@@ -1977,6 +2009,8 @@ class Test:
             ('\\by\\b', 'yz', '', ascii(None)),
             ('\\by\\b', 'xyz', '', ascii(None)),
             ('x\\b', 'xyz', '', ascii(None)),
+
+            # 111..120
             ('x\\B', 'xyz', '0', ascii('x')),
             ('\\Bz', 'xyz', '0', ascii('z')),
             ('z\\B', 'xyz', '', ascii(None)),
@@ -1987,6 +2021,8 @@ class Test:
             ('\\By\\B', 'xy', '', ascii(None)),
             ('\\By\\B', 'yz', '', ascii(None)),
             ('\\By\\b', 'xy', '0', ascii('y')),
+
+            # 121..130
             ('\\by\\B', 'yz', '0', ascii('y')),
             ('\\By\\B', 'xyz', '0', ascii('y')),
             ('ab|cd', 'abc', '0', ascii('ab')),
@@ -1997,6 +2033,8 @@ class Test:
             ('a\\(*b', 'ab', '0', ascii('ab')),
             ('a\\(*b', 'a((b', '0', ascii('a((b')),
             ('a\\\\b', 'a\\b', '0', ascii('a\\b')),
+
+            # 131..140
             ('((a))', 'abc', '0,1,2', ascii(('a', 'a', 'a'))),
             ('(a)b(c)', 'abc', '0,1,2', ascii(('abc', 'a', 'c'))),
             ('a+b+c', 'aabbabc', '0', ascii('abc')),
@@ -2007,6 +2045,8 @@ class Test:
             ('[^ab]*', 'cde', '0', ascii('cde')),
             ('abc', '', '', ascii(None)),
             ('a*', '', '0', ascii('')),
+
+            # 141..150
             ('a|b|c|d|e', 'e', '0', ascii('e')),
             ('(a|b|c|d|e)f', 'ef', '0,1', ascii(('ef', 'e'))),
             ('abcd*efg', 'abcdefg', '0', ascii('abcdefg')),
@@ -2017,6 +2057,8 @@ class Test:
             ('^(ab|cd)e', 'abcde', '', ascii(None)),
             ('(abc|)ef', 'abcdef', '0,1', ascii(('ef', ''))),
             ('(a|b)c*d', 'abcd', '0,1', ascii(('bcd', 'b'))),
+
+            # 151..160
             ('(ab|ab*)bc', 'abc', '0,1', ascii(('abc', 'a'))),
             ('a([bc]*)c*', 'abc', '0,1', ascii(('abc', 'bc'))),
             ('a([bc]*)(c*d)', 'abcd', '0,1,2', ascii(('abcd', 'bc', 'd'))),
@@ -2027,6 +2069,8 @@ class Test:
             ('(ab|a)b*c', 'abc', '0,1', ascii(('abc', 'ab'))),
             ('((a)(b)c)(d)', 'abcd', '1,2,3,4', ascii(('abc', 'a', 'b', 'd'))),
             ('[a-zA-Z_][a-zA-Z0-9_]*', 'alpha', '0', ascii('alpha')),
+
+            # 161..170
             ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', ascii(('bh', None))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effgz', '0,1,2', ascii(('effgz',
               'effgz', None))),
@@ -2040,6 +2084,8 @@ class Test:
             ('multiple words', 'multiple words, yeah', '0',
               ascii('multiple words')),
             ('(.*)c(.*)', 'abcde', '0,1,2', ascii(('abcde', 'ab', 'de'))),
+
+            # 171..180
             ('\\((.*), (.*)\\)', '(a, b)', '2,1', ascii(('b', 'a'))),
             ('[k]', 'ab', '', ascii(None)),
             ('a[-]?c', 'ac', '0', ascii('ac')),
@@ -2050,6 +2096,8 @@ class Test:
             ('^(a+).\\1$', 'aaaa', '', ascii(None)),
             ('(abc)\\1', 'abcabc', '0,1', ascii(('abcabc', 'abc'))),
             ('([a-c]+)\\1', 'abcabc', '0,1', ascii(('abcabc', 'abc'))),
+
+            # 181..190
             ('(a)\\1', 'aa', '0,1', ascii(('aa', 'a'))),
             ('(a+)\\1', 'aa', '0,1', ascii(('aa', 'a'))),
             ('(a+)+\\1', 'aa', '0,1', ascii(('aa', 'a'))),
@@ -2060,6 +2108,8 @@ class Test:
             ('(a+)a\\1$', 'aaa', '0,1', ascii(('aaa', 'a'))),
             ('([abc]*)\\1', 'abcabc', '0,1', ascii(('abcabc', 'abc'))),
             ('(a)(b)c|ab', 'ab', '0,1,2', ascii(('ab', None, None))),
+
+            # 191..200
             ('(a)+x', 'aaax', '0,1', ascii(('aaax', 'a'))),
             ('([ac])+x', 'aacx', '0,1', ascii(('aacx', 'c'))),
             ('([^/]*/)*sub1/', 'd:msgs/tdir/sub1/trial/away.cpp', '0,1',
@@ -2075,13 +2125,14 @@ class Test:
             ('(a)+b|aac', 'aac', '0,1', ascii(('aac', None))),
 
             # Test symbolic groups.
-
+            # 201..204
             ('(?P<i d>aaa)a', 'aaaa', '', self.MISSING_GT),
             ('(?P<id>aaa)a', 'aaaa', '0,id', ascii(('aaaa', 'aaa'))),
             ('(?P<id>aa)(?P=id)', 'aaaa', '0,id', ascii(('aaaa', 'aa'))),
             ('(?P<id>aa)(?P=xd)', 'aaaa', '', self.UNKNOWN_GROUP),
 
             # Character properties.
+            # 205..214
             (r"\g", "g", '0', ascii('g')),
             (r"\g<1>", "g", '', self.UNKNOWN_GROUP),
             (r"(.)\g<1>", "gg", '0', ascii('gg')),
@@ -2094,13 +2145,15 @@ class Test:
             (r"\P{Lu}", "p", '0', ascii('p')),
 
             # All tests from Perl.
-
+            # 215..220
             ('abc', 'abc', '0', ascii('abc')),
             ('abc', 'xbc', '', ascii(None)),
             ('abc', 'axc', '', ascii(None)),
             ('abc', 'abx', '', ascii(None)),
             ('abc', 'xabcy', '0', ascii('abc')),
             ('abc', 'ababc', '0', ascii('abc')),
+
+            # 221..230
             ('ab*c', 'abc', '0', ascii('abc')),
             ('ab*bc', 'abc', '0', ascii('abc')),
             ('ab*bc', 'abbc', '0', ascii('abbc')),
@@ -2111,6 +2164,8 @@ class Test:
             ('ab+bc', 'abq', '', ascii(None)),
             ('ab{1,}bc', 'abq', '', ascii(None)),
             ('ab+bc', 'abbbbc', '0', ascii('abbbbc')),
+
+            # 231..240
             ('ab{1,}bc', 'abbbbc', '0', ascii('abbbbc')),
             ('ab{1,3}bc', 'abbbbc', '0', ascii('abbbbc')),
             ('ab{3,4}bc', 'abbbbc', '0', ascii('abbbbc')),
@@ -2121,6 +2176,8 @@ class Test:
             ('ab?bc', 'abbbbc', '', ascii(None)),
             ('ab?c', 'abc', '0', ascii('abc')),
             ('ab{0,1}c', 'abc', '0', ascii('abc')),
+
+            # 241..250
             ('^abc$', 'abc', '0', ascii('abc')),
             ('^abc$', 'abcc', '', ascii(None)),
             ('^abc', 'abcc', '0', ascii('abc')),
@@ -2131,6 +2188,8 @@ class Test:
             ('a.c', 'abc', '0', ascii('abc')),
             ('a.c', 'axc', '0', ascii('axc')),
             ('a.*c', 'axyzc', '0', ascii('axyzc')),
+
+            # 251..260
             ('a.*c', 'axyzd', '', ascii(None)),
             ('a[bc]d', 'abc', '', ascii(None)),
             ('a[bc]d', 'abd', '0', ascii('abd')),
@@ -2141,6 +2200,8 @@ class Test:
             ('a[b-]', 'a-', '0', ascii('a-')),
             ('a[b-a]', '-', '', self.BAD_CHAR_RANGE),
             ('a[]b', '-', '', self.BAD_SET),
+
+            # 261..270
             ('a[', '-', '', self.BAD_SET),
             ('a]', 'a]', '0', ascii('a]')),
             ('a[]]b', 'a]b', '0', ascii('a]b')),
@@ -2151,6 +2212,8 @@ class Test:
             ('a[^]b]c', 'a]c', '', ascii(None)),
             ('a[^]b]c', 'adc', '0', ascii('adc')),
             ('ab|cd', 'abc', '0', ascii('ab')),
+
+            # 271..280
             ('ab|cd', 'abcd', '0', ascii('ab')),
             ('()ef', 'def', '0,1', ascii(('ef', ''))),
             ('*a', '-', '', self.NOTHING_TO_REPEAT),
@@ -2161,6 +2224,8 @@ class Test:
             ('a\\(*b', 'ab', '0', ascii('ab')),
             ('a\\(*b', 'a((b', '0', ascii('a((b')),
             ('a\\\\b', 'a\\b', '0', ascii('a\\b')),
+
+            # 281..290
             ('abc)', '-', '', self.TRAILING_CHARS),
             ('(abc', '-', '', self.MISSING_RPAREN),
             ('((a))', 'abc', '0,1,2', ascii(('a', 'a', 'a'))),
@@ -2171,6 +2236,8 @@ class Test:
             ('a.+?c', 'abcabc', '0', ascii('abc')),
             ('(a+|b)*', 'ab', '0,1', ascii(('ab', 'b'))),
             ('(a+|b){0,}', 'ab', '0,1', ascii(('ab', 'b'))),
+
+            # 291..300
             ('(a+|b)+', 'ab', '0,1', ascii(('ab', 'b'))),
             ('(a+|b){1,}', 'ab', '0,1', ascii(('ab', 'b'))),
             ('(a+|b)?', 'ab', '0,1', ascii(('a', 'a'))),
@@ -2181,6 +2248,8 @@ class Test:
             ('a*', '', '0', ascii('')),
             ('([abc])*d', 'abbbcd', '0,1', ascii(('abbbcd', 'c'))),
             ('([abc])*bcd', 'abcd', '0,1', ascii(('abcd', 'a'))),
+
+            # 301..310
             ('a|b|c|d|e', 'e', '0', ascii('e')),
             ('(a|b|c|d|e)f', 'ef', '0,1', ascii(('ef', 'e'))),
             ('abcd*efg', 'abcdefg', '0', ascii('abcdefg')),
@@ -2191,6 +2260,8 @@ class Test:
             ('^(ab|cd)e', 'abcde', '', ascii(None)),
             ('(abc|)ef', 'abcdef', '0,1', ascii(('ef', ''))),
             ('(a|b)c*d', 'abcd', '0,1', ascii(('bcd', 'b'))),
+
+            # 311..320
             ('(ab|ab*)bc', 'abc', '0,1', ascii(('abc', 'a'))),
             ('a([bc]*)c*', 'abc', '0,1', ascii(('abc', 'bc'))),
             ('a([bc]*)(c*d)', 'abcd', '0,1,2', ascii(('abcd', 'bc', 'd'))),
@@ -2201,6 +2272,8 @@ class Test:
             ('(ab|a)b*c', 'abc', '0,1', ascii(('abc', 'ab'))),
             ('((a)(b)c)(d)', 'abcd', '1,2,3,4', ascii(('abc', 'a', 'b', 'd'))),
             ('[a-zA-Z_][a-zA-Z0-9_]*', 'alpha', '0', ascii('alpha')),
+
+            # 321..328
             ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', ascii(('bh', None))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effgz', '0,1,2', ascii(('effgz',
               'effgz', None))),
@@ -2211,11 +2284,15 @@ class Test:
               'effgz', None))),
             ('((((((((((a))))))))))', 'a', '10', ascii('a')),
             ('((((((((((a))))))))))\\10', 'aa', '0', ascii('aa')),
+
             # Python does not have the same rules for \\41 so this is a syntax error
             #    ('((((((((((a))))))))))\\41', 'aa', '', ascii(None)),
             #    ('((((((((((a))))))))))\\41', 'a!', '0', ascii('a!')),
+            # 329..330
             ('((((((((((a))))))))))\\41', '', '', self.UNKNOWN_GROUP),
             ('(?i)((((((((((a))))))))))\\41', '', '', self.UNKNOWN_GROUP),
+
+            # 331..340
             ('(((((((((a)))))))))', 'a', '0', ascii('a')),
             ('multiple words of text', 'uh-uh', '', ascii(None)),
             ('multiple words', 'multiple words, yeah', '0',
@@ -2227,6 +2304,8 @@ class Test:
             ('(abc)\\1', 'abcabc', '1', ascii('abc')),
             ('([a-c]*)\\1', 'abcabc', '1', ascii('abc')),
             ('(?i)abc', 'ABC', '0', ascii('ABC')),
+
+            # 341..350
             ('(?i)abc', 'XBC', '', ascii(None)),
             ('(?i)abc', 'AXC', '', ascii(None)),
             ('(?i)abc', 'ABX', '', ascii(None)),
@@ -2237,6 +2316,8 @@ class Test:
             ('(?i)ab*bc', 'ABBC', '0', ascii('ABBC')),
             ('(?i)ab*?bc', 'ABBBBC', '0', ascii('ABBBBC')),
             ('(?i)ab{0,}?bc', 'ABBBBC', '0', ascii('ABBBBC')),
+
+            # 351..360
             ('(?i)ab+?bc', 'ABBC', '0', ascii('ABBC')),
             ('(?i)ab+bc', 'ABC', '', ascii(None)),
             ('(?i)ab+bc', 'ABQ', '', ascii(None)),
@@ -2247,6 +2328,8 @@ class Test:
             ('(?i)ab{3,4}?bc', 'ABBBBC', '0', ascii('ABBBBC')),
             ('(?i)ab{4,5}?bc', 'ABBBBC', '', ascii(None)),
             ('(?i)ab??bc', 'ABBC', '0', ascii('ABBC')),
+
+            # 361..370
             ('(?i)ab??bc', 'ABC', '0', ascii('ABC')),
             ('(?i)ab{0,1}?bc', 'ABC', '0', ascii('ABC')),
             ('(?i)ab??bc', 'ABBBBC', '', ascii(None)),
@@ -2257,6 +2340,8 @@ class Test:
             ('(?i)^abc', 'ABCC', '0', ascii('ABC')),
             ('(?i)^abc$', 'AABC', '', ascii(None)),
             ('(?i)abc$', 'AABC', '0', ascii('ABC')),
+
+            # 371..380
             ('(?i)^', 'ABC', '0', ascii('')),
             ('(?i)$', 'ABC', '0', ascii('')),
             ('(?i)a.c', 'ABC', '0', ascii('ABC')),
@@ -2267,6 +2352,8 @@ class Test:
             ('(?i)a[bc]d', 'ABD', '0', ascii('ABD')),
             ('(?i)a[b-d]e', 'ABD', '', ascii(None)),
             ('(?i)a[b-d]e', 'ACE', '0', ascii('ACE')),
+
+            # 381..390
             ('(?i)a[b-d]', 'AAC', '0', ascii('AC')),
             ('(?i)a[-b]', 'A-', '0', ascii('A-')),
             ('(?i)a[b-]', 'A-', '0', ascii('A-')),
@@ -2277,6 +2364,8 @@ class Test:
             ('(?i)a[]]b', 'A]B', '0', ascii('A]B')),
             ('(?i)a[^bc]d', 'AED', '0', ascii('AED')),
             ('(?i)a[^bc]d', 'ABD', '', ascii(None)),
+
+            # 391..400
             ('(?i)a[^-b]c', 'ADC', '0', ascii('ADC')),
             ('(?i)a[^-b]c', 'A-C', '', ascii(None)),
             ('(?i)a[^]b]c', 'A]C', '', ascii(None)),
@@ -2287,6 +2376,8 @@ class Test:
             ('(?i)*a', '-', '', self.NOTHING_TO_REPEAT),
             ('(?i)(*)b', '-', '', self.NOTHING_TO_REPEAT),
             ('(?i)$b', 'B', '', ascii(None)),
+
+            # 401..410
             ('(?i)a\\', '-', '', self.BAD_ESCAPE),
             ('(?i)a\\(b', 'A(B', '', ascii(('A(B',))),
             ('(?i)a\\(*b', 'AB', '0', ascii('AB')),
@@ -2297,6 +2388,8 @@ class Test:
             ('(?i)((a))', 'ABC', '0,1,2', ascii(('A', 'A', 'A'))),
             ('(?i)(a)b(c)', 'ABC', '0,1,2', ascii(('ABC', 'A', 'C'))),
             ('(?i)a+b+c', 'AABBABC', '0', ascii('ABC')),
+
+            # 411..420
             ('(?i)a{1,}b{1,}c', 'AABBABC', '0', ascii('ABC')),
             ('(?i)a**', '-', '', self.NOTHING_TO_REPEAT),
             ('(?i)a.+?c', 'ABCABC', '0', ascii('ABC')),
@@ -2307,6 +2400,8 @@ class Test:
             ('(?i)(a+|b)+', 'AB', '0,1', ascii(('AB', 'B'))),
             ('(?i)(a+|b){1,}', 'AB', '0,1', ascii(('AB', 'B'))),
             ('(?i)(a+|b)?', 'AB', '0,1', ascii(('A', 'A'))),
+
+            # 421..430
             ('(?i)(a+|b){0,1}', 'AB', '0,1', ascii(('A', 'A'))),
             ('(?i)(a+|b){0,1}?', 'AB', '0,1', ascii(('', None))),
             ('(?i))(', '-', '', self.TRAILING_CHARS),
@@ -2317,6 +2412,8 @@ class Test:
             ('(?i)([abc])*bcd', 'ABCD', '0,1', ascii(('ABCD', 'A'))),
             ('(?i)a|b|c|d|e', 'E', '0', ascii('E')),
             ('(?i)(a|b|c|d|e)f', 'EF', '0,1', ascii(('EF', 'E'))),
+
+            # 431..440
             ('(?i)abcd*efg', 'ABCDEFG', '0', ascii('ABCDEFG')),
             ('(?i)ab*', 'XABYABBBZ', '0', ascii('AB')),
             ('(?i)ab*', 'XAYABBBZ', '0', ascii('A')),
@@ -2327,6 +2424,8 @@ class Test:
             ('(?i)(a|b)c*d', 'ABCD', '0,1', ascii(('BCD', 'B'))),
             ('(?i)(ab|ab*)bc', 'ABC', '0,1', ascii(('ABC', 'A'))),
             ('(?i)a([bc]*)c*', 'ABC', '0,1', ascii(('ABC', 'BC'))),
+
+            # 441..450
             ('(?i)a([bc]*)(c*d)', 'ABCD', '0,1,2', ascii(('ABCD', 'BC', 'D'))),
             ('(?i)a([bc]+)(c*d)', 'ABCD', '0,1,2', ascii(('ABCD', 'BC', 'D'))),
             ('(?i)a([bc]*)(c+d)', 'ABCD', '0,1,2', ascii(('ABCD', 'B', 'CD'))),
@@ -2339,6 +2438,8 @@ class Test:
             ('(?i)^a(bc+|b[eh])g|.h$', 'ABH', '0,1', ascii(('BH', None))),
             ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFGZ', '0,1,2', ascii(('EFFGZ',
               'EFFGZ', None))),
+
+            # 451..456
             ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'IJ', '0,1,2', ascii(('IJ', 'IJ',
               'J'))),
             ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFG', '', ascii(None)),
@@ -2349,12 +2450,15 @@ class Test:
             ('(?i)((((((((((a))))))))))\\10', 'AA', '0', ascii('AA')),
             #('(?i)((((((((((a))))))))))\\41', 'AA', '', ascii(None)),
             #('(?i)((((((((((a))))))))))\\41', 'A!', '0', ascii('A!')),
+            # 457..460
             ('(?i)(((((((((a)))))))))', 'A', '0', ascii('A')),
             ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a))))))))))', 'A', '1',
               ascii('A')),
             ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a|b|c))))))))))', 'C', '1',
               ascii('C')),
             ('(?i)multiple words of text', 'UH-UH', '', ascii(None)),
+
+            # 461..464
             ('(?i)multiple words', 'MULTIPLE WORDS, YEAH', '0',
               ascii('MULTIPLE WORDS')),
             ('(?i)(.*)c(.*)', 'ABCDE', '0,1,2', ascii(('ABCDE', 'AB', 'DE'))),
@@ -2362,26 +2466,33 @@ class Test:
             ('(?i)[k]', 'AB', '', ascii(None)),
         #    ('(?i)abcd', 'ABCD', SUCCEED, 'found+"-"+\\found+"-"+\\\\found', ascii(ABCD-$&-\\ABCD)),
         #    ('(?i)a(bc)d', 'ABCD', SUCCEED, 'g1+"-"+\\g1+"-"+\\\\g1', ascii(BC-$1-\\BC)),
+            # 465..470
             ('(?i)a[-]?c', 'AC', '0', ascii('AC')),
             ('(?i)(abc)\\1', 'ABCABC', '1', ascii('ABC')),
             ('(?i)([a-c]*)\\1', 'ABCABC', '1', ascii('ABC')),
             ('a(?!b).', 'abad', '0', ascii('ad')),
             ('a(?=d).', 'abad', '0', ascii('ad')),
             ('a(?=c|d).', 'abad', '0', ascii('ad')),
+
+            # 471..474
             ('a(?:b|c|d)(.)', 'ace', '1', ascii('e')),
             ('a(?:b|c|d)*(.)', 'ace', '1', ascii('e')),
             ('a(?:b|c|d)+?(.)', 'ace', '1', ascii('e')),
             ('a(?:b|(c|e){1,2}?|d)+?(.)', 'ace', '1,2', ascii(('c', 'e'))),
 
             # Lookbehind: split by : but not if it is escaped by -.
+            # 475
             ('(?<!-):(.*?)(?<!-):', 'a:bc-:de:f', '1', ascii('bc-:de')),
             # Escaping with \ as we know it.
+            # 476
             ('(?<!\\\):(.*?)(?<!\\\):', 'a:bc\\:de:f', '1', ascii('bc\\:de')),
             # Terminating with ' and escaping with ? as in edifact.
+            # 477
             ("(?<!\\?)'(.*?)(?<!\\?)'", "a'bc?'de'f", '1', ascii("bc?'de")),
 
             # Comments using the (?#...) syntax.
 
+            # 478..479
             ('w(?# comment', 'w', '', self.MISSING_RPAREN),
             ('w(?# comment 1)xy(?# comment 2)z', 'wxyz', '0', ascii('wxyz')),
 
@@ -2390,6 +2501,7 @@ class Test:
             # Not an error under PCRE/PRE:
             # When the new behaviour is turned on positional inline flags affect
             # only what follows.
+            # 480..485
             ('w(?i)', 'W', '0', ascii('W')),
             ('w(?in)', 'W', '0', ascii(None)),
             ('w(?i)', 'w', '0', ascii('w')),
@@ -2398,14 +2510,14 @@ class Test:
             ('(?in)w', 'W', '0', ascii('W')),
 
             # Comments using the x embedded pattern modifier.
-
+            # 486
             ("""(?x)w# comment 1
 x y
 # comment 2
 z""", 'wxyz', '0', ascii('wxyz')),
 
             # Using the m embedded pattern modifier.
-
+            # 487..489
             ('^abc', """jkl
 abc
 xyz""", '', ascii(None)),
@@ -2418,12 +2530,12 @@ xyzabc
 123""", '0', ascii('abc')),
 
             # Using the s embedded pattern modifier.
-
+            # 490..491
             ('a.b', 'a\nb', '', ascii(None)),
             ('(?s)a.b', 'a\nb', '0', ascii('a\nb')),
 
             # Test \w, etc. both inside and outside character classes.
-
+            # 492..496
             ('\\w+', '--ab_cd0123--', '0', ascii('ab_cd0123')),
             ('[\\w]+', '--ab_cd0123--', '0', ascii('ab_cd0123')),
             ('\\D+', '1234abc5678', '0', ascii('abc')),
@@ -2431,6 +2543,7 @@ xyzabc
             ('[\\da-fA-F]+', '123abc', '0', ascii('123abc')),
             # Not an error under PCRE/PRE:
             # ('[\\d-x]', '-', '', self.SYNTAX_ERROR),
+            # 497..498
             (r'([\s]*)([\S]*)([\s]*)', ' testing!1972', '3,2,1', ascii(('',
               'testing!1972', ' '))),
             (r'(\s*)(\S*)(\s*)', ' testing!1972', '3,2,1', ascii(('',
@@ -2440,20 +2553,26 @@ xyzabc
             # Post-1.5.2 additions.
 
             # xmllib problem.
+            # 499
             (r'(([a-z]+):)?([a-z]+)$', 'smil', '1,2,3', ascii((None, None,
               'smil'))),
             # Bug 110866: reference to undefined group.
+            # 500
             (r'((.)\1+)', '', '', self.OPEN_GROUP),
             # Bug 111869: search (PRE/PCRE fails on this one, SRE doesn't).
+            # 501
             (r'.*d', 'abc\nabd', '0', ascii('abd')),
             # Bug 112468: various expected syntax errors.
+            # 502..503
             (r'(', '', '', self.MISSING_RPAREN),
             (r'[\41]', '!', '0', ascii('!')),
             # Bug 114033: nothing to repeat.
+            # 504
             (r'(x?)?', 'x', '0', ascii('x')),
             # Bug 115040: rescan if flags are modified inside pattern.
             # If the new behaviour is turned on then positional inline flags
             # affect only what follows.
+            # 505..510
             (r' (?x)foo ', 'foo', '0', ascii('foo')),
             (r' (?nx)foo ', 'foo', '0', ascii(None)),
             (r'(?x) foo ', 'foo', '0', ascii('foo')),
@@ -2461,37 +2580,50 @@ xyzabc
             (r'(?x)foo ', 'foo', '0', ascii('foo')),
             (r'(?nx)foo ', 'foo', '0', ascii('foo')),
             # Bug 115618: negative lookahead.
+            # 511
             (r'(?<!abc)(d.f)', 'abcdefdof', '0', ascii('dof')),
             # Bug 116251: character class bug.
+            # 512
             (r'[\w-]+', 'laser_beam', '0', ascii('laser_beam')),
             # Bug 123769+127259: non-greedy backtracking bug.
+            # 513..515
             (r'.*?\S *:', 'xx:', '0', ascii('xx:')),
             (r'a[ ]*?\ (\d+).*', 'a   10', '0', ascii('a   10')),
             (r'a[ ]*?\ (\d+).*', 'a    10', '0', ascii('a    10')),
             # Bug 127259: \Z shouldn't depend on multiline mode.
+            # 516
             (r'(?ms).*?x\s*\Z(.*)','xx\nx\n', '1', ascii('')),
             # Bug 128899: uppercase literals under the ignorecase flag.
+            # 517..520
             (r'(?i)M+', 'MMM', '0', ascii('MMM')),
             (r'(?i)m+', 'MMM', '0', ascii('MMM')),
             (r'(?i)[M]+', 'MMM', '0', ascii('MMM')),
             (r'(?i)[m]+', 'MMM', '0', ascii('MMM')),
             # Bug 130748: ^* should be an error (nothing to repeat).
+            # 521
             (r'^*', '', '', self.NOTHING_TO_REPEAT),
             # Bug 133283: minimizing repeat problem.
+            # 522
             (r'"(?:\\"|[^"])*?"', r'"\""', '0', ascii(r'"\""')),
             # Bug 477728: minimizing repeat problem.
+            # 523
             (r'^.*?$', 'one\ntwo\nthree\n', '', ascii(None)),
             # Bug 483789: minimizing repeat problem.
+            # 524
             (r'a[^>]*?b', 'a>b', '', ascii(None)),
             # Bug 490573: minimizing repeat problem.
+            # 525
             (r'^a*?$', 'foo', '', ascii(None)),
             # Bug 470582: nested groups problem.
+            # 526
             (r'^((a)c)?(ab)$', 'ab', '1,2,3', ascii((None, None, 'ab'))),
             # Another minimizing repeat problem (capturing groups in assertions).
+            # 527..529
             ('^([ab]*?)(?=(b)?)c', 'abc', '1,2', ascii(('ab', None))),
             ('^([ab]*?)(?!(b))c', 'abc', '1,2', ascii(('ab', None))),
             ('^([ab]*?)(?<!(a))c', 'abc', '1,2', ascii(('ab', None))),
             # Bug 410271: \b broken under locales.
+            # 530..532
             (r'\b.\b', 'a', '0', ascii('a')),
             (r'\b.\b', '\N{LATIN CAPITAL LETTER A WITH DIAERESIS}', '0',
               ascii('\xc4')),

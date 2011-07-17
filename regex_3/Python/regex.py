@@ -121,6 +121,8 @@ the second character.
     \G              Matches the empty string, but only at the position where
                     the search started.
     \L<name>        Named list. The list is provided as a keyword argument.
+    \m              Matches the empty string, but only at the start of a word.
+    \M              Matches the empty string, but only at the end of a word.
     \n              Matches the newline character.
     \N{name}        Matches the named character.
     \p{name=value}  Matches the character if its property has the specified
@@ -348,7 +350,7 @@ _named_args = {}
 # Maximum size of the cache.
 _MAXCACHE = 500
 
-def _compile(pattern, flags=0, kwargs={}):
+def _compile(pattern, flags=0, kwargs=None):
     "Compiles a regular expression to a PatternObject."
     # We're checking in this order because pattern_type isn't defined when
     # _compile() is first called, with a string pattern, but only after the
@@ -362,26 +364,27 @@ def _compile(pattern, flags=0, kwargs={}):
     else:
         raise TypeError("first argument must be a string or compiled pattern")
 
+    if kwargs is None:
+        kwargs = {}
+
     # Do we know what keyword arguments are needed?
     args_key = pattern, type(pattern), flags
-    if args_key in _named_args:
-        args_needed = _named_args[args_key]
-
-        args = set()
+    args_needed = _named_args.get(args_key)
+    if args_needed is not None:
+        # Are we being provided with those keyword arguments?
+        args_supplied = set()
         for k, v in args_needed:
             if k not in kwargs:
                 raise error("missing named list")
-            args.add((k, frozenset(kwargs[k])))
+            args_supplied.add((k, frozenset(kwargs[k])))
 
-        args = frozenset(args)
-    else:
-        args = frozenset()
+        # Have we already seen this regular expression and named list?
+        pattern_key = pattern, type(pattern), flags, frozenset(args_supplied)
+        compiled_pattern = _cache.get(pattern_key)
+        if compiled_pattern:
+            return compiled_pattern
 
-    # Have we already seen this regular expression?
-    pattern_key = pattern, type(pattern), flags, args
-    compiled_pattern = _cache.get(pattern_key)
-    if compiled_pattern:
-        return compiled_pattern
+    # It's a new pattern (or new named list for a known pattern).
 
     # Guess the encoding from the class of the pattern string.
     if isinstance(pattern, bytes):
@@ -433,18 +436,19 @@ def _compile(pattern, flags=0, kwargs={}):
     parsed = parsed.pack_characters(info)
 
     # Build the named lists.
-    indexed_lists = [None] * len(info.named_lists)
-    args = set()
-    for key, index in info.named_lists.items():
+    named_lists = {}
+    named_list_indexes = [None] * len(info.named_lists_used)
+    args_needed = set()
+    for key, index in info.named_lists_used.items():
         name, ignore_case = key
+        values = frozenset(kwargs[name])
         if ignore_case:
-            items = frozenset(fold_string_case(info, i) for i in kwargs[name])
+            items = frozenset(fold_string_case(info, v) for v in values)
         else:
-            items = frozenset(kwargs[name])
-        indexed_lists[index] = items
-        args.add((name, frozenset(kwargs[name])))
-
-    args = frozenset(args)
+            items = values
+        named_lists[name] = values
+        named_list_indexes[index] = items
+        args_needed.add((name, values))
 
     reverse = bool(info.global_flags & REVERSE)
 
@@ -476,15 +480,21 @@ def _compile(pattern, flags=0, kwargs={}):
     # by the PatternObject itself. Conversely, global flags like LOCALE _don't_
     # affect the code generation but _are_ needed by the PatternObject.
     compiled_pattern = _regex.compile(pattern, info.global_flags |
-      info.scoped_flags, code, info.group_index, index_group, indexed_lists)
+      info.scoped_flags, code, info.group_index, index_group, named_lists,
+      named_list_indexes)
 
-    # Store the compiled pattern.
+    # Do we need to reduce the size of the cache?
     if len(_cache) >= _MAXCACHE:
         shrink_cache(_cache, _named_args, _MAXCACHE)
 
-    pattern_key = pattern, type(pattern), flags, args
+    args_needed = frozenset(args_needed)
+
+    # Store this regular expression and named list.
+    pattern_key = pattern, type(pattern), flags, args_needed
     _cache[pattern_key] = compiled_pattern
-    _named_args[args_key] = args
+
+    # Store what keyword arguments are needed.
+    _named_args[args_key] = args_needed
 
     return compiled_pattern
 

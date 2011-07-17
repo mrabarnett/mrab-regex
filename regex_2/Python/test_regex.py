@@ -314,6 +314,14 @@ class Test:
           "xaxbxc")], repr(['c', 'x', None, 'b', 'x', None, 'a', 'x', None,
           '']))
 
+        # 17..19
+        self.expect(lambda: regex.split(r"(?n)\b", "a b c"), repr(['', 'a',
+          ' ', 'b', ' ', 'c', '']))
+        self.expect(lambda: regex.split(r"(?n)\m", "a b c"), repr(['', 'a ',
+          'b ', 'c']))
+        self.expect(lambda: regex.split(r"(?n)\M", "a b c"), repr(['a', ' b',
+          ' c', '']))
+
     def test_qualified_re_split(self):
         # 1..4
         self.expect(lambda: regex.split(":", ":a:b::c", 2), repr(['', 'a',
@@ -1848,30 +1856,36 @@ class Test:
     def test_various(self):
         tests = [
             # Test ?P< and ?P= extensions.
+            # 1..4
             ('(?P<foo_123', '', '', self.MISSING_GT),      # Unterminated group identifier.
             ('(?P<1>a)', '', '', self.BAD_GROUP_NAME),     # Begins with a digit.
             ('(?P<!>a)', '', '', self.BAD_GROUP_NAME),     # Begins with an illegal char.
             ('(?P<foo!>a)', '', '', self.MISSING_GT),      # Begins with an illegal char.
 
             # Same tests, for the ?P= form.
+            # 5..8
             ('(?P<foo_123>a)(?P=foo_123', 'aa', '', self.MISSING_RPAREN),
             ('(?P<foo_123>a)(?P=1)', 'aa', '', self.BAD_GROUP_NAME),
             ('(?P<foo_123>a)(?P=!)', 'aa', '', self.BAD_GROUP_NAME),
             ('(?P<foo_123>a)(?P=foo_124)', 'aa', '', self.UNKNOWN_GROUP),  # Backref to undefined group.
 
+            # 9..10
             ('(?P<foo_123>a)', 'a', '1', repr('a')),
             ('(?P<foo_123>a)(?P=foo_123)', 'aa', '1', repr('a')),
 
             # Mal-formed \g in pattern treated as literal for compatibility.
+            # 11..14
             (r'(?<foo_123>a)\g<foo_123', 'aa', '', repr(None)),
             (r'(?<foo_123>a)\g<1>', 'aa', '1', repr('a')),
             (r'(?<foo_123>a)\g<!>', 'aa', '', repr(None)),
             (r'(?<foo_123>a)\g<foo_124>', 'aa', '', self.UNKNOWN_GROUP),  # Backref to undefined group.
 
+            # 15..16
             ('(?<foo_123>a)', 'a', '1', repr('a')),
             (r'(?<foo_123>a)\g<foo_123>', 'aa', '1', repr('a')),
 
             # Test octal escapes.
+            # 17..21
             ('\\1', 'a', '', self.UNKNOWN_GROUP),    # Backreference.
             ('[\\1]', '\1', '0', "'\\x01'"),  # Character.
             ('\\09', chr(0) + '9', '0', repr(chr(0) + '9')),
@@ -1880,24 +1894,28 @@ class Test:
               '0,11', repr(('abcdefghijklk9', 'k'))),
 
             # Test \0 is handled everywhere.
+            # 22..25
             (r'\0', '\0', '0', repr('\0')),
             (r'[\0a]', '\0', '0', repr('\0')),
             (r'[a\0]', '\0', '0', repr('\0')),
             (r'[^a\0]', '\0', '', repr(None)),
 
             # Test various letter escapes.
+            # 26..29
             (r'\a[\b]\f\n\r\t\v', '\a\b\f\n\r\t\v', '0',
               repr('\a\b\f\n\r\t\v')),
             (r'[\a][\b][\f][\n][\r][\t][\v]', '\a\b\f\n\r\t\v', '0',
               repr('\a\b\f\n\r\t\v')),
-            (r'\c\e\g\h\i\j\k\m\o\p\q\y\z', 'ceghijkmopqyz', '0',
-              repr('ceghijkmopqyz')),
+            (r'\c\e\g\h\i\j\k\o\p\q\y\z', 'ceghijkopqyz', '0',
+              repr('ceghijkopqyz')),
             (r'\xff', '\377', '0', repr(chr(255))),
             # New \x semantics.
+            # 30..32
             (r'\x00ffffffffffffff', '\377', '', repr(None)),
             (r'\x00f', '\017', '', repr(None)),
             (r'\x00fe', '\376', '', repr(None)),
 
+            # 33..37
             (r'\x00ff', '\377', '', repr(None)),
             (r'\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', repr('\t\n\v\r\f\ag')),
             ('\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', repr('\t\n\v\r\f\ag')),
@@ -1906,17 +1924,20 @@ class Test:
             (r'[\t][\n][\v][\r][\f][\b]', '\t\n\v\r\f\b', '0',
               repr('\t\n\v\r\f\b')),
 
+            # 38
             (r"^\w+=(\\[\000-\277]|[^\n\\])*",
               "SRC=eval.c g.c blah blah blah \\\\\n\tapes.c", '0',
               repr("SRC=eval.c g.c blah blah blah \\\\")),
 
             # Test that . only matches \n in DOTALL mode.
+            # 39..43
             ('a.b', 'acb', '0', repr('acb')),
             ('a.b', 'a\nb', '', repr(None)),
             ('a.*b', 'acc\nccb', '', repr(None)),
             ('a.{4,5}b', 'acc\nccb', '', repr(None)),
             ('a.b', 'a\rb', '0', repr('a\rb')),
             # The new behaviour is that the inline flag affects only what follows.
+            # 44..50
             ('a.b(?s)', 'a\nb', '0', repr('a\nb')),
             ('a.b(?ns)', 'a\nb', '', repr(None)),
             ('(?s)a.b', 'a\nb', '0', repr('a\nb')),
@@ -1925,6 +1946,7 @@ class Test:
             ('(?s)a.*b', 'acc\nccb', '0', repr('acc\nccb')),
             ('(?s)a.{4,5}b', 'acc\nccb', '0', repr('acc\nccb')),
 
+            # 51..60
             (')', '', '', self.TRAILING_CHARS),           # Unmatched right bracket.
             ('', '', '0', "''"),    # Empty pattern.
             ('abc', 'abc', '0', repr('abc')),
@@ -1935,6 +1957,8 @@ class Test:
             ('abc', 'ababc', '0', repr('abc')),
             ('ab*c', 'abc', '0', repr('abc')),
             ('ab*bc', 'abc', '0', repr('abc')),
+
+            # 61..70
             ('ab*bc', 'abbc', '0', repr('abbc')),
             ('ab*bc', 'abbbbc', '0', repr('abbbbc')),
             ('ab+bc', 'abbc', '0', repr('abbc')),
@@ -1945,6 +1969,8 @@ class Test:
             ('ab?bc', 'abc', '0', repr('abc')),
             ('ab?bc', 'abbbbc', '', repr(None)),
             ('ab?c', 'abc', '0', repr('abc')),
+
+            # 71..80
             ('^abc$', 'abc', '0', repr('abc')),
             ('^abc$', 'abcc', '', repr(None)),
             ('^abc', 'abcc', '0', repr('abc')),
@@ -1955,6 +1981,8 @@ class Test:
             ('a.c', 'abc', '0', repr('abc')),
             ('a.c', 'axc', '0', repr('axc')),
             ('a.*c', 'axyzc', '0', repr('axyzc')),
+
+            # 81..90
             ('a.*c', 'axyzd', '', repr(None)),
             ('a[bc]d', 'abc', '', repr(None)),
             ('a[bc]d', 'abd', '0', repr('abd')),
@@ -1965,6 +1993,8 @@ class Test:
             ('a[\\-b]', 'a-', '0', repr('a-')),
             ('a[b-]', 'a-', '0', repr('a-')),
             ('a[]b', '-', '', self.BAD_SET),
+
+            # 91..100
             ('a[', '-', '', self.BAD_SET),
             ('a\\', '-', '', self.BAD_ESCAPE),
             ('abc)', '-', '', self.TRAILING_CHARS),
@@ -1975,6 +2005,8 @@ class Test:
             ('a[^bc]d', 'aed', '0', repr('aed')),
             ('a[^bc]d', 'abd', '', repr(None)),
             ('a[^-b]c', 'adc', '0', repr('adc')),
+
+            # 101..110
             ('a[^-b]c', 'a-c', '', repr(None)),
             ('a[^]b]c', 'a]c', '', repr(None)),
             ('a[^]b]c', 'adc', '0', repr('adc')),
@@ -1985,6 +2017,8 @@ class Test:
             ('\\by\\b', 'yz', '', repr(None)),
             ('\\by\\b', 'xyz', '', repr(None)),
             ('x\\b', 'xyz', '', repr(None)),
+
+            # 111..120
             ('x\\B', 'xyz', '0', repr('x')),
             ('\\Bz', 'xyz', '0', repr('z')),
             ('z\\B', 'xyz', '', repr(None)),
@@ -1995,6 +2029,8 @@ class Test:
             ('\\By\\B', 'xy', '', repr(None)),
             ('\\By\\B', 'yz', '', repr(None)),
             ('\\By\\b', 'xy', '0', repr('y')),
+
+            # 121..130
             ('\\by\\B', 'yz', '0', repr('y')),
             ('\\By\\B', 'xyz', '0', repr('y')),
             ('ab|cd', 'abc', '0', repr('ab')),
@@ -2005,6 +2041,8 @@ class Test:
             ('a\\(*b', 'ab', '0', repr('ab')),
             ('a\\(*b', 'a((b', '0', repr('a((b')),
             ('a\\\\b', 'a\\b', '0', repr('a\\b')),
+
+            # 131..140
             ('((a))', 'abc', '0,1,2', repr(('a', 'a', 'a'))),
             ('(a)b(c)', 'abc', '0,1,2', repr(('abc', 'a', 'c'))),
             ('a+b+c', 'aabbabc', '0', repr('abc')),
@@ -2015,6 +2053,8 @@ class Test:
             ('[^ab]*', 'cde', '0', repr('cde')),
             ('abc', '', '', repr(None)),
             ('a*', '', '0', repr('')),
+
+            # 141..150
             ('a|b|c|d|e', 'e', '0', repr('e')),
             ('(a|b|c|d|e)f', 'ef', '0,1', repr(('ef', 'e'))),
             ('abcd*efg', 'abcdefg', '0', repr('abcdefg')),
@@ -2025,6 +2065,8 @@ class Test:
             ('^(ab|cd)e', 'abcde', '', repr(None)),
             ('(abc|)ef', 'abcdef', '0,1', repr(('ef', ''))),
             ('(a|b)c*d', 'abcd', '0,1', repr(('bcd', 'b'))),
+
+            # 151..160
             ('(ab|ab*)bc', 'abc', '0,1', repr(('abc', 'a'))),
             ('a([bc]*)c*', 'abc', '0,1', repr(('abc', 'bc'))),
             ('a([bc]*)(c*d)', 'abcd', '0,1,2', repr(('abcd', 'bc', 'd'))),
@@ -2035,6 +2077,8 @@ class Test:
             ('(ab|a)b*c', 'abc', '0,1', repr(('abc', 'ab'))),
             ('((a)(b)c)(d)', 'abcd', '1,2,3,4', repr(('abc', 'a', 'b', 'd'))),
             ('[a-zA-Z_][a-zA-Z0-9_]*', 'alpha', '0', repr('alpha')),
+
+            # 161..170
             ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', repr(('bh', None))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effgz', '0,1,2', repr(('effgz',
               'effgz', None))),
@@ -2048,6 +2092,8 @@ class Test:
             ('multiple words', 'multiple words, yeah', '0',
               repr('multiple words')),
             ('(.*)c(.*)', 'abcde', '0,1,2', repr(('abcde', 'ab', 'de'))),
+
+            # 171..180
             ('\\((.*), (.*)\\)', '(a, b)', '2,1', repr(('b', 'a'))),
             ('[k]', 'ab', '', repr(None)),
             ('a[-]?c', 'ac', '0', repr('ac')),
@@ -2058,6 +2104,8 @@ class Test:
             ('^(a+).\\1$', 'aaaa', '', repr(None)),
             ('(abc)\\1', 'abcabc', '0,1', repr(('abcabc', 'abc'))),
             ('([a-c]+)\\1', 'abcabc', '0,1', repr(('abcabc', 'abc'))),
+
+            # 181..190
             ('(a)\\1', 'aa', '0,1', repr(('aa', 'a'))),
             ('(a+)\\1', 'aa', '0,1', repr(('aa', 'a'))),
             ('(a+)+\\1', 'aa', '0,1', repr(('aa', 'a'))),
@@ -2068,6 +2116,8 @@ class Test:
             ('(a+)a\\1$', 'aaa', '0,1', repr(('aaa', 'a'))),
             ('([abc]*)\\1', 'abcabc', '0,1', repr(('abcabc', 'abc'))),
             ('(a)(b)c|ab', 'ab', '0,1,2', repr(('ab', None, None))),
+
+            # 191..200
             ('(a)+x', 'aaax', '0,1', repr(('aaax', 'a'))),
             ('([ac])+x', 'aacx', '0,1', repr(('aacx', 'c'))),
             ('([^/]*/)*sub1/', 'd:msgs/tdir/sub1/trial/away.cpp', '0,1',
@@ -2083,13 +2133,14 @@ class Test:
             ('(a)+b|aac', 'aac', '0,1', repr(('aac', None))),
 
             # Test symbolic groups.
-
+            # 201..204
             ('(?P<i d>aaa)a', 'aaaa', '', self.MISSING_GT),
             ('(?P<id>aaa)a', 'aaaa', '0,id', repr(('aaaa', 'aaa'))),
             ('(?P<id>aa)(?P=id)', 'aaaa', '0,id', repr(('aaaa', 'aa'))),
             ('(?P<id>aa)(?P=xd)', 'aaaa', '', self.UNKNOWN_GROUP),
 
             # Character properties.
+            # 205..214
             (ur"\g", u"g", '0', repr(u'g')),
             (ur"\g<1>", u"g", '', self.UNKNOWN_GROUP),
             (ur"(.)\g<1>", u"gg", '0', repr(u'gg')),
@@ -2102,13 +2153,15 @@ class Test:
             (ur"\P{Lu}", u"p", '0', repr(u'p')),
 
             # All tests from Perl.
-
+            # 215..220
             ('abc', 'abc', '0', repr('abc')),
             ('abc', 'xbc', '', repr(None)),
             ('abc', 'axc', '', repr(None)),
             ('abc', 'abx', '', repr(None)),
             ('abc', 'xabcy', '0', repr('abc')),
             ('abc', 'ababc', '0', repr('abc')),
+
+            # 221..230
             ('ab*c', 'abc', '0', repr('abc')),
             ('ab*bc', 'abc', '0', repr('abc')),
             ('ab*bc', 'abbc', '0', repr('abbc')),
@@ -2119,6 +2172,8 @@ class Test:
             ('ab+bc', 'abq', '', repr(None)),
             ('ab{1,}bc', 'abq', '', repr(None)),
             ('ab+bc', 'abbbbc', '0', repr('abbbbc')),
+
+            # 231..240
             ('ab{1,}bc', 'abbbbc', '0', repr('abbbbc')),
             ('ab{1,3}bc', 'abbbbc', '0', repr('abbbbc')),
             ('ab{3,4}bc', 'abbbbc', '0', repr('abbbbc')),
@@ -2129,6 +2184,8 @@ class Test:
             ('ab?bc', 'abbbbc', '', repr(None)),
             ('ab?c', 'abc', '0', repr('abc')),
             ('ab{0,1}c', 'abc', '0', repr('abc')),
+
+            # 241..250
             ('^abc$', 'abc', '0', repr('abc')),
             ('^abc$', 'abcc', '', repr(None)),
             ('^abc', 'abcc', '0', repr('abc')),
@@ -2139,6 +2196,8 @@ class Test:
             ('a.c', 'abc', '0', repr('abc')),
             ('a.c', 'axc', '0', repr('axc')),
             ('a.*c', 'axyzc', '0', repr('axyzc')),
+
+            # 251..260
             ('a.*c', 'axyzd', '', repr(None)),
             ('a[bc]d', 'abc', '', repr(None)),
             ('a[bc]d', 'abd', '0', repr('abd')),
@@ -2149,6 +2208,8 @@ class Test:
             ('a[b-]', 'a-', '0', repr('a-')),
             ('a[b-a]', '-', '', self.BAD_CHAR_RANGE),
             ('a[]b', '-', '', self.BAD_SET),
+
+            # 261..270
             ('a[', '-', '', self.BAD_SET),
             ('a]', 'a]', '0', repr('a]')),
             ('a[]]b', 'a]b', '0', repr('a]b')),
@@ -2159,6 +2220,8 @@ class Test:
             ('a[^]b]c', 'a]c', '', repr(None)),
             ('a[^]b]c', 'adc', '0', repr('adc')),
             ('ab|cd', 'abc', '0', repr('ab')),
+
+            # 271..280
             ('ab|cd', 'abcd', '0', repr('ab')),
             ('()ef', 'def', '0,1', repr(('ef', ''))),
             ('*a', '-', '', self.NOTHING_TO_REPEAT),
@@ -2169,6 +2232,8 @@ class Test:
             ('a\\(*b', 'ab', '0', repr('ab')),
             ('a\\(*b', 'a((b', '0', repr('a((b')),
             ('a\\\\b', 'a\\b', '0', repr('a\\b')),
+
+            # 281..290
             ('abc)', '-', '', self.TRAILING_CHARS),
             ('(abc', '-', '', self.MISSING_RPAREN),
             ('((a))', 'abc', '0,1,2', repr(('a', 'a', 'a'))),
@@ -2179,6 +2244,8 @@ class Test:
             ('a.+?c', 'abcabc', '0', repr('abc')),
             ('(a+|b)*', 'ab', '0,1', repr(('ab', 'b'))),
             ('(a+|b){0,}', 'ab', '0,1', repr(('ab', 'b'))),
+
+            # 291..300
             ('(a+|b)+', 'ab', '0,1', repr(('ab', 'b'))),
             ('(a+|b){1,}', 'ab', '0,1', repr(('ab', 'b'))),
             ('(a+|b)?', 'ab', '0,1', repr(('a', 'a'))),
@@ -2189,6 +2256,8 @@ class Test:
             ('a*', '', '0', repr('')),
             ('([abc])*d', 'abbbcd', '0,1', repr(('abbbcd', 'c'))),
             ('([abc])*bcd', 'abcd', '0,1', repr(('abcd', 'a'))),
+
+            # 301..310
             ('a|b|c|d|e', 'e', '0', repr('e')),
             ('(a|b|c|d|e)f', 'ef', '0,1', repr(('ef', 'e'))),
             ('abcd*efg', 'abcdefg', '0', repr('abcdefg')),
@@ -2199,6 +2268,8 @@ class Test:
             ('^(ab|cd)e', 'abcde', '', repr(None)),
             ('(abc|)ef', 'abcdef', '0,1', repr(('ef', ''))),
             ('(a|b)c*d', 'abcd', '0,1', repr(('bcd', 'b'))),
+
+            # 311..320
             ('(ab|ab*)bc', 'abc', '0,1', repr(('abc', 'a'))),
             ('a([bc]*)c*', 'abc', '0,1', repr(('abc', 'bc'))),
             ('a([bc]*)(c*d)', 'abcd', '0,1,2', repr(('abcd', 'bc', 'd'))),
@@ -2209,6 +2280,8 @@ class Test:
             ('(ab|a)b*c', 'abc', '0,1', repr(('abc', 'ab'))),
             ('((a)(b)c)(d)', 'abcd', '1,2,3,4', repr(('abc', 'a', 'b', 'd'))),
             ('[a-zA-Z_][a-zA-Z0-9_]*', 'alpha', '0', repr('alpha')),
+
+            # 321..328
             ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', repr(('bh', None))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effgz', '0,1,2', repr(('effgz',
               'effgz', None))),
@@ -2219,11 +2292,15 @@ class Test:
               'effgz', None))),
             ('((((((((((a))))))))))', 'a', '10', repr('a')),
             ('((((((((((a))))))))))\\10', 'aa', '0', repr('aa')),
+
             # Python does not have the same rules for \\41 so this is a syntax error
             #    ('((((((((((a))))))))))\\41', 'aa', '', repr(None)),
             #    ('((((((((((a))))))))))\\41', 'a!', '0', repr('a!')),
+            # 329..330
             ('((((((((((a))))))))))\\41', '', '', self.UNKNOWN_GROUP),
             ('(?i)((((((((((a))))))))))\\41', '', '', self.UNKNOWN_GROUP),
+
+            # 331..340
             ('(((((((((a)))))))))', 'a', '0', repr('a')),
             ('multiple words of text', 'uh-uh', '', repr(None)),
             ('multiple words', 'multiple words, yeah', '0',
@@ -2235,6 +2312,8 @@ class Test:
             ('(abc)\\1', 'abcabc', '1', repr('abc')),
             ('([a-c]*)\\1', 'abcabc', '1', repr('abc')),
             ('(?i)abc', 'ABC', '0', repr('ABC')),
+
+            # 341..350
             ('(?i)abc', 'XBC', '', repr(None)),
             ('(?i)abc', 'AXC', '', repr(None)),
             ('(?i)abc', 'ABX', '', repr(None)),
@@ -2245,6 +2324,8 @@ class Test:
             ('(?i)ab*bc', 'ABBC', '0', repr('ABBC')),
             ('(?i)ab*?bc', 'ABBBBC', '0', repr('ABBBBC')),
             ('(?i)ab{0,}?bc', 'ABBBBC', '0', repr('ABBBBC')),
+
+            # 351..360
             ('(?i)ab+?bc', 'ABBC', '0', repr('ABBC')),
             ('(?i)ab+bc', 'ABC', '', repr(None)),
             ('(?i)ab+bc', 'ABQ', '', repr(None)),
@@ -2255,6 +2336,8 @@ class Test:
             ('(?i)ab{3,4}?bc', 'ABBBBC', '0', repr('ABBBBC')),
             ('(?i)ab{4,5}?bc', 'ABBBBC', '', repr(None)),
             ('(?i)ab??bc', 'ABBC', '0', repr('ABBC')),
+
+            # 361..370
             ('(?i)ab??bc', 'ABC', '0', repr('ABC')),
             ('(?i)ab{0,1}?bc', 'ABC', '0', repr('ABC')),
             ('(?i)ab??bc', 'ABBBBC', '', repr(None)),
@@ -2265,6 +2348,8 @@ class Test:
             ('(?i)^abc', 'ABCC', '0', repr('ABC')),
             ('(?i)^abc$', 'AABC', '', repr(None)),
             ('(?i)abc$', 'AABC', '0', repr('ABC')),
+
+            # 371..380
             ('(?i)^', 'ABC', '0', repr('')),
             ('(?i)$', 'ABC', '0', repr('')),
             ('(?i)a.c', 'ABC', '0', repr('ABC')),
@@ -2275,6 +2360,8 @@ class Test:
             ('(?i)a[bc]d', 'ABD', '0', repr('ABD')),
             ('(?i)a[b-d]e', 'ABD', '', repr(None)),
             ('(?i)a[b-d]e', 'ACE', '0', repr('ACE')),
+
+            # 381..390
             ('(?i)a[b-d]', 'AAC', '0', repr('AC')),
             ('(?i)a[-b]', 'A-', '0', repr('A-')),
             ('(?i)a[b-]', 'A-', '0', repr('A-')),
@@ -2285,6 +2372,8 @@ class Test:
             ('(?i)a[]]b', 'A]B', '0', repr('A]B')),
             ('(?i)a[^bc]d', 'AED', '0', repr('AED')),
             ('(?i)a[^bc]d', 'ABD', '', repr(None)),
+
+            # 391..400
             ('(?i)a[^-b]c', 'ADC', '0', repr('ADC')),
             ('(?i)a[^-b]c', 'A-C', '', repr(None)),
             ('(?i)a[^]b]c', 'A]C', '', repr(None)),
@@ -2295,6 +2384,8 @@ class Test:
             ('(?i)*a', '-', '', self.NOTHING_TO_REPEAT),
             ('(?i)(*)b', '-', '', self.NOTHING_TO_REPEAT),
             ('(?i)$b', 'B', '', repr(None)),
+
+            # 401..410
             ('(?i)a\\', '-', '', self.BAD_ESCAPE),
             ('(?i)a\\(b', 'A(B', '', repr(('A(B',))),
             ('(?i)a\\(*b', 'AB', '0', repr('AB')),
@@ -2305,6 +2396,8 @@ class Test:
             ('(?i)((a))', 'ABC', '0,1,2', repr(('A', 'A', 'A'))),
             ('(?i)(a)b(c)', 'ABC', '0,1,2', repr(('ABC', 'A', 'C'))),
             ('(?i)a+b+c', 'AABBABC', '0', repr('ABC')),
+
+            # 411..420
             ('(?i)a{1,}b{1,}c', 'AABBABC', '0', repr('ABC')),
             ('(?i)a**', '-', '', self.NOTHING_TO_REPEAT),
             ('(?i)a.+?c', 'ABCABC', '0', repr('ABC')),
@@ -2315,6 +2408,8 @@ class Test:
             ('(?i)(a+|b)+', 'AB', '0,1', repr(('AB', 'B'))),
             ('(?i)(a+|b){1,}', 'AB', '0,1', repr(('AB', 'B'))),
             ('(?i)(a+|b)?', 'AB', '0,1', repr(('A', 'A'))),
+
+            # 421..430
             ('(?i)(a+|b){0,1}', 'AB', '0,1', repr(('A', 'A'))),
             ('(?i)(a+|b){0,1}?', 'AB', '0,1', repr(('', None))),
             ('(?i))(', '-', '', self.TRAILING_CHARS),
@@ -2325,6 +2420,8 @@ class Test:
             ('(?i)([abc])*bcd', 'ABCD', '0,1', repr(('ABCD', 'A'))),
             ('(?i)a|b|c|d|e', 'E', '0', repr('E')),
             ('(?i)(a|b|c|d|e)f', 'EF', '0,1', repr(('EF', 'E'))),
+
+            # 431..440
             ('(?i)abcd*efg', 'ABCDEFG', '0', repr('ABCDEFG')),
             ('(?i)ab*', 'XABYABBBZ', '0', repr('AB')),
             ('(?i)ab*', 'XAYABBBZ', '0', repr('A')),
@@ -2335,6 +2432,8 @@ class Test:
             ('(?i)(a|b)c*d', 'ABCD', '0,1', repr(('BCD', 'B'))),
             ('(?i)(ab|ab*)bc', 'ABC', '0,1', repr(('ABC', 'A'))),
             ('(?i)a([bc]*)c*', 'ABC', '0,1', repr(('ABC', 'BC'))),
+
+            # 441..450
             ('(?i)a([bc]*)(c*d)', 'ABCD', '0,1,2', repr(('ABCD', 'BC', 'D'))),
             ('(?i)a([bc]+)(c*d)', 'ABCD', '0,1,2', repr(('ABCD', 'BC', 'D'))),
             ('(?i)a([bc]*)(c+d)', 'ABCD', '0,1,2', repr(('ABCD', 'B', 'CD'))),
@@ -2347,6 +2446,8 @@ class Test:
             ('(?i)^a(bc+|b[eh])g|.h$', 'ABH', '0,1', repr(('BH', None))),
             ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFGZ', '0,1,2', repr(('EFFGZ',
               'EFFGZ', None))),
+
+            # 451..456
             ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'IJ', '0,1,2', repr(('IJ', 'IJ',
               'J'))),
             ('(?i)(bc+d$|ef*g.|h?i(j|k))', 'EFFG', '', repr(None)),
@@ -2357,12 +2458,15 @@ class Test:
             ('(?i)((((((((((a))))))))))\\10', 'AA', '0', repr('AA')),
             #('(?i)((((((((((a))))))))))\\41', 'AA', '', repr(None)),
             #('(?i)((((((((((a))))))))))\\41', 'A!', '0', repr('A!')),
+            # 457..460
             ('(?i)(((((((((a)))))))))', 'A', '0', repr('A')),
             ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a))))))))))', 'A', '1',
               repr('A')),
             ('(?i)(?:(?:(?:(?:(?:(?:(?:(?:(?:(a|b|c))))))))))', 'C', '1',
               repr('C')),
             ('(?i)multiple words of text', 'UH-UH', '', repr(None)),
+
+            # 461..464
             ('(?i)multiple words', 'MULTIPLE WORDS, YEAH', '0',
               repr('MULTIPLE WORDS')),
             ('(?i)(.*)c(.*)', 'ABCDE', '0,1,2', repr(('ABCDE', 'AB', 'DE'))),
@@ -2370,26 +2474,33 @@ class Test:
             ('(?i)[k]', 'AB', '', repr(None)),
         #    ('(?i)abcd', 'ABCD', SUCCEED, 'found+"-"+\\found+"-"+\\\\found', repr(ABCD-$&-\\ABCD)),
         #    ('(?i)a(bc)d', 'ABCD', SUCCEED, 'g1+"-"+\\g1+"-"+\\\\g1', repr(BC-$1-\\BC)),
+            # 465..470
             ('(?i)a[-]?c', 'AC', '0', repr('AC')),
             ('(?i)(abc)\\1', 'ABCABC', '1', repr('ABC')),
             ('(?i)([a-c]*)\\1', 'ABCABC', '1', repr('ABC')),
             ('a(?!b).', 'abad', '0', repr('ad')),
             ('a(?=d).', 'abad', '0', repr('ad')),
             ('a(?=c|d).', 'abad', '0', repr('ad')),
+
+            # 471..474
             ('a(?:b|c|d)(.)', 'ace', '1', repr('e')),
             ('a(?:b|c|d)*(.)', 'ace', '1', repr('e')),
             ('a(?:b|c|d)+?(.)', 'ace', '1', repr('e')),
             ('a(?:b|(c|e){1,2}?|d)+?(.)', 'ace', '1,2', repr(('c', 'e'))),
 
             # Lookbehind: split by : but not if it is escaped by -.
+            # 475
             ('(?<!-):(.*?)(?<!-):', 'a:bc-:de:f', '1', repr('bc-:de')),
             # Escaping with \ as we know it.
+            # 476
             ('(?<!\\\):(.*?)(?<!\\\):', 'a:bc\\:de:f', '1', repr('bc\\:de')),
             # Terminating with ' and escaping with ? as in edifact.
+            # 477
             ("(?<!\\?)'(.*?)(?<!\\?)'", "a'bc?'de'f", '1', repr("bc?'de")),
 
             # Comments using the (?#...) syntax.
 
+            # 478..479
             ('w(?# comment', 'w', '', self.MISSING_RPAREN),
             ('w(?# comment 1)xy(?# comment 2)z', 'wxyz', '0', repr('wxyz')),
 
@@ -2398,6 +2509,7 @@ class Test:
             # Not an error under PCRE/PRE:
             # When the new behaviour is turned on positional inline flags affect
             # only what follows.
+            # 480..485
             ('w(?i)', 'W', '0', repr('W')),
             ('w(?in)', 'W', '0', repr(None)),
             ('w(?i)', 'w', '0', repr('w')),
@@ -2406,14 +2518,14 @@ class Test:
             ('(?in)w', 'W', '0', repr('W')),
 
             # Comments using the x embedded pattern modifier.
-
+            # 486
             ("""(?x)w# comment 1
 x y
 # comment 2
 z""", 'wxyz', '0', repr('wxyz')),
 
             # Using the m embedded pattern modifier.
-
+            # 487..489
             ('^abc', """jkl
 abc
 xyz""", '', repr(None)),
@@ -2426,12 +2538,12 @@ xyzabc
 123""", '0', repr('abc')),
 
             # Using the s embedded pattern modifier.
-
+            # 490..491
             ('a.b', 'a\nb', '', repr(None)),
             ('(?s)a.b', 'a\nb', '0', repr('a\nb')),
 
             # Test \w, etc. both inside and outside character classes.
-
+            # 492..496
             ('\\w+', '--ab_cd0123--', '0', repr('ab_cd0123')),
             ('[\\w]+', '--ab_cd0123--', '0', repr('ab_cd0123')),
             ('\\D+', '1234abc5678', '0', repr('abc')),
@@ -2439,6 +2551,7 @@ xyzabc
             ('[\\da-fA-F]+', '123abc', '0', repr('123abc')),
             # Not an error under PCRE/PRE:
             # ('[\\d-x]', '-', '', self.SYNTAX_ERROR),
+            # 497..498
             (r'([\s]*)([\S]*)([\s]*)', ' testing!1972', '3,2,1', repr(('',
               'testing!1972', ' '))),
             (r'(\s*)(\S*)(\s*)', ' testing!1972', '3,2,1', repr(('',
@@ -2448,20 +2561,26 @@ xyzabc
             # Post-1.5.2 additions.
 
             # xmllib problem.
+            # 499
             (r'(([a-z]+):)?([a-z]+)$', 'smil', '1,2,3', repr((None, None,
               'smil'))),
             # Bug 110866: reference to undefined group.
+            # 500
             (r'((.)\1+)', '', '', self.OPEN_GROUP),
             # Bug 111869: search (PRE/PCRE fails on this one, SRE doesn't).
+            # 501
             (r'.*d', 'abc\nabd', '0', repr('abd')),
             # Bug 112468: various expected syntax errors.
+            # 502..503
             (r'(', '', '', self.MISSING_RPAREN),
             (r'[\41]', '!', '0', repr('!')),
             # Bug 114033: nothing to repeat.
+            # 504
             (r'(x?)?', 'x', '0', repr('x')),
             # Bug 115040: rescan if flags are modified inside pattern.
             # If the new behaviour is turned on then positional inline flags
             # affect only what follows.
+            # 505..510
             (r' (?x)foo ', 'foo', '0', repr('foo')),
             (r' (?nx)foo ', 'foo', '0', repr(None)),
             (r'(?x) foo ', 'foo', '0', repr('foo')),
@@ -2469,37 +2588,50 @@ xyzabc
             (r'(?x)foo ', 'foo', '0', repr('foo')),
             (r'(?nx)foo ', 'foo', '0', repr('foo')),
             # Bug 115618: negative lookahead.
+            # 511
             (r'(?<!abc)(d.f)', 'abcdefdof', '0', repr('dof')),
             # Bug 116251: character class bug.
+            # 512
             (r'[\w-]+', 'laser_beam', '0', repr('laser_beam')),
             # Bug 123769+127259: non-greedy backtracking bug.
+            # 513..515
             (r'.*?\S *:', 'xx:', '0', repr('xx:')),
             (r'a[ ]*?\ (\d+).*', 'a   10', '0', repr('a   10')),
             (r'a[ ]*?\ (\d+).*', 'a    10', '0', repr('a    10')),
             # Bug 127259: \Z shouldn't depend on multiline mode.
+            # 516
             (r'(?ms).*?x\s*\Z(.*)','xx\nx\n', '1', repr('')),
             # Bug 128899: uppercase literals under the ignorecase flag.
+            # 517..520
             (r'(?i)M+', 'MMM', '0', repr('MMM')),
             (r'(?i)m+', 'MMM', '0', repr('MMM')),
             (r'(?i)[M]+', 'MMM', '0', repr('MMM')),
             (r'(?i)[m]+', 'MMM', '0', repr('MMM')),
             # Bug 130748: ^* should be an error (nothing to repeat).
+            # 521
             (r'^*', '', '', self.NOTHING_TO_REPEAT),
             # Bug 133283: minimizing repeat problem.
+            # 522
             (r'"(?:\\"|[^"])*?"', r'"\""', '0', repr(r'"\""')),
             # Bug 477728: minimizing repeat problem.
+            # 523
             (r'^.*?$', 'one\ntwo\nthree\n', '', repr(None)),
             # Bug 483789: minimizing repeat problem.
+            # 524
             (r'a[^>]*?b', 'a>b', '', repr(None)),
             # Bug 490573: minimizing repeat problem.
+            # 525
             (r'^a*?$', 'foo', '', repr(None)),
             # Bug 470582: nested groups problem.
+            # 526
             (r'^((a)c)?(ab)$', 'ab', '1,2,3', repr((None, None, 'ab'))),
             # Another minimizing repeat problem (capturing groups in assertions).
+            # 527..529
             ('^([ab]*?)(?=(b)?)c', 'abc', '1,2', repr(('ab', None))),
             ('^([ab]*?)(?!(b))c', 'abc', '1,2', repr(('ab', None))),
             ('^([ab]*?)(?<!(a))c', 'abc', '1,2', repr(('ab', None))),
             # Bug 410271: \b broken under locales.
+            # 530..532
             (r'\b.\b', 'a', '0', repr('a')),
             (ur'(?u)\b.\b', u'\N{LATIN CAPITAL LETTER A WITH DIAERESIS}', '0',
               repr(u'\xc4')),

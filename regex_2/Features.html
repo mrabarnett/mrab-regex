@@ -392,15 +392,26 @@ ul.auto-toc {
 <p>There are occasions where you may want to include a list (actually, a set) of options in a regex.</p>
 <p>One way is to build the pattern like this:</p>
 <pre class="literal-block">
-regex.compile(r&quot;first|second|third|fourth|fifth&quot;)
+p = regex.compile(r&quot;first|second|third|fourth|fifth&quot;)
 </pre>
-<p>but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character which has a special meaning in a regex.</p>
+<p>but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character which has a special meaning in a regex, and that if there is a shorter string which occurs initially in a longer string that the longer string is listed before the shorter one, for example, &quot;cats&quot; before &quot;cat&quot;.</p>
 <p>The new alternative is to use a named list:</p>
 <pre class="literal-block">
-option_set = set([&quot;first&quot;, &quot;second&quot;, &quot;third&quot;, &quot;fourth&quot;, &quot;fifth&quot;])
-regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
+option_set = [&quot;first&quot;, &quot;second&quot;, &quot;third&quot;, &quot;fourth&quot;, &quot;fifth&quot;]
+p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
 </pre>
-<p>The order of the items is irrelevant, they are treated as a set.</p>
+<p>The order of the items is irrelevant, they are treated as a set. The named lists are available as the <tt class="docutils literal">.named_lists</tt> attribute of the pattern object</p>
+<pre class="literal-block">
+&gt;&gt;&gt; print(p.named_lists)
+{'options': frozenset({'second', 'fifth', 'fourth', 'third', 'first'})}
+</pre>
+</blockquote>
+</li>
+<li><p class="first">Start and end of word</p>
+<blockquote>
+<p><tt class="docutils literal">\m</tt> matches at the start of a word.</p>
+<p><tt class="docutils literal">\M</tt> matches at the end of a word.</p>
+<p>Compare with <tt class="docutils literal">\b</tt>, which matches at the start or end of a word.</p>
 </blockquote>
 </li>
 <li><p class="first">Unicode line separators</p>

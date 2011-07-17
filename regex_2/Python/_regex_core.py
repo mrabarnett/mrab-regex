@@ -110,6 +110,8 @@ CHARACTER_IGN
 CHARACTER_IGN_REV
 CHARACTER_REV
 DEFAULT_BOUNDARY
+DEFAULT_END_OF_WORD
+DEFAULT_START_OF_WORD
 END
 END_FUZZY
 END_GREEDY_REPEAT
@@ -120,6 +122,7 @@ END_OF_LINE_U
 END_OF_STRING
 END_OF_STRING_LINE
 END_OF_STRING_LINE_U
+END_OF_WORD
 FUZZY
 GRAPHEME_BOUNDARY
 GREEDY_REPEAT
@@ -151,6 +154,7 @@ START_GROUP
 START_OF_LINE
 START_OF_LINE_U
 START_OF_STRING
+START_OF_WORD
 STRING
 STRING_IGN
 STRING_IGN_REV
@@ -2000,6 +2004,14 @@ class DefaultBoundary(ZeroWidthBase):
     _opcode = OP.DEFAULT_BOUNDARY
     _op_name = "DEFAULT_BOUNDARY"
 
+class DefaultEndOfWord(ZeroWidthBase):
+    _opcode = OP.DEFAULT_END_OF_WORD
+    _op_name = "DEFAULT_END_OF_WORD"
+
+class DefaultStartOfWord(ZeroWidthBase):
+    _opcode = OP.DEFAULT_START_OF_WORD
+    _op_name = "DEFAULT_START_OF_WORD"
+
 class EndOfLine(ZeroWidthBase):
     _opcode = OP.END_OF_LINE
     _op_name = "END_OF_LINE"
@@ -2019,6 +2031,10 @@ class EndOfStringLine(ZeroWidthBase):
 class EndOfStringLineU(EndOfStringLine):
     _opcode = OP.END_OF_STRING_LINE_U
     _op_name = "END_OF_STRING_LINE_U"
+
+class EndOfWord(ZeroWidthBase):
+    _opcode = OP.END_OF_WORD
+    _op_name = "END_OF_WORD"
 
 class Fuzzy(StructureBase):
     def __init__(self, subpattern, constraints=None):
@@ -2419,7 +2435,7 @@ class Info(object):
         self.used_groups = set()
         self.group_state = {}
         self.char_type = char_type
-        self.named_lists = {}
+        self.named_lists_used = {}
         self.nested_sets = nested_sets
 
     def new_group(self, name=None):
@@ -2825,6 +2841,10 @@ class StartOfString(ZeroWidthBase):
     _opcode = OP.START_OF_STRING
     _op_name = "START_OF_STRING"
 
+class StartOfWord(ZeroWidthBase):
+    _opcode = OP.START_OF_WORD
+    _op_name = "START_OF_WORD"
+
 class String(RegexBase):
     _opcode = {False: OP.STRING, True: OP.STRING_REV}
     _op_name = {False: "STRING", True: "STRING_REV"}
@@ -2875,11 +2895,11 @@ class StringSet(RegexBase):
         self._key = self.__class__, self.name
 
         self.set_key = (name, False)
-        if self.set_key not in info.named_lists:
-            info.named_lists[self.set_key] = len(info.named_lists)
+        if self.set_key not in info.named_lists_used:
+            info.named_lists_used[self.set_key] = len(info.named_lists_used)
 
     def compile(self, reverse=False, fuzzy=False):
-        index = self.info.named_lists[self.set_key]
+        index = self.info.named_lists_used[self.set_key]
         items = self.info.kwargs[self.name]
         if fuzzy:
             strings = []
@@ -2987,8 +3007,8 @@ class StringSetIgn(StringSet):
         self._key = self.__class__, self.name
 
         self.set_key = (name, True)
-        if self.set_key not in info.named_lists:
-            info.named_lists[self.set_key] = len(info.named_lists)
+        if self.set_key not in info.named_lists_used:
+            info.named_lists_used[self.set_key] = len(info.named_lists_used)
 
 class Source(object):
     "Scanner for the regular expression source string."
@@ -3096,7 +3116,7 @@ class Scanner:
         # LOCALE _don't_ affect the code generation but _are_ needed by the
         # PatternObject.
         self.scanner = _regex.compile(None, flags & GLOBAL_FLAGS, code, {}, {},
-          {})
+          {}, [])
 
     def scan(self, string):
         result = []
@@ -3151,6 +3171,8 @@ POSITION_ESCAPES = {
     "A": StartOfString(),
     "b": Boundary(),
     "B": Boundary(False),
+    "m": StartOfWord(),
+    "M": EndOfWord(),
     "Z": EndOfString(),
 }
 
@@ -3159,4 +3181,6 @@ WORD_POSITION_ESCAPES = dict(POSITION_ESCAPES)
 WORD_POSITION_ESCAPES.update({
     "b": DefaultBoundary(),
     "B": DefaultBoundary(False),
+    "m": DefaultStartOfWord(),
+    "M": DefaultEndOfWord(),
 })

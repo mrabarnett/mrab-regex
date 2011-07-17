@@ -127,16 +127,27 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     One way is to build the pattern like this::
 
-        regex.compile(r"first|second|third|fourth|fifth")
+        p = regex.compile(r"first|second|third|fourth|fifth")
 
-    but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character which has a special meaning in a regex.
+    but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character which has a special meaning in a regex, and that if there is a shorter string which occurs initially in a longer string that the longer string is listed before the shorter one, for example, "cats" before "cat".
 
     The new alternative is to use a named list::
 
-        option_set = set(["first", "second", "third", "fourth", "fifth"])
-        regex.compile(r"\L<options>", options=option_set)
+        option_set = ["first", "second", "third", "fourth", "fifth"]
+        p = regex.compile(r"\L<options>", options=option_set)
 
-    The order of the items is irrelevant, they are treated as a set.
+    The order of the items is irrelevant, they are treated as a set. The named lists are available as the ``.named_lists`` attribute of the pattern object ::
+
+        >>> print(p.named_lists)
+        {'options': frozenset({'second', 'fifth', 'fourth', 'third', 'first'})}
+
+* Start and end of word
+
+    ``\m`` matches at the start of a word.
+
+    ``\M`` matches at the end of a word.
+
+    Compare with ``\b``, which matches at the start or end of a word.
 
 * Unicode line separators
 

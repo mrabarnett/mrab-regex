@@ -149,7 +149,11 @@ typedef struct RE_EncodingTable {
     RE_CODE (*title)(RE_CODE ch);
     BOOL (*same_char_ign)(RE_CODE ch1, RE_CODE ch2);
     BOOL (*at_boundary)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*at_word_start)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*at_word_end)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_default_boundary)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*at_default_word_start)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*at_default_word_end)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_grapheme_boundary)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*is_line_sep)(RE_CODE ch);
     BOOL (*at_line_start)(struct RE_State* state, Py_ssize_t text_pos);
@@ -410,7 +414,8 @@ typedef struct PatternObject {
     Py_ssize_t group_end_index; /* Number of group closures. */
     PyObject* groupindex;
     PyObject* indexgroup;
-    PyObject* ref_lists;
+    PyObject* named_lists;
+    PyObject* named_list_indexes;
     /* Storage for the pattern nodes. */
     Py_ssize_t node_capacity;
     Py_ssize_t node_count;
@@ -661,6 +666,32 @@ static BOOL ascii_at_boundary(RE_State* state, Py_ssize_t text_pos) {
     return before != after;
 }
 
+/* Checks whether the current text position is at the start of a word. */
+static BOOL ascii_at_word_start(RE_State* state, Py_ssize_t text_pos) {
+    BOOL before;
+    BOOL after;
+
+    before = text_pos > 0 && ascii_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos - 1));
+    after = text_pos < state->text_length && ascii_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos));
+
+    return !before && after;
+}
+
+/* Checks whether the current text position is at the end of a word. */
+static BOOL ascii_at_word_end(RE_State* state, Py_ssize_t text_pos) {
+    BOOL before;
+    BOOL after;
+
+    before = text_pos > 0 && ascii_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos - 1));
+    after = text_pos < state->text_length && ascii_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos));
+
+    return before && !after;
+}
+
 /* Checks whether a character is a line separator. */
 static BOOL ascii_is_line_sep(RE_CODE ch) {
     return 0x0A <= ch && ch <= 0x0D;
@@ -733,7 +764,11 @@ static RE_EncodingTable ascii_encoding = {
     ascii_upper, /* For ASCII, titlecase is the same as uppercase. */
     ascii_same_char_ign,
     ascii_at_boundary,
+    ascii_at_word_start,
+    ascii_at_word_end,
     ascii_at_boundary, /* No special "default word boundary" for ASCII. */
+    ascii_at_word_start, /* No special "default start of word" for ASCII. */
+    ascii_at_word_end, /* No special "default end of a word" for ASCII. */
     at_boundary_always, /* No special "grapheme boundary" for ASCII. */
     ascii_is_line_sep,
     ascii_at_line_start,
@@ -880,6 +915,32 @@ static BOOL locale_at_boundary(RE_State* state, Py_ssize_t text_pos) {
     return before != after;
 }
 
+/* Checks whether the current text position is at the start of a word. */
+static BOOL locale_at_word_start(RE_State* state, Py_ssize_t text_pos) {
+    BOOL before;
+    BOOL after;
+
+    before = text_pos > 0 && locale_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos - 1));
+    after = text_pos < state->text_length && locale_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos));
+
+    return !before && after;
+}
+
+/* Checks whether the current text position is at the end of a word. */
+static BOOL locale_at_word_end(RE_State* state, Py_ssize_t text_pos) {
+    BOOL before;
+    BOOL after;
+
+    before = text_pos > 0 && locale_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos - 1));
+    after = text_pos < state->text_length && locale_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos));
+
+    return before && !after;
+}
+
 /* Checks whether a character could be Turkic (variants of I/i). */
 static BOOL locale_possible_turkic(RE_CODE ch) {
     return toupper(ch) == 'I' || tolower(ch) == 'i';
@@ -924,7 +985,11 @@ static RE_EncodingTable locale_encoding = {
     locale_upper, /* For locale, titlecase is the same as uppercase. */
     locale_same_char_ign,
     locale_at_boundary,
+    locale_at_word_start,
+    locale_at_word_end,
     locale_at_boundary, /* No special "default word boundary" for locale. */
+    locale_at_word_start, /* No special "default start of a word" for locale. */
+    locale_at_word_end, /* No special "default end of a word" for locale. */
     at_boundary_always, /* No special "grapheme boundary" for locale. */
     ascii_is_line_sep, /* Assume locale line separators are same as ASCII. */
     ascii_at_line_start, /* Assume locale line separators are same as ASCII. */
@@ -1005,6 +1070,32 @@ static BOOL unicode_at_boundary(RE_State* state, Py_ssize_t text_pos) {
     return before != after;
 }
 
+/* Checks whether the current text position is at the start of a word. */
+static BOOL unicode_at_word_start(RE_State* state, Py_ssize_t text_pos) {
+    BOOL before;
+    BOOL after;
+
+    before = text_pos > 0 && unicode_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos - 1));
+    after = text_pos < state->text_length && unicode_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos));
+
+    return !before && after;
+}
+
+/* Checks whether the current text position is at the end of a word. */
+static BOOL unicode_at_word_end(RE_State* state, Py_ssize_t text_pos) {
+    BOOL before;
+    BOOL after;
+
+    before = text_pos > 0 && unicode_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos - 1));
+    after = text_pos < state->text_length && unicode_has_property(RE_PROP_WORD,
+      state->char_at(state->text, text_pos));
+
+    return before && !after;
+}
+
 /* Checks whether a character is a Unicode vowel.
  *
  * Only a limited number are treated as vowels.
@@ -1034,7 +1125,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     Py_ssize_t pos_m2;
     int prop_m2;
 
-    /* Break at the start and end of text. */
+    /* Break at the start and end of the text. */
     if (text_pos <= 0 || text_pos >= state->text_length)
         return TRUE;
 
@@ -1140,6 +1231,289 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     return TRUE;
 }
 
+/* Checks whether the current text position is at the start of a word. */
+static BOOL unicode_at_default_word_start(RE_State* state, Py_ssize_t text_pos)
+  {
+    void* text;
+    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    BOOL before;
+    BOOL after;
+    RE_CODE char_0;
+    RE_CODE char_m1;
+    int prop;
+    int prop_m1;
+    Py_ssize_t pos_m1;
+    RE_CODE char_p1;
+    Py_ssize_t pos_p1;
+    int prop_p1;
+    Py_ssize_t pos_m2;
+    RE_CODE char_m2;
+    int prop_m2;
+
+    text = state->text;
+    char_at = state->char_at;
+
+    /* At the start or end of the text. */
+    if (text_pos <= 0 || text_pos >= state->text_length) {
+        before = text_pos > 0 && unicode_has_property(RE_PROP_WORD,
+          char_at(state->text, text_pos - 1));
+        after = text_pos < state->text_length &&
+          unicode_has_property(RE_PROP_WORD, char_at(state->text, text_pos));
+
+        return !before && after;
+    }
+
+    char_0 = char_at(state->text, text_pos);
+    char_m1 = char_at(state->text, text_pos - 1);
+    prop = re_get_word_break(char_0);
+    prop_m1 = re_get_word_break(char_m1);
+
+    /* No break within CRLF. */
+    if (prop_m1 == RE_BREAK_CR && prop == RE_BREAK_LF)
+        return FALSE;
+
+    /* Break before and after Newlines (including CR and LF). */
+    if (prop_m1 == RE_BREAK_NEWLINE || prop_m1 == RE_BREAK_CR || prop_m1 ==
+      RE_BREAK_LF || prop == RE_BREAK_NEWLINE || prop == RE_BREAK_CR || prop ==
+      RE_BREAK_LF) {
+        before = unicode_has_property(RE_PROP_WORD, char_m1);
+        after = unicode_has_property(RE_PROP_WORD, char_0);
+
+        return !before && after;
+    }
+
+    /* No break just before Format or Extend characters. */
+    if (prop == RE_BREAK_EXTEND || prop == RE_BREAK_FORMAT)
+        return FALSE;
+
+    /* Get the property of the previous character. */
+    pos_m1 = text_pos - 1;
+    prop_m1 = RE_BREAK_OTHER;
+    while (pos_m1 >= 0) {
+        char_m1 = char_at(text, pos_m1);
+        prop_m1 = re_get_word_break(char_m1);
+        if (prop_m1 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT)
+            break;
+        --pos_m1;
+    }
+
+    /* No break between most letters. */
+    if (prop_m1 == RE_BREAK_ALETTER && prop == RE_BREAK_ALETTER)
+        return FALSE;
+
+    if (pos_m1 >= 0 && char_m1 == '\'' && is_unicode_vowel(char_0))
+        return TRUE;
+
+    pos_p1 = text_pos + 1;
+    prop_p1 = RE_BREAK_OTHER;
+    while (pos_p1 < state->text_length) {
+        char_p1 = char_at(text, pos_p1);
+        prop_p1 = re_get_word_break(char_p1);
+        if (prop_p1 != RE_BREAK_EXTEND && prop_p1 != RE_BREAK_FORMAT)
+            break;
+        --pos_p1;
+    }
+
+    /* No break letters across certain punctuation. */
+    if (prop_m1 == RE_BREAK_ALETTER && (prop == RE_BREAK_MIDLETTER || prop ==
+      RE_BREAK_MIDNUMLET) && prop_p1 == RE_BREAK_ALETTER)
+        return FALSE;
+
+    pos_m2 = pos_m1 - 1;
+    prop_m2 = RE_BREAK_OTHER;
+    while (pos_m2 >= 0) {
+        char_m2 = char_at(text, pos_m2);
+        prop_m2 = re_get_word_break(char_m2);
+        if (prop_m2 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT)
+            break;
+        --pos_m2;
+    }
+
+    if (prop_m2 == RE_BREAK_ALETTER && (prop_m1 == RE_BREAK_MIDLETTER ||
+      prop_m1 == RE_BREAK_MIDNUMLET) && prop == RE_BREAK_ALETTER)
+        return FALSE;
+
+    /* No break within sequences of digits, or digits adjacent to letters
+     * ("3a", or "A3").
+     */
+    if ((prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_ALETTER) && prop ==
+      RE_BREAK_NUMERIC)
+        return FALSE;
+
+    if (prop_m1 == RE_BREAK_NUMERIC && prop == RE_BREAK_ALETTER)
+        return FALSE;
+
+    /* No break within sequences, such as "3.2" or "3,456.789". */
+    if (prop_m2 == RE_BREAK_NUMERIC && (prop_m1 == RE_BREAK_MIDNUM || prop_m1
+      == RE_BREAK_MIDNUMLET) && prop == RE_BREAK_NUMERIC)
+        return FALSE;
+
+    if (prop_m1 == RE_BREAK_NUMERIC && (prop == RE_BREAK_MIDNUM || prop ==
+      RE_BREAK_MIDNUMLET) && prop_p1 == RE_BREAK_NUMERIC)
+        return FALSE;
+
+    /* No break between Katakana. */
+    if (prop_m1 == RE_BREAK_KATAKANA && prop == RE_BREAK_KATAKANA)
+        return FALSE;
+
+    /* No break from extenders. */
+    if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_NUMERIC || prop_m1
+      == RE_BREAK_KATAKANA || prop_m1 == RE_BREAK_EXTENDNUMLET) && prop ==
+      RE_BREAK_EXTENDNUMLET)
+        return FALSE;
+
+    if (prop_m1 == RE_BREAK_EXTENDNUMLET && (prop == RE_BREAK_ALETTER || prop
+      == RE_BREAK_NUMERIC || prop == RE_BREAK_KATAKANA))
+        return FALSE;
+
+    /* Otherwise, break everywhere (including around ideographs). */
+    before = unicode_has_property(RE_PROP_WORD, char_m1);
+    after = unicode_has_property(RE_PROP_WORD, char_0);
+
+    return !before && after;
+}
+
+/* Checks whether the current text position is at the end of a word. */
+static BOOL unicode_at_default_word_end(RE_State* state, Py_ssize_t text_pos) {
+    void* text;
+    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    BOOL before;
+    BOOL after;
+    RE_CODE char_0;
+    RE_CODE char_m1;
+    int prop;
+    int prop_m1;
+    Py_ssize_t pos_m1;
+    Py_ssize_t pos_p1;
+    RE_CODE char_p1;
+    int prop_p1;
+    Py_ssize_t pos_m2;
+    RE_CODE char_m2;
+    int prop_m2;
+
+    text = state->text;
+    char_at = state->char_at;
+
+    /* At the start or end of the text. */
+    if (text_pos <= 0 || text_pos >= state->text_length) {
+        before = text_pos > 0 && unicode_has_property(RE_PROP_WORD,
+          char_at(state->text, text_pos - 1));
+        after = text_pos < state->text_length &&
+          unicode_has_property(RE_PROP_WORD, char_at(state->text, text_pos));
+
+        return before && !after;
+    }
+
+    char_0 = char_at(state->text, text_pos);
+    char_m1 = char_at(state->text, text_pos - 1);
+    prop = re_get_word_break(char_0);
+    prop_m1 = re_get_word_break(char_m1);
+
+    /* No break within CRLF. */
+    if (prop_m1 == RE_BREAK_CR && prop == RE_BREAK_LF)
+        return FALSE;
+
+    /* Break before and after Newlines (including CR and LF). */
+    if (prop_m1 == RE_BREAK_NEWLINE || prop_m1 == RE_BREAK_CR || prop_m1 ==
+      RE_BREAK_LF || prop == RE_BREAK_NEWLINE || prop == RE_BREAK_CR || prop ==
+      RE_BREAK_LF) {
+        before = unicode_has_property(RE_PROP_WORD, char_m1);
+        after = unicode_has_property(RE_PROP_WORD, char_0);
+
+        return before && !after;
+    }
+
+    /* No break just before Format or Extend characters. */
+    if (prop == RE_BREAK_EXTEND || prop == RE_BREAK_FORMAT)
+        return FALSE;
+
+    /* Get the property of the previous character. */
+    pos_m1 = text_pos - 1;
+    prop_m1 = RE_BREAK_OTHER;
+    while (pos_m1 >= 0) {
+        char_m1 = char_at(text, pos_m1);
+        prop_m1 = re_get_word_break(char_m1);
+        if (prop_m1 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT)
+            break;
+        --pos_m1;
+    }
+
+    /* No break between most letters. */
+    if (prop_m1 == RE_BREAK_ALETTER && prop == RE_BREAK_ALETTER)
+        return FALSE;
+
+    if (pos_m1 >= 0 && char_m1 == '\'' && is_unicode_vowel(char_0))
+        return TRUE;
+
+    pos_p1 = text_pos + 1;
+    prop_p1 = RE_BREAK_OTHER;
+    while (pos_p1 < state->text_length) {
+        char_p1 = char_at(text, pos_p1);
+        prop_p1 = re_get_word_break(char_p1);
+        if (prop_p1 != RE_BREAK_EXTEND && prop_p1 != RE_BREAK_FORMAT)
+            break;
+        --pos_p1;
+    }
+
+    /* No break letters across certain punctuation. */
+    if (prop_m1 == RE_BREAK_ALETTER && (prop == RE_BREAK_MIDLETTER || prop ==
+      RE_BREAK_MIDNUMLET) && prop_p1 == RE_BREAK_ALETTER)
+        return FALSE;
+
+    pos_m2 = pos_m1 - 1;
+    prop_m2 = RE_BREAK_OTHER;
+    while (pos_m2 >= 0) {
+        char_m2 = char_at(text, pos_m2);
+        prop_m2 = re_get_word_break(char_m2);
+        if (prop_m2 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT)
+            break;
+        --pos_m2;
+    }
+
+    if (prop_m2 == RE_BREAK_ALETTER && (prop_m1 == RE_BREAK_MIDLETTER ||
+      prop_m1 == RE_BREAK_MIDNUMLET) && prop == RE_BREAK_ALETTER)
+        return FALSE;
+
+    /* No break within sequences of digits, or digits adjacent to letters
+     * ("3a", or "A3").
+     */
+    if ((prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_ALETTER) && prop ==
+      RE_BREAK_NUMERIC)
+        return FALSE;
+
+    if (prop_m1 == RE_BREAK_NUMERIC && prop == RE_BREAK_ALETTER)
+        return FALSE;
+
+    /* No break within sequences, such as "3.2" or "3,456.789". */
+    if (prop_m2 == RE_BREAK_NUMERIC && (prop_m1 == RE_BREAK_MIDNUM || prop_m1
+      == RE_BREAK_MIDNUMLET) && prop == RE_BREAK_NUMERIC)
+        return FALSE;
+
+    if (prop_m1 == RE_BREAK_NUMERIC && (prop == RE_BREAK_MIDNUM || prop ==
+      RE_BREAK_MIDNUMLET) && prop_p1 == RE_BREAK_NUMERIC)
+        return FALSE;
+
+    /* No break between Katakana. */
+    if (prop_m1 == RE_BREAK_KATAKANA && prop == RE_BREAK_KATAKANA)
+        return FALSE;
+
+    /* No break from extenders. */
+    if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_NUMERIC || prop_m1
+      == RE_BREAK_KATAKANA || prop_m1 == RE_BREAK_EXTENDNUMLET) && prop ==
+      RE_BREAK_EXTENDNUMLET)
+        return FALSE;
+
+    if (prop_m1 == RE_BREAK_EXTENDNUMLET && (prop == RE_BREAK_ALETTER || prop
+      == RE_BREAK_NUMERIC || prop == RE_BREAK_KATAKANA))
+        return FALSE;
+
+    /* Otherwise, break everywhere (including around ideographs). */
+    before = unicode_has_property(RE_PROP_WORD, char_m1);
+    after = unicode_has_property(RE_PROP_WORD, char_0);
+
+    return before && !after;
+}
+
 /* Checks whether the current text position is on a grapheme boundary. */
 static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
   {
@@ -1148,7 +1522,7 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
     int prop;
     int prop_m1;
 
-    /* Break at the start and end of text. */
+    /* Break at the start and end of the text. */
     if (text_pos <= 0 || text_pos >= state->text_length)
         return TRUE;
 
@@ -1259,7 +1633,11 @@ static RE_EncodingTable unicode_encoding = {
     unicode_title,
     re_is_same_char_ign,
     unicode_at_boundary,
+    unicode_at_word_start,
+    unicode_at_word_end,
     unicode_at_default_boundary,
+    unicode_at_default_word_start,
+    unicode_at_default_word_end,
     unicode_at_grapheme_boundary,
     unicode_is_line_sep,
     unicode_at_line_start,
@@ -3754,6 +4132,11 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
           test->match)
             return FALSE;
         break;
+    case RE_OP_DEFAULT_START_OF_WORD: /* At a default start of a word. */
+        if (state->encoding->at_default_word_start(state, text_pos) !=
+          test->match)
+            return FALSE;
+        break;
     case RE_OP_END_OF_LINE: /* At the end of a line. */
         if (text_pos != state->text_length && char_at(text, text_pos) != '\n')
             return FALSE;
@@ -3766,13 +4149,22 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         if (text_pos != state->text_length)
             return FALSE;
         break;
-    case RE_OP_END_OF_STRING_LINE: /* At end of string or final newline. */
+    case RE_OP_END_OF_STRING_LINE: /* At the end of the string or the final newline. */
         if (text_pos != state->text_length && text_pos != state->final_newline)
             return FALSE;
         break;
-    case RE_OP_END_OF_STRING_LINE_U: /* At end of string or final newline. */
+    case RE_OP_END_OF_STRING_LINE_U: /* At the end of the string or the final newline. */
         if (text_pos != state->text_length && text_pos !=
           state->final_line_sep)
+            return FALSE;
+        break;
+    case RE_OP_END_OF_WORD: /* At end of a word. */
+        if (state->encoding->at_word_end(state, text_pos) != test->match)
+            return FALSE;
+        break;
+    case RE_OP_DEFAULT_END_OF_WORD: /* At a default end of a word. */
+        if (state->encoding->at_default_word_end(state, text_pos) !=
+          test->match)
             return FALSE;
         break;
     case RE_OP_GRAPHEME_BOUNDARY: /* At a grapheme boundary. */
@@ -3834,6 +4226,10 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         break;
     case RE_OP_START_OF_STRING: /* At the start of the string. */
         if (text_pos != 0)
+            return FALSE;
+        break;
+    case RE_OP_START_OF_WORD: /* At start of a word. */
+        if (state->encoding->at_word_start(state, text_pos) != test->match)
             return FALSE;
         break;
     case RE_OP_STRING: /* A string literal. */
@@ -4316,6 +4712,44 @@ again:
         }
         break;
     }
+    case RE_OP_DEFAULT_END_OF_WORD: /* At a default end of a word. */
+    {
+        BOOL match;
+        Py_ssize_t step;
+        BOOL (*at_default_word_end)(RE_State* state, Py_ssize_t start_pos);
+
+        match = test->match;
+        step = state->reverse ? -1 : 1;
+        at_default_word_end = state->encoding->at_default_word_end;
+
+        for (;;) {
+            if (at_default_word_end(state, start_pos) == match)
+                break;
+            if (start_pos == limit)
+                return FALSE;
+            start_pos += step;
+        }
+        break;
+    }
+    case RE_OP_DEFAULT_START_OF_WORD: /* At a default start of a word. */
+    {
+        BOOL match;
+        Py_ssize_t step;
+        BOOL (*at_default_word_start)(RE_State* state, Py_ssize_t start_pos);
+
+        match = test->match;
+        step = state->reverse ? -1 : 1;
+        at_default_word_start = state->encoding->at_default_word_start;
+
+        for (;;) {
+            if (at_default_word_start(state, start_pos) == match)
+                break;
+            if (start_pos == limit)
+                return FALSE;
+            start_pos += step;
+        }
+        break;
+    }
     case RE_OP_END_OF_LINE: /* At the end of a line. */
     {
         Py_ssize_t step;
@@ -4395,6 +4829,25 @@ again:
                 return FALSE;
         }
         break;
+    case RE_OP_END_OF_WORD: /* At end of a word. */
+    {
+        BOOL match;
+        Py_ssize_t step;
+        BOOL (*at_word_end)(RE_State* state, Py_ssize_t start_pos);
+
+        match = test->match;
+        step = state->reverse ? -1 : 1;
+        at_word_end = state->encoding->at_word_end;
+
+        for (;;) {
+            if (at_word_end(state, start_pos) == match)
+                break;
+            if (start_pos == limit)
+                return FALSE;
+            start_pos += step;
+        }
+        break;
+    }
     case RE_OP_GRAPHEME_BOUNDARY: /* At a grapheme boundary. */
     {
         BOOL match;
@@ -4522,6 +4975,25 @@ again:
 
         start_pos = 0;
         break;
+    case RE_OP_START_OF_WORD: /* At start of a word. */
+    {
+        BOOL match;
+        Py_ssize_t step;
+        BOOL (*at_word_start)(RE_State* state, Py_ssize_t start_pos);
+
+        match = test->match;
+        step = state->reverse ? -1 : 1;
+        at_word_start = state->encoding->at_word_start;
+
+        for (;;) {
+            if (at_word_start(state, start_pos) == match)
+                break;
+            if (start_pos == limit)
+                return FALSE;
+            start_pos += step;
+        }
+        break;
+    }
     case RE_OP_STRING: /* A string literal. */
         start_pos = string_search(safe_state, test, start_pos, limit);
         if (start_pos < 0)
@@ -5108,7 +5580,7 @@ Py_LOCAL_INLINE(int) string_set_match(RE_SafeState* safe_state, RE_Node* node)
     acquire_GIL(safe_state);
 
     /* Fetch the string set. */
-    string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
+    string_set = PyList_GET_ITEM(state->pattern->named_list_indexes, index);
     if (!string_set)
         goto error;
 
@@ -5181,7 +5653,7 @@ Py_LOCAL_INLINE(int) string_set_match_ign(RE_SafeState* safe_state, RE_Node*
     acquire_GIL(safe_state);
 
     /* Fetch the string set. */
-    string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
+    string_set = PyList_GET_ITEM(state->pattern->named_list_indexes, index);
     if (!string_set)
         goto error;
 
@@ -5249,7 +5721,7 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
     acquire_GIL(safe_state);
 
     /* Fetch the string set. */
-    string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
+    string_set = PyList_GET_ITEM(state->pattern->named_list_indexes, index);
     if (!string_set)
         goto error;
 
@@ -5317,7 +5789,7 @@ Py_LOCAL_INLINE(BOOL) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
     acquire_GIL(safe_state);
 
     /* Fetch the string set. */
-    string_set = PyList_GET_ITEM(state->pattern->ref_lists, index);
+    string_set = PyList_GET_ITEM(state->pattern->named_list_indexes, index);
     if (!string_set)
         goto error;
 
@@ -6676,6 +7148,33 @@ advance:
             } else
                 goto backtrack;
             break;
+        case RE_OP_DEFAULT_END_OF_WORD: /* At a default end of a word. */
+            TRACE(("%s %d\n", re_op_text[node->op], node->match))
+
+            if (encoding->at_default_word_end(state, text_pos) == node->match)
+                node = node->next_1.node;
+            else if (node->status & RE_STATUS_FUZZY) {
+                if (!fuzzy_match_zero(safe_state, search, &text_pos, &node))
+                    return RE_ERROR_MEMORY;
+                if (!node)
+                    goto backtrack;
+            } else
+                goto backtrack;
+            break;
+        case RE_OP_DEFAULT_START_OF_WORD: /* At a default start of a word. */
+            TRACE(("%s %d\n", re_op_text[node->op], node->match))
+
+            if (encoding->at_default_word_start(state, text_pos) ==
+              node->match)
+                node = node->next_1.node;
+            else if (node->status & RE_STATUS_FUZZY) {
+                if (!fuzzy_match_zero(safe_state, search, &text_pos, &node))
+                    return RE_ERROR_MEMORY;
+                if (!node)
+                    goto backtrack;
+            } else
+                goto backtrack;
+            break;
         case RE_OP_END_FUZZY: /* End of fuzzy matching. */
             TRACE(("%s\n", re_op_text[node->op]))
 
@@ -7015,6 +7514,19 @@ advance:
             TRACE(("%s\n", re_op_text[node->op]))
 
             if (text_pos == text_length || text_pos == state->final_line_sep)
+                node = node->next_1.node;
+            else if (node->status & RE_STATUS_FUZZY) {
+                if (!fuzzy_match_zero(safe_state, search, &text_pos, &node))
+                    return RE_ERROR_MEMORY;
+                if (!node)
+                    goto backtrack;
+            } else
+                goto backtrack;
+            break;
+        case RE_OP_END_OF_WORD: /* At end of a word. */
+            TRACE(("%s %d\n", re_op_text[node->op], node->match))
+
+            if (encoding->at_word_end(state, text_pos) == node->match)
                 node = node->next_1.node;
             else if (node->status & RE_STATUS_FUZZY) {
                 if (!fuzzy_match_zero(safe_state, search, &text_pos, &node))
@@ -7753,6 +8265,19 @@ advance:
             } else
                 goto backtrack;
             break;
+        case RE_OP_START_OF_WORD: /* At start of a word. */
+            TRACE(("%s %d\n", re_op_text[node->op], node->match))
+
+            if (encoding->at_word_start(state, text_pos) == node->match)
+                node = node->next_1.node;
+            else if (node->status & RE_STATUS_FUZZY) {
+                if (!fuzzy_match_zero(safe_state, search, &text_pos, &node))
+                    return RE_ERROR_MEMORY;
+                if (!node)
+                    goto backtrack;
+            } else
+                goto backtrack;
+            break;
         case RE_OP_STRING: /* A string literal. */
         {
             Py_ssize_t length;
@@ -8013,16 +8538,20 @@ backtrack:
             break;
         case RE_OP_BOUNDARY: /* At a word boundary. */
         case RE_OP_DEFAULT_BOUNDARY: /* At a default word boundary. */
+        case RE_OP_DEFAULT_END_OF_WORD: /* At a default end of a word. */
+        case RE_OP_DEFAULT_START_OF_WORD: /* At a default start of a word. */
         case RE_OP_END_OF_LINE: /* At the end of a line. */
         case RE_OP_END_OF_LINE_U: /* At the end of a line. */
         case RE_OP_END_OF_STRING: /* At the end of the string. */
         case RE_OP_END_OF_STRING_LINE: /* At end of string or final newline. */
         case RE_OP_END_OF_STRING_LINE_U: /* At end of string or final newline. */
+        case RE_OP_END_OF_WORD: /* At end of a word. */
         case RE_OP_GRAPHEME_BOUNDARY: /* At a grapheme boundary. */
         case RE_OP_SEARCH_ANCHOR: /* At the start of the search. */
         case RE_OP_START_OF_LINE: /* At the start of a line. */
         case RE_OP_START_OF_LINE_U: /* At the start of a line. */
         case RE_OP_START_OF_STRING: /* At the start of the string. */
+        case RE_OP_START_OF_WORD: /* At start of a word. */
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             if (!retry_fuzzy_match_zero(safe_state, search, &text_pos, &node))
@@ -9314,8 +9843,8 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
 
     for (;;) {
         /* If there's a better match, it won't start earlier in the string than
-         * the current best match, so there's no need to start earlier than that
-         * match.
+         * the current best match, so there's no need to start earlier than
+         * that match.
          */
         state->text_pos = best_match_pos;
         state->must_advance = must_advance;
@@ -12775,15 +13304,17 @@ static void pattern_dealloc(PatternObject* self) {
     Py_XDECREF(self->pattern);
     Py_XDECREF(self->groupindex);
     Py_XDECREF(self->indexgroup);
-    Py_DECREF(self->ref_lists);
+    Py_DECREF(self->named_lists);
+    Py_DECREF(self->named_list_indexes);
     PyObject_DEL(self);
 }
 
 static PyMemberDef pattern_members[] = {
-    {"pattern",    T_OBJECT,   offsetof(PatternObject, pattern),     READONLY},
-    {"flags",      T_INT,      offsetof(PatternObject, flags),       READONLY},
-    {"groups",     T_PYSSIZET, offsetof(PatternObject, group_count), READONLY},
-    {"groupindex", T_OBJECT,   offsetof(PatternObject, groupindex),  READONLY},
+    {"pattern",     T_OBJECT,   offsetof(PatternObject, pattern),     READONLY},
+    {"flags",       T_INT,      offsetof(PatternObject, flags),       READONLY},
+    {"groups",      T_PYSSIZET, offsetof(PatternObject, group_count), READONLY},
+    {"groupindex",  T_OBJECT,   offsetof(PatternObject, groupindex),  READONLY},
+    {"named_lists", T_OBJECT,   offsetof(PatternObject, named_lists), READONLY},
     {NULL}  /* Sentinel */
 };
 
@@ -13247,11 +13778,14 @@ Py_LOCAL_INLINE(void) set_test_node(RE_NextNode* next) {
     case RE_OP_CHARACTER_IGN_REV:
     case RE_OP_CHARACTER_REV:
     case RE_OP_DEFAULT_BOUNDARY:
+    case RE_OP_DEFAULT_END_OF_WORD:
+    case RE_OP_DEFAULT_START_OF_WORD:
     case RE_OP_END_OF_LINE:
     case RE_OP_END_OF_LINE_U:
     case RE_OP_END_OF_STRING:
     case RE_OP_END_OF_STRING_LINE:
     case RE_OP_END_OF_STRING_LINE_U:
+    case RE_OP_END_OF_WORD:
     case RE_OP_GRAPHEME_BOUNDARY:
     case RE_OP_PROPERTY:
     case RE_OP_PROPERTY_REV:
@@ -13269,6 +13803,7 @@ Py_LOCAL_INLINE(void) set_test_node(RE_NextNode* next) {
     case RE_OP_START_OF_LINE:
     case RE_OP_START_OF_LINE_U:
     case RE_OP_START_OF_STRING:
+    case RE_OP_START_OF_WORD:
     case RE_OP_STRING:
     case RE_OP_STRING_IGN:
     case RE_OP_STRING_IGN_REV:
@@ -13318,14 +13853,18 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
         case RE_OP_BIG_BITSET_REV:
         case RE_OP_BOUNDARY:
         case RE_OP_DEFAULT_BOUNDARY:
+        case RE_OP_DEFAULT_END_OF_WORD:
+        case RE_OP_DEFAULT_START_OF_WORD:
         case RE_OP_END_OF_LINE:
         case RE_OP_END_OF_LINE_U:
         case RE_OP_END_OF_STRING:
         case RE_OP_END_OF_STRING_LINE:
         case RE_OP_END_OF_STRING_LINE_U:
+        case RE_OP_END_OF_WORD:
         case RE_OP_GRAPHEME_BOUNDARY:
         case RE_OP_PROPERTY:
         case RE_OP_PROPERTY_REV:
+        case RE_OP_SEARCH_ANCHOR:
         case RE_OP_SET_DIFF:
         case RE_OP_SET_DIFF_REV:
         case RE_OP_SET_INTER:
@@ -13339,7 +13878,7 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
         case RE_OP_START_OF_LINE:
         case RE_OP_START_OF_LINE_U:
         case RE_OP_START_OF_STRING:
-        case RE_OP_SEARCH_ANCHOR:
+        case RE_OP_START_OF_WORD:
             early = FALSE;
             node = node->next_1.node;
             break;
@@ -14716,7 +15255,11 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
             break;
         case RE_OP_BOUNDARY:
         case RE_OP_DEFAULT_BOUNDARY:
+        case RE_OP_DEFAULT_END_OF_WORD:
+        case RE_OP_DEFAULT_START_OF_WORD:
+        case RE_OP_END_OF_WORD:
         case RE_OP_GRAPHEME_BOUNDARY:
+        case RE_OP_START_OF_WORD:
             /* A word or grapheme boundary. */
             if (!build_BOUNDARY(args))
                 return FALSE;
@@ -14898,7 +15441,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     PyObject* code_list;
     PyObject* groupindex;
     PyObject* indexgroup;
-    PyObject* ref_lists;
+    PyObject* named_lists;
+    PyObject* named_list_indexes;
     Py_ssize_t code_len;
     RE_CODE* code;
     Py_ssize_t i;
@@ -14908,8 +15452,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     BOOL unicode;
     BOOL ok;
 
-    if (!PyArg_ParseTuple(args, "OnOOOO", &pattern, &flags, &code_list,
-      &groupindex, &indexgroup, &ref_lists))
+    if (!PyArg_ParseTuple(args, "OnOOOOO", &pattern, &flags, &code_list,
+      &groupindex, &indexgroup, &named_lists, &named_list_indexes))
         return NULL;
 
     /* Read the regular expression code. */
@@ -14950,7 +15494,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->group_end_index = 0;
     self->groupindex = groupindex;
     self->indexgroup = indexgroup;
-    self->ref_lists = ref_lists;
+    self->named_lists = named_lists;
+    self->named_list_indexes = named_list_indexes;
     self->node_capacity = 0;
     self->node_count = 0;
     self->node_list = NULL;
@@ -14966,7 +15511,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     Py_INCREF(self->pattern);
     Py_INCREF(self->groupindex);
     Py_INCREF(self->indexgroup);
-    Py_INCREF(self->ref_lists);
+    Py_INCREF(self->named_lists);
+    Py_INCREF(self->named_list_indexes);
 
     /* Initialise the character encoding. */
     unicode = (flags & RE_FLAG_UNICODE) != 0;
