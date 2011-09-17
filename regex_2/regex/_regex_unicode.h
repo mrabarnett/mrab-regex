@@ -1,5 +1,7 @@
 typedef unsigned char RE_UINT8;
+typedef signed char RE_INT8;
 typedef unsigned short RE_UINT16;
+typedef signed short RE_INT16;
 typedef unsigned int RE_UINT32;
 typedef signed int RE_INT32;
 
@@ -8,7 +10,10 @@ enum {FALSE, TRUE};
 
 #define RE_ASCII_MAX 0x7F
 #define RE_LOCALE_MAX 0xFF
-#define RE_MAX_CASE_DIFFS 3
+#define RE_UNICODE_MAX 0x10FFFF
+
+#define RE_MAX_CASES 4
+#define RE_MAX_FOLDED 3
 
 typedef struct RE_Property {
     RE_UINT16 name;
@@ -40,22 +45,22 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_PROP_S_MASK 0x0F000000
 #define RE_PROP_Z_MASK 0x00007000
 
-#define RE_PROP_ALNUM 0x430001
-#define RE_PROP_ALPHA 0x70001
-#define RE_PROP_ANY 0x440001
-#define RE_PROP_ASCII 0x450001
-#define RE_PROP_ASSIGNED 0x460001
-#define RE_PROP_BLANK 0x470001
-#define RE_PROP_CNTRL 0xF
-#define RE_PROP_DIGIT 0x9
-#define RE_PROP_GRAPH 0x480001
-#define RE_PROP_LOWER 0x80001
-#define RE_PROP_PRINT 0x490001
-#define RE_PROP_PUNCT 0x22
+#define RE_PROP_ALNUM 0x460001
+#define RE_PROP_ALPHA 0x070001
+#define RE_PROP_ANY 0x470001
+#define RE_PROP_ASCII 0x480001
+#define RE_PROP_ASSIGNED 0x490001
+#define RE_PROP_BLANK 0x4A0001
+#define RE_PROP_CNTRL 0x00000F
+#define RE_PROP_DIGIT 0x000009
+#define RE_PROP_GRAPH 0x4B0001
+#define RE_PROP_LOWER 0x080001
+#define RE_PROP_PRINT 0x4C0001
+#define RE_PROP_PUNCT 0x000022
 #define RE_PROP_SPACE 0x190001
-#define RE_PROP_UPPER 0x90001
-#define RE_PROP_WORD 0x4A0001
-#define RE_PROP_XDIGIT 0x4B0001
+#define RE_PROP_UPPER 0x090001
+#define RE_PROP_WORD 0x4D0001
+#define RE_PROP_XDIGIT 0x4E0001
 
 #define RE_BREAK_OTHER 0
 #define RE_BREAK_CR 1
@@ -84,10 +89,11 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_GBREAK_LV 10
 #define RE_GBREAK_LVT 11
 
-extern char* re_strings[946];
-extern RE_Property re_properties[141];
-extern RE_PropertyValue re_property_values[1734];
-extern RE_GetPropertyFunc re_get_property[78];
+extern char* re_strings[980];
+extern RE_Property re_properties[143];
+extern RE_PropertyValue re_property_values[1051];
+extern RE_UINT16 re_expand_on_folding[104];
+extern RE_GetPropertyFunc re_get_property[79];
 
 RE_UINT32 re_get_general_category(RE_UINT32 ch);
 RE_UINT32 re_get_block(RE_UINT32 ch);
@@ -156,6 +162,9 @@ RE_UINT32 re_get_joining_type(RE_UINT32 ch);
 RE_UINT32 re_get_line_break(RE_UINT32 ch);
 RE_UINT32 re_get_numeric_type(RE_UINT32 ch);
 RE_UINT32 re_get_numeric_value(RE_UINT32 ch);
+RE_UINT32 re_get_bidi_mirrored(RE_UINT32 ch);
+RE_UINT32 re_get_indic_matra_category(RE_UINT32 ch);
+RE_UINT32 re_get_indic_syllabic_category(RE_UINT32 ch);
 RE_UINT32 re_get_alphanumeric(RE_UINT32 ch);
 RE_UINT32 re_get_any(RE_UINT32 ch);
 RE_UINT32 re_get_ascii(RE_UINT32 ch);
@@ -165,6 +174,5 @@ RE_UINT32 re_get_graph(RE_UINT32 ch);
 RE_UINT32 re_get_print(RE_UINT32 ch);
 RE_UINT32 re_get_word(RE_UINT32 ch);
 RE_UINT32 re_get_xdigit(RE_UINT32 ch);
-BOOL re_is_same_char_ign(RE_UINT32 ch1, RE_UINT32 ch2);
-int re_get_all_cases(RE_UINT32 ch, RE_UINT32* cases);
-RE_UINT32 re_folded_case(RE_UINT32 ch);
+int re_get_all_cases(RE_UINT32 ch, RE_UINT32* codepoints);
+int re_get_case_folding(RE_UINT32 ch, RE_UINT32* codepoints);

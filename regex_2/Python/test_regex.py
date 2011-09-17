@@ -15,6 +15,7 @@ class Test:
     UNKNOWN_GROUP_I = "IndexError('unknown group',)"
     UNKNOWN_GROUP = "error('unknown group',)"
     BAD_ESCAPE = "error('bad escape',)"
+    BAD_OCTAL_ESCAPE = "error('bad octal escape',)"
     BAD_SET = "error('bad set',)"
     STR_PAT_ON_BYTES = """TypeError("can't use a string pattern on a bytes-like object",)"""
     BYTES_PAT_ON_STR = """TypeError("can't use a bytes pattern on a string-like object",)"""
@@ -180,11 +181,13 @@ class Test:
         self.expect(lambda: regex.sub('x', r'\09', 'x'), repr("\0" + "9"))
         self.expect(lambda: regex.sub('x', r'\0a', 'x'), repr("\0" + "a"))
 
-        # 15..16
-        self.expect(lambda: regex.sub('x', r'\400', 'x'), repr("\0"))
-        self.expect(lambda: regex.sub('x', r'\777', 'x'), repr("\377"))
+        # 15..18
+        self.expect(lambda: regex.sub('x', r'\400', 'x'), repr("\x00"))
+        self.expect(lambda: regex.sub('x', r'\777', 'x'), repr("\xFF"))
+        self.expect(lambda: regex.sub(u'x', ur'\400', u'x'), repr(u"\u0100"))
+        self.expect(lambda: regex.sub(u'x', ur'\777', u'x'), repr(u"\u01FF"))
 
-        # 17..28
+        # 19..30
         self.expect(lambda: regex.sub('x', r'\1', 'x'), self.INVALID_GROUP_REF)
         self.expect(lambda: regex.sub('x', r'\8', 'x'), self.INVALID_GROUP_REF)
         self.expect(lambda: regex.sub('x', r'\9', 'x'), self.INVALID_GROUP_REF)
@@ -208,7 +211,7 @@ class Test:
           self.INVALID_GROUP_REF) # r'\80' + '0'
 
         # In Python 2.3 (etc), these loop endlessly in sre_parser.py.
-        # 29..31
+        # 31..33
         self.expect(lambda: regex.sub('(((((((((((x)))))))))))', r'\11', 'x'),
           repr('x'))
         self.expect(lambda: regex.sub('((((((((((y))))))))))(.)', r'\118',
@@ -315,11 +318,11 @@ class Test:
           '']))
 
         # 17..19
-        self.expect(lambda: regex.split(r"(?n)\b", "a b c"), repr(['', 'a',
+        self.expect(lambda: regex.split(r"(?V1)\b", "a b c"), repr(['', 'a',
           ' ', 'b', ' ', 'c', '']))
-        self.expect(lambda: regex.split(r"(?n)\m", "a b c"), repr(['', 'a ',
+        self.expect(lambda: regex.split(r"(?V1)\m", "a b c"), repr(['', 'a ',
           'b ', 'c']))
-        self.expect(lambda: regex.split(r"(?n)\M", "a b c"), repr(['a', ' b',
+        self.expect(lambda: regex.split(r"(?V1)\M", "a b c"), repr(['a', ' b',
           ' c', '']))
 
     def test_qualified_re_split(self):
@@ -522,8 +525,10 @@ class Test:
         # 1..6
         self.expect(lambda: regex.compile("(?i)(a)(b)").pattern,
           repr('(?i)(a)(b)'))
-        self.expect(lambda: regex.compile("(?i)(a)(b)").flags, repr(regex.I))
-        self.expect(lambda: regex.compile(u"(?i)(a)(b)").flags, repr(regex.I))
+        self.expect(lambda: regex.compile("(?i)(a)(b)").flags, repr(regex.A |
+          regex.I | regex.DEFAULT_VERSION))
+        self.expect(lambda: regex.compile(u"(?i)(a)(b)").flags, repr(regex.I |
+          regex.U | regex.DEFAULT_VERSION))
         self.expect(lambda: regex.compile("(?i)(a)(b)").groups, repr(2))
         self.expect(lambda: regex.compile("(?i)(a)(b)").groupindex, repr({}))
         self.expect(lambda:
@@ -676,10 +681,52 @@ class Test:
           self.MATCH_CLASS)
         self.expect(lambda: type(regex.match(ur"(?iu)s", u"\u017F")),
           self.MATCH_CLASS)
-#        self.expect(lambda: type(regex.match(ur"(?iu)ss", u"\xDF")),
-#          self.MATCH_CLASS)
-#        self.expect(lambda: type(regex.match(ur"(?iu)ffi", u"\uFB03")),
-#          self.MATCH_CLASS)
+
+    def test_case_folding(self):
+        # 1..4
+        self.expect(lambda: regex.search(ur"(?iu)ss", u"SS").span(),
+          repr((0, 2)))
+        self.expect(lambda: regex.search(ur"(?iu)SS", u"ss").span(),
+          repr((0, 2)))
+        self.expect(lambda: regex.search(ur"(?iu)SS",
+          u"\N{LATIN SMALL LETTER SHARP S}").span(), repr((0, 1)))
+        self.expect(lambda:
+          regex.search(ur"(?i)\N{LATIN SMALL LETTER SHARP S}", u"SS").span(),
+          repr((0, 2)))
+
+        # 5..7
+        self.expect(lambda: regex.search(ur"(?iu)\N{LATIN SMALL LIGATURE ST}",
+          u"ST").span(), repr((0, 2)))
+        self.expect(lambda: regex.search(ur"(?iu)ST",
+          u"\N{LATIN SMALL LIGATURE ST}").span(), repr((0, 1)))
+        self.expect(lambda: regex.search(ur"(?iu)ST",
+          u"\N{LATIN SMALL LIGATURE LONG S T}").span(), repr((0, 1)))
+
+        # 8..12
+        self.expect(lambda: regex.search(ur"(?iu)SST",
+          u"\N{LATIN SMALL LETTER SHARP S}t").span(), repr((0, 2)))
+        self.expect(lambda: regex.search(ur"(?iu)SST",
+          u"s\N{LATIN SMALL LIGATURE LONG S T}").span(), repr((0, 2)))
+        self.expect(lambda: regex.search(ur"(?iu)SST",
+          u"s\N{LATIN SMALL LIGATURE ST}").span(), repr((0, 2)))
+        self.expect(lambda: regex.search(ur"(?iu)\N{LATIN SMALL LIGATURE ST}",
+          u"SST").span(), repr((1, 3)))
+        self.expect(lambda: regex.search(ur"(?iu)SST",
+          u"s\N{LATIN SMALL LIGATURE ST}").span(), repr((0, 2)))
+
+        # 13..18
+        self.expect(lambda: regex.search(ur"(?iu)FFI",
+          u"\N{LATIN SMALL LIGATURE FFI}").span(), repr((0, 1)))
+        self.expect(lambda: regex.search(ur"(?iu)FFI",
+          u"\N{LATIN SMALL LIGATURE FF}i").span(), repr((0, 2)))
+        self.expect(lambda: regex.search(ur"(?iu)FFI",
+          u"f\N{LATIN SMALL LIGATURE FI}").span(), repr((0, 2)))
+        self.expect(lambda: regex.search(ur"(?iu)\N{LATIN SMALL LIGATURE FFI}",
+          u"FFI").span(), repr((0, 3)))
+        self.expect(lambda: regex.search(ur"(?iu)\N{LATIN SMALL LIGATURE FF}i",
+          u"FFI").span(), repr((0, 3)))
+        self.expect(lambda: regex.search(ur"(?iu)f\N{LATIN SMALL LIGATURE FI}",
+          u"FFI").span(), repr((0, 3)))
 
     def test_category(self):
         self.expect(lambda: regex.match(r"(\s)", " ")[1], repr(' '))
@@ -759,7 +806,7 @@ class Test:
               self.MATCH_CLASS)
             self.expect(lambda: type(regex.match(r"[\x%02xz]" % i, chr(i))),
               self.MATCH_CLASS)
-        self.expect(lambda: regex.match(r"[\911]", ""), self.BAD_ESCAPE)
+        self.expect(lambda: regex.match(r"[\911]", ""), self.BAD_OCTAL_ESCAPE)
 
     def test_bug_113254(self):
         # 1..3
@@ -950,9 +997,9 @@ class Test:
         # 7..10
         self.expect(lambda: type(regex.match(r"(?i)a", "A")), self.MATCH_CLASS)
         self.expect(lambda: type(regex.match(r"a(?i)", "A")), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(r"(?in)a", "A")),
+        self.expect(lambda: type(regex.match(r"(?iV1)a", "A")),
           self.MATCH_CLASS)
-        self.expect(lambda: regex.match(r"a(?in)", "A"), repr(None))
+        self.expect(lambda: regex.match(r"a(?iV1)", "A"), repr(None))
 
     def test_dollar_matches_twice(self):
         # $ matches the end of string, and just before the terminating \n.
@@ -1000,10 +1047,14 @@ class Test:
     def test_subscripting_match(self):
         self.index += 1
         m = regex.match(r'(?<a>\w)', 'xy')
-        if m[0] != m.group(0) or m[1] != m.group(1):
-            record_failure("Failed")
+        if not m:
+            self.record_failure("Failed: expected match but returned None")
+        elif not m or m[0] != m.group(0) or m[1] != m.group(1):
+            self.record_failure("Failed")
         self.index += 1
-        if m[:] != ('x', 'x'):
+        if not m:
+            self.record_failure("Failed: expected match but returned None")
+        elif m[:] != ('x', 'x'):
             self.record_failure("Failed: expected \"('x', 'x')\" but got %s instead"
              % repr(m[:]))
 
@@ -1230,10 +1281,10 @@ class Test:
           repr([u'\u0939\u093f\u0928\u094d\u0926\u0940']))
         self.expect(lambda: regex.findall(ur"(?u)\W+",
           u" \u0939\u093f\u0928\u094d\u0926\u0940,"), repr([u' ', u',']))
-        self.expect(lambda: regex.split(ur"(?un)\b",
+        self.expect(lambda: regex.split(ur"(?uV1)\b",
           u" \u0939\u093f\u0928\u094d\u0926\u0940,"), repr([u' ',
           u'\u0939\u093f\u0928\u094d\u0926\u0940', u',']))
-        self.expect(lambda: regex.split(ur"(?un)\B",
+        self.expect(lambda: regex.split(ur"(?uV1)\B",
           u" \u0939\u093f\u0928\u094d\u0926\u0940,"), repr([u'', u' \u0939',
           u'\u093f', u'\u0928', u'\u094d', u'\u0926', u'\u0940,', u'']))
 
@@ -1267,21 +1318,21 @@ class Test:
         # 10..13
         self.expect(lambda: regex.findall(r"^|\w+", "foo bar"), repr(['',
           'foo', 'bar']))
-        self.expect(lambda: regex.findall(r"(?n)^|\w+", "foo bar"), repr(['',
+        self.expect(lambda: regex.findall(r"(?V1)^|\w+", "foo bar"), repr(['',
           'foo', 'bar']))
         self.expect(lambda: regex.findall(r"(?r)^|\w+", "foo bar"),
           repr(['bar', 'foo', '']))
-        self.expect(lambda: regex.findall(r"(?nr)^|\w+", "foo bar"),
+        self.expect(lambda: regex.findall(r"(?rV1)^|\w+", "foo bar"),
           repr(['bar', 'foo', '']))
 
         # 14..17
         self.expect(lambda: [m[0] for m in regex.finditer(r"^|\w+",
           "foo bar")], repr(['', 'foo', 'bar']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?n)^|\w+",
+        self.expect(lambda: [m[0] for m in regex.finditer(r"(?V1)^|\w+",
           "foo bar")], repr(['', 'foo', 'bar']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)^|\w+",
           "foo bar")], repr(['bar', 'foo', '']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?nr)^|\w+",
+        self.expect(lambda: [m[0] for m in regex.finditer(r"(?rV1)^|\w+",
           "foo bar")], repr(['bar', 'foo', '']))
 
         # 18..21
@@ -1296,11 +1347,11 @@ class Test:
         # 22..25
         self.expect(lambda: regex.findall(r"q*", "qqwe"), repr(['qq', '', '',
           '']))
-        self.expect(lambda: regex.findall(r"(?n)q*", "qqwe"), repr(['qq', '',
+        self.expect(lambda: regex.findall(r"(?V1)q*", "qqwe"), repr(['qq', '',
           '', '']))
         self.expect(lambda: regex.findall(r"(?r)q*", "qqwe"), repr(['', '',
           'qq', '']))
-        self.expect(lambda: regex.findall(r"(?nr)q*", "qqwe"), repr(['', '',
+        self.expect(lambda: regex.findall(r"(?rV1)q*", "qqwe"), repr(['', '',
           'qq', '']))
 
         # 26..29
@@ -1409,7 +1460,7 @@ class Test:
         # Issue 3262.
         # 1..2
         self.expect(lambda: regex.split(r"\b", "a b"), repr(['a b']))
-        self.expect(lambda: regex.split(r"(?n)\b", "a b"), repr(['', 'a', ' ',
+        self.expect(lambda: regex.split(r"(?V1)\b", "a b"), repr(['', 'a', ' ',
           'b', '']))
 
         # Issue 1647489.
@@ -1422,13 +1473,13 @@ class Test:
           repr(['bar', 'foo', '']))
         self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)^|\w+",
           "foo bar")], repr(['bar', 'foo', '']))
-        self.expect(lambda: regex.findall(r"(?n)^|\w+", "foo bar"), repr(['',
+        self.expect(lambda: regex.findall(r"(?V1)^|\w+", "foo bar"), repr(['',
           'foo', 'bar']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?n)^|\w+",
+        self.expect(lambda: [m[0] for m in regex.finditer(r"(?V1)^|\w+",
           "foo bar")], repr(['', 'foo', 'bar']))
-        self.expect(lambda: regex.findall(r"(?nr)^|\w+", "foo bar"),
+        self.expect(lambda: regex.findall(r"(?rV1)^|\w+", "foo bar"),
           repr(['bar', 'foo', '']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?nr)^|\w+",
+        self.expect(lambda: [m[0] for m in regex.finditer(r"(?rV1)^|\w+",
           "foo bar")], repr(['bar', 'foo', '']))
 
         # 11..12
@@ -1442,15 +1493,15 @@ class Test:
           repr(['xaxbxc']))
 
         # 15..16
-        self.expect(lambda: regex.split("(?n)", "xaxbxc"), repr(['', 'x', 'a',
+        self.expect(lambda: regex.split("(?V1)", "xaxbxc"), repr(['', 'x', 'a',
           'x', 'b', 'x', 'c', '']))
-        self.expect(lambda: [m for m in regex.splititer("(?n)", "xaxbxc")],
+        self.expect(lambda: [m for m in regex.splititer("(?V1)", "xaxbxc")],
           repr(['', 'x', 'a', 'x', 'b', 'x', 'c', '']))
 
         # 17..18
-        self.expect(lambda: regex.split("(?nr)", "xaxbxc"), repr(['', 'c', 'x',
-          'b', 'x', 'a', 'x', '']))
-        self.expect(lambda: [m for m in regex.splititer("(?nr)", "xaxbxc")],
+        self.expect(lambda: regex.split("(?rV1)", "xaxbxc"), repr(['', 'c',
+          'x', 'b', 'x', 'a', 'x', '']))
+        self.expect(lambda: [m for m in regex.splititer("(?rV1)", "xaxbxc")],
           repr(['', 'c', 'x', 'b', 'x', 'a', 'x', '']))
 
     def test_scoped_and_inline_flags(self):
@@ -1460,12 +1511,12 @@ class Test:
         self.expect(lambda: regex.search(r"(?i:A)b", "ab").span(), repr((0,
           2)))
         self.expect(lambda: regex.search(r"A(?i)b", "ab").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(r"A(?in)b", "ab"), repr(None))
+        self.expect(lambda: regex.search(r"A(?iV1)b", "ab"), repr(None))
 
         # 5..8
         self.expect(lambda: regex.search(r"(?-i)Ab", "ab",
           flags=regex.I).span(), repr((0, 2)))
-        self.expect(lambda: regex.search(r"(?n-i)Ab", "ab", flags=regex.I),
+        self.expect(lambda: regex.search(r"(?V1-i)Ab", "ab", flags=regex.I),
           repr(None))
         self.expect(lambda: regex.search(r"(?-i:A)b", "ab", flags=regex.I),
           repr(None))
@@ -1616,28 +1667,28 @@ class Test:
     def test_word_boundary(self):
         text = u'The quick ("brown") fox can\'t jump 32.3 feet, right?'
         # 1..2
-        self.expect(lambda: regex.split(ur'(?n)\b', text), repr([u'', u'The',
+        self.expect(lambda: regex.split(ur'(?V1)\b', text), repr([u'', u'The',
           u' ', u'quick', u' ("', u'brown', u'") ', u'fox', u' ', u'can', u"'",
           u't', u' ', u'jump', u' ', u'32', u'.', u'3', u' ', u'feet', u', ',
           u'right', u'?']))
-        self.expect(lambda: regex.split(ur'(?wn)\b', text), repr([u'', u'The',
+        self.expect(lambda: regex.split(ur'(?V1w)\b', text), repr([u'', u'The',
           u' ', u'quick', u' ', u'(', u'"', u'brown', u'"', u')', u' ', u'fox',
           u' ', u"can't", u' ', u'jump', u' ', u'32.3', u' ', u'feet', u',',
           u' ', u'right', u'?', u'']))
 
         text = u"The  fox"
         # 3..4
-        self.expect(lambda: regex.split(ur'(?n)\b', text), repr([u'', u'The',
+        self.expect(lambda: regex.split(ur'(?V1)\b', text), repr([u'', u'The',
           u'  ', u'fox', u'']))
-        self.expect(lambda: regex.split(ur'(?wn)\b', text), repr([u'', u'The',
+        self.expect(lambda: regex.split(ur'(?V1w)\b', text), repr([u'', u'The',
           u' ', u' ', u'fox', u'']))
 
         text = u"can't aujourd'hui l'objectif"
         # 5..6
-        self.expect(lambda: regex.split(ur'(?n)\b', text), repr([u'', u'can',
+        self.expect(lambda: regex.split(ur'(?V1)\b', text), repr([u'', u'can',
           u"'", u't', u' ', u'aujourd', u"'", u'hui', u' ', u'l', u"'",
           u'objectif', u'']))
-        self.expect(lambda: regex.split(ur'(?wn)\b', text), repr([u'',
+        self.expect(lambda: regex.split(ur'(?V1w)\b', text), repr([u'',
           u"can't", u' ', u"aujourd'hui", u' ', u"l'", u'objectif', u'']))
 
     def test_line_boundary(self):
@@ -1762,18 +1813,17 @@ class Test:
         self.expect(lambda: regex.match(r"(?i)[a-b]", r"A").span(), repr((0,
           1)))
 
-        # 5..6
-        self.expect(lambda: regex.sub(r"([\]\[])", r"-", "a[b]c"),
+        # 5
+        self.expect(lambda: regex.sub(r"(?V0)([][])", r"-", "a[b]c"),
           repr("a-b-c"))
-        self.expect(lambda: regex.sub(r"([][])", r"-", "a[b]c"), repr("a-b-c"))
 
-        # 7..8
+        # 6..7
         self.expect(lambda: regex.findall(ur"[\p{Alpha}]", u"a0"),
           repr([u"a"]))
         self.expect(lambda: regex.findall(ur"(?i)[\p{Alpha}]", u"A0"),
           repr([u"A"]))
 
-        # 9..12
+        # 8..11
         self.expect(lambda: regex.findall(ur"[a\p{Alpha}]", u"ab0"),
           repr([u"a", u"b"]))
         self.expect(lambda: regex.findall(ur"[a\P{Alpha}]", u"ab0"),
@@ -1783,13 +1833,13 @@ class Test:
         self.expect(lambda: regex.findall(ur"(?i)[a\P{Alpha}]", u"ab0"),
           repr([u"a", u"0"]))
 
-        # 13..14
+        # 12..13
         self.expect(lambda: regex.findall(ur"[a-b\p{Alpha}]", u"abC0"),
           repr([u"a", u"b", u"C"]))
         self.expect(lambda: regex.findall(ur"(?i)[a-b\p{Alpha}]", u"AbC0"),
           repr([u"A", u"b", u"C"]))
 
-        # 15..18
+        # 14..17
         self.expect(lambda: regex.findall(ur"[\p{Alpha}]", u"a0"),
           repr([u"a"]))
         self.expect(lambda: regex.findall(ur"[\P{Alpha}]", u"a0"),
@@ -1799,7 +1849,7 @@ class Test:
         self.expect(lambda: regex.findall(ur"[^\P{Alpha}]", u"a0"),
           repr([u"a"]))
 
-        # 19..24
+        # 18..23
         self.expect(lambda: "".join(regex.findall(r"[^\d-h]", "a^b12c-h")),
           repr('a^bc'))
         self.expect(lambda: "".join(regex.findall(r"[^\dh]", "a^b12c-h")),
@@ -1814,43 +1864,44 @@ class Test:
           repr('a b'))
 
         all_chars = "".join(unichr(c) for c in range(0x100))
-        # 25..38
+        # 24..37
         self.expect(lambda: len(regex.findall(ur"(?u)\p{ASCII}", all_chars)),
           repr(128))
         self.expect(lambda: len(regex.findall(ur"(?u)\p{Letter}", all_chars)),
           repr(117))
         self.expect(lambda: len(regex.findall(ur"(?u)\p{Digit}", all_chars)),
           repr(10))
-        self.expect(lambda: len(regex.findall(ur"(?u)[\p{ASCII}&&\p{Letter}]",
+        self.expect(lambda:
+          len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Letter}]", all_chars)),
+          repr(52))
+        self.expect(lambda:
+          len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Letter}]",
           all_chars)), repr(52))
         self.expect(lambda:
-          len(regex.findall(ur"(?u)[\p{ASCII}&&\p{Alnum}&&\p{Letter}]",
-          all_chars)), repr(52))
-        self.expect(lambda:
-          len(regex.findall(ur"(?u)[\p{ASCII}&&\p{Alnum}&&\p{Digit}]",
+          len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Digit}]",
           all_chars)), repr(10))
-        self.expect(lambda: len(regex.findall(ur"(?u)[\p{ASCII}&&\p{Cc}]",
+        self.expect(lambda: len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Cc}]",
           all_chars)), repr(33))
-        self.expect(lambda: len(regex.findall(ur"(?u)[\p{ASCII}&&\p{Graph}]",
+        self.expect(lambda: len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Graph}]",
           all_chars)), repr(94))
-        self.expect(lambda: len(regex.findall(ur"(?u)[\p{ASCII}--\p{Cc}]",
+        self.expect(lambda: len(regex.findall(ur"(?uV1)[\p{ASCII}--\p{Cc}]",
           all_chars)), repr(95))
         self.expect(lambda: len(regex.findall(ur"(?u)[\p{Letter}\p{Digit}]",
           all_chars)), repr(127))
-        self.expect(lambda: len(regex.findall(ur"(?u)[\p{Letter}||\p{Digit}]",
-          all_chars)), repr(127))
+        self.expect(lambda:
+          len(regex.findall(ur"(?uV1)[\p{Letter}||\p{Digit}]", all_chars)),
+          repr(127))
         self.expect(lambda: len(regex.findall(ur"(?u)\p{HexDigit}",
           all_chars)), repr(22))
         self.expect(lambda:
-          len(regex.findall(ur"(?u)[\p{HexDigit}~~\p{Digit}]", all_chars)),
+          len(regex.findall(ur"(?uV1)[\p{HexDigit}~~\p{Digit}]", all_chars)),
           repr(12))
         self.expect(lambda:
-          len(regex.findall(ur"(?u)[\p{Digit}~~\p{HexDigit}]", all_chars)),
+          len(regex.findall(ur"(?uV1)[\p{Digit}~~\p{HexDigit}]", all_chars)),
           repr(12))
 
-        # Old-style sets which look like nested sets.
-        # 39
-        self.expect(lambda: type(regex.compile(r"([][-])")),
+        # 38
+        self.expect(lambda: type(regex.compile(r"(?V0)([][-])")),
           self.PATTERN_CLASS)
 
     def test_various(self):
@@ -1939,10 +1990,10 @@ class Test:
             # The new behaviour is that the inline flag affects only what follows.
             # 44..50
             ('a.b(?s)', 'a\nb', '0', repr('a\nb')),
-            ('a.b(?ns)', 'a\nb', '', repr(None)),
+            ('a.b(?sV1)', 'a\nb', '', repr(None)),
             ('(?s)a.b', 'a\nb', '0', repr('a\nb')),
             ('a.*(?s)b', 'acc\nccb', '0', repr('acc\nccb')),
-            ('a.*(?ns)b', 'acc\nccb', '', repr(None)),
+            ('a.*(?sV1)b', 'acc\nccb', '', repr(None)),
             ('(?s)a.*b', 'acc\nccb', '0', repr('acc\nccb')),
             ('(?s)a.{4,5}b', 'acc\nccb', '0', repr('acc\nccb')),
 
@@ -2001,7 +2052,7 @@ class Test:
             ('(abc', '-', '', self.MISSING_RPAREN),
             ('a]', 'a]', '0', repr('a]')),
             ('a[]]b', 'a]b', '0', repr('a]b')),
-            ('a[\]]b', 'a]b', '0', repr('a]b')),
+            ('a[]]b', 'a]b', '0', repr('a]b')),
             ('a[^bc]d', 'aed', '0', repr('aed')),
             ('a[^bc]d', 'abd', '', repr(None)),
             ('a[^-b]c', 'adc', '0', repr('adc')),
@@ -2511,11 +2562,11 @@ class Test:
             # only what follows.
             # 480..485
             ('w(?i)', 'W', '0', repr('W')),
-            ('w(?in)', 'W', '0', repr(None)),
+            ('w(?iV1)', 'W', '0', repr(None)),
             ('w(?i)', 'w', '0', repr('w')),
-            ('w(?in)', 'w', '0', repr('w')),
+            ('w(?iV1)', 'w', '0', repr('w')),
             ('(?i)w', 'W', '0', repr('W')),
-            ('(?in)w', 'W', '0', repr('W')),
+            ('(?iV1)w', 'W', '0', repr('W')),
 
             # Comments using the x embedded pattern modifier.
             # 486
@@ -2582,11 +2633,11 @@ xyzabc
             # affect only what follows.
             # 505..510
             (r' (?x)foo ', 'foo', '0', repr('foo')),
-            (r' (?nx)foo ', 'foo', '0', repr(None)),
+            (r' (?V1x)foo ', 'foo', '0', repr(None)),
             (r'(?x) foo ', 'foo', '0', repr('foo')),
-            (r'(?nx) foo ', 'foo', '0', repr('foo')),
+            (r'(?V1x) foo ', 'foo', '0', repr('foo')),
             (r'(?x)foo ', 'foo', '0', repr('foo')),
-            (r'(?nx)foo ', 'foo', '0', repr('foo')),
+            (r'(?V1x)foo ', 'foo', '0', repr('foo')),
             # Bug 115618: negative lookahead.
             # 511
             (r'(?<!abc)(d.f)', 'abcdefdof', '0', repr('dof')),
@@ -2746,23 +2797,32 @@ xyzabc
         # 6
         self.expect(lambda: m.span(), repr((7, 13)))
 
-    def test_turkish(self):
+    def test_turkic(self):
         # Turkish has dotted and dotless I/i.
-        chars = u"Ii\u0130\u0131"
-        for c in chars:
-            for r in chars:
+        pairs = u"I=i;I=\u0131;i=\u0130"
+
+        all_chars = set()
+        matching = set()
+        for pair in pairs.split(";"):
+            ch1, ch2 = pair.split("=")
+            all_chars.update((ch1, ch2))
+            matching.add((ch1, ch1))
+            matching.add((ch1, ch2))
+            matching.add((ch2, ch1))
+            matching.add((ch2, ch2))
+
+        for ch1 in all_chars:
+            for ch2 in all_chars:
                 self.index += 1
-                same = c == r or c in set([r.upper(), r.lower()]) or r in \
-                  set([c.lower(), c.upper()])
-                char_same = bool(regex.match(r, c, flags=regex.I | regex.U))
-                set_same = bool(regex.match(u"[%s]" % r, c, flags=regex.I |
-                  regex.U))
-                if char_same != same:
-                    self.record_failure("char match failed for %s vs %s" %
-                      (repr(c), repr(r)))
-                if set_same != same:
-                    self.record_failure("set match failed for %s vs %s" %
-                      (repr(c), repr(r)))
+                m = regex.match(ur"(?iu)\A" + ch1 + r"\Z", ch2)
+                if m:
+                    if (ch1, ch2) not in matching:
+                        self.record_failure("%s matching %s" % (repr(ch1),
+                          repr(ch2)))
+                else:
+                    if (ch1, ch2) in matching:
+                        self.record_failure("%s not matching %s" % (repr(ch1),
+                          repr(ch2)))
 
     def test_named_lists(self):
         options = [u"one", u"two", u"three"]
@@ -2792,6 +2852,33 @@ xyzabc
           options=set(['good', 'brilliant', '+s\\ol[i}d'])), repr([]))
         self.expect(lambda: regex.findall(r"^\L<options>", "+solid QWERT",
           options=set(['good', 'brilliant', '+solid'])), repr(['+solid']))
+
+        options = [u"STRASSE"]
+        # 10
+        self.expect(lambda: regex.match(ur"(?iu)\L<words>",
+          u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(),
+          repr((0, 6)))
+
+        options = [u"stra\N{LATIN SMALL LETTER SHARP S}e"]
+        # 11
+        self.expect(lambda: regex.match(ur"(?iu)\L<words>", u"STRASSE",
+          words=options).span(), repr((0, 7)))
+
+        options = ["kit"]
+        # 12..13
+        self.expect(lambda: regex.search(ur"(?iu)\L<words>", u"SKITS",
+          words=options).span(), repr((1, 4)))
+        self.expect(lambda: regex.search(ur"(?iu)\L<words>",
+          u"SK\N{LATIN CAPITAL LETTER I WITH DOT ABOVE}TS",
+          words=options).span(), repr((1, 4)))
+
+        # 14..15
+        self.expect(lambda: regex.search(ur"(?iu)\b(\w+) +\1\b",
+          u" stra\N{LATIN SMALL LETTER SHARP S}e STRASSE ").span(), repr((1,
+          15)))
+        self.expect(lambda: regex.search(ur"(?iu)\b(\w+) +\1\b",
+          u" STRASSE stra\N{LATIN SMALL LETTER SHARP S}e ").span(), repr((1,
+          15)))
 
     def test_fuzzy(self):
         # Some tests borrowed from TRE library tests.
@@ -2825,44 +2912,52 @@ xyzabc
           repr("anaconda"))
 
         text = 'anaconda foo bar baz smith anderson'
-        # 12..14
+        # 12..16
         self.expect(lambda: regex.search('(fuu){i<=3,d<=3,e<=5}', text).span(0,
-          1), repr(((9, 10), (9, 10))))
+          1), repr(((0, 0), (0, 0))))
+        self.expect(lambda: regex.search('(?b)(fuu){i<=3,d<=3,e<=5}',
+          text).span(0, 1), repr(((9, 10), (9, 10))))
         self.expect(lambda: regex.search('(fuu){i<=2,d<=2,e<=5}', text).span(0,
           1), repr(((9, 10), (9, 10))))
         self.expect(lambda: regex.search('(fuu){i<=3,d<=3,e}', text).span(0,
-          1), repr(((9, 10), (9, 10))))
+          1), repr(((0, 0), (0, 0))))
+        self.expect(lambda: regex.search('(?b)(fuu){i<=3,d<=3,e}',
+          text).span(0, 1), repr(((9, 10), (9, 10))))
 
-        #15
+        # 17
         self.expect(lambda: type(regex.compile('(approximate){s<=3,1i+1d<3}')),
           self.PATTERN_CLASS)
 
         # No cost limit.
-        # 16
+        # 18..19
         self.expect(lambda: regex.search('(foobar){e}',
+          'xirefoabralfobarxie').span(0, 1), repr(((4, 7), (4, 7))))
+        self.expect(lambda: regex.search('(?b)(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), repr(((11, 16), (11, 16))))
 
         # At most two errors.
-        # 17..18
+        # 20..21
         self.expect(lambda: regex.search('(foobar){e<=2}',
           'xirefoabrzlfd').span(0, 1), repr(((4, 9), (4, 9))))
         self.expect(lambda: regex.search('(foobar){e<=2}', 'xirefoabzlfd'),
           repr(None))
 
         # At most two inserts or substitutions and max two errors total.
-        # 19
+        # 22
         self.expect(lambda: regex.search('(foobar){i<=2,s<=2,e<=2}',
           'oobargoobaploowap').span(0, 1), repr(((5, 11), (5, 11))))
 
         # Find best whole word match for "foobar".
-        # 20..21
+        # 23..25
         self.expect(lambda: regex.search('\\b(foobar){e}\\b',
           'zfoobarz').span(0, 1), repr(((0, 8), (0, 8))))
         self.expect(lambda: regex.search('\\b(foobar){e}\\b',
+          'boing zfoobarz goobar woop').span(0, 1), repr(((0, 6), (0, 6))))
+        self.expect(lambda: regex.search('(?b)\\b(foobar){e}\\b',
           'boing zfoobarz goobar woop').span(0, 1), repr(((15, 21), (15, 21))))
 
         # Match whole string, allow only 1 error.
-        # 22..36
+        # 26..40
         self.expect(lambda: regex.search('^(foobar){e<=1}$', 'foobar').span(0,
           1), repr(((0, 6), (0, 6))))
         self.expect(lambda: regex.search('^(foobar){e<=1}$', 'xfoobar').span(0,
@@ -2897,13 +2992,17 @@ xyzabc
         # At most one insert, two deletes, and three substitutions.
         # Additionally, deletes cost two and substitutes one, and total
         # cost must be less than 4.
-        # 37
+        # 41..42
         self.expect(lambda: regex.search('(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
+          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), repr(((6,
+          13), (6, 13))))
+        self.expect(lambda:
+          regex.search('(?b)(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
           '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), repr(((26,
           33), (26, 33))))
 
         # Partially fuzzy matches.
-        # 38..40
+        # 43..45
         self.expect(lambda: regex.search('foo(bar){e<=1}zap',
           'foobarzap').span(0, 1), repr(((0, 9), (3, 6))))
         self.expect(lambda: regex.search('foo(bar){e<=1}zap', 'fobarzap'),
@@ -2911,7 +3010,7 @@ xyzabc
         self.expect(lambda: regex.search('foo(bar){e<=1}zap',
           'foobrzap').span(0, 1), repr(((0, 8), (3, 5))))
 
-        # 41..42
+        # 46..47
         text = ('www.cnn.com 64.236.16.20\nwww.slashdot.org 66.35.250.150\n'
           'For useful information, use www.slashdot.org\nthis is demo data!\n')
         self.expect(lambda: regex.search(r'(?s)^.*(dot.org){e}.*$',
@@ -2919,12 +3018,12 @@ xyzabc
         self.expect(lambda: regex.search(r'^.*(dot.org){e}.*$', text).span(0,
           1), repr(((0, 119), (24, 101))))
 
-        # 43..50
+        # 48..55
         # Behaviour is unexpectd, but arguably not wrong. It first finds the
         # best match, then the best in what follows, etc.
         self.expect(lambda: regex.findall(r"\b\L<words>{e<=1}\b",
           " book cot dog desk ", words="cat dog".split()),
-          repr(["dog"]))
+          repr(["cot", "dog"]))
         self.expect(lambda: regex.findall(r"\b\L<words>{e<=1}\b",
           " book dog cot desk ", words="cat dog".split()),
           repr(["dog", "cot"]))
@@ -2933,10 +3032,10 @@ xyzabc
           repr(["dog", "cot"]))
         self.expect(lambda: regex.findall(r"(?r)\b\L<words>{e<=1}\b",
           " book dog cot desk ", words="cat dog".split()),
-          repr(["dog"]))
+          repr(["cot", "dog"]))
         self.expect(lambda: regex.findall(ur"\b\L<words>{e<=1}\b",
           u" book cot dog desk ", words=u"cat dog".split()),
-          repr([u"dog"]))
+          repr([u"cot", u"dog"]))
         self.expect(lambda: regex.findall(ur"\b\L<words>{e<=1}\b",
           u" book dog cot desk ", words=u"cat dog".split()),
           repr([u"dog", u"cot"]))
@@ -2945,9 +3044,9 @@ xyzabc
           repr([u"dog", u"cot"]))
         self.expect(lambda: regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
           u" book dog cot desk ", words=u"cat dog".split()),
-          repr([u"dog"]))
+          repr([u"cot", u"dog"]))
 
-        # 51..53
+        # 56..58
         self.expect(lambda: regex.search(r"(\w+) (\1{e<=1})",
           "foo fou").groups(), repr(("foo", "fou")))
         self.expect(lambda: regex.search(r"(?r)(\2{e<=1}) (\w+)",

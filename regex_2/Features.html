@@ -319,13 +319,41 @@ ul.auto-toc {
 <p>For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.</p>
 <p>Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.2 on 32-bit Windows.</p>
 </div>
+<div class="section" id="change-of-behaviour">
+<h1>Change of behaviour</h1>
+<p><strong>Old vs new behaviour</strong></p>
+<p>This module has 2 behaviours:</p>
+<p>Version 0 behaviour (old behaviour, compatible with the current 're' module):</p>
+<blockquote>
+<p>Indicated by the <tt class="docutils literal">VERSION0</tt> or <tt class="docutils literal">V0</tt> flag, or <tt class="docutils literal"><span class="pre">(?V0)</span></tt> in the pattern.</p>
+<p><tt class="docutils literal">.split</tt> won't split a string at a zero-width match.</p>
+<p>Inline flags apply to the entire pattern, and they can't be turned off.</p>
+<p>Only simple sets are supported.</p>
+</blockquote>
+<p>Version 1 behaviour (new behaviour, different from the current 're' module):</p>
+<blockquote>
+<p>Indicated by the <tt class="docutils literal">VERSION1</tt> or <tt class="docutils literal">V1</tt> flag, or <tt class="docutils literal"><span class="pre">(?V1)</span></tt> in the pattern.</p>
+<p><tt class="docutils literal">.split</tt> will split a string at a zero-width match.</p>
+<p>Inline flags apply to the end of the group or pattern, and they can be turned off.</p>
+<p>Nested sets and set operations are supported.</p>
+</blockquote>
+<p>If no version is specified, the regex module will default to <tt class="docutils literal">regex.DEFAULT_VERSION</tt>. In the short term this will be <tt class="docutils literal">VERSION0</tt>, but in the longer term it will be <tt class="docutils literal">VERSION1</tt>.</p>
+<p><strong>Note</strong>: the <tt class="docutils literal">VERSION1</tt> flag replaces the <tt class="docutils literal">NEW</tt> flag in the previous versions of this module. The <tt class="docutils literal">NEW</tt> flag is still supported in this release, but will be removed. The decision about versions and making the change was made after discussion in the python-dev list.</p>
+<p><strong>Nested sets and set operations</strong></p>
+<p>Previous releases supported both simple and nested sets at the same time. This occasionally lead to problems in practice when an unescaped &quot;[&quot; in a simple set was interpreted as being the start of a nested set. Therefore nested sets and set operations are now supported only in the version 1 behaviour.</p>
+<p>Version 0 behaviour: only simple sets are supported.</p>
+<p>Version 1 behaviour: nested sets and set operations are supported.</p>
+<p><strong>Fuzzy matching</strong></p>
+<p>When performing fuzzy matching, the previous release of this module searched for the best match. This proved to be confusing in practice when used with <tt class="docutils literal">.findall</tt>, for example.</p>
+<p>Therefore, the default behaviour has been changed to search for the first match which meets the constraints, and a new <tt class="docutils literal">BESTMATCH</tt> flag has been added to force it to search for the best match instead (the previous behaviour).</p>
+</div>
 <div class="section" id="flags">
 <h1>Flags</h1>
 <p>There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.</p>
 <p>The scoped flags are: <tt class="docutils literal">IGNORECASE</tt>, <tt class="docutils literal">MULTILINE</tt>, <tt class="docutils literal">DOTALL</tt>, <tt class="docutils literal">VERBOSE</tt>, <tt class="docutils literal">WORD</tt>.</p>
-<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">NEW</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>.</p>
-<p>If neither the <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt> nor <tt class="docutils literal">UNICODE</tt> flag is specified, the default is UNICODE if the regex pattern is a Unicode string and ASCII if it's a bytestring.</p>
-<p>The <tt class="docutils literal">NEW</tt> flag turns on the new behaviour of this module, which can differ from that of the 're' module, such as splitting on zero-width matches, inline flags affecting only what follows, and being able to turn inline flags off.</p>
+<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">BESTMATCH</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">VERSION0</tt>, <tt class="docutils literal">VERSION1</tt>.</p>
+<p>If neither the <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt> nor <tt class="docutils literal">UNICODE</tt> flag is specified, it will default to <tt class="docutils literal">UNICODE</tt> if the regex pattern is a Unicode string and <tt class="docutils literal">ASCII</tt> if it's a bytestring.</p>
+<p>The <tt class="docutils literal">BESTMATCH</tt> flag makes fuzzy matching search for the best match instead of the next match which meets the given constraints.</p>
 </div>
 <div class="section" id="notes-on-named-capture-groups">
 <h1>Notes on named capture groups</h1>
@@ -345,11 +373,26 @@ ul.auto-toc {
 <div class="section" id="unicode">
 <h1>Unicode</h1>
 <p>This module supports Unicode 6.0.0.</p>
+<p>Full Unicode case-folding is supported.</p>
 </div>
 <div class="section" id="additional-features">
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Full Unicode case-folding is supported.</p>
+<blockquote>
+<p>When performing case-insensitive matches in Unicode, regex uses full case-folding.</p>
+<p>Examples (in Python 3):</p>
+<blockquote>
+<pre class="doctest-block">
+&gt;&gt;&gt; regex.match(r&quot;(?i)strasse&quot;, &quot;stra\N{LATIN SMALL LETTER SHARP S}e&quot;).span()
+(0, 6)
+&gt;&gt;&gt; regex.match(r&quot;(?i)stra\N{LATIN SMALL LETTER SHARP S}e&quot;, &quot;STRASSE&quot;).span()
+(0, 7)
+</pre>
+</blockquote>
+</blockquote>
+</li>
 <li><p class="first">Approximate &quot;fuzzy&quot; matching (Hg issue 12)</p>
 <blockquote>
 <p>Regex usually attempts an exact match, but sometimes an approximate, or &quot;fuzzy&quot;, match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.</p>
@@ -384,6 +427,7 @@ ul.auto-toc {
 <p>You can also use &quot;&lt;&quot; instead of &quot;&lt;=&quot; if you want an exclusive maximum:</p>
 <p><tt class="docutils literal"><span class="pre">{e&lt;=3}</span></tt> permit up to 3 errors</p>
 <p><tt class="docutils literal">{e&lt;4}</tt> permit fewer than 4 errors</p>
+<p>By default, fuzzy matching searches for the first match which meets the given constraints, but turning on the <tt class="docutils literal">BESTMATCH</tt> flag will make it search for the best match instead.</p>
 </blockquote>
 </li>
 <li><p class="first">Named lists (Hg issue 11)</p>
@@ -422,6 +466,7 @@ p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
 </li>
 <li><p class="first">Set operators</p>
 <blockquote>
+<p><strong>Version 1 behaviour only</strong></p>
 <p>Set operators have been added, and a set <tt class="docutils literal"><span class="pre">[...]</span></tt> can include nested sets.</p>
 <p>The operators, in order of increasing precedence, are:</p>
 <blockquote>
@@ -521,7 +566,8 @@ p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
 <li><p class="first">Inline flags (issue #433024, issue #433027)</p>
 <blockquote>
 <p><tt class="docutils literal"><span class="pre">(?flags-flags)</span></tt></p>
-<p>If the <tt class="docutils literal">NEW</tt> flag is turned on then the flags will apply to the end of the group or pattern and can be turned on or off. If the <tt class="docutils literal">NEW</tt> flag isn't turned on then the flags will be global and can't be turned off.</p>
+<p>Version 0 behaviour: the flags apply to the entire pattern, and they can't be turned off.</p>
+<p>Version 1 behaviour: the flags apply to the end of the group or pattern, and they can be turned on or off.</p>
 </blockquote>
 </li>
 <li><p class="first">Repeated repeats (issue #2537)</p>
@@ -591,7 +637,8 @@ p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
 </li>
 <li><p class="first">Zero-width split with regex.split (issue #3262)</p>
 <blockquote>
-<p><tt class="docutils literal">regex.split</tt> can split at a zero-width match if the <tt class="docutils literal">NEW</tt> flag is turned on. When the flag is turned off the current behaviour is unchanged because the BDFL thinks that some existing software might depend on it.</p>
+<p>Version 0 behaviour: a string won't be split at a zero-width match.</p>
+<p>Version 1 behaviour: a string will be split at a zero-width match.</p>
 </blockquote>
 </li>
 <li><p class="first">Splititer</p>

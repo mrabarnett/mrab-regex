@@ -8,6 +8,52 @@ For testing and comparison with the current 're' module the new implementation i
 Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.2 on 32-bit Windows.
 
 
+Change of behaviour
+-------------------
+
+**Old vs new behaviour**
+
+This module has 2 behaviours:
+
+Version 0 behaviour (old behaviour, compatible with the current 're' module):
+
+    Indicated by the ``VERSION0`` or ``V0`` flag, or ``(?V0)`` in the pattern.
+
+    ``.split`` won't split a string at a zero-width match.
+
+    Inline flags apply to the entire pattern, and they can't be turned off.
+
+    Only simple sets are supported.
+
+Version 1 behaviour (new behaviour, different from the current 're' module):
+
+    Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
+
+    ``.split`` will split a string at a zero-width match.
+
+    Inline flags apply to the end of the group or pattern, and they can be turned off.
+
+    Nested sets and set operations are supported.
+
+If no version is specified, the regex module will default to ``regex.DEFAULT_VERSION``. In the short term this will be ``VERSION0``, but in the longer term it will be ``VERSION1``.
+
+**Note**: the ``VERSION1`` flag replaces the ``NEW`` flag in the previous versions of this module. The ``NEW`` flag is still supported in this release, but will be removed. The decision about versions and making the change was made after discussion in the python-dev list.
+
+**Nested sets and set operations**
+
+Previous releases supported both simple and nested sets at the same time. This occasionally lead to problems in practice when an unescaped "[" in a simple set was interpreted as being the start of a nested set. Therefore nested sets and set operations are now supported only in the version 1 behaviour.
+
+Version 0 behaviour: only simple sets are supported.
+
+Version 1 behaviour: nested sets and set operations are supported.
+
+**Fuzzy matching**
+
+When performing fuzzy matching, the previous release of this module searched for the best match. This proved to be confusing in practice when used with ``.findall``, for example.
+
+Therefore, the default behaviour has been changed to search for the first match which meets the constraints, and a new ``BESTMATCH`` flag has been added to force it to search for the best match instead (the previous behaviour).
+
+
 Flags
 -----
 
@@ -15,11 +61,11 @@ There are 2 kinds of flag: scoped and global. Scoped flags can apply to only par
 
 The scoped flags are: ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
 
-The global flags are: ``ASCII``, ``LOCALE``, ``NEW``, ``REVERSE``, ``UNICODE``.
+The global flags are: ``ASCII``, ``BESTMATCH``, ``LOCALE``, ``REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
 
-If neither the ``ASCII``, ``LOCALE`` nor ``UNICODE`` flag is specified, the default is UNICODE if the regex pattern is a Unicode string and ASCII if it's a bytestring.
+If neither the ``ASCII``, ``LOCALE`` nor ``UNICODE`` flag is specified, it will default to ``UNICODE`` if the regex pattern is a Unicode string and ``ASCII`` if it's a bytestring.
 
-The ``NEW`` flag turns on the new behaviour of this module, which can differ from that of the 're' module, such as splitting on zero-width matches, inline flags affecting only what follows, and being able to turn inline flags off.
+The ``BESTMATCH`` flag makes fuzzy matching search for the best match instead of the next match which meets the given constraints.
 
 
 Notes on named capture groups
@@ -51,11 +97,24 @@ Unicode
 
 This module supports Unicode 6.0.0.
 
+Full Unicode case-folding is supported.
+
 
 Additional features
 -------------------
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+
+* Full Unicode case-folding is supported.
+
+    When performing case-insensitive matches in Unicode, regex uses full case-folding.
+
+    Examples (in Python 3):
+
+        >>> regex.match(r"(?i)strasse", "stra\N{LATIN SMALL LETTER SHARP S}e").span()
+        (0, 6)
+        >>> regex.match(r"(?i)stra\N{LATIN SMALL LETTER SHARP S}e", "STRASSE").span()
+        (0, 7)
 
 * Approximate "fuzzy" matching (Hg issue 12)
 
@@ -119,6 +178,8 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     ``{e<4}`` permit fewer than 4 errors
 
+    By default, fuzzy matching searches for the first match which meets the given constraints, but turning on the ``BESTMATCH`` flag will make it search for the best match instead.
+
 * Named lists (Hg issue 11)
 
     ``\L<name>``
@@ -156,6 +217,8 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
     This affects the regex dot ``"."``, which, with the ``DOTALL`` flag turned off, matches any character except a line separator. It also affects the line anchors ``^`` and ``$`` (in multiline mode).
 
 * Set operators
+
+    **Version 1 behaviour only**
 
     Set operators have been added, and a set ``[...]`` can include nested sets.
 
@@ -260,7 +323,9 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     ``(?flags-flags)``
 
-    If the ``NEW`` flag is turned on then the flags will apply to the end of the group or pattern and can be turned on or off. If the ``NEW`` flag isn't turned on then the flags will be global and can't be turned off.
+    Version 0 behaviour: the flags apply to the entire pattern, and they can't be turned off.
+
+    Version 1 behaviour: the flags apply to the end of the group or pattern, and they can be turned on or off.
 
 * Repeated repeats (issue #2537)
 
@@ -316,7 +381,9 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * Zero-width split with regex.split (issue #3262)
 
-    ``regex.split`` can split at a zero-width match if the ``NEW`` flag is turned on. When the flag is turned off the current behaviour is unchanged because the BDFL thinks that some existing software might depend on it.
+    Version 0 behaviour: a string won't be split at a zero-width match.
+
+    Version 1 behaviour: a string will be split at a zero-width match.
 
 * Splititer
 
