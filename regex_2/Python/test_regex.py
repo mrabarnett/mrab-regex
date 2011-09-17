@@ -728,6 +728,14 @@ class Test:
         self.expect(lambda: regex.search(ur"(?iu)f\N{LATIN SMALL LIGATURE FI}",
           u"FFI").span(), repr((0, 3)))
 
+        # 19..27
+        sigma = u"\u03A3\u03C3\u03C2"
+        for ch1 in sigma:
+            for ch2 in sigma:
+                self.index += 1
+                if not regex.match(ur"(?iu)" + ch1, ch2):
+                    self.record_failure()
+
     def test_category(self):
         self.expect(lambda: regex.match(r"(\s)", " ")[1], repr(' '))
 
@@ -2814,7 +2822,7 @@ xyzabc
         for ch1 in all_chars:
             for ch2 in all_chars:
                 self.index += 1
-                m = regex.match(ur"(?iu)\A" + ch1 + r"\Z", ch2)
+                m = regex.match(ur"(?iu)\A" + ch1 + ur"\Z", ch2)
                 if m:
                     if (ch1, ch2) not in matching:
                         self.record_failure("%s matching %s" % (repr(ch1),

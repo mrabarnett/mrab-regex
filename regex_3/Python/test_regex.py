@@ -707,6 +707,14 @@ class Test:
         self.expect(lambda: regex.search(r"(?i)f\N{LATIN SMALL LIGATURE FI}",
           "FFI").span(), ascii((0, 3)))
 
+        # 19..27
+        sigma = "\u03A3\u03C3\u03C2"
+        for ch1 in sigma:
+            for ch2 in sigma:
+                self.index += 1
+                if not regex.match(r"(?i)" + ch1, ch2):
+                    self.record_failure()
+
     def test_category(self):
         self.expect(lambda: regex.match(r"(\s)", " ")[1], ascii(' '))
 
