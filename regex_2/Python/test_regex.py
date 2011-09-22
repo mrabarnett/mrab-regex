@@ -30,6 +30,7 @@ class Test:
     NOTHING_TO_REPEAT = "error('nothing to repeat',)"
     OPEN_GROUP = """error("can't refer to an open group",)"""
     DUPLICATE_GROUP = "error('duplicate group',)"
+    CANT_TURN_OFF = """error("bad inline flags: can't turn flags off",)"""
 
     def __init__(self):
         pass
@@ -684,56 +685,59 @@ class Test:
 
     def test_case_folding(self):
         # 1..4
-        self.expect(lambda: regex.search(ur"(?iu)ss", u"SS").span(),
+        self.expect(lambda: regex.search(ur"(?fiu)ss", u"SS").span(),
           repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?iu)SS", u"ss").span(),
+        self.expect(lambda: regex.search(ur"(?fiu)SS", u"ss").span(),
           repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?iu)SS",
+        self.expect(lambda: regex.search(ur"(?fiu)SS",
           u"\N{LATIN SMALL LETTER SHARP S}").span(), repr((0, 1)))
         self.expect(lambda:
-          regex.search(ur"(?i)\N{LATIN SMALL LETTER SHARP S}", u"SS").span(),
+          regex.search(ur"(?fi)\N{LATIN SMALL LETTER SHARP S}", u"SS").span(),
           repr((0, 2)))
 
         # 5..7
-        self.expect(lambda: regex.search(ur"(?iu)\N{LATIN SMALL LIGATURE ST}",
+        self.expect(lambda: regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
           u"ST").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?iu)ST",
+        self.expect(lambda: regex.search(ur"(?fiu)ST",
           u"\N{LATIN SMALL LIGATURE ST}").span(), repr((0, 1)))
-        self.expect(lambda: regex.search(ur"(?iu)ST",
+        self.expect(lambda: regex.search(ur"(?fiu)ST",
           u"\N{LATIN SMALL LIGATURE LONG S T}").span(), repr((0, 1)))
 
         # 8..12
-        self.expect(lambda: regex.search(ur"(?iu)SST",
+        self.expect(lambda: regex.search(ur"(?fiu)SST",
           u"\N{LATIN SMALL LETTER SHARP S}t").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?iu)SST",
+        self.expect(lambda: regex.search(ur"(?fiu)SST",
           u"s\N{LATIN SMALL LIGATURE LONG S T}").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?iu)SST",
+        self.expect(lambda: regex.search(ur"(?fiu)SST",
           u"s\N{LATIN SMALL LIGATURE ST}").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?iu)\N{LATIN SMALL LIGATURE ST}",
+        self.expect(lambda: regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
           u"SST").span(), repr((1, 3)))
-        self.expect(lambda: regex.search(ur"(?iu)SST",
+        self.expect(lambda: regex.search(ur"(?fiu)SST",
           u"s\N{LATIN SMALL LIGATURE ST}").span(), repr((0, 2)))
 
         # 13..18
-        self.expect(lambda: regex.search(ur"(?iu)FFI",
+        self.expect(lambda: regex.search(ur"(?fiu)FFI",
           u"\N{LATIN SMALL LIGATURE FFI}").span(), repr((0, 1)))
-        self.expect(lambda: regex.search(ur"(?iu)FFI",
+        self.expect(lambda: regex.search(ur"(?fiu)FFI",
           u"\N{LATIN SMALL LIGATURE FF}i").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?iu)FFI",
+        self.expect(lambda: regex.search(ur"(?fiu)FFI",
           u"f\N{LATIN SMALL LIGATURE FI}").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?iu)\N{LATIN SMALL LIGATURE FFI}",
-          u"FFI").span(), repr((0, 3)))
-        self.expect(lambda: regex.search(ur"(?iu)\N{LATIN SMALL LIGATURE FF}i",
-          u"FFI").span(), repr((0, 3)))
-        self.expect(lambda: regex.search(ur"(?iu)f\N{LATIN SMALL LIGATURE FI}",
-          u"FFI").span(), repr((0, 3)))
+        self.expect(lambda:
+          regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FFI}", u"FFI").span(),
+          repr((0, 3)))
+        self.expect(lambda:
+          regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FF}i", u"FFI").span(),
+          repr((0, 3)))
+        self.expect(lambda:
+          regex.search(ur"(?fiu)f\N{LATIN SMALL LIGATURE FI}", u"FFI").span(),
+          repr((0, 3)))
 
         # 19..27
         sigma = u"\u03A3\u03C3\u03C2"
         for ch1 in sigma:
             for ch2 in sigma:
                 self.index += 1
-                if not regex.match(ur"(?iu)" + ch1, ch2):
+                if not regex.match(ur"(?fiu)" + ch1, ch2):
                     self.record_failure()
 
     def test_category(self):
@@ -1522,13 +1526,13 @@ class Test:
         self.expect(lambda: regex.search(r"A(?iV1)b", "ab"), repr(None))
 
         # 5..8
-        self.expect(lambda: regex.search(r"(?-i)Ab", "ab",
-          flags=regex.I).span(), repr((0, 2)))
+        self.expect(lambda: regex.search(r"(?V0-i)Ab", "ab",
+          flags=regex.I), self.CANT_TURN_OFF)
         self.expect(lambda: regex.search(r"(?V1-i)Ab", "ab", flags=regex.I),
           repr(None))
         self.expect(lambda: regex.search(r"(?-i:A)b", "ab", flags=regex.I),
           repr(None))
-        self.expect(lambda: regex.search(r"A(?-i)b", "ab",
+        self.expect(lambda: regex.search(r"A(?V1-i)b", "ab",
           flags=regex.I).span(), repr((0, 2)))
 
     def test_repeated_repeats(self):
@@ -2863,13 +2867,13 @@ xyzabc
 
         options = [u"STRASSE"]
         # 10
-        self.expect(lambda: regex.match(ur"(?iu)\L<words>",
+        self.expect(lambda: regex.match(ur"(?fiu)\L<words>",
           u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(),
           repr((0, 6)))
 
         options = [u"stra\N{LATIN SMALL LETTER SHARP S}e"]
         # 11
-        self.expect(lambda: regex.match(ur"(?iu)\L<words>", u"STRASSE",
+        self.expect(lambda: regex.match(ur"(?fiu)\L<words>", u"STRASSE",
           words=options).span(), repr((0, 7)))
 
         options = ["kit"]
@@ -2881,10 +2885,10 @@ xyzabc
           words=options).span(), repr((1, 4)))
 
         # 14..15
-        self.expect(lambda: regex.search(ur"(?iu)\b(\w+) +\1\b",
+        self.expect(lambda: regex.search(ur"(?fiu)\b(\w+) +\1\b",
           u" stra\N{LATIN SMALL LETTER SHARP S}e STRASSE ").span(), repr((1,
           15)))
-        self.expect(lambda: regex.search(ur"(?iu)\b(\w+) +\1\b",
+        self.expect(lambda: regex.search(ur"(?fiu)\b(\w+) +\1\b",
           u" STRASSE stra\N{LATIN SMALL LETTER SHARP S}e ").span(), repr((1,
           15)))
 

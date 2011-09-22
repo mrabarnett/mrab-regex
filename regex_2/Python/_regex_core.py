@@ -20,13 +20,13 @@ from collections import defaultdict
 
 import _regex
 
-__all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "I", "IGNORECASE",
-  "L", "LOCALE", "M", "MULTILINE", "N", "NEW", "R", "REVERSE", "S", "DOTALL",
-  "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "W",
-  "WORD", "X", "VERBOSE", "error", "ALNUM", "NONLITERAL", "Info", "Source",
-  "FirstSetError", "UnscopedFlagSet", "OP", "Scanner", "compile_firstset",
-  "compile_repl_escape", "count_ones", "flatten_code", "fold_case",
-  "parse_pattern", "shrink_cache"]
+__all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "F", "FULLCASE", "I",
+  "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "N", "NEW", "R", "REVERSE",
+  "S", "DOTALL", "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1",
+  "VERSION1", "W", "WORD", "X", "VERBOSE", "error", "ALNUM", "NONLITERAL",
+  "Info", "Source", "FirstSetError", "UnscopedFlagSet", "OP", "Scanner",
+  "compile_firstset", "compile_repl_escape", "count_ones", "flatten_code",
+  "fold_case", "parse_pattern", "shrink_cache", "REGEX_FLAGS"]
 
 # The regex exception.
 class error(Exception):
@@ -53,14 +53,15 @@ class FirstSetError(Exception):
 A = ASCII = 0x80        # Assume ASCII locale.
 B = BESTMATCH = 0x1000  # Best fuzzy match.
 D = DEBUG = 0x200       # Print parsed pattern.
+F = FULLCASE = 0x4000   # Unicode Full case-folding.
 I = IGNORECASE = 0x2    # Ignore case.
 L = LOCALE = 0x4        # Assume current 8-bit locale.
 M = MULTILINE = 0x8     # Make anchors look for newline.
 R = REVERSE = 0x400     # Search backwards.
 S = DOTALL = 0x10       # Make dot match newline.
 U = UNICODE = 0x20      # Assume Unicode locale.
-V0 = VERSION0 = 0x2000  # Old behaviour.
-V1 = VERSION1 = 0x100   # New behaviour.
+V0 = VERSION0 = 0x2000  # Old legacy behaviour.
+V1 = VERSION1 = 0x100   # New enhanced behaviour.
 W = WORD = 0x800        # Default Unicode word breaks.
 X = VERBOSE = 0x40      # Ignore whitespace and comments.
 T = TEMPLATE = 0x1      # Template (present because re module has it).
@@ -72,9 +73,12 @@ DEFAULT_VERSION = VERSION1
 ALL_VERSIONS = VERSION0 | VERSION1
 ALL_ENCODINGS = ASCII | LOCALE | UNICODE
 
+# The default flags for the various versions.
+DEFAULT_FLAGS = {VERSION0: 0, VERSION1: FULLCASE}
+
 # The mask for the flags.
 GLOBAL_FLAGS = ALL_ENCODINGS | ALL_VERSIONS | BESTMATCH | DEBUG | REVERSE
-SCOPED_FLAGS = IGNORECASE | MULTILINE | DOTALL | WORD | VERBOSE
+SCOPED_FLAGS = FULLCASE | IGNORECASE | MULTILINE | DOTALL | WORD | VERBOSE
 
 ALPHA = frozenset(string.ascii_letters)
 DIGITS = frozenset(string.digits)
@@ -93,9 +97,16 @@ BITS_PER_CODE = BYTES_PER_CODE * 8
 UNLIMITED = (1 << BITS_PER_CODE) - 1
 
 # The regular expression flags.
-REGEX_FLAGS = {"a": ASCII, "b": BESTMATCH, "i": IGNORECASE, "L": LOCALE, "m":
-  MULTILINE, "n": NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE, "V0": VERSION0,
-  "V1": VERSION1, "w": WORD, "x": VERBOSE}
+REGEX_FLAGS = {"a": ASCII, "b": BESTMATCH, "f": FULLCASE, "i": IGNORECASE, "L":
+  LOCALE, "m": MULTILINE, "n": NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE,
+  "V0": VERSION0, "V1": VERSION1, "w": WORD, "x": VERBOSE}
+
+# The case flags.
+CASE_FLAGS = FULLCASE | IGNORECASE
+NOCASE = 0
+FULLIGNORECASE = FULLCASE | IGNORECASE
+
+FULL_CASE_FOLDING = UNICODE | FULLIGNORECASE
 
 # The number of digits in hexadecimal escapes.
 HEX_ESCAPES = {"x": 2, "u": 4, "U": 8}
@@ -150,6 +161,8 @@ RANGE_IGN
 RANGE_IGN_REV
 RANGE_REV
 REF_GROUP
+REF_GROUP_FLD
+REF_GROUP_FLD_REV
 REF_GROUP_IGN
 REF_GROUP_IGN_REV
 REF_GROUP_REV
@@ -176,10 +189,14 @@ START_OF_LINE_U
 START_OF_STRING
 START_OF_WORD
 STRING
+STRING_FLD
+STRING_FLD_REV
 STRING_IGN
 STRING_IGN_REV
 STRING_REV
 STRING_SET
+STRING_SET_FLD
+STRING_SET_FLD_REV
 STRING_SET_IGN
 STRING_SET_IGN_REV
 STRING_SET_REV
@@ -237,8 +254,10 @@ def shrink_cache(cache_dict, args_dict, max_length, divisor=5):
 
 def fold_case(info, string):
     "Folds the case of a string."
-    encoding = info.global_flags & ALL_ENCODINGS
-    return _regex.fold_case(encoding or info.guess_encoding, string)
+    flags = info.all_flags
+    if (info.global_flags & ALL_ENCODINGS) == 0:
+        flags |= info.guess_encoding
+    return _regex.fold_case(flags, string)
 
 def is_cased(info, char):
     "Checks whether a character is cased."
@@ -249,17 +268,16 @@ def compile_firstset(info, fs):
     if not fs or None in fs:
         return []
 
-    # If we ignore the case, we need full case-folding, so for simplicity we
-    # won't build a firstset.
+    # If we ignore the case, for simplicity we won't build a firstset.
     members = set()
     for i in fs:
         if not i.positive:
             return []
-        if (i.ignore_case and isinstance(i, Character) and
-          is_cased(info, i.value)):
+        if i.case_flags and isinstance(i, Character) and is_cased(info,
+          i.value):
             return []
 
-        members.add(i.with_flags(ignore_case=False))
+        members.add(i.with_flags(case_flags=NOCASE))
 
     # Build the firstset.
     fs = SetUnion(list(members), zerowidth=True)
@@ -291,22 +309,22 @@ def make_character(info, value, in_set=False):
         # A character set is built case-sensitively.
         return Character(value)
 
-    return Character(value, ignore_case=info.all_flags & IGNORECASE)
+    return Character(value, case_flags=info.all_flags & CASE_FLAGS)
 
 def make_ref_group(info, name):
     "Makes a group reference."
-    return RefGroup(info, name, ignore_case=info.all_flags & IGNORECASE)
+    return RefGroup(info, name, case_flags=info.all_flags & CASE_FLAGS)
 
 def make_string_set(info, name):
     "Makes a string set."
-    return StringSet(info, name, ignore_case=info.all_flags & IGNORECASE)
+    return StringSet(info, name, case_flags=info.all_flags & CASE_FLAGS)
 
 def make_property(info, prop, in_set):
     "Makes a property."
     if in_set:
         return prop
 
-    return prop.with_flags(ignore_case=info.all_flags & IGNORECASE)
+    return prop.with_flags(case_flags=info.all_flags & CASE_FLAGS)
 
 def parse_pattern(source, info):
     "Parses a pattern, eg. 'a|b|c'."
@@ -848,6 +866,8 @@ def parse_flags_subpattern(source, info):
     except KeyError:
         pass
 
+    flags_on |= DEFAULT_FLAGS.get(flags_on & ALL_VERSIONS, 0)
+
     if ch == "-":
         try:
             while True:
@@ -898,6 +918,8 @@ def parse_flags_subpattern(source, info):
         version = (info.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
         if version == VERSION0:
             # Positional flags are global and can only be turned on.
+            if flags_off:
+                raise error("bad inline flags: can't turn flags off")
             info.global_flags |= flags_on
 
         if info.global_flags & ~old_global_flags:
@@ -1191,7 +1213,7 @@ def parse_set(source, info):
     if negate:
         item = item.with_flags(positive=not item.positive)
 
-    item = item.with_flags(ignore_case=info.all_flags & IGNORECASE)
+    item = item.with_flags(case_flags=info.all_flags & CASE_FLAGS)
 
     return item
 
@@ -1503,7 +1525,8 @@ FUZZY_OP = 0x4
 REVERSE_OP = 0x8
 
 POS_TEXT = {False: "NON-MATCH", True: "MATCH"}
-IGN_TEXT = {False: "", True: " IGNORE_CASE"}
+CASE_TEXT = {NOCASE: "", IGNORECASE: " SIMPLE_IGNORE_CASE", FULLCASE: "",
+  FULLIGNORECASE: " FULL_IGNORE_CASE"}
 
 def make_sequence(items):
     if len(items) == 1:
@@ -1515,25 +1538,25 @@ class RegexBase(object):
     def __init__(self):
         self._key = self.__class__
 
-    def with_flags(self, positive=None, ignore_case=None, zerowidth=None):
+    def with_flags(self, positive=None, case_flags=None, zerowidth=None):
         if positive is None:
             positive = self.positive
         else:
             positive = bool(positive)
-        if ignore_case is None:
-            ignore_case = self.ignore_case
+        if case_flags is None:
+            case_flags = self.case_flags
         else:
-            ignore_case = bool(ignore_case)
+            case_flags = case_flags & CASE_FLAGS
         if zerowidth is None:
             zerowidth = self.zerowidth
         else:
             zerowidth = bool(zerowidth)
 
-        if (positive == self.positive and ignore_case == self.ignore_case and
+        if (positive == self.positive and case_flags == self.case_flags and
           zerowidth == self.zerowidth):
             return self
 
-        return self.rebuild(positive, ignore_case, zerowidth)
+        return self.rebuild(positive, case_flags, zerowidth)
 
     def fix_groups(self):
         pass
@@ -1837,7 +1860,7 @@ class Branch(RegexBase):
             pos += 1
         count = pos
 
-        if info.global_flags & UNICODE:
+        if (info.global_flags & UNICODE) == UNICODE:
             # We need to check that we're not splitting a sequence of
             # characters which could form part of full case-folding.
             while count > 0 and not all(Branch._can_split(a, count) for a in
@@ -1878,7 +1901,7 @@ class Branch(RegexBase):
             pos -= 1
         count = -1 - pos
 
-        if info.global_flags & UNICODE:
+        if (info.global_flags & UNICODE) == UNICODE:
             # We need to check that we're not splitting a sequence of
             # characters which could form part of full case-folding.
             while count > 0 and not all(Branch._can_split_rev(a, count) for a
@@ -1898,47 +1921,52 @@ class Branch(RegexBase):
 
     @staticmethod
     def _can_split(items, count):
-        if not 0 < count < len(items):
+        # Check the characters either side of the proposed split.
+        if not Branch._is_full_case(items, count - 1):
             return True
 
-        i = items[count - 1]
-        if not isinstance(i, Character) or not i.positive or not i.ignore_case:
+        if not Branch._is_full_case(items, count):
             return True
 
-        i = items[count]
-        if not isinstance(i, Character) or not i.positive or not i.ignore_case:
-            return True
-
+        # Check whether a 1-1 split would be OK.
         if Branch._is_folded(items[count - 1 : count + 1]):
             return False
-        if Branch._is_folded(items[count - 1 : count + 2]):
+
+        # Check whether a 1-2 split would be OK.
+        if (Branch._is_full_case(items, count + 2) and
+          Branch._is_folded(items[count - 1 : count + 2])):
             return False
-        if count >= 2 and Branch._is_folded(items[count - 2 : count + 1]):
+
+        # Check whether a 2-1 split would be OK.
+        if (Branch._is_full_case(items, count - 2) and
+          Branch._is_folded(items[count - 2 : count + 1])):
             return False
 
         return True
 
     @staticmethod
     def _can_split_rev(items, count):
-        if not 0 < count < len(items):
-            return True
-
         end = len(items)
 
-        i = items[end - count]
-        if not isinstance(i, Character) or not i.positive or not i.ignore_case:
+        # Check the characters either side of the proposed split.
+        if not Branch._is_full_case(items, end - count):
             return True
 
-        i = items[end - count - 1]
-        if not isinstance(i, Character) or not i.positive or not i.ignore_case:
+        if not Branch._is_full_case(items, end - count - 1):
             return True
 
+        # Check whether a 1-1 split would be OK.
         if Branch._is_folded(items[end - count - 1 : end - count + 1]):
             return False
-        if Branch._is_folded(items[end - count - 1 : end - count + 2]):
+
+        # Check whether a 1-2 split would be OK.
+        if (Branch._is_full_case(items, end - count + 2) and
+          Branch._is_folded(items[end - count - 1 : end - count + 2])):
             return False
-        if count >= 2 and Branch._is_folded(items[end - count - 2 : end - count
-          + 1]):
+
+        # Check whether a 2-1 split would be OK.
+        if (Branch._is_full_case(items, end - count - 2) and
+          Branch._is_folded(items[end - count - 2 : end - count + 1])):
             return False
 
         return True
@@ -1972,32 +2000,32 @@ class Branch(RegexBase):
 
     @staticmethod
     def _is_simple_character(c):
-        return isinstance(c, Character) and c.positive and not c.ignore_case
+        return isinstance(c, Character) and c.positive and not c.case_flags
 
     @staticmethod
     def _reduce_to_set(info, branches):
         # Can the branches be reduced to a set?
         new_branches = []
         items = set()
-        ignore_case = False
+        case_flags = NOCASE
         for b in branches:
             if isinstance(b, (Character, Property, SetBase)):
                 # Branch starts with a single character.
-                if b.ignore_case != ignore_case:
+                if b.case_flags != case_flags:
                     # Different case sensitivity, so flush.
-                    Branch._flush_set_members(info, items, ignore_case,
+                    Branch._flush_set_members(info, items, case_flags,
                       new_branches)
 
-                    ignore_case = b.ignore_case
+                    case_flags = b.case_flags
 
-                items.add(b.with_flags(ignore_case=False))
+                items.add(b.with_flags(case_flags=NOCASE))
             else:
-                Branch._flush_set_members(info, items, ignore_case,
+                Branch._flush_set_members(info, items, case_flags,
                   new_branches)
 
                 new_branches.append(b)
 
-        Branch._flush_set_members(info, items, ignore_case, new_branches)
+        Branch._flush_set_members(info, items, case_flags, new_branches)
 
         return new_branches
 
@@ -2028,7 +2056,7 @@ class Branch(RegexBase):
         order.clear()
 
     @staticmethod
-    def _flush_set_members(info, items, ignore_case, new_branches):
+    def _flush_set_members(info, items, case_flags, new_branches):
         # Flush the set members.
         if not items:
             return
@@ -2038,9 +2066,17 @@ class Branch(RegexBase):
         else:
             item = SetUnion(list(items)).optimise(info)
 
-        new_branches.append(item.with_flags(ignore_case=ignore_case))
+        new_branches.append(item.with_flags(case_flags=case_flags))
 
         items.clear()
+
+    @staticmethod
+    def _is_full_case(items, i):
+        if not 0 <= i < len(items):
+            return False
+
+        return isinstance(i, Character) and i.positive and (i.case_flags &
+          FULLIGNORECASE) == FULLIGNORECASE
 
     @staticmethod
     def _is_folded(items):
@@ -2049,17 +2085,17 @@ class Branch(RegexBase):
 
         for i in items:
             if (not isinstance(i, Character) or not i.positive or not
-              i.ignore_case):
+              i.case_flags):
                 return False
 
         folded = u"".join(unichr(i.value) for i in items)
-        folded = _regex.fold_case(UNICODE, folded)
+        folded = _regex.fold_case(FULL_CASE_FOLDING, folded)
 
         # Get the characters which expand to multiple codepoints on folding.
         expanding_chars = _regex.get_expand_on_folding()
 
         for c in expanding_chars:
-            if folded == _regex.fold_case(UNICODE, c):
+            if folded == _regex.fold_case(FULL_CASE_FOLDING, c):
                 return True
 
         return False
@@ -2071,43 +2107,50 @@ class Branch(RegexBase):
         return any(self.branches)
 
 class Character(RegexBase):
-    _opcode = {(False, False): OP.CHARACTER, (False, True): OP.CHARACTER_REV,
-      (True, False): OP.CHARACTER_IGN, (True, True): OP.CHARACTER_IGN_REV}
+    _opcode = {(NOCASE, False): OP.CHARACTER, (IGNORECASE, False):
+      OP.CHARACTER_IGN, (FULLCASE, False): OP.CHARACTER, (FULLIGNORECASE,
+      False): OP.CHARACTER_IGN, (NOCASE, True): OP.CHARACTER_REV, (IGNORECASE,
+      True): OP.CHARACTER_IGN_REV, (FULLCASE, True): OP.CHARACTER_REV,
+      (FULLIGNORECASE, True): OP.CHARACTER_IGN_REV}
     _op_name = {False: "CHARACTER", True: "CHARACTER_REV"}
 
-    def __init__(self, value, positive=True, ignore_case=False,
+    def __init__(self, value, positive=True, case_flags=NOCASE,
       zerowidth=False):
         RegexBase.__init__(self)
         self.value = value
         self.positive = bool(positive)
-        self.ignore_case = bool(ignore_case)
+        self.case_flags = case_flags
         self.zerowidth = bool(zerowidth)
 
         self._key = (self.__class__, self.value, self.positive,
-          self.ignore_case, self.zerowidth)
+          self.case_flags, self.zerowidth)
 
-    def rebuild(self, positive, ignore_case, zerowidth):
-        return Character(self.value, positive, ignore_case, zerowidth)
+    def rebuild(self, positive, case_flags, zerowidth):
+        return Character(self.value, positive, case_flags, zerowidth)
 
     def optimise(self, info, in_set=False):
-        # Is full case-folding possible?
-        if (not self.positive or not self.ignore_case or in_set or not
-          (info.global_flags & UNICODE)):
+        # Is the character case-sensitive?
+        if not self.positive or not (self.case_flags & IGNORECASE) or in_set:
             return self
 
         # Is the character cased?
         if not is_cased(info, self.value):
-            self.ignore = False
+            self.case_flags = NOCASE
+            return self
+
+        # Is full case-folding possible?
+        if not (info.global_flags & UNICODE) or (self.case_flags &
+          FULLIGNORECASE) != FULLIGNORECASE:
             return self
 
         # Get the folded character.
-        folded = _regex.fold_case(UNICODE, unichr(self.value))
+        folded = _regex.fold_case(FULL_CASE_FOLDING, unichr(self.value))
         if len(folded) == 1:
             # We can fall back to simple case-folding.
             return self
 
         return Branch([self, String([ord(c) for c in folded],
-          ignore_case=True)])
+          case_flags=self.case_flags)])
 
     def get_firstset(self, reverse):
         return set([self])
@@ -2124,11 +2167,11 @@ class Character(RegexBase):
         if fuzzy:
             flags |= FUZZY_OP
 
-        return [(self._opcode[self.ignore_case, reverse], flags, self.value)]
+        return [(self._opcode[self.case_flags, reverse], flags, self.value)]
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s %s%s" % (INDENT * indent, self._op_name[reverse],
-          POS_TEXT[self.positive], self.value, IGN_TEXT[self.ignore_case])
+          POS_TEXT[self.positive], self.value, CASE_TEXT[self.case_flags])
 
     def matches(self, ch):
         return (ch == self.value) == self.positive
@@ -2408,8 +2451,8 @@ class GreedyRepeat(RegexBase):
             limit = "INF"
         else:
             limit = self.max_count
-        print "%s%s %s %s" % (INDENT * indent, self._op_name,
-          self.min_count, limit)
+        print "%s%s %s %s" % (INDENT * indent, self._op_name, self.min_count,
+          limit)
 
         self.subpattern.dump(indent + 1, reverse)
 
@@ -2533,23 +2576,26 @@ class LookAround(RegexBase):
         return bool(self.subpattern)
 
 class Property(RegexBase):
-    _opcode = {(False, False): OP.PROPERTY, (False, True): OP.PROPERTY_REV,
-      (True, False): OP.PROPERTY_IGN, (True, True): OP.PROPERTY_IGN_REV}
+    _opcode = {(NOCASE, False): OP.PROPERTY, (IGNORECASE, False):
+      OP.PROPERTY_IGN, (FULLCASE, False): OP.PROPERTY, (FULLIGNORECASE, False):
+      OP.PROPERTY_IGN, (NOCASE, True): OP.PROPERTY_REV, (IGNORECASE, True):
+      OP.PROPERTY_IGN_REV, (FULLCASE, True): OP.PROPERTY_REV, (FULLIGNORECASE,
+      True): OP.PROPERTY_IGN_REV}
     _op_name = {False: "PROPERTY", True: "PROPERTY_REV"}
 
-    def __init__(self, value, positive=True, ignore_case=False,
+    def __init__(self, value, positive=True, case_flags=NOCASE,
       zerowidth=False):
         RegexBase.__init__(self)
         self.value = value
         self.positive = bool(positive)
-        self.ignore_case = bool(ignore_case)
+        self.case_flags = case_flags
         self.zerowidth = bool(zerowidth)
 
         self._key = (self.__class__, self.value, self.positive,
-          self.ignore_case, self.zerowidth)
+          self.case_flags, self.zerowidth)
 
-    def rebuild(self, positive, ignore_case, zerowidth):
-        return Property(self.value, positive, ignore_case, zerowidth)
+    def rebuild(self, positive, case_flags, zerowidth):
+        return Property(self.value, positive, case_flags, zerowidth)
 
     def optimise(self, info, in_set=False):
         return self
@@ -2568,40 +2614,46 @@ class Property(RegexBase):
             flags |= ZEROWIDTH_OP
         if fuzzy:
             flags |= FUZZY_OP
-        return [(self._opcode[self.ignore_case, reverse], flags, self.value)]
+        return [(self._opcode[self.case_flags, reverse], flags, self.value)]
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s %s=%s%s" % (INDENT * indent, self._op_name[reverse],
           POS_TEXT[self.positive], self.value >> 16, self.value & 0xFFFF,
-          IGN_TEXT[self.ignore_case])
+          CASE_TEXT[self.case_flags])
 
     def matches(self, ch):
         return _regex.has_property_value(self.value, ch) == self.positive
 
 class Range(RegexBase):
-    _opcode = {(False, False): OP.RANGE, (False, True): OP.RANGE_REV, (True,
-      False): OP.RANGE_IGN, (True, True): OP.RANGE_IGN_REV}
+    _opcode = {(NOCASE, False): OP.RANGE, (IGNORECASE, False): OP.RANGE_IGN,
+      (FULLCASE, False): OP.RANGE, (FULLIGNORECASE, False): OP.RANGE_IGN,
+      (NOCASE, True): OP.RANGE_REV, (IGNORECASE, True): OP.RANGE_IGN_REV,
+      (FULLCASE, True): OP.RANGE_REV, (FULLIGNORECASE, True): OP.RANGE_IGN_REV}
     _op_name = {False: "RANGE", True: "RANGE_REV"}
 
-    def __init__(self, lower, upper, positive=True, ignore_case=False,
+    def __init__(self, lower, upper, positive=True, case_flags=NOCASE,
       zerowidth=False):
         RegexBase.__init__(self)
         self.lower = lower
         self.upper = upper
         self.positive = bool(positive)
-        self.ignore_case = bool(ignore_case)
+        self.case_flags = case_flags
         self.zerowidth = bool(zerowidth)
 
         self._key = (self.__class__, self.lower, self.upper, self.positive,
-          self.ignore_case, self.zerowidth)
+          self.case_flags, self.zerowidth)
 
-    def rebuild(self, positive, ignore_case, zerowidth):
-        return Range(self.lower, self.upper, positive, ignore_case, zerowidth)
+    def rebuild(self, positive, case_flags, zerowidth):
+        return Range(self.lower, self.upper, positive, case_flags, zerowidth)
 
     def optimise(self, info, in_set=False):
+        # Is the range case-sensitive?
+        if not self.positive or not (self.case_flags & IGNORECASE) or in_set:
+            return self
+
         # Is full case-folding possible?
-        if (not self.positive or not self.ignore_case or in_set or not
-          (info.global_flags & UNICODE)):
+        if not (info.global_flags & UNICODE) or (self.case_flags &
+          FULLIGNORECASE) != FULLIGNORECASE:
             return self
 
         # Get the characters which expand to multiple codepoints on folding.
@@ -2611,9 +2663,9 @@ class Range(RegexBase):
         items = []
         for ch in expanding_chars:
             if self.lower <= ord(ch) <= self.upper:
-                folded = _regex.fold_case(UNICODE, ch)
+                folded = _regex.fold_case(FULL_CASE_FOLDING, ch)
                 items.append(String([ord(c) for c in folded],
-                  ignore_case=True))
+                  case_flags=self.case_flags))
 
         if not items:
             # We can fall back to simple case-folding.
@@ -2633,29 +2685,32 @@ class Range(RegexBase):
             flags |= ZEROWIDTH_OP
         if fuzzy:
             flags |= FUZZY_OP
-        return [(self._opcode[self.ignore_case, reverse], flags, self.lower,
+        return [(self._opcode[self.case_flags, reverse], flags, self.lower,
           self.upper)]
 
     def dump(self, indent=0, reverse=False):
         print "%sRANGE %s %s..%s%s" % (INDENT * indent,
           POS_TEXT[self.positive], self.lower, self.upper,
-          IGN_TEXT[self.ignore_case])
+          CASE_TEXT[self.case_flags])
 
     def matches(self, ch):
         return (self.lower <= ch <= self.upper) == self.positive
 
 class RefGroup(RegexBase):
-    _opcode = {(False, False): OP.REF_GROUP, (False, True): OP.REF_GROUP_REV,
-      (True, False): OP.REF_GROUP_IGN, (True, True): OP.REF_GROUP_IGN_REV}
+    _opcode = {(NOCASE, False): OP.REF_GROUP, (IGNORECASE, False):
+      OP.REF_GROUP_IGN, (FULLCASE, False): OP.REF_GROUP_FLD, (FULLIGNORECASE,
+      False): OP.REF_GROUP_FLD, (NOCASE, True): OP.REF_GROUP_REV, (IGNORECASE,
+      True): OP.REF_GROUP_IGN_REV, (FULLCASE, True): OP.REF_GROUP_FLD_REV,
+      (FULLIGNORECASE, True): OP.REF_GROUP_FLD_REV}
     _op_name = {False: "REF_GROUP", True: "REF_GROUP_REV"}
 
-    def __init__(self, info, group, ignore_case=False):
+    def __init__(self, info, group, case_flags=NOCASE):
         RegexBase.__init__(self)
         self.info = info
         self.group = group
-        self.ignore_case = bool(ignore_case)
+        self.case_flags = case_flags
 
-        self._key = self.__class__, self.group, self.ignore_case
+        self._key = self.__class__, self.group, self.case_flags
 
     def fix_groups(self):
         try:
@@ -2669,7 +2724,7 @@ class RefGroup(RegexBase):
         if not 1 <= self.group <= self.info.group_count:
             raise error("unknown group")
 
-        self._key = self.__class__, self.group, self.ignore_case
+        self._key = self.__class__, self.group, self.case_flags
 
     def remove_captures(self):
         raise error("group reference not allowed")
@@ -2678,11 +2733,11 @@ class RefGroup(RegexBase):
         flags = 0
         if fuzzy:
             flags |= FUZZY_OP
-        return [(self._opcode[self.ignore_case, reverse], flags, self.group)]
+        return [(self._opcode[self.case_flags, reverse], flags, self.group)]
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s%s" % (INDENT * indent, self._op_name[reverse],
-          self.group, IGN_TEXT[self.ignore_case])
+          self.group, CASE_TEXT[self.case_flags])
 
 class SearchAnchor(ZeroWidthBase):
     _opcode = OP.SEARCH_ANCHOR
@@ -2716,38 +2771,37 @@ class Sequence(RegexBase):
         "Packs sequences of characters into strings."
         items = []
         characters = []
-        ignore_case = False
+        case_flags = NOCASE
         for s in self.items:
             if type(s) is Character and s.positive:
-                if s.ignore_case != ignore_case:
+                if s.case_flags != case_flags:
                     # Different case sensitivity, so flush, unless neither the
                     # previous nor the new character are cased.
-                    if ignore_case or is_cased(info, s.value):
+                    if case_flags or is_cased(info, s.value):
                         Sequence._flush_characters(info, characters,
-                          ignore_case, items)
+                          case_flags, items)
 
-                        ignore_case = s.ignore_case
+                        case_flags = s.case_flags
 
                 characters.append(s.value)
             elif type(s) is String:
-                if s.ignore_case != ignore_case:
+                if s.case_flags != case_flags:
                     # Different case sensitivity, so flush, unless the neither
                     # the previous nor the new string are cased.
-                    if not s.ignore_case or any(is_cased(info, c) for c in
+                    if not s.case_flags or any(is_cased(info, c) for c in
                       characters):
                         Sequence._flush_characters(info, characters,
-                          ignore_case, items)
+                          case_flags, items)
 
-                        ignore_case = s.ignore_case
+                        case_flags = s.case_flags
 
                 characters.extend(s.characters)
             else:
-                Sequence._flush_characters(info, characters, ignore_case,
-                  items)
+                Sequence._flush_characters(info, characters, case_flags, items)
 
                 items.append(s.pack_characters(info))
 
-        Sequence._flush_characters(info, characters, ignore_case, items)
+        Sequence._flush_characters(info, characters, case_flags, items)
 
         return make_sequence(items)
 
@@ -2796,18 +2850,19 @@ class Sequence(RegexBase):
             s.dump(indent, reverse)
 
     @staticmethod
-    def _flush_characters(info, characters, ignore_case, items):
+    def _flush_characters(info, characters, case_flags, items):
         if not characters:
             return
 
-        # Disregard ignore_case if all of the characters are case-less.
-        if ignore_case:
-            ignore_case = any(is_cased(info, c) for c in characters)
+        # Disregard case_flags if all of the characters are case-less.
+        if case_flags & IGNORECASE:
+            if not any(is_cased(info, c) for c in characters):
+                case_flags = NOCASE
 
         if len(characters) == 1:
-            items.append(Character(characters[0], ignore_case=ignore_case))
+            items.append(Character(characters[0], case_flags=case_flags))
         else:
-            items.append(String(characters, ignore_case=ignore_case))
+            items.append(String(characters, case_flags=case_flags))
 
         characters[:] = []
 
@@ -2818,19 +2873,19 @@ class Sequence(RegexBase):
         return any(self.items)
 
 class SetBase(RegexBase):
-    def __init__(self, items, positive=True, ignore_case=False,
+    def __init__(self, items, positive=True, case_flags=NOCASE,
       zerowidth=False):
         RegexBase.__init__(self)
         self.items = tuple(items)
         self.positive = bool(positive)
-        self.ignore_case = bool(ignore_case)
+        self.case_flags = case_flags
         self.zerowidth = bool(zerowidth)
 
         self._key = (self.__class__, self.items, self.positive,
-          self.ignore_case, self.zerowidth)
+          self.case_flags, self.zerowidth)
 
-    def rebuild(self, positive, ignore_case, zerowidth):
-        return type(self)(self.items, positive, ignore_case, zerowidth)
+    def rebuild(self, positive, case_flags, zerowidth):
+        return type(self)(self.items, positive, case_flags, zerowidth)
 
     def get_firstset(self, reverse):
         return set([self])
@@ -2846,7 +2901,7 @@ class SetBase(RegexBase):
             flags |= ZEROWIDTH_OP
         if fuzzy:
             flags |= FUZZY_OP
-        code = [(self._opcode[self.ignore_case, reverse], flags)]
+        code = [(self._opcode[self.case_flags, reverse], flags)]
         for m in self.items:
             code.extend(m.compile())
 
@@ -2856,14 +2911,18 @@ class SetBase(RegexBase):
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s %s%s" % (INDENT * indent, self._op_name[reverse],
-          POS_TEXT[self.positive], IGN_TEXT[self.ignore_case])
+          POS_TEXT[self.positive], CASE_TEXT[self.case_flags])
         for i in self.items:
             i.dump(indent + 1)
 
     def _handle_case_folding(self, info, in_set):
+        # Is the set case-sensitive?
+        if not self.positive or not (self.case_flags & IGNORECASE) or in_set:
+            return self
+
         # Is full case-folding possible?
-        if (not self.positive or not self.ignore_case or in_set or not
-          (info.global_flags & UNICODE)):
+        if not (info.global_flags & UNICODE) or (self.case_flags &
+          FULLIGNORECASE) != FULLIGNORECASE:
             return self
 
         # Get the characters which expand to multiple codepoints on folding.
@@ -2873,9 +2932,9 @@ class SetBase(RegexBase):
         items = []
         for ch in expanding_chars:
             if self.matches(ord(ch)):
-                folded = _regex.fold_case(UNICODE, ch)
+                folded = _regex.fold_case(FULL_CASE_FOLDING, ch)
                 items.append(String([ord(c) for c in folded],
-                  ignore_case=True))
+                  case_flags=self.case_flags))
 
         if not items:
             # We can fall back to simple case-folding.
@@ -2884,8 +2943,11 @@ class SetBase(RegexBase):
         return Branch([self] + items)
 
 class SetDiff(SetBase):
-    _opcode = {(False, False): OP.SET_DIFF, (False, True): OP.SET_DIFF_REV,
-      (True, False): OP.SET_DIFF_IGN, (True, True): OP.SET_DIFF_IGN_REV}
+    _opcode = {(NOCASE, False): OP.SET_DIFF, (IGNORECASE, False):
+      OP.SET_DIFF_IGN, (FULLCASE, False): OP.SET_DIFF, (FULLIGNORECASE, False):
+      OP.SET_DIFF_IGN, (NOCASE, True): OP.SET_DIFF_REV, (IGNORECASE, True):
+      OP.SET_DIFF_IGN_REV, (FULLCASE, True): OP.SET_DIFF_REV, (FULLIGNORECASE,
+      True): OP.SET_DIFF_IGN_REV}
     _op_name = {False: "SET_DIFF", True: "SET_DIFF_REV"}
 
     def optimise(self, info, in_set=False):
@@ -2894,7 +2956,7 @@ class SetDiff(SetBase):
             items = [items[0], SetUnion(items[1 : ])]
 
         if len(items) == 1:
-            return items[0].with_flags(ignore_case=self.ignore_case,
+            return items[0].with_flags(case_flags=self.case_flags,
               zerowidth=self.zerowidth).optimise(info, in_set)
 
         self.items = tuple(m.optimise(info, in_set=True) for m in items)
@@ -2906,8 +2968,11 @@ class SetDiff(SetBase):
         return m == self.positive
 
 class SetInter(SetBase):
-    _opcode = {(False, False): OP.SET_INTER, (False, True): OP.SET_INTER_REV,
-      (True, False): OP.SET_INTER_IGN, (True, True): OP.SET_INTER_IGN_REV}
+    _opcode = {(NOCASE, False): OP.SET_INTER, (IGNORECASE, False):
+      OP.SET_INTER_IGN, (FULLCASE, False): OP.SET_INTER, (FULLIGNORECASE,
+      False): OP.SET_INTER_IGN, (NOCASE, True): OP.SET_INTER_REV, (IGNORECASE,
+      True): OP.SET_INTER_IGN_REV, (FULLCASE, True): OP.SET_INTER_REV,
+      (FULLIGNORECASE, True): OP.SET_INTER_IGN_REV}
     _op_name = {False: "SET_INTER", True: "SET_INTER_REV"}
 
     def optimise(self, info, in_set=False):
@@ -2921,7 +2986,7 @@ class SetInter(SetBase):
                 items.append(m)
 
         if len(items) == 1:
-            return items[0].with_flags(ignore_case=self.ignore_case,
+            return items[0].with_flags(case_flags=self.case_flags,
               zerowidth=self.zerowidth).optimise(info, in_set)
 
         self.items = tuple(items)
@@ -2933,9 +2998,11 @@ class SetInter(SetBase):
         return m == self.positive
 
 class SetSymDiff(SetBase):
-    _opcode = {(False, False): OP.SET_SYM_DIFF, (False, True):
-      OP.SET_SYM_DIFF_REV, (True, False): OP.SET_SYM_DIFF_IGN, (True, True):
-      OP.SET_SYM_DIFF_IGN_REV}
+    _opcode = {(NOCASE, False): OP.SET_SYM_DIFF, (IGNORECASE, False):
+      OP.SET_SYM_DIFF_IGN, (FULLCASE, False): OP.SET_SYM_DIFF, (FULLIGNORECASE,
+      False): OP.SET_SYM_DIFF_IGN, (NOCASE, True): OP.SET_SYM_DIFF_REV,
+      (IGNORECASE, True): OP.SET_SYM_DIFF_IGN_REV, (FULLCASE, True):
+      OP.SET_SYM_DIFF_REV, (FULLIGNORECASE, True): OP.SET_SYM_DIFF_IGN_REV}
     _op_name = {False: "SET_SYM_DIFF", True: "SET_SYM_DIFF_REV"}
 
     def optimise(self, info, in_set=False):
@@ -2949,7 +3016,7 @@ class SetSymDiff(SetBase):
                 items.append(m)
 
         if len(items) == 1:
-            return items[0].with_flags(ignore_case=self.ignore_case,
+            return items[0].with_flags(case_flags=self.case_flags,
               zerowidth=self.zerowidth).optimise(info, in_set)
 
         self.items = tuple(items)
@@ -2964,8 +3031,11 @@ class SetSymDiff(SetBase):
         return m == self.positive
 
 class SetUnion(SetBase):
-    _opcode = {(False, False): OP.SET_UNION, (False, True): OP.SET_UNION_REV,
-      (True, False): OP.SET_UNION_IGN, (True, True): OP.SET_UNION_IGN_REV}
+    _opcode = {(NOCASE, False): OP.SET_UNION, (IGNORECASE, False):
+      OP.SET_UNION_IGN, (FULLCASE, False): OP.SET_UNION, (FULLIGNORECASE,
+      False): OP.SET_UNION_IGN, (NOCASE, True): OP.SET_UNION_REV, (IGNORECASE,
+      True): OP.SET_UNION_IGN_REV, (FULLCASE, True): OP.SET_UNION_REV,
+      (FULLIGNORECASE, True): OP.SET_UNION_IGN_REV}
     _op_name = {False: "SET_UNION", True: "SET_UNION_REV"}
 
     def optimise(self, info, in_set=False):
@@ -2981,7 +3051,7 @@ class SetUnion(SetBase):
         if len(items) == 1:
             i = items[0]
             return i.with_flags(positive=i.positive == self.positive,
-              ignore_case=self.ignore_case,
+              case_flags=self.case_flags,
               zerowidth=self.zerowidth).optimise(info, in_set)
 
         self.items = tuple(items)
@@ -3009,15 +3079,18 @@ class StartOfWord(ZeroWidthBase):
     _op_name = "START_OF_WORD"
 
 class String(RegexBase):
-    _opcode = {(False, False): OP.STRING, (False, True): OP.STRING_REV, (True,
-      False): OP.STRING_IGN, (True, True): OP.STRING_IGN_REV}
+    _opcode = {(NOCASE, False): OP.STRING, (IGNORECASE, False): OP.STRING_IGN,
+      (FULLCASE, False): OP.STRING, (FULLIGNORECASE, False): OP.STRING_FLD,
+      (NOCASE, True): OP.STRING_REV, (IGNORECASE, True): OP.STRING_IGN_REV,
+      (FULLCASE, True): OP.STRING_REV, (FULLIGNORECASE, True):
+      OP.STRING_FLD_REV}
     _op_name = {False: "STRING", True: "STRING_REV"}
 
-    def __init__(self, characters, ignore_case=False):
+    def __init__(self, characters, case_flags=NOCASE):
         self.characters = tuple(characters)
-        self.ignore_case = bool(ignore_case)
+        self.case_flags = case_flags
 
-        self._key = self.__class__, self.characters, self.ignore_case
+        self._key = self.__class__, self.characters, self.case_flags
 
     def get_firstset(self, reverse):
         if reverse:
@@ -3025,7 +3098,7 @@ class String(RegexBase):
         else:
             pos = 0
         return set([Character(self.characters[pos],
-          ignore_case=self.ignore_case)])
+          case_flags=self.case_flags)])
 
     def has_simple_start(self):
         return True
@@ -3034,38 +3107,45 @@ class String(RegexBase):
         flags = 0
         if fuzzy:
             flags |= FUZZY_OP
-        return [(self._opcode[self.ignore_case, reverse], flags,
+        return [(self._opcode[self.case_flags, reverse], flags,
           len(self.characters)) + tuple(self.characters)]
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s%s" % (INDENT * indent, self._op_name[reverse],
-          " ".join(map(str, self.characters)), IGN_TEXT[self.ignore_case])
+          " ".join(map(str, self.characters)), CASE_TEXT[self.case_flags])
 
 class StringSet(RegexBase):
-    _opcode = {(False, False): OP.STRING_SET, (False, True): OP.STRING_SET_REV,
-      (True, False): OP.STRING_SET_IGN, (True, True): OP.STRING_SET_IGN_REV}
+    _opcode = {(NOCASE, False): OP.STRING_SET, (IGNORECASE, False):
+      OP.STRING_SET_IGN, (FULLCASE, False): OP.STRING_SET, (FULLIGNORECASE,
+      False): OP.STRING_SET_FLD, (NOCASE, True): OP.STRING_SET_REV,
+      (IGNORECASE, True): OP.STRING_SET_IGN_REV, (FULLCASE, True):
+      OP.STRING_SET_REV, (FULLIGNORECASE, True): OP.STRING_SET_FLD_REV}
     _op_name = {False: "STRING_SET", True: "STRING_SET_REV"}
 
-    def __init__(self, info, name, ignore_case=False):
+    def __init__(self, info, name, case_flags=NOCASE):
         self.info = info
         self.name = name
-        self.ignore_case = bool(ignore_case)
+        self.case_flags = case_flags
 
-        self._key = self.__class__, self.name, self.ignore_case
+        self._key = self.__class__, self.name, self.case_flags
 
-        self.set_key = (name, self.ignore_case)
+        self.set_key = (name, self.case_flags)
         if self.set_key not in info.named_lists_used:
             info.named_lists_used[self.set_key] = len(info.named_lists_used)
 
     def compile(self, reverse=False, fuzzy=False):
         index = self.info.named_lists_used[self.set_key]
         items = self.info.kwargs[self.name]
-        if fuzzy or self.ignore_case:
+
+        if fuzzy or (self.case_flags & IGNORECASE):
+            fold_flags = ((self.info.global_flags & ALL_ENCODINGS) |
+              self.case_flags)
+
             strings = []
             for i in items:
                 if isinstance(i, unicode):
                     strings.append(tuple(ord(c) for c in
-                      _regex.fold_case(UNICODE, i)))
+                      _regex.fold_case(fold_flags, i)))
                 else:
                     strings.append(tuple(ord(c) for c in i))
             s = self._build_string_set(strings)
@@ -3076,12 +3156,12 @@ class StringSet(RegexBase):
             min_len = min(len(i) for i in items)
             max_len = max(len(i) for i in items)
 
-            return [(self._opcode[self.ignore_case, reverse], index, min_len,
+            return [(self._opcode[self.case_flags, reverse], index, min_len,
               max_len)]
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s%s" % (INDENT * indent, self._op_name[reverse],
-          self.name, IGN_TEXT[self.ignore_case])
+          self.name, CASE_TEXT[self.case_flags])
 
     def _build_string_set(self, strings):
         # Builds a set of branches representing the string set.
@@ -3118,19 +3198,19 @@ class StringSet(RegexBase):
         if char_set:
             if len(char_set) == 1:
                 branches.append(Character(list(char_set)[0],
-                  ignore_case=self.ignore_case))
+                  case_flags=self.case_flags))
             else:
                 branches.append(SetUnion([Character(c) for c in char_set],
-                  ignore_case=self.ignore_case))
+                  case_flags=self.case_flags))
 
         # Add the string subsets, complete with their character prefixes.
         for c, s in others.items():
-            s = Sequence([Character(c, ignore_case=self.ignore_case), s])
+            s = Sequence([Character(c, case_flags=self.case_flags), s])
             branches.append(s)
 
         # Add the lone strings.
         for s in string_set:
-            branches.append(String(list(s), ignore_case=self.ignore_case))
+            branches.append(String(list(s), case_flags=self.case_flags))
 
         # Is this string set optional?
         if optional:
@@ -3161,7 +3241,7 @@ class StringSet(RegexBase):
 
             if n > 1:
                 seq[ : n] = [String([c.value for c in seq[ : n]],
-                  ignore_case=self.ignore_case)]
+                  case_flags=self.case_flags)]
 
             self._flatten(seq[-1])
 

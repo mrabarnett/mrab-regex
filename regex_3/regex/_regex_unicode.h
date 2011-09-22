@@ -92,7 +92,7 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 extern char* re_strings[980];
 extern RE_Property re_properties[143];
 extern RE_PropertyValue re_property_values[1051];
-extern RE_UINT32 re_expand_on_folding[1022];
+extern RE_UINT16 re_expand_on_folding[104];
 extern RE_GetPropertyFunc re_get_property[79];
 
 RE_UINT32 re_get_general_category(RE_UINT32 ch);
@@ -175,4 +175,5 @@ RE_UINT32 re_get_print(RE_UINT32 ch);
 RE_UINT32 re_get_word(RE_UINT32 ch);
 RE_UINT32 re_get_xdigit(RE_UINT32 ch);
 int re_get_all_cases(RE_UINT32 ch, RE_UINT32* codepoints);
-int re_get_case_folding(RE_UINT32 ch, RE_UINT32* codepoints);
+RE_UINT32 re_get_simple_case_folding(RE_UINT32 ch);
+int re_get_full_case_folding(RE_UINT32 ch, RE_UINT32* codepoints);

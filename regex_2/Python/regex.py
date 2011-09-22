@@ -146,8 +146,8 @@ second character.
                     [a-zA-Z0-9_] when matching a bytestring or a Unicode string
                     with the ASCII flag, or the whole range of Unicode
                     alphanumeric characters (letters plus digits plus
-                    underscore) when matching a Unicode string. With LOCALE,
-                    it will match the set [0-9_] plus characters defined as
+                    underscore) when matching a Unicode string. With LOCALE, it
+                    will match the set [0-9_] plus characters defined as
                     letters for the current locale.
     \W              Matches the complement of \w; equivalent to [^\w].
     \xXX            Matches the character with 2-digit hex code XX.
@@ -183,6 +183,8 @@ these flags can also be set within an RE:
                         bytestring.
     B   b   BESTMATCH   Find the best fuzzy match (default is first).
     D       DEBUG       Print the parsed pattern.
+    F   f   FULLCASE    Use full case-folding when performing case-insensitive
+                        matching in Unicode.
     I   i   IGNORECASE  Perform case-insensitive matching.
     L   L   LOCALE      Make \w, \W, \b, \B, \d, and \D dependent on the
                         current locale. (One byte per character only.)
@@ -194,8 +196,9 @@ these flags can also be set within an RE:
                         newline.
     U   u   UNICODE     Make \w, \W, \b, \B, \d, and \D dependent on the
                         Unicode locale. Default when matching a Unicode string.
-    V0  V0  VERSION0    Turn on the old behaviour.
-    V1  V1  VERSION1    Turn on the new behaviour.
+    V0  V0  VERSION0    Turn on the old legacy behaviour.
+    V1  V1  VERSION1    Turn on the new enhanced behaviour. This flag includes
+                        the FULLCASE flag.
     W   w   WORD        Make \b and \B work with default Unicode word breaks
                         and make ".", "^" and "$" work with Unicode line
                         breaks.
@@ -208,10 +211,10 @@ This module also defines an exception 'error'.
 # Public symbols.
 __all__ = ["compile", "escape", "findall", "finditer", "match", "purge",
   "search", "split", "splititer", "sub", "subn", "template", "A", "ASCII", "B",
-  "BESTMATCH", "D", "DEBUG", "S", "DOTALL", "I", "IGNORECASE", "L", "LOCALE",
-  "M", "MULTILINE", "N", "NEW", "R", "REVERSE", "T", "TEMPLATE", "U",
-  "UNICODE", "V0","VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD",
-  "error"]
+  "BESTMATCH", "D", "DEBUG", "S", "DOTALL", "F", "FULLCASE", "I", "IGNORECASE",
+  "L", "LOCALE", "M", "MULTILINE", "N", "NEW", "R", "REVERSE", "T", "TEMPLATE",
+  "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
+  "WORD", "error"]
 
 __version__ = "2.3.0"
 
@@ -419,7 +422,7 @@ def _compile(pattern, flags=0, kwargs=None):
             break
         except UnscopedFlagSet, e:
             # Remember the global flags for the next attempt.
-            global_flags = e.global_flags
+            global_flags = e.global_flags | flags
 
     if not source.at_end():
         raise error("trailing characters in pattern")
@@ -450,9 +453,9 @@ def _compile(pattern, flags=0, kwargs=None):
     named_list_indexes = [None] * len(info.named_lists_used)
     args_needed = set()
     for key, index in info.named_lists_used.items():
-        name, ignore_case = key
+        name, case_flags = key
         values = frozenset(kwargs[name])
-        if ignore_case:
+        if case_flags:
             items = frozenset(fold_case(info, v) for v in values)
         else:
             items = values

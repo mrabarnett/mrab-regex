@@ -25,6 +25,8 @@ Version 0 behaviour (old behaviour, compatible with the current 're' module):
 
     Only simple sets are supported.
 
+    Case-insensitive matches in Unicode use simple case-folding by default.
+
 Version 1 behaviour (new behaviour, different from the current 're' module):
 
     Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
@@ -35,9 +37,19 @@ Version 1 behaviour (new behaviour, different from the current 're' module):
 
     Nested sets and set operations are supported.
 
+    Case-insensitive matches in Unicode use full case-folding by default.
+
 If no version is specified, the regex module will default to ``regex.DEFAULT_VERSION``. In the short term this will be ``VERSION0``, but in the longer term it will be ``VERSION1``.
 
-**Note**: the ``VERSION1`` flag replaces the ``NEW`` flag in the previous versions of this module. The ``NEW`` flag is still supported in this release, but will be removed. The decision about versions and making the change was made after discussion in the python-dev list.
+**Note**: the ``VERSION1`` flag replaces the ``NEW`` flag in previous versions of this module. The ``NEW`` flag is still supported in this release, but will be removed. The decision about versions and making the change was made after discussion in the python-dev list.
+
+**Case-insensitive matches in Unicode**
+
+The regex module supports both simple and full case-folding for case-insensitive matches in Unicode. Use of full case-folding can be turned on using the ``FULLCASE`` or ``F`` flag, or ``(?f)`` in the pattern. Please note that this flag affects how the ``IGNORECASE`` flag works; the ``FULLCASE`` flag itself does not turn on case-insensitive matching.
+
+In the version 0 behaviour, the flag is off by default.
+
+In the version 1 behaviour, the flag is on by default.
 
 **Nested sets and set operations**
 
@@ -59,7 +71,7 @@ Flags
 
 There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.
 
-The scoped flags are: ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
+The scoped flags are: ``FULLCASE``, ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
 
 The global flags are: ``ASCII``, ``BESTMATCH``, ``LOCALE``, ``REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
 

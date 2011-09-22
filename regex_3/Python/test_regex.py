@@ -30,6 +30,7 @@ class Test:
     NOTHING_TO_REPEAT = "error('nothing to repeat',)"
     OPEN_GROUP = """error("can't refer to an open group",)"""
     DUPLICATE_GROUP = "error('duplicate group',)"
+    CANT_TURN_OFF = """error("bad inline flags: can't turn flags off",)"""
 
     def __init__(self):
         pass
@@ -666,45 +667,48 @@ class Test:
 
     def test_case_folding(self):
         # 1..4
-        self.expect(lambda: regex.search(r"(?i)ss", "SS").span(), ascii((0, 2)))
-        self.expect(lambda: regex.search(r"(?i)SS", "ss").span(), ascii((0, 2)))
-        self.expect(lambda: regex.search(r"(?i)SS",
+        self.expect(lambda: regex.search(r"(?fi)ss", "SS").span(), ascii((0,
+          2)))
+        self.expect(lambda: regex.search(r"(?fi)SS", "ss").span(), ascii((0,
+          2)))
+        self.expect(lambda: regex.search(r"(?fi)SS",
           "\N{LATIN SMALL LETTER SHARP S}").span(), ascii((0, 1)))
-        self.expect(lambda: regex.search(r"(?i)\N{LATIN SMALL LETTER SHARP S}",
-          "SS").span(), ascii((0, 2)))
+        self.expect(lambda:
+          regex.search(r"(?fi)\N{LATIN SMALL LETTER SHARP S}", "SS").span(),
+          ascii((0, 2)))
 
         # 5..7
-        self.expect(lambda: regex.search(r"(?i)\N{LATIN SMALL LIGATURE ST}",
+        self.expect(lambda: regex.search(r"(?fi)\N{LATIN SMALL LIGATURE ST}",
           "ST").span(), ascii((0, 2)))
-        self.expect(lambda: regex.search(r"(?i)ST",
+        self.expect(lambda: regex.search(r"(?fi)ST",
           "\N{LATIN SMALL LIGATURE ST}").span(), ascii((0, 1)))
-        self.expect(lambda: regex.search(r"(?i)ST",
+        self.expect(lambda: regex.search(r"(?fi)ST",
           "\N{LATIN SMALL LIGATURE LONG S T}").span(), ascii((0, 1)))
 
         # 8..12
-        self.expect(lambda: regex.search(r"(?i)SST",
+        self.expect(lambda: regex.search(r"(?fi)SST",
           "\N{LATIN SMALL LETTER SHARP S}t").span(), ascii((0, 2)))
-        self.expect(lambda: regex.search(r"(?i)SST",
+        self.expect(lambda: regex.search(r"(?fi)SST",
           "s\N{LATIN SMALL LIGATURE LONG S T}").span(), ascii((0, 2)))
-        self.expect(lambda: regex.search(r"(?i)SST",
+        self.expect(lambda: regex.search(r"(?fi)SST",
           "s\N{LATIN SMALL LIGATURE ST}").span(), ascii((0, 2)))
-        self.expect(lambda: regex.search(r"(?i)\N{LATIN SMALL LIGATURE ST}",
+        self.expect(lambda: regex.search(r"(?fi)\N{LATIN SMALL LIGATURE ST}",
           "SST").span(), ascii((1, 3)))
-        self.expect(lambda: regex.search(r"(?i)SST",
+        self.expect(lambda: regex.search(r"(?fi)SST",
           "s\N{LATIN SMALL LIGATURE ST}").span(), ascii((0, 2)))
 
         # 13..18
-        self.expect(lambda: regex.search(r"(?i)FFI",
+        self.expect(lambda: regex.search(r"(?fi)FFI",
           "\N{LATIN SMALL LIGATURE FFI}").span(), ascii((0, 1)))
-        self.expect(lambda: regex.search(r"(?i)FFI",
+        self.expect(lambda: regex.search(r"(?fi)FFI",
           "\N{LATIN SMALL LIGATURE FF}i").span(), ascii((0, 2)))
-        self.expect(lambda: regex.search(r"(?i)FFI",
+        self.expect(lambda: regex.search(r"(?fi)FFI",
           "f\N{LATIN SMALL LIGATURE FI}").span(), ascii((0, 2)))
-        self.expect(lambda: regex.search(r"(?i)\N{LATIN SMALL LIGATURE FFI}",
+        self.expect(lambda: regex.search(r"(?fi)\N{LATIN SMALL LIGATURE FFI}",
           "FFI").span(), ascii((0, 3)))
-        self.expect(lambda: regex.search(r"(?i)\N{LATIN SMALL LIGATURE FF}i",
+        self.expect(lambda: regex.search(r"(?fi)\N{LATIN SMALL LIGATURE FF}i",
           "FFI").span(), ascii((0, 3)))
-        self.expect(lambda: regex.search(r"(?i)f\N{LATIN SMALL LIGATURE FI}",
+        self.expect(lambda: regex.search(r"(?fi)f\N{LATIN SMALL LIGATURE FI}",
           "FFI").span(), ascii((0, 3)))
 
         # 19..27
@@ -712,7 +716,7 @@ class Test:
         for ch1 in sigma:
             for ch2 in sigma:
                 self.index += 1
-                if not regex.match(r"(?i)" + ch1, ch2):
+                if not regex.match(r"(?fi)" + ch1, ch2):
                     self.record_failure()
 
     def test_category(self):
@@ -1522,13 +1526,13 @@ class Test:
         self.expect(lambda: regex.search(r"A(?iV1)b", "ab"), ascii(None))
 
         # 5..8
-        self.expect(lambda: regex.search(r"(?-i)Ab", "ab",
-          flags=regex.I).span(), ascii((0, 2)))
+        self.expect(lambda: regex.search(r"(?V0-i)Ab", "ab",
+          flags=regex.I), self.CANT_TURN_OFF)
         self.expect(lambda: regex.search(r"(?V1-i)Ab", "ab", flags=regex.I),
           ascii(None))
         self.expect(lambda: regex.search(r"(?-i:A)b", "ab", flags=regex.I),
           ascii(None))
-        self.expect(lambda: regex.search(r"A(?-i)b", "ab",
+        self.expect(lambda: regex.search(r"A(?V1-i)b", "ab",
           flags=regex.I).span(), ascii((0, 2)))
 
     def test_repeated_repeats(self):
@@ -2854,13 +2858,13 @@ xyzabc
 
         options = ["STRASSE"]
         # 10
-        self.expect(lambda: regex.match(r"(?i)\L<words>",
+        self.expect(lambda: regex.match(r"(?fi)\L<words>",
           "stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(),
           ascii((0, 6)))
 
         options = ["stra\N{LATIN SMALL LETTER SHARP S}e"]
         # 11
-        self.expect(lambda: regex.match(r"(?i)\L<words>", "STRASSE",
+        self.expect(lambda: regex.match(r"(?fi)\L<words>", "STRASSE",
           words=options).span(), ascii((0, 7)))
 
         options = ["kit"]
@@ -2872,10 +2876,10 @@ xyzabc
           words=options).span(), ascii((1, 4)))
 
         # 14..15
-        self.expect(lambda: regex.search(r"(?i)\b(\w+) +\1\b",
+        self.expect(lambda: regex.search(r"(?fi)\b(\w+) +\1\b",
           " stra\N{LATIN SMALL LETTER SHARP S}e STRASSE ").span(), ascii((1,
           15)))
-        self.expect(lambda: regex.search(r"(?i)\b(\w+) +\1\b",
+        self.expect(lambda: regex.search(r"(?fi)\b(\w+) +\1\b",
           " STRASSE stra\N{LATIN SMALL LETTER SHARP S}e ").span(), ascii((1,
           15)))
 
