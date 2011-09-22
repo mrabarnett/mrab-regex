@@ -411,7 +411,9 @@ def _compile(pattern, flags=0, kwargs=None):
 
     # Parse the pattern. In the old behaviour the inline flags are global and
     # the pattern will need to be reparsed if a flag becomes turned on.
-    global_flags = flags
+    version = (flags & ALL_VERSIONS) or DEFAULT_VERSION
+    global_flags = flags | _regex_core.DEFAULT_FLAGS.get(version, 0)
+
     while True:
         try:
             source = Source(pattern)
