@@ -2871,20 +2871,26 @@ xyzabc
           u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(),
           repr((0, 6)))
 
-        options = [u"stra\N{LATIN SMALL LETTER SHARP S}e"]
+        options = [u"STRASSE", u"stress"]
         # 11
+        self.expect(lambda: regex.match(ur"(?fiu)\L<words>",
+          u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(),
+          repr((0, 6)))
+
+        options = [u"stra\N{LATIN SMALL LETTER SHARP S}e"]
+        # 12
         self.expect(lambda: regex.match(ur"(?fiu)\L<words>", u"STRASSE",
           words=options).span(), repr((0, 7)))
 
         options = ["kit"]
-        # 12..13
+        # 13..14
         self.expect(lambda: regex.search(ur"(?iu)\L<words>", u"SKITS",
           words=options).span(), repr((1, 4)))
         self.expect(lambda: regex.search(ur"(?iu)\L<words>",
           u"SK\N{LATIN CAPITAL LETTER I WITH DOT ABOVE}TS",
           words=options).span(), repr((1, 4)))
 
-        # 14..15
+        # 15..16
         self.expect(lambda: regex.search(ur"(?fiu)\b(\w+) +\1\b",
           u" stra\N{LATIN SMALL LETTER SHARP S}e STRASSE ").span(), repr((1,
           15)))

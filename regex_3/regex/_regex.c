@@ -388,7 +388,7 @@ typedef struct RE_State {
     BOOL wide;
     BOOL overlapped; /* Matches can be overlapped. */
     BOOL reverse; /* Search backwards. */
-    BOOL save_captures;
+    BOOL visible_captures;
     BOOL has_captures;
     BOOL zero_width; /* Enable the correct handling of zero-width matches. */
     BOOL must_advance; /* The end of the match must advance past its start. */
@@ -493,7 +493,7 @@ typedef struct RE_CompileArgs {
     RE_Node* end;
     size_t repeat_depth;
     BOOL forward;
-    BOOL save_captures;
+    BOOL visible_captures;
     BOOL has_captures;
     BOOL is_fuzzy;
 } RE_CompileArgs;
@@ -4163,7 +4163,7 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
             return FALSE;
 
         next_position->node = next->match_next;
-        next_position->text_pos = text_pos + next->match_step;
+        next_position->text_pos = pos;
 
         return TRUE;
     }
@@ -4219,7 +4219,7 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
             return FALSE;
 
         next_position->node = next->match_next;
-        next_position->text_pos = text_pos + next->match_step;
+        next_position->text_pos = pos;
 
         return TRUE;
     }
@@ -5031,12 +5031,21 @@ Py_LOCAL_INLINE(BOOL) save_capture(RE_SafeState* safe_state, size_t index) {
      * entire matched string).
      */
     group = &state->groups[index - 1];
+
+    /* Will the repeated captures never be visible? */
+    if (!state->visible_captures) {
+        group->captures[0] = group->span;
+        group->capture_count = 1;
+
+        return TRUE;
+    }
+
     if (group->capture_count >= group->capture_capacity) {
         size_t new_capacity;
         RE_GroupSpan* new_captures;
 
         new_capacity = group->capture_capacity * 2;
-        if (new_capacity == 0)
+        if (new_capacity < 16)
             new_capacity = 16;
         new_captures = (RE_GroupSpan*)safe_realloc(safe_state, group->captures,
           new_capacity * sizeof(RE_GroupSpan));
@@ -5057,7 +5066,8 @@ Py_LOCAL_INLINE(void) unsave_capture(RE_State* state, size_t index) {
     /* Capture group indexes are 1-based (excluding group 0, which is the
      * entire matched string).
      */
-    --state->groups[index - 1].capture_count;
+    if (state->groups[index - 1].capture_count > 0)
+        --state->groups[index - 1].capture_count;
 }
 
 /* Saves all the capture counts to backtrack. */
@@ -6702,7 +6712,8 @@ Py_LOCAL_INLINE(BOOL) fuzzy_match_string_fld(RE_SafeState* safe_state, BOOL
             case RE_FUZZY_INS:
                 /* Could the character at text_pos have been inserted? */
                 new_pos = new_folded_pos + step;
-                if (permit_insertion && 0 <= new_pos && new_pos <= folded_len) {
+                if (permit_insertion && 0 <= new_pos && new_pos <= folded_len)
+                  {
                     new_folded_pos = new_pos;
                     goto found;
                 }
@@ -7601,7 +7612,7 @@ advance:
             state->groups[node->values[0] - 1].span.end = text_pos;
 
             /* Save the capture? */
-            if (node->values[1] && state->save_captures) {
+            if (node->values[1]) {
                 RE_BacktrackData* bt_data;
 
                 if (!save_capture(safe_state, node->values[0]))
@@ -8000,7 +8011,7 @@ advance:
         }
         case RE_OP_GROUP_EXISTS: /* Capture group exists. */
         {
-            RE_GroupSpan* span;
+            RE_GroupData* group;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Capture group indexes are 1-based (excluding group 0, which is
@@ -8009,9 +8020,8 @@ advance:
              * Check whether the captured text, if any, exists at this position
              * in the string.
              */
-            span = &state->groups[node->values[0] - 1].span;
-            if (0 <= span->start && span->start <= span->end && span->end <=
-              text_length)
+            group = &state->groups[node->values[0] - 1];
+            if (group->capture_count == 1)
                 node = node->next_1.node;
             else
                 node = node->nonstring.next_2.node;
@@ -8339,6 +8349,7 @@ advance:
             break;
         case RE_OP_REF_GROUP: /* Reference to a capture group. */
         {
+            RE_GroupData* group;
             RE_GroupSpan* span;
             Py_ssize_t available;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
@@ -8351,12 +8362,12 @@ advance:
              */
 
             /* Did the group capture anything? */
-            span = &state->groups[node->values[0] - 1].span;
-            if (!(0 <= span->start && span->start <= span->end && span->end <=
-              text_length))
+            group = &state->groups[node->values[0] - 1];
+            if (group->capture_count == 0)
                 goto backtrack;
 
             /* Are there enough characters? */
+            span = &group->captures[group->capture_count - 1];
             available = state->slice_end - text_pos;
             if (span->end - span->start > available)
                 goto backtrack;
@@ -8393,6 +8404,7 @@ advance:
         }
         case RE_OP_REF_GROUP_FLD: /* Reference to a capture group, ignoring case. */
         {
+            RE_GroupData* group;
             RE_GroupSpan* span;
             int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
             int folded_len;
@@ -8408,10 +8420,11 @@ advance:
              * in the string.
              */
             /* Did the group capture anything? */
-            span = &state->groups[node->values[0] - 1].span;
-            if (!(0 <= span->start && span->start <= span->end && span->end <=
-              text_length))
+            group = &state->groups[node->values[0] - 1];
+            if (group->capture_count == 0)
                 goto backtrack;
+
+            span = &group->captures[group->capture_count - 1];
 
             full_case_fold = encoding->full_case_fold;
 
@@ -8423,14 +8436,16 @@ advance:
                 gfolded_len = 0;
             } else {
                 folded_len = full_case_fold(char_at(text, text_pos), folded);
-                gfolded_len = full_case_fold(char_at(text, string_pos), gfolded);
+                gfolded_len = full_case_fold(char_at(text, string_pos),
+                  gfolded);
             }
 
             /* Try comparing. */
             while (string_pos < span->end) {
                 /* Case-fold at current position in text. */
                 if (folded_pos >= folded_len) {
-                    folded_len = full_case_fold(char_at(text, text_pos), folded);
+                    folded_len = full_case_fold(char_at(text, text_pos),
+                      folded);
                     folded_pos = 0;
                 }
 
@@ -8478,6 +8493,7 @@ advance:
         }
         case RE_OP_REF_GROUP_FLD_REV: /* Reference to a capture group, ignoring case. */
         {
+            RE_GroupData* group;
             RE_GroupSpan* span;
             int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
             int folded_len;
@@ -8494,10 +8510,11 @@ advance:
              */
 
             /* Did the group capture anything? */
-            span = &state->groups[node->values[0] - 1].span;
-            if (!(0 <= span->start && span->start <= span->end && span->end <=
-              text_length))
+            group = &state->groups[node->values[0] - 1];
+            if (group->capture_count == 0)
                 goto backtrack;
+
+            span = &group->captures[group->capture_count - 1];
 
             full_case_fold = encoding->full_case_fold;
 
@@ -8508,7 +8525,8 @@ advance:
                 gfolded_pos = 0;
                 gfolded_len = 0;
             } else {
-                folded_len = full_case_fold(char_at(text, text_pos - 1), folded);
+                folded_len = full_case_fold(char_at(text, text_pos - 1),
+                  folded);
                 gfolded_len = full_case_fold(char_at(text, string_pos - 1),
                   gfolded);
             }
@@ -8566,6 +8584,7 @@ advance:
         }
         case RE_OP_REF_GROUP_IGN: /* Reference to a capture group, ignoring case. */
         {
+            RE_GroupData* group;
             RE_GroupSpan* span;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
@@ -8577,18 +8596,19 @@ advance:
              */
 
             /* Did the group capture anything? */
-            span = &state->groups[node->values[0] - 1].span;
-            if (!(0 <= span->start && span->start <= span->end && span->end <=
-              text_length))
+            group = &state->groups[node->values[0] - 1];
+            if (group->capture_count == 0)
                 goto backtrack;
+
+            span = &group->captures[group->capture_count - 1];
 
             if (string_pos < 0)
                 string_pos = span->start;
 
             /* Try comparing. */
             while (string_pos < span->end) {
-                if (same_char_ign(encoding, char_at(text, text_pos), char_at(text,
-                  string_pos))) {
+                if (same_char_ign(encoding, char_at(text, text_pos),
+                  char_at(text, string_pos))) {
                     ++string_pos;
                     ++text_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
@@ -8613,6 +8633,7 @@ advance:
         }
         case RE_OP_REF_GROUP_IGN_REV: /* Reference to a capture group, ignoring case. */
         {
+            RE_GroupData* group;
             RE_GroupSpan* span;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
@@ -8624,18 +8645,19 @@ advance:
              */
 
             /* Did the group capture anything? */
-            span = &state->groups[node->values[0] - 1].span;
-            if (!(0 <= span->start && span->start <= span->end && span->end <=
-              text_length))
+            group = &state->groups[node->values[0] - 1];
+            if (group->capture_count == 0)
                 goto backtrack;
+
+            span = &group->captures[group->capture_count - 1];
 
             if (string_pos < 0)
                 string_pos = span->end;
 
             /* Try comparing. */
             while (string_pos > span->start) {
-                if (same_char_ign(encoding, char_at(text, text_pos - 1), char_at(text,
-                  string_pos - 1))) {
+                if (same_char_ign(encoding, char_at(text, text_pos - 1),
+                  char_at(text, string_pos - 1))) {
                     --string_pos;
                     --text_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
@@ -8660,6 +8682,7 @@ advance:
         }
         case RE_OP_REF_GROUP_REV: /* Reference to a capture group. */
         {
+            RE_GroupData* group;
             RE_GroupSpan* span;
             Py_ssize_t available;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
@@ -8672,10 +8695,11 @@ advance:
              */
 
             /* Did the group capture anything? */
-            span = &state->groups[node->values[0] - 1].span;
-            if (!(0 <= span->start && span->start <= span->end && span->end <=
-              text_length))
+            group = &state->groups[node->values[0] - 1];
+            if (group->capture_count == 0)
                 goto backtrack;
+
+            span = &group->captures[group->capture_count - 1];
 
             /* Are there enough characters? */
             available = text_pos - state->slice_start;
@@ -8807,7 +8831,7 @@ advance:
             state->groups[node->values[0] - 1].span.start = text_pos;
 
             /* Save the capture? */
-            if (node->values[1] && state->save_captures) {
+            if (node->values[1]) {
                 RE_BacktrackData* bt_data;
 
                 if (!save_capture(safe_state, node->values[0]))
@@ -8949,7 +8973,8 @@ advance:
             /* Try comparing. */
             while (string_pos < length) {
                 if (folded_pos >= folded_len) {
-                    folded_len = full_case_fold(char_at(text, text_pos), folded);
+                    folded_len = full_case_fold(char_at(text, text_pos),
+                      folded);
                     folded_pos = 0;
                 }
 
@@ -9032,7 +9057,8 @@ advance:
                 folded_pos = 0;
                 folded_len = 0;
             } else
-                folded_len = full_case_fold(char_at(text, text_pos - 1), folded);
+                folded_len = full_case_fold(char_at(text, text_pos - 1),
+                  folded);
 
             values = node->values;
 
@@ -9055,7 +9081,8 @@ advance:
                     BOOL matched;
 
                     if (!fuzzy_match_string_fld(safe_state, search, &text_pos,
-                      node, &string_pos, &folded_pos, folded_len, &matched, -1))
+                      node, &string_pos, &folded_pos, folded_len, &matched,
+                      -1))
                         return RE_ERROR_MEMORY;
                     if (!matched) {
                         string_pos = -1;
@@ -9075,7 +9102,8 @@ advance:
                     BOOL matched;
 
                     if (!fuzzy_match_string_fld(safe_state, search, &text_pos,
-                      node, &string_pos, &folded_pos, folded_len, &matched, -1))
+                      node, &string_pos, &folded_pos, folded_len, &matched,
+                      -1))
                         return RE_ERROR_MEMORY;
 
                     if (!matched) {
@@ -9115,8 +9143,8 @@ advance:
 
             /* Try comparing. */
             while (string_pos < length) {
-                if (same_char_ign(encoding, char_at(text, text_pos), values[string_pos]))
-                  {
+                if (same_char_ign(encoding, char_at(text, text_pos),
+                  values[string_pos])) {
                     ++string_pos;
                     ++text_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
@@ -10698,7 +10726,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
 
     state->groups = NULL;
     state->repeats = NULL;
-    state->save_captures = TRUE;
+    state->visible_captures = TRUE;
     state->saved_groups = NULL;
     state->backtrack_block.previous = NULL;
     state->backtrack_block.next = NULL;
@@ -10715,12 +10743,39 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
             state->groups = pattern->groups_storage;
             pattern->groups_storage = NULL;
         } else {
+            Py_ssize_t capacity;
+            Py_ssize_t g;
+
             state->groups = (RE_GroupData*)re_alloc(pattern->group_count *
               sizeof(RE_GroupData));
             if (!state->groups)
                 goto error;
             memset(state->groups, 0, pattern->group_count *
               sizeof(RE_GroupData));
+
+            if (state->visible_captures)
+                capacity = 16;
+            else
+                capacity = 1;
+
+            for (g = 0; g < pattern->group_count; g++) {
+                RE_GroupSpan* captures;
+
+                captures = (RE_GroupSpan*)re_alloc(capacity *
+                  sizeof(RE_GroupSpan));
+                if (!captures) {
+                    Py_ssize_t i;
+
+                    i = 0;
+                    while (i < g)
+                        re_dealloc(state->groups[i++].captures);
+
+                    return FALSE;
+                }
+
+                state->groups[g].captures = captures;
+                state->groups[g].capture_capacity = capacity;
+            }
         }
 
         if (pattern->saved_groups_storage) {
@@ -12324,7 +12379,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
     if (status > 0) {
         MatchObject* match;
 
-        /* Create a NatchObject. */
+        /* Create a MatchObject. */
         match = PyObject_NEW(MatchObject, &Match_Type);
         if (!match)
             return NULL;
@@ -12899,7 +12954,7 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
 
     /* The MatchObject, and therefore repeated captures, will never be visible.
      */
-    state->save_captures = FALSE;
+    state->visible_captures = FALSE;
 
     return (PyObject*) self;
 }
@@ -13253,7 +13308,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         /* The MatchObject, and therefore repeated captures, will never be
          * visible.
          */
-        state.save_captures = FALSE;
+        state.visible_captures = FALSE;
 
     join_info.item = NULL;
     join_info.list = NULL;
@@ -13506,7 +13561,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
 
     /* The MatchObject, and therefore repeated captures, will never be visible.
      */
-    state.save_captures = FALSE;
+    state.visible_captures = FALSE;
 
     list = PyList_New(0);
     if (!list) {
@@ -13689,7 +13744,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
 
     /* The MatchObject, and therefore repeated captures, will never be visible.
      */
-    state.save_captures = FALSE;
+    state.visible_captures = FALSE;
 
     list = PyList_New(0);
     if (!list) {
@@ -15150,7 +15205,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
 
     /* Signal that the capture should be saved when it's complete. */
     start_node->values[1] = 0;
-    end_node->values[1] = args->save_captures ? 1 : 0;
+    end_node->values[1] = 1;
 
     /* Record that we have a new capture group. */
     if (!record_group(args->pattern, group))
@@ -15169,7 +15224,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
 
     args->code = subargs.code;
     args->min_width = subargs.min_width;
-    args->has_captures |= subargs.has_captures || subargs.save_captures;
+    args->has_captures |= subargs.has_captures || subargs.visible_captures;
     args->is_fuzzy |= subargs.is_fuzzy;
 
     ++args->code;
@@ -15528,7 +15583,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         /* Compile the 'body' and check that we've reached the end of it. */
         subargs = *args;
         subargs.min_width = 0;
-        subargs.save_captures = TRUE;
+        subargs.visible_captures = TRUE;
         subargs.has_captures = FALSE;
         ++subargs.repeat_depth;
         if (!build_sequence(&subargs))
@@ -15956,7 +16011,7 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     args.pattern = pattern;
     args.forward = (pattern->flags & RE_FLAG_REVERSE) == 0;
     args.min_width = 0;
-    args.save_captures = FALSE;
+    args.visible_captures = FALSE;
     args.has_captures = FALSE;
     args.repeat_depth = 0;
     args.is_fuzzy = FALSE;

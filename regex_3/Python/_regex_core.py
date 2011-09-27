@@ -3137,92 +3137,40 @@ class StringSet(RegexBase):
         index = self.info.named_lists_used[self.set_key]
         items = self.info.kwargs[self.name]
 
-        if fuzzy or (self.case_flags & IGNORECASE):
-            fold_flags = ((self.info.global_flags & ALL_ENCODINGS) |
-              self.case_flags)
+        case_flags = self.case_flags
 
-            strings = []
+        if fuzzy or (case_flags & IGNORECASE):
+            encoding = self.info.global_flags & ALL_ENCODINGS
+            fold_flags = encoding | case_flags
+
+            branches = []
             for i in items:
+                string = []
                 if isinstance(i, str):
-                    strings.append(tuple(ord(c) for c in
-                      _regex.fold_case(fold_flags, i)))
+                    string = [ord(c) for c in _regex.fold_case(fold_flags, i)]
                 else:
-                    strings.append(tuple(i))
-            s = self._build_string_set(strings)
-            self._flatten(s)
+                    string = list(i)
 
-            return s.compile(reverse, fuzzy)
+                branches.append(Sequence([Character(c, case_flags=case_flags)
+                  for c in string]))
+
+            if len(branches) > 1:
+                branch = Branch(branches)
+            else:
+                branch = branches[0]
+            branch = branch.optimise(self.info).pack_characters(self.info)
+
+            return branch.compile(reverse, fuzzy)
         else:
             min_len = min(len(i) for i in items)
             max_len = max(len(i) for i in items)
 
-            return [(self._opcode[self.case_flags, reverse], index, min_len,
+            return [(self._opcode[case_flags, reverse], index, min_len,
               max_len)]
 
     def dump(self, indent=0, reverse=False):
         print("{}{} {}{}".format(INDENT * indent, self._op_name[reverse],
           self.name, CASE_TEXT[self.case_flags]))
-
-    def _build_string_set(self, strings):
-        # Builds a set of branches representing the string set.
-
-        # Divide the strings according to their first character.
-        optional = False
-        prefixed = defaultdict(set)
-        for s in strings:
-            try:
-                prefixed[s[0]].add(s)
-            except IndexError:
-                optional = True
-
-        # Collect lone characters and lone strings.
-        char_set = set()
-        string_set = set()
-        others = {}
-        for c, subset in prefixed.items():
-            if len(subset) == 1:
-                s = list(subset)[0]
-                if len(s) == 1:
-                    # It's a lone character.
-                    char_set.add(s[0])
-                else:
-                    # It's a lone string.
-                    string_set.add(s)
-            else:
-                # The 'normal' case.
-                others[c] = self._build_string_set([s[1 : ] for s in subset])
-
-        branches = []
-
-        # Add the character set for the lone characters.
-        if char_set:
-            if len(char_set) == 1:
-                branches.append(Character(list(char_set)[0],
-                  case_flags=self.case_flags))
-            else:
-                branches.append(SetUnion([Character(c) for c in char_set],
-                  case_flags=self.case_flags))
-
-        # Add the string subsets, complete with their character prefixes.
-        for c, s in others.items():
-            s = Sequence([Character(c, case_flags=self.case_flags), s])
-            branches.append(s)
-
-        # Add the lone strings.
-        for s in string_set:
-            branches.append(String(list(s), case_flags=self.case_flags))
-
-        # Is this string set optional?
-        if optional:
-            branches.append(Sequence())
-
-        if not branches:
-            return Sequence()
-
-        if len(branches) == 1:
-            return branches[0]
-
-        return Branch(branches)
 
     def _flatten(self, s):
         # Flattens the branches.
@@ -3348,6 +3296,12 @@ class Info:
         self.group_state[group] = self.CLOSED
 
     def is_open_group(self, name):
+        # In version 1, a group reference can refer to an open group. We'll
+        # just pretend the group isn't open.
+        version = (self.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
+        if version == VERSION1:
+            return False
+
         if name.isdigit():
             group = int(name)
         else:

@@ -1,0 +1,1022 @@
+The following is a list of the 79 properties which are supported by this module:
+
+ASCII
+    No [F, False, N]
+    Yes [T, True, Y]
+
+ASCII_Hex_Digit [AHex]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Alphabetic [Alpha]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Alphanumeric [AlNum]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Any
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Assigned
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Bidi_Class [bc]
+    AL [Arabic_Letter]
+    AN [Arabic_Number]
+    B [Paragraph_Separator]
+    BN [Boundary_Neutral]
+    CS [Common_Separator]
+    EN [European_Number]
+    ES [European_Separator]
+    ET [European_Terminator]
+    LRE [Left_To_Right_Embedding]
+    LRO [Left_To_Right_Override]
+    Left_To_Right [L]
+    NSM [Nonspacing_Mark]
+    ON [Other_Neutral]
+    PDF [Pop_Directional_Format]
+    R [Right_To_Left]
+    RLE [Right_To_Left_Embedding]
+    RLO [Right_To_Left_Override]
+    S [Segment_Separator]
+    WS [White_Space]
+
+Bidi_Control [Bidi_C]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Bidi_Mirrored [Bidi_M]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Blank
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Block [blk]
+    Aegean_Numbers
+    Alchemical_Symbols
+    Alphabetic_Presentation_Forms
+    Ancient_Greek_Musical_Notation
+    Ancient_Greek_Numbers
+    Ancient_Symbols
+    Arabic
+    Arabic_Presentation_Forms_A
+    Arabic_Presentation_Forms_B
+    Arabic_Supplement
+    Armenian
+    Arrows
+    Avestan
+    Balinese
+    Bamum
+    Bamum_Supplement
+    Basic_Latin [ASCII]
+    Batak
+    Bengali
+    Block_Elements
+    Bopomofo
+    Bopomofo_Extended
+    Box_Drawing
+    Brahmi
+    Braille_Patterns
+    Buginese
+    Buhid
+    Byzantine_Musical_Symbols
+    CJK_Compatibility
+    CJK_Compatibility_Forms
+    CJK_Compatibility_Ideographs
+    CJK_Compatibility_Ideographs_Supplement
+    CJK_Radicals_Supplement
+    CJK_Strokes
+    CJK_Symbols_And_Punctuation
+    CJK_Unified_Ideographs
+    CJK_Unified_Ideographs_Extension_A
+    CJK_Unified_Ideographs_Extension_B
+    CJK_Unified_Ideographs_Extension_C
+    CJK_Unified_Ideographs_Extension_D
+    Carian
+    Cham
+    Cherokee
+    Combining_Diacritical_Marks
+    Combining_Diacritical_Marks_For_Symbols [Combining_Marks_For_Symbols]
+    Combining_Diacritical_Marks_Supplement
+    Combining_Half_Marks
+    Common_Indic_Number_Forms
+    Control_Pictures
+    Coptic
+    Counting_Rod_Numerals
+    Cuneiform
+    Cuneiform_Numbers_And_Punctuation
+    Currency_Symbols
+    Cypriot_Syllabary
+    Cyrillic
+    Cyrillic_Extended_A
+    Cyrillic_Extended_B
+    Cyrillic_Supplement [Cyrillic_Supplementary]
+    Deseret
+    Devanagari
+    Devanagari_Extended
+    Dingbats
+    Domino_Tiles
+    Egyptian_Hieroglyphs
+    Emoticons
+    Enclosed_Alphanumeric_Supplement
+    Enclosed_Alphanumerics
+    Enclosed_CJK_Letters_And_Months
+    Enclosed_Ideographic_Supplement
+    Ethiopic
+    Ethiopic_Extended
+    Ethiopic_Extended_A
+    Ethiopic_Supplement
+    General_Punctuation
+    Geometric_Shapes
+    Georgian
+    Georgian_Supplement
+    Glagolitic
+    Gothic
+    Greek_And_Coptic [Greek]
+    Greek_Extended
+    Gujarati
+    Gurmukhi
+    Halfwidth_And_Fullwidth_Forms
+    Hangul_Compatibility_Jamo
+    Hangul_Jamo
+    Hangul_Jamo_Extended_A
+    Hangul_Jamo_Extended_B
+    Hangul_Syllables
+    Hanunoo
+    Hebrew
+    High_Private_Use_Surrogates
+    High_Surrogates
+    Hiragana
+    IPA_Extensions
+    Ideographic_Description_Characters
+    Imperial_Aramaic
+    Inscriptional_Pahlavi
+    Inscriptional_Parthian
+    Javanese
+    Kaithi
+    Kana_Supplement
+    Kanbun
+    Kangxi_Radicals
+    Kannada
+    Katakana
+    Katakana_Phonetic_Extensions
+    Kayah_Li
+    Kharoshthi
+    Khmer
+    Khmer_Symbols
+    Lao
+    Latin_1_Supplement [Latin_1]
+    Latin_Extended_A
+    Latin_Extended_Additional
+    Latin_Extended_B
+    Latin_Extended_C
+    Latin_Extended_D
+    Lepcha
+    Letterlike_Symbols
+    Limbu
+    Linear_B_Ideograms
+    Linear_B_Syllabary
+    Lisu
+    Low_Surrogates
+    Lycian
+    Lydian
+    Mahjong_Tiles
+    Malayalam
+    Mandaic
+    Mathematical_Alphanumeric_Symbols
+    Mathematical_Operators
+    Meetei_Mayek
+    Miscellaneous_Mathematical_Symbols_A
+    Miscellaneous_Mathematical_Symbols_B
+    Miscellaneous_Symbols
+    Miscellaneous_Symbols_And_Arrows
+    Miscellaneous_Symbols_And_Pictographs
+    Miscellaneous_Technical
+    Modifier_Tone_Letters
+    Mongolian
+    Musical_Symbols
+    Myanmar
+    Myanmar_Extended_A
+    NKo
+    New_Tai_Lue
+    No_Block
+    Number_Forms
+    Ogham
+    Ol_Chiki
+    Old_Italic
+    Old_Persian
+    Old_South_Arabian
+    Old_Turkic
+    Optical_Character_Recognition
+    Oriya
+    Osmanya
+    Phags_Pa
+    Phaistos_Disc
+    Phoenician
+    Phonetic_Extensions
+    Phonetic_Extensions_Supplement
+    Playing_Cards
+    Private_Use_Area [Private_Use]
+    Rejang
+    Rumi_Numeral_Symbols
+    Runic
+    Samaritan
+    Saurashtra
+    Shavian
+    Sinhala
+    Small_Form_Variants
+    Spacing_Modifier_Letters
+    Specials
+    Sundanese
+    Superscripts_And_Subscripts
+    Supplemental_Arrows_A
+    Supplemental_Arrows_B
+    Supplemental_Mathematical_Operators
+    Supplemental_Punctuation
+    Supplementary_Private_Use_Area_A
+    Supplementary_Private_Use_Area_B
+    Syloti_Nagri
+    Syriac
+    Tagalog
+    Tagbanwa
+    Tags
+    Tai_Le
+    Tai_Tham
+    Tai_Viet
+    Tai_Xuan_Jing_Symbols
+    Tamil
+    Telugu
+    Thaana
+    Thai
+    Tibetan
+    Tifinagh
+    Transport_And_Map_Symbols
+    Ugaritic
+    Unified_Canadian_Aboriginal_Syllabics [Canadian_Syllabics]
+    Unified_Canadian_Aboriginal_Syllabics_Extended
+    Vai
+    Variation_Selectors
+    Variation_Selectors_Supplement
+    Vedic_Extensions
+    Vertical_Forms
+    Yi_Radicals
+    Yi_Syllables
+    Yijing_Hexagram_Symbols
+
+Canonical_Combining_Class [ccc]
+    1 [OV, Overlay]
+    10
+    103
+    107
+    11
+    118
+    12
+    122
+    129
+    13
+    130
+    132
+    14
+    15
+    16
+    17
+    18
+    19
+    20
+    202 [ATB, Attached_Below]
+    21
+    214 [ATA, Attached_Above]
+    216 [ATAR, Attached_Above_Right]
+    218 [BL, Below_Left]
+    22
+    220 [B, Below]
+    222 [BR, Below_Right]
+    224 [L, Left]
+    226 [R, Right]
+    228 [AL, Above_Left]
+    23
+    230 [A, Above]
+    232 [AR, Above_Right]
+    233 [DB, Double_Below]
+    234 [DA, Double_Above]
+    24
+    240 [IS, Iota_Subscript]
+    25
+    26
+    27
+    28
+    29
+    30
+    31
+    32
+    33
+    34
+    35
+    36
+    7 [NK, Nukta]
+    8 [KV, Kana_Voicing]
+    84
+    9 [VR, Virama]
+    91
+    Not_Reordered [0, NR]
+
+Case_Ignorable [CI]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Cased
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Changes_When_Casefolded [CWCF]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Changes_When_Casemapped [CWCM]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Changes_When_Lowercased [CWL]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Changes_When_Titlecased [CWT]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Changes_When_Uppercased [CWU]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Dash
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Decomposition_Type [dt]
+    Canonical [Can]
+    Circle [Enc]
+    Compat [Com]
+    Final [Fin]
+    Font
+    Fraction [Fra]
+    Initial [Init]
+    Isolated [Iso]
+    Medial [Med]
+    Narrow [Nar]
+    Nobreak [Nb]
+    None
+    Small [Sml]
+    Square [Sqr]
+    Sub
+    Super [Sup]
+    Vertical [Vert]
+    Wide
+
+Default_Ignorable_Code_Point [DI]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Deprecated [Dep]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Diacritic [Dia]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+East_Asian_Width [ea]
+    A [Ambiguous]
+    F [Fullwidth]
+    H [Halfwidth]
+    Neutral [N]
+    W [Wide]
+    na [Narrow]
+
+Extender [Ext]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+General_Category [gc]
+    C [C&, Other]
+    CS [Surrogate]
+    Cc [Control, cntrl]
+    Cn [unassigned]
+    Co [Private_Use]
+    L [L&, Letter]
+    Ll [Lowercase_Letter]
+    Lm [Modifier_Letter]
+    Lo [Other_Letter]
+    Lt [Titlecase_Letter]
+    Lu [Uppercase_Letter]
+    M [M&, Mark]
+    Mc [Spacing_Mark]
+    Me [Enclosing_Mark]
+    Mn [Nonspacing_Mark]
+    N [N&, Number]
+    Nd [Decimal_Number, digit]
+    Nl [Letter_Number]
+    No [Other_Number]
+    P [P&, Punctuation, punct]
+    Pc [Connector_Punctuation]
+    Pd [Dash_Punctuation]
+    Pe [Close_Punctuation]
+    Pf [Final_Punctuation]
+    Pi [Initial_Punctuation]
+    Po [Other_Punctuation]
+    Ps [Open_Punctuation]
+    S [S&, Symbol]
+    Sk [Modifier_Symbol]
+    Sm [Math_Symbol]
+    So [Other_Symbol]
+    Z [Separator, Z&]
+    Zl [Line_Separator]
+    Zp [Paragraph_Separator]
+    Zs [Space_Separator]
+    cf [Format]
+    sc [Currency_Symbol]
+
+Graph
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Grapheme_Base [Gr_Base]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Grapheme_Cluster_Break [GCB]
+    CR
+    Control [Cn]
+    Extend [EX]
+    L
+    LF
+    LV
+    LVT
+    Other [XX]
+    Prepend [PP]
+    Spacing_Mark [Sm]
+    T
+    V
+
+Grapheme_Extend [Gr_Ext]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Grapheme_Link [Gr_Link]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Hangul_Syllable_Type [hst]
+    L [Leading_Jamo]
+    LV [LV_Syllable]
+    LVT [LVT_Syllable]
+    Not_Applicable [na]
+    T [Trailing_Jamo]
+    V [Vowel_Jamo]
+
+Hex_Digit [Hex]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Hyphen
+    No [F, False, N]
+    Yes [T, True, Y]
+
+IDS_Binary_Operator [IDSB]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+IDS_Trinary_Operator [IDST]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+ID_Continue [IDC]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+ID_Start [IDS]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Ideographic [Ideo]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Indic_Matra_Category
+    Bottom
+    Bottom_And_Right
+    Invisible
+    Left
+    Left_And_Right
+    Overstruck
+    Right
+    Top
+    Top_And_Bottom
+    Top_And_Bottom_And_Right
+    Top_And_Left
+    Top_And_Left_And_Right
+    Top_And_Right
+    Visual_Order_Left
+    na [Not_Applicable]
+
+Indic_Syllabic_Category
+    Avagraha
+    Bindu
+    Consonant
+    Consonant_Dead
+    Consonant_Final
+    Consonant_Head_Letter
+    Consonant_Medial
+    Consonant_Placeholder
+    Consonant_Repha
+    Consonant_Subjoined
+    Modifying_Letter
+    Nukta
+    Other
+    Register_Shifter
+    Tone_Letter
+    Tone_Mark
+    Virama
+    Visarga
+    Vowel
+    Vowel_Dependent
+    Vowel_Independent
+
+Join_Control [Join_C]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Joining_Group [jg]
+    Ain
+    Alaph
+    Alef
+    Beh
+    Beth
+    Burushaski_Yeh_Barree
+    Dal
+    Dalath_Rish
+    E
+    Farsi_Yeh
+    Fe
+    Feh
+    Final_Semkath
+    Gaf
+    Gamal
+    Hah
+    He
+    Heh
+    Heh_Goal
+    Heth
+    Kaf
+    Kaph
+    Khaph
+    Knotted_Heh
+    Lam
+    Lamadh
+    Meem
+    Mim
+    No_Joining_Group
+    Noon
+    Nun
+    Nya
+    Pe
+    Qaf
+    Qaph
+    Reh
+    Reversed_Pe
+    Sad
+    Sadhe
+    Seen
+    Semkath
+    Shin
+    Swash_Kaf
+    Syriac_Waw
+    Tah
+    Taw
+    Teh_Marbuta
+    Teh_Marbuta_Goal [Hamza_On_Heh_Goal]
+    Teth
+    Waw
+    Yeh
+    Yeh_Barree
+    Yeh_With_Tail
+    Yudh
+    Yudh_He
+    Zain
+    Zhain
+
+Joining_Type [jt]
+    C [Join_Causing]
+    D [Dual_Joining]
+    Non_Joining [U]
+    R [Right_Joining]
+    T [Transparent]
+
+Line_Break [lb]
+    AI [Ambiguous]
+    AL [Alphabetic]
+    B2 [Break_Both]
+    BA [Break_After]
+    BB [Break_Before]
+    BK [Mandatory_Break]
+    CB [Contingent_Break]
+    CL [Close_Punctuation]
+    CM [Combining_Mark]
+    CP [Close_Parenthesis]
+    CR [Carriage_Return]
+    EX [Exclamation]
+    GL [Glue]
+    H2
+    H3
+    HY [Hyphen]
+    ID [Ideographic]
+    IN [Inseparable, Inseperable]
+    IS [Infix_Numeric]
+    JL
+    JV
+    LF [Line_Feed]
+    NS [Nonstarter]
+    NU [Numeric]
+    Nl [Next_Line]
+    OP [Open_Punctuation]
+    PR [Prefix_Numeric]
+    Po [Postfix_Numeric]
+    QU [Quotation]
+    SA [Complex_Context]
+    SG [Surrogate]
+    SP [space]
+    SY [Break_Symbols]
+    Unknown [XX]
+    WJ [Word_Joiner]
+    ZW [ZWSpace]
+    jt
+
+Logical_Order_Exception [LOE]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Lowercase [Lower]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Math
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Noncharacter_Code_Point [NChar]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Numeric_Type [nt]
+    Decimal [De]
+    None
+    Numeric [NU]
+    digit [DI]
+
+Numeric_Value [nv]
+    -1/2
+    0
+    1
+    1/10
+    1/16
+    1/2
+    1/3
+    1/4
+    1/5
+    1/6
+    1/7
+    1/8
+    1/9
+    10
+    100
+    1000
+    10000
+    100000
+    100000000
+    1000000000000
+    11
+    11/2
+    12
+    13
+    13/2
+    14
+    15
+    15/2
+    16
+    17
+    17/2
+    18
+    19
+    2
+    2/3
+    2/5
+    20
+    200
+    2000
+    20000
+    21
+    22
+    23
+    24
+    25
+    26
+    27
+    28
+    29
+    3
+    3/16
+    3/2
+    3/4
+    3/5
+    3/8
+    30
+    300
+    3000
+    30000
+    31
+    32
+    33
+    34
+    35
+    36
+    37
+    38
+    39
+    4
+    4/5
+    40
+    400
+    4000
+    40000
+    41
+    42
+    43
+    44
+    45
+    46
+    47
+    48
+    49
+    5
+    5/2
+    5/6
+    5/8
+    50
+    500
+    5000
+    50000
+    6
+    60
+    600
+    6000
+    60000
+    7
+    7/2
+    7/8
+    70
+    700
+    7000
+    70000
+    8
+    80
+    800
+    8000
+    80000
+    9
+    9/2
+    90
+    900
+    9000
+    90000
+    NaN
+
+Other_Alphabetic [OAlpha]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Other_Default_Ignorable_Code_Point [ODI]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Other_Grapheme_Extend [OGr_Ext]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Other_ID_Continue [OIDC]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Other_ID_Start [OIDS]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Other_Lowercase [OLower]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Other_Math [OMath]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Other_Uppercase [OUpper]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Pattern_Syntax [Pat_Syn]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Pattern_White_Space [Pat_WS]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Print
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Quotation_Mark [QMark]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Radical
+    No [F, False, N]
+    Yes [T, True, Y]
+
+STerm
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Script [sc]
+    Arabic [Arab]
+    Armenian [Armn]
+    Avestan [Avst]
+    Balinese [Bali]
+    Bamum [Bamu]
+    Batak [Batk]
+    Bengali [Beng]
+    Bopomofo [Bopo]
+    Brahmi [Brah]
+    Braille [Brai]
+    Buginese [Bugi]
+    Buhid [Buhd]
+    Canadian_Aboriginal [Cans]
+    Carian [Cari]
+    Cham
+    Cherokee [Cher]
+    Common [Zyyy]
+    Coptic [Copt, Qaac]
+    Cuneiform [Xsux]
+    Cypriot [Cprt]
+    Cyrillic [Cyrl]
+    Deseret [Dsrt]
+    Devanagari [Deva]
+    Egyptian_Hieroglyphs [Egyp]
+    Ethiopic [Ethi]
+    Georgian [Geor]
+    Glagolitic [Glag]
+    Gothic [Goth]
+    Greek [Grek]
+    Gujarati [Gujr]
+    Gurmukhi [Guru]
+    Han [Hani]
+    Hangul [Hang]
+    Hanunoo [Hano]
+    Hebrew [Hebr]
+    Hiragana [Hira]
+    Imperial_Aramaic [Armi]
+    Inherited [Qaai, Zinh]
+    Inscriptional_Pahlavi [Phli]
+    Inscriptional_Parthian [Prti]
+    Javanese [Java]
+    Kaithi [Kthi]
+    Kannada [Knda]
+    Katakana [Kana]
+    Kayah_Li [Kali]
+    Kharoshthi [Khar]
+    Khmer [Khmr]
+    Lao [Laoo]
+    Latin [Latn]
+    Lepcha [Lepc]
+    Limbu [Limb]
+    Linear_B [Linb]
+    Lisu
+    Lycian [Lyci]
+    Lydian [Lydi]
+    Malayalam [Mlym]
+    Mandaic [Mand]
+    Meetei_Mayek [Mtei]
+    Mongolian [Mong]
+    Myanmar [Mymr]
+    NKo [Nkoo]
+    New_Tai_Lue [Talu]
+    Ogham [Ogam]
+    Ol_Chiki [Olck]
+    Old_Italic [Ital]
+    Old_Persian [Xpeo]
+    Old_South_Arabian [Sarb]
+    Old_Turkic [Orkh]
+    Oriya [Orya]
+    Osmanya [Osma]
+    Phags_Pa [Phag]
+    Phoenician [Phnx]
+    Rejang [Rjng]
+    Runic [Runr]
+    Samaritan [Samr]
+    Saurashtra [Saur]
+    Shavian [Shaw]
+    Sinhala [Sinh]
+    Sundanese [Sund]
+    Syloti_Nagri [Sylo]
+    Syriac [Syrc]
+    Tagalog [Tglg]
+    Tagbanwa [Tagb]
+    Tai_Le [Tale]
+    Tai_Tham [Lana]
+    Tai_Viet [Tavt]
+    Tamil [Taml]
+    Telugu [Telu]
+    Thaana [Thaa]
+    Thai
+    Tibetan [Tibt]
+    Tifinagh [Tfng]
+    Ugaritic [Ugar]
+    Unknown [Zzzz]
+    Vai [Vaii]
+    YI [Yiii]
+
+Sentence_Break [SB]
+    ATerm [AT]
+    CR
+    Close [CL]
+    Extend [EX]
+    Format [FO]
+    LF
+    Lower [Lo]
+    Numeric [NU]
+    OLetter [LE]
+    Other [XX]
+    SContinue [sc]
+    SP
+    STerm [ST]
+    Sep [SE]
+    Upper [UP]
+
+Soft_Dotted [SD]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Terminal_Punctuation [Term]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Unified_Ideograph [UIdeo]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Uppercase [Upper]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Variation_Selector [VS]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+White_Space [WSpace, space]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Word
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Word_Break [WB]
+    ALetter [LE]
+    CR
+    Extend
+    ExtendNumLet [EX]
+    Format [FO]
+    Katakana [KA]
+    LF
+    MidLetter [ML]
+    MidNum [Mn]
+    MidNumLet [MB]
+    Newline [Nl]
+    Numeric [NU]
+    Other [XX]
+
+XDigit
+    No [F, False, N]
+    Yes [T, True, Y]
+
+XID_Continue [XIDC]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+XID_Start [XIDS]
+    No [F, False, N]
+    Yes [T, True, Y]
