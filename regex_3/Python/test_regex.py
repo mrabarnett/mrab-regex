@@ -1246,6 +1246,10 @@ class Test:
             (r"[[:^alnum:]]", chars_u, "-_"),
             (r"[[:xdigit:]]", chars_u, "09Aa"),
             (r"[[:^xdigit:]]", chars_u, "-Zz_\u0393\u03b3"),
+            (r"\p{InBasicLatin}", "a\xE1", "a"),
+            (r"\P{InBasicLatin}", "a\xE1", "\xE1"),
+            (r"(?i)\p{InBasicLatin}", "a\xE1", "a"),
+            (r"(?i)\P{InBasicLatin}", "a\xE1", "\xE1"),
 
             (br"(?L)\w", chars_b, b"09AZaz_"),
             (br"(?L)[[:word:]]", chars_b, b"09AZaz_"),

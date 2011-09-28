@@ -1247,6 +1247,10 @@ class Test:
             (ur"(?u)[[:^alnum:]]", chars_u, u"-_"),
             (ur"(?u)[[:xdigit:]]", chars_u, u"09Aa"),
             (ur"(?u)[[:^xdigit:]]", chars_u, u"-Zz_\u0393\u03b3"),
+            (ur"(?u)\p{InBasicLatin}", u"a\xE1", u"a"),
+            (ur"(?u)\P{InBasicLatin}", u"a\xE1", u"\xE1"),
+            (ur"(?iu)\p{InBasicLatin}", u"a\xE1", u"a"),
+            (ur"(?iu)\P{InBasicLatin}", u"a\xE1", u"\xE1"),
 
             (r"(?L)\w", chars_b, "09AZaz_"),
             (r"(?L)[[:word:]]", chars_b, "09AZaz_"),

@@ -1848,7 +1848,7 @@ static BOOL same_char_ign(RE_EncodingTable* encoding, RE_CODE ch1, RE_CODE ch2)
  * we want none of the case-forms to match.
  */
 Py_LOCAL_INLINE(BOOL) has_property_ign(RE_EncodingTable* encoding, RE_CODE
-  property, RE_CODE ch, BOOL match) {
+  property, RE_CODE ch) {
     RE_CODE cases[RE_MAX_CASES];
     int count;
     int i;
@@ -1857,10 +1857,10 @@ Py_LOCAL_INLINE(BOOL) has_property_ign(RE_EncodingTable* encoding, RE_CODE
 
     for (i = 0; i < count; i++) {
         if (encoding->has_property(property, cases[i]))
-            return match;
+            return TRUE;
     }
 
-    return !match;
+    return FALSE;
 }
 
 /* Checks whether a character is in a range, ignoring case. */
@@ -2481,7 +2481,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY_IGN(RE_State* state, RE_Node*
     property = node->values[0];
 
     while (text_pos < limit && has_property_ign(encoding, property,
-      char_at(text, text_pos), node->match) == match)
+      char_at(text, text_pos)) == match)
         ++text_pos;
 
     return text_pos;
@@ -2505,7 +2505,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY_IGN_REV(RE_State* state,
     --limit;
 
     while (text_pos > limit && has_property_ign(encoding, property,
-      char_at(text, text_pos), node->match) == match)
+      char_at(text, text_pos)) == match)
         --text_pos;
 
     return text_pos + 1;
@@ -2928,11 +2928,11 @@ Py_LOCAL_INLINE(BOOL) match_one(RE_State* state, RE_Node* node, Py_ssize_t
           text_pos)) == node->match;
     case RE_OP_PROPERTY_IGN:
         return text_pos < state->slice_end && has_property_ign(state->encoding,
-          node->values[0], char_at(text, text_pos), node->match);
+          node->values[0], char_at(text, text_pos)) == node->match;
     case RE_OP_PROPERTY_IGN_REV:
         return text_pos > state->slice_start &&
           has_property_ign(state->encoding, node->values[0], char_at(text,
-          text_pos - 1), node->match);
+          text_pos - 1)) == node->match;
     case RE_OP_PROPERTY_REV:
         return text_pos > state->slice_start &&
           state->encoding->has_property(node->values[0], char_at(text, text_pos
@@ -3993,15 +3993,15 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         break;
     case RE_OP_PROPERTY_IGN: /* A character property, ignoring case. */
         /* values are: property */
-        if (text_pos >= state->slice_end || !has_property_ign(state->encoding,
-          test->values[0], char_at(text, text_pos), test->match))
+        if (text_pos >= state->slice_end || has_property_ign(state->encoding,
+          test->values[0], char_at(text, text_pos)) != test->match)
             return FALSE;
         break;
     case RE_OP_PROPERTY_IGN_REV: /* A character property, ignoring case. */
         /* values are: property */
         if (text_pos <= state->slice_start ||
           !has_property_ign(state->encoding, test->values[0], char_at(text,
-          text_pos - 1), test->match))
+          text_pos - 1)) != test->match)
             return FALSE;
         break;
     case RE_OP_PROPERTY_REV: /* A character property. */
@@ -8233,7 +8233,7 @@ advance:
               node->values[0]))
 
             if (text_pos < slice_end && has_property_ign(encoding,
-              node->values[0], char_at(text, text_pos), node->match)) {
+              node->values[0], char_at(text, text_pos)) == node->match) {
                 text_pos += node->step;
                 node = node->next_1.node;
             } else if (node->status & RE_STATUS_FUZZY) {
@@ -8250,7 +8250,7 @@ advance:
               node->values[0]))
 
             if (text_pos > slice_start && has_property_ign(encoding,
-              node->values[0], char_at(text, text_pos - 1), node->match)) {
+              node->values[0], char_at(text, text_pos - 1)) == node->match) {
                 text_pos += node->step;
                 node = node->next_1.node;
             } else if (node->status & RE_STATUS_FUZZY) {
