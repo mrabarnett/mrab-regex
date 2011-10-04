@@ -3067,6 +3067,12 @@ xyzabc
         self.expect(lambda: regex.search(br"(\w+) (\1{e<=1})",
           b"foo fou").groups(), ascii((b"foo", b"fou")))
 
+        # 59..60
+        self.expect(lambda: regex.findall(r"(?:(?:QR)+){e}","abcde"),
+          ascii(["ab", "cd", "e", ""]))
+        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), ascii(["a", "b",
+          "c", ""]))
+
     def run(self):
         print("Performing tests")
         print("================")

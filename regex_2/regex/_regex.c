@@ -15029,6 +15029,7 @@ Py_LOCAL_INLINE(BOOL) build_FUZZY(RE_CompileArgs* args) {
 
     subargs = *args;
     subargs.has_captures = FALSE;
+    subargs.is_fuzzy = TRUE;
 
     /* Compile the sequence and check that we've reached the end of the
      * subpattern.
@@ -15659,7 +15660,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
 
         ++args->code;
 
-        if (sequence_matches_one(subargs.start)) {
+        if (!args->is_fuzzy && sequence_matches_one(subargs.start)) {
             repeat_node->op = greedy ? RE_OP_GREEDY_REPEAT_ONE :
               RE_OP_LAZY_REPEAT_ONE;
 
