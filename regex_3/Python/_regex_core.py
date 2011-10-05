@@ -1331,7 +1331,18 @@ def parse_set_item(source, info):
 
     if version == VERSION1 and source.match("["):
         # It's the start of a nested set.
-        return parse_set(source, info)
+
+        # Negative set?
+        negate = source.match("^")
+        item = parse_set_union(source, info)
+
+        if not source.match("]"):
+            raise error("missing ]")
+
+        if negate:
+            item = item.with_flags(positive=not item.positive)
+
+        return item
 
     ch = source.get()
     if not ch:

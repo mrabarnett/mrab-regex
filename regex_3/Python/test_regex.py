@@ -1908,9 +1908,13 @@ class Test:
           len(regex.findall(r"(?V1)[\p{Digit}~~\p{HexDigit}]", all_chars)),
           ascii(12))
 
-        # 38
+        # 38..40
         self.expect(lambda: type(regex.compile(r"(?V0)([][-])")),
           self.PATTERN_CLASS)
+        self.expect(lambda: regex.findall(r"(?V1)[[a-z]--[aei]]", "abc"),
+          ascii(["b", "c"]))
+        self.expect(lambda: regex.findall(r"(?iV1)[[a-z]--[aei]]", "abc"),
+          ascii(["b", "c"]))
 
     def test_various(self):
         tests = [
