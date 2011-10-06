@@ -1897,18 +1897,17 @@ Py_LOCAL_INLINE(BOOL) matches_member(RE_EncodingTable* encoding, RE_Node*
         /* values are: char_code */
         TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
           member->values[0]))
-        return (ch == member->values[0]) == member->match;
+        return ch == member->values[0];
     case RE_OP_PROPERTY:
         /* values are: property */
         TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
           member->values[0]))
-        return encoding->has_property(member->values[0], ch) == member->match;
+        return encoding->has_property(member->values[0], ch);
     case RE_OP_RANGE:
         /* values are: lower, upper */
         TRACE(("%s %d %d %d\n", re_op_text[member->op], member->match,
           member->values[0], member->values[1]))
-        return in_range(member->values[0], member->values[1], ch) ==
-          member->match;
+        return in_range(member->values[0], member->values[1], ch);
     case RE_OP_SET_DIFF:
         TRACE(("%s\n", re_op_text[member->op]))
         return in_set_diff(encoding, member, ch);
@@ -1926,6 +1925,66 @@ Py_LOCAL_INLINE(BOOL) matches_member(RE_EncodingTable* encoding, RE_Node*
     }
 }
 
+/* Checks whether a character matches a set member, ignoring case. */
+Py_LOCAL_INLINE(BOOL) matches_member_ign(RE_EncodingTable* encoding, RE_Node*
+  member, RE_CODE ch) {
+    RE_CODE cases[RE_MAX_CASES];
+    int count;
+    int i;
+
+    count = encoding->all_cases(ch, cases);
+
+    for (i = 0; i < count; i++) {
+        switch (member->op) {
+        case RE_OP_CHARACTER:
+            /* values are: char_code */
+            TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+              member->values[0]))
+            if (cases[i] == member->values[0])
+                return TRUE;
+            break;
+        case RE_OP_PROPERTY:
+            /* values are: property */
+            TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+              member->values[0]))
+            if (encoding->has_property(member->values[0], cases[i]))
+                return TRUE;
+            break;
+        case RE_OP_RANGE:
+            /* values are: lower, upper */
+            TRACE(("%s %d %d %d\n", re_op_text[member->op], member->match,
+              member->values[0], member->values[1]))
+            if (in_range(member->values[0], member->values[1], cases[i]))
+                return TRUE;
+            break;
+        case RE_OP_SET_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_diff(encoding, member, cases[i]))
+                return TRUE;
+            break;
+        case RE_OP_SET_INTER:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_inter(encoding, member, cases[i]))
+                return TRUE;
+            break;
+        case RE_OP_SET_SYM_DIFF:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_sym_diff(encoding, member, cases[i]))
+                return TRUE;
+            break;
+        case RE_OP_SET_UNION:
+            TRACE(("%s\n", re_op_text[member->op]))
+            if (in_set_union(encoding, member, cases[i]))
+                return TRUE;
+            break;
+        default:
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 /* Checks whether a character is in a set difference. */
 Py_LOCAL_INLINE(BOOL) in_set_diff(RE_EncodingTable* encoding, RE_Node* node,
   RE_CODE ch) {
@@ -1933,19 +1992,41 @@ Py_LOCAL_INLINE(BOOL) in_set_diff(RE_EncodingTable* encoding, RE_Node* node,
 
     member = node->nonstring.next_2.node;
 
-    if (!matches_member(encoding, member, ch))
-        return !node->match;
+    if (matches_member(encoding, member, ch) != member->match)
+        return FALSE;
 
     member = member->next_1.node;
 
     while (member) {
-        if (matches_member(encoding, member, ch))
-            return !node->match;
+        if (matches_member(encoding, member, ch) == member->match)
+            return FALSE;
 
         member = member->next_1.node;
     }
 
-    return node->match;
+    return TRUE;
+}
+
+/* Checks whether a character is in a set difference, ignoring case. */
+Py_LOCAL_INLINE(BOOL) in_set_diff_ign(RE_EncodingTable* encoding, RE_Node*
+  node, RE_CODE ch) {
+    RE_Node* member;
+
+    member = node->nonstring.next_2.node;
+
+    if (matches_member_ign(encoding, member, ch) != member->match)
+        return FALSE;
+
+    member = member->next_1.node;
+
+    while (member) {
+        if (matches_member_ign(encoding, member, ch) == member->match)
+            return FALSE;
+
+        member = member->next_1.node;
+    }
+
+    return TRUE;
 }
 
 /* Checks whether a character is in a set intersection. */
@@ -1956,13 +2037,30 @@ Py_LOCAL_INLINE(BOOL) in_set_inter(RE_EncodingTable* encoding, RE_Node* node,
     member = node->nonstring.next_2.node;
 
     while (member) {
-        if (!matches_member(encoding, member, ch))
-            return !node->match;
+        if (matches_member(encoding, member, ch) != member->match)
+            return FALSE;
 
         member = member->next_1.node;
     }
 
-    return node->match;
+    return TRUE;
+}
+
+/* Checks whether a character is in a set intersection, ignoring case. */
+Py_LOCAL_INLINE(BOOL) in_set_inter_ign(RE_EncodingTable* encoding, RE_Node*
+  node, RE_CODE ch) {
+    RE_Node* member;
+
+    member = node->nonstring.next_2.node;
+
+    while (member) {
+        if (matches_member_ign(encoding, member, ch) != member->match)
+            return FALSE;
+
+        member = member->next_1.node;
+    }
+
+    return TRUE;
 }
 
 /* Checks whether a character is in a set symmetric difference. */
@@ -1973,10 +2071,31 @@ Py_LOCAL_INLINE(BOOL) in_set_sym_diff(RE_EncodingTable* encoding, RE_Node*
 
     member = node->nonstring.next_2.node;
 
-    result = !node->match;
+    result = FALSE;
 
     while (member) {
-        if (matches_member(encoding, member, ch))
+        if (matches_member(encoding, member, ch) == member->match)
+            result = !result;
+
+        member = member->next_1.node;
+    }
+
+    return result;
+}
+
+/* Checks whether a character is in a set symmetric difference, ignoring case.
+ */
+Py_LOCAL_INLINE(BOOL) in_set_sym_diff_ign(RE_EncodingTable* encoding, RE_Node*
+  node, RE_CODE ch) {
+    RE_Node* member;
+    BOOL result;
+
+    member = node->nonstring.next_2.node;
+
+    result = FALSE;
+
+    while (member) {
+        if (matches_member_ign(encoding, member, ch) == member->match)
             result = !result;
 
         member = member->next_1.node;
@@ -1993,13 +2112,30 @@ Py_LOCAL_INLINE(BOOL) in_set_union(RE_EncodingTable* encoding, RE_Node* node,
     member = node->nonstring.next_2.node;
 
     while (member) {
-        if (matches_member(encoding, member, ch))
-            return node->match;
+        if (matches_member(encoding, member, ch) == member->match)
+            return TRUE;
 
         member = member->next_1.node;
     }
 
-    return !node->match;
+    return FALSE;
+}
+
+/* Checks whether a character is in a set union, ignoring case. */
+Py_LOCAL_INLINE(BOOL) in_set_union_ign(RE_EncodingTable* encoding, RE_Node*
+  node, RE_CODE ch) {
+    RE_Node* member;
+
+    member = node->nonstring.next_2.node;
+
+    while (member) {
+        if (matches_member_ign(encoding, member, ch) == member->match)
+            return TRUE;
+
+        member = member->next_1.node;
+    }
+
+    return FALSE;
 }
 
 /* Checks whether a character is in a set. */
@@ -2026,41 +2162,22 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
 /* Checks whether a character is in a set, ignoring case. */
 Py_LOCAL_INLINE(BOOL) in_set_ign(RE_EncodingTable* encoding, RE_Node* node,
   RE_CODE ch) {
-    RE_CODE cases[RE_MAX_CASES];
-    BOOL match;
-    int count;
-    int i;
-
-    match = node->match;
-
-    count = encoding->all_cases(ch, cases);
-
-    for (i = 0; i < count; i++) {
-        switch (node->op) {
-        case RE_OP_SET_INTER_IGN:
-        case RE_OP_SET_INTER_IGN_REV:
-            if (in_set_inter(encoding, node, cases[i]) == match)
-                return match;
-            break;
-        case RE_OP_SET_UNION_IGN:
-        case RE_OP_SET_UNION_IGN_REV:
-            if (in_set_union(encoding, node, cases[i]) == match)
-                return match;
-            break;
-        case RE_OP_SET_DIFF_IGN:
-        case RE_OP_SET_DIFF_IGN_REV:
-            if (in_set_diff(encoding, node, cases[i]) == match)
-                return match;
-            break;
-        case RE_OP_SET_SYM_DIFF_IGN:
-        case RE_OP_SET_SYM_DIFF_IGN_REV:
-            if (in_set_sym_diff(encoding, node, cases[i]) == match)
-                return match;
-            break;
-        }
+    switch (node->op) {
+    case RE_OP_SET_INTER_IGN:
+    case RE_OP_SET_INTER_IGN_REV:
+        return in_set_inter_ign(encoding, node, ch);
+    case RE_OP_SET_UNION_IGN:
+    case RE_OP_SET_UNION_IGN_REV:
+        return in_set_union_ign(encoding, node, ch);
+    case RE_OP_SET_DIFF_IGN:
+    case RE_OP_SET_DIFF_IGN_REV:
+        return in_set_diff_ign(encoding, node, ch);
+    case RE_OP_SET_SYM_DIFF_IGN:
+    case RE_OP_SET_SYM_DIFF_IGN_REV:
+        return in_set_sym_diff_ign(encoding, node, ch);
     }
 
-    return !match;
+    return FALSE;
 }
 
 /* Pushes the groups. */
@@ -2638,6 +2755,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_SET(RE_State* state, RE_Node* node,
 
     char_at = state->char_at;
     text = state->text;
+    match = node->match == match;
     encoding = state->encoding;
 
     while (text_pos < limit && in_set(encoding, node, char_at(text, text_pos))
@@ -2656,6 +2774,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_SET_IGN(RE_State* state, RE_Node* node,
 
     char_at = state->char_at;
     text = state->text;
+    match = node->match == match;
     encoding = state->encoding;
 
     while (text_pos < limit && in_set_ign(encoding, node, char_at(text,
@@ -2674,6 +2793,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_SET_IGN_REV(RE_State* state, RE_Node*
 
     char_at = state->char_at;
     text = state->text;
+    match = node->match == match;
     encoding = state->encoding;
 
     --text_pos;
@@ -2695,6 +2815,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_SET_REV(RE_State* state, RE_Node* node,
 
     char_at = state->char_at;
     text = state->text;
+    match = node->match == match;
     encoding = state->encoding;
 
     --text_pos;
@@ -2956,25 +3077,25 @@ Py_LOCAL_INLINE(BOOL) match_one(RE_State* state, RE_Node* node, Py_ssize_t
     case RE_OP_SET_SYM_DIFF:
     case RE_OP_SET_UNION:
         return text_pos < state->slice_end && in_set(state->encoding, node,
-          char_at(text, text_pos));
+          char_at(text, text_pos)) == node->match;
     case RE_OP_SET_DIFF_IGN:
     case RE_OP_SET_INTER_IGN:
     case RE_OP_SET_SYM_DIFF_IGN:
     case RE_OP_SET_UNION_IGN:
         return text_pos < state->slice_end && in_set_ign(state->encoding, node,
-          char_at(text, text_pos));
+          char_at(text, text_pos)) == node->match;
     case RE_OP_SET_DIFF_IGN_REV:
     case RE_OP_SET_INTER_IGN_REV:
     case RE_OP_SET_SYM_DIFF_IGN_REV:
     case RE_OP_SET_UNION_IGN_REV:
         return text_pos > state->slice_start && in_set_ign(state->encoding,
-          node, char_at(text, text_pos - 1));
+          node, char_at(text, text_pos - 1)) == node->match;
     case RE_OP_SET_DIFF_REV:
     case RE_OP_SET_INTER_REV:
     case RE_OP_SET_SYM_DIFF_REV:
     case RE_OP_SET_UNION_REV:
         return text_pos > state->slice_start && in_set(state->encoding, node,
-          char_at(text, text_pos - 1));
+          char_at(text, text_pos - 1)) == node->match;
     }
 
     return FALSE;
@@ -4045,32 +4166,32 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     case RE_OP_SET_INTER:
     case RE_OP_SET_SYM_DIFF:
     case RE_OP_SET_UNION:
-        if (text_pos >= state->slice_end || !in_set(state->encoding, test,
-          char_at(text, text_pos)))
+        if (text_pos >= state->slice_end || in_set(state->encoding, test,
+          char_at(text, text_pos)) != test->match)
             return FALSE;
         break;
     case RE_OP_SET_DIFF_IGN: /* Character set, ignoring case. */
     case RE_OP_SET_INTER_IGN:
     case RE_OP_SET_SYM_DIFF_IGN:
     case RE_OP_SET_UNION_IGN:
-        if (text_pos >= state->slice_end || !in_set_ign(state->encoding, test,
-          char_at(text, text_pos)))
+        if (text_pos >= state->slice_end || in_set_ign(state->encoding, test,
+          char_at(text, text_pos)) != test->match)
             return FALSE;
         break;
     case RE_OP_SET_DIFF_IGN_REV: /* Character set, ignoring case. */
     case RE_OP_SET_INTER_IGN_REV:
     case RE_OP_SET_SYM_DIFF_IGN_REV:
     case RE_OP_SET_UNION_IGN_REV:
-        if (text_pos <= state->slice_start || !in_set_ign(state->encoding,
-          test, char_at(text, text_pos - 1)))
+        if (text_pos <= state->slice_start || in_set_ign(state->encoding, test,
+          char_at(text, text_pos - 1)) != test->match)
             return FALSE;
         break;
     case RE_OP_SET_DIFF_REV: /* Character set. */
     case RE_OP_SET_INTER_REV:
     case RE_OP_SET_SYM_DIFF_REV:
     case RE_OP_SET_UNION_REV:
-        if (text_pos <= state->slice_start || !in_set(state->encoding, test,
-          char_at(text, text_pos - 1)))
+        if (text_pos <= state->slice_start || in_set(state->encoding, test,
+          char_at(text, text_pos - 1)) != test->match)
             return FALSE;
         break;
     case RE_OP_START_OF_LINE: /* At the start of a line. */
@@ -8757,7 +8878,7 @@ advance:
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
             if (text_pos < slice_end && in_set(encoding, node, char_at(text,
-              text_pos))) {
+              text_pos)) == node->match) {
                 text_pos += node->step;
                 node = node->next_1.node;
             } else if (node->status & RE_STATUS_FUZZY) {
@@ -8775,7 +8896,7 @@ advance:
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
             if (text_pos < slice_end && in_set_ign(encoding, node,
-              char_at(text, text_pos))) {
+              char_at(text, text_pos)) == node->match) {
                 text_pos += node->step;
                 node = node->next_1.node;
             } else if (node->status & RE_STATUS_FUZZY) {
@@ -8793,7 +8914,7 @@ advance:
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
             if (text_pos > slice_start && in_set_ign(encoding, node,
-              char_at(text, text_pos - 1))) {
+              char_at(text, text_pos - 1)) == node->match) {
                 text_pos += node->step;
                 node = node->next_1.node;
             } else if (node->status & RE_STATUS_FUZZY) {
@@ -8811,7 +8932,7 @@ advance:
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
             if (text_pos > slice_start && in_set(encoding, node, char_at(text,
-              text_pos - 1))) {
+              text_pos - 1)) == node->match) {
                 text_pos += node->step;
                 node = node->next_1.node;
             } else if (node->status & RE_STATUS_FUZZY) {

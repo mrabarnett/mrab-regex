@@ -2941,11 +2941,14 @@ class SetBase(RegexBase):
 
         # Get the folded characters in the set.
         items = []
+        seen = set()
         for ch in expanding_chars:
             if self.matches(ord(ch)):
                 folded = _regex.fold_case(FULL_CASE_FOLDING, ch)
-                items.append(String([ord(c) for c in folded],
-                  case_flags=self.case_flags))
+                if folded not in seen:
+                    items.append(String([ord(c) for c in folded],
+                      case_flags=self.case_flags))
+                    seen.add(folded)
 
         if not items:
             # We can fall back to simple case-folding.
