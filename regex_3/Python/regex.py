@@ -419,7 +419,7 @@ def _compile(pattern, flags=0, kwargs=None):
             source = Source(pattern)
             info = Info(global_flags, source.char_type, kwargs)
             info.guess_encoding = guess_encoding
-            source.ignore_space = bool(info.all_flags & VERBOSE)
+            source.ignore_space = bool(info.flags & VERBOSE)
             parsed = parse_pattern(source, info)
             break
         except UnscopedFlagSet as e:
@@ -430,20 +430,20 @@ def _compile(pattern, flags=0, kwargs=None):
         raise error("trailing characters in pattern")
 
     # Check the global flags for conflicts.
-    version = (info.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
+    version = (info.flags & ALL_VERSIONS) or DEFAULT_VERSION
     if count_ones(version) > 1:
         raise ValueError("VERSION0 and VERSION1 flags are mutually incompatible")
 
-    if count_ones(info.global_flags & ALL_ENCODINGS) > 1:
+    if count_ones(info.flags & ALL_ENCODINGS) > 1:
         raise ValueError("ASCII, LOCALE and UNICODE flags are mutually incompatible")
 
-    if isinstance(pattern, bytes) and (info.global_flags & UNICODE):
+    if isinstance(pattern, bytes) and (info.flags & UNICODE):
         raise ValueError("can't use UNICODE flag with a bytes pattern")
-    if not (info.global_flags & ALL_ENCODINGS):
+    if not (info.flags & ALL_ENCODINGS):
         if isinstance(pattern, str):
-            info.global_flags |= UNICODE
+            info.flags |= UNICODE
         else:
-            info.global_flags |= ASCII
+            info.flags |= ASCII
 
     # Fix the group references.
     parsed.fix_groups()
@@ -467,7 +467,7 @@ def _compile(pattern, flags=0, kwargs=None):
         named_list_indexes[index] = items
         args_needed.add((name, values))
 
-    reverse = bool(info.global_flags & REVERSE)
+    reverse = bool(info.flags & REVERSE)
 
     # Should we print the parsed pattern?
     if flags & DEBUG:
@@ -496,9 +496,8 @@ def _compile(pattern, flags=0, kwargs=None):
     # Local flags like IGNORECASE affect the code generation, but aren't needed
     # by the PatternObject itself. Conversely, global flags like LOCALE _don't_
     # affect the code generation but _are_ needed by the PatternObject.
-    compiled_pattern = _regex.compile(pattern, info.global_flags |
-      info.scoped_flags | version, code, info.group_index, index_group,
-      named_lists, named_list_indexes)
+    compiled_pattern = _regex.compile(pattern, info.flags | version, code,
+      info.group_index, index_group, named_lists, named_list_indexes)
 
     # Do we need to reduce the size of the cache?
     if len(_cache) >= _MAXCACHE:

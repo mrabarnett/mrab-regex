@@ -254,14 +254,14 @@ def shrink_cache(cache_dict, args_dict, max_length, divisor=5):
 
 def fold_case(info, string):
     "Folds the case of a string."
-    flags = info.all_flags
-    if (info.global_flags & ALL_ENCODINGS) == 0:
+    flags = info.flags
+    if (flags & ALL_ENCODINGS) == 0:
         flags |= info.guess_encoding
     return _regex.fold_case(flags, string)
 
 def is_cased(info, char):
     "Checks whether a character is cased."
-    return len(_regex.get_all_cases(info.global_flags, char)) > 1
+    return len(_regex.get_all_cases(info.flags, char)) > 1
 
 def compile_firstset(info, fs):
     "Compiles the firstset for the pattern."
@@ -284,7 +284,7 @@ def compile_firstset(info, fs):
     fs = fs.optimise(info, in_set=True)
 
     # Compile the firstset.
-    return fs.compile(bool(info.global_flags & REVERSE))
+    return fs.compile(bool(info.flags & REVERSE))
 
 def count_ones(n):
     "Counts the number of set bits in an int."
@@ -309,22 +309,22 @@ def make_character(info, value, in_set=False):
         # A character set is built case-sensitively.
         return Character(value)
 
-    return Character(value, case_flags=info.all_flags & CASE_FLAGS)
+    return Character(value, case_flags=info.flags & CASE_FLAGS)
 
 def make_ref_group(info, name):
     "Makes a group reference."
-    return RefGroup(info, name, case_flags=info.all_flags & CASE_FLAGS)
+    return RefGroup(info, name, case_flags=info.flags & CASE_FLAGS)
 
 def make_string_set(info, name):
     "Makes a string set."
-    return StringSet(info, name, case_flags=info.all_flags & CASE_FLAGS)
+    return StringSet(info, name, case_flags=info.flags & CASE_FLAGS)
 
 def make_property(info, prop, in_set):
     "Makes a property."
     if in_set:
         return prop
 
-    return prop.with_flags(case_flags=info.all_flags & CASE_FLAGS)
+    return prop.with_flags(case_flags=info.flags & CASE_FLAGS)
 
 def parse_pattern(source, info):
     "Parses a pattern, eg. 'a|b|c'."
@@ -589,9 +589,9 @@ def parse_element(source, info):
                     return element
             elif ch == ".":
                 # Any character.
-                if info.all_flags & DOTALL:
+                if info.flags & DOTALL:
                     return AnyAll()
-                elif info.all_flags & WORD:
+                elif info.flags & WORD:
                     return AnyU()
                 else:
                     return Any()
@@ -600,8 +600,8 @@ def parse_element(source, info):
                 return parse_set(source, info)
             elif ch == "^":
                 # The start of a line or the string.
-                if info.all_flags & MULTILINE:
-                    if info.all_flags & WORD:
+                if info.flags & MULTILINE:
+                    if info.flags & WORD:
                         return StartOfLineU()
                     else:
                         return StartOfLine()
@@ -609,13 +609,13 @@ def parse_element(source, info):
                     return StartOfString()
             elif ch == "$":
                 # The end of a line or the string.
-                if info.all_flags & MULTILINE:
-                    if info.all_flags & WORD:
+                if info.flags & MULTILINE:
+                    if info.flags & WORD:
                         return EndOfLineU()
                     else:
                         return EndOfLine()
                 else:
-                    if info.all_flags & WORD:
+                    if info.flags & WORD:
                         return EndOfStringLineU()
                     else:
                         return EndOfStringLine()
@@ -634,7 +634,7 @@ def parse_element(source, info):
             elif ch in "?*+":
                 # A quantifier where we expected an element.
                 raise error("nothing to repeat")
-            elif info.all_flags & VERBOSE:
+            elif info.flags & VERBOSE:
                 if ch == "#":
                     # A comment.
                     source.ignore_space = False
@@ -677,13 +677,13 @@ def parse_paren(source, info):
             name = parse_name(source)
             group = info.new_group(name)
             source.expect(">")
-            saved_scoped_flags = info.scoped_flags
+            saved_flags = info.flags
             saved_ignore = source.ignore_space
             try:
                 subpattern = parse_pattern(source, info)
             finally:
                 source.ignore_space = saved_ignore
-                info.scoped_flags = saved_scoped_flags
+                info.flags = saved_flags
 
             source.expect(")")
             info.close_group(group)
@@ -717,14 +717,13 @@ def parse_paren(source, info):
     # An unnamed capture group.
     source.pos = here
     group = info.new_group()
-    saved_scoped_flags = info.scoped_flags
+    saved_flags = info.flags
     saved_ignore = source.ignore_space
     try:
         subpattern = parse_pattern(source, info)
     finally:
         source.ignore_space = saved_ignore
-        info.scoped_flags = saved_scoped_flags
-        info.all_flags = info.global_flags | info.scoped_flags
+        info.flags = saved_flags
 
     source.expect(")")
     info.close_group(group)
@@ -740,13 +739,13 @@ def parse_extension(source, info):
         name = parse_name(source)
         group = info.new_group(name)
         source.expect(">")
-        saved_scoped_flags = info.scoped_flags
+        saved_flags = info.flags
         saved_ignore = source.ignore_space
         try:
             subpattern = parse_pattern(source, info)
         finally:
             source.ignore_space = saved_ignore
-            info.scoped_flags = saved_scoped_flags
+            info.flags = saved_flags
 
         source.expect(")")
         info.close_group(group)
@@ -778,13 +777,13 @@ def parse_comment(source):
 
 def parse_lookaround(source, info, behind, positive):
     "Parses a lookaround."
-    saved_scoped_flags = info.scoped_flags
+    saved_flags = info.flags
     saved_ignore = source.ignore_space
     try:
         subpattern = parse_pattern(source, info)
     finally:
         source.ignore_space = saved_ignore
-        info.scoped_flags = saved_scoped_flags
+        info.flags = saved_flags
 
     source.expect(")")
 
@@ -792,7 +791,7 @@ def parse_lookaround(source, info, behind, positive):
 
 def parse_conditional(source, info):
     "Parses a conditional subpattern."
-    saved_scoped_flags = info.scoped_flags
+    saved_flags = info.flags
     saved_ignore = source.ignore_space
     try:
         group = parse_name(source, True)
@@ -808,7 +807,7 @@ def parse_conditional(source, info):
             no_branch = Sequence()
     finally:
         source.ignore_space = saved_ignore
-        info.scoped_flags = saved_scoped_flags
+        info.flags = saved_flags
 
     source.expect(")")
 
@@ -816,13 +815,13 @@ def parse_conditional(source, info):
 
 def parse_atomic(source, info):
     "Parses an atomic subpattern."
-    saved_scoped_flags = info.scoped_flags
+    saved_flags = info.flags
     saved_ignore = source.ignore_space
     try:
         subpattern = parse_pattern(source, info)
     finally:
         source.ignore_space = saved_ignore
-        info.scoped_flags = saved_scoped_flags
+        info.flags = saved_flags
 
     source.expect(")")
 
@@ -879,33 +878,28 @@ def parse_flags_subpattern(source, info):
         except KeyError:
             pass
 
-        if not flags_off or (flags_off & GLOBAL_FLAGS):
+        if not flags_off:
             raise error("bad inline flags: no flags after '-'")
+
+        if (flags_off & GLOBAL_FLAGS):
+            raise error("bad inline flags: can't turn off global flag")
 
     # Separate the global and scoped flags.
     source.pos = here
-    old_global_flags = info.global_flags
-    info.global_flags |= flags_on & GLOBAL_FLAGS
-    flags_on &= SCOPED_FLAGS
-    flags_off &= SCOPED_FLAGS
-    new_scoped_flags = (info.scoped_flags | flags_on) & ~flags_off
-    saved_scoped_flags = info.scoped_flags
+    saved_flags = info.flags
+    info.flags = (info.flags | flags_on) & ~(flags_off & SCOPED_FLAGS)
     saved_ignore = source.ignore_space
-    info.scoped_flags = new_scoped_flags
-    info.all_flags = info.global_flags | info.scoped_flags
-    source.ignore_space = bool(info.all_flags & VERBOSE)
+    source.ignore_space = bool(info.flags & VERBOSE)
     if source.match(":"):
         # A subpattern with local flags.
-        saved_global_flags = info.global_flags
-        info.global_flags &= ~flags_off
-        info.all_flags = info.global_flags | info.scoped_flags
+        if flags_on & GLOBAL_FLAGS:
+            raise error("bad inline flags: can't scope global flag")
+
         try:
             subpattern = parse_pattern(source, info)
         finally:
-            info.global_flags = saved_global_flags
-            info.scoped_flags = saved_scoped_flags
-            info.all_flags = info.global_flags | info.scoped_flags
             source.ignore_space = saved_ignore
+            info.flags = saved_flags
 
         source.expect(")")
 
@@ -915,22 +909,19 @@ def parse_flags_subpattern(source, info):
         if not source.match(")"):
             raise error("bad inline flags: " + repr(source.get()))
 
-        version = (info.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
+        version = (info.flags & ALL_VERSIONS) or DEFAULT_VERSION
         if version == VERSION0:
             # Positional flags are global and can only be turned on.
             if flags_off:
                 raise error("bad inline flags: can't turn flags off")
-            info.global_flags |= flags_on
 
-        if info.global_flags & ~old_global_flags:
+            info.global_flags = info.flags
+        else:
+            info.global_flags = info.flags & GLOBAL_FLAGS
+
+        if info.global_flags & ~saved_flags:
             # A global has been turned on, so reparse the pattern.
-            if version == VERSION1:
-                # Positional flags are scoped.
-                info.global_flags &= GLOBAL_FLAGS
-
             raise UnscopedFlagSet(info.global_flags)
-
-        info.all_flags = info.global_flags | info.scoped_flags
 
         return None
 
@@ -1013,7 +1004,7 @@ def parse_escape(source, info, in_set):
         # An alphabetic escape sequence.
         # Positional escapes aren't allowed inside a character set.
         if not in_set:
-            if info.all_flags & WORD:
+            if info.flags & WORD:
                 value = WORD_POSITION_ESCAPES.get(ch)
             else:
                 value = POSITION_ESCAPES.get(ch)
@@ -1054,7 +1045,7 @@ def parse_numeric_escape(source, info, ch, in_set):
         ch = source.get()
         if is_octal(digits) and ch in OCT_DIGITS:
             # 3 octal digits, so octal escape sequence.
-            encoding = info.global_flags & ALL_ENCODINGS
+            encoding = info.flags & ALL_ENCODINGS
             if encoding == ASCII or encoding == LOCALE:
                 octal_mask = 0xFF
             else:
@@ -1193,7 +1184,7 @@ def parse_property_name(source):
 
 def parse_set(source, info):
     "Parses a character set."
-    version = (info.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
+    version = (info.flags & ALL_VERSIONS) or DEFAULT_VERSION
 
     saved_ignore = source.ignore_space
     source.ignore_space = False
@@ -1213,7 +1204,7 @@ def parse_set(source, info):
     if negate:
         item = item.with_flags(positive=not item.positive)
 
-    item = item.with_flags(case_flags=info.all_flags & CASE_FLAGS)
+    item = item.with_flags(case_flags=info.flags & CASE_FLAGS)
 
     return item
 
@@ -1259,7 +1250,7 @@ def parse_set_diff(source, info):
 
 def parse_set_imp_union(source, info):
     "Parses a set implicit union ([xy])."
-    version = (info.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
+    version = (info.flags & ALL_VERSIONS) or DEFAULT_VERSION
 
     items = [parse_set_member(source, info)]
     while True:
@@ -1314,7 +1305,7 @@ def parse_set_member(source, info):
 
 def parse_set_item(source, info):
     "Parses an item in a character set."
-    version = (info.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
+    version = (info.flags & ALL_VERSIONS) or DEFAULT_VERSION
 
     if source.match("\\"):
         # An escape sequence in a set.
@@ -1871,7 +1862,7 @@ class Branch(RegexBase):
             pos += 1
         count = pos
 
-        if (info.global_flags & UNICODE) == UNICODE:
+        if (info.flags & UNICODE) == UNICODE:
             # We need to check that we're not splitting a sequence of
             # characters which could form part of full case-folding.
             while count > 0 and not all(Branch._can_split(a, count) for a in
@@ -1912,7 +1903,7 @@ class Branch(RegexBase):
             pos -= 1
         count = -1 - pos
 
-        if (info.global_flags & UNICODE) == UNICODE:
+        if (info.flags & UNICODE) == UNICODE:
             # We need to check that we're not splitting a sequence of
             # characters which could form part of full case-folding.
             while count > 0 and not all(Branch._can_split_rev(a, count) for a
@@ -2140,28 +2131,7 @@ class Character(RegexBase):
         return Character(self.value, positive, case_flags, zerowidth)
 
     def optimise(self, info, in_set=False):
-        # Is the character case-sensitive?
-        if not self.positive or not (self.case_flags & IGNORECASE) or in_set:
-            return self
-
-        # Is the character cased?
-        if not is_cased(info, self.value):
-            self.case_flags = NOCASE
-            return self
-
-        # Is full case-folding possible?
-        if not (info.global_flags & UNICODE) or (self.case_flags &
-          FULLIGNORECASE) != FULLIGNORECASE:
-            return self
-
-        # Get the folded character.
-        folded = _regex.fold_case(FULL_CASE_FOLDING, unichr(self.value))
-        if len(folded) == 1:
-            # We can fall back to simple case-folding.
-            return self
-
-        return Branch([self, String([ord(c) for c in folded],
-          case_flags=self.case_flags)])
+        return self
 
     def get_firstset(self, reverse):
         return set([self])
@@ -2178,7 +2148,19 @@ class Character(RegexBase):
         if fuzzy:
             flags |= FUZZY_OP
 
-        return [(self._opcode[self.case_flags, reverse], flags, self.value)]
+        code = PrecompiledCode([self._opcode[self.case_flags, reverse], flags,
+          self.value])
+
+        if (self.positive and (self.case_flags & FULLIGNORECASE) ==
+          FULLIGNORECASE):
+            # Get the folded character.
+            folded = _regex.fold_case(FULL_CASE_FOLDING, unichr(self.value))
+            if len(folded) > 1:
+                # The character expands on full case-folding.
+                code = Branch([code, String([ord(c) for c in folded],
+                  case_flags=self.case_flags)])
+
+        return code.compile(reverse, fuzzy)
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s %s%s" % (INDENT * indent, self._op_name[reverse],
@@ -2586,6 +2568,13 @@ class LookAround(RegexBase):
     def __nonzero__(self):
         return bool(self.subpattern)
 
+class PrecompiledCode(RegexBase):
+    def __init__(self, code):
+        self.code = code
+
+    def compile(self, reverse=False, fuzzy=False):
+        return [tuple(self.code)]
+
 class Property(RegexBase):
     _opcode = {(NOCASE, False): OP.PROPERTY, (IGNORECASE, False):
       OP.PROPERTY_IGN, (FULLCASE, False): OP.PROPERTY, (FULLIGNORECASE, False):
@@ -2663,8 +2652,8 @@ class Range(RegexBase):
             return self
 
         # Is full case-folding possible?
-        if not (info.global_flags & UNICODE) or (self.case_flags &
-          FULLIGNORECASE) != FULLIGNORECASE:
+        if (not (info.flags & UNICODE) or (self.case_flags & FULLIGNORECASE) !=
+          FULLIGNORECASE):
             return self
 
         # Get the characters which expand to multiple codepoints on folding.
@@ -2932,8 +2921,8 @@ class SetBase(RegexBase):
             return self
 
         # Is full case-folding possible?
-        if not (info.global_flags & UNICODE) or (self.case_flags &
-          FULLIGNORECASE) != FULLIGNORECASE:
+        if (not (info.flags & UNICODE) or (self.case_flags & FULLIGNORECASE) !=
+          FULLIGNORECASE):
             return self
 
         # Get the characters which expand to multiple codepoints on folding.
@@ -3118,11 +3107,19 @@ class String(RegexBase):
         return True
 
     def compile(self, reverse=False, fuzzy=False):
+        if (self.case_flags & FULLIGNORECASE) == FULLIGNORECASE:
+            characters = []
+            for char in self.characters:
+                folded = _regex.fold_case(FULL_CASE_FOLDING, unichr(char))
+                characters.extend(ord(c) for c in folded)
+        else:
+            characters = self.characters
+
         flags = 0
         if fuzzy:
             flags |= FUZZY_OP
         return [(self._opcode[self.case_flags, reverse], flags,
-          len(self.characters)) + tuple(self.characters)]
+          len(characters)) + tuple(characters)]
 
     def dump(self, indent=0, reverse=False):
         print "%s%s %s%s" % (INDENT * indent, self._op_name[reverse],
@@ -3154,7 +3151,7 @@ class StringSet(RegexBase):
         case_flags = self.case_flags
 
         if fuzzy or (case_flags & IGNORECASE):
-            encoding = self.info.global_flags & ALL_ENCODINGS
+            encoding = self.info.flags & ALL_ENCODINGS
             fold_flags = encoding | case_flags
 
             branches = []
@@ -3268,13 +3265,8 @@ class Info(object):
     CLOSED = "CLOSED"
 
     def __init__(self, flags=0, char_type=None, kwargs={}):
-        self.global_flags = flags & GLOBAL_FLAGS
-        self.scoped_flags = flags & SCOPED_FLAGS
-        self.all_flags = self.global_flags | self.scoped_flags
-
-        version = (self.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
-        if version == VERSION0:
-            self.global_flags = self.all_flags
+        self.flags = flags
+        self.global_flags = flags
 
         self.kwargs = kwargs
 
@@ -3312,7 +3304,7 @@ class Info(object):
     def is_open_group(self, name):
         # In version 1, a group reference can refer to an open group. We'll
         # just pretend the group isn't open.
-        version = (self.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
+        version = (self.flags & ALL_VERSIONS) or DEFAULT_VERSION
         if version == VERSION1:
             return False
 
@@ -3333,7 +3325,7 @@ class Scanner:
             # Parse the regular expression.
             source = Source(phrase)
             info = Info(flags, source.char_type)
-            source.ignore_space = bool(info.all_flags & VERBOSE)
+            source.ignore_space = bool(info.flags & VERBOSE)
             parsed = parse_pattern(source, info)
             if not source.at_end():
                 raise error("trailing characters")
@@ -3350,7 +3342,7 @@ class Scanner:
         parsed = parsed.optimise(info)
         parsed = parsed.pack_characters(info)
 
-        reverse = bool(info.global_flags & REVERSE)
+        reverse = bool(info.flags & REVERSE)
 
         # Compile the compound pattern. The result is a list of tuples.
         code = parsed.compile(reverse) + [(OP.SUCCESS, )]
@@ -3368,7 +3360,7 @@ class Scanner:
                 pass
 
         # Check the global flags for conflicts.
-        version = (info.global_flags & ALL_VERSIONS) or DEFAULT_VERSION
+        version = (info.flags & ALL_VERSIONS) or DEFAULT_VERSION
         if count_ones(version) > 1:
             raise ValueError("VERSION0 and VERSION1 flags are mutually incompatible")
 
