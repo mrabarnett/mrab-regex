@@ -741,18 +741,40 @@ class Test:
                     self.record_failure()
 
         # 28..35
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)ff", u"\uFB01\uFB00")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fi", u"\uFB01\uFB00")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fffi", u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB03", u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fffi", u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB03", u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")), repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
+          repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)ff", u"\uFB01\uFB00")),
+          repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
+          repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)fi", u"\uFB01\uFB00")),
+          repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)fffi",
+          u"\uFB00\uFB01")), repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB03",
+          u"\uFB00\uFB01")), repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
+          repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
+          repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)fffi",
+          u"\uFB00\uFB01")), repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB03",
+          u"\uFB00\uFB01")), repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
+          repr(True))
+        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
+          repr(True))
+
+        # 36..37
+        self.expect(lambda:
+          regex.findall(ur"(?iuV0)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
+          u"word word2 word word3 word word234 word23 word"), repr([u"word234",
+          u"word23"]))
+        self.expect(lambda:
+          regex.findall(ur"(?iuV1)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
+          u"word word2 word word3 word word234 word23 word"), repr([u"word234",
+          u"word23"]))
 
     def test_category(self):
         self.expect(lambda: regex.match(r"(\s)", " ")[1], repr(' '))

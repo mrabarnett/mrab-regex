@@ -6917,8 +6917,11 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_match_string_fld(RE_SafeState* safe_state,
     /* Permit insertion except initially when searching (it's better just to
      * start searching one character later).
      */
-    permit_insertion = !search || new_text_pos != state->search_anchor ||
-      new_folded_pos != bt_data->fuzzy_string.folded_len;
+    permit_insertion = !search || new_text_pos != state->search_anchor;
+    if (step > 0)
+        permit_insertion |= new_folded_pos != 0;
+    else
+        permit_insertion |= new_folded_pos != bt_data->fuzzy_string.folded_len;
 
     for (++fuzzy_type; fuzzy_type < RE_FUZZY_COUNT; fuzzy_type++) {
         if (this_error_permitted(state, fuzzy_type)) {
@@ -9086,8 +9089,17 @@ advance:
                 string_pos = 0;
                 folded_pos = 0;
                 folded_len = 0;
-            } else
+            } else {
                 folded_len = full_case_fold(char_at(text, text_pos), folded);
+                if (folded_pos >= folded_len) {
+                    if (text_pos >= slice_end)
+                        goto backtrack;
+
+                    ++text_pos;
+                    folded_pos = 0;
+                    folded_len = 0;
+                }
+            }
 
             values = node->values;
 
@@ -9177,10 +9189,18 @@ advance:
                 string_pos = length;
                 folded_pos = 0;
                 folded_len = 0;
-            } else
+            } else {
                 folded_len = full_case_fold(char_at(text, text_pos - 1),
                   folded);
+                if (folded_pos <= 0) {
+                    if (text_pos <= slice_start)
+                        goto backtrack;
 
+                    --text_pos;
+                    folded_pos = 0;
+                    folded_len = 0;
+                }
+            }
             values = node->values;
 
             /* Try comparing. */
@@ -9231,6 +9251,9 @@ advance:
                         string_pos = -1;
                         goto backtrack;
                     }
+
+                    if (folded_pos <= 0)
+                        --text_pos;
                 }
             }
 

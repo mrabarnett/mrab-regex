@@ -720,18 +720,40 @@ class Test:
                     self.record_failure()
 
         # 28..35
-        self.expect(lambda: bool(regex.search(r"(?iV1)ff", "\uFB00\uFB01")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)ff", "\uFB01\uFB00")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)fi", "\uFB00\uFB01")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)fi", "\uFB01\uFB00")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)fffi", "\uFB00\uFB01")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)f\uFB03", "\uFB00\uFB01")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)ff", "\uFB00\uFB01")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)fi", "\uFB00\uFB01")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)fffi", "\uFB00\uFB01")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)f\uFB03", "\uFB00\uFB01")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)f\uFB01", "\uFB00i")), ascii(True))
-        self.expect(lambda: bool(regex.search(r"(?iV1)f\uFB01", "\uFB00i")), ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)ff", "\uFB00\uFB01")),
+          ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)ff", "\uFB01\uFB00")),
+          ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)fi", "\uFB00\uFB01")),
+          ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)fi", "\uFB01\uFB00")),
+          ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)fffi", "\uFB00\uFB01")),
+          ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)f\uFB03",
+          "\uFB00\uFB01")), ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)ff", "\uFB00\uFB01")),
+          ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)fi", "\uFB00\uFB01")),
+          ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)fffi", "\uFB00\uFB01")),
+          ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)f\uFB03",
+          "\uFB00\uFB01")), ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)f\uFB01", "\uFB00i")),
+          ascii(True))
+        self.expect(lambda: bool(regex.search(r"(?iV1)f\uFB01", "\uFB00i")),
+          ascii(True))
+
+        # 36..37
+        self.expect(lambda:
+          regex.findall(r"(?iV0)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
+          "word word2 word word3 word word234 word23 word"), ascii(["word234",
+          "word23"]))
+        self.expect(lambda:
+          regex.findall(r"(?iV1)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
+          "word word2 word word3 word word234 word23 word"), ascii(["word234",
+          "word23"]))
 
     def test_category(self):
         self.expect(lambda: regex.match(r"(\s)", " ")[1], ascii(' '))
