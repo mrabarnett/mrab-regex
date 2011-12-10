@@ -22,6 +22,7 @@
  * 2003-04-18 mvl  fully support 4-byte codes
  * 2003-10-17 gn   implemented non recursive scheme
  * 2009-07-26 mrab completely re-designed matcher code
+ * 2011-11-18 mrab added support for PEP 393 strings
  *
  * Copyright (c) 1997-2001 by Secret Labs AB.  All rights reserved.
  *
@@ -48,6 +49,11 @@
 #include "_regex.h"
 #include "pyport.h"
 #include "pythread.h"
+
+#if PY_VERSION_HEX < 0x03030000
+typedef unsigned char Py_UCS1;
+typedef unsigned short Py_UCS2;
+#endif
 
 typedef RE_UINT32 RE_CODE;
 
@@ -145,10 +151,10 @@ static PyObject* property_dict;
 
 /* Handlers for ASCII, locale and Unicode. */
 typedef struct RE_EncodingTable {
-    BOOL (*has_property)(RE_CODE property, RE_CODE ch);
-    RE_CODE (*lower)(RE_CODE ch);
-    RE_CODE (*upper)(RE_CODE ch);
-    RE_CODE (*title)(RE_CODE ch);
+    BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
+    Py_UCS4 (*lower)(Py_UCS4 ch);
+    Py_UCS4 (*upper)(Py_UCS4 ch);
+    Py_UCS4 (*title)(Py_UCS4 ch);
     BOOL (*at_boundary)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_word_start)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_word_end)(struct RE_State* state, Py_ssize_t text_pos);
@@ -156,14 +162,14 @@ typedef struct RE_EncodingTable {
     BOOL (*at_default_word_start)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_default_word_end)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_grapheme_boundary)(struct RE_State* state, Py_ssize_t text_pos);
-    BOOL (*is_line_sep)(RE_CODE ch);
+    BOOL (*is_line_sep)(Py_UCS4 ch);
     BOOL (*at_line_start)(struct RE_State* state, Py_ssize_t text_pos);
     BOOL (*at_line_end)(struct RE_State* state, Py_ssize_t text_pos);
-    BOOL (*possible_turkic)(RE_CODE ch);
-    int (*all_cases)(RE_CODE ch, RE_CODE* codepoints);
-    RE_CODE (*simple_case_fold)(RE_CODE ch);
-    int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
-    int (*all_turkic_i)(RE_CODE ch, RE_CODE* cases);
+    BOOL (*possible_turkic)(Py_UCS4 ch);
+    int (*all_cases)(Py_UCS4 ch, Py_UCS4* codepoints);
+    Py_UCS4 (*simple_case_fold)(Py_UCS4 ch);
+    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
+    int (*all_turkic_i)(Py_UCS4 ch, Py_UCS4* cases);
 } RE_EncodingTable;
 
 /* Position with the regex and text. */
@@ -375,8 +381,8 @@ typedef struct RE_State {
     RE_GroupData* saved_groups;
     size_t min_width;
     RE_EncodingTable* encoding;
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
-    void (*set_char_at)(void* text, Py_ssize_t pos, RE_CODE ch);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
+    void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
     void* (*point_to)(void* text, Py_ssize_t pos);
     PyThread_type_lock lock;
     RE_FuzzyInfo fuzzy_info; /* Info about fuzzy matching. */
@@ -384,8 +390,7 @@ typedef struct RE_State {
     size_t total_errors;
     size_t total_cost;
     size_t max_cost;
-    size_t bytesize;
-    BOOL wide;
+    BOOL unicode; /* The string to be matched is Unicode. */
     BOOL overlapped; /* Matches can be overlapped. */
     BOOL reverse; /* Search backwards. */
     BOOL visible_captures;
@@ -504,9 +509,6 @@ typedef struct JoinInfo {
     BOOL reversed;
 } JoinInfo;
 
-typedef Py_UNICODE RE_UCHAR;
-typedef unsigned char RE_BCHAR;
-
 /* Function types for getting info from a MatchObject. */
 typedef PyObject* (*RE_GetByIndexFunc)(MatchObject* self, Py_ssize_t index);
 
@@ -522,34 +524,55 @@ Py_LOCAL_INLINE(int) max3(int a, int b, int c) {
     return max2(max2(a, b), c);
 }
 
-/* Gets a byte character at the given position. */
-static RE_CODE bytes_char_at(void* text, Py_ssize_t pos) {
-    return *((RE_BCHAR*)text + pos);
+/* Gets a character at the given position assuming 1 byte per character. */
+static Py_UCS4 bytes1_char_at(void* text, Py_ssize_t pos) {
+    return *((Py_UCS1*)text + pos);
 }
 
-/* Sets a byte character at the given position. */
-static void bytes_set_char_at(void* text, Py_ssize_t pos, RE_CODE ch) {
-    *((RE_BCHAR*)text + pos) = ch;
+/* Sets a character at the given position assuming 1 byte per character. */
+static void bytes1_set_char_at(void* text, Py_ssize_t pos, Py_UCS4 ch) {
+    *((Py_UCS1*)text + pos) = ch;
 }
 
-/* Gets a pointer to the character at the given position. */
-static void* bytes_point_to(void* text, Py_ssize_t pos) {
-    return (RE_BCHAR*)text + pos;
+/* Gets a pointer to the character at the given position assuming 1 byte per
+ * character.
+ */
+static void* bytes1_point_to(void* text, Py_ssize_t pos) {
+    return (Py_UCS1*)text + pos;
 }
 
-/* Gets a Unicode character at the given position. */
-static RE_CODE unicode_char_at(void* text, Py_ssize_t pos) {
-    return *((RE_UCHAR*)text + pos);
+/* Gets a character at the given position assuming 2 bytes per character. */
+static Py_UCS4 bytes2_char_at(void* text, Py_ssize_t pos) {
+    return *((Py_UCS2*)text + pos);
 }
 
-/* Sets a Unicode character at the given position. */
-static void unicode_set_char_at(void* text, Py_ssize_t pos, RE_CODE ch) {
-    *((RE_UCHAR*)text + pos) = ch;
+/* Sets a character at the given position assuming 2 bytes per character. */
+static void bytes2_set_char_at(void* text, Py_ssize_t pos, Py_UCS4 ch) {
+    *((Py_UCS2*)text + pos) = ch;
 }
 
-/* Gets a pointer to the character at the given position. */
-static void* unicode_point_to(void* text, Py_ssize_t pos) {
-    return (RE_UCHAR*)text + pos;
+/* Gets a pointer to the character at the given position assuming 2 bytes per
+ * character.
+ */
+static void* bytes2_point_to(void* text, Py_ssize_t pos) {
+    return (Py_UCS2*)text + pos;
+}
+
+/* Gets a character at the given position assuming 4 bytes per character. */
+static Py_UCS4 bytes4_char_at(void* text, Py_ssize_t pos) {
+    return *((Py_UCS4*)text + pos);
+}
+
+/* Sets a character at the given position assuming 4 bytes per character. */
+static void bytes4_set_char_at(void* text, Py_ssize_t pos, Py_UCS4 ch) {
+    *((Py_UCS4*)text + pos) = ch;
+}
+
+/* Gets a pointer to the character at the given position assuming 4 bytes per
+ * character.
+ */
+static void* bytes4_point_to(void* text, Py_ssize_t pos) {
+    return (Py_UCS4*)text + pos;
 }
 
 /* Default for whether the current text position is on a boundary. */
@@ -559,10 +582,10 @@ static BOOL at_boundary_always(RE_State* state, Py_ssize_t text_pos) {
 
 /* ASCII-specific. */
 
-static BOOL unicode_has_property(RE_CODE property, RE_CODE ch);
+static BOOL unicode_has_property(RE_CODE property, Py_UCS4 ch);
 
 /* Checks whether a character has the given property. */
-static BOOL ascii_has_property(RE_CODE property, RE_CODE ch) {
+static BOOL ascii_has_property(RE_CODE property, Py_UCS4 ch) {
     if (ch > RE_ASCII_MAX) {
         /* Outside the ASCII range. */
         RE_UINT32 value;
@@ -576,7 +599,7 @@ static BOOL ascii_has_property(RE_CODE property, RE_CODE ch) {
 }
 
 /* Converts a character to lowercase. */
-static RE_CODE ascii_lower(RE_CODE ch) {
+static Py_UCS4 ascii_lower(Py_UCS4 ch) {
     if (ch > RE_ASCII_MAX || !re_get_uppercase(ch))
         return ch;
 
@@ -584,7 +607,7 @@ static RE_CODE ascii_lower(RE_CODE ch) {
 }
 
 /* Converts a character to uppercase. */
-static RE_CODE ascii_upper(RE_CODE ch) {
+static Py_UCS4 ascii_upper(Py_UCS4 ch) {
     if (ch > RE_ASCII_MAX || !re_get_lowercase(ch))
         return ch;
 
@@ -631,13 +654,13 @@ static BOOL ascii_at_word_end(RE_State* state, Py_ssize_t text_pos) {
 }
 
 /* Checks whether a character is a line separator. */
-static BOOL ascii_is_line_sep(RE_CODE ch) {
+static BOOL ascii_is_line_sep(Py_UCS4 ch) {
     return 0x0A <= ch && ch <= 0x0D;
 }
 
 /* Checks whether the current text position is at the start of a line. */
 static BOOL ascii_at_line_start(RE_State* state, Py_ssize_t text_pos) {
-    RE_CODE ch;
+    Py_UCS4 ch;
 
     if (text_pos == 0)
         return TRUE;
@@ -654,7 +677,7 @@ static BOOL ascii_at_line_start(RE_State* state, Py_ssize_t text_pos) {
 
 /* Checks whether the current text position is at the end of a line. */
 static BOOL ascii_at_line_end(RE_State* state, Py_ssize_t text_pos) {
-    RE_CODE ch;
+    Py_UCS4 ch;
 
     if (text_pos >= state->text_length)
         return TRUE;
@@ -672,12 +695,12 @@ static BOOL ascii_at_line_end(RE_State* state, Py_ssize_t text_pos) {
 /* Checks whether a character could be Turkic (variants of I/i). For ASCII, it
  * won't be.
  */
-static BOOL ascii_possible_turkic(RE_CODE ch) {
+static BOOL ascii_possible_turkic(Py_UCS4 ch) {
     return FALSE;
 }
 
 /* Gets all the cases of a character. */
-static int ascii_all_cases(RE_CODE ch, RE_CODE* codepoints) {
+static int ascii_all_cases(Py_UCS4 ch, Py_UCS4* codepoints) {
     int count;
 
     count = 0;
@@ -692,7 +715,7 @@ static int ascii_all_cases(RE_CODE ch, RE_CODE* codepoints) {
 }
 
 /* Returns a character with its case folded. */
-static RE_CODE ascii_simple_case_fold(RE_CODE ch) {
+static Py_UCS4 ascii_simple_case_fold(Py_UCS4 ch) {
     if ('A' <= ch && ch <= 'Z')
         /* Uppercase folds to lowercase. */
         return ch ^ 0x20;
@@ -701,7 +724,7 @@ static RE_CODE ascii_simple_case_fold(RE_CODE ch) {
 }
 
 /* Returns a character with its case folded. */
-static int ascii_full_case_fold(RE_CODE ch, RE_CODE* folded) {
+static int ascii_full_case_fold(Py_UCS4 ch, Py_UCS4* folded) {
     if ('A' <= ch && ch <= 'Z')
         /* Uppercase folds to lowercase. */
         folded[0] = ch ^ 0x20;
@@ -714,7 +737,7 @@ static int ascii_full_case_fold(RE_CODE ch, RE_CODE* folded) {
 /* Gets all the case variants of Turkic 'I'. The given character will be listed
  * first.
  */
-static int ascii_all_turkic_i(RE_CODE ch, RE_CODE* cases) {
+static int ascii_all_turkic_i(Py_UCS4 ch, Py_UCS4* cases) {
     int count;
 
     count = 0;
@@ -756,7 +779,7 @@ static RE_EncodingTable ascii_encoding = {
 /* Locale-specific. */
 
 /* Checks whether a character has the given property. */
-static BOOL locale_has_property(RE_CODE property, RE_CODE ch) {
+static BOOL locale_has_property(RE_CODE property, Py_UCS4 ch) {
     RE_UINT32 value;
     RE_UINT32 v;
 
@@ -831,7 +854,7 @@ static BOOL locale_has_property(RE_CODE property, RE_CODE ch) {
 }
 
 /* Converts a character to lowercase. */
-static RE_CODE locale_lower(RE_CODE ch) {
+static Py_UCS4 locale_lower(Py_UCS4 ch) {
     if (ch > RE_LOCALE_MAX)
         return ch;
 
@@ -839,7 +862,7 @@ static RE_CODE locale_lower(RE_CODE ch) {
 }
 
 /* Converts a character to uppercase. */
-static RE_CODE locale_upper(RE_CODE ch) {
+static Py_UCS4 locale_upper(Py_UCS4 ch) {
     if (ch > RE_LOCALE_MAX)
         return ch;
 
@@ -886,14 +909,14 @@ static BOOL locale_at_word_end(RE_State* state, Py_ssize_t text_pos) {
 }
 
 /* Checks whether a character could be Turkic (variants of I/i). */
-static BOOL locale_possible_turkic(RE_CODE ch) {
+static BOOL locale_possible_turkic(Py_UCS4 ch) {
     return toupper(ch) == 'I' || tolower(ch) == 'i';
 }
 
 /* Gets all the cases of a character. */
-static int locale_all_cases(RE_CODE ch, RE_CODE* codepoints) {
+static int locale_all_cases(Py_UCS4 ch, Py_UCS4* codepoints) {
     int count;
-    RE_CODE other;
+    Py_UCS4 other;
 
     count = 0;
 
@@ -911,7 +934,7 @@ static int locale_all_cases(RE_CODE ch, RE_CODE* codepoints) {
 }
 
 /* Returns a character with its case folded. */
-static RE_CODE locale_simple_case_fold(RE_CODE ch) {
+static Py_UCS4 locale_simple_case_fold(Py_UCS4 ch) {
     if (ch <= RE_LOCALE_MAX)
         return tolower(ch);
 
@@ -919,7 +942,7 @@ static RE_CODE locale_simple_case_fold(RE_CODE ch) {
 }
 
 /* Returns a character with its case folded. */
-static int locale_full_case_fold(RE_CODE ch, RE_CODE* folded) {
+static int locale_full_case_fold(Py_UCS4 ch, Py_UCS4* folded) {
     if (ch <= RE_LOCALE_MAX)
         folded[0] = tolower(ch);
     else
@@ -931,9 +954,9 @@ static int locale_full_case_fold(RE_CODE ch, RE_CODE* folded) {
 /* Gets all the case variants of Turkic 'I'. The given character will be listed
  * first.
  */
-static int locale_all_turkic_i(RE_CODE ch, RE_CODE* cases) {
+static int locale_all_turkic_i(Py_UCS4 ch, Py_UCS4* cases) {
     int count;
-    RE_CODE other;
+    Py_UCS4 other;
 
     count = 0;
 
@@ -984,7 +1007,7 @@ static RE_EncodingTable locale_encoding = {
 /* Unicode-specific. */
 
 /* Checks whether a Unicode character has the given property. */
-static BOOL unicode_has_property(RE_CODE property, RE_CODE ch) {
+static BOOL unicode_has_property(RE_CODE property, Py_UCS4 ch) {
     RE_UINT32 prop;
     RE_UINT32 value;
     RE_UINT32 v;
@@ -1020,18 +1043,18 @@ static BOOL unicode_has_property(RE_CODE property, RE_CODE ch) {
 }
 
 /* Converts a Unicode character to lowercase. */
-static RE_CODE unicode_lower(RE_CODE ch) {
-    return Py_UNICODE_TOLOWER((Py_UNICODE)ch);
+static Py_UCS4 unicode_lower(Py_UCS4 ch) {
+    return Py_UNICODE_TOLOWER((Py_UCS4)ch);
 }
 
 /* Converts a Unicode character to uppercase. */
-static RE_CODE unicode_upper(RE_CODE ch) {
-    return Py_UNICODE_TOUPPER((Py_UNICODE)ch);
+static Py_UCS4 unicode_upper(Py_UCS4 ch) {
+    return Py_UNICODE_TOUPPER((Py_UCS4)ch);
 }
 
 /* Converts a Unicode character to titlecase. */
-static RE_CODE unicode_title(RE_CODE ch) {
-    return Py_UNICODE_TOTITLE((Py_UNICODE)ch);
+static Py_UCS4 unicode_title(Py_UCS4 ch) {
+    return Py_UNICODE_TOTITLE((Py_UCS4)ch);
 }
 
 /* Checks whether the current text position is on a word boundary. */
@@ -1077,7 +1100,7 @@ static BOOL unicode_at_word_end(RE_State* state, Py_ssize_t text_pos) {
  *
  * Only a limited number are treated as vowels.
  */
-Py_LOCAL_INLINE(BOOL) is_unicode_vowel(RE_CODE ch) {
+Py_LOCAL_INLINE(BOOL) is_unicode_vowel(Py_UCS4 ch) {
     switch (unicode_lower(ch)) {
     case 'a': case 0xE0: case 0xE1: case 0xE2:
     case 'e': case 0xE8: case 0xE9: case 0xEA:
@@ -1092,7 +1115,7 @@ Py_LOCAL_INLINE(BOOL) is_unicode_vowel(RE_CODE ch) {
 
 /* Checks whether the current text position is on a default word boundary. */
 static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     int prop;
     int prop_m1;
@@ -1211,20 +1234,20 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
 /* Checks whether the current text position is at the start of a word. */
 static BOOL unicode_at_default_word_start(RE_State* state, Py_ssize_t text_pos)
   {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     BOOL before;
     BOOL after;
-    RE_CODE char_0;
-    RE_CODE char_m1;
+    Py_UCS4 char_0;
+    Py_UCS4 char_m1;
     int prop;
     int prop_m1;
     Py_ssize_t pos_m1;
-    RE_CODE char_p1;
+    Py_UCS4 char_p1;
     Py_ssize_t pos_p1;
     int prop_p1;
     Py_ssize_t pos_m2;
-    RE_CODE char_m2;
+    Py_UCS4 char_m2;
     int prop_m2;
 
     char_at = state->char_at;
@@ -1352,20 +1375,20 @@ static BOOL unicode_at_default_word_start(RE_State* state, Py_ssize_t text_pos)
 
 /* Checks whether the current text position is at the end of a word. */
 static BOOL unicode_at_default_word_end(RE_State* state, Py_ssize_t text_pos) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     BOOL before;
     BOOL after;
-    RE_CODE char_0;
-    RE_CODE char_m1;
+    Py_UCS4 char_0;
+    Py_UCS4 char_m1;
     int prop;
     int prop_m1;
     Py_ssize_t pos_m1;
     Py_ssize_t pos_p1;
-    RE_CODE char_p1;
+    Py_UCS4 char_p1;
     int prop_p1;
     Py_ssize_t pos_m2;
-    RE_CODE char_m2;
+    Py_UCS4 char_m2;
     int prop_m2;
 
     char_at = state->char_at;
@@ -1494,7 +1517,7 @@ static BOOL unicode_at_default_word_end(RE_State* state, Py_ssize_t text_pos) {
 /* Checks whether the current text position is on a grapheme boundary. */
 static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
   {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     int prop;
     int prop_m1;
@@ -1546,14 +1569,14 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
 }
 
 /* Checks whether a character is a line separator. */
-static BOOL unicode_is_line_sep(RE_CODE ch) {
+static BOOL unicode_is_line_sep(Py_UCS4 ch) {
     return 0x0A <= ch && ch <= 0x0D || ch == 0x85 || ch == 0x2028 || ch ==
       0x2029;
 }
 
 /* Checks whether the current text position is at the start of a line. */
 static BOOL unicode_at_line_start(RE_State* state, Py_ssize_t text_pos) {
-    RE_CODE ch;
+    Py_UCS4 ch;
 
     if (text_pos == 0)
         return TRUE;
@@ -1571,7 +1594,7 @@ static BOOL unicode_at_line_start(RE_State* state, Py_ssize_t text_pos) {
 
 /* Checks whether the current text position is at the end of a line. */
 static BOOL unicode_at_line_end(RE_State* state, Py_ssize_t text_pos) {
-    RE_CODE ch;
+    Py_UCS4 ch;
 
     if (text_pos >= state->text_length)
         return TRUE;
@@ -1588,19 +1611,19 @@ static BOOL unicode_at_line_end(RE_State* state, Py_ssize_t text_pos) {
 }
 
 /* Checks whether a character could be Turkic (variants of I/i). */
-static BOOL unicode_possible_turkic(RE_CODE ch) {
+static BOOL unicode_possible_turkic(Py_UCS4 ch) {
     return ch == 'I' || ch == 'i' || ch == 0x0130 || ch == 0x0131;
 }
 
 /* Gets all the cases of a character. */
-static int unicode_all_cases(RE_CODE ch, RE_CODE* codepoints) {
+static int unicode_all_cases(Py_UCS4 ch, Py_UCS4* codepoints) {
     return re_get_all_cases(ch, codepoints);
 }
 
 /* Returns a character with its case folded, unless it could be Turkic
  * (variants of I/i).
  */
-static RE_CODE unicode_simple_case_fold(RE_CODE ch) {
+static Py_UCS4 unicode_simple_case_fold(Py_UCS4 ch) {
     /* Is it a possible Turkic character? If so, pass it through unchanged. */
     if (ch == 'I' || ch == 'i' || ch == 0x0130 || ch == 0x0131)
         return ch;
@@ -1611,7 +1634,7 @@ static RE_CODE unicode_simple_case_fold(RE_CODE ch) {
 /* Returns a character with its case folded, unless it could be Turkic
  * (variants of I/i).
  */
-static int unicode_full_case_fold(RE_CODE ch, RE_CODE* folded) {
+static int unicode_full_case_fold(Py_UCS4 ch, Py_UCS4* folded) {
     /* Is it a possible Turkic character? If so, pass it through unchanged. */
     if (ch == 'I' || ch == 'i' || ch == 0x0130 || ch == 0x0131) {
         folded[0] = ch;
@@ -1622,7 +1645,7 @@ static int unicode_full_case_fold(RE_CODE ch, RE_CODE* folded) {
 }
 
 /* Gets all the case variants of Turkic 'I'. */
-static int unicode_all_turkic_i(RE_CODE ch, RE_CODE* cases) {
+static int unicode_all_turkic_i(Py_UCS4 ch, Py_UCS4* cases) {
     int count;
 
     count = 0;
@@ -1820,14 +1843,14 @@ Py_LOCAL_INLINE(BOOL) safe_check_signals(RE_SafeState* safe_state) {
 }
 
 /* Checks whether a character is in a range. */
-Py_LOCAL_INLINE(BOOL) in_range(RE_CODE lower, RE_CODE upper, RE_CODE ch) {
+Py_LOCAL_INLINE(BOOL) in_range(Py_UCS4 lower, Py_UCS4 upper, Py_UCS4 ch) {
     return lower <= ch && ch <= upper;
 }
 
 /* Checks whether 2 characters are the same, ignoring case. */
-static BOOL same_char_ign(RE_EncodingTable* encoding, RE_CODE ch1, RE_CODE ch2)
+static BOOL same_char_ign(RE_EncodingTable* encoding, Py_UCS4 ch1, Py_UCS4 ch2)
   {
-    RE_CODE cases[RE_MAX_CASES];
+    Py_UCS4 cases[RE_MAX_CASES];
     int count;
     int i;
 
@@ -1848,8 +1871,8 @@ static BOOL same_char_ign(RE_EncodingTable* encoding, RE_CODE ch1, RE_CODE ch2)
  * we want none of the case-forms to match.
  */
 Py_LOCAL_INLINE(BOOL) has_property_ign(RE_EncodingTable* encoding, RE_CODE
-  property, RE_CODE ch) {
-    RE_CODE cases[RE_MAX_CASES];
+  property, Py_UCS4 ch) {
+    Py_UCS4 cases[RE_MAX_CASES];
     int count;
     int i;
 
@@ -1864,9 +1887,9 @@ Py_LOCAL_INLINE(BOOL) has_property_ign(RE_EncodingTable* encoding, RE_CODE
 }
 
 /* Checks whether a character is in a range, ignoring case. */
-Py_LOCAL_INLINE(BOOL) in_range_ign(RE_EncodingTable* encoding, RE_CODE lower,
-  RE_CODE upper, RE_CODE ch) {
-    RE_CODE cases[RE_MAX_CASES];
+Py_LOCAL_INLINE(BOOL) in_range_ign(RE_EncodingTable* encoding, Py_UCS4 lower,
+  Py_UCS4 upper, Py_UCS4 ch) {
+    Py_UCS4 cases[RE_MAX_CASES];
     int count;
     int i;
 
@@ -1881,17 +1904,17 @@ Py_LOCAL_INLINE(BOOL) in_range_ign(RE_EncodingTable* encoding, RE_CODE lower,
 }
 
 Py_LOCAL_INLINE(BOOL) in_set_diff(RE_EncodingTable* encoding, RE_Node* node,
-  RE_CODE ch);
+  Py_UCS4 ch);
 Py_LOCAL_INLINE(BOOL) in_set_inter(RE_EncodingTable* encoding, RE_Node* node,
-  RE_CODE ch);
+  Py_UCS4 ch);
 Py_LOCAL_INLINE(BOOL) in_set_sym_diff(RE_EncodingTable* encoding, RE_Node*
-  node, RE_CODE ch);
+  node, Py_UCS4 ch);
 Py_LOCAL_INLINE(BOOL) in_set_union(RE_EncodingTable* encoding, RE_Node* node,
-  RE_CODE ch);
+  Py_UCS4 ch);
 
 /* Checks whether a character matches a set member. */
 Py_LOCAL_INLINE(BOOL) matches_member(RE_EncodingTable* encoding, RE_Node*
-  member, RE_CODE ch) {
+  member, Py_UCS4 ch) {
     switch (member->op) {
     case RE_OP_CHARACTER:
         /* values are: char_code */
@@ -1927,8 +1950,8 @@ Py_LOCAL_INLINE(BOOL) matches_member(RE_EncodingTable* encoding, RE_Node*
 
 /* Checks whether a character matches a set member, ignoring case. */
 Py_LOCAL_INLINE(BOOL) matches_member_ign(RE_EncodingTable* encoding, RE_Node*
-  member, RE_CODE ch) {
-    RE_CODE cases[RE_MAX_CASES];
+  member, Py_UCS4 ch) {
+    Py_UCS4 cases[RE_MAX_CASES];
     int count;
     int i;
 
@@ -1987,7 +2010,7 @@ Py_LOCAL_INLINE(BOOL) matches_member_ign(RE_EncodingTable* encoding, RE_Node*
 
 /* Checks whether a character is in a set difference. */
 Py_LOCAL_INLINE(BOOL) in_set_diff(RE_EncodingTable* encoding, RE_Node* node,
-  RE_CODE ch) {
+  Py_UCS4 ch) {
     RE_Node* member;
 
     member = node->nonstring.next_2.node;
@@ -2009,7 +2032,7 @@ Py_LOCAL_INLINE(BOOL) in_set_diff(RE_EncodingTable* encoding, RE_Node* node,
 
 /* Checks whether a character is in a set difference, ignoring case. */
 Py_LOCAL_INLINE(BOOL) in_set_diff_ign(RE_EncodingTable* encoding, RE_Node*
-  node, RE_CODE ch) {
+  node, Py_UCS4 ch) {
     RE_Node* member;
 
     member = node->nonstring.next_2.node;
@@ -2031,7 +2054,7 @@ Py_LOCAL_INLINE(BOOL) in_set_diff_ign(RE_EncodingTable* encoding, RE_Node*
 
 /* Checks whether a character is in a set intersection. */
 Py_LOCAL_INLINE(BOOL) in_set_inter(RE_EncodingTable* encoding, RE_Node* node,
-  RE_CODE ch) {
+  Py_UCS4 ch) {
     RE_Node* member;
 
     member = node->nonstring.next_2.node;
@@ -2048,7 +2071,7 @@ Py_LOCAL_INLINE(BOOL) in_set_inter(RE_EncodingTable* encoding, RE_Node* node,
 
 /* Checks whether a character is in a set intersection, ignoring case. */
 Py_LOCAL_INLINE(BOOL) in_set_inter_ign(RE_EncodingTable* encoding, RE_Node*
-  node, RE_CODE ch) {
+  node, Py_UCS4 ch) {
     RE_Node* member;
 
     member = node->nonstring.next_2.node;
@@ -2065,7 +2088,7 @@ Py_LOCAL_INLINE(BOOL) in_set_inter_ign(RE_EncodingTable* encoding, RE_Node*
 
 /* Checks whether a character is in a set symmetric difference. */
 Py_LOCAL_INLINE(BOOL) in_set_sym_diff(RE_EncodingTable* encoding, RE_Node*
-  node, RE_CODE ch) {
+  node, Py_UCS4 ch) {
     RE_Node* member;
     BOOL result;
 
@@ -2086,7 +2109,7 @@ Py_LOCAL_INLINE(BOOL) in_set_sym_diff(RE_EncodingTable* encoding, RE_Node*
 /* Checks whether a character is in a set symmetric difference, ignoring case.
  */
 Py_LOCAL_INLINE(BOOL) in_set_sym_diff_ign(RE_EncodingTable* encoding, RE_Node*
-  node, RE_CODE ch) {
+  node, Py_UCS4 ch) {
     RE_Node* member;
     BOOL result;
 
@@ -2106,7 +2129,7 @@ Py_LOCAL_INLINE(BOOL) in_set_sym_diff_ign(RE_EncodingTable* encoding, RE_Node*
 
 /* Checks whether a character is in a set union. */
 Py_LOCAL_INLINE(BOOL) in_set_union(RE_EncodingTable* encoding, RE_Node* node,
-  RE_CODE ch) {
+  Py_UCS4 ch) {
     RE_Node* member;
 
     member = node->nonstring.next_2.node;
@@ -2123,7 +2146,7 @@ Py_LOCAL_INLINE(BOOL) in_set_union(RE_EncodingTable* encoding, RE_Node* node,
 
 /* Checks whether a character is in a set union, ignoring case. */
 Py_LOCAL_INLINE(BOOL) in_set_union_ign(RE_EncodingTable* encoding, RE_Node*
-  node, RE_CODE ch) {
+  node, Py_UCS4 ch) {
     RE_Node* member;
 
     member = node->nonstring.next_2.node;
@@ -2139,7 +2162,7 @@ Py_LOCAL_INLINE(BOOL) in_set_union_ign(RE_EncodingTable* encoding, RE_Node*
 }
 
 /* Checks whether a character is in a set. */
-Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
+Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, Py_UCS4
   ch) {
     switch (node->op) {
     case RE_OP_SET_INTER:
@@ -2161,7 +2184,7 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, RE_CODE
 
 /* Checks whether a character is in a set, ignoring case. */
 Py_LOCAL_INLINE(BOOL) in_set_ign(RE_EncodingTable* encoding, RE_Node* node,
-  RE_CODE ch) {
+  Py_UCS4 ch) {
     switch (node->op) {
     case RE_OP_SET_INTER_IGN:
     case RE_OP_SET_INTER_IGN_REV:
@@ -2411,7 +2434,7 @@ Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
 /* Matches many ANYs. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
 
     char_at = state->char_at;
@@ -2426,7 +2449,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY(RE_State* state, RE_Node* node,
 /* Matches many ANYs backwards. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
 
     char_at = state->char_at;
@@ -2444,8 +2467,8 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_REV(RE_State* state, RE_Node* node,
 /* Matches many ANY_Us. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    BOOL (*is_line_sep)(RE_CODE ch);
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    BOOL (*is_line_sep)(Py_UCS4 ch);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
 
     is_line_sep = state->encoding->is_line_sep;
@@ -2461,8 +2484,8 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U(RE_State* state, RE_Node* node,
 /* Matches many ANY_Us backwards. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U_REV(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    BOOL (*is_line_sep)(RE_CODE ch);
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    BOOL (*is_line_sep)(Py_UCS4 ch);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
 
     is_line_sep = state->encoding->is_line_sep;
@@ -2481,9 +2504,9 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U_REV(RE_State* state, RE_Node*
 /* Matches many CHARACTERs. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
-    RE_CODE ch;
+    Py_UCS4 ch;
 
     char_at = state->char_at;
     text = state->text;
@@ -2499,10 +2522,10 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER(RE_State* state, RE_Node*
 /* Matches many CHARACTERs, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
-    RE_CODE ch;
+    Py_UCS4 ch;
 
     char_at = state->char_at;
     text = state->text;
@@ -2520,10 +2543,10 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN(RE_State* state, RE_Node*
 /* Matches many CHARACTERs backwards, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN_REV(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
-    RE_CODE ch;
+    Py_UCS4 ch;
 
     char_at = state->char_at;
     text = state->text;
@@ -2544,9 +2567,9 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN_REV(RE_State* state,
 /* Matches many CHARACTERs backwards. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_REV(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
-    RE_CODE ch;
+    Py_UCS4 ch;
 
     char_at = state->char_at;
     text = state->text;
@@ -2565,9 +2588,9 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_REV(RE_State* state, RE_Node*
 /* Matches many PROPERTYs. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
-    BOOL (*has_property)(RE_CODE property, RE_CODE ch);
+    BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
     RE_CODE property;
 
     char_at = state->char_at;
@@ -2586,7 +2609,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY(RE_State* state, RE_Node* node,
 /* Matches many PROPERTYs, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY_IGN(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
     RE_CODE property;
@@ -2607,7 +2630,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY_IGN(RE_State* state, RE_Node*
 /* Matches many PROPERTYs backwards, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY_IGN_REV(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
     RE_CODE property;
@@ -2631,9 +2654,9 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY_IGN_REV(RE_State* state,
 /* Matches many PROPERTYs backwards. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY_REV(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
-    BOOL (*has_property)(RE_CODE property, RE_CODE ch);
+    BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
     RE_CODE property;
 
     char_at = state->char_at;
@@ -2655,10 +2678,10 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_PROPERTY_REV(RE_State* state, RE_Node*
 /* Matches many RANGEs. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_RANGE(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
-    RE_CODE lower;
-    RE_CODE upper;
+    Py_UCS4 lower;
+    Py_UCS4 upper;
 
     char_at = state->char_at;
     text = state->text;
@@ -2676,11 +2699,11 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_RANGE(RE_State* state, RE_Node* node,
 /* Matches many RANGEs, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_RANGE_IGN(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
-    RE_CODE lower;
-    RE_CODE upper;
+    Py_UCS4 lower;
+    Py_UCS4 upper;
 
     char_at = state->char_at;
     text = state->text;
@@ -2699,11 +2722,11 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_RANGE_IGN(RE_State* state, RE_Node*
 /* Matches many RANGEs backwards, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_RANGE_IGN_REV(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
-    RE_CODE lower;
-    RE_CODE upper;
+    Py_UCS4 lower;
+    Py_UCS4 upper;
 
     char_at = state->char_at;
     text = state->text;
@@ -2725,10 +2748,10 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_RANGE_IGN_REV(RE_State* state, RE_Node*
 /* Matches many RANGEs backwards. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_RANGE_REV(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
-    RE_CODE lower;
-    RE_CODE upper;
+    Py_UCS4 lower;
+    Py_UCS4 upper;
 
     char_at = state->char_at;
     text = state->text;
@@ -2749,7 +2772,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_RANGE_REV(RE_State* state, RE_Node*
 /* Matches many SETs. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_SET(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
 
@@ -2768,7 +2791,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_SET(RE_State* state, RE_Node* node,
 /* Matches many SETs, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_SET_IGN(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
 
@@ -2787,7 +2810,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_SET_IGN(RE_State* state, RE_Node* node,
 /* Matches many SETs backwards, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_SET_IGN_REV(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
 
@@ -2809,7 +2832,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_SET_IGN_REV(RE_State* state, RE_Node*
 /* Matches many SETs backwards, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) match_many_SET_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_EncodingTable* encoding;
 
@@ -3009,7 +3032,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
 /* Tries to match a character pattern. */
 Py_LOCAL_INLINE(BOOL) match_one(RE_State* state, RE_Node* node, Py_ssize_t
   text_pos) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
 
     char_at = state->char_at;
@@ -3104,11 +3127,11 @@ Py_LOCAL_INLINE(BOOL) match_one(RE_State* state, RE_Node* node, Py_ssize_t
 /* Performs a simple string search. */
 Py_LOCAL_INLINE(Py_ssize_t) simple_string_search(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
-    RE_CODE first_char;
+    Py_UCS4 first_char;
 
     char_at = state->char_at;
     text = state->text;
@@ -3138,12 +3161,12 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search(RE_State* state, RE_Node*
 /* Performs a simple string search, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
     RE_EncodingTable* encoding;
-    RE_CODE first_char;
+    Py_UCS4 first_char;
 
     char_at = state->char_at;
     text = state->text;
@@ -3174,12 +3197,12 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign(RE_State* state, RE_Node*
 /* Performs a simple string search backwards, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
     RE_EncodingTable* encoding;
-    RE_CODE first_char;
+    Py_UCS4 first_char;
 
     char_at = state->char_at;
     text = state->text;
@@ -3212,11 +3235,11 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
 /* Performs a simple string search backwards. */
 Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_rev(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
-    RE_CODE first_char;
+    Py_UCS4 first_char;
 
     char_at = state->char_at;
     text = state->text;
@@ -3248,14 +3271,14 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_rev(RE_State* state, RE_Node*
 /* Performs a Boyer-Moore fast string search. */
 Py_LOCAL_INLINE(Py_ssize_t) fast_string_search(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos, Py_ssize_t limit) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
     Py_ssize_t* bad_character_offset;
     Py_ssize_t* good_suffix_offset;
     Py_ssize_t last_pos;
-    RE_CODE last_char;
+    Py_UCS4 last_char;
 
     char_at = state->char_at;
     text = state->text;
@@ -3267,7 +3290,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search(RE_State* state, RE_Node* node,
     last_char = values[last_pos];
 
     while (text_pos <= limit) {
-        RE_CODE ch;
+        Py_UCS4 ch;
 
         ch = char_at(text, text_pos + last_pos);
         if (ch == last_char) {
@@ -3291,7 +3314,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search(RE_State* state, RE_Node* node,
 /* Performs a Boyer-Moore fast string search, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     RE_EncodingTable* encoding;
     void* text;
     Py_ssize_t length;
@@ -3299,7 +3322,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
     Py_ssize_t* bad_character_offset;
     Py_ssize_t* good_suffix_offset;
     Py_ssize_t last_pos;
-    RE_CODE last_char;
+    Py_UCS4 last_char;
 
     char_at = state->char_at;
     encoding = state->encoding;
@@ -3312,7 +3335,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
     last_char = values[last_pos];
 
     while (text_pos <= limit) {
-        RE_CODE ch;
+        Py_UCS4 ch;
 
         ch = char_at(text, text_pos + last_pos);
         if (same_char_ign(encoding, ch, last_char)) {
@@ -3337,14 +3360,14 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
 /* Performs a Boyer-Moore fast string search backwards, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     RE_EncodingTable* encoding;
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
     Py_ssize_t* bad_character_offset;
     Py_ssize_t* good_suffix_offset;
-    RE_CODE first_char;
+    Py_UCS4 first_char;
 
     char_at = state->char_at;
     encoding = state->encoding;
@@ -3358,7 +3381,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
     limit -= length;
 
     while (text_pos >= limit) {
-        RE_CODE ch;
+        Py_UCS4 ch;
 
         ch = char_at(text, text_pos);
         if (same_char_ign(encoding, ch, first_char)) {
@@ -3383,13 +3406,13 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
 /* Performs a Boyer-Moore fast string search backwards. */
 Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
     Py_ssize_t* bad_character_offset;
     Py_ssize_t* good_suffix_offset;
-    RE_CODE first_char;
+    Py_UCS4 first_char;
 
     char_at = state->char_at;
     text = state->text;
@@ -3403,7 +3426,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
     limit -= length;
 
     while (text_pos >= limit) {
-        RE_CODE ch;
+        Py_UCS4 ch;
 
         ch = char_at(text, text_pos);
         if (ch == first_char) {
@@ -3426,7 +3449,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
 }
 
 /* Check whether 2 characters are the same. */
-static BOOL same_char(RE_EncodingTable* encoding, RE_CODE ch1, RE_CODE ch2) {
+static BOOL same_char(RE_EncodingTable* encoding, Py_UCS4 ch1, Py_UCS4 ch2) {
     return ch1 == ch2;
 }
 
@@ -3437,16 +3460,16 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables(RE_EncodingTable* encoding, RE_Node*
     RE_CODE* values;
     Py_ssize_t* bad;
     Py_ssize_t* good;
-    RE_CODE ch;
+    Py_UCS4 ch;
     Py_ssize_t last_pos;
     Py_ssize_t pos;
-    BOOL (*is_same_char)(RE_EncodingTable* encoding, RE_CODE ch1, RE_CODE ch2);
+    BOOL (*is_same_char)(RE_EncodingTable* encoding, Py_UCS4 ch1, Py_UCS4 ch2);
     Py_ssize_t suffix_len;
     BOOL saved_start;
     Py_ssize_t s;
     Py_ssize_t i;
     Py_ssize_t s_start;
-    RE_UINT32 codepoints[RE_MAX_CASES];
+    Py_UCS4 codepoints[RE_MAX_CASES];
 
     length = node->value_count;
 
@@ -3563,15 +3586,15 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables_rev(RE_EncodingTable* encoding,
     RE_CODE* values;
     Py_ssize_t* bad;
     Py_ssize_t* good;
-    RE_CODE ch;
+    Py_UCS4 ch;
     Py_ssize_t pos;
-    BOOL (*is_same_char)(RE_EncodingTable* encoding, RE_CODE ch1, RE_CODE ch2);
+    BOOL (*is_same_char)(RE_EncodingTable* encoding, Py_UCS4 ch1, Py_UCS4 ch2);
     Py_ssize_t suffix_len;
     BOOL saved_start;
     Py_ssize_t s;
     Py_ssize_t i;
     Py_ssize_t s_start;
-    RE_UINT32 codepoints[RE_MAX_CASES];
+    Py_UCS4 codepoints[RE_MAX_CASES];
 
     length = node->value_count;
 
@@ -3719,8 +3742,8 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld(RE_SafeState* safe_state,
   RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit, Py_ssize_t* new_pos) {
     RE_State* state;
     RE_EncodingTable* encoding;
-    int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_CODE* values;
     Py_ssize_t start_pos;
@@ -3728,9 +3751,9 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld(RE_SafeState* safe_state,
     int folded_len;
     Py_ssize_t length;
     Py_ssize_t string_pos;
-    RE_UINT32 folded[RE_MAX_FOLDED];
+    Py_UCS4 folded[RE_MAX_FOLDED];
     int case_count;
-    RE_UINT32 cases[RE_MAX_CASES];
+    Py_UCS4 cases[RE_MAX_CASES];
 
     state = safe_state->re_state;
     encoding = state->encoding;
@@ -3797,8 +3820,8 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld_rev(RE_SafeState* safe_state,
   RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit, Py_ssize_t* new_pos) {
     RE_State* state;
     RE_EncodingTable* encoding;
-    int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     RE_CODE* values;
     Py_ssize_t start_pos;
@@ -3806,9 +3829,9 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld_rev(RE_SafeState* safe_state,
     int folded_len;
     Py_ssize_t length;
     Py_ssize_t string_pos;
-    RE_UINT32 folded[RE_MAX_FOLDED];
+    Py_UCS4 folded[RE_MAX_FOLDED];
     int case_count;
-    RE_UINT32 cases[RE_MAX_CASES];
+    Py_UCS4 cases[RE_MAX_CASES];
 
     state = safe_state->re_state;
     encoding = state->encoding;
@@ -3991,7 +4014,7 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
   text_pos, RE_Position* next_position) {
     RE_Node* test;
     void* text;
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
 
     test = next->test;
     text = state->text;
@@ -4214,7 +4237,7 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     {
         size_t length;
         size_t available;
-        RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+        Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
         RE_CODE* values;
         size_t i;
 
@@ -4236,15 +4259,15 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     {
         Py_ssize_t length;
         Py_ssize_t available;
-        RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+        Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
         RE_EncodingTable* encoding;
-        int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
+        int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
         Py_ssize_t pos;
         Py_ssize_t string_pos;
         RE_CODE* values;
         int folded_len;
         int folded_pos;
-        RE_UINT32 folded[RE_MAX_FOLDED];
+        Py_UCS4 folded[RE_MAX_FOLDED];
 
         length = test->value_count;
         available = state->slice_end - text_pos;
@@ -4292,15 +4315,15 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     {
         Py_ssize_t length;
         Py_ssize_t available;
-        RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+        Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
         RE_EncodingTable* encoding;
-        int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
+        int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
         Py_ssize_t pos;
         Py_ssize_t string_pos;
         RE_CODE* values;
         int folded_len;
         int folded_pos;
-        RE_UINT32 folded[RE_MAX_FOLDED];
+        Py_UCS4 folded[RE_MAX_FOLDED];
 
         length = test->value_count;
         available = text_pos - state->slice_start;
@@ -4348,7 +4371,7 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     {
         size_t length;
         size_t available;
-        RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+        Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
         RE_EncodingTable* encoding;
         RE_CODE* values;
         size_t i;
@@ -4373,7 +4396,7 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     {
         size_t length;
         size_t available;
-        RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+        Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
         RE_EncodingTable* encoding;
         RE_CODE* values;
         size_t i;
@@ -4401,7 +4424,7 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     {
         size_t length;
         size_t available;
-        RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+        Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
         RE_CODE* values;
         size_t i;
 
@@ -4797,7 +4820,7 @@ again:
     }
     case RE_OP_END_OF_LINE: /* At the end of a line. */
     {
-        RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+        Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
         void* text;
         Py_ssize_t step;
 
@@ -4985,7 +5008,7 @@ again:
         break;
     case RE_OP_START_OF_LINE: /* At the start of a line. */
     {
-        RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+        Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
         void* text;
         Py_ssize_t step;
         Py_ssize_t text_pos;
@@ -5563,15 +5586,62 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
     }
 }
 
+/* Builds a Unicode string. */
+Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t len,
+  Py_ssize_t buffer_charsize)
+{
+#if PY_VERSION_HEX < 0x03030000
+    return PyUnicode_FromWideChar(buffer, len);
+#else
+    int kind;
+
+    switch(buffer_charsize) {
+    case 1:
+        kind = PyUnicode_1BYTE_KIND;
+        break;
+    case 2:
+        kind = PyUnicode_2BYTE_KIND;
+        break;
+    case 4:
+        kind = PyUnicode_4BYTE_KIND;
+        break;
+    }
+
+    return PyUnicode_FromKindAndData(kind, buffer, len);
+#endif
+}
+
+/* Builds a bytestring. */
+Py_LOCAL_INLINE(PyObject*) build_bytes_value(void* buffer, Py_ssize_t len)
+{
+    return Py_BuildValue("s#", buffer, len);
+}
+
 /* Looks for a string in a string set, ignoring case. */
 Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
-  string_set, void* buffer, Py_ssize_t index, Py_ssize_t len) {
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
+  string_set, void* buffer, Py_ssize_t index, Py_ssize_t len, Py_ssize_t
+  buffer_charsize) {
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
+    void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
     RE_EncodingTable* encoding;
-    BOOL (*possible_turkic)(RE_CODE ch);
-    RE_CODE codepoints[4];
+    BOOL (*possible_turkic)(Py_UCS4 ch);
+    Py_UCS4 codepoints[4];
 
-    char_at = state->char_at;
+    switch (buffer_charsize) {
+    case 1:
+        char_at = bytes1_char_at;
+        set_char_at = bytes1_set_char_at;
+        break;
+    case 2:
+        char_at = bytes2_char_at;
+        set_char_at = bytes2_set_char_at;
+        break;
+    case 4:
+        char_at = bytes4_char_at;
+        set_char_at = bytes4_set_char_at;
+        break;
+    }
+
     encoding = state->encoding;
     possible_turkic = encoding->possible_turkic;
 
@@ -5581,11 +5651,9 @@ Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
 
     if (index < len) {
         /* Possible Turkic 'I'. */
-        void (*set_char_at)(void* text, Py_ssize_t pos, RE_CODE ch);
         int count;
         int i;
 
-        set_char_at = state->set_char_at;
 
         /* Try all the alternatives to the 'I'. */
         count = encoding->all_turkic_i(char_at(buffer, index), codepoints);
@@ -5597,7 +5665,7 @@ Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
 
             /* Recurse for the remainder of the string. */
             status = string_set_contains_ign(state, string_set, buffer, index +
-              1, len);
+              1, len, buffer_charsize);
             if (status != 0)
                 return status;
         }
@@ -5605,13 +5673,13 @@ Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
         return 0;
     } else {
         /* No Turkic 'I'. */
-        char* format;
         PyObject* string;
         int status;
 
-        format = state->wide ? "u#" : "s#";
-
-        string = Py_BuildValue(format, buffer, len);
+        if (state->unicode)
+            string = build_unicode_value(buffer, len, buffer_charsize);
+        else
+            string = build_bytes_value(buffer, len);
         if (!string)
             return RE_ERROR_MEMORY;
 
@@ -5637,7 +5705,6 @@ Py_LOCAL_INLINE(int) string_set_match(RE_SafeState* safe_state, RE_Node* node)
     Py_ssize_t text_pos;
     PyObject* string_set;
     int status;
-    char* format;
     Py_ssize_t len;
 
     index = node->values[0];
@@ -5667,13 +5734,15 @@ Py_LOCAL_INLINE(int) string_set_match(RE_SafeState* safe_state, RE_Node* node)
 
     status = 0;
 
-    format = state->wide ? "u#" : "s#";
-
     /* Attempt matches for a decreasing length. */
     for (len = max_len; status == 0 && len >= min_len; len--) {
         PyObject* string;
 
-        string = Py_BuildValue(format, point_to(text, text_pos), len);
+        if (state->unicode)
+            string = build_unicode_value(point_to(text, text_pos), len,
+              state->charsize);
+        else
+            string = build_bytes_value(point_to(text, text_pos), len);
         if (!string)
             goto error;
 
@@ -5705,20 +5774,21 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
     Py_ssize_t max_len;
     RE_State* state;
     Py_ssize_t available;
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
-    void (*set_char_at)(void* text, Py_ssize_t pos, RE_CODE ch);
-    void* (*point_to)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t text_pos;
     RE_EncodingTable* encoding;
-    int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
+    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
     Py_ssize_t buf_size;
+    Py_ssize_t folded_charsize;
+    void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
+    void* (*point_to)(void* text, Py_ssize_t pos);
     void* folded;
     PyObject* string_set;
     int status;
     Py_ssize_t end_fetch;
     Py_ssize_t len;
-    RE_CODE codepoints[RE_MAX_FOLDED];
+    Py_UCS4 codepoints[RE_MAX_FOLDED];
 
     index = node->values[0];
     min_len = node->values[1];
@@ -5732,18 +5802,37 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
         return 0;
 
     char_at = state->char_at;
-    set_char_at = state->set_char_at;
-    point_to = state->point_to;
     text = state->text;
     text_pos = state->text_pos;
     encoding = state->encoding;
     full_case_fold = encoding->full_case_fold;
 
+#if PY_VERSION_HEX < 0x03030000
+    /* The folded string will have the same width as the original string. */
+    folded_charsize = state->charsize;
+#else
+    /* The folded string needs to be at least 2 bytes per character. */
+    folded_charsize = max2(state->charsize, sizeof(Py_UCS2));
+#endif
+
+    switch (folded_charsize) {
+    case 2:
+        set_char_at = bytes2_set_char_at;
+        point_to = bytes2_point_to;
+        break;
+    case 4:
+        set_char_at = bytes4_set_char_at;
+        point_to = bytes4_point_to;
+        break;
+    default:
+        return 0;
+    }
+
     acquire_GIL(safe_state);
 
     /* Allocate a buffer for the folded string, plus a little extra. */
     buf_size = max_len + RE_MAX_FOLDED;
-    folded = re_alloc(buf_size * state->bytesize);
+    folded = re_alloc(buf_size * folded_charsize);
     if (!folded)
         goto error;
 
@@ -5770,18 +5859,22 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
 
             count = full_case_fold(char_at(text, pos), codepoints);
 
-            for (i = 0; i < count; i++)
-                set_char_at(folded, folded_len + i, codepoints[i]);
+            for (i = 0; i < count; i++) {
+                Py_UCS4 ch;
+
+                ch = codepoints[i];
+                set_char_at(folded, folded_len + i, ch);
+            }
 
             folded_len += count;
 
             ++pos;
         }
 
-        /* Do we have an acceptable correct number? */
+        /* Do we have an acceptable number? */
         if (min_len <= folded_len && folded_len <= len) {
             status = string_set_contains_ign(state, string_set,
-              point_to(folded, 0), 0, folded_len);
+              folded, 0, folded_len, folded_charsize);
 
             if (status == 1)
                 /* Advance past the match. */
@@ -5821,20 +5914,21 @@ Py_LOCAL_INLINE(BOOL) string_set_match_fld_rev(RE_SafeState* safe_state,
     Py_ssize_t max_len;
     RE_State* state;
     Py_ssize_t available;
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
-    void (*set_char_at)(void* text, Py_ssize_t pos, RE_CODE ch);
-    void* (*point_to)(void* text, Py_ssize_t pos);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t text_pos;
     RE_EncodingTable* encoding;
-    int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
+    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
+    Py_ssize_t folded_charsize;
+    void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
+    void* (*point_to)(void* text, Py_ssize_t pos);
     Py_ssize_t buf_size;
     void* folded;
     PyObject* string_set;
     int status;
     Py_ssize_t end_fetch;
     Py_ssize_t len;
-    RE_CODE codepoints[RE_MAX_FOLDED];
+    Py_UCS4 codepoints[RE_MAX_FOLDED];
 
     index = node->values[0];
     min_len = node->values[1];
@@ -5848,8 +5942,6 @@ Py_LOCAL_INLINE(BOOL) string_set_match_fld_rev(RE_SafeState* safe_state,
         return 0;
 
     char_at = state->char_at;
-    set_char_at = state->set_char_at;
-    point_to = state->point_to;
     text = state->text;
     text_pos = state->text_pos;
     encoding = state->encoding;
@@ -5857,9 +5949,30 @@ Py_LOCAL_INLINE(BOOL) string_set_match_fld_rev(RE_SafeState* safe_state,
 
     acquire_GIL(safe_state);
 
+#if PY_VERSION_HEX < 0x03030000
+    /* The folded string will have the same width as the original string. */
+    folded_charsize = state->charsize;
+#else
+    /* The folded string needs to be at least 2 bytes per character. */
+    folded_charsize = max2(state->charsize, sizeof(Py_UCS2));
+#endif
+
+    switch (folded_charsize) {
+    case 2:
+        set_char_at = bytes2_set_char_at;
+        point_to = bytes2_point_to;
+        break;
+    case 4:
+        set_char_at = bytes4_set_char_at;
+        point_to = bytes4_point_to;
+        break;
+    default:
+        return 0;
+    }
+
     /* Allocate a buffer for the folded string, plus a little extra. */
     buf_size = max_len + RE_MAX_FOLDED;
-    folded = re_alloc(buf_size * state->bytesize);
+    folded = re_alloc(buf_size * folded_charsize);
     if (!folded)
         goto error;
 
@@ -5890,14 +6003,18 @@ Py_LOCAL_INLINE(BOOL) string_set_match_fld_rev(RE_SafeState* safe_state,
 
             folded_len += count;
 
-            for (i = 0; i < count; i++)
-                set_char_at(folded, buf_size - folded_len + i, codepoints[i]);
+            for (i = 0; i < count; i++) {
+                Py_UCS4 ch;
+
+                ch = codepoints[i];
+                set_char_at(folded, buf_size - folded_len + i, ch);
+            }
         }
 
-        /* Do we have an acceptable correct number? */
+        /* Do we have an acceptable number? */
         if (min_len <= folded_len && folded_len <= len) {
             status = string_set_contains_ign(state, string_set,
-              point_to(folded, buf_size - len), 0, folded_len);
+              point_to(folded, buf_size - len), 0, folded_len, folded_charsize);
 
             if (status == 1)
                 /* Advance past the match. */
@@ -5910,7 +6027,7 @@ Py_LOCAL_INLINE(BOOL) string_set_match_fld_rev(RE_SafeState* safe_state,
 
         /* Fetch one fewer next time. */
         end_fetch = pos + 1;
-     }
+    }
 
     re_dealloc(folded);
 
@@ -5937,12 +6054,13 @@ Py_LOCAL_INLINE(int) string_set_match_ign(RE_SafeState* safe_state, RE_Node*
     Py_ssize_t max_len;
     RE_State* state;
     Py_ssize_t available;
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
-    void (*set_char_at)(void* text, Py_ssize_t pos, RE_CODE ch);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t text_pos;
     RE_EncodingTable* encoding;
-    RE_CODE (*simple_case_fold)(RE_CODE ch);
+    Py_UCS4 (*simple_case_fold)(Py_UCS4 ch);
+    Py_ssize_t folded_charsize;
+    void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
     void* folded;
     PyObject* string_set;
     int status;
@@ -5963,7 +6081,6 @@ Py_LOCAL_INLINE(int) string_set_match_ign(RE_SafeState* safe_state, RE_Node*
         max_len = available;
 
     char_at = state->char_at;
-    set_char_at = state->set_char_at;
     text = state->text;
     text_pos = state->text_pos;
     encoding = state->encoding;
@@ -5971,8 +6088,27 @@ Py_LOCAL_INLINE(int) string_set_match_ign(RE_SafeState* safe_state, RE_Node*
 
     acquire_GIL(safe_state);
 
+#if PY_VERSION_HEX < 0x03030000
+    /* The folded string will have the same width as the original string. */
+    folded_charsize = state->charsize;
+#else
+    /* The folded string needs to be at least 2 bytes per character. */
+    folded_charsize = max2(state->charsize, sizeof(Py_UCS2));
+#endif
+
+    switch (folded_charsize) {
+    case 2:
+        set_char_at = bytes2_set_char_at;
+        break;
+    case 4:
+        set_char_at = bytes4_set_char_at;
+        break;
+    default:
+        return 0;
+    }
+
     /* Allocate a buffer for the folded string. */
-    folded = re_alloc(max_len * state->bytesize);
+    folded = re_alloc(max_len * folded_charsize);
     if (!folded)
         goto error;
 
@@ -5988,13 +6124,14 @@ Py_LOCAL_INLINE(int) string_set_match_ign(RE_SafeState* safe_state, RE_Node*
         int i;
 
         for (i = 0; i < len; i++) {
-            RE_CODE ch;
+            Py_UCS4 ch;
 
             ch = simple_case_fold(char_at(text, text_pos + i));
             set_char_at(folded, i, ch);
         }
 
-        status = string_set_contains_ign(state, string_set, folded, 0, len);
+        status = string_set_contains_ign(state, string_set, folded, 0, len,
+          folded_charsize);
 
         if (status == 1)
             /* Advance past the match. */
@@ -6026,12 +6163,13 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
     Py_ssize_t max_len;
     RE_State* state;
     Py_ssize_t available;
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
-    void (*set_char_at)(void* text, Py_ssize_t pos, RE_CODE ch);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t text_pos;
     RE_EncodingTable* encoding;
-    RE_CODE (*simple_case_fold)(RE_CODE ch);
+    Py_UCS4 (*simple_case_fold)(Py_UCS4 ch);
+    Py_ssize_t folded_charsize;
+    void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
     void* folded;
     PyObject* string_set;
     int status;
@@ -6052,7 +6190,6 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
         max_len = available;
 
     char_at = state->char_at;
-    set_char_at = state->set_char_at;
     text = state->text;
     text_pos = state->text_pos;
     encoding = state->encoding;
@@ -6060,8 +6197,27 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
 
     acquire_GIL(safe_state);
 
+#if PY_VERSION_HEX < 0x03030000
+    /* The folded string will have the same width as the original string. */
+    folded_charsize = state->charsize;
+#else
+    /* The folded string needs to be at least 2 bytes per character. */
+    folded_charsize = max2(state->charsize, sizeof(Py_UCS2));
+#endif
+
+    switch (folded_charsize) {
+    case 2:
+        set_char_at = bytes2_set_char_at;
+        break;
+    case 4:
+        set_char_at = bytes4_set_char_at;
+        break;
+    default:
+        return 0;
+    }
+
     /* Allocate a buffer for the folded string. */
-    folded = re_alloc(max_len * state->bytesize);
+    folded = re_alloc(max_len * folded_charsize);
     if (!folded)
         goto error;
 
@@ -6077,13 +6233,14 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
         int i;
 
         for (i = 0; i < len; i++) {
-            RE_CODE ch;
+            Py_UCS4 ch;
 
             ch = simple_case_fold(char_at(text, text_pos - len + i));
             set_char_at(folded, i, ch);
         }
 
-        status = string_set_contains_ign(state, string_set, folded, 0, len);
+        status = string_set_contains_ign(state, string_set, folded, 0, len,
+          folded_charsize);
 
         if (status == 1)
             /* Advance past the match. */
@@ -6120,7 +6277,6 @@ Py_LOCAL_INLINE(BOOL) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
     Py_ssize_t text_pos;
     PyObject* string_set;
     int status;
-    char* format;
     Py_ssize_t len;
 
     index = node->values[0];
@@ -6150,13 +6306,15 @@ Py_LOCAL_INLINE(BOOL) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
 
     status = 0;
 
-    format = state->wide ? "u#" : "s#";
-
     /* Attempt matches for a decreasing length. */
     for (len = max_len; status == 0 && len >= min_len; len--) {
         PyObject* string;
 
-        string = Py_BuildValue(format, point_to(text, text_pos - len), len);
+        if (state->unicode)
+            string = build_unicode_value(point_to(text, text_pos - len), len,
+              state->charsize);
+        else
+            string = build_bytes_value(point_to(text, text_pos - len), len);
         if (!string)
             goto error;
 
@@ -7182,8 +7340,8 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     RE_NextNode start_pair;
     size_t iterations;
     void* text;
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
-    BOOL (*has_property)(RE_CODE property, RE_CODE ch);
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
+    BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
     RE_GroupInfo* group_info;
     Py_ssize_t step;
     BOOL has_groups;
@@ -8530,11 +8688,11 @@ advance:
         {
             RE_GroupData* group;
             RE_GroupSpan* span;
-            int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
+            int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
             int folded_len;
             int gfolded_len;
-            RE_UINT32 folded[RE_MAX_FOLDED];
-            RE_UINT32 gfolded[RE_MAX_FOLDED];
+            Py_UCS4 folded[RE_MAX_FOLDED];
+            Py_UCS4 gfolded[RE_MAX_FOLDED];
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Capture group indexes are 1-based (excluding group 0, which is
@@ -8619,11 +8777,11 @@ advance:
         {
             RE_GroupData* group;
             RE_GroupSpan* span;
-            int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
+            int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
             int folded_len;
             int gfolded_len;
-            RE_UINT32 folded[RE_MAX_FOLDED];
-            RE_UINT32 gfolded[RE_MAX_FOLDED];
+            Py_UCS4 folded[RE_MAX_FOLDED];
+            Py_UCS4 gfolded[RE_MAX_FOLDED];
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Capture group indexes are 1-based (excluding group 0, which is
@@ -9070,10 +9228,10 @@ advance:
         {
             Py_ssize_t length;
             Py_ssize_t available;
-            int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
+            int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
             RE_CODE* values;
             int folded_len;
-            RE_UINT32 folded[RE_MAX_FOLDED];
+            Py_UCS4 folded[RE_MAX_FOLDED];
             TRACE(("%s %d\n", re_op_text[node->op], node->value_count))
 
             /* Are there enough characters to match? */
@@ -9170,10 +9328,10 @@ advance:
         {
             Py_ssize_t length;
             Py_ssize_t available;
-            int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
+            int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
             RE_CODE* values;
             int folded_len;
-            RE_UINT32 folded[RE_MAX_FOLDED];
+            Py_UCS4 folded[RE_MAX_FOLDED];
             TRACE(("%s %d\n", re_op_text[node->op], node->value_count))
 
             /* Are there enough characters to match? */
@@ -9759,7 +9917,7 @@ backtrack:
             Py_ssize_t pos;
             Py_ssize_t limit;
             BOOL match;
-            RE_CODE ch;
+            Py_UCS4 ch;
             BOOL m;
             size_t index;
             TRACE(("%s\n", re_op_text[bt_data->op]))
@@ -9859,8 +10017,8 @@ backtrack:
                     break;
                 case RE_OP_STRING_FLD:
                 {
-                    int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
-                    RE_UINT32 folded[RE_MAX_FOLDED];
+                    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
+                    Py_UCS4 folded[RE_MAX_FOLDED];
 
                     full_case_fold = encoding->full_case_fold;
 
@@ -9882,8 +10040,8 @@ backtrack:
                 }
                 case RE_OP_STRING_FLD_REV:
                 {
-                    int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
-                    RE_UINT32 folded[RE_MAX_FOLDED];
+                    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
+                    Py_UCS4 folded[RE_MAX_FOLDED];
 
                     full_case_fold = encoding->full_case_fold;
                     ch =
@@ -10038,7 +10196,7 @@ backtrack:
             RE_Node* repeated;
             RE_Node* test;
             BOOL match;
-            RE_CODE ch;
+            Py_UCS4 ch;
             BOOL m;
             size_t index;
             TRACE(("%s\n", re_op_text[bt_data->op]))
@@ -10205,8 +10363,8 @@ backtrack:
                 }
                 case RE_OP_STRING_FLD:
                 {
-                    int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
-                    RE_UINT32 folded[RE_MAX_FOLDED];
+                    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
+                    Py_UCS4 folded[RE_MAX_FOLDED];
 
                     full_case_fold = encoding->full_case_fold;
 
@@ -10231,8 +10389,8 @@ backtrack:
                 }
                 case RE_OP_STRING_FLD_REV:
                 {
-                    int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
-                    RE_UINT32 folded[RE_MAX_FOLDED];
+                    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
+                    Py_UCS4 folded[RE_MAX_FOLDED];
 
                     full_case_fold = encoding->full_case_fold;
                     ch = test->values[test->value_count - 1];
@@ -10781,7 +10939,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
 
 /* Gets a string from a Python object. */
 Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
-  Py_ssize_t* length, Py_ssize_t* charsize) {
+  Py_ssize_t* length, Py_ssize_t* charsize, BOOL* unicode) {
     /* Given a Python object, return a data pointer, a length (in characters),
      * and a character size. Return FALSE if the object is not a string (or not
      * compatible).
@@ -10795,9 +10953,19 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
      */
     if (PyUnicode_Check(string)) {
         /* Unicode strings doesn't always support the buffer interface. */
+#if PY_VERSION_HEX < 0x03030000
         *characters = (void*)PyUnicode_AS_DATA(string);
         *length = PyUnicode_GET_SIZE(string);
         *charsize = sizeof(Py_UNICODE);
+#else
+        if (PyUnicode_READY(string) == -1)
+            return FALSE;
+
+        *characters = (void*)PyUnicode_DATA(string);
+        *length = PyUnicode_GET_LENGTH(string);
+        *charsize = PyUnicode_KIND(string);
+#endif
+        *unicode = TRUE;
         return TRUE;
     }
 
@@ -10821,14 +10989,13 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
 
     if (PyString_Check(string) || bytes == size)
         *charsize = 1;
-    else if (bytes == (Py_ssize_t)(size * sizeof(Py_UNICODE)))
-        *charsize = sizeof(Py_UNICODE);
     else {
         PyErr_SetString(PyExc_TypeError, "buffer size mismatch");
         return FALSE;
     }
 
     *length = size;
+    *unicode = FALSE;
 
     return TRUE;
 }
@@ -10850,8 +11017,8 @@ Py_LOCAL_INLINE(void) dealloc_groups(RE_GroupData* groups, size_t group_count)
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
   PyObject* string, void* characters, Py_ssize_t length, Py_ssize_t charsize,
-  Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int concurrent, BOOL
-  use_lock) {
+  BOOL unicode, Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int
+  concurrent, BOOL use_lock) {
     Py_ssize_t final_pos;
 
     state->groups = NULL;
@@ -10945,16 +11112,27 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->overlapped = overlapped;
     state->min_width = pattern->min_width;
 
+    /* Initialise the getters and setters for the character size. */
     state->charsize = charsize;
-    state->wide = charsize > 1;
-    if (state->wide) {
-        state->char_at = unicode_char_at;
-        state->set_char_at = unicode_set_char_at;
-        state->point_to = unicode_point_to;
-    } else {
-        state->char_at = bytes_char_at;
-        state->set_char_at = bytes_set_char_at;
-        state->point_to = bytes_point_to;
+    state->unicode = unicode;
+    switch (state->charsize) {
+    case 1:
+        state->char_at = bytes1_char_at;
+        state->set_char_at = bytes1_set_char_at;
+        state->point_to = bytes1_point_to;
+        break;
+    case 2:
+        state->char_at = bytes2_char_at;
+        state->set_char_at = bytes2_set_char_at;
+        state->point_to = bytes2_point_to;
+        break;
+    case 4:
+        state->char_at = bytes4_char_at;
+        state->set_char_at = bytes4_set_char_at;
+        state->point_to = bytes4_point_to;
+        break;
+    default:
+        goto error;
     }
 
     state->encoding = pattern->encoding;
@@ -10981,18 +11159,24 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->final_line_sep = -1;
     final_pos = state->text_length - 1;
     if (final_pos >= 0) {
-        RE_CODE ch;
+        Py_UCS4 ch;
 
         ch = state->char_at(state->text, final_pos);
-        if (ch == '\n')
+        if (ch == 0x0A) {
+            /* The string ends with LF. */
             state->final_newline = final_pos;
-        if (state->encoding->is_line_sep(ch))
             state->final_line_sep = final_pos;
 
-        if (ch == 0x0A) {
+            /* Does the string end with CR/LF? */
             --final_pos;
             if (final_pos >= 0 && state->char_at(state->text, final_pos) ==
               0x0D)
+                state->final_line_sep = final_pos;
+        } else {
+            /* The string doesn't end with LF, but it could be another kind of
+             * line separator.
+             */
+            if (state->encoding->is_line_sep(ch))
                 state->final_line_sep = final_pos;
         }
     }
@@ -11076,13 +11260,14 @@ Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
     void* characters;
     Py_ssize_t length;
     Py_ssize_t charsize;
+    BOOL unicode;
 
     /* Get the string to search or match. */
-    if (!get_string(string, &characters, &length, &charsize))
+    if (!get_string(string, &characters, &length, &charsize, &unicode))
         return FALSE;
 
     return state_init_2(state, pattern, string, characters, length, charsize,
-      start, end, overlapped, concurrent, use_lock);
+      unicode, start, end, overlapped, concurrent, use_lock);
 }
 
 /* Deallocates repeat data. */
@@ -13226,6 +13411,7 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
     void* characters;
     Py_ssize_t length;
     Py_ssize_t charsize;
+    BOOL unicode;
     Py_ssize_t start;
     Py_ssize_t end;
     int conc;
@@ -13244,7 +13430,7 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
         return NULL;
 
     /* Get the string. */
-    if (!get_string(string, &characters, &length, &charsize))
+    if (!get_string(string, &characters, &length, &charsize, &unicode))
         return NULL;
 
     /* Get the limits of the search. */
@@ -13265,7 +13451,7 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
         return NULL;
 
     if (!state_init_2(&state, self, string, characters, length, charsize,
-      start, end, FALSE, conc, FALSE))
+      unicode, start, end, FALSE, conc, FALSE))
         return NULL;
 
     /* Initialise the "safe state" structure. */
@@ -13353,36 +13539,30 @@ Py_LOCAL_INLINE(Py_ssize_t) check_template(PyObject* str_template) {
     void* characters;
     Py_ssize_t length;
     Py_ssize_t charsize;
+    BOOL unicode;
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
+    Py_ssize_t pos;
 
-    if (!get_string(str_template, &characters, &length, &charsize))
+    if (!get_string(str_template, &characters, &length, &charsize, &unicode))
         return -1;
 
-    if (charsize == 1) {
-        char* c_ptr;
-        char* end_ptr;
+    switch (charsize) {
+    case 1:
+        char_at = bytes1_char_at;
+        break;
+    case 2:
+        char_at = bytes2_char_at;
+        break;
+    case 4:
+        char_at = bytes4_char_at;
+        break;
+    default:
+        return -1;
+    }
 
-        c_ptr = (char*)characters;
-        end_ptr = (char*)characters + length;
-
-        while (c_ptr < end_ptr) {
-            if (*c_ptr == '\\')
-                return -1;
-
-            ++c_ptr;
-        }
-    } else {
-        Py_UNICODE* c_ptr;
-        Py_UNICODE* end_ptr;
-
-        c_ptr = (Py_UNICODE*)characters;
-        end_ptr = (Py_UNICODE*)characters + length;
-
-        while (c_ptr < end_ptr) {
-            if (*c_ptr == '\\')
-                return -1;
-
-            ++c_ptr;
-        }
+    for (pos = 0; pos < length; pos++) {
+        if (char_at(characters, pos) == '\\')
+            return -1;
     }
 
     return length;
@@ -13395,6 +13575,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     void* characters;
     Py_ssize_t length;
     Py_ssize_t charsize;
+    BOOL unicode;
     Py_ssize_t start;
     Py_ssize_t end;
     BOOL is_callable;
@@ -13409,7 +13590,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     Py_ssize_t end_pos;
 
     /* Get the string. */
-    if (!get_string(string, &characters, &length, &charsize))
+    if (!get_string(string, &characters, &length, &charsize, &unicode))
         return NULL;
 
     /* Get the limits of the search. */
@@ -13469,7 +13650,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     }
 
     if (!state_init_2(&state, self, string, characters, length, charsize,
-      start, end, FALSE, concurrent, FALSE)) {
+      unicode, start, end, FALSE, concurrent, FALSE)) {
         Py_DECREF(replacement);
         return NULL;
     }
@@ -16387,9 +16568,10 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     void* characters;
     Py_ssize_t length;
     Py_ssize_t charsize;
-    RE_CODE (*char_at)(void* text, Py_ssize_t pos);
-    void (*set_char_at)(void* text, Py_ssize_t pos, RE_CODE ch);
-    char* format;
+    BOOL unicode;
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
+    Py_ssize_t folded_charsize;
+    void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
     RE_EncodingTable* encoding;
     Py_ssize_t buf_size;
     void* folded;
@@ -16407,19 +16589,43 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     }
 
     /* Get the string. */
-    if (!get_string(string, &characters, &length, &charsize))
+    if (!get_string(string, &characters, &length, &charsize, &unicode))
         return NULL;
 
-    if (charsize == 1) {
-        char_at = bytes_char_at;
-        set_char_at = bytes_set_char_at;
+    switch (charsize) {
+    case 1:
+        char_at = bytes1_char_at;
+        break;
+    case 2:
+        char_at = bytes2_char_at;
+        break;
+    case 4:
+        char_at = bytes4_char_at;
+        break;
+    default:
+        return NULL;
+    }
 
-        format = "s#";
-    } else {
-        char_at = unicode_char_at;
-        set_char_at = unicode_set_char_at;
+#if PY_VERSION_HEX < 0x03030000
+    /* The folded string will have the same width as the original string. */
+    folded_charsize = charsize;
+#else
+    /* The folded string needs to be at least 2 bytes per character. */
+    folded_charsize = max2(charsize, sizeof(Py_UCS2));
+#endif
 
-        format = "u#";
+    switch (folded_charsize) {
+    case 1:
+        set_char_at = bytes1_set_char_at;
+        break;
+    case 2:
+        set_char_at = bytes2_set_char_at;
+        break;
+    case 4:
+        set_char_at = bytes4_set_char_at;
+        break;
+    default:
+        return NULL;
     }
 
     /* What's the encoding? */
@@ -16438,7 +16644,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     else
         buf_size = length;
 
-    folded = re_alloc(buf_size * charsize);
+    folded = re_alloc(buf_size * folded_charsize);
     if (!folded)
         return NULL;
 
@@ -16446,9 +16652,9 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     folded_len = 0;
 
     if (flags & RE_FLAG_FULLCASE) {
-        int (*full_case_fold)(RE_CODE ch, RE_CODE* folded);
+        int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
         Py_ssize_t i;
-        RE_CODE codepoints[RE_MAX_FOLDED];
+        Py_UCS4 codepoints[RE_MAX_FOLDED];
 
         full_case_fold = encoding->full_case_fold;
 
@@ -16463,13 +16669,13 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
             folded_len += count;
         }
     } else {
-        RE_CODE (*simple_case_fold)(RE_CODE ch);
+        Py_UCS4 (*simple_case_fold)(Py_UCS4 ch);
         Py_ssize_t i;
 
         simple_case_fold = encoding->simple_case_fold;
 
         for (i = 0; i < length; i++) {
-            RE_CODE ch;
+            Py_UCS4 ch;
 
             ch = simple_case_fold(char_at(characters, i));
             set_char_at(folded, i, ch);
@@ -16479,7 +16685,10 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     }
 
     /* Build the result string. */
-    result = Py_BuildValue(format, folded, folded_len);
+    if (unicode)
+        result = build_unicode_value(folded, folded_len, folded_charsize);
+    else
+        result = build_bytes_value(folded, folded_len);
 
     re_dealloc(folded);
 
@@ -16502,12 +16711,20 @@ static PyObject* get_expand_on_folding(PyObject* self, PyObject* unused) {
         goto error;
 
     for (i = 0; i < count; i++) {
-        RE_UCHAR codepoint;
+#if PY_VERSION_HEX < 0x03030000
+        Py_UNICODE codepoint;
+#else
+        Py_UCS4 codepoint;
+#endif
         PyObject* item;
 
         codepoint = re_expand_on_folding[i];
 
-        item = Py_BuildValue("u#", &codepoint, 1);
+#if PY_VERSION_HEX < 0x03030000
+        item = build_unicode_value(&codepoint, 1, sizeof(Py_UNICODE));
+#else
+        item = build_unicode_value(&codepoint, 1, sizeof(Py_UCS4));
+#endif
         if (!item)
             goto error;
 
@@ -16544,8 +16761,8 @@ static PyObject* has_property_value(PyObject* self_, PyObject* args) {
 static PyObject* get_all_cases(PyObject* self_, PyObject* args) {
     RE_EncodingTable* encoding;
     int count;
-    RE_UINT32 cases[RE_MAX_CASES];
-    RE_UINT32 folded[RE_MAX_FOLDED];
+    Py_UCS4 cases[RE_MAX_CASES];
+    Py_UCS4 folded[RE_MAX_FOLDED];
     PyObject* result;
     int i;
 
