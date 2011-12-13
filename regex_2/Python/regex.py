@@ -515,8 +515,9 @@ def _compile(pattern, flags=0, kwargs=None):
 def compile_replacement(pattern, template):
     "Compiles a replacement template."
     # This function is called by the _regex module.
+    is_unicode = isinstance(template, unicode)
     source = Source(template)
-    if isinstance(template, unicode):
+    if is_unicode:
         def make_string(char_codes):
             return u"".join(unichr(c) for c in char_codes)
     else:
@@ -533,7 +534,7 @@ def compile_replacement(pattern, template):
             # 'compile_repl_escape' will return either an int group reference
             # or a string literal. It returns items (plural) in order to handle
             # a 2-character literal (an invalid escape sequence).
-            is_group, items = compile_repl_escape(source, pattern)
+            is_group, items = compile_repl_escape(source, pattern, is_unicode)
             if is_group:
                 # It's a group, so first flush the literal.
                 if literal:

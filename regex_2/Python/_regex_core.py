@@ -1443,7 +1443,7 @@ def lookup_property(property, value, positive):
     # Unknown property.
     raise error("unknown property")
 
-def compile_repl_escape(source, pattern):
+def compile_repl_escape(source, pattern, is_unicode):
     "Compiles a replacement template escape sequence."
     ch = source.get()
     if ch in ALPHA:
@@ -1451,6 +1451,16 @@ def compile_repl_escape(source, pattern):
         value = CHARACTER_ESCAPES.get(ch)
         if value:
             return False, [ord(value)]
+
+        if ch in HEX_ESCAPES and (ch == "x" or is_unicode):
+            # A hexadecimal escape sequence.
+            return False, [parse_repl_hex_escape(source, HEX_ESCAPES[ch])]
+
+        if ch == "N" and is_unicode:
+            # A named character.
+            value = parse_repl_named_char(source)
+            if value is not None:
+                return False, [value]
 
         if ch == "g":
             # A group preference.
@@ -1499,6 +1509,39 @@ def compile_repl_escape(source, pattern):
 
     # An escaped non-backslash is a backslash followed by the literal.
     return False, [ord("\\"), ord(ch)]
+
+def parse_repl_hex_escape(source, expected_len):
+    "Parses a hex escape sequence in a replacement string."
+    digits = []
+    for i in range(expected_len):
+        ch = source.get()
+        if ch not in HEX_DIGITS:
+            raise error("bad hex escape")
+        digits.append(ch)
+
+    return int("".join(digits), 16)
+
+
+def parse_repl_named_char(source):
+    "Parses a named character in a replacement string."
+    here = source.pos
+    ch = source.get()
+    if ch == "{":
+        name = []
+        ch = source.get()
+        while ch in ALPHA or ch == " ":
+            name.append(ch)
+            ch = source.get()
+
+        if ch == "}":
+            try:
+                value = unicodedata.lookup("".join(name))
+                return ord(value)
+            except KeyError:
+                raise error("undefined character name")
+
+    source.pos = here
+    return None
 
 def compile_repl_group(source, pattern):
     "Compiles a replacement template group reference."

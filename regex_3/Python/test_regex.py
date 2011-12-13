@@ -107,6 +107,22 @@ class Test:
         # 13
         self.expect(lambda: regex.sub(r'^\s*', 'X', 'test'), ascii('Xtest'))
 
+        # 14..17
+        self.expect(lambda: regex.sub(r"x", r"\x0A", "x"), ascii("\n"))
+        self.expect(lambda: regex.sub(r"x", r"\u000A", "x"), ascii("\n"))
+        self.expect(lambda: regex.sub(r"x", r"\U0000000A", "x"), ascii("\n"))
+        self.expect(lambda: regex.sub(r"x", r"\N{LATIN CAPITAL LETTER A}",
+          "x"), ascii("A"))
+
+        # 18..21
+        self.expect(lambda: regex.sub(br"x", br"\x0A", b"x"), ascii(b"\n"))
+        self.expect(lambda: regex.sub(br"x", br"\u000A", b"x"),
+          ascii(b"\\u000A"))
+        self.expect(lambda: regex.sub(br"x", br"\U0000000A", b"x"),
+          ascii(b"\\U0000000A"))
+        self.expect(lambda: regex.sub(br"x", br"\N{LATIN CAPITAL LETTER A}",
+          b"x"), ascii(b"\\N{LATIN CAPITAL LETTER A}"))
+
     def test_bug_449964(self):
         # Fails for group followed by other escape.
         self.expect(lambda: regex.sub(r'(?P<unk>x)', r'\g<1>\g<1>\b', 'xx'),
