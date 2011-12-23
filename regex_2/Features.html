@@ -340,7 +340,7 @@ ul.auto-toc {
 <p>Case-insensitive matches in Unicode use full case-folding by default.</p>
 </blockquote>
 <p>If no version is specified, the regex module will default to <tt class="docutils literal">regex.DEFAULT_VERSION</tt>. In the short term this will be <tt class="docutils literal">VERSION0</tt>, but in the longer term it will be <tt class="docutils literal">VERSION1</tt>.</p>
-<p><strong>Note</strong>: the <tt class="docutils literal">VERSION1</tt> flag replaces the <tt class="docutils literal">NEW</tt> flag in previous versions of this module. The <tt class="docutils literal">NEW</tt> flag is still supported in this release, but will be removed. The decision about versions and making the change was made after discussion in the python-dev list.</p>
+<p><strong>Note</strong>: the <tt class="docutils literal">VERSION1</tt> flag replaces the <tt class="docutils literal">NEW</tt> flag in previous versions of this module. The <tt class="docutils literal">NEW</tt> flag has been removed. The decision about versions and making the change was made after discussion in the python-dev list.</p>
 <p><strong>Case-insensitive matches in Unicode</strong></p>
 <p>The regex module supports both simple and full case-folding for case-insensitive matches in Unicode. Use of full case-folding can be turned on using the <tt class="docutils literal">FULLCASE</tt> or <tt class="docutils literal">F</tt> flag, or <tt class="docutils literal"><span class="pre">(?f)</span></tt> in the pattern. Please note that this flag affects how the <tt class="docutils literal">IGNORECASE</tt> flag works; the <tt class="docutils literal">FULLCASE</tt> flag itself does not turn on case-insensitive matching.</p>
 <p>In the version 0 behaviour, the flag is off by default.</p>
@@ -385,6 +385,24 @@ ul.auto-toc {
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">repr(regex) doesn't include actual regex (issue #13592)</p>
+<blockquote>
+<p>The repr of a compiled regex is now in the form of a eval-able string. For example:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; r = regex.compile(&quot;foo&quot;, regex.I)
+&gt;&gt;&gt; repr(r)
+&quot;regex.Regex('foo', flags=regex.I | regex.V0)&quot;
+&gt;&gt;&gt; r
+regex.Regex('foo', flags=regex.I | regex.V0)
+</pre>
+<p>The regex module has Regex as an alias for the 'compile' function.</p>
+</blockquote>
+</li>
+<li><p class="first">Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)</p>
+<blockquote>
+<p>The source code of the regex module has been updated to support PEP 393 (&quot;Flexible String Representation&quot;), which will be new in Python 3.3.</p>
+</blockquote>
+</li>
 <li><p class="first">Full Unicode case-folding is supported.</p>
 <blockquote>
 <p>When performing case-insensitive matches in Unicode, regex uses full case-folding.</p>

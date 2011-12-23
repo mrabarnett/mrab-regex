@@ -14272,6 +14272,139 @@ static void pattern_dealloc(PyObject* self_) {
     PyObject_DEL(self);
 }
 
+typedef struct RE_FlagName {
+    char* name;
+    int value;
+} RE_FlagName;
+
+/* We won't bother about the U flag in Python 3. */
+static RE_FlagName flag_names[] = {
+    {"A", RE_FLAG_ASCII},
+    {"B", RE_FLAG_BESTMATCH},
+    {"D", RE_FLAG_DEBUG},
+    {"S", RE_FLAG_DOTALL},
+    {"F", RE_FLAG_FULLCASE},
+    {"I", RE_FLAG_IGNORECASE},
+    {"L", RE_FLAG_LOCALE},
+    {"M", RE_FLAG_MULTILINE},
+    {"R", RE_FLAG_REVERSE},
+    {"T", RE_FLAG_TEMPLATE},
+    {"X", RE_FLAG_VERBOSE},
+    {"V0", RE_FLAG_VERSION0},
+    {"V1", RE_FLAG_VERSION1},
+    {"W", RE_FLAG_WORD},
+};
+
+/* Appends a string to a list. */
+Py_LOCAL_INLINE(BOOL) append_string(PyObject* list, char* string) {
+    PyObject* item;
+    int status;
+
+    item = Py_BuildValue("U", string);
+    if (!item)
+        return FALSE;
+
+    status = PyList_Append(list, item);
+    Py_DECREF(item);
+    if (status < 0)
+        return FALSE;
+
+    return TRUE;
+}
+
+/* PatternObject's '__repr__' method. */
+static PyObject* pattern_repr(PyObject* self_) {
+    PatternObject* self;
+    PyObject* list;
+    PyObject* item;
+    int status;
+    int flag_count;
+    Py_ssize_t i;
+    PyObject *key;
+    PyObject *value;
+    PyObject* separator;
+    PyObject* result;
+
+    self = (PatternObject*)self_;
+
+    list = PyList_New(0);
+    if (!list)
+        return NULL;
+
+    if (!append_string(list, "regex.Regex("))
+        goto error;
+
+    item = PyObject_Repr(self->pattern);
+    if (!item)
+        goto error;
+
+    status = PyList_Append(list, item);
+    Py_DECREF(item);
+    if (status < 0)
+        goto error;
+
+    flag_count = 0;
+    for (i = 0; i < sizeof(flag_names) / sizeof(flag_names[0]); i++) {
+        if (self->flags & flag_names[i].value) {
+            if (flag_count == 0) {
+                if (!append_string(list, ", flags="))
+                    goto error;
+            } else {
+                if (!append_string(list, " | "))
+                    goto error;
+            }
+
+            if (!append_string(list, "regex."))
+                goto error;
+
+            if (!append_string(list, flag_names[i].name))
+                goto error;
+
+            ++flag_count;
+        }
+    }
+
+    i = 0;
+    while (PyDict_Next(self->named_lists, &i, &key, &value)) {
+        if (!append_string(list, ", "))
+            goto error;
+
+        status = PyList_Append(list, key);
+        if (status < 0)
+            goto error;
+
+        item = PyObject_Repr(value);
+        if (!item)
+            goto error;
+
+        if (!append_string(list, "="))
+            goto error;
+
+        status = PyList_Append(list, item);
+        Py_DECREF(item);
+        if (status < 0)
+            goto error;
+    }
+
+    if (!append_string(list, ")"))
+        goto error;
+
+    separator = Py_BuildValue("U", "");
+    if (!separator)
+        goto error;
+
+    result = PyUnicode_Join(separator, list);
+    Py_DECREF(separator);
+
+    Py_DECREF(list);
+
+    return result;
+
+error:
+    Py_DECREF(list);
+    return NULL;
+}
+
 static PyMemberDef pattern_members[] = {
     {"pattern",     T_OBJECT,   offsetof(PatternObject, pattern),     READONLY},
     {"flags",       T_INT,      offsetof(PatternObject, flags),       READONLY},
@@ -16872,6 +17005,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
 
     /* Initialise Pattern_Type. */
     Pattern_Type.tp_dealloc = pattern_dealloc;
+    Pattern_Type.tp_repr = pattern_repr;
     Pattern_Type.tp_flags = Py_TPFLAGS_DEFAULT;
     Pattern_Type.tp_doc = pattern_doc;
     Pattern_Type.tp_weaklistoffset = offsetof(PatternObject, weakreflist);

@@ -212,9 +212,9 @@ This module also defines an exception 'error'.
 __all__ = ["compile", "escape", "findall", "finditer", "match", "purge",
   "search", "split", "splititer", "sub", "subn", "template", "A", "ASCII", "B",
   "BESTMATCH", "D", "DEBUG", "S", "DOTALL", "F", "FULLCASE", "I", "IGNORECASE",
-  "L", "LOCALE", "M", "MULTILINE", "N", "NEW", "R", "REVERSE", "T", "TEMPLATE",
-  "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
-  "WORD", "error"]
+  "L", "LOCALE", "M", "MULTILINE", "R", "REVERSE", "T", "TEMPLATE", "U",
+  "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD",
+  "error"]
 
 __version__ = "2.4.0"
 
@@ -555,6 +555,10 @@ def compile_replacement(pattern, template):
 
 # We define pattern_type here after all the support objects have been defined.
 pattern_type = type(_compile("", 0, {}))
+
+# We'll define an alias for the 'compile' function so that the repr of a
+# pattern object is eval-able.
+Regex = compile
 
 # Register myself for pickling.
 import copyreg

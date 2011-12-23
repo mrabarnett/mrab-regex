@@ -41,7 +41,7 @@ Version 1 behaviour (new behaviour, different from the current 're' module):
 
 If no version is specified, the regex module will default to ``regex.DEFAULT_VERSION``. In the short term this will be ``VERSION0``, but in the longer term it will be ``VERSION1``.
 
-**Note**: the ``VERSION1`` flag replaces the ``NEW`` flag in previous versions of this module. The ``NEW`` flag is still supported in this release, but will be removed. The decision about versions and making the change was made after discussion in the python-dev list.
+**Note**: the ``VERSION1`` flag replaces the ``NEW`` flag in previous versions of this module. The ``NEW`` flag has been removed. The decision about versions and making the change was made after discussion in the python-dev list.
 
 **Case-insensitive matches in Unicode**
 
@@ -116,6 +116,22 @@ Additional features
 -------------------
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+
+* repr(regex) doesn't include actual regex (issue #13592)
+
+    The repr of a compiled regex is now in the form of a eval-able string. For example::
+
+        >>> r = regex.compile("foo", regex.I)
+        >>> repr(r)
+        "regex.Regex('foo', flags=regex.I | regex.V0)"
+        >>> r
+        regex.Regex('foo', flags=regex.I | regex.V0)
+
+    The regex module has Regex as an alias for the 'compile' function.
+
+* Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)
+
+    The source code of the regex module has been updated to support PEP 393 ("Flexible String Representation"), which will be new in Python 3.3.
 
 * Full Unicode case-folding is supported.
 
