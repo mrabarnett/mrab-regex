@@ -232,6 +232,9 @@ typedef struct RE_BacktrackData {
             int gfolded_len;
             int step;
         } fuzzy_string;
+        struct {
+            struct RE_Node* node;
+        } group_call;
     };
 } RE_BacktrackData;
 
@@ -260,6 +263,7 @@ typedef struct RE_Info {
     RE_CaptureCountsBlock* current_capture_counts_block;
     size_t captures_count;
     size_t saved_groups_count;
+    struct RE_GroupCallFrame* current_group_call_frame;
     BOOL must_advance;
 } RE_Info;
 
@@ -301,14 +305,6 @@ typedef struct RE_GroupSpan {
     Py_ssize_t end;
 } RE_GroupSpan;
 
-/* Data about a group in a context. */
-typedef struct RE_GroupData {
-    RE_GroupSpan span;
-    size_t capture_count;
-    size_t capture_capacity;
-    RE_GroupSpan* captures;
-} RE_GroupData;
-
 /* Span of a guard (inclusive range). */
 typedef struct RE_GuardSpan {
     Py_ssize_t low;
@@ -324,6 +320,15 @@ typedef struct RE_GuardList {
     Py_ssize_t last_text_pos;
     size_t last_low;
 } RE_GuardList;
+
+/* Data about a group in a context. */
+typedef struct RE_GroupData {
+    RE_GroupSpan span;
+    size_t capture_count;
+    size_t capture_capacity;
+    RE_GroupSpan* captures;
+    RE_GuardList guard_list;
+} RE_GroupData;
 
 /* Data about a repeat. */
 typedef struct RE_RepeatData {
@@ -343,14 +348,23 @@ typedef struct RE_FuzzyGuards {
 /* Info about a capture group. */
 typedef struct RE_GroupInfo {
     Py_ssize_t end_index;
+    RE_Node* node;
     BOOL referenced;
     BOOL has_name;
+    BOOL called;
 } RE_GroupInfo;
 
 /* Info about a repeat. */
 typedef struct RE_RepeatInfo {
     RE_STATUS_T status;
 } RE_RepeatInfo;
+
+typedef struct RE_GroupCallFrame {
+    struct RE_GroupCallFrame* previous;
+    struct RE_GroupCallFrame* next;
+    RE_Node* node;
+    RE_GroupData* groups;
+} RE_GroupCallFrame;
 
 /* The state object used during matching. */
 typedef struct RE_State {
@@ -390,6 +404,9 @@ typedef struct RE_State {
     size_t total_errors;
     size_t total_cost;
     size_t max_cost;
+    RE_GroupCallFrame* first_group_call_frame;
+    RE_GroupCallFrame* current_group_call_frame;
+    RE_GuardList group_call_guard_list;
     BOOL unicode; /* The string to be matched is Unicode. */
     BOOL overlapped; /* Matches can be overlapped. */
     BOOL reverse; /* Search backwards. */
@@ -451,6 +468,7 @@ typedef struct PatternObject {
     BOOL do_check;
     BOOL is_fuzzy; /* Whether it's a fuzzy pattern. */
     BOOL do_search_start;
+    BOOL recursive; /* Whether the entire pattern is recursive. */
 } PatternObject;
 
 /* The MatchObject created when a match is found. */
@@ -2320,7 +2338,11 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
         group->span.start = -1;
         group->span.end = -1;
         group->capture_count = 0;
+        reset_guard_list(&group->guard_list);
     }
+
+    /* Reset the guards for the group calls. */
+    reset_guard_list(&state->group_call_guard_list);
 
     /* Clear the counts and cost for matching. */
     memset(state->fuzzy_info.counts, 0, sizeof(state->fuzzy_info.counts));
@@ -2389,6 +2411,124 @@ Py_LOCAL_INLINE(void) discard_backtrack(RE_State* state) {
     --current->count;
     if (current->count == 0 && current->previous)
         state->current_backtrack_block = current->previous;
+}
+
+/* Copies a group and its captures. */
+Py_LOCAL_INLINE(BOOL) copy_group_data(RE_SafeState* safe_state, RE_GroupData*
+  dst, RE_GroupData* src) {
+    if (dst->capture_capacity < src->capture_count) {
+        RE_GroupSpan* new_captures;
+
+        if (!safe_state)
+            return FALSE;
+
+        dst->capture_capacity = src->capture_count;
+        new_captures = (RE_GroupSpan*)safe_realloc(safe_state, dst->captures,
+          dst->capture_capacity * sizeof(RE_GroupSpan));
+        if (!new_captures)
+            return FALSE;
+
+        dst->captures = new_captures;
+    }
+
+    dst->capture_count = src->capture_count;
+    memmove(dst->captures, src->captures, dst->capture_count *
+      sizeof(RE_GroupSpan));
+
+    dst->span = src->span;
+
+    return TRUE;
+}
+
+/* Pushes a return node onto the group call stack. */
+Py_LOCAL_INLINE(BOOL) push_group_return(RE_SafeState* safe_state, RE_Node*
+  return_node) {
+    RE_State* state;
+    PatternObject* pattern;
+    RE_GroupCallFrame* frame;
+
+    state = safe_state->re_state;
+    pattern = state->pattern;
+
+    if (state->current_group_call_frame &&
+      state->current_group_call_frame->next)
+        /* Advance to the next allocated frame. */
+        frame = state->current_group_call_frame->next;
+    else if (!state->current_group_call_frame && state->first_group_call_frame)
+        /* Advance to the first allocated frame. */
+        frame = state->first_group_call_frame;
+    else {
+        /* Create a new frame. */
+        frame = (RE_GroupCallFrame*)safe_alloc(safe_state,
+          sizeof(RE_GroupCallFrame));
+        if (!frame)
+            return FALSE;
+
+        frame->groups = (RE_GroupData*)safe_alloc(safe_state,
+          pattern->group_count * sizeof(RE_GroupData));
+        if (!frame->groups) {
+            safe_dealloc(safe_state, frame);
+
+            return FALSE;
+        }
+
+        memset(frame->groups, 0, pattern->group_count * sizeof(RE_GroupData));
+
+        frame->previous = state->current_group_call_frame;
+        frame->next = NULL;
+
+        if (frame->previous)
+            frame->previous->next = frame;
+        else
+            state->first_group_call_frame = frame;
+    }
+
+    frame->node = return_node;
+
+    if (return_node) {
+        Py_ssize_t g;
+
+        for (g = 0; g < pattern->group_count; g++) {
+            if (!copy_group_data(safe_state, &frame->groups[g],
+              &state->groups[g]))
+                return FALSE;
+        }
+    }
+
+    state->current_group_call_frame = frame;
+
+    return TRUE;
+}
+
+/* Pops a return node from the group call stack. */
+Py_LOCAL_INLINE(RE_Node*) pop_group_return(RE_State* state) {
+    RE_GroupCallFrame* frame;
+    Py_ssize_t g;
+
+    frame = state->current_group_call_frame;
+
+    if (frame->node) {
+        PatternObject* pattern;
+
+        pattern = state->pattern;
+
+        for (g = 0; g < pattern->group_count; g++)
+            copy_group_data(NULL, &state->groups[g], &frame->groups[g]);
+    }
+
+    /* Withdraw to previous frame. */
+    state->current_group_call_frame = frame->previous;
+
+    return frame->node;
+}
+
+/* Returns the return node from the top of the group call stack. */
+Py_LOCAL_INLINE(RE_Node*) top_group_return(RE_State* state) {
+    RE_GroupCallFrame* frame;
+
+    frame = state->current_group_call_frame;
+
+    return frame->node;
 }
 
 /* Locates the start node for testing ahead. */
@@ -5310,10 +5450,12 @@ Py_LOCAL_INLINE(void) save_info(RE_State* state, RE_Info* info) {
         info->captures_count = info->current_capture_counts_block->count;
     info->saved_groups_count = state->saved_groups_count;
     info->must_advance = state->must_advance;
+    info->current_group_call_frame = state->current_group_call_frame;
 }
 
 /* Restores state info after a recusive call by 'basic_match'. */
 Py_LOCAL_INLINE(void) restore_info(RE_State* state, RE_Info* info) {
+    state->current_group_call_frame = info->current_group_call_frame;
     state->must_advance = info->must_advance;
     state->saved_groups_count = info->saved_groups_count;
     if (info->current_capture_counts_block) {
@@ -5540,6 +5682,40 @@ Py_LOCAL_INLINE(BOOL) is_fuzzy_guarded(RE_SafeState* safe_state, size_t index,
         guard_list = &state->fuzzy_guards[index].tail_guard_list;
 
     return is_guarded(safe_state, guard_list, text_pos);
+}
+
+/* Checks whether a position is guarded against further matching for a group
+ * call.
+ */
+Py_LOCAL_INLINE(BOOL) is_group_call_guarded(RE_SafeState* safe_state, size_t
+  index, Py_ssize_t text_pos) {
+    RE_State* state;
+    RE_GuardList* guard_list;
+
+    state = safe_state->re_state;
+
+    if (index == 0)
+        guard_list = &state->group_call_guard_list;
+    else
+        guard_list = &state->groups[index - 1].guard_list;
+
+    return is_guarded(safe_state, guard_list, text_pos);
+}
+
+/* Guards a position against further matching for a group call. */
+Py_LOCAL_INLINE(BOOL) guard_group_call(RE_SafeState* safe_state, size_t index,
+  Py_ssize_t text_pos) {
+    RE_State* state;
+    RE_GuardList* guard_list;
+
+    state = safe_state->re_state;
+
+    if (index == 0)
+        guard_list = &state->group_call_guard_list;
+    else
+        guard_list = &state->groups[index - 1].guard_list;
+
+    return guard(safe_state, guard_list, text_pos);
 }
 
 /* Resets the guards inside atomic subpatterns and lookarounds. */
@@ -8291,6 +8467,50 @@ advance:
                 return RE_ERROR_MEMORY;
             break;
         }
+        case RE_OP_GROUP_CALL: /* Group call. */
+        {
+            size_t index;
+            Py_ssize_t g;
+            TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
+
+            index = node->values[0];
+
+            /* Have we already called at this position? */
+            if (is_group_call_guarded(safe_state, index, text_pos))
+                goto backtrack;
+
+            if (!guard_group_call(safe_state, index, text_pos))
+                return RE_ERROR_MEMORY;
+
+            /* Save the capture groups. */
+            if (!push_group_return(safe_state, node->next_1.node))
+                return RE_ERROR_MEMORY;
+
+            /* Clear the capture groups for the group call. They'll be restored
+             * on return.
+             */
+            for (g = 0; g < state->pattern->group_count; g++) {
+                RE_GroupData* group;
+
+                group = &state->groups[g];
+                group->span.start = -1;
+                group->span.end = -1;
+                group->capture_count = 0;
+            }
+
+            if (index == 0)
+                /* Call the entire pattern recursively, skipping the group call
+                 * wrapper.
+                 */
+                node = start_node->next_1.node;
+            else
+                /* Call a group. */
+                node = pattern->group_info[index - 1].node;
+
+            if (!add_backtrack(safe_state, RE_OP_GROUP_CALL))
+                return RE_ERROR_MEMORY;
+            break;
+        }
         case RE_OP_GROUP_EXISTS: /* Capture group exists. */
         {
             RE_GroupData* group;
@@ -8307,6 +8527,41 @@ advance:
                 node = node->next_1.node;
             else
                 node = node->nonstring.next_2.node;
+            break;
+        }
+        case RE_OP_GROUP_RETURN: /* Group return. */
+        {
+            RE_Node* return_node;
+            RE_BacktrackData* bt_data;
+            TRACE(("%s\n", re_op_text[node->op]))
+
+            return_node = top_group_return(state);
+
+            if (!add_backtrack(safe_state, RE_OP_GROUP_RETURN))
+                return RE_ERROR_MEMORY;
+            bt_data = state->backtrack;
+            bt_data->group_call.node = return_node;
+
+            if (return_node) {
+                /* The group was called. */
+                node = return_node;
+
+                if (has_groups && !push_groups(safe_state))
+                    return RE_ERROR_MEMORY;
+
+                if (!save_all_captures(safe_state, state->backtrack))
+                    return RE_ERROR_MEMORY;
+
+                pop_group_return(state);
+
+                if (has_groups && !push_groups(safe_state))
+                    return RE_ERROR_MEMORY;
+            } else {
+                /* The group was not called. */
+                node = node->next_1.node;
+
+                pop_group_return(state);
+            }
             break;
         }
         case RE_OP_LAZY_REPEAT: /* Lazy repeat. */
@@ -8469,6 +8724,7 @@ advance:
             }
 
             save_info(state, &info);
+
             state->slice_start = 0;
             state->slice_end = text_length;
             state->text_pos = text_pos;
@@ -8488,6 +8744,19 @@ advance:
             matched = status == RE_ERROR_SUCCESS;
             if (matched != node->match)
                 goto backtrack;
+
+            node = node->next_1.node;
+            break;
+        }
+        case RE_OP_NOT_GROUP_CALL: /* Not calling a group. */
+        {
+            TRACE(("%s\n", re_op_text[node->op]))
+
+            if (!push_group_return(safe_state, NULL))
+                return RE_ERROR_MEMORY;
+
+            if (!add_backtrack(safe_state, RE_OP_NOT_GROUP_CALL))
+                return RE_ERROR_MEMORY;
 
             node = node->next_1.node;
             break;
@@ -9750,7 +10019,7 @@ backtrack:
             discard_backtrack(state);
             goto advance;
         case RE_OP_END_FUZZY: /* End of fuzzy matching. */
-            TRACE(("%s\n", re_op_text[node->op]))
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
             for (;;) {
                 if (!retry_fuzzy_insert(safe_state, &text_pos, &node))
@@ -10171,6 +10440,35 @@ backtrack:
             }
             break;
         }
+        case RE_OP_GROUP_CALL: /* Group call. */
+            TRACE(("%s\n", re_op_text[bt_data->op]))
+
+            pop_group_return(state);
+            discard_backtrack(state);
+            break;
+        case RE_OP_GROUP_RETURN: /* Group return. */
+        {
+            RE_Node* return_node;
+            TRACE(("%s\n", re_op_text[bt_data->op]))
+
+            return_node = bt_data->group_call.node;
+
+            if (return_node) {
+                restore_all_captures(state, bt_data);
+
+                if (has_groups)
+                    pop_groups(state);
+
+                push_group_return(safe_state, return_node);
+
+                if (has_groups)
+                    pop_groups(state);
+            } else
+                push_group_return(safe_state, return_node);
+
+            discard_backtrack(state);
+            break;
+        }
         case RE_OP_LAZY_REPEAT: /* Lazy repeat. */
         {
             RE_RepeatData* rp_data;
@@ -10541,10 +10839,16 @@ backtrack:
             break;
         }
         case RE_OP_LOOKAROUND: /* Lookaround. */
-            TRACE(("%s %d\n", re_op_text[node->op], node->match))
+            TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->match))
 
             /* Restore the captures and backtrack. */
             restore_all_captures(state, bt_data);
+            discard_backtrack(state);
+            break;
+        case RE_OP_NOT_GROUP_CALL: /* Not calling a group. */
+            TRACE(("%s\n", re_op_text[bt_data->op]))
+
+            pop_group_return(state);
             discard_backtrack(state);
             break;
         case RE_OP_REF_GROUP: /* Reference to a capture group. */
@@ -11001,15 +11305,16 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
 }
 
 /* Deallocates the groups storage. */
-Py_LOCAL_INLINE(void) dealloc_groups(RE_GroupData* groups, size_t group_count)
-  {
+Py_LOCAL_INLINE(void) dealloc_groups(RE_GroupData* groups, size_t group_count) {
     size_t g;
 
     if (!groups)
         return;
 
-    for (g = 0; g < group_count; g++)
+    for (g = 0; g < group_count; g++) {
         re_dealloc(groups[g].captures);
+        re_dealloc(groups[g].guard_list.spans);
+    }
 
     re_dealloc(groups);
 }
@@ -11031,6 +11336,9 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->current_capture_counts_block = NULL;
     state->lock = NULL;
     state->fuzzy_guards = NULL;
+    state->first_group_call_frame = NULL;
+    state->current_group_call_frame = NULL;
+    memset(&state->group_call_guard_list, 0, sizeof(RE_GuardList));
 
     /* The capture groups. */
     if (pattern->group_count) {
@@ -11307,6 +11615,7 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
     PatternObject* pattern;
     RE_BacktrackBlock* current;
     RE_CaptureCountsBlock* current2;
+    RE_GroupCallFrame* frame;
 
     /* Discard the lock (mutex) if there's one. */
     if (state->lock)
@@ -11355,6 +11664,24 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
         pattern->saved_groups_capacity_storage = state->saved_groups_capacity;
         pattern->saved_groups_storage = state->saved_groups;
     }
+
+    frame = state->first_group_call_frame;
+    while (frame) {
+        RE_GroupCallFrame* next;
+        Py_ssize_t g;
+
+        next = frame->next;
+
+        for (g = 0; g < pattern->group_count; g++)
+            re_dealloc(frame->groups[g].captures);
+
+        re_dealloc(frame->groups);
+
+        re_dealloc(frame);
+        frame = next;
+    }
+
+    re_dealloc(state->group_call_guard_list.spans);
 
     dealloc_fuzzy_guards(state->fuzzy_guards, pattern->fuzzy_count);
 
@@ -14485,6 +14812,41 @@ static PyTypeObject Pattern_Type = {
     sizeof(PatternObject)
 };
 
+/* Groups which aren't called don't need call wrappers. */
+Py_LOCAL_INLINE(void) check_called_groups(PatternObject* pattern) {
+    Py_ssize_t i;
+
+    for (i = 0; i < pattern->node_count; i++) {
+        RE_Node* node;
+        RE_Node* next;
+
+        node = pattern->node_list[i];
+        next = node->next_1.node;
+
+        switch (node->op) {
+        case RE_OP_END_GROUP:
+        case RE_OP_START_GROUP:
+            if (next->op == RE_OP_GROUP_RETURN) {
+                int group;
+
+                group = node->values[0];
+                if (group > 0 && !pattern->group_info[group - 1].called)
+                    next->op = RE_OP_BRANCH;
+            }
+            break;
+        case RE_OP_NOT_GROUP_CALL:
+            if (next->op == RE_OP_START_GROUP || next->op == RE_OP_END_GROUP) {
+                int group;
+
+                group = next->values[0];
+                if (group > 0 && !pattern->group_info[group - 1].called)
+                    node->op = RE_OP_BRANCH;
+            }
+            break;
+        }
+    }
+}
+
 /* Building the nodes is made simpler by allowing branches to have a single
  * exit. These need to be removed.
  */
@@ -15131,6 +15493,9 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
 
 /* Optimises the pattern. */
 Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
+    /* Groups which aren't called don't need call wrappers. */
+    check_called_groups(pattern);
+
     /* Building the nodes is made simpler by allowing branches to have a single
      * exit. These need to be removed.
      */
@@ -15269,12 +15634,18 @@ Py_LOCAL_INLINE(BOOL) record_ref_group(PatternObject* pattern, Py_ssize_t
 }
 
 /* Records that there's a new group. */
-Py_LOCAL_INLINE(BOOL) record_group(PatternObject* pattern, Py_ssize_t group) {
+Py_LOCAL_INLINE(BOOL) record_group(PatternObject* pattern, Py_ssize_t group,
+  RE_Node* node) {
     if (!ensure_group(pattern, group))
         return FALSE;
 
-    if (group >= 1)
-        pattern->group_info[group - 1].end_index = pattern->group_count;
+    if (group >= 1) {
+        RE_GroupInfo* info;
+
+        info = &pattern->group_info[group - 1];
+        info->end_index = pattern->group_count;
+        info->node = node;
+    }
 
     return TRUE;
 }
@@ -15284,6 +15655,23 @@ Py_LOCAL_INLINE(void) record_group_end(PatternObject* pattern, Py_ssize_t
   group) {
     if (group >= 1)
         pattern->group_info[group - 1].end_index = ++pattern->group_end_index;
+}
+
+/* Records that a group is called. */
+Py_LOCAL_INLINE(BOOL) record_group_called(PatternObject* pattern, Py_ssize_t
+  group) {
+    if (group == 0) {
+        pattern->recursive = TRUE;
+
+        return TRUE;
+    }
+
+    if (!ensure_group(pattern, group))
+        return FALSE;
+
+    pattern->group_info[group - 1].called = TRUE;
+
+    return TRUE;
 }
 
 /* Checks whether a node matches one and only one character. */
@@ -15706,9 +16094,11 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
     RE_Node* start_node;
     RE_Node* end_node;
     RE_CompileArgs subargs;
+    RE_Node* node;
 
     /* codes: opcode, group. */
     group = args->code[1];
+
     args->code += 2;
 
     /* Create nodes for the start and end of the capture group. */
@@ -15727,7 +16117,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
     end_node->values[1] = 1;
 
     /* Record that we have a new capture group. */
-    if (!record_group(args->pattern, group))
+    if (!record_group(args->pattern, group, start_node))
         return FALSE;
 
     /* Compile the sequence and check that we've reached the end of the capture
@@ -15751,11 +16141,62 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
     /* Record that the capture group has closed. */
     record_group_end(args->pattern, group);
 
+    /* Create a NOT_GROUP_CALL node in case the group is called. */
+    node = create_node(args->pattern, RE_OP_NOT_GROUP_CALL, 0, 0, 0);
+    if (!node)
+        return FALSE;
+
+    /* Append the node. */
+    add_node(args->end, node);
+    args->end = node;
+
     /* Append the capture group. */
     add_node(args->end, start_node);
     add_node(start_node, subargs.start);
     add_node(subargs.end, end_node);
     args->end = end_node;
+
+    /* Create a GROUP_RETURN node in case the group is called. */
+    node = create_node(args->pattern, RE_OP_GROUP_RETURN, 0, 0, 0);
+    if (!node)
+        return FALSE;
+
+    /* Append the node. */
+    add_node(args->end, node);
+    args->end = node;
+
+    return TRUE;
+}
+
+/* Builds GROUP_CALL. */
+Py_LOCAL_INLINE(BOOL) build_GROUP_CALL(RE_CompileArgs* args) {
+    BYTE op;
+    RE_CODE group;
+    RE_Node* node;
+
+    /* codes: opcode, group. */
+    if (args->code + 2 > args->end_code)
+        return FALSE;
+
+    op = args->code[0];
+    group = args->code[1];
+
+    /* Create the node. */
+    node = create_node(args->pattern, op, 0, 0, 1);
+    if (!node)
+        return FALSE;
+
+    node->values[0] = group;
+
+    args->code += 2;
+
+    /* Record that we call a group. */
+    if (!record_group_called(args->pattern, group))
+        return FALSE;
+
+    /* Append the node. */
+    add_node(args->end, node);
+    args->end = node;
 
     return TRUE;
 }
@@ -15770,6 +16211,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
 
     /* codes: opcode, sequence, next, sequence, end. */
     group = args->code[1];
+
     args->code += 2;
 
     /* Create nodes for the start and end of the structure. */
@@ -15984,6 +16426,7 @@ Py_LOCAL_INLINE(BOOL) build_REF_GROUP(RE_CompileArgs* args) {
         return FALSE;
 
     node->values[0] = group;
+
     args->code += 3;
 
     /* Record that we have a reference to a group. */
@@ -16302,6 +16745,7 @@ Py_LOCAL_INLINE(BOOL) build_STRING_SET(RE_CompileArgs* args) {
     node->values[0] = index;
     node->values[1] = min_len;
     node->values[2] = max_len;
+
     args->code += 4;
 
     /* Append the reference. */
@@ -16413,6 +16857,11 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
             if (!build_GROUP(args))
                 return FALSE;
             break;
+        case RE_OP_GROUP_CALL:
+            /* A group call. */
+            if (!build_GROUP_CALL(args))
+                return FALSE;
+            break;
         case RE_OP_GROUP_EXISTS:
             /* A conditional sequence. */
             if (!build_GROUP_EXISTS(args))
@@ -16517,6 +16966,8 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
 Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
   PatternObject* pattern) {
     RE_CompileArgs args;
+    RE_Node* start_node;
+    RE_Node* end_node;
     RE_Node* success_node;
 
     /* Compile a regex sequence and then check that we've reached the end
@@ -16539,18 +16990,40 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
 
     if (args.code + 1 != end_code || args.code[0] != RE_OP_SUCCESS)
         return FALSE;
-
     pattern->min_width = args.min_width;
     pattern->is_fuzzy = args.is_fuzzy;
     pattern->do_search_start = TRUE;
+
+    if (pattern->recursive) {
+        /* Create a NOT_GROUP_CALL node. */
+        start_node = create_node(pattern, RE_OP_NOT_GROUP_CALL, 0, 0, 0);
+        if (!start_node)
+            return FALSE;
+
+        /* Append the node. */
+        add_node(start_node, args.start);
+
+        /* Create a GROUP_RETURN node. */
+        end_node = create_node(pattern, RE_OP_GROUP_RETURN, 0, 0, 0);
+        if (!end_node)
+            return FALSE;
+
+        /* Append the node. */
+        add_node(args.end, end_node);
+    } else {
+        start_node = args.start;
+        end_node = args.end;
+    }
 
     /* Create the 'SUCCESS' node and append it to the sequence. */
     success_node = create_node(pattern, RE_OP_SUCCESS, 0, 0, 0);
     if (!success_node)
         return FALSE;
 
-    add_node(args.end, success_node);
-    pattern->start_node = args.start;
+    /* Append the node. */
+    add_node(end_node, success_node);
+
+    pattern->start_node = start_node;
     pattern->success_node = success_node;
 
     /* Optimise the pattern. */
@@ -16639,6 +17112,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->saved_groups_capacity_storage = 0;
     self->saved_groups_storage = NULL;
     self->fuzzy_count = 0;
+    self->recursive = FALSE;
     Py_INCREF(self->pattern);
     Py_INCREF(self->groupindex);
     Py_INCREF(self->indexgroup);
@@ -17050,7 +17524,7 @@ PyMODINIT_FUNC init_regex(void) {
     PyObject* m;
     PyObject* d;
     PyObject* x;
-#if defined(VERBOSE)
+#if 1 || defined(VERBOSE)
     /* Unbuffered in case it crashes! */
     setvbuf(stdout, NULL, _IONBF, 0);
 #endif

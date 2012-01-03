@@ -3142,6 +3142,101 @@ xyzabc
         self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), repr(["a", "b",
           "c", ""]))
 
+    def test_recursive(self):
+        # 1..6
+        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
+          "xx")[ : ], repr(("xx", "x", "")))
+        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
+          "aba")[ : ], repr(("aba", "a", "b")))
+        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
+          "abba")[ : ], repr(("abba", "a", None)))
+        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
+          "kayak")[ : ], repr(("kayak", "k", None)))
+        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
+          "paper")[ : ], repr(("pap", "p", "a")))
+        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
+          "dontmatchme"), repr(None))
+
+        # 7..12
+        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
+          "xx")[ : ], repr(("xx", "", "x")))
+        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
+          "aba")[ : ], repr(("aba", "b", "a")))
+        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
+          "abba")[ : ], repr(("abba", None, "a")))
+        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
+          "kayak")[ : ], repr(("kayak", None, "k")))
+        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
+          "paper")[ : ], repr(("pap", "a", "p")))
+        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
+          "dontmatchme"), repr(None))
+
+        # 13..14
+        self.expect(lambda: regex.search(r"\(((?>[^()]+)|(?R))*\)",
+          "(ab(cd)ef)")[ : ], repr(("(ab(cd)ef)", "ef")))
+        self.expect(lambda: regex.search(r"\(((?>[^()]+)|(?R))*\)",
+          "(ab(cd)ef)").captures(1), repr(["ab", "(cd)", "ef"]))
+
+        # 15..16
+        self.expect(lambda: regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
+          "(ab(cd)ef)")[ : ], repr(("(ab(cd)ef)", "ab")))
+        self.expect(lambda: regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
+          "(ab(cd)ef)").captures(1), repr(["ef", "(cd)", "ab"]))
+
+        # 17
+        self.expect(lambda: regex.search(r"\(([^()]+|(?R))*\)",
+          "some text (a(b(c)d)e) more text")[ : ], repr(("(a(b(c)d)e)",  "e")))
+
+        # 18
+        self.expect(lambda: regex.search(r"(?r)\(((?R)|[^()]+)*\)",
+          "some text (a(b(c)d)e) more text")[ : ], repr(("(a(b(c)d)e)",  "a")))
+
+        # 19
+        self.expect(lambda: regex.search(r"(foo(\(((?:(?>[^()]+)|(?2))*)\)))",
+          "foo(bar(baz)+baz(bop))")[ : ], repr(("foo(bar(baz)+baz(bop))",
+          "foo(bar(baz)+baz(bop))", "(bar(baz)+baz(bop))",
+          "bar(baz)+baz(bop)")))
+
+        # 20
+        self.expect(lambda: regex.search(r"(?r)(foo(\(((?:(?2)|(?>[^()]+))*)\)))",
+          "foo(bar(baz)+baz(bop))")[ : ], repr(("foo(bar(baz)+baz(bop))",
+          "foo(bar(baz)+baz(bop))", "(bar(baz)+baz(bop))",
+          "bar(baz)+baz(bop)")))
+
+        # 21..25
+        rgx = regex.compile(r"""^\s*(<\s*([a-zA-Z:]+)(?:\s*[a-zA-Z:]*\s*=\s*(?:'[^']*'|"[^"]*"))*\s*(/\s*)?>(?:[^<>]*|(?1))*(?(3)|<\s*/\s*\2\s*>))\s*$""")
+        self.expect(lambda: bool(rgx.search('<foo><bar></bar></foo>')),
+          repr(True))
+        self.expect(lambda: bool(rgx.search('<foo><bar></foo></bar>')),
+          repr(False))
+        self.expect(lambda: bool(rgx.search('<foo><bar/></foo>')), repr(True))
+        self.expect(lambda: bool(rgx.search('<foo><bar></foo>')), repr(False))
+        self.expect(lambda: bool(rgx.search('<foo bar=baz/>')), repr(False))
+
+        # 26..30
+        self.expect(lambda: bool(rgx.search('<foo bar="baz">')), repr(False))
+        self.expect(lambda: bool(rgx.search('<foo bar="baz"/>')), repr(True))
+        self.expect(lambda: bool(rgx.search('<    fooo   /  >')), repr(True))
+        # The next regex should and does match. Perl 5.14 agrees.
+        #self.expect(lambda: bool(rgx.search('<foo/>foo')), repr(False))
+        self.expect(lambda: bool(rgx.search('foo<foo/>')), repr(False))
+
+        # 31..33
+        self.expect(lambda: bool(rgx.search('<foo>foo</foo>')), repr(True))
+        self.expect(lambda: bool(rgx.search('<foo><bar/>foo</foo>')),
+          repr(True))
+        self.expect(lambda: bool(rgx.search('<a><b><c></c></b></a>')),
+          repr(True))
+
+    def test_hg_bugs(self):
+        # Hg issue 28: regex.compile("(?>b)") causes "TypeError: 'Character' object is not subscriptable"
+        self.expect(lambda: bool(regex.compile("(?>b)", flags=regex.V1)),
+          repr(True))
+
+        # Hg issue 29: regex.compile("^((?>\w+)|(?>\s+))*$") causes "TypeError: 'GreedyRepeat' object is not iterable"
+        self.expect(lambda: bool(regex.compile("^((?>\w+)|(?>\s+))*$",
+          flags=regex.V1)), repr(True))
+
     def run(self):
         print "Performing tests"
         print "================"

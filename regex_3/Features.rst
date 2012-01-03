@@ -117,6 +117,22 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
+* Recursive patterns (Hg issue 27)
+
+    Recursive regexes are supported. For example::
+
+        >>> m = regex.search(r"(\w)(?:(?R)|(\w?))\1", "kayak")
+        >>> m.group(0, 1, 2)
+        ('kayak', 'k', None)
+
+    ``(?R)`` or ``(?0)`` tries to match the entire regex recursively. ``(?1)``, ``(?2)``, etc, try to match the relevant capture group.
+
+    ``(?&name)`` tries to match the named capture group.
+
+    It's possible to backtrack into a recursed group.
+
+    The alternative forms ``(?P>name)`` and ``(?P&name)`` are also supported.
+
 * repr(regex) doesn't include actual regex (issue #13592)
 
     The repr of a compiled regex is now in the form of a eval-able string. For example::

@@ -21,12 +21,12 @@ from collections import defaultdict
 import _regex
 
 __all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "F", "FULLCASE", "I",
-  "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "N", "NEW", "R", "REVERSE",
-  "S", "DOTALL", "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1",
-  "VERSION1", "W", "WORD", "X", "VERBOSE", "error", "ALNUM", "NONLITERAL",
-  "Info", "Source", "FirstSetError", "UnscopedFlagSet", "OP", "Scanner",
-  "compile_firstset", "compile_repl_escape", "count_ones", "flatten_code",
-  "fold_case", "parse_pattern", "shrink_cache", "REGEX_FLAGS"]
+  "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "R", "REVERSE", "S", "DOTALL",
+  "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "W",
+  "WORD", "X", "VERBOSE", "error", "ALNUM", "NONLITERAL", "Info", "Source",
+  "FirstSetError", "UnscopedFlagSet", "OP", "Scanner", "compile_firstset",
+  "compile_repl_escape", "count_ones", "flatten_code", "fold_case",
+  "parse_pattern", "shrink_cache", "REGEX_FLAGS"]
 
 # The regex exception.
 class error(Exception):
@@ -66,8 +66,6 @@ W = WORD = 0x800        # Default Unicode word breaks.
 X = VERBOSE = 0x40      # Ignore whitespace and comments.
 T = TEMPLATE = 0x1      # Template (present because re module has it).
 
-N = NEW = VERSION1 # deprecated
-
 DEFAULT_VERSION = VERSION1
 
 ALL_VERSIONS = VERSION0 | VERSION1
@@ -98,8 +96,8 @@ UNLIMITED = (1 << BITS_PER_CODE) - 1
 
 # The regular expression flags.
 REGEX_FLAGS = {"a": ASCII, "b": BESTMATCH, "f": FULLCASE, "i": IGNORECASE, "L":
-  LOCALE, "m": MULTILINE, "n": NEW, "r": REVERSE, "s": DOTALL, "u": UNICODE,
-  "V0": VERSION0, "V1": VERSION1, "w": WORD, "x": VERBOSE}
+  LOCALE, "m": MULTILINE, "r": REVERSE, "s": DOTALL, "u": UNICODE, "V0":
+  VERSION0, "V1": VERSION1, "w": WORD, "x": VERBOSE}
 
 # The case flags.
 CASE_FLAGS = FULLCASE | IGNORECASE
@@ -147,11 +145,14 @@ GRAPHEME_BOUNDARY
 GREEDY_REPEAT
 GREEDY_REPEAT_ONE
 GROUP
+GROUP_CALL
 GROUP_EXISTS
+GROUP_RETURN
 LAZY_REPEAT
 LAZY_REPEAT_ONE
 LOOKAROUND
 NEXT
+NOT_GROUP_CALL
 PROPERTY
 PROPERTY_IGN
 PROPERTY_IGN_REV
@@ -709,6 +710,12 @@ def parse_paren(source, info):
         if ch == "|":
             # A common groups branch.
             return parse_common(source, info)
+        if ch == "R" or "0" <= ch <= "9":
+            # A call to a group.
+            return parse_call_group(source, info, ch)
+        if ch == "&":
+            # A call to a named group.
+            return parse_call_named_group(source, info)
 
         # A flags subpattern.
         source.pos = here2
@@ -760,6 +767,10 @@ def parse_extension(source, info):
             raise error("can't refer to an open group")
 
         return make_ref_group(info, name)
+
+    if ch == ">" or ch == "&":
+        # A call to a group.
+        return parse_call_named_group(source, info)
 
     source.pos = here
     raise error("unknown extension")
@@ -849,6 +860,33 @@ def parse_common(source, info):
     if len(branches) == 1:
         return branches[0]
     return Branch(branches)
+
+def parse_call_group(source, info, ch):
+    "Parses a call to a group."
+    if ch == "R":
+        source.expect(")")
+        group = "0"
+    else:
+        group = [ch]
+
+        ch = source.get()
+        while "0" <= ch <= "9":
+            group.append(ch)
+            ch = source.get()
+
+        if ch != ")":
+            raise error("expected )")
+
+        group = "".join(group)
+
+    return CallGroup(info, group)
+
+def parse_call_named_group(source, info):
+    "Parses a call to a named group."
+    group = parse_name(source)
+    source.expect(")")
+
+    return CallGroup(info, group)
 
 def parse_flags_subpattern(source, info):
     "Parses a flags subpattern."
@@ -942,7 +980,7 @@ def parse_name(source, allow_numeric=False):
 
     source.pos = here
     name = "".join(name)
-    if not name:
+    if not name or name[0].isdigit() and not name.isdigit():
         raise error("bad group name")
 
     if name.isdigit():
@@ -1728,7 +1766,7 @@ class Atomic(RegexBase):
         return self
 
     def can_be_affix(self):
-        return all(s.can_be_affix() for s in self.subpattern)
+        return self.subpattern.can_be_affix()
 
     def contains_group(self):
         return self.subpattern.contains_group()
@@ -1762,7 +1800,7 @@ class Atomic(RegexBase):
         if count == 0:
             return [], subpattern
 
-        prefix, subpattern = prefix[ : count], subpattern[count : ]
+        prefix, subpattern = prefix[ : count], prefix[count : ]
 
         return prefix, make_sequence(subpattern)
 
@@ -1781,7 +1819,7 @@ class Atomic(RegexBase):
         if count == 0:
             return [], subpattern
 
-        suffix, subpattern = suffix[ : count][::-1], subpattern[count : ][::-1]
+        suffix, subpattern = suffix[ : count][::-1], suffix[count : ][::-1]
 
         return suffix, make_sequence(subpattern)
 
@@ -2150,6 +2188,40 @@ class Branch(RegexBase):
 
     def __nonzero__(self):
         return any(self.branches)
+
+class CallGroup(RegexBase):
+    def __init__(self, info, group):
+        RegexBase.__init__(self)
+        self.info = info
+        self.group = group
+
+        self._key = self.__class__, self.group
+
+    def fix_groups(self):
+        try:
+            self.group = int(self.group)
+        except ValueError:
+            try:
+                self.group = self.info.group_index[self.group]
+            except KeyError:
+                raise error("unknown group")
+
+        if not 0 <= self.group <= self.info.group_count:
+            raise error("unknown group")
+
+        self._key = self.__class__, self.group
+
+    def remove_captures(self):
+        raise error("group reference not allowed")
+
+    def compile(self, reverse=False, fuzzy=False):
+        return [(OP.GROUP_CALL, self.group)]
+
+    def dump(self, indent=0, reverse=False):
+        print "%sGROUP_CALL %s" % (INDENT * indent, self.group)
+
+    def __eq__(self, other):
+        return type(self) is type(other) and self.group == other.group
 
 class Character(RegexBase):
     _opcode = {(NOCASE, False): OP.CHARACTER, (IGNORECASE, False):

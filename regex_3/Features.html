@@ -385,6 +385,20 @@ ul.auto-toc {
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Recursive patterns (Hg issue 27)</p>
+<blockquote>
+<p>Recursive regexes are supported. For example:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; m = regex.search(r&quot;(\w)(?:(?R)|(\w?))\1&quot;, &quot;kayak&quot;)
+&gt;&gt;&gt; m.group(0, 1, 2)
+('kayak', 'k', None)
+</pre>
+<p><tt class="docutils literal"><span class="pre">(?R)</span></tt> or <tt class="docutils literal"><span class="pre">(?0)</span></tt> tries to match the entire regex recursively. <tt class="docutils literal"><span class="pre">(?1)</span></tt>, <tt class="docutils literal"><span class="pre">(?2)</span></tt>, etc, try to match the relevant capture group.</p>
+<p><tt class="docutils literal"><span class="pre">(?&amp;name)</span></tt> tries to match the named capture group.</p>
+<p>It's possible to backtrack into a recursed group.</p>
+<p>The alternative forms <tt class="docutils literal"><span class="pre">(?P&gt;name)</span></tt> and <tt class="docutils literal"><span class="pre">(?P&amp;name)</span></tt> are also supported.</p>
+</blockquote>
+</li>
 <li><p class="first">repr(regex) doesn't include actual regex (issue #13592)</p>
 <blockquote>
 <p>The repr of a compiled regex is now in the form of a eval-able string. For example:</p>
