@@ -5767,7 +5767,7 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t len,
   Py_ssize_t buffer_charsize)
 {
 #if PY_VERSION_HEX < 0x03030000
-    return PyUnicode_FromWideChar(buffer, len);
+    return PyUnicode_FromUnicode(buffer, len);
 #else
     int kind;
 

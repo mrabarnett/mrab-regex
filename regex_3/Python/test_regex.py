@@ -735,7 +735,7 @@ class Test:
                 if not regex.match(r"(?fi)" + ch1, ch2):
                     self.record_failure()
 
-        # 28..35
+        # 28..39
         self.expect(lambda: bool(regex.search(r"(?iV1)ff", "\uFB00\uFB01")),
           ascii(True))
         self.expect(lambda: bool(regex.search(r"(?iV1)ff", "\uFB01\uFB00")),
@@ -761,7 +761,7 @@ class Test:
         self.expect(lambda: bool(regex.search(r"(?iV1)f\uFB01", "\uFB00i")),
           ascii(True))
 
-        # 36..37
+        # 40..41
         self.expect(lambda:
           regex.findall(r"(?iV0)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
           "word word2 word word3 word word234 word23 word"), ascii(["word234",
@@ -1969,7 +1969,7 @@ class Test:
           ascii(["b", "c"]))
         self.expect(lambda: regex.findall("(?V1)[\w--a]","abc"), ascii(["b",
           "c"]))
-        self.expect(lambda: regex.findall("(?V1i)[\w--a]","abc"), ascii(["b",
+        self.expect(lambda: regex.findall("(?iV1)[\w--a]","abc"), ascii(["b",
           "c"]))
 
     def test_various(self):
