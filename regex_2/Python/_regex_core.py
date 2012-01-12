@@ -3176,6 +3176,40 @@ class SetUnion(SetBase):
 
         return self._handle_case_folding(info, in_set)
 
+    def compile(self, reverse=False, fuzzy=False):
+        flags = 0
+        if self.positive:
+            flags |= POSITIVE_OP
+        if self.zerowidth:
+            flags |= ZEROWIDTH_OP
+        if fuzzy:
+            flags |= FUZZY_OP
+
+        characters, others = defaultdict(list), []
+        for m in self.items:
+            if isinstance(m, Character):
+                characters[m.positive].append(m.value)
+            else:
+                others.append(m)
+
+        code = [(self._opcode[self.case_flags, reverse], flags)]
+
+        for positive, values in characters.items():
+            flags = 0
+            if positive:
+                flags |= POSITIVE_OP
+            if len(values) == 1:
+                code.append((OP.CHARACTER, flags, values[0]))
+            else:
+                code.append((OP.STRING, flags, len(values)) + tuple(values))
+
+        for m in others:
+            code.extend(m.compile())
+
+        code.append((OP.END, ))
+
+        return code
+
     def matches(self, ch):
         m = any(i.matches(ch) for i in self.items)
         return m == self.positive
