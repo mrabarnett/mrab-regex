@@ -3221,7 +3221,7 @@ xyzabc
         #self.expect(lambda: bool(rgx.search('<foo/>foo')), repr(False))
         self.expect(lambda: bool(rgx.search('foo<foo/>')), repr(False))
 
-        # 31..33
+        # 30..32
         self.expect(lambda: bool(rgx.search('<foo>foo</foo>')), repr(True))
         self.expect(lambda: bool(rgx.search('<foo><bar/>foo</foo>')),
           repr(True))
@@ -3230,12 +3230,62 @@ xyzabc
 
     def test_hg_bugs(self):
         # Hg issue 28: regex.compile("(?>b)") causes "TypeError: 'Character' object is not subscriptable"
+        # 1
         self.expect(lambda: bool(regex.compile("(?>b)", flags=regex.V1)),
           repr(True))
 
         # Hg issue 29: regex.compile("^((?>\w+)|(?>\s+))*$") causes "TypeError: 'GreedyRepeat' object is not iterable"
+        # 2
         self.expect(lambda: bool(regex.compile("^((?>\w+)|(?>\s+))*$",
           flags=regex.V1)), repr(True))
+
+        # Hg issue 31
+        # 3..8
+        self.expect(lambda: regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
+          "a(bcd(e)f)g(h)"), repr(['(bcd(e)f)', '(h)']))
+        self.expect(lambda: regex.findall(r"\((?:(?:[^()]+)|(?R))*\)",
+          "a(bcd(e)f)g(h)"), repr(['(bcd(e)f)', '(h)']))
+        self.expect(lambda: regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
+          "a(b(cd)e)f)g)h"), repr(['(b(cd)e)']))
+        self.expect(lambda: regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
+          "a(bc(d(e)f)gh"), repr(['(d(e)f)']))
+        self.expect(lambda: regex.findall(r"(?r)\((?:(?>[^()]+)|(?R))*\)",
+          "a(bc(d(e)f)gh"), repr(['(d(e)f)']))
+        self.expect(lambda: [m.group() for m in
+          regex.finditer(r"\((?:[^()]*+|(?0))*\)", "a(b(c(de)fg)h")],
+          repr(['(c(de)fg)']))
+
+        # Hg issue 32
+        # 9
+        self.expect(lambda: regex.search("a(bc)d", "abcd", regex.I |
+          regex.V1).group(0), repr("abcd"))
+
+        # Hg issue 33
+        # 10..11
+        self.expect(lambda: regex.search("([\da-f:]+)$", "E", regex.I |
+          regex.V1).group(0), repr("E"))
+        self.expect(lambda: regex.search("([\da-f:]+)$", "e", regex.I |
+          regex.V1).group(0), repr("e"))
+
+        # Hg issue 34
+        # 12
+        self.expect(lambda: regex.search("^(?=ab(de))(abd)(e)",
+          "abde").groups(), repr(('de', 'abd', 'e')))
+
+        # Hg issue 35
+        # 13
+        self.expect(lambda: bool(regex.match(r"\ ", " ", flags=regex.X)),
+          repr(True))
+
+        # Hg issue 36
+        # 14
+        self.expect(lambda: regex.search(r"^(a|)\1{2}b", "b").group(0, 1),
+          repr(('b', '')))
+
+        # Hg issue 37
+        # 15
+        self.expect(lambda: regex.search("^(a){0,0}", "abc").group(0, 1),
+          repr(('', None)))
 
     def run(self):
         print "Performing tests"

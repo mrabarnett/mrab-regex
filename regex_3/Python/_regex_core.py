@@ -272,11 +272,12 @@ def compile_firstset(info, fs):
     # If we ignore the case, for simplicity we won't build a firstset.
     members = set()
     for i in fs:
-        if not i.positive:
-            return []
-        if i.case_flags and isinstance(i, Character) and is_cased(info,
-          i.value):
-            return []
+        if i.case_flags:
+            if isinstance(i, Character):
+                if is_cased(info, i.value):
+                    return []
+            elif isinstance(i, SetBase):
+                return []
 
         members.add(i.with_flags(case_flags=NOCASE))
 
@@ -1006,7 +1007,10 @@ def is_hexadecimal(string):
 
 def parse_escape(source, info, in_set):
     "Parses an escape sequence."
+    saved_ignore = source.ignore_space
+    source.ignore_space = False
     ch = source.get()
+    source.ignore_space = saved_ignore
     if not ch:
         # A backslash at the end of the pattern.
         raise error("bad escape")
