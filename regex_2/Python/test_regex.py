@@ -3287,6 +3287,23 @@ xyzabc
         self.expect(lambda: regex.search("^(a){0,0}", "abc").group(0, 1),
           repr(('', None)))
 
+        # Hg issue 38
+        # 16
+        self.expect(lambda: regex.search("(?>.*/)b", "a/b").group(0),
+          repr("a/b"))
+
+        # Hg issue 39
+        # 17..18
+        self.expect(lambda: regex.search(r"(?V0)((?i)blah)\s+\1",
+          "blah BLAH").group(0, 1), repr(("blah BLAH", "blah")))
+        self.expect(lambda: regex.search(r"(?V1)((?i)blah)\s+\1", "blah BLAH"),
+          repr(None))
+
+        # Hg issue 40
+        # 19
+        self.expect(lambda: regex.search(r"(\()?[^()]+(?(1)\)|)",
+          "(abcd").group(0), repr("abcd"))
+
     def run(self):
         print "Performing tests"
         print "================"

@@ -542,12 +542,8 @@ Py_LOCAL_INLINE(Py_ssize_t) abs_ssize_t(Py_ssize_t x) {
     return x >= 0 ? x : -x;
 }
 
-Py_LOCAL_INLINE(int) max2(int a, int b) {
+Py_LOCAL_INLINE(int) max_int(int a, int b) {
     return a >= b ? a : b;
-}
-
-Py_LOCAL_INLINE(int) max3(int a, int b, int c) {
-    return max2(max2(a, b), c);
 }
 
 /* Gets a character at the given position assuming 1 byte per character. */
@@ -6083,7 +6079,7 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
     folded_charsize = state->charsize;
 #else
     /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max2(state->charsize, sizeof(Py_UCS2));
+    folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
 #endif
 
     switch (folded_charsize) {
@@ -6225,7 +6221,7 @@ Py_LOCAL_INLINE(BOOL) string_set_match_fld_rev(RE_SafeState* safe_state,
     folded_charsize = state->charsize;
 #else
     /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max2(state->charsize, sizeof(Py_UCS2));
+    folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
 #endif
 
     switch (folded_charsize) {
@@ -6365,7 +6361,7 @@ Py_LOCAL_INLINE(int) string_set_match_ign(RE_SafeState* safe_state, RE_Node*
     folded_charsize = state->charsize;
 #else
     /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max2(state->charsize, sizeof(Py_UCS2));
+    folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
 #endif
 
     switch (folded_charsize) {
@@ -6474,7 +6470,7 @@ Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
     folded_charsize = state->charsize;
 #else
     /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max2(state->charsize, sizeof(Py_UCS2));
+    folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
 #endif
 
     switch (folded_charsize) {
@@ -14980,7 +14976,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             body_result = add_repeat_guards(pattern,
               node->nonstring.next_2.node);
             tail_result = add_repeat_guards(pattern, node->next_1.node);
-            status = max3(result, body_result, tail_result);
+            status = max_int(max_int(result, body_result), tail_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
@@ -14993,7 +14989,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             branch_1_result = add_repeat_guards(pattern, node->next_1.node);
             branch_2_result = add_repeat_guards(pattern,
               node->nonstring.next_2.node);
-            status = max3(result, branch_1_result, branch_2_result);
+            status = max_int(max_int(result, branch_1_result), branch_2_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
@@ -15024,10 +15020,10 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             if (tail_result == RE_STATUS_REPEAT)
                 repeat_info->status |= RE_STATUS_TAIL;
             if (limited)
-                result = max2(result, RE_STATUS_LIMITED);
+                result = max_int(result, RE_STATUS_LIMITED);
             else
-                result = max2(result, RE_STATUS_REPEAT);
-            status = max3(result, body_result, tail_result);
+                result = max_int(result, RE_STATUS_REPEAT);
+            status = max_int(max_int(result, body_result), tail_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
@@ -15043,15 +15039,15 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             tail_result = add_repeat_guards(pattern, node->next_1.node);
 
             repeat_info = &pattern->repeat_info[node->values[0]];
-            if (!limited)
+            if (tail_result == RE_STATUS_REPEAT && !limited)
                 repeat_info->status |= RE_STATUS_BODY;
             if (tail_result == RE_STATUS_REPEAT)
                 repeat_info->status |= RE_STATUS_TAIL;
             if (limited)
-                result = max2(result, RE_STATUS_LIMITED);
+                result = max_int(result, RE_STATUS_LIMITED);
             else
-                result = max2(result, RE_STATUS_REPEAT);
-            status = max3(result, RE_STATUS_REPEAT, tail_result);
+                result = max_int(result, RE_STATUS_REPEAT);
+            status = max_int(max_int(result, RE_STATUS_REPEAT), tail_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
@@ -15064,7 +15060,8 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             branch_1_result = add_repeat_guards(pattern, node->next_1.node);
             branch_2_result = add_repeat_guards(pattern,
               node->nonstring.next_2.node);
-            status = max3(result, branch_1_result, branch_2_result);
+            status = max_int(max_int(max_int(result, branch_1_result),
+              branch_2_result), RE_STATUS_REF);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
@@ -17284,7 +17281,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     folded_charsize = charsize;
 #else
     /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max2(charsize, sizeof(Py_UCS2));
+    folded_charsize = max_int(charsize, sizeof(Py_UCS2));
 #endif
 
     switch (folded_charsize) {

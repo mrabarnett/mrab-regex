@@ -1748,18 +1748,7 @@ class Atomic(RegexBase):
         self.subpattern.fix_groups()
 
     def optimise(self, info):
-        subpattern = self.subpattern.optimise(info)
-
-        # Move any atomic prefix or suffix out of the subpattern.
-        prefix, subpattern = Atomic._split_atomic_prefix(subpattern)
-        suffix, subpattern = Atomic._split_atomic_suffix(subpattern)
-
-        if subpattern:
-            sequence = prefix + [Atomic(subpattern)] + suffix
-        else:
-            sequence = prefix + suffix
-
-        return make_sequence(sequence)
+        return Atomic(self.subpattern.optimise(info))
 
     def pack_characters(self, info):
         self.subpattern = self.subpattern.pack_characters(info)
@@ -1788,44 +1777,6 @@ class Atomic(RegexBase):
     def dump(self, indent=0, reverse=False):
         print "%sATOMIC" % (INDENT * indent)
         self.subpattern.dump(indent + 1, reverse)
-
-    @staticmethod
-    def _split_atomic_prefix(subpattern):
-        # Leading atomic items can be moved out of an atomic subpattern.
-        if isinstance(subpattern, Sequence):
-            prefix = subpattern.items
-        else:
-            prefix = [subpattern]
-
-        count = 0
-        while count < len(prefix) and prefix[count].is_atomic():
-            count += 1
-
-        if count == 0:
-            return [], subpattern
-
-        prefix, subpattern = prefix[ : count], prefix[count : ]
-
-        return prefix, make_sequence(subpattern)
-
-    @staticmethod
-    def _split_atomic_suffix(subpattern):
-        # Trailing atomic items can be moved out of an atomic subpattern.
-        if isinstance(subpattern, Sequence):
-            suffix = subpattern.items[::-1]
-        else:
-            suffix = [subpattern]
-
-        count = 0
-        while count < len(suffix) and suffix[count].is_atomic():
-            count += 1
-
-        if count == 0:
-            return [], subpattern
-
-        suffix, subpattern = suffix[ : count][::-1], suffix[count : ][::-1]
-
-        return suffix, make_sequence(subpattern)
 
     def __eq__(self, other):
         return (type(self) is type(other) and self.subpattern ==
@@ -2817,9 +2768,9 @@ class Range(RegexBase):
 
 class RefGroup(RegexBase):
     _opcode = {(NOCASE, False): OP.REF_GROUP, (IGNORECASE, False):
-      OP.REF_GROUP_IGN, (FULLCASE, False): OP.REF_GROUP_FLD, (FULLIGNORECASE,
+      OP.REF_GROUP_IGN, (FULLCASE, False): OP.REF_GROUP, (FULLIGNORECASE,
       False): OP.REF_GROUP_FLD, (NOCASE, True): OP.REF_GROUP_REV, (IGNORECASE,
-      True): OP.REF_GROUP_IGN_REV, (FULLCASE, True): OP.REF_GROUP_FLD_REV,
+      True): OP.REF_GROUP_IGN_REV, (FULLCASE, True): OP.REF_GROUP_REV,
       (FULLIGNORECASE, True): OP.REF_GROUP_FLD_REV}
     _op_name = {False: "REF_GROUP", True: "REF_GROUP_REV"}
 
