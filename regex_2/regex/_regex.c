@@ -195,37 +195,23 @@ typedef struct RE_BacktrackData {
     BYTE op;
     union {
         struct {
+            BOOL too_few_errors;
+        } atomic;
+        struct {
             RE_Position position;
         } branch;
+        RE_FuzzyInfo fuzzy_info;
         struct {
             RE_Position position;
-            size_t index;
-            Py_ssize_t text_pos;
-            size_t count;
-            size_t max_count;
-        } repeat;
-        struct {
-            size_t index;
-            Py_ssize_t text_pos;
-            BOOL capture;
-        } group;
-        struct {
-            size_t* capture_counts;
-        } saved;
-        RE_FuzzyInfo fuzzy_info;
+            Py_ssize_t count;
+            struct RE_Node* fuzzy_node;
+            BOOL too_few_errors;
+        } fuzzy_insert;
         struct {
             int fuzzy_type;
             RE_Position position;
             int step;
         } fuzzy_one;
-        struct {
-            int fuzzy_type;
-            RE_Position position;
-        } fuzzy_zero;
-        struct {
-            RE_Position position;
-            Py_ssize_t count;
-        } fuzzy_insert;
         struct {
             int fuzzy_type;
             RE_Position position;
@@ -238,8 +224,30 @@ typedef struct RE_BacktrackData {
             int step;
         } fuzzy_string;
         struct {
+            int fuzzy_type;
+            RE_Position position;
+        } fuzzy_zero;
+        struct {
+            size_t index;
+            Py_ssize_t text_pos;
+            BOOL capture;
+        } group;
+        struct {
             struct RE_Node* node;
         } group_call;
+        struct {
+            BOOL too_few_errors;
+        } lookaround;
+        struct {
+            RE_Position position;
+            size_t index;
+            Py_ssize_t text_pos;
+            size_t count;
+            size_t max_count;
+        } repeat;
+        struct {
+            size_t* capture_counts;
+        } saved;
     };
 } RE_BacktrackData;
 
@@ -426,6 +434,7 @@ typedef struct RE_State {
     BOOL must_advance; /* The end of the match must advance past its start. */
     BOOL is_multithreaded; /* Whether to release the GIL while matching. */
     BOOL do_check;
+    BOOL too_few_errors; /* Whether there are too few fuzzy errors. */
 } RE_State;
 
 /* Storage for the regex state and thread state.
@@ -2298,6 +2307,7 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     state->fuzzy_info.total_cost = 0;
     state->total_errors = 0;
     state->total_cost = 0;
+    state->too_few_errors = FALSE;
 }
 
 /* Adds a new backtrack entry. */
@@ -6969,6 +6979,7 @@ Py_LOCAL_INLINE(BOOL) fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t
   text_pos, RE_Node* node) {
     RE_State* state;
     RE_BacktrackData* bt_data;
+    RE_FuzzyInfo* fuzzy_info;
 
     state = safe_state->re_state;
 
@@ -6979,6 +6990,17 @@ Py_LOCAL_INLINE(BOOL) fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t
     bt_data->fuzzy_insert.position.text_pos = text_pos;
     bt_data->fuzzy_insert.position.node = node;
     bt_data->fuzzy_insert.count = 0;
+    bt_data->fuzzy_insert.too_few_errors = state->too_few_errors;
+    bt_data->fuzzy_insert.fuzzy_node = node;
+
+    /* Check whether there are too few errors. */
+    fuzzy_info = &state->fuzzy_info;
+
+    if (fuzzy_info->counts[RE_FUZZY_DEL] < node->values[1] ||
+      fuzzy_info->counts[RE_FUZZY_INS] < node->values[2] ||
+      fuzzy_info->counts[RE_FUZZY_SUB] < node->values[3] ||
+      fuzzy_info->counts[RE_FUZZY_ERR] < node->values[4])
+      state->too_few_errors = TRUE;
 
     return TRUE;
 }
@@ -6993,6 +7015,7 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t*
     RE_Node* new_node;
     int step;
     Py_ssize_t limit;
+    RE_Node* fuzzy_node;
 
     state = safe_state->re_state;
     fuzzy_info = &state->fuzzy_info;
@@ -7020,6 +7043,7 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t*
         fuzzy_info->total_cost -= fuzzy_info->costs[RE_FUZZY_INS] * count;
         state->total_errors -= count;
         state->total_cost -= fuzzy_info->costs[RE_FUZZY_INS] * count;
+        state->too_few_errors = bt_data->fuzzy_insert.too_few_errors;
 
         discard_backtrack(state);
         *node = NULL;
@@ -7033,6 +7057,15 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t*
     fuzzy_info->total_cost += fuzzy_info->costs[RE_FUZZY_INS];
     ++state->total_errors;
     state->total_cost += fuzzy_info->costs[RE_FUZZY_INS];
+
+    /* Check whether there are too few errors. */
+    state->too_few_errors = bt_data->fuzzy_insert.too_few_errors;
+    fuzzy_node = bt_data->fuzzy_insert.fuzzy_node;
+    if (fuzzy_info->counts[RE_FUZZY_DEL] < fuzzy_node->values[1] ||
+      fuzzy_info->counts[RE_FUZZY_INS] < fuzzy_node->values[2] ||
+      fuzzy_info->counts[RE_FUZZY_SUB] < fuzzy_node->values[3] ||
+      fuzzy_info->counts[RE_FUZZY_ERR] < fuzzy_node->values[4])
+      state->too_few_errors = TRUE;
 
     *text_pos = new_text_pos + step * bt_data->fuzzy_insert.count;
     *node = new_node;
@@ -7840,6 +7873,7 @@ advance:
 
             if (!add_backtrack(safe_state, RE_OP_ATOMIC))
                 return RE_ERROR_MEMORY;
+            state->backtrack->atomic.too_few_errors = state->too_few_errors;
 
             /* Save the groups. */
             if (!push_groups(safe_state))
@@ -8804,6 +8838,7 @@ advance:
         case RE_OP_LOOKAROUND: /* Lookaround. */
         {
             RE_Info info;
+            BOOL too_few_errors;
             int status;
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
@@ -8818,6 +8853,8 @@ advance:
             state->slice_end = text_length;
             state->text_pos = text_pos;
             state->must_advance = FALSE;
+
+            too_few_errors = state->too_few_errors;
 
             status = basic_match(safe_state, node->nonstring.next_2.node,
               FALSE);
@@ -8835,24 +8872,35 @@ advance:
             if (node->match) {
                 /* It's a positive lookaround. */
                 if (status == RE_ERROR_SUCCESS) {
-                    /* It succeeded, so the groups may have changed. */
+                    /* It succeeded, so the groups and certain flags may have
+                     * changed.
+                     */
                     if (!add_backtrack(safe_state, RE_OP_LOOKAROUND))
                         return RE_ERROR_MEMORY;
 
-                    /* We'll restore the groups on backtracking. */
+                    /* We'll restore the groups and flags on backtracking. */
+                    state->backtrack->lookaround.too_few_errors =
+                      too_few_errors;
                 } else {
-                    /* It failed, so the groups haven't changed. */
+                    /* It failed, so the groups and certain flags haven't
+                     * changed.
+                     */
                     drop_groups(state);
                     goto backtrack;
                 }
             } else {
                 /* It's a negative lookaround. */
                 if (status == RE_ERROR_SUCCESS) {
-                    /* It succeeded, so the groups may have changed. */
+                    /* It succeeded, so the groups and certain flags may have
+                     * changed. We need to restore them.
+                     */
                     pop_groups(state);
+                    state->too_few_errors = too_few_errors;
                     goto backtrack;
                 } else
-                    /* It failed, so the groups haven't changed. */
+                    /* It failed, so the groups and certain flags haven't
+                     * changed.
+                     */
                     drop_groups(state);
             }
 
@@ -10097,8 +10145,9 @@ backtrack:
         case RE_OP_ATOMIC: /* Atomic subpattern. */
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
-            /* Restore the groups and backtrack. */
+            /* Restore the groups and certain flags and then backtrack. */
             pop_groups(state);
+            state->too_few_errors = bt_data->atomic.too_few_errors;
             discard_backtrack(state);
             break;
         case RE_OP_BOUNDARY: /* At a word boundary. */
@@ -10931,8 +10980,9 @@ backtrack:
         case RE_OP_LOOKAROUND: /* Lookaround. */
             TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->match))
 
-            /* Restore the groups and backtrack. */
+            /* Restore the groups and certain flags and then backtrack. */
             pop_groups(state);
+            state->too_few_errors = bt_data->lookaround.too_few_errors;
             discard_backtrack(state);
             break;
         case RE_OP_NOT_GROUP_CALL: /* Not calling a group. */
@@ -11148,22 +11198,27 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     pattern = state->pattern;
     fuzzy_info = &state->fuzzy_info;
 
+    /* Release the GIL. */
+    release_GIL(safe_state);
+
     /* Is there enough to search? */
     if (state->reverse) {
-        if (state->text_pos < state->slice_start)
+        if (state->text_pos < state->slice_start) {
+            acquire_GIL(safe_state);
             return FALSE;
+        }
 
         available = state->text_pos - state->slice_start;
     } else {
-        if (state->text_pos > state->slice_end)
+        if (state->text_pos > state->slice_end) {
+            acquire_GIL(safe_state);
             return FALSE;
+        }
 
         available = state->slice_end - state->text_pos;
     }
 
-    /* Release the GIL. */
-    release_GIL(safe_state);
-
+try_again:
     /* The range of permitted costs. */
     low_cost = 0;
     high_cost = pattern->is_fuzzy ? RE_UNLIMITED : 0;
@@ -11299,6 +11354,14 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         restore_groups(safe_state, best_groups);
     } else if (best_groups)
         discard_groups(safe_state, best_groups);
+
+    if (status == RE_ERROR_SUCCESS && state->too_few_errors) {
+        /* It matched, but there were too few errors, so ignore that match and
+         * try again from where we finished.
+         */
+        state->must_advance = state->match_pos == state->text_pos;
+        goto try_again;
+    }
 
     if (status == RE_ERROR_SUCCESS) {
         Py_ssize_t max_end_index;
@@ -15972,18 +16035,17 @@ Py_LOCAL_INLINE(BOOL) build_FUZZY(RE_CompileArgs* args) {
     RE_Node* start_node;
     RE_Node* end_node;
     size_t index;
-    int i;
     RE_CompileArgs subargs;
 
     /* codes: opcode, flags, constraints, sequence, end. */
-    if (args->code + 9 > args->end_code)
+    if (args->code + 13 > args->end_code)
         return FALSE;
 
     flags = args->code[1];
 
     /* Create nodes for the start and end of the fuzzy sequence. */
     start_node = create_node(args->pattern, RE_OP_FUZZY, flags, 0, 9);
-    end_node = create_node(args->pattern, RE_OP_END_FUZZY, flags, 0, 1);
+    end_node = create_node(args->pattern, RE_OP_END_FUZZY, flags, 0, 5);
     if (!start_node || !end_node)
         return FALSE;
 
@@ -15991,11 +16053,23 @@ Py_LOCAL_INLINE(BOOL) build_FUZZY(RE_CompileArgs* args) {
     start_node->values[0] = index;
     end_node->values[0] = index;
 
-    /* The constraints consist of 4 maxima and the cost equation. */
-    for (i = 0; i < 8; i++)
-        start_node->values[1 + i] = args->code[2 + i];
+    /* The constraints consist of 4 pairs of limits and the cost equation. */
+    end_node->values[1] = args->code[2]; /* Deletion minimum. */
+    end_node->values[2] = args->code[4]; /* Insertion minimum. */
+    end_node->values[3] = args->code[6]; /* Substitution minimum. */
+    end_node->values[4] = args->code[8]; /* Error minimum. */
 
-    args->code += 10;
+    start_node->values[1] = args->code[3]; /* Deletion maximum. */
+    start_node->values[2] = args->code[5]; /* Insertion maximum. */
+    start_node->values[3] = args->code[7]; /* Substitution maximum. */
+    start_node->values[4] = args->code[9]; /* Error maximum. */
+
+    start_node->values[5] = args->code[10]; /* Deletion cost. */
+    start_node->values[6] = args->code[11]; /* Insertion cost. */
+    start_node->values[7] = args->code[12]; /* Substitution cost. */
+    start_node->values[8] = args->code[13]; /* Total cost. */
+
+    args->code += 14;
 
     subargs = *args;
     subargs.has_captures = FALSE;

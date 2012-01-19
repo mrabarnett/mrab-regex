@@ -3142,6 +3142,18 @@ xyzabc
         self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), repr(["a", "b",
           "c", ""]))
 
+        # 61..65
+        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
+          "servic detection").span(), repr((0, 16)))
+        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
+          "service detect").span(), repr((0, 14)))
+        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
+          "service detecti").span(), repr((0, 15)))
+        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
+          "service detection"), repr(None))
+        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
+          "in service detection").span(), repr((0, 20)))
+
     def test_recursive(self):
         # 1..6
         self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",

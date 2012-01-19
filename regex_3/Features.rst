@@ -160,11 +160,11 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
         >>> regex.match(r"(?i)stra\N{LATIN SMALL LETTER SHARP S}e", "STRASSE").span()
         (0, 7)
 
-* Approximate "fuzzy" matching (Hg issue 12)
+* Approximate "fuzzy" matching (Hg issue 12, Hg issue 41)
 
     Regex usually attempts an exact match, but sometimes an approximate, or "fuzzy", match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.
 
-    A fuzzy regex specifies which types of errors are permitted, and, optionally, the maximum permitted number of each type.
+    A fuzzy regex specifies which types of errors are permitted, and, optionally, either the minimum and maximum or only the maximum permitted number of each type. (You cannot specify only a minimum.)
 
     The 3 types of error are:
 
@@ -206,6 +206,8 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     ``{e<=3}`` permit at most 3 errors
 
+    ``{1<=e<=3}`` permit at least 1 and at most 3 errors
+
     ``{i<=2,d<=2,e<=3}`` permit at most 2 insertions, at most 2 deletions, at most 3 errors in total, but no substitutions
 
     It's also possible to state the costs of each type of error and the maximum permitted total cost.
@@ -216,13 +218,17 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     ``{i<=1,d<=1,s<=1,2i+2d+1s<=4}`` at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
 
-    You can also use "<" instead of "<=" if you want an exclusive maximum:
+    You can also use "<" instead of "<=" if you want an exclusive minimum or maximum:
 
     ``{e<=3}`` permit up to 3 errors
 
     ``{e<4}`` permit fewer than 4 errors
 
+    ``{0<e<4}`` permit more than 0 but fewer than 4 errors
+
     By default, fuzzy matching searches for the first match which meets the given constraints, but turning on the ``BESTMATCH`` flag will make it search for the best match instead.
+
+    When matching a fuzzy regex which contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then reject it, continuing from where the match finished, if there were too few errors.
 
 * Named lists (Hg issue 11)
 

@@ -491,58 +491,118 @@ def parse_fuzzy(source):
 def parse_fuzzy_item(source, constraints):
     "Parses a fuzzy setting item."
     here = source.pos
+    try:
+        parse_cost_constraint(source, constraints)
+    except ParseError:
+        source.pos = here
+
+        parse_cost_equation(source, constraints)
+
+def parse_cost_constraint(source, constraints):
+    "Parses a cost constraint."
+    here = source.pos
     ch = source.get()
-    if not ch:
+    if ch in ALPHA:
+        # Syntax: constraint [("<=" | "<") cost]
+        constraint = parse_constraint(source, constraints, ch)
+
+        max_inc = parse_fuzzy_compare(source)
+
+        if max_inc is None:
+            # No maximum cost.
+            constraints[constraint] = 0, None
+        else:
+            # There's a maximum cost.
+            max_cost = int(parse_count(source))
+
+            # Inclusive or exclusive limit?
+            if not max_inc:
+                max_cost -= 1
+
+            if max_cost < 0:
+                raise error("bad fuzzy cost limit")
+
+            constraints[constraint] = 0, max_cost
+    elif ch in DIGITS:
+        # Syntax: cost ("<=" | "<") constraint ("<=" | "<") cost
+        source.pos = here
+        try:
+            # Minimum cost.
+            min_cost = int(parse_count(source))
+
+            min_inc = parse_fuzzy_compare(source)
+            if min_inc is None:
+                raise ParseError()
+
+            constraint = parse_constraint(source, constraints, source.get())
+
+            max_inc = parse_fuzzy_compare(source)
+            if max_inc is None:
+                raise ParseError()
+
+            # Maximum cost.
+            max_cost = int(parse_count(source))
+
+            # Inclusive or exclusive limits?
+            if not min_inc:
+                min_cost += 1
+            if not max_inc:
+                max_cost -= 1
+
+            if not 0 <= min_cost <= max_cost:
+                raise error("bad fuzzy cost limit")
+
+            constraints[constraint] = min_cost, max_cost
+        except ValueError:
+            raise ParseError()
+    else:
         raise ParseError()
 
-    if ch in "deis":
-        # It's a single error constraint.
-        if ch in constraints:
-            raise error("repeated fuzzy constraint")
+def parse_constraint(source, constraints, ch):
+    "Parses a constraint."
+    if ch not in "deis":
+        raise error("bad fuzzy constraint")
 
-        if source.match("<="):
-            try:
-                constraints[ch] = int(parse_count(source))
-            except ValueError:
-                raise error("missing maximum")
-        elif source.match("<"):
-            try:
-                constraints[ch] = max(int(parse_count(source)) - 1, 0)
-            except ValueError:
-                raise error("missing maximum")
-        else:
-            # There's no maximum.
-            constraints[ch] = None
+    if ch in constraints:
+        raise error("repeated fuzzy constraint")
+
+    return ch
+
+def parse_fuzzy_compare(source):
+    "Parses a cost comparator."
+    if source.match("<="):
+        return True
+    elif source.match("<"):
+        return False
     else:
-        # It's a cost equation.
-        source.pos = here
-        cost = parse_cost_equation(source)
-        if "cost" in constraints:
-            raise error("more than one cost equation")
+        return None
 
-        constraints["cost"] = cost
-
-def parse_cost_equation(source):
+def parse_cost_equation(source, constraints):
     "Parses a cost equation."
+    if "cost" in constraints:
+        raise error("more than one cost equation")
+
     cost = {}
+
     parse_cost_term(source, cost)
     while source.match("+"):
         parse_cost_term(source, cost)
 
-    if source.match("<="):
-        try:
-            cost["max"] = int(parse_count(source))
-        except ValueError:
-            raise error("missing maximum")
-    elif source.match("<"):
-        try:
-            cost["max"] = max(int(parse_count(source)) - 1, 0)
-        except ValueError:
-            raise error("missing maximum")
-    else:
-        raise error("missing maximum")
+    max_inc = parse_fuzzy_compare(source)
+    if max_inc is None:
+        raise error("missing fuzzy cost limit")
 
-    return cost
+    max_cost = int(parse_count(source))
+
+    if not max_inc:
+        max_cost -= 1
+
+    if max_cost < 0:
+        raise error("bad fuzzy cost limit")
+
+    cost["max"] = max_cost
+
+    constraints["cost"] = cost
 
 def parse_cost_term(source, cost):
     "Parses a cost equation term."
@@ -552,7 +612,7 @@ def parse_cost_term(source, cost):
         raise ParseError()
 
     if ch in cost:
-        raise error("repeated cost")
+        raise error("repeated fuzzy cost")
 
     cost[ch] = int(coeff) if coeff else 1
 
@@ -2371,29 +2431,28 @@ class Fuzzy(RegexBase):
         if "cost" in constraints:
             for e in "dis":
                 if e in constraints["cost"]:
-                    constraints.setdefault(e, None)
+                    constraints.setdefault(e, (0, None))
 
-        # If any error type is mentioned then the maxima default to 0,
-        # they default to unlimited.
+        # If any error type is mentioned, then all the error maxima default to
+        # 0, otherwise they default to unlimited.
         if set(constraints) & set("dis"):
             for e in "dis":
-                constraints.setdefault(e, 0)
+                constraints.setdefault(e, (0, 0))
         else:
             for e in "dis":
-                constraints.setdefault(e, None)
+                constraints.setdefault(e, (0, None))
 
         # The maximum of the generic error type defaults to unlimited.
-        constraints.setdefault("e", None)
+        constraints.setdefault("e", (0, None))
 
-        # The cost equation defaults to equal costs.
-        # Also, the cost of any error type not mentioned in the cost equation
-        # defaults to 0.
+        # The cost equation defaults to equal costs. Also, the cost of any
+        # error type not mentioned in the cost equation defaults to 0.
         if "cost" in constraints:
             for e in "dis":
                 constraints["cost"].setdefault(e, 0)
         else:
             constraints["cost"] = {"d": 1, "i": 1, "s": 1, "max":
-              constraints["e"]}
+              constraints["e"][1]}
 
     def fix_groups(self):
         self.subpattern.fix_groups()
@@ -2413,11 +2472,12 @@ class Fuzzy(RegexBase):
         return self.subpattern.contains_group()
 
     def compile(self, reverse=False, fuzzy=False):
-        # The individual maxima.
+        # The individual limits.
         arguments = []
         for e in "dise":
             v = self.constraints[e]
-            arguments.append(UNLIMITED if v is None else v)
+            arguments.append(v[0])
+            arguments.append(UNLIMITED if v[1] is None else v[1])
 
         # The coeffs of the cost equation.
         for e in "dis":
