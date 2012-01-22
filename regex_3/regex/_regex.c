@@ -133,13 +133,20 @@ typedef unsigned short RE_STATUS_T;
 #define RE_STATUS_FUZZY (RE_FUZZY_OP << 12)
 #define RE_STATUS_REVERSE (RE_REVERSE_OP << 12)
 
+/* The different error types for fuzzy matching. */
 #define RE_FUZZY_SUB 0
 #define RE_FUZZY_INS 1
 #define RE_FUZZY_DEL 2
 #define RE_FUZZY_ERR 3
 #define RE_FUZZY_COUNT 3
 
+#define RE_FUZZY_THRESHOLD 10
+
+/* The flags which will be set for full Unicode case folding. */
 #define RE_FULL_CASE_FOLDING (RE_FLAG_UNICODE | RE_FLAG_FULLCASE | RE_FLAG_IGNORECASE)
+
+/* The shortest string prefix for which we'll use a fast string search. */
+#define RE_MIN_FAST_LENGTH 3
 
 static char copyright[] =
     " RE 2.3.0 Copyright (c) 1997-2002 by Secret Labs AB ";
@@ -148,9 +155,6 @@ static char copyright[] =
 static PyObject* error_exception;
 
 static PyObject* property_dict;
-
-/* The shortest string prefix for which we'll use a fast string search. */
-#define RE_MIN_FAST_LENGTH 3
 
 /* Handlers for ASCII, locale and Unicode. */
 typedef struct RE_EncodingTable {
@@ -8462,6 +8466,7 @@ advance:
             size_t index;
             RE_RepeatData* rp_data;
             RE_BacktrackData* bt_data;
+            Py_ssize_t available;
             size_t max_count;
             BOOL try_body;
             RE_Position next_body_position;
@@ -8481,8 +8486,17 @@ advance:
             bt_data->repeat.count = rp_data->count;
             bt_data->repeat.max_count = rp_data->max_count;
 
-            max_count = node->values[3] ? slice_end - text_pos : text_pos -
+            /* In the worst-case scenario, the body of the repeat could
+             * alternate between matching no characters and 1 character, which
+             * gives a maximum of 2*n+1 iterations, where 'n' is the number of
+             * available characters.
+             */
+            available = node->values[3] ? slice_end - text_pos : text_pos -
               slice_start;
+            if (available > (RE_UNLIMITED - 1) / 2)
+                max_count = RE_UNLIMITED;
+            else
+                max_count = 2 * available + 1;
             if (max_count > node->values[2])
                 max_count = node->values[2];
 
@@ -8700,6 +8714,7 @@ advance:
             size_t index;
             RE_RepeatData* rp_data;
             RE_BacktrackData* bt_data;
+            Py_ssize_t available;
             size_t max_count;
             BOOL try_body;
             RE_Position next_body_position;
@@ -8719,8 +8734,17 @@ advance:
             bt_data->repeat.count = rp_data->count;
             bt_data->repeat.max_count = rp_data->max_count;
 
-            max_count = node->values[3] ? slice_end - text_pos : text_pos -
+            /* In the worst-case scenario, the body of the repeat could
+             * alternate between matching no characters and 1 character, which
+             * gives a maximum of 2*n+1 iterations, where 'n' is the number of
+             * available characters.
+             */
+            available = node->values[3] ? slice_end - text_pos : text_pos -
               slice_start;
+            if (available > (RE_UNLIMITED - 1) / 2)
+                max_count = RE_UNLIMITED;
+            else
+                max_count = 2 * available + 1;
             if (max_count > node->values[2])
                 max_count = node->values[2];
 
@@ -11182,6 +11206,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     PatternObject* pattern;
     RE_FuzzyInfo* fuzzy_info;
     size_t available;
+    BOOL get_best;
     BOOL must_advance;
     size_t low_cost;
     size_t high_cost;
@@ -11191,7 +11216,6 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     int status;
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
-    BOOL stop_on_same;
     TRACE(("<<do_match>>\n"))
 
     state = safe_state->re_state;
@@ -11218,6 +11242,8 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         available = state->slice_end - state->text_pos;
     }
 
+    get_best = (pattern->flags & RE_FLAG_BESTMATCH) != 0;
+
 try_again:
     /* The range of permitted costs. */
     low_cost = 0;
@@ -11232,8 +11258,6 @@ try_again:
 
     slice_start = state->slice_start;
     slice_end = state->slice_end;
-
-    stop_on_same = FALSE;
 
     for (;;) {
         /* If there's a better match, it won't start earlier in the string than
@@ -11269,8 +11293,7 @@ try_again:
             /* An error occurred or we want an exact match. */
             break;
 
-        if (!(pattern->flags & RE_FLAG_BESTMATCH) && state->text_pos ==
-          state->match_pos)
+        if (!get_best && state->text_pos == state->match_pos)
             /* We want the first match. The match is already zero-width, so the
              * cost can't get any lower (because the fit can't get any better).
              */
@@ -11283,12 +11306,13 @@ try_again:
                  */
                 break;
 
-            if (stop_on_same && best_groups) {
+            if (best_groups && !get_best) {
                 /* Not the first success. Are the results the same? */
                 BOOL same;
                 Py_ssize_t g;
 
-                same = TRUE;
+                same = state->match_pos == best_match_pos && state->text_pos ==
+                  best_text_pos;
                 for (g = 0; same && g < state->pattern->group_count; g++)
                     same = state->groups[g].span.start ==
                       best_groups[g].span.start && state->groups[g].span.end ==
@@ -11332,13 +11356,10 @@ try_again:
         if (low_cost > high_cost || low_cost == high_cost && best_groups)
             break;
 
-        if (state->total_errors <= 10) {
-            stop_on_same = FALSE;
-            state->max_cost = (low_cost + high_cost) / 2;
-        } else {
-            stop_on_same = TRUE;
+        if (high_cost >= RE_FUZZY_THRESHOLD)
             state->max_cost = high_cost - 1;
-        }
+        else
+            state->max_cost = (low_cost + high_cost) / 2;
     }
 
     state->slice_start = slice_start;
@@ -17674,7 +17695,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
     PyObject* m;
     PyObject* d;
     PyObject* x;
-#if 1 || defined(VERBOSE)
+#if defined(VERBOSE)
     /* Unbuffered in case it crashes! */
     setvbuf(stdout, NULL, _IONBF, 0);
 #endif

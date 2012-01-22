@@ -3129,10 +3129,11 @@ xyzabc
 
         # 59..60
         self.expect(lambda: regex.findall(r"(?:(?:QR)+){e}","abcde"),
-          ascii(["ab", "cd", "e", ""]))
-        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), ascii(["a", "b",
-          "c", ""]))
+          ascii(["abcde", ""]))
+        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), ascii(["abc",
+          ""]))
 
+        # Hg issue 41
         # 61..65
         self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
           "servic detection").span(), ascii((0, 16)))
@@ -3232,12 +3233,12 @@ xyzabc
           ascii(True))
 
     def test_hg_bugs(self):
-        # Hg issue 28: regex.compile("(?>b)") causes "TypeError: 'Character' object is not subscriptable"
+        # Hg issue 28
         # 1
         self.expect(lambda: bool(regex.compile("(?>b)", flags=regex.V1)),
           ascii(True))
 
-        # Hg issue 29: regex.compile("^((?>\w+)|(?>\s+))*$") causes "TypeError: 'GreedyRepeat' object is not iterable"
+        # Hg issue 29
         # 2
         self.expect(lambda: bool(regex.compile("^((?>\w+)|(?>\s+))*$",
           flags=regex.V1)), ascii(True))
@@ -3306,6 +3307,29 @@ xyzabc
         # 19
         self.expect(lambda: regex.search(r"(\()?[^()]+(?(1)\)|)",
           "(abcd").group(0), ascii("abcd"))
+
+        # Hg issue 42
+        # 20..22
+        self.expect(lambda: regex.search("(a*)*", "a").span(1), ascii((1, 1)))
+        self.expect(lambda: regex.search("(a*)*", "aa").span(1), ascii((2, 2)))
+        self.expect(lambda: regex.search("(a*)*", "aaa").span(1), ascii((3, 3)))
+
+        # Hg issue 43
+        # 23
+        self.expect(lambda: regex.search("a(?#xxx)*", "aaa").group(),
+          ascii("aaa"))
+
+        # Hg issue 44
+        # 24
+        self.expect(lambda: regex.search("(?=abc){3}abc", "abcabcabc").span(),
+          ascii((0, 3)))
+
+        # Hg issue 45
+        # 25..26
+        self.expect(lambda: regex.search("^(?:a(?:(?:))+)+", "a").span(),
+          ascii((0, 1)))
+        self.expect(lambda: regex.search("^(?:a(?:(?:))+)+", "aa").span(),
+          ascii((0, 2)))
 
     def run(self):
         print("Performing tests")

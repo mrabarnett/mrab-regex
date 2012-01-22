@@ -3138,10 +3138,11 @@ xyzabc
 
         # 59..60
         self.expect(lambda: regex.findall(r"(?:(?:QR)+){e}","abcde"),
-          repr(["ab", "cd", "e", ""]))
-        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), repr(["a", "b",
-          "c", ""]))
+          repr(["abcde", ""]))
+        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), repr(["abc",
+          ""]))
 
+        # Hg issue 41
         # 61..65
         self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
           "servic detection").span(), repr((0, 16)))
@@ -3241,12 +3242,12 @@ xyzabc
           repr(True))
 
     def test_hg_bugs(self):
-        # Hg issue 28: regex.compile("(?>b)") causes "TypeError: 'Character' object is not subscriptable"
+        # Hg issue 28
         # 1
         self.expect(lambda: bool(regex.compile("(?>b)", flags=regex.V1)),
           repr(True))
 
-        # Hg issue 29: regex.compile("^((?>\w+)|(?>\s+))*$") causes "TypeError: 'GreedyRepeat' object is not iterable"
+        # Hg issue 29
         # 2
         self.expect(lambda: bool(regex.compile("^((?>\w+)|(?>\s+))*$",
           flags=regex.V1)), repr(True))
@@ -3315,6 +3316,29 @@ xyzabc
         # 19
         self.expect(lambda: regex.search(r"(\()?[^()]+(?(1)\)|)",
           "(abcd").group(0), repr("abcd"))
+
+        # Hg issue 42
+        # 20..22
+        self.expect(lambda: regex.search("(a*)*", "a").span(1), repr((1, 1)))
+        self.expect(lambda: regex.search("(a*)*", "aa").span(1), repr((2, 2)))
+        self.expect(lambda: regex.search("(a*)*", "aaa").span(1), repr((3, 3)))
+
+        # Hg issue 43
+        # 23
+        self.expect(lambda: regex.search("a(?#xxx)*", "aaa").group(),
+          repr("aaa"))
+
+        # Hg issue 44
+        # 24
+        self.expect(lambda: regex.search("(?=abc){3}abc", "abcabcabc").span(),
+          repr((0, 3)))
+
+        # Hg issue 45
+        # 25..26
+        self.expect(lambda: regex.search("^(?:a(?:(?:))+)+", "a").span(),
+          repr((0, 1)))
+        self.expect(lambda: regex.search("^(?:a(?:(?:))+)+", "aa").span(),
+          repr((0, 2)))
 
     def run(self):
         print "Performing tests"

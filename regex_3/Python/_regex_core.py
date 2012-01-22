@@ -109,6 +109,9 @@ FULL_CASE_FOLDING = UNICODE | FULLIGNORECASE
 # The number of digits in hexadecimal escapes.
 HEX_ESCAPES = {"x": 2, "u": 4, "U": 8}
 
+# A singleton which indicates a comment within a pattern.
+COMMENT = object()
+
 # The names of the opcodes.
 OPCODES = """
 FAILURE
@@ -383,7 +386,7 @@ def parse_item(source, info):
             source.pos = here
             repeated = GreedyRepeat
 
-        if not element or min_count == max_count == 1:
+        if element.is_empty() or min_count == max_count == 1:
             return element
 
         return repeated(element, min_count, max_count)
@@ -404,24 +407,32 @@ def parse_item(source, info):
 
 def parse_quantifier(source, info):
     "Parses a quantifier."
-    here = source.pos
-    ch = source.get()
-    if ch == "?":
-        # Optional element, eg. 'a?'.
-        return 0, 1
-    if ch == "*":
-        # Repeated element, eg. 'a*'.
-        return 0, None
-    if ch == "+":
-        # Repeated element, eg. 'a+'.
-        return 1, None
-    if ch == "{":
-        # Looks like a limited repeated element, eg. 'a{2,3}'.
-        try:
-            return parse_limited_quantifier(source)
-        except ParseError:
-            # Not a limited quantifier.
-            pass
+    while True:
+        here = source.pos
+        ch = source.get()
+        if ch == "?":
+            # Optional element, eg. 'a?'.
+            return 0, 1
+        if ch == "*":
+            # Repeated element, eg. 'a*'.
+            return 0, None
+        if ch == "+":
+            # Repeated element, eg. 'a+'.
+            return 1, None
+        if ch == "{":
+            # Looks like a limited repeated element, eg. 'a{2,3}'.
+            try:
+                return parse_limited_quantifier(source)
+            except ParseError:
+                # Not a limited quantifier.
+                pass
+        if ch == "(" and source.match("?#"):
+            # A comment.
+            parse_comment(source)
+            continue
+
+        # Neither a quantifier nor a comment.
+        break
 
     # Parse it later, perhaps as a literal.
     source.pos = here
@@ -647,7 +658,7 @@ def parse_element(source, info):
             elif ch == "(":
                 # A parenthesised subpattern or a flag.
                 element = parse_paren(source, info)
-                if element:
+                if element and element is not COMMENT:
                     return element
             elif ch == ".":
                 # Any character.
@@ -722,19 +733,21 @@ def parse_paren(source, info):
     here = source.pos
     ch = source.get()
     if ch == "?":
+        # (?...
         here2 = source.pos
         ch = source.get()
         if ch == "<":
+            # (?<...
             here3 = source.pos
             ch = source.get()
             if ch == "=":
-                # Positive lookbehind.
+                # (?<=...: positive lookbehind.
                 return parse_lookaround(source, info, True, True)
             if ch == "!":
-                # Negative lookbehind.
+                # (?<!...: negative lookbehind.
                 return parse_lookaround(source, info, True, False)
 
-            # A named capture group.
+            # (?<...: a named capture group.
             source.pos = here3
             name = parse_name(source)
             group = info.new_group(name)
@@ -751,38 +764,38 @@ def parse_paren(source, info):
             info.close_group(group)
             return Group(info, group, subpattern)
         if ch == "=":
-            # Positive lookahead.
+            # (?=...: positive lookahead.
             return parse_lookaround(source, info, False, True)
         if ch == "!":
-            # Negative lookahead.
+            # (?!...: negative lookahead.
             return parse_lookaround(source, info, False, False)
         if ch == "P":
-            # A Python extension.
+            # (?P...: a Python extension.
             return parse_extension(source, info)
         if ch == "#":
-            # A comment.
+            # (?#...: a comment.
             return parse_comment(source)
         if ch == "(":
-            # A conditional subpattern.
+            # (?(...: a conditional subpattern.
             return parse_conditional(source, info)
         if ch == ">":
-            # An atomic subpattern.
+            # (?>...: an atomic subpattern.
             return parse_atomic(source, info)
         if ch == "|":
-            # A common groups branch.
+            # (?|...: a common/reset groups branch.
             return parse_common(source, info)
         if ch == "R" or "0" <= ch <= "9":
-            # A call to a group.
+            # (?R...: probably a call to a group.
             return parse_call_group(source, info, ch)
         if ch == "&":
-            # A call to a named group.
+            # (?&...: a call to a named group.
             return parse_call_named_group(source, info)
 
-        # A flags subpattern.
+        # (?...: probably a flags subpattern.
         source.pos = here2
         return parse_flags_subpattern(source, info)
 
-    # An unnamed capture group.
+    # (...: an unnamed capture group.
     source.pos = here
     group = info.new_group()
     saved_flags = info.flags
@@ -803,7 +816,7 @@ def parse_extension(source, info):
     here = source.pos
     ch = source.get()
     if ch == "<":
-        # A named capture group.
+        # (?P<...: a named capture group.
         name = parse_name(source)
         group = info.new_group(name)
         source.expect(">")
@@ -819,18 +832,16 @@ def parse_extension(source, info):
         info.close_group(group)
 
         return Group(info, group, subpattern)
-
     if ch == "=":
-        # A named group reference.
+        # (?P=...: a named group reference.
         name = parse_name(source)
         source.expect(")")
         if info.is_open_group(name):
             raise error("can't refer to an open group")
 
         return make_ref_group(info, name)
-
     if ch == ">" or ch == "&":
-        # A call to a group.
+        # (?P>...: a call to a group.
         return parse_call_named_group(source, info)
 
     source.pos = here
@@ -845,7 +856,7 @@ def parse_comment(source):
     if not ch:
         raise error("missing )")
 
-    return None
+    return COMMENT
 
 def parse_lookaround(source, info, behind, positive):
     "Parses a lookaround."
@@ -1558,15 +1569,15 @@ def compile_repl_escape(source, pattern, is_unicode):
             # A hexadecimal escape sequence.
             return False, [parse_repl_hex_escape(source, HEX_ESCAPES[ch])]
 
+        if ch == "g":
+            # A group preference.
+            return True, [compile_repl_group(source, pattern)]
+
         if ch == "N" and is_unicode:
             # A named character.
             value = parse_repl_named_char(source)
             if value is not None:
                 return False, [value]
-
-        if ch == "g":
-            # A group preference.
-            return True, [compile_repl_group(source, pattern)]
 
         return False, [ord("\\"), ord(ch)]
 
@@ -1605,6 +1616,7 @@ def compile_repl_escape(source, pattern, is_unicode):
         # A group reference.
         source.pos = here
         return True, [int(digits)]
+
     if ch == "\\":
         # An escaped backslash is a backslash.
         return False, [ord("\\")]
@@ -1680,7 +1692,7 @@ def make_sequence(items):
         return items[0]
     return Sequence(items)
 
-# Common base for all nodes.
+# Common base class for all nodes.
 class RegexBase:
     def __init__(self):
         self._key = self.__class__
@@ -1735,6 +1747,9 @@ class RegexBase:
     def has_simple_start(self):
         return False
 
+    def is_empty(self):
+        return False
+
     def __hash__(self):
         return hash(self._key)
 
@@ -1744,10 +1759,7 @@ class RegexBase:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def __bool__(self):
-        return True
-
-# Base for zero-width nodes.
+# Base class for zero-width nodes.
 class ZeroWidthBase(RegexBase):
     def __init__(self, positive=True):
         RegexBase.__init__(self)
@@ -1808,7 +1820,11 @@ class Atomic(RegexBase):
         self.subpattern.fix_groups()
 
     def optimise(self, info):
-        return Atomic(self.subpattern.optimise(info))
+        self.subpattern = self.subpattern.optimise(info)
+
+        if self.subpattern.is_empty():
+            return self.subpattern
+        return self
 
     def pack_characters(self, info):
         self.subpattern = self.subpattern.pack_characters(info)
@@ -1838,12 +1854,12 @@ class Atomic(RegexBase):
         print("{}ATOMIC".format(INDENT * indent))
         self.subpattern.dump(indent + 1, reverse)
 
+    def is_empty(self):
+        return self.subpattern.is_empty()
+
     def __eq__(self, other):
         return (type(self) is type(other) and self.subpattern ==
           other.subpattern)
-
-    def __bool__(self):
-        return bool(self.subpattern)
 
 class Boundary(ZeroWidthBase):
     _opcode = OP.BOUNDARY
@@ -2198,11 +2214,11 @@ class Branch(RegexBase):
 
         return False
 
+    def is_empty(self):
+        return all(b.is_empty() for b in self.branches)
+
     def __eq__(self, other):
         return type(self) is type(other) and self.branches == other.branches
-
-    def __bool__(self):
-        return any(self.branches)
 
 class CallGroup(RegexBase):
     def __init__(self, info, group):
@@ -2301,7 +2317,7 @@ class Character(RegexBase):
 
 class Conditional(RegexBase):
     def __new__(cls, info, group, yes_item, no_item):
-        if not yes_item and not no_item:
+        if yes_item.is_empty() and no_item.is_empty():
             return Sequence()
 
         return RegexBase.__new__(cls)
@@ -2375,12 +2391,12 @@ class Conditional(RegexBase):
             print("{}OR".format(INDENT * indent))
             self.no_item.dump(indent + 1, reverse)
 
+    def is_empty(self):
+        return self.yes_item.is_empty() and self.no_item.is_empty()
+
     def __eq__(self, other):
         return type(self) is type(other) and (self.group, self.yes_item,
           self.no_item) == (other.group, other.yes_item, other.no_item)
-
-    def __bool__(self):
-        return bool(self.yes_item or self.no_item)
 
 class DefaultBoundary(ZeroWidthBase):
     _opcode = OP.DEFAULT_BOUNDARY
@@ -2498,12 +2514,12 @@ class Fuzzy(RegexBase):
         print("{}FUZZY".format(INDENT * indent))
         self.subpattern.dump(indent + 1, reverse)
 
+    def is_empty(self):
+        return self.subpattern.is_empty()
+
     def __eq__(self, other):
         return (type(self) is type(other) and self.subpattern ==
           other.subpattern)
-
-    def __bool__(self):
-        return bool(self.subpattern)
 
 class Grapheme(RegexBase):
     _op_name = {False: "GRAPHEME", True: "GRAPHEME_REV"}
@@ -2579,13 +2595,13 @@ class GreedyRepeat(RegexBase):
 
         self.subpattern.dump(indent + 1, reverse)
 
+    def is_empty(self):
+        return self.subpattern.is_empty()
+
     def __eq__(self, other):
         return type(self) is type(other) and (self.subpattern, self.min_count,
           self.max_count) == (other.subpattern, other.min_count,
           other.max_count)
-
-    def __bool__(self):
-        return bool(self.subpattern)
 
 class Group(RegexBase):
     def __init__(self, info, group, subpattern):
@@ -2644,7 +2660,7 @@ class LookAround(RegexBase):
     _dir_text = {False: "AHEAD", True: "BEHIND"}
 
     def __new__(cls, behind, positive, subpattern):
-        if positive and not subpattern:
+        if positive and subpattern.is_empty():
             return subpattern
 
         return RegexBase.__new__(cls)
@@ -2679,9 +2695,6 @@ class LookAround(RegexBase):
     def contains_group(self):
         return self.subpattern.contains_group()
 
-    def can_repeat(self):
-        return False
-
     def compile(self, reverse=False, fuzzy=False):
         return ([(OP.LOOKAROUND, int(self.positive), int(not self.behind))] +
           self.subpattern.compile(self.behind) + [(OP.END, )])
@@ -2691,12 +2704,12 @@ class LookAround(RegexBase):
           self._dir_text[self.behind], POS_TEXT[self.positive]))
         self.subpattern.dump(indent + 1, self.behind)
 
+    def is_empty(self):
+        return self.subpattern.is_empty()
+
     def __eq__(self, other):
         return type(self) is type(other) and (self.behind, self.positive,
           self.subpattern) == (other.behind, other.positive, other.subpattern)
-
-    def __bool__(self):
-        return bool(self.subpattern)
 
 class PrecompiledCode(RegexBase):
     def __init__(self, code):
@@ -2996,11 +3009,11 @@ class Sequence(RegexBase):
 
         characters[:] = []
 
+    def is_empty(self):
+        return all(i.is_empty() for i in self.items)
+
     def __eq__(self, other):
         return type(self) is type(other) and self.items == other.items
-
-    def __bool__(self):
-        return any(self.items)
 
 class SetBase(RegexBase):
     def __init__(self, items, positive=True, case_flags=NOCASE,
@@ -3397,14 +3410,27 @@ class Source:
     def match(self, substring):
         try:
             if self.ignore_space:
-                while self.string[self.pos].isspace():
-                    self.pos += 1
+                pos = self.pos
 
-            if not self.string.startswith(substring, self.pos):
-                return False
+                for c in substring:
+                    # Ignore any whitespace before the character.
+                    while self.string[pos].isspace():
+                        pos += 1
 
-            self.pos += len(substring)
-            return True
+                    # Does the character match?
+                    if c != self.string[pos]:
+                        return False
+
+                    pos += 1
+
+                self.pos = pos
+                return True
+            else:
+                if not self.string.startswith(substring, self.pos):
+                    return False
+
+                self.pos += len(substring)
+                return True
         except IndexError:
             return False
 
