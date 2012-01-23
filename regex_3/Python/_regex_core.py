@@ -430,6 +430,9 @@ def parse_quantifier(source, info):
             # A comment.
             parse_comment(source)
             continue
+        if ch == "#" and (info.flags & VERBOSE):
+            parse_hash_comment(source)
+            continue
 
         # Neither a quantifier nor a comment.
         break
@@ -437,6 +440,17 @@ def parse_quantifier(source, info):
     # Parse it later, perhaps as a literal.
     source.pos = here
     return None
+
+def parse_hash_comment(source):
+    "Parses a single-line 'hash' comment."
+    source.ignore_space = False
+    try:
+        # Ignore characters until a newline or the end of the
+        # pattern.
+        while source.get() not in "\n":
+            pass
+    finally:
+        source.ignore_space = True
 
 def parse_limited_quantifier(source):
     "Parses a limited quantifier."
@@ -707,20 +721,9 @@ def parse_element(source, info):
             elif ch in "?*+":
                 # A quantifier where we expected an element.
                 raise error("nothing to repeat")
-            elif info.flags & VERBOSE:
-                if ch == "#":
-                    # A comment.
-                    source.ignore_space = False
-                    try:
-                        # Ignore characters until a newline or the end of the
-                        # pattern.
-                        while source.get() not in "\n":
-                            pass
-                    finally:
-                        source.ignore_space = True
-                else:
-                    # A literal.
-                    return make_character(info, ord(ch))
+            elif ch == "#" and (info.flags & VERBOSE):
+                # A comment.
+                parse_hash_comment(source)
             else:
                 # A literal.
                 return make_character(info, ord(ch))
@@ -1007,6 +1010,10 @@ def parse_flags_subpattern(source, info):
 
         try:
             subpattern = parse_pattern(source, info)
+
+            # Consume trailing whitespace if VERBOSE.
+            if source.get():
+                source.pos -= 1
         finally:
             source.ignore_space = saved_ignore
             info.flags = saved_flags

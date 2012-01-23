@@ -3331,6 +3331,16 @@ xyzabc
         self.expect(lambda: regex.search("^(?:a(?:(?:))+)+", "aa").span(),
           ascii((0, 2)))
 
+        # Hg issue 46
+        # 27
+        self.expect(lambda: regex.search("a(?x: b c )d", "abcd").group(0),
+          ascii("abcd"))
+
+        # Hg issue 47
+        # 28
+        self.expect(lambda: regex.search("a#comment\n*", "aaa",
+          flags=regex.X).group(0), ascii("aaa"))
+
     def run(self):
         print("Performing tests")
         print("================")
