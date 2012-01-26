@@ -445,8 +445,11 @@ def _compile(pattern, flags=0, kwargs=None):
         else:
             info.flags |= ASCII
 
+    reverse = bool(info.flags & REVERSE)
+    fuzzy = isinstance(parsed, Fuzzy)
+
     # Fix the group references.
-    parsed.fix_groups()
+    parsed.fix_groups(reverse, False)
 
     # Optimise the parsed pattern.
     parsed = parsed.optimise(info)
@@ -467,14 +470,28 @@ def _compile(pattern, flags=0, kwargs=None):
         named_list_indexes[index] = items
         args_needed.add((name, values))
 
-    reverse = bool(info.flags & REVERSE)
-
     # Should we print the parsed pattern?
     if flags & DEBUG:
         parsed.dump(indent=0, reverse=reverse)
 
+    # Check of the features of the groups.
+    check_group_features(info, parsed)
+
     # Compile the parsed pattern. The result is a list of tuples.
-    code = parsed.compile(reverse) + [(OP.SUCCESS, )]
+    code = parsed.compile(reverse)
+
+    # Is there a group call to the pattern as a whole?
+    key = (0, reverse, fuzzy)
+    ref = info.call_refs.get(key)
+    if ref is not None:
+        code = [(OP.CALL_REF, ref)] + code + [(OP.END, )]
+
+    # Add the final 'success' opcode.
+    code += [(OP.SUCCESS, )]
+
+    # Compile the additional copies of the groups that we need.
+    for group, rev, fuz in info.additional_groups:
+        code += group.compile(rev, fuz)
 
     # Flatten the code into a list of ints.
     code = flatten_code(code)

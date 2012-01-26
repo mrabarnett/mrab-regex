@@ -3350,6 +3350,41 @@ xyzabc
         self.expect(lambda: regex.search("a#comment\n*", "aaa",
           flags=regex.X).group(0), repr("aaa"))
 
+        # Hg issue 48
+        # 29..32
+        self.expect(lambda: regex.search(r"(?V1)(a(?(1)\1)){1}",
+          "aaaaaaaaaa").span(0, 1), repr(((0, 1), (0, 1))))
+        self.expect(lambda: regex.search(r"(?V1)(a(?(1)\1)){2}",
+          "aaaaaaaaaa").span(0, 1), repr(((0, 3), (1, 3))))
+        self.expect(lambda: regex.search(r"(?V1)(a(?(1)\1)){3}",
+          "aaaaaaaaaa").span(0, 1), repr(((0, 6), (3, 6))))
+        self.expect(lambda: regex.search(r"(?V1)(a(?(1)\1)){4}",
+          "aaaaaaaaaa").span(0, 1), repr(((0, 10), (6, 10))))
+
+        # Hg issue 49
+        # 33
+        self.expect(lambda: regex.search("(?V1)(a)(?<=b(?1))", "baz").group(0),
+          repr("a"))
+
+        # Hg issue 50
+        # 34..37
+        self.expect(lambda: regex.findall(ur'(?fi)\L<keywords>',
+          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05',
+          keywords=['post','pos']), repr([u'POST', u'Post', u'post',
+          u'po\u017Ft', u'po\uFB06', u'po\uFB05']))
+        self.expect(lambda: regex.findall(ur'(?fi)pos|post',
+          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'),
+          repr([u'POS', u'Pos', u'pos', u'po\u017F', u'po\uFB06',
+          u'po\uFB05']))
+        self.expect(lambda: regex.findall(ur'(?fi)post|pos',
+          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'),
+          repr([u'POST', u'Post', u'post', u'po\u017Ft', u'po\uFB06',
+          u'po\uFB05']))
+        self.expect(lambda: regex.findall(ur'(?fi)post|another',
+          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'),
+          repr([u'POST', u'Post', u'post', u'po\u017Ft', u'po\uFB06',
+          u'po\uFB05']))
+
     def run(self):
         print "Performing tests"
         print "================"

@@ -151,14 +151,16 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * Full Unicode case-folding is supported.
 
-    When performing case-insensitive matches in Unicode, regex uses full case-folding.
+    In version 1 behaviour, the regex module uses full case-folding when performing case-insensitive matches in Unicode.
 
     Examples (in Python 3):
 
-        >>> regex.match(r"(?i)strasse", "stra\N{LATIN SMALL LETTER SHARP S}e").span()
+        >>> regex.match(r"(?iV1)strasse", "stra\N{LATIN SMALL LETTER SHARP S}e").span()
         (0, 6)
-        >>> regex.match(r"(?i)stra\N{LATIN SMALL LETTER SHARP S}e", "STRASSE").span()
+        >>> regex.match(r"(?iV1)stra\N{LATIN SMALL LETTER SHARP S}e", "STRASSE").span()
         (0, 7)
+
+    In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.
 
 * Approximate "fuzzy" matching (Hg issue 12, Hg issue 41)
 

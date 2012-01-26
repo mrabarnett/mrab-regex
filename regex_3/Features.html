@@ -419,16 +419,17 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 </li>
 <li><p class="first">Full Unicode case-folding is supported.</p>
 <blockquote>
-<p>When performing case-insensitive matches in Unicode, regex uses full case-folding.</p>
+<p>In version 1 behaviour, the regex module uses full case-folding when performing case-insensitive matches in Unicode.</p>
 <p>Examples (in Python 3):</p>
 <blockquote>
 <pre class="doctest-block">
-&gt;&gt;&gt; regex.match(r&quot;(?i)strasse&quot;, &quot;stra\N{LATIN SMALL LETTER SHARP S}e&quot;).span()
+&gt;&gt;&gt; regex.match(r&quot;(?iV1)strasse&quot;, &quot;stra\N{LATIN SMALL LETTER SHARP S}e&quot;).span()
 (0, 6)
-&gt;&gt;&gt; regex.match(r&quot;(?i)stra\N{LATIN SMALL LETTER SHARP S}e&quot;, &quot;STRASSE&quot;).span()
+&gt;&gt;&gt; regex.match(r&quot;(?iV1)stra\N{LATIN SMALL LETTER SHARP S}e&quot;, &quot;STRASSE&quot;).span()
 (0, 7)
 </pre>
 </blockquote>
+<p>In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.</p>
 </blockquote>
 </li>
 <li><p class="first">Approximate &quot;fuzzy&quot; matching (Hg issue 12, Hg issue 41)</p>

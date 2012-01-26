@@ -23,10 +23,11 @@ import _regex
 __all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "F", "FULLCASE", "I",
   "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "R", "REVERSE", "S", "DOTALL",
   "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "W",
-  "WORD", "X", "VERBOSE", "error", "ALNUM", "NONLITERAL", "Info", "Source",
-  "FirstSetError", "UnscopedFlagSet", "OP", "Scanner", "compile_firstset",
-  "compile_repl_escape", "count_ones", "flatten_code", "fold_case",
-  "parse_pattern", "shrink_cache", "REGEX_FLAGS"]
+  "WORD", "X", "VERBOSE", "error", "ALNUM", "NONLITERAL", "Fuzzy", "Info",
+  "Source", "FirstSetError", "UnscopedFlagSet", "OP", "Scanner",
+  "check_group_features", "compile_firstset", "compile_repl_escape",
+  "count_ones", "flatten_code", "fold_case", "parse_pattern", "shrink_cache",
+  "REGEX_FLAGS"]
 
 # The regex exception.
 class error(Exception):
@@ -125,6 +126,7 @@ ANY_U_REV
 ATOMIC
 BOUNDARY
 BRANCH
+CALL_REF
 CHARACTER
 CHARACTER_IGN
 CHARACTER_IGN_REV
@@ -155,7 +157,6 @@ LAZY_REPEAT
 LAZY_REPEAT_ONE
 LOOKAROUND
 NEXT
-NOT_GROUP_CALL
 PROPERTY
 PROPERTY_IGN
 PROPERTY_IGN_REV
@@ -1724,7 +1725,7 @@ class RegexBase:
 
         return self.rebuild(positive, case_flags, zerowidth)
 
-    def fix_groups(self):
+    def fix_groups(self, reverse, fuzzy):
         pass
 
     def optimise(self, info):
@@ -1796,7 +1797,7 @@ class ZeroWidthBase(RegexBase):
 
 class Any(RegexBase):
     _opcode = {False: OP.ANY, True: OP.ANY_REV}
-    _op_name = {False: "ANY", True: "ANY_REV"}
+    _op_name = "ANY"
 
     def has_simple_start(self):
         return True
@@ -1808,23 +1809,23 @@ class Any(RegexBase):
         return [(self._opcode[reverse], flags)]
 
     def dump(self, indent=0, reverse=False):
-        print("{}{}".format(INDENT * indent, self._op_name[reverse]))
+        print("{}{}".format(INDENT * indent, self._op_name))
 
 class AnyAll(Any):
     _opcode = {False: OP.ANY_ALL, True: OP.ANY_ALL_REV}
-    _op_name = {False: "ANY_ALL", True: "ANY_ALL_REV"}
+    _op_name = "ANY_ALL"
 
 class AnyU(Any):
     _opcode = {False: OP.ANY_U, True: OP.ANY_U_REV}
-    _op_name = {False: "ANY_U", True: "ANY_U_REV"}
+    _op_name = "ANY_U"
 
 class Atomic(RegexBase):
     def __init__(self, subpattern):
         RegexBase.__init__(self)
         self.subpattern = subpattern
 
-    def fix_groups(self):
-        self.subpattern.fix_groups()
+    def fix_groups(self, reverse, fuzzy):
+        self.subpattern.fix_groups(reverse, fuzzy)
 
     def optimise(self, info):
         self.subpattern = self.subpattern.optimise(info)
@@ -1877,9 +1878,9 @@ class Branch(RegexBase):
         RegexBase.__init__(self)
         self.branches = branches
 
-    def fix_groups(self):
+    def fix_groups(self, reverse, fuzzy):
         for b in self.branches:
-            b.fix_groups()
+            b.fix_groups(reverse, fuzzy)
 
     def optimise(self, info):
         # Flatten branches within branches.
@@ -1981,9 +1982,10 @@ class Branch(RegexBase):
             pos += 1
         count = pos
 
-        if (info.flags & UNICODE) == UNICODE:
+        if info.flags & UNICODE:
             # We need to check that we're not splitting a sequence of
             # characters which could form part of full case-folding.
+            count = pos
             while count > 0 and not all(Branch._can_split(a, count) for a in
               alternatives):
                 count -= 1
@@ -2022,7 +2024,7 @@ class Branch(RegexBase):
             pos -= 1
         count = -1 - pos
 
-        if (info.flags & UNICODE) == UNICODE:
+        if info.flags & UNICODE:
             # We need to check that we're not splitting a sequence of
             # characters which could form part of full case-folding.
             while count > 0 and not all(Branch._can_split_rev(a, count) for a
@@ -2196,8 +2198,9 @@ class Branch(RegexBase):
         if not 0 <= i < len(items):
             return False
 
-        return isinstance(i, Character) and i.positive and (i.case_flags &
-          FULLIGNORECASE) == FULLIGNORECASE
+        item = items[i]
+        return (isinstance(item, Character) and item.positive and
+          (item.case_flags & FULLIGNORECASE) == FULLIGNORECASE)
 
     @staticmethod
     def _is_folded(items):
@@ -2235,7 +2238,7 @@ class CallGroup(RegexBase):
 
         self._key = self.__class__, self.group
 
-    def fix_groups(self):
+    def fix_groups(self, reverse, fuzzy):
         try:
             self.group = int(self.group)
         except ValueError:
@@ -2247,13 +2250,15 @@ class CallGroup(RegexBase):
         if not 0 <= self.group <= self.info.group_count:
             raise error("unknown group")
 
+        self.info.group_calls.append((self, reverse, fuzzy))
+
         self._key = self.__class__, self.group
 
     def remove_captures(self):
         raise error("group reference not allowed")
 
     def compile(self, reverse=False, fuzzy=False):
-        return [(OP.GROUP_CALL, self.group)]
+        return [(OP.GROUP_CALL, self.call_ref)]
 
     def dump(self, indent=0, reverse=False):
         print("{}GROUP_CALL {}".format(INDENT * indent, self.group))
@@ -2267,7 +2272,7 @@ class Character(RegexBase):
       False): OP.CHARACTER_IGN, (NOCASE, True): OP.CHARACTER_REV, (IGNORECASE,
       True): OP.CHARACTER_IGN_REV, (FULLCASE, True): OP.CHARACTER_REV,
       (FULLIGNORECASE, True): OP.CHARACTER_IGN_REV}
-    _op_name = {False: "CHARACTER", True: "CHARACTER_REV"}
+    _op_name = "CHARACTER"
 
     def __init__(self, value, positive=True, case_flags=NOCASE,
       zerowidth=False):
@@ -2316,7 +2321,7 @@ class Character(RegexBase):
         return code.compile(reverse, fuzzy)
 
     def dump(self, indent=0, reverse=False):
-        print("{}{} {} {}{}".format(INDENT * indent, self._op_name[reverse],
+        print("{}{} {} {}{}".format(INDENT * indent, self._op_name,
           POS_TEXT[self.positive], self.value, CASE_TEXT[self.case_flags]))
 
     def matches(self, ch):
@@ -2336,7 +2341,7 @@ class Conditional(RegexBase):
         self.yes_item = yes_item
         self.no_item = no_item
 
-    def fix_groups(self):
+    def fix_groups(self, reverse, fuzzy):
         try:
             self.group = int(self.group)
         except ValueError:
@@ -2348,8 +2353,8 @@ class Conditional(RegexBase):
         if not 1 <= self.group <= self.info.group_count:
             raise error("unknown group")
 
-        self.yes_item.fix_groups()
-        self.no_item.fix_groups()
+        self.yes_item.fix_groups(reverse, fuzzy)
+        self.no_item.fix_groups(reverse, fuzzy)
 
     def optimise(self, info):
         yes_item = self.yes_item.optimise(info)
@@ -2477,8 +2482,8 @@ class Fuzzy(RegexBase):
             constraints["cost"] = {"d": 1, "i": 1, "s": 1, "max":
               constraints["e"][1]}
 
-    def fix_groups(self):
-        self.subpattern.fix_groups()
+    def fix_groups(self, reverse, fuzzy):
+        self.subpattern.fix_groups(reverse, True)
 
     def pack_characters(self, info):
         self.subpattern = self.subpattern.pack_characters(info)
@@ -2529,7 +2534,7 @@ class Fuzzy(RegexBase):
           other.subpattern)
 
 class Grapheme(RegexBase):
-    _op_name = {False: "GRAPHEME", True: "GRAPHEME_REV"}
+    _op_name = "GRAPHEME"
 
     def compile(self, reverse=False, fuzzy=False):
         # Match at least 1 character until a grapheme boundary is reached. Note
@@ -2541,7 +2546,7 @@ class Grapheme(RegexBase):
         return character_matcher + boundary_matcher
 
     def dump(self, indent=0, reverse=False):
-        print("{}{}".format(INDENT * indent, self._op_name[reverse]))
+        print("{}{}".format(INDENT * indent, self._op_name))
 
 class GreedyRepeat(RegexBase):
     _opcode = OP.GREEDY_REPEAT
@@ -2553,8 +2558,8 @@ class GreedyRepeat(RegexBase):
         self.min_count = min_count
         self.max_count = max_count
 
-    def fix_groups(self):
-        self.subpattern.fix_groups()
+    def fix_groups(self, reverse, fuzzy):
+        self.subpattern.fix_groups(reverse, fuzzy)
 
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
@@ -2617,8 +2622,11 @@ class Group(RegexBase):
         self.group = group
         self.subpattern = subpattern
 
-    def fix_groups(self):
-        self.subpattern.fix_groups()
+        self.call_ref = None
+
+    def fix_groups(self, reverse, fuzzy):
+        self.info.defined_groups[self.group] = (self, reverse, fuzzy)
+        self.subpattern.fix_groups(reverse, fuzzy)
 
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
@@ -2648,8 +2656,20 @@ class Group(RegexBase):
         return self.subpattern.has_simple_start()
 
     def compile(self, reverse=False, fuzzy=False):
-        return [(OP.GROUP, self.group)] + self.subpattern.compile(reverse,
+        code = []
+
+        key = self.group, reverse, fuzzy
+        ref = self.info.call_refs.get(key)
+        if ref is not None:
+            code += [(OP.CALL_REF, ref)]
+
+        code += [(OP.GROUP, self.group)] + self.subpattern.compile(reverse,
           fuzzy) + [(OP.END, )]
+
+        if ref is not None:
+            code += [(OP.END, )]
+
+        return code
 
     def dump(self, indent=0, reverse=False):
         print("{}GROUP {}".format(INDENT * indent, self.group))
@@ -2678,8 +2698,8 @@ class LookAround(RegexBase):
         self.positive = bool(positive)
         self.subpattern = subpattern
 
-    def fix_groups(self):
-        self.subpattern.fix_groups()
+    def fix_groups(self, reverse, fuzzy):
+        self.subpattern.fix_groups(self.behind, fuzzy)
 
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
@@ -2707,7 +2727,7 @@ class LookAround(RegexBase):
           self.subpattern.compile(self.behind) + [(OP.END, )])
 
     def dump(self, indent=0, reverse=False):
-        print("{}LOOKAROUND {} {}".format(INDENT * indent,
+        print("{}LOOK{} {}".format(INDENT * indent,
           self._dir_text[self.behind], POS_TEXT[self.positive]))
         self.subpattern.dump(indent + 1, self.behind)
 
@@ -2731,7 +2751,7 @@ class Property(RegexBase):
       OP.PROPERTY_IGN, (NOCASE, True): OP.PROPERTY_REV, (IGNORECASE, True):
       OP.PROPERTY_IGN_REV, (FULLCASE, True): OP.PROPERTY_REV, (FULLIGNORECASE,
       True): OP.PROPERTY_IGN_REV}
-    _op_name = {False: "PROPERTY", True: "PROPERTY_REV"}
+    _op_name = "PROPERTY"
 
     def __init__(self, value, positive=True, case_flags=NOCASE,
       zerowidth=False):
@@ -2767,7 +2787,7 @@ class Property(RegexBase):
         return [(self._opcode[self.case_flags, reverse], flags, self.value)]
 
     def dump(self, indent=0, reverse=False):
-        print("{}{} {} {}:{}{}".format(INDENT * indent, self._op_name[reverse],
+        print("{}{} {} {}:{}{}".format(INDENT * indent, self._op_name,
           POS_TEXT[self.positive], self.value >> 16, self.value & 0xFFFF,
           CASE_TEXT[self.case_flags]))
 
@@ -2779,7 +2799,7 @@ class Range(RegexBase):
       (FULLCASE, False): OP.RANGE, (FULLIGNORECASE, False): OP.RANGE_IGN,
       (NOCASE, True): OP.RANGE_REV, (IGNORECASE, True): OP.RANGE_IGN_REV,
       (FULLCASE, True): OP.RANGE_REV, (FULLIGNORECASE, True): OP.RANGE_IGN_REV}
-    _op_name = {False: "RANGE", True: "RANGE_REV"}
+    _op_name = "RANGE"
 
     def __init__(self, lower, upper, positive=True, case_flags=NOCASE,
       zerowidth=False):
@@ -2852,7 +2872,7 @@ class RefGroup(RegexBase):
       False): OP.REF_GROUP_FLD, (NOCASE, True): OP.REF_GROUP_REV, (IGNORECASE,
       True): OP.REF_GROUP_IGN_REV, (FULLCASE, True): OP.REF_GROUP_REV,
       (FULLIGNORECASE, True): OP.REF_GROUP_FLD_REV}
-    _op_name = {False: "REF_GROUP", True: "REF_GROUP_REV"}
+    _op_name = "REF_GROUP"
 
     def __init__(self, info, group, case_flags=NOCASE):
         RegexBase.__init__(self)
@@ -2862,7 +2882,7 @@ class RefGroup(RegexBase):
 
         self._key = self.__class__, self.group, self.case_flags
 
-    def fix_groups(self):
+    def fix_groups(self, reverse, fuzzy):
         try:
             self.group = int(self.group)
         except ValueError:
@@ -2886,8 +2906,8 @@ class RefGroup(RegexBase):
         return [(self._opcode[self.case_flags, reverse], flags, self.group)]
 
     def dump(self, indent=0, reverse=False):
-        print("{}{} {}{}".format(INDENT * indent, self._op_name[reverse],
-          self.group, CASE_TEXT[self.case_flags]))
+        print("{}{} {}{}".format(INDENT * indent, self._op_name, self.group,
+          CASE_TEXT[self.case_flags]))
 
 class SearchAnchor(ZeroWidthBase):
     _opcode = OP.SEARCH_ANCHOR
@@ -2901,9 +2921,9 @@ class Sequence(RegexBase):
 
         self.items = items
 
-    def fix_groups(self):
+    def fix_groups(self, reverse, fuzzy):
         for s in self.items:
-            s.fix_groups()
+            s.fix_groups(reverse, fuzzy)
 
     def optimise(self, info):
         # Flatten the sequences.
@@ -3060,7 +3080,7 @@ class SetBase(RegexBase):
         return code
 
     def dump(self, indent=0, reverse=False):
-        print("{}{} {}{}".format(INDENT * indent, self._op_name[reverse],
+        print("{}{} {}{}".format(INDENT * indent, self._op_name,
           POS_TEXT[self.positive], CASE_TEXT[self.case_flags]))
         for i in self.items:
             i.dump(indent + 1)
@@ -3101,7 +3121,7 @@ class SetDiff(SetBase):
       OP.SET_DIFF_IGN, (NOCASE, True): OP.SET_DIFF_REV, (IGNORECASE, True):
       OP.SET_DIFF_IGN_REV, (FULLCASE, True): OP.SET_DIFF_REV, (FULLIGNORECASE,
       True): OP.SET_DIFF_IGN_REV}
-    _op_name = {False: "SET_DIFF", True: "SET_DIFF_REV"}
+    _op_name = "SET_DIFF"
 
     def optimise(self, info, in_set=False):
         items = self.items
@@ -3126,7 +3146,7 @@ class SetInter(SetBase):
       False): OP.SET_INTER_IGN, (NOCASE, True): OP.SET_INTER_REV, (IGNORECASE,
       True): OP.SET_INTER_IGN_REV, (FULLCASE, True): OP.SET_INTER_REV,
       (FULLIGNORECASE, True): OP.SET_INTER_IGN_REV}
-    _op_name = {False: "SET_INTER", True: "SET_INTER_REV"}
+    _op_name = "SET_INTER"
 
     def optimise(self, info, in_set=False):
         items = []
@@ -3156,7 +3176,7 @@ class SetSymDiff(SetBase):
       False): OP.SET_SYM_DIFF_IGN, (NOCASE, True): OP.SET_SYM_DIFF_REV,
       (IGNORECASE, True): OP.SET_SYM_DIFF_IGN_REV, (FULLCASE, True):
       OP.SET_SYM_DIFF_REV, (FULLIGNORECASE, True): OP.SET_SYM_DIFF_IGN_REV}
-    _op_name = {False: "SET_SYM_DIFF", True: "SET_SYM_DIFF_REV"}
+    _op_name = "SET_SYM_DIFF"
 
     def optimise(self, info, in_set=False):
         items = []
@@ -3189,7 +3209,7 @@ class SetUnion(SetBase):
       False): OP.SET_UNION_IGN, (NOCASE, True): OP.SET_UNION_REV, (IGNORECASE,
       True): OP.SET_UNION_IGN_REV, (FULLCASE, True): OP.SET_UNION_REV,
       (FULLIGNORECASE, True): OP.SET_UNION_IGN_REV}
-    _op_name = {False: "SET_UNION", True: "SET_UNION_REV"}
+    _op_name = "SET_UNION"
 
     def optimise(self, info, in_set=False):
         items = []
@@ -3271,7 +3291,7 @@ class String(RegexBase):
       (NOCASE, True): OP.STRING_REV, (IGNORECASE, True): OP.STRING_IGN_REV,
       (FULLCASE, True): OP.STRING_REV, (FULLIGNORECASE, True):
       OP.STRING_FLD_REV}
-    _op_name = {False: "STRING", True: "STRING_REV"}
+    _op_name = "STRING"
 
     def __init__(self, characters, case_flags=NOCASE):
         self.characters = tuple(characters)
@@ -3306,8 +3326,12 @@ class String(RegexBase):
           len(characters)) + tuple(characters)]
 
     def dump(self, indent=0, reverse=False):
-        print("{}{} {}{}".format(INDENT * indent, self._op_name[reverse],
-          " ".join(map(str, self.characters)), CASE_TEXT[self.case_flags]))
+        chars = " ".join(map(str, self.characters[ : 9]))
+        if len(self.characters) > 9:
+            chars += " ..."
+
+        print("{}{} {}{}".format(INDENT * indent, self._op_name, chars,
+          CASE_TEXT[self.case_flags]))
 
 class StringSet(RegexBase):
     _opcode = {(NOCASE, False): OP.STRING_SET, (IGNORECASE, False):
@@ -3315,7 +3339,7 @@ class StringSet(RegexBase):
       False): OP.STRING_SET_FLD, (NOCASE, True): OP.STRING_SET_REV,
       (IGNORECASE, True): OP.STRING_SET_IGN_REV, (FULLCASE, True):
       OP.STRING_SET_REV, (FULLIGNORECASE, True): OP.STRING_SET_FLD_REV}
-    _op_name = {False: "STRING_SET", True: "STRING_SET_REV"}
+    _op_name = "STRING_SET"
 
     def __init__(self, info, name, case_flags=NOCASE):
         self.info = info
@@ -3364,8 +3388,8 @@ class StringSet(RegexBase):
               max_len)]
 
     def dump(self, indent=0, reverse=False):
-        print("{}{} {}{}".format(INDENT * indent, self._op_name[reverse],
-          self.name, CASE_TEXT[self.case_flags]))
+        print("{}{} {}{}".format(INDENT * indent, self._op_name, self.name,
+          CASE_TEXT[self.case_flags]))
 
     def _flatten(self, s):
         # Flattens the branches.
@@ -3475,6 +3499,9 @@ class Info:
         self.char_type = char_type
         self.named_lists_used = {}
 
+        self.defined_groups = {}
+        self.group_calls = []
+
     def new_group(self, name=None):
         group = self.group_index.get(name)
         if group is not None:
@@ -3512,6 +3539,44 @@ class Info:
 
         return self.group_state.get(group) == self.OPEN
 
+def check_group_features(info, parsed):
+    """Checks whether the reverse and fuzzy features of the group calls match
+    the groups which they call."""
+
+    call_refs = {}
+    additional_groups = []
+    for call, reverse, fuzzy in info.group_calls:
+        # Look up the reference of this group call.
+        key = (call.group, reverse, fuzzy)
+        ref = call_refs.get(key)
+        if ref is None:
+            # This group doesn't have a reference yet, so look up its features.
+            if call.group == 0:
+                # Calling the pattern as a whole.
+                rev = bool(info.flags & REVERSE)
+                fuz = isinstance(parsed, Fuzzy)
+                if (rev, fuz) != (reverse, fuzzy):
+                    # The pattern as a whole doesn't have the features we want,
+                    # so we'll need to make a copy of it with the desired
+                    # features.
+                    additional_groups.append((parsed, reverse, fuzzy))
+            else:
+                # Calling a capture group.
+                def_info = info.defined_groups[call.group]
+                group = def_info[0]
+                if def_info[1 : ] != (reverse, fuzzy):
+                    # The group doesn't have the features we want, so we'll
+                    # need to make a copy of it with the desired features.
+                    additional_groups.append((group, reverse, fuzzy))
+
+            ref = len(call_refs)
+            call_refs[key] = ref
+
+        call.call_ref = ref
+
+    info.call_refs = call_refs
+    info.additional_groups = additional_groups
+
 class Scanner:
     def __init__(self, lexicon, flags=0):
         self.lexicon = lexicon
@@ -3538,6 +3603,14 @@ class Scanner:
         # Optimise the compound pattern.
         parsed = parsed.optimise(info)
         parsed = parsed.pack_characters(info)
+
+        # Check of the features of the groups.
+        check_group_features(info, parsed)
+
+        # Complain if there are any group calls. They are not supported by the
+        # Scanner class.
+        if info.call_refs:
+            raise error("recursive regex not supported by Scanner")
 
         reverse = bool(info.flags & REVERSE)
 
