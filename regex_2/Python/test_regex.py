@@ -3138,9 +3138,9 @@ xyzabc
 
         # 59..60
         self.expect(lambda: regex.findall(r"(?:(?:QR)+){e}","abcde"),
-          repr(["abcde", ""]))
-        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), repr(["abc",
-          ""]))
+          repr(["ab", "cd", "e", ""]))
+        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), repr(["a", "b",
+          "c", ""]))
 
         # Hg issue 41
         # 61..65
@@ -3384,6 +3384,14 @@ xyzabc
           u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'),
           repr([u'POST', u'Post', u'post', u'po\u017Ft', u'po\uFB06',
           u'po\uFB05']))
+
+        # Hg issue 51
+        self.expect(lambda: regex.search("(?V1)((a)(?1)|(?2))", "a").group(0,
+          1, 2), repr(('a', 'a', None)))
+
+        # Hg issue 52
+        self.expect(lambda: regex.search(r"(?V1)(\1xx|){6}", "xx").span(0, 1),
+          repr(((0, 2), (2, 2))))
 
     def run(self):
         print "Performing tests"

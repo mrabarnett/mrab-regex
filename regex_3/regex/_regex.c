@@ -550,6 +550,7 @@ typedef struct RE_CompileArgs {
     BOOL visible_captures;
     BOOL has_captures;
     BOOL is_fuzzy;
+    BOOL within_fuzzy;
 } RE_CompileArgs;
 
 typedef struct JoinInfo {
@@ -7957,7 +7958,7 @@ advance:
         }
         case RE_OP_CALL_REF: /* A group call reference. */
         {
-            TRACE(("%s\n", re_op_text[node->op]))
+            TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             if (!push_group_return(safe_state, NULL))
                 return RE_ERROR_MEMORY;
@@ -8488,8 +8489,6 @@ advance:
             size_t index;
             RE_RepeatData* rp_data;
             RE_BacktrackData* bt_data;
-            Py_ssize_t available;
-            size_t max_count;
             BOOL try_body;
             RE_Position next_body_position;
             BOOL try_tail;
@@ -8508,22 +8507,8 @@ advance:
             bt_data->repeat.count = rp_data->count;
             bt_data->repeat.max_count = rp_data->max_count;
 
-            /* In the worst-case scenario, the body of the repeat could
-             * alternate between matching no characters and 1 character, which
-             * gives a maximum of 2*n+1 iterations, where 'n' is the number of
-             * available characters.
-             */
-            available = node->values[3] ? slice_end - text_pos : text_pos -
-              slice_start;
-            if (available > (RE_UNLIMITED - 1) / 2)
-                max_count = RE_UNLIMITED;
-            else
-                max_count = 2 * available + 1;
-            if (max_count > node->values[2])
-                max_count = node->values[2];
-
             rp_data->count = 0;
-            rp_data->max_count = max_count;
+            rp_data->max_count = node->values[2];
 
             /* Could the body or tail match? */
             try_body = node->values[2] > 0 && !is_repeat_guarded(safe_state,
@@ -8667,7 +8652,7 @@ advance:
             }
 
             /* Call a group, skipping its CALL_REF node. */
-            node = pattern->call_ref_info[0].node->next_1.node;
+            node = pattern->call_ref_info[index].node->next_1.node;
 
             if (!add_backtrack(safe_state, RE_OP_GROUP_CALL))
                 return RE_ERROR_MEMORY;
@@ -8730,8 +8715,6 @@ advance:
             size_t index;
             RE_RepeatData* rp_data;
             RE_BacktrackData* bt_data;
-            Py_ssize_t available;
-            size_t max_count;
             BOOL try_body;
             RE_Position next_body_position;
             BOOL try_tail;
@@ -8750,22 +8733,8 @@ advance:
             bt_data->repeat.count = rp_data->count;
             bt_data->repeat.max_count = rp_data->max_count;
 
-            /* In the worst-case scenario, the body of the repeat could
-             * alternate between matching no characters and 1 character, which
-             * gives a maximum of 2*n+1 iterations, where 'n' is the number of
-             * available characters.
-             */
-            available = node->values[3] ? slice_end - text_pos : text_pos -
-              slice_start;
-            if (available > (RE_UNLIMITED - 1) / 2)
-                max_count = RE_UNLIMITED;
-            else
-                max_count = 2 * available + 1;
-            if (max_count > node->values[2])
-                max_count = node->values[2];
-
             rp_data->count = 0;
-            rp_data->max_count = max_count;
+            rp_data->max_count = node->values[2];
 
             /* Could the body or tail match? */
             try_body = node->values[2] > 0 && !is_repeat_guarded(safe_state,
@@ -11011,7 +10980,7 @@ backtrack:
             break;
         }
         case RE_OP_LOOKAROUND: /* Lookaround. */
-            TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->match))
+            TRACE(("%s\n", re_op_text[bt_data->op]))
 
             /* Restore the groups and certain flags and then backtrack. */
             pop_groups(state);
@@ -11408,8 +11377,8 @@ try_again:
             /* The string positions are of type Py_ssize_t, so the format needs
              * to specify that.
              */
-            TRACE(("group %d at %d from %" PY_FORMAT_SIZE_T "d to %"
-              PY_FORMAT_SIZE_T "d\n", g + 1, ofs, span->start, span->end))
+            TRACE(("group %d from %" PY_FORMAT_SIZE_T "d to %" PY_FORMAT_SIZE_T
+              "d\n", g + 1, span->start, span->end))
 
             if (span->start >= 0 && span->end >= 0 && group_info[g].end_index >
               max_end_index) {
@@ -11552,14 +11521,17 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->fuzzy_guards = NULL;
     state->first_group_call_frame = NULL;
     state->current_group_call_frame = NULL;
+    state->group_call_guard_list = NULL;
 
-    state->group_call_guard_list =
-      (RE_GuardList*)re_alloc(pattern->call_ref_info_count *
-      sizeof(RE_GuardList));
-    if (!state->group_call_guard_list)
-        goto error;
-    memset(state->group_call_guard_list, 0, pattern->call_ref_info_count *
-      sizeof(RE_GuardList));
+    if (pattern->call_ref_info_count > 0) {
+        state->group_call_guard_list =
+          (RE_GuardList*)re_alloc(pattern->call_ref_info_count *
+          sizeof(RE_GuardList));
+        if (!state->group_call_guard_list)
+            goto error;
+        memset(state->group_call_guard_list, 0, pattern->call_ref_info_count *
+          sizeof(RE_GuardList));
+    }
 
     /* The capture groups. */
     if (pattern->group_count) {
@@ -14967,7 +14939,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
         }
         case RE_OP_END_GREEDY_REPEAT:
         case RE_OP_END_LAZY_REPEAT:
-            node->status = RE_STATUS_VISITED_AG;
+            node->status |= RE_STATUS_VISITED_AG;
             return result;
         case RE_OP_GREEDY_REPEAT:
         case RE_OP_LAZY_REPEAT:
@@ -14996,7 +14968,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             else
                 result = max_int(result, RE_STATUS_REPEAT);
             status = max_int(max_int(result, body_result), tail_result);
-            node->status = RE_STATUS_VISITED_AG | status;
+            node->status |= RE_STATUS_VISITED_AG | status;
             return status;
         }
         case RE_OP_GREEDY_REPEAT_ONE:
@@ -15539,7 +15511,7 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
       pattern->repeat_count, pattern->start_node))
         return FALSE;
 
-    for (i = 0; i < pattern->call_ref_info_capacity; i++) {
+    for (i = 0; i < pattern->call_ref_info_count; i++) {
         RE_Node* node;
 
         node = pattern->call_ref_info[i].node;
@@ -15964,6 +15936,7 @@ Py_LOCAL_INLINE(BOOL) build_FUZZY(RE_CompileArgs* args) {
     subargs = *args;
     subargs.has_captures = FALSE;
     subargs.is_fuzzy = TRUE;
+    subargs.within_fuzzy = TRUE;
 
     /* Compile the sequence and check that we've reached the end of the
      * subpattern.
@@ -16684,6 +16657,9 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         repeat_node->values[2] = max_count;
         repeat_node->values[3] = args->forward;
 
+        if (args->within_fuzzy)
+            args->pattern->repeat_info[index].status |= RE_STATUS_BODY;
+
         /* Compile the 'body' and check that we've reached the end of it. */
         subargs = *args;
         subargs.min_width = 0;
@@ -17159,6 +17135,7 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     args.has_captures = FALSE;
     args.repeat_depth = 0;
     args.is_fuzzy = FALSE;
+    args.within_fuzzy = FALSE;
     if (!build_sequence(&args))
         return FALSE;
 
