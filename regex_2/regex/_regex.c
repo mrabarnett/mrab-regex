@@ -247,7 +247,8 @@ typedef struct RE_BacktrackData {
             size_t index;
             Py_ssize_t text_pos;
             size_t count;
-            size_t max_count;
+            Py_ssize_t start;
+            BOOL advanced;
         } repeat;
         struct {
             size_t* capture_counts;
@@ -355,9 +356,9 @@ typedef struct RE_GroupData {
 typedef struct RE_RepeatData {
     size_t count;
     Py_ssize_t start;
-    size_t max_count;
     RE_GuardList body_guard_list;
     RE_GuardList tail_guard_list;
+    BOOL advanced;
 } RE_RepeatData;
 
 /* Guards for fuzzy sections. */
@@ -8090,6 +8091,7 @@ advance:
         {
             size_t index;
             RE_RepeatData* rp_data;
+            BOOL advanced;
             BOOL try_body;
             RE_Position next_body_position;
             BOOL try_tail;
@@ -8103,6 +8105,10 @@ advance:
 
             /* Matched the body again. */
             ++rp_data->count;
+            advanced = rp_data->advanced || text_pos != rp_data->start;
+            rp_data->advanced = text_pos != rp_data->start;
+            rp_data->start = text_pos;
+
             /* The counts are of type size_t, so the format needs to specify
              * that.
              */
@@ -8111,14 +8117,13 @@ advance:
               node->values[2], rp_data->count))
 
             /* Could the body or tail match? */
-            try_body = rp_data->count < rp_data->max_count &&
-              !is_repeat_guarded(safe_state, index, text_pos, RE_STATUS_BODY)
-              && try_match(state, &node->next_1, text_pos,
-              &next_body_position);
-            try_tail = (rp_data->count >= node->values[1] || text_pos ==
-              rp_data->start) && !is_repeat_guarded(safe_state, index,
-              text_pos, RE_STATUS_TAIL) && try_match(state,
-              &node->nonstring.next_2, text_pos, &next_tail_position);
+            try_body = advanced && rp_data->count < node->values[2] &&
+              !is_repeat_guarded(safe_state, index, text_pos, RE_STATUS_BODY) &&
+              try_match(state, &node->next_1, text_pos, &next_body_position);
+            try_tail = (!advanced || rp_data->count >= node->values[1]) &&
+              !is_repeat_guarded(safe_state, index, text_pos, RE_STATUS_TAIL) &&
+              try_match(state, &node->nonstring.next_2, text_pos,
+              &next_tail_position);
             if (!try_body && !try_tail) {
                 /* Neither the body nor the tail could match. */
                 --rp_data->count;
@@ -8139,8 +8144,9 @@ advance:
                     bt_data->repeat.position = next_tail_position;
                     bt_data->repeat.index = index;
                     bt_data->repeat.count = rp_data->count;
-                    bt_data->repeat.max_count = rp_data->max_count;
                     bt_data->repeat.text_pos = text_pos;
+                    bt_data->repeat.start = rp_data->start;
+                    bt_data->repeat.advanced = rp_data->advanced;
                 } else {
                     /* Only the body could match. If the body fails to match
                      * then we want to backtrack into the body.
@@ -8165,7 +8171,6 @@ advance:
                         bt_data->repeat.index = index;
                     }
                     bt_data->repeat.count = rp_data->count - 1;
-                    bt_data->repeat.max_count = rp_data->max_count;
                 }
 
                 /* Advance into the body. */
@@ -8196,7 +8201,6 @@ advance:
                     bt_data->repeat.index = index;
                 }
                 bt_data->repeat.count = rp_data->count - 1;
-                bt_data->repeat.max_count = rp_data->max_count;
 
                 /* Advance into the tail. */
                 if (!guard_repeat(safe_state, index, text_pos, RE_STATUS_TAIL))
@@ -8238,6 +8242,7 @@ advance:
         {
             size_t index;
             RE_RepeatData* rp_data;
+            BOOL advanced;
             BOOL try_body;
             RE_Position next_body_position;
             BOOL try_tail;
@@ -8251,18 +8256,26 @@ advance:
 
             /* Matched the body again. */
             ++rp_data->count;
-            TRACE(("min is %d, max is %d, count is %d\n", node->values[1],
+            advanced = rp_data->advanced || text_pos != rp_data->start;
+            rp_data->advanced = text_pos != rp_data->start;
+            rp_data->start = text_pos;
+
+            /* The counts are of type size_t, so the format needs to specify
+             * that.
+             */
+            TRACE(("min is %" PY_FORMAT_SIZE_T "u, max is %" PY_FORMAT_SIZE_T
+              "u, count is %" PY_FORMAT_SIZE_T "u\n", node->values[1],
               node->values[2], rp_data->count))
 
             /* Could the body or tail match? */
-            try_body = rp_data->count < rp_data->max_count &&
+            try_body = advanced && rp_data->count < node->values[2] &&
               !is_repeat_guarded(safe_state, index, text_pos, RE_STATUS_BODY)
               && try_match(state, &node->next_1, text_pos,
               &next_body_position);
-            try_tail = (rp_data->count >= node->values[1] || text_pos ==
-              rp_data->start) && !is_repeat_guarded(safe_state, index, text_pos,
-              RE_STATUS_TAIL) && try_match(state, &node->nonstring.next_2,
-              text_pos, &next_tail_position);
+            try_tail = (!advanced || rp_data->count >= node->values[1]) &&
+              !is_repeat_guarded(safe_state, index, text_pos, RE_STATUS_TAIL) &&
+              try_match(state, &node->nonstring.next_2, text_pos,
+              &next_tail_position);
             if (!try_body && !try_tail) {
                 /* Neither the body nor the tail could match. */
                 --rp_data->count;
@@ -8284,8 +8297,9 @@ advance:
                     bt_data->repeat.position = next_body_position;
                     bt_data->repeat.index = index;
                     bt_data->repeat.count = rp_data->count;
-                    bt_data->repeat.max_count = rp_data->max_count;
                     bt_data->repeat.text_pos = text_pos;
+                    bt_data->repeat.start = rp_data->start;
+                    bt_data->repeat.advanced = rp_data->advanced;
 
                     /* Advance into the tail. */
                     if (!guard_repeat(safe_state, index, text_pos,
@@ -8315,7 +8329,6 @@ advance:
                         bt_data->repeat.index = index;
                     }
                     bt_data->repeat.count = rp_data->count - 1;
-                    bt_data->repeat.max_count = rp_data->max_count;
 
                     /* Advance into the body. */
                     if (!guard_repeat(safe_state, index, text_pos,
@@ -8345,7 +8358,6 @@ advance:
                     bt_data->repeat.index = index;
                 }
                 bt_data->repeat.count = rp_data->count - 1;
-                bt_data->repeat.max_count = rp_data->max_count;
 
                 /* Advance into the tail. */
                 if (!guard_repeat(safe_state, index, text_pos, RE_STATUS_TAIL))
@@ -8505,10 +8517,12 @@ advance:
             bt_data = state->backtrack;
             bt_data->repeat.index = index;
             bt_data->repeat.count = rp_data->count;
-            bt_data->repeat.max_count = rp_data->max_count;
+            bt_data->repeat.start = rp_data->start;
+            bt_data->repeat.advanced = rp_data->advanced;
 
             rp_data->count = 0;
-            rp_data->max_count = node->values[2];
+            rp_data->start = text_pos;
+            rp_data->advanced = TRUE;
 
             /* Could the body or tail match? */
             try_body = node->values[2] > 0 && !is_repeat_guarded(safe_state,
@@ -8535,7 +8549,6 @@ advance:
                     bt_data->repeat.position = next_tail_position;
                     bt_data->repeat.index = index;
                     bt_data->repeat.count = rp_data->count;
-                    bt_data->repeat.max_count = rp_data->max_count;
                     bt_data->repeat.text_pos = text_pos;
                 }
 
@@ -8731,10 +8744,12 @@ advance:
             bt_data = state->backtrack;
             bt_data->repeat.index = index;
             bt_data->repeat.count = rp_data->count;
-            bt_data->repeat.max_count = rp_data->max_count;
+            bt_data->repeat.start = rp_data->start;
+            bt_data->repeat.advanced = rp_data->advanced;
 
             rp_data->count = 0;
-            rp_data->max_count = node->values[2];
+            rp_data->start = text_pos;
+            rp_data->advanced = TRUE;
 
             /* Could the body or tail match? */
             try_body = node->values[2] > 0 && !is_repeat_guarded(safe_state,
@@ -8763,7 +8778,6 @@ advance:
                     bt_data->repeat.position.node = node->next_1.node;
                     bt_data->repeat.position.text_pos = text_pos;
                     bt_data->repeat.count = rp_data->count;
-                    bt_data->repeat.max_count = rp_data->max_count;
                     bt_data->repeat.text_pos = text_pos;
 
                     /* Advance into the tail. */
@@ -10220,7 +10234,6 @@ backtrack:
             /* Restore the count. */
             rp_data = &state->repeats[bt_data->repeat.index];
             rp_data->count = bt_data->repeat.count;
-            rp_data->max_count = bt_data->repeat.max_count;
             if (bt_data->repeat.position.node) {
                 /* Advance into the tail. */
                 if (!guard_repeat(safe_state, bt_data->repeat.index,
@@ -10249,7 +10262,6 @@ backtrack:
             /* Restore the count. */
             rp_data = &state->repeats[bt_data->repeat.index];
             rp_data->count = bt_data->repeat.count;
-            rp_data->max_count = bt_data->repeat.max_count;
             if (bt_data->repeat.position.node) {
                 /* Advance into the body. */
                 if (!guard_repeat(safe_state, bt_data->repeat.index,
@@ -10332,7 +10344,6 @@ backtrack:
 
             rp_data = &state->repeats[bt_data->repeat.index];
             rp_data->count = bt_data->repeat.count;
-            rp_data->max_count = bt_data->repeat.max_count;
             discard_backtrack(state);
             break;
         }
@@ -10625,7 +10636,6 @@ backtrack:
 
             rp_data = &state->repeats[bt_data->repeat.index];
             rp_data->count = bt_data->repeat.count;
-            rp_data->max_count = bt_data->repeat.max_count;
             discard_backtrack(state);
             break;
         }

@@ -3381,6 +3381,10 @@ xyzabc
         self.expect(lambda: regex.search(r"(?V1)(\1xx|){6}", "xx").span(0, 1),
           ascii(((0, 2), (2, 2))))
 
+        # Hg issue 53
+        self.expect(lambda: regex.search("(a|)+", "a").group(0, 1),
+          ascii(("a", "")))
+
     def run(self):
         print("Performing tests")
         print("================")
