@@ -72,6 +72,11 @@ DEFAULT_VERSION = VERSION1
 ALL_VERSIONS = VERSION0 | VERSION1
 ALL_ENCODINGS = ASCII | LOCALE | UNICODE
 
+# The maximum number of iterations that the regex engine should perform. This
+# defines the threshold of 'excessive' backtracking, and may need to be raised
+# when working with very long texts.
+MAX_ITERATIONS = 1024 ** 2
+
 # The default flags for the various versions.
 DEFAULT_FLAGS = {VERSION0: 0, VERSION1: FULLCASE}
 
@@ -85,7 +90,9 @@ ALNUM = ALPHA | DIGITS
 OCT_DIGITS = frozenset(string.octdigits)
 HEX_DIGITS = frozenset(string.hexdigits)
 NONLITERAL = frozenset("()[]{}?*+|^$\\")
-SPECIAL_CHARS = set("()|?*+{^$.[\\#") | set([""])
+SPECIAL_CHARS = frozenset("()|?*+{^$.[\\#") | frozenset([""])
+NAMED_CHAR_PART = ALNUM | frozenset(" -")
+PROPERTY_NAME_PART = ALNUM | frozenset(" &_-.")
 SET_OPS = ("||", "~~", "&&", "--")
 
 # The width of the code words inside the regex engine.
@@ -135,10 +142,6 @@ DEFAULT_BOUNDARY
 DEFAULT_END_OF_WORD
 DEFAULT_START_OF_WORD
 END
-END_FUZZY
-END_GREEDY_REPEAT
-END_GROUP
-END_LAZY_REPEAT
 END_OF_LINE
 END_OF_LINE_U
 END_OF_STRING
@@ -148,13 +151,10 @@ END_OF_WORD
 FUZZY
 GRAPHEME_BOUNDARY
 GREEDY_REPEAT
-GREEDY_REPEAT_ONE
 GROUP
 GROUP_CALL
 GROUP_EXISTS
-GROUP_RETURN
 LAZY_REPEAT
-LAZY_REPEAT_ONE
 LOOKAROUND
 NEXT
 PROPERTY
@@ -188,7 +188,6 @@ SET_UNION
 SET_UNION_IGN
 SET_UNION_IGN_REV
 SET_UNION_REV
-START_GROUP
 START_OF_LINE
 START_OF_LINE_U
 START_OF_STRING
@@ -1237,7 +1236,7 @@ def parse_named_char(source, info, in_set):
     if ch == "{":
         name = []
         ch = source.get()
-        while ch in ALPHA or ch == " ":
+        while ch in NAMED_CHAR_PART:
             name.append(ch)
             ch = source.get()
 
@@ -1277,7 +1276,7 @@ def parse_property_name(source):
     name = []
     here = source.pos
     ch = source.get()
-    while ch and (ch in ALNUM or ch in " &_-."):
+    while ch in PROPERTY_NAME_PART:
         name.append(ch)
         here = source.pos
         ch = source.get()

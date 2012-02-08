@@ -81,17 +81,17 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_GBREAK_LF 2
 #define RE_GBREAK_CONTROL 3
 #define RE_GBREAK_EXTEND 4
-#define RE_GBREAK_PREPEND 5
-#define RE_GBREAK_SPACINGMARK 6
-#define RE_GBREAK_L 7
-#define RE_GBREAK_V 8
-#define RE_GBREAK_T 9
-#define RE_GBREAK_LV 10
-#define RE_GBREAK_LVT 11
+#define RE_GBREAK_SPACINGMARK 5
+#define RE_GBREAK_L 6
+#define RE_GBREAK_V 7
+#define RE_GBREAK_T 8
+#define RE_GBREAK_LV 9
+#define RE_GBREAK_LVT 10
+#define RE_GBREAK_PREPEND 11
 
-extern char* re_strings[980];
-extern RE_Property re_properties[143];
-extern RE_PropertyValue re_property_values[1051];
+extern char* re_strings[1135];
+extern RE_Property re_properties[145];
+extern RE_PropertyValue re_property_values[1218];
 extern RE_UINT16 re_expand_on_folding[104];
 extern RE_GetPropertyFunc re_get_property[79];
 

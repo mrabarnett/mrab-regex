@@ -31,6 +31,7 @@ class Test:
     OPEN_GROUP = """error("can't refer to an open group",)"""
     DUPLICATE_GROUP = "error('duplicate group',)"
     CANT_TURN_OFF = """error("bad inline flags: can't turn flags off",)"""
+    UNDEF_CHAR_NAME = """error('undefined character name',)"""
 
     def __init__(self):
         pass
@@ -453,6 +454,7 @@ class Test:
         self.expect(lambda: regex.match(r'^(?:(a)|c)(\1)?$', 'c')[:],
           ascii(('c', None, None)))
 
+        # 7
         self.expect(lambda:
           regex.findall("(?i)(.{1,40}?),(.{1,40}?)(?:;)+(.{1,80}).{1,40}?\\3(\ |;)+(.{1,80}?)\\1",
           "TEST, BEST; LEST ; Lest 123 Test, Best"), ascii([('TEST', ' BEST',
@@ -3004,7 +3006,7 @@ xyzabc
         # No cost limit.
         # 18..19
         self.expect(lambda: regex.search('(foobar){e}',
-          'xirefoabralfobarxie').span(0, 1), ascii(((4, 7), (4, 7))))
+          'xirefoabralfobarxie').span(0, 1), ascii(((4, 9), (4, 9))))
         self.expect(lambda: regex.search('(?b)(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), ascii(((11, 16), (11, 16))))
 
@@ -3374,16 +3376,38 @@ xyzabc
           ascii(['POST', 'Post', 'post', 'po\u017Ft', 'po\uFB06', 'po\uFB05']))
 
         # Hg issue 51
+        # 38
         self.expect(lambda: regex.search("(?V1)((a)(?1)|(?2))", "a").group(0,
           1, 2), ascii(('a', 'a', None)))
 
         # Hg issue 52
+        # 39
         self.expect(lambda: regex.search(r"(?V1)(\1xx|){6}", "xx").span(0, 1),
           ascii(((0, 2), (2, 2))))
 
         # Hg issue 53
+        # 40
         self.expect(lambda: regex.search("(a|)+", "a").group(0, 1),
           ascii(("a", "")))
+
+        # Hg issue 54
+        # 41
+        self.expect(lambda: regex.search(r"(a|)*\d", "a" * 80), ascii(None))
+
+        # Hg issue 55
+        # 42
+        self.expect(lambda: regex.search("^(?:a?b?)*$", "ac"), ascii(None))
+
+        # Hg issue 58
+        self.expect(lambda: regex.compile("\\N{1}"), self.UNDEF_CHAR_NAME)
+
+        # Hg issue 59
+        self.expect(lambda: regex.search("\\Z", "a\na\n").span(0), ascii((4,
+          4)))
+
+        # Hg issue 60
+        self.expect(lambda: regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}",
+          "xayxay").group(0), ascii("xayxay"))
 
     def run(self):
         print("Performing tests")
