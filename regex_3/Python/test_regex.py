@@ -3409,6 +3409,9 @@ xyzabc
         self.expect(lambda: regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}",
           "xayxay").group(0), ascii("xayxay"))
 
+        # Hg issue 61
+        self.expect(lambda: regex.search("(?i)[^a]", "A"), ascii(None))
+
     def run(self):
         print("Performing tests")
         print("================")

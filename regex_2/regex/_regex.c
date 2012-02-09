@@ -4965,21 +4965,18 @@ again:
             return FALSE;
         break;
     case RE_OP_CHARACTER_IGN: /* A character literal, ignoring case. */
-        limit = state->slice_end - state->min_width + 1;
         start_pos = match_many_CHARACTER_IGN(state, test, start_pos, limit + 1,
           FALSE);
         if (start_pos > limit)
             return FALSE;
         break;
     case RE_OP_CHARACTER_IGN_REV: /* A character literal backwards, ignoring case. */
-        limit = state->slice_start + state->min_width - 1;
         start_pos = match_many_CHARACTER_IGN_REV(state, test, start_pos, limit
           - 1, FALSE);
         if (start_pos < limit)
             return FALSE;
         break;
     case RE_OP_CHARACTER_REV: /* A character literal backwards. */
-        limit = state->slice_start + state->min_width - 1;
         start_pos = match_many_CHARACTER_REV(state, test, start_pos, limit - 1,
           FALSE);
         if (start_pos < limit)
