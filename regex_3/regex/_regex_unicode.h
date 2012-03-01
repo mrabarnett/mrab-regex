@@ -29,6 +29,11 @@ typedef struct RE_PropertyValue {
 
 typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 
+#define RE_PROP_GC 0x1C
+#define RE_PROP_CASED 0x8
+#define RE_PROP_UPPERCASE 0x7
+#define RE_PROP_LOWERCASE 0x6
+
 #define RE_PROP_C 30
 #define RE_PROP_L 31
 #define RE_PROP_M 32
@@ -36,6 +41,37 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_PROP_P 34
 #define RE_PROP_S 35
 #define RE_PROP_Z 36
+
+#define RE_PROP_CN 0
+#define RE_PROP_LU 1
+#define RE_PROP_LL 2
+#define RE_PROP_LT 3
+#define RE_PROP_LM 4
+#define RE_PROP_LO 5
+#define RE_PROP_MN 6
+#define RE_PROP_ME 7
+#define RE_PROP_MC 8
+#define RE_PROP_ND 9
+#define RE_PROP_NL 10
+#define RE_PROP_NO 11
+#define RE_PROP_ZS 12
+#define RE_PROP_ZL 13
+#define RE_PROP_ZP 14
+#define RE_PROP_CC 15
+#define RE_PROP_CF 16
+#define RE_PROP_CO 17
+#define RE_PROP_CS 18
+#define RE_PROP_PD 19
+#define RE_PROP_PS 20
+#define RE_PROP_PE 21
+#define RE_PROP_PC 22
+#define RE_PROP_PO 23
+#define RE_PROP_SM 24
+#define RE_PROP_SC 25
+#define RE_PROP_SK 26
+#define RE_PROP_SO 27
+#define RE_PROP_PI 28
+#define RE_PROP_PF 29
 
 #define RE_PROP_C_MASK 0x00078001
 #define RE_PROP_L_MASK 0x0000003E
@@ -46,21 +82,21 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_PROP_Z_MASK 0x00007000
 
 #define RE_PROP_ALNUM 0x460001
-#define RE_PROP_ALPHA 0x070001
+#define RE_PROP_ALPHA 0x050001
 #define RE_PROP_ANY 0x470001
-#define RE_PROP_ASCII 0x480001
-#define RE_PROP_ASSIGNED 0x490001
-#define RE_PROP_BLANK 0x4A0001
-#define RE_PROP_CNTRL 0x00000F
-#define RE_PROP_DIGIT 0x000009
-#define RE_PROP_GRAPH 0x4B0001
-#define RE_PROP_LOWER 0x080001
-#define RE_PROP_PRINT 0x4C0001
-#define RE_PROP_PUNCT 0x000022
-#define RE_PROP_SPACE 0x190001
-#define RE_PROP_UPPER 0x090001
-#define RE_PROP_WORD 0x4D0001
-#define RE_PROP_XDIGIT 0x4E0001
+#define RE_PROP_ASSIGNED 0x480001
+#define RE_PROP_BLANK 0x490001
+#define RE_PROP_CNTRL 0x1C000F
+#define RE_PROP_DIGIT 0x1C0009
+#define RE_PROP_GRAPH 0x4A0001
+#define RE_PROP_LOWER 0x060001
+#define RE_PROP_PRINT 0x4B0001
+#define RE_PROP_PUNCT 0x1C0022
+#define RE_PROP_SPACE 0x250001
+#define RE_PROP_UPPER 0x070001
+#define RE_PROP_WORD 0x4C0001
+#define RE_PROP_XDIGIT 0x2D0001
+#define RE_PROP_ASCII 0x030001
 
 #define RE_BREAK_OTHER 0
 #define RE_BREAK_CR 1
@@ -90,17 +126,15 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_GBREAK_PREPEND 11
 
 extern char* re_strings[1135];
-extern RE_Property re_properties[145];
+extern RE_Property re_properties[144];
 extern RE_PropertyValue re_property_values[1218];
 extern RE_UINT16 re_expand_on_folding[104];
-extern RE_GetPropertyFunc re_get_property[79];
+extern RE_GetPropertyFunc re_get_property[77];
 
-RE_UINT32 re_get_general_category(RE_UINT32 ch);
-RE_UINT32 re_get_block(RE_UINT32 ch);
-RE_UINT32 re_get_script(RE_UINT32 ch);
-RE_UINT32 re_get_word_break(RE_UINT32 ch);
 RE_UINT32 re_get_grapheme_cluster_break(RE_UINT32 ch);
 RE_UINT32 re_get_sentence_break(RE_UINT32 ch);
+RE_UINT32 re_get_word_break(RE_UINT32 ch);
+RE_UINT32 re_get_block(RE_UINT32 ch);
 RE_UINT32 re_get_math(RE_UINT32 ch);
 RE_UINT32 re_get_alphabetic(RE_UINT32 ch);
 RE_UINT32 re_get_lowercase(RE_UINT32 ch);
@@ -120,6 +154,20 @@ RE_UINT32 re_get_default_ignorable_code_point(RE_UINT32 ch);
 RE_UINT32 re_get_grapheme_extend(RE_UINT32 ch);
 RE_UINT32 re_get_grapheme_base(RE_UINT32 ch);
 RE_UINT32 re_get_grapheme_link(RE_UINT32 ch);
+RE_UINT32 re_get_bidi_class(RE_UINT32 ch);
+RE_UINT32 re_get_bidi_mirrored(RE_UINT32 ch);
+RE_UINT32 re_get_canonical_combining_class(RE_UINT32 ch);
+RE_UINT32 re_get_decomposition_type(RE_UINT32 ch);
+RE_UINT32 re_get_east_asian_width(RE_UINT32 ch);
+RE_UINT32 re_get_general_category(RE_UINT32 ch);
+RE_UINT32 re_get_joining_group(RE_UINT32 ch);
+RE_UINT32 re_get_joining_type(RE_UINT32 ch);
+RE_UINT32 re_get_line_break(RE_UINT32 ch);
+RE_UINT32 re_get_numeric_type(RE_UINT32 ch);
+RE_UINT32 re_get_numeric_value(RE_UINT32 ch);
+RE_UINT32 re_get_hangul_syllable_type(RE_UINT32 ch);
+RE_UINT32 re_get_indic_matra_category(RE_UINT32 ch);
+RE_UINT32 re_get_indic_syllabic_category(RE_UINT32 ch);
 RE_UINT32 re_get_white_space(RE_UINT32 ch);
 RE_UINT32 re_get_bidi_control(RE_UINT32 ch);
 RE_UINT32 re_get_join_control(RE_UINT32 ch);
@@ -152,28 +200,14 @@ RE_UINT32 re_get_sterm(RE_UINT32 ch);
 RE_UINT32 re_get_variation_selector(RE_UINT32 ch);
 RE_UINT32 re_get_pattern_white_space(RE_UINT32 ch);
 RE_UINT32 re_get_pattern_syntax(RE_UINT32 ch);
-RE_UINT32 re_get_hangul_syllable_type(RE_UINT32 ch);
-RE_UINT32 re_get_bidi_class(RE_UINT32 ch);
-RE_UINT32 re_get_canonical_combining_class(RE_UINT32 ch);
-RE_UINT32 re_get_decomposition_type(RE_UINT32 ch);
-RE_UINT32 re_get_east_asian_width(RE_UINT32 ch);
-RE_UINT32 re_get_joining_group(RE_UINT32 ch);
-RE_UINT32 re_get_joining_type(RE_UINT32 ch);
-RE_UINT32 re_get_line_break(RE_UINT32 ch);
-RE_UINT32 re_get_numeric_type(RE_UINT32 ch);
-RE_UINT32 re_get_numeric_value(RE_UINT32 ch);
-RE_UINT32 re_get_bidi_mirrored(RE_UINT32 ch);
-RE_UINT32 re_get_indic_matra_category(RE_UINT32 ch);
-RE_UINT32 re_get_indic_syllabic_category(RE_UINT32 ch);
+RE_UINT32 re_get_script(RE_UINT32 ch);
 RE_UINT32 re_get_alphanumeric(RE_UINT32 ch);
 RE_UINT32 re_get_any(RE_UINT32 ch);
-RE_UINT32 re_get_ascii(RE_UINT32 ch);
 RE_UINT32 re_get_assigned(RE_UINT32 ch);
 RE_UINT32 re_get_blank(RE_UINT32 ch);
 RE_UINT32 re_get_graph(RE_UINT32 ch);
 RE_UINT32 re_get_print(RE_UINT32 ch);
 RE_UINT32 re_get_word(RE_UINT32 ch);
-RE_UINT32 re_get_xdigit(RE_UINT32 ch);
 int re_get_all_cases(RE_UINT32 ch, RE_UINT32* codepoints);
 RE_UINT32 re_get_simple_case_folding(RE_UINT32 ch);
 int re_get_full_case_folding(RE_UINT32 ch, RE_UINT32* codepoints);

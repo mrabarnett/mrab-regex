@@ -57,6 +57,11 @@ typedef unsigned short Py_UCS2;
 
 typedef RE_UINT32 RE_CODE;
 
+/* Case-sensitive letters in the General Category. */
+#define RE_PROP_GC_LU ((RE_PROP_GC << 16) | RE_PROP_LU)
+#define RE_PROP_GC_LL ((RE_PROP_GC << 16) | RE_PROP_LL)
+#define RE_PROP_GC_LT ((RE_PROP_GC << 16) | RE_PROP_LT)
+
 /* Unlimited repeat count. */
 #define RE_UNLIMITED (~(RE_CODE)0)
 
@@ -84,17 +89,12 @@ typedef unsigned short RE_STATUS_T;
 #define RE_ERROR_NO_SUCH_GROUP -14 /* No such group. */
 #define RE_ERROR_INDEX -15 /* String index. */
 #define RE_ERROR_BACKTRACKING -16 /* Too much backtracking. */
-#define RE_ERROR_ITERATIONS -17 /* Too many iterations. */
 
 /* The number of backtrack entries per allocated block. */
 #define RE_BACKTRACK_BLOCK_SIZE 64
 
 /* The maximum number of backtrack entries to allocate. */
 #define RE_MAX_BACKTRACK_ALLOC (1024 * 1024)
-
-/* The minimum and maximum number of iterations. */
-#define RE_MIN_ITERATIONS 1024
-#define RE_MAX_ITERATIONS (1024 * 1024)
 
 /* The nominal number of capture counts per allocated block. */
 #define RE_CAPTURES_BLOCK_SIZE 1024
@@ -182,8 +182,6 @@ static PyObject* error_exception;
 
 static PyObject* property_dict;
 
-static size_t max_iterations;
-
 /* Handlers for ASCII, locale and Unicode. */
 typedef struct RE_EncodingTable {
     BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
@@ -224,6 +222,7 @@ typedef struct RE_FuzzyInfo {
 typedef struct RE_BacktrackData {
     union {
         struct {
+            size_t capture_change;
             BOOL too_few_errors;
         } atomic;
         struct {
@@ -267,8 +266,10 @@ typedef struct RE_BacktrackData {
         } group;
         struct {
             struct RE_Node* node;
+            size_t capture_change;
         } group_call;
         struct {
+            size_t capture_change;
             BOOL too_few_errors;
         } lookaround;
         struct {
@@ -277,7 +278,7 @@ typedef struct RE_BacktrackData {
             size_t count;
             Py_ssize_t start;
             RE_UINT32 index;
-            BOOL advanced;
+            size_t capture_change;
         } repeat;
         struct {
             size_t* capture_counts;
@@ -388,7 +389,7 @@ typedef struct RE_RepeatData {
     Py_ssize_t start;
     RE_GuardList body_guard_list;
     RE_GuardList tail_guard_list;
-    BOOL advanced;
+    size_t capture_change;
 } RE_RepeatData;
 
 /* Guards for fuzzy sections. */
@@ -474,6 +475,8 @@ typedef struct RE_State {
     RE_GroupCallFrame* first_group_call_frame;
     RE_GroupCallFrame* current_group_call_frame;
     RE_GuardList* group_call_guard_list;
+    size_t iterations;
+    size_t capture_change;
     BOOL unicode; /* Whether the string to be matched is Unicode. */
     BOOL overlapped; /* Whether the matches can be overlapped. */
     BOOL reverse; /* Whether it's a reverse pattern. */
@@ -882,14 +885,14 @@ static BOOL locale_has_property(RE_CODE property, Py_UCS4 ch) {
         return value == 0;
 
     switch (property >> 16) {
-    case RE_PROP_ANY >> 16:
-        v = 1;
-        break;
     case RE_PROP_ALNUM >> 16:
         v = isalnum(ch) != 0;
         break;
     case RE_PROP_ALPHA >> 16:
         v = isalpha(ch) != 0;
+        break;
+    case RE_PROP_ANY >> 16:
+        v = 1;
         break;
     case RE_PROP_ASCII >> 16:
         v = ch <= RE_ASCII_MAX;
@@ -899,6 +902,28 @@ static BOOL locale_has_property(RE_CODE property, Py_UCS4 ch) {
         break;
     case RE_PROP_BLANK >> 16:
         v = ch == '\t' || ch == ' ';
+        break;
+    case RE_PROP_GC:
+        switch (property) {
+        case RE_PROP_CNTRL:
+            v = iscntrl(ch) ? value : 0xFFFF;
+            break;
+        case RE_PROP_DIGIT:
+            v = isdigit(ch) ? value : 0xFFFF;
+            break;
+        case RE_PROP_GC_LL:
+            v = islower(ch) ? value : 0xFFFF;
+            break;
+        case RE_PROP_GC_LU:
+            v = isupper(ch) ? value : 0xFFFF;
+            break;
+        case RE_PROP_PUNCT:
+            v = ispunct(ch) ? value : 0xFFFF;
+            break;
+        default:
+            v = 0xFFFF;
+            break;
+        }
         break;
     case RE_PROP_GRAPH >> 16:
         v = isgraph(ch) != 0;
@@ -920,22 +945,6 @@ static BOOL locale_has_property(RE_CODE property, Py_UCS4 ch) {
         break;
     case RE_PROP_XDIGIT >> 16:
         v = re_get_hex_digit(ch) != 0;
-        break;
-    case 0:
-        switch (property) {
-        case RE_PROP_CNTRL:
-            v = iscntrl(ch) != 0 ? value : 0;
-            break;
-        case RE_PROP_DIGIT:
-            v = isdigit(ch) != 0 ? value : 0;
-            break;
-        case RE_PROP_PUNCT:
-            v = ispunct(ch) != 0 ? value : 0;
-            break;
-        default:
-            v = 0;
-            break;
-        }
         break;
     default:
         v = 0;
@@ -1114,21 +1123,23 @@ static BOOL unicode_has_property(RE_CODE property, Py_UCS4 ch) {
     if (v == value)
         return TRUE;
 
-    switch (property) {
-    case RE_PROP_C:
-        return (RE_PROP_C_MASK & (1 << v)) != 0;
-    case RE_PROP_L:
-        return (RE_PROP_L_MASK & (1 << v)) != 0;
-    case RE_PROP_M:
-        return (RE_PROP_M_MASK & (1 << v)) != 0;
-    case RE_PROP_N:
-        return (RE_PROP_N_MASK & (1 << v)) != 0;
-    case RE_PROP_P:
-        return (RE_PROP_P_MASK & (1 << v)) != 0;
-    case RE_PROP_S:
-        return (RE_PROP_S_MASK & (1 << v)) != 0;
-    case RE_PROP_Z:
-        return (RE_PROP_Z_MASK & (1 << v)) != 0;
+    if (prop == RE_PROP_GC) {
+        switch (value) {
+        case RE_PROP_C:
+            return (RE_PROP_C_MASK & (1 << v)) != 0;
+        case RE_PROP_L:
+            return (RE_PROP_L_MASK & (1 << v)) != 0;
+        case RE_PROP_M:
+            return (RE_PROP_M_MASK & (1 << v)) != 0;
+        case RE_PROP_N:
+            return (RE_PROP_N_MASK & (1 << v)) != 0;
+        case RE_PROP_P:
+            return (RE_PROP_P_MASK & (1 << v)) != 0;
+        case RE_PROP_S:
+            return (RE_PROP_S_MASK & (1 << v)) != 0;
+        case RE_PROP_Z:
+            return (RE_PROP_Z_MASK & (1 << v)) != 0;
+        }
     }
 
     return FALSE;
@@ -1793,6 +1804,12 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
         error_exception = get_object("_" RE_MODULE "_core", "error");
 
     switch (status) {
+    case RE_ERROR_BACKTRACKING:
+        PyErr_SetString(error_exception, "too much backtracking");
+        break;
+    case RE_ERROR_CONCURRENT:
+        PyErr_SetString(PyExc_ValueError, "concurrent not int or None");
+        break;
     case RE_ERROR_GROUP_INDEX_TYPE:
         if (object)
             PyErr_Format(PyExc_TypeError,
@@ -1804,6 +1821,9 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
         break;
     case RE_ERROR_ILLEGAL:
         PyErr_SetString(PyExc_RuntimeError, "invalid RE code");
+        break;
+    case RE_ERROR_INDEX:
+        PyErr_SetString(PyExc_TypeError, "string indices must be integers");
         break;
     case RE_ERROR_INTERRUPTED:
         /* An exception has already been raised, so let it fly. */
@@ -1819,15 +1839,6 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
         break;
     case RE_ERROR_REPLACEMENT:
         PyErr_SetString(error_exception, "invalid replacement");
-        break;
-    case RE_ERROR_INDEX:
-        PyErr_SetString(PyExc_TypeError, "string indices must be integers");
-        break;
-    case RE_ERROR_CONCURRENT:
-        PyErr_SetString(PyExc_ValueError, "concurrent not int or None");
-        break;
-    case RE_ERROR_BACKTRACKING:
-        PyErr_SetString(error_exception, "too much backtracking");
         break;
     default:
         /* Other error codes indicate compiler/engine bugs. */
@@ -1961,24 +1972,57 @@ static BOOL same_char_ign(RE_EncodingTable* encoding, Py_UCS4 ch1, Py_UCS4 ch2)
 
 /* Checks whether a character has or hasn't the given property, ignoring
  * case.
- *
- * If match is TRUE, we want any of the case-forms to match; if match is FALSE,
- * we want none of the case-forms to match.
  */
 Py_LOCAL_INLINE(BOOL) has_property_ign(RE_EncodingTable* encoding, RE_CODE
   property, Py_UCS4 ch) {
-    Py_UCS4 cases[RE_MAX_CASES];
-    int count;
-    int i;
+    RE_UINT32 prop;
 
-    count = encoding->all_cases(ch, cases);
+    prop = property >> 16;
 
-    for (i = 0; i < count; i++) {
-        if (encoding->has_property(property, cases[i]))
-            return TRUE;
+    /* We need to do special handling of case-sensitive properties according to
+     * the 'encoding'.
+     */
+    if (encoding == &unicode_encoding) {
+        /* We are working with Unicode. */
+        if (property == RE_PROP_GC_LU || property == RE_PROP_GC_LL || property
+          == RE_PROP_GC_LT) {
+            RE_UINT32 value;
+
+            value = re_get_general_category(ch);
+
+            return value == RE_PROP_LU || value == RE_PROP_LL || value ==
+              RE_PROP_LT;
+        } else if (prop == RE_PROP_UPPERCASE || prop == RE_PROP_LOWERCASE)
+            return re_get_cased(ch);
+
+        /* The property is case-insensitive. */
+        return unicode_has_property(property, ch);
+    } else if (encoding == &ascii_encoding) {
+        /* We are working with ASCII. */
+        if (property == RE_PROP_GC_LU || property == RE_PROP_GC_LL || property
+          == RE_PROP_GC_LT) {
+            RE_UINT32 value;
+
+            value = re_get_general_category(ch);
+
+            return value == RE_PROP_LU || value == RE_PROP_LL || value ==
+              RE_PROP_LT;
+        } else if (prop == RE_PROP_UPPERCASE || prop == RE_PROP_LOWERCASE)
+            return re_get_cased(ch);
+
+        /* The property is case-insensitive. */
+        return ascii_has_property(property, ch);
+    } else {
+        /* We are working with Locale. */
+        if (property == RE_PROP_GC_LU || property == RE_PROP_GC_LL || property
+          == RE_PROP_GC_LT)
+            return (isupper(ch) || islower(ch)) != 0;
+        else if (prop == RE_PROP_UPPERCASE || prop == RE_PROP_LOWERCASE)
+            return (isupper(ch) || islower(ch)) != 0;
+
+        /* The property is case-insensitive. */
+        return locale_has_property(property, ch);
     }
-
-    return FALSE;
 }
 
 /* Checks whether a character is in a range, ignoring case. */
@@ -2285,18 +2329,18 @@ Py_LOCAL_INLINE(BOOL) in_set_union_ign(RE_EncodingTable* encoding, RE_Node*
 Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, Py_UCS4
   ch) {
     switch (node->op) {
-    case RE_OP_SET_INTER:
-    case RE_OP_SET_INTER_REV:
-        return in_set_inter(encoding, node, ch);
-    case RE_OP_SET_UNION:
-    case RE_OP_SET_UNION_REV:
-        return in_set_union(encoding, node, ch);
     case RE_OP_SET_DIFF:
     case RE_OP_SET_DIFF_REV:
         return in_set_diff(encoding, node, ch);
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_INTER_REV:
+        return in_set_inter(encoding, node, ch);
     case RE_OP_SET_SYM_DIFF:
     case RE_OP_SET_SYM_DIFF_REV:
         return in_set_sym_diff(encoding, node, ch);
+    case RE_OP_SET_UNION:
+    case RE_OP_SET_UNION_REV:
+        return in_set_union(encoding, node, ch);
     }
 
     return FALSE;
@@ -2306,18 +2350,18 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, Py_UCS4
 Py_LOCAL_INLINE(BOOL) in_set_ign(RE_EncodingTable* encoding, RE_Node* node,
   Py_UCS4 ch) {
     switch (node->op) {
-    case RE_OP_SET_INTER_IGN:
-    case RE_OP_SET_INTER_IGN_REV:
-        return in_set_inter_ign(encoding, node, ch);
-    case RE_OP_SET_UNION_IGN:
-    case RE_OP_SET_UNION_IGN_REV:
-        return in_set_union_ign(encoding, node, ch);
     case RE_OP_SET_DIFF_IGN:
     case RE_OP_SET_DIFF_IGN_REV:
         return in_set_diff_ign(encoding, node, ch);
+    case RE_OP_SET_INTER_IGN:
+    case RE_OP_SET_INTER_IGN_REV:
+        return in_set_inter_ign(encoding, node, ch);
     case RE_OP_SET_SYM_DIFF_IGN:
     case RE_OP_SET_SYM_DIFF_IGN_REV:
         return in_set_sym_diff_ign(encoding, node, ch);
+    case RE_OP_SET_UNION_IGN:
+    case RE_OP_SET_UNION_IGN_REV:
+        return in_set_union_ign(encoding, node, ch);
     }
 
     return FALSE;
@@ -2372,6 +2416,8 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     state->total_errors = 0;
     state->total_cost = 0;
     state->too_few_errors = FALSE;
+    state->capture_change = 0;
+    state->iterations = 0;
 }
 
 /* Adds a new backtrack entry. */
@@ -4306,6 +4352,11 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
           test->match)
             return FALSE;
         break;
+    case RE_OP_DEFAULT_END_OF_WORD: /* At a default end of a word. */
+        if (state->encoding->at_default_word_end(state, text_pos) !=
+          test->match)
+            return FALSE;
+        break;
     case RE_OP_DEFAULT_START_OF_WORD: /* At a default start of a word. */
         if (state->encoding->at_default_word_start(state, text_pos) !=
           test->match)
@@ -4334,11 +4385,6 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         break;
     case RE_OP_END_OF_WORD: /* At end of a word. */
         if (state->encoding->at_word_end(state, text_pos) != test->match)
-            return FALSE;
-        break;
-    case RE_OP_DEFAULT_END_OF_WORD: /* At a default end of a word. */
-        if (state->encoding->at_default_word_end(state, text_pos) !=
-          test->match)
             return FALSE;
         break;
     case RE_OP_GRAPHEME_BOUNDARY: /* At a grapheme boundary. */
@@ -4690,6 +4736,26 @@ Py_LOCAL_INLINE(BOOL) general_check(RE_SafeState* safe_state, RE_Node* node,
 
     for (;;) {
         switch (node->op) {
+        case RE_OP_ANY:
+            text_pos = match_many_ANY(state, node, text_pos,
+              state->slice_end, FALSE);
+            return text_pos < state->slice_end;
+        case RE_OP_ANY_ALL:
+            return text_pos < state->slice_end;
+        case RE_OP_ANY_ALL_REV:
+            return text_pos > state->slice_start;
+        case RE_OP_ANY_REV:
+            text_pos = match_many_ANY_REV(state, node, text_pos,
+              state->slice_start, FALSE);
+            return text_pos > state->slice_start;
+        case RE_OP_ANY_U:
+            text_pos = match_many_ANY_U(state, node, text_pos,
+              state->slice_end, FALSE);
+            return text_pos < state->slice_end;
+        case RE_OP_ANY_U_REV:
+            text_pos = match_many_ANY_U_REV(state, node, text_pos,
+              state->slice_start, FALSE);
+            return text_pos > state->slice_start;
         case RE_OP_BRANCH:
             if (general_check(safe_state, node->next_1.check, text_pos))
                 return TRUE;
@@ -4727,6 +4793,66 @@ Py_LOCAL_INLINE(BOOL) general_check(RE_SafeState* safe_state, RE_Node* node,
                 return TRUE;
             node = node->nonstring.next_2.check;
             break;
+        case RE_OP_PROPERTY:
+            text_pos = match_many_PROPERTY(state, node, text_pos,
+              state->slice_end, FALSE);
+            return text_pos < state->slice_end;
+        case RE_OP_PROPERTY_IGN:
+            text_pos = match_many_PROPERTY_IGN(state, node, text_pos,
+              state->slice_end, FALSE);
+            return text_pos < state->slice_end;
+        case RE_OP_PROPERTY_IGN_REV:
+            text_pos = match_many_PROPERTY_IGN_REV(state, node, text_pos,
+              state->slice_start, FALSE);
+            return text_pos > state->slice_start;
+        case RE_OP_PROPERTY_REV:
+            text_pos = match_many_PROPERTY_REV(state, node, text_pos,
+              state->slice_start, FALSE);
+            return text_pos > state->slice_start;
+        case RE_OP_RANGE:
+            text_pos = match_many_RANGE(state, node, text_pos,
+              state->slice_end, FALSE);
+            return text_pos < state->slice_end;
+        case RE_OP_RANGE_IGN:
+            text_pos = match_many_RANGE_IGN(state, node, text_pos,
+              state->slice_end, FALSE);
+            return text_pos < state->slice_end;
+        case RE_OP_RANGE_IGN_REV:
+            text_pos = match_many_RANGE_IGN_REV(state, node, text_pos,
+              state->slice_start, FALSE);
+            return text_pos > state->slice_start;
+        case RE_OP_RANGE_REV:
+            text_pos = match_many_RANGE_REV(state, node, text_pos,
+              state->slice_start, FALSE);
+            return text_pos > state->slice_start;
+        case RE_OP_SET_DIFF:
+        case RE_OP_SET_INTER:
+        case RE_OP_SET_SYM_DIFF:
+        case RE_OP_SET_UNION:
+            text_pos = match_many_SET(state, node, text_pos,
+              state->slice_end, FALSE);
+            return text_pos < state->slice_end;
+        case RE_OP_SET_DIFF_IGN:
+        case RE_OP_SET_INTER_IGN:
+        case RE_OP_SET_SYM_DIFF_IGN:
+        case RE_OP_SET_UNION_IGN:
+            text_pos = match_many_SET_IGN(state, node, text_pos,
+              state->slice_end, FALSE);
+            return text_pos < state->slice_end;
+        case RE_OP_SET_DIFF_IGN_REV:
+        case RE_OP_SET_INTER_IGN_REV:
+        case RE_OP_SET_SYM_DIFF_IGN_REV:
+        case RE_OP_SET_UNION_IGN_REV:
+            text_pos = match_many_SET_IGN_REV(state, node, text_pos,
+              state->slice_start, FALSE);
+            return text_pos > state->slice_start;
+        case RE_OP_SET_DIFF_REV:
+        case RE_OP_SET_INTER_REV:
+        case RE_OP_SET_SYM_DIFF_REV:
+        case RE_OP_SET_UNION_REV:
+            text_pos = match_many_SET_REV(state, node, text_pos,
+              state->slice_start, FALSE);
+            return text_pos > state->slice_start;
         case RE_OP_STRING:
             text_pos = string_search(safe_state, node, text_pos,
               state->slice_end - node->value_count);
@@ -4790,10 +4916,40 @@ Py_LOCAL_INLINE(RE_Node*) next_check(RE_Node* node) {
             node->status |= RE_STATUS_VISITED_NC;
             return next;
         }
+        case RE_OP_ANY:
+        case RE_OP_ANY_ALL:
+        case RE_OP_ANY_ALL_REV:
+        case RE_OP_ANY_REV:
+        case RE_OP_ANY_U:
+        case RE_OP_ANY_U_REV:
         case RE_OP_CHARACTER:
         case RE_OP_CHARACTER_IGN:
         case RE_OP_CHARACTER_IGN_REV:
         case RE_OP_CHARACTER_REV:
+        case RE_OP_PROPERTY:
+        case RE_OP_PROPERTY_IGN:
+        case RE_OP_PROPERTY_IGN_REV:
+        case RE_OP_PROPERTY_REV:
+        case RE_OP_RANGE:
+        case RE_OP_RANGE_IGN:
+        case RE_OP_RANGE_IGN_REV:
+        case RE_OP_RANGE_REV:
+        case RE_OP_SET_DIFF:
+        case RE_OP_SET_DIFF_IGN:
+        case RE_OP_SET_DIFF_IGN_REV:
+        case RE_OP_SET_DIFF_REV:
+        case RE_OP_SET_INTER:
+        case RE_OP_SET_INTER_IGN:
+        case RE_OP_SET_INTER_IGN_REV:
+        case RE_OP_SET_INTER_REV:
+        case RE_OP_SET_SYM_DIFF:
+        case RE_OP_SET_SYM_DIFF_IGN:
+        case RE_OP_SET_SYM_DIFF_IGN_REV:
+        case RE_OP_SET_SYM_DIFF_REV:
+        case RE_OP_SET_UNION:
+        case RE_OP_SET_UNION_IGN:
+        case RE_OP_SET_UNION_IGN_REV:
+        case RE_OP_SET_UNION_REV:
             node->next_check = node;
             node->status |= RE_STATUS_VISITED_NC;
             return node;
@@ -4871,6 +5027,7 @@ Py_LOCAL_INLINE(BOOL) search_start(RE_SafeState* safe_state, RE_NextNode* next,
     state = safe_state->re_state;
 
     start_pos = state->text_pos;
+    TRACE(("<<search_start>> at %d\n", start_pos))
 
     test = next->test;
     node = next->node;
@@ -7718,7 +7875,6 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     PatternObject* pattern;
     Py_ssize_t text_length;
     RE_NextNode start_pair;
-    size_t iterations;
     void* text;
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
@@ -7749,16 +7905,6 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
 
     /* Is the pattern anchored to the start or end of the string? */
     switch (start_pair.test->op) {
-    case RE_OP_START_OF_STRING:
-        if (!state->reverse) {
-            /* Searching forwards. */
-            if (text_pos != 0)
-                return RE_ERROR_FAILURE;
-
-            /* Don't bother to search further because it's anchored. */
-            search = FALSE;
-        }
-        break;
     case RE_OP_END_OF_STRING:
         if (state->reverse) {
             /* Searching backwards. */
@@ -7769,9 +7915,18 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
             search = FALSE;
         }
         break;
+    case RE_OP_START_OF_STRING:
+        if (!state->reverse) {
+            /* Searching forwards. */
+            if (text_pos != 0)
+                return RE_ERROR_FAILURE;
+
+            /* Don't bother to search further because it's anchored. */
+            search = FALSE;
+        }
+        break;
     }
 
-    iterations = 0;
     text = state->text;
     char_at = state->char_at;
     has_property = encoding->has_property;
@@ -7862,12 +8017,9 @@ advance:
         TRACE(("%d|", text_pos))
 
         /* Should we abort the matching? */
-        ++iterations;
+        ++state->iterations;
 
-        if (iterations >= max_iterations)
-            return RE_ERROR_ITERATIONS;
-
-        if ((iterations & 0xFFFF) == 0 && safe_check_signals(safe_state))
+        if ((state->iterations & 0xFFFF) == 0 && safe_check_signals(safe_state))
             return RE_ERROR_INTERRUPTED;
 
         switch (node->op) {
@@ -7966,6 +8118,7 @@ advance:
             if (!add_backtrack(safe_state, RE_OP_ATOMIC))
                 return RE_ERROR_BACKTRACKING;
             state->backtrack->atomic.too_few_errors = state->too_few_errors;
+            state->backtrack->atomic.capture_change = state->capture_change;
 
             /* Save the groups. */
             if (!push_groups(safe_state))
@@ -8163,7 +8316,7 @@ advance:
         {
             size_t index;
             RE_RepeatData* rp_data;
-            BOOL advanced;
+            BOOL changed;
             BOOL try_body;
             RE_Position next_body_position;
             BOOL try_tail;
@@ -8182,10 +8335,10 @@ advance:
 
             ++rp_data->count;
 
-            /* Have we advanced through the text, either this time or last
-             * time?
+            /* Have we advanced through the text or has a capture group change?
              */
-            advanced = rp_data->advanced || text_pos != rp_data->start;
+            changed = rp_data->capture_change != state->capture_change ||
+              text_pos != rp_data->start;
 
             /* The counts are of type size_t, so the format needs to specify
              * that.
@@ -8195,10 +8348,10 @@ advance:
               node->values[2], rp_data->count))
 
             /* Could the body or tail match? */
-            try_body = advanced && rp_data->count < node->values[2] &&
+            try_body = changed && rp_data->count < node->values[2] &&
               !is_repeat_guarded(safe_state, index, text_pos, RE_STATUS_BODY) &&
               try_match(state, &node->next_1, text_pos, &next_body_position);
-            try_tail = (!advanced || rp_data->count >= node->values[1]) &&
+            try_tail = (!changed || rp_data->count >= node->values[1]) &&
               !is_repeat_guarded(safe_state, index, text_pos, RE_STATUS_TAIL) &&
               try_match(state, &node->nonstring.next_2, text_pos,
               &next_tail_position);
@@ -8215,7 +8368,7 @@ advance:
             bt_data->repeat.index = index;
             bt_data->repeat.count = rp_data->count - 1;
             bt_data->repeat.start = rp_data->start;
-            bt_data->repeat.advanced = rp_data->advanced;
+            bt_data->repeat.capture_change = rp_data->capture_change;
 
             if (try_body) {
                 if (try_tail) {
@@ -8232,7 +8385,7 @@ advance:
                     bt_data->repeat.index = index;
                     bt_data->repeat.count = rp_data->count;
                     bt_data->repeat.start = rp_data->start;
-                    bt_data->repeat.advanced = rp_data->advanced;
+                    bt_data->repeat.capture_change = rp_data->capture_change;
                     bt_data->repeat.text_pos = text_pos;
                 }
 
@@ -8243,7 +8396,7 @@ advance:
                 bt_data->repeat.index = index;
                 bt_data->repeat.text_pos = text_pos;
 
-                rp_data->advanced = text_pos != rp_data->start;
+                rp_data->capture_change = state->capture_change;
                 rp_data->start = text_pos;
 
                 /* Advance into the body. */
@@ -8276,6 +8429,9 @@ advance:
             bt_data->group.text_pos = state->groups[index - 1].span.end;
             bt_data->group.capture = node->values[1];
 
+            if (pattern->group_info[index - 1].referenced && state->groups[index
+              - 1].span.end != text_pos)
+                ++state->capture_change;
             state->groups[index - 1].span.end = text_pos;
 
             /* Save the capture? */
@@ -8283,13 +8439,14 @@ advance:
                 return RE_ERROR_MEMORY;
 
             node = node->next_1.node;
+            --state->iterations;
             break;
         }
         case RE_OP_END_LAZY_REPEAT: /* End of a lazy repeat. */
         {
             size_t index;
             RE_RepeatData* rp_data;
-            BOOL advanced;
+            BOOL changed;
             BOOL try_body;
             RE_Position next_body_position;
             BOOL try_tail;
@@ -8308,10 +8465,10 @@ advance:
 
             ++rp_data->count;
 
-            /* Have we advanced through the text, either this time or last
-             * time?
+            /* Have we advanced through the text or has a capture group change?
              */
-            advanced = rp_data->advanced || text_pos != rp_data->start;
+            changed = rp_data->capture_change != state->capture_change ||
+              text_pos != rp_data->start;
 
             /* The counts are of type size_t, so the format needs to specify
              * that.
@@ -8321,10 +8478,10 @@ advance:
               node->values[2], rp_data->count))
 
             /* Could the body or tail match? */
-            try_body = advanced && rp_data->count < node->values[2] &&
+            try_body = changed && rp_data->count < node->values[2] &&
               !is_repeat_guarded(safe_state, index, text_pos, RE_STATUS_BODY) &&
               try_match(state, &node->next_1, text_pos, &next_body_position);
-            try_tail = (!advanced || rp_data->count >= node->values[1]) &&
+            try_tail = (!changed || rp_data->count >= node->values[1]) &&
               try_match(state, &node->nonstring.next_2, text_pos,
               &next_tail_position);
             if (!try_body && !try_tail) {
@@ -8340,7 +8497,7 @@ advance:
             bt_data->repeat.index = index;
             bt_data->repeat.count = rp_data->count - 1;
             bt_data->repeat.start = rp_data->start;
-            bt_data->repeat.advanced = rp_data->advanced;
+            bt_data->repeat.capture_change = rp_data->capture_change;
 
             if (try_body) {
                 if (try_tail) {
@@ -8357,7 +8514,7 @@ advance:
                     bt_data->repeat.index = index;
                     bt_data->repeat.count = rp_data->count;
                     bt_data->repeat.start = rp_data->start;
-                    bt_data->repeat.advanced = rp_data->advanced;
+                    bt_data->repeat.capture_change = rp_data->capture_change;
                     bt_data->repeat.text_pos = text_pos;
 
                     /* Advance into the tail. */
@@ -8374,7 +8531,7 @@ advance:
                     bt_data->repeat.index = index;
                     bt_data->repeat.text_pos = text_pos;
 
-                    rp_data->advanced = text_pos != rp_data->start;
+                    rp_data->capture_change = state->capture_change;
                     rp_data->start = text_pos;
 
                     /* Advance into the body. */
@@ -8530,13 +8687,13 @@ advance:
             bt_data->repeat.index = index;
             bt_data->repeat.count = rp_data->count;
             bt_data->repeat.start = rp_data->start;
-            bt_data->repeat.advanced = rp_data->advanced;
+            bt_data->repeat.capture_change = rp_data->capture_change;
             bt_data->repeat.text_pos = text_pos;
 
             /* Initialise the new repeat. */
             rp_data->count = 0;
             rp_data->start = text_pos;
-            rp_data->advanced = TRUE;
+            rp_data->capture_change = state->capture_change;
 
             /* Could the body or tail match? */
             try_body = node->values[2] > 0 && !is_repeat_guarded(safe_state,
@@ -8563,7 +8720,7 @@ advance:
                     bt_data->repeat.index = index;
                     bt_data->repeat.count = rp_data->count;
                     bt_data->repeat.start = rp_data->start;
-                    bt_data->repeat.advanced = rp_data->advanced;
+                    bt_data->repeat.capture_change = rp_data->capture_change;
                     bt_data->repeat.text_pos = text_pos;
                 }
 
@@ -8711,6 +8868,7 @@ advance:
                 return RE_ERROR_BACKTRACKING;
             bt_data = state->backtrack;
             bt_data->group_call.node = return_node;
+            bt_data->group_call.capture_change = state->capture_change;
 
             if (return_node) {
                 /* The group was called. */
@@ -8757,13 +8915,13 @@ advance:
             bt_data->repeat.index = index;
             bt_data->repeat.count = rp_data->count;
             bt_data->repeat.start = rp_data->start;
-            bt_data->repeat.advanced = rp_data->advanced;
+            bt_data->repeat.capture_change = rp_data->capture_change;
             bt_data->repeat.text_pos = text_pos;
 
             /* Initialise the new repeat. */
             rp_data->count = 0;
             rp_data->start = text_pos;
-            rp_data->advanced = TRUE;
+            rp_data->capture_change = state->capture_change;
 
             /* Could the body or tail match? */
             try_body = node->values[2] > 0 && !is_repeat_guarded(safe_state,
@@ -8790,7 +8948,7 @@ advance:
                     bt_data->repeat.index = index;
                     bt_data->repeat.count = rp_data->count;
                     bt_data->repeat.start = rp_data->start;
-                    bt_data->repeat.advanced = rp_data->advanced;
+                    bt_data->repeat.capture_change = rp_data->capture_change;
                     bt_data->repeat.text_pos = text_pos;
 
                     /* Advance into the tail. */
@@ -8866,6 +9024,7 @@ advance:
         case RE_OP_LOOKAROUND: /* Lookaround. */
         {
             RE_Info info;
+            size_t capture_change;
             BOOL too_few_errors;
             int status;
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
@@ -8873,6 +9032,8 @@ advance:
             /* Save the groups. */
             if (!push_groups(safe_state))
                 return RE_ERROR_MEMORY;
+
+            capture_change = state->capture_change;
 
             /* Save the other info. */
             save_info(state, &info);
@@ -8909,6 +9070,8 @@ advance:
                     /* We'll restore the groups and flags on backtracking. */
                     state->backtrack->lookaround.too_few_errors =
                       too_few_errors;
+                    state->backtrack->lookaround.capture_change =
+                      capture_change;
                 } else {
                     /* It failed, so the groups and certain flags haven't
                      * changed.
@@ -8924,6 +9087,7 @@ advance:
                      */
                     pop_groups(state);
                     state->too_few_errors = too_few_errors;
+                    state->capture_change = capture_change;
                     goto backtrack;
                 } else
                     /* It failed, so the groups and certain flags haven't
@@ -9565,6 +9729,9 @@ advance:
             bt_data->group.text_pos = state->groups[index - 1].span.start;
             bt_data->group.capture = node->values[1];
 
+            if (pattern->group_info[index - 1].referenced && state->groups[index
+              - 1].span.start != text_pos)
+                ++state->capture_change;
             state->groups[index - 1].span.start = text_pos;
 
             /* Save the capture? */
@@ -9572,6 +9739,7 @@ advance:
                 return RE_ERROR_MEMORY;
 
             node = node->next_1.node;
+            --state->iterations;
             break;
         }
         case RE_OP_START_OF_LINE: /* At the start of a line. */
@@ -10114,12 +10282,9 @@ backtrack:
         TRACE(("BACKTRACK "))
 
         /* Should we abort the matching? */
-        ++iterations;
+        ++state->iterations;
 
-        if (iterations >= max_iterations)
-            return RE_ERROR_ITERATIONS;
-
-        if ((iterations & 0xFFFF) == 0 && safe_check_signals(safe_state))
+        if ((state->iterations & 0xFFFF) == 0 && safe_check_signals(safe_state))
             return RE_ERROR_INTERRUPTED;
 
         bt_data = last_backtrack(state);
@@ -10172,6 +10337,7 @@ backtrack:
             /* Restore the groups and certain flags and then backtrack. */
             pop_groups(state);
             state->too_few_errors = bt_data->atomic.too_few_errors;
+            state->capture_change = bt_data->atomic.capture_change;
             discard_backtrack(state);
             break;
         case RE_OP_BODY_END:
@@ -10185,7 +10351,7 @@ backtrack:
             /* Restore the repeat info. */
             rp_data->count = bt_data->repeat.count;
             rp_data->start = bt_data->repeat.start;
-            rp_data->advanced = bt_data->repeat.advanced;
+            rp_data->capture_change = bt_data->repeat.capture_change;
 
             discard_backtrack(state);
             break;
@@ -10251,17 +10417,25 @@ backtrack:
             }
             break;
         case RE_OP_END_GROUP: /* End of capture group. */
+        {
+            size_t index;
             TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.index))
+
+            index = bt_data->group.index;
 
             /* Unsave the capture? */
             if (bt_data->group.capture)
                 unsave_capture(state, bt_data->group.index);
 
-            state->groups[bt_data->group.index - 1].span.end =
-              bt_data->group.text_pos;
+            if (pattern->group_info[index - 1].referenced && state->groups[index
+              - 1].span.end != bt_data->group.text_pos)
+                --state->capture_change;
+            state->groups[index - 1].span.end = bt_data->group.text_pos;
 
             discard_backtrack(state);
+            --state->iterations;
             break;
+        }
         case RE_OP_FAILURE:
         {
             Py_ssize_t end_pos;
@@ -10336,7 +10510,7 @@ backtrack:
             /* Restore the previous repeat. */
             rp_data->count = bt_data->repeat.count;
             rp_data->start = bt_data->repeat.start;
-            rp_data->advanced = bt_data->repeat.advanced;
+            rp_data->capture_change = bt_data->repeat.capture_change;
 
             discard_backtrack(state);
             break;
@@ -10618,6 +10792,7 @@ backtrack:
             if (return_node) {
                 /* Restore the groups. */
                 pop_groups(state);
+                state->capture_change = bt_data->group_call.capture_change;
 
                 /* Restore the repeat guards. */
                 pop_guards(state);
@@ -10980,6 +11155,7 @@ backtrack:
             /* Restore the groups and certain flags and then backtrack. */
             pop_groups(state);
             state->too_few_errors = bt_data->lookaround.too_few_errors;
+            state->capture_change = bt_data->lookaround.capture_change;
             discard_backtrack(state);
             break;
         case RE_OP_MATCH_BODY:
@@ -10993,7 +11169,7 @@ backtrack:
             /* Restore the repeat info. */
             rp_data->count = bt_data->repeat.count;
             rp_data->start = bt_data->repeat.start;
-            rp_data->advanced = bt_data->repeat.advanced;
+            rp_data->capture_change = bt_data->repeat.capture_change;
 
             /* Record backtracking info in case the body fails to match. */
             bt_data->op = RE_OP_BODY_START;
@@ -11014,7 +11190,7 @@ backtrack:
             /* Restore the repeat info. */
             rp_data->count = bt_data->repeat.count;
             rp_data->start = bt_data->repeat.start;
-            rp_data->advanced = bt_data->repeat.advanced;
+            rp_data->capture_change = bt_data->repeat.capture_change;
 
             /* Advance into the tail. */
             node = bt_data->repeat.position.node;
@@ -11058,17 +11234,25 @@ backtrack:
             break;
         }
         case RE_OP_START_GROUP: /* Start of capture group. */
+        {
+            size_t index;
             TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.index))
+
+            index = bt_data->group.index;
 
             /* Unsave the capture? */
             if (bt_data->group.capture)
-                unsave_capture(state, bt_data->group.index);
+                unsave_capture(state, index);
 
-            state->groups[bt_data->group.index - 1].span.start =
-              bt_data->group.text_pos;
+            if (pattern->group_info[index - 1].referenced && state->groups[index
+              - 1].span.start != bt_data->group.text_pos)
+                --state->capture_change;
+            state->groups[index - 1].span.start = bt_data->group.text_pos;
 
             discard_backtrack(state);
+            --state->iterations;
             break;
+        }
         case RE_OP_STRING_FLD: /* A string literal, ignoring case. */
         case RE_OP_STRING_FLD_REV: /* A string literal backwards, ignoring case. */
         {
@@ -11216,8 +11400,6 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     size_t available;
     BOOL get_best;
     BOOL must_advance;
-    size_t low_cost;
-    size_t high_cost;
     RE_GroupData* best_groups;
     Py_ssize_t best_match_pos;
     Py_ssize_t best_text_pos;
@@ -11225,36 +11407,6 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
     TRACE(("<<do_match>>\n"))
-
-    /* Get the maximum permitted number of iterations unless it's already set.
-     *
-     * If the number of iterations exceeds this number, an exception will be
-     * raised.
-     */
-    if (!max_iterations) {
-        PyObject* obj;
-
-        /* Set it to the default. */
-        max_iterations = RE_MAX_ITERATIONS;
-
-        obj = get_object("_" RE_MODULE "_core", "MAX_ITERATIONS");
-        if (obj) {
-            Py_ssize_t value;
-
-            value = PyLong_AsLong(obj);
-            Py_DECREF(obj);
-
-            /* A value below a reasonable minimum or an invalid value will cause
-             * it to be set to the default. If it's not an integer then 'value'
-             * will be -1.
-             */
-            if (value >= RE_MIN_ITERATIONS)
-                max_iterations = value;
-        }
-
-        /* Clear any error which we may have caused above. */
-        PyErr_Clear();
-    }
 
     state = safe_state->re_state;
     pattern = state->pattern;
@@ -11283,11 +11435,8 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     get_best = (pattern->flags & RE_FLAG_BESTMATCH) != 0;
 
 try_again:
-    /* The range of permitted costs. */
-    low_cost = 0;
-    high_cost = pattern->is_fuzzy ? RE_UNLIMITED : 0;
-
-    state->max_cost = high_cost;
+    /* The maximum permitted cost. */
+    state->max_cost = pattern->is_fuzzy ? RE_UNLIMITED : 0;
 
     best_groups = NULL;
 
@@ -11327,65 +11476,73 @@ try_again:
             status = basic_match(safe_state, state->pattern->start_node,
               search);
 
-        if (status == RE_ERROR_ITERATIONS)
-            status = RE_ERROR_FAILURE;
+        /* Has an error occurred? */
+        if (status < 0)
+            break;
 
-        if (status < 0 || !pattern->is_fuzzy || status == RE_ERROR_FAILURE &&
-          state->max_cost == RE_UNLIMITED)
-            /* An error occurred or we want an exact match (at least
-             * partially).
+        if (status == RE_ERROR_FAILURE || status == RE_ERROR_SUCCESS &&
+          state->total_cost == 0)
+            break;
+
+        if (!get_best)
+            break;
+
+        if (!get_best && state->text_pos == state->match_pos)
+            /* We want the first match. The match is already zero-width, so
+             * the cost can't get any lower (because the fit can't get any
+             * better).
              */
             break;
 
-        if (status == RE_ERROR_SUCCESS) {
-            if (!get_best && state->text_pos == state->match_pos)
-                /* We want the first match. The match is already zero-width, so the
-                 * cost can't get any lower (because the fit can't get any better).
-                 */
-                break;
+        if (best_groups) {
+            BOOL same;
+            Py_ssize_t g;
 
-            /* It was successful at this cost. */
-            high_cost = state->total_cost;
-
-            /* Save the best result so far. */
-            best_groups = save_groups(safe_state, best_groups);
-            if (!best_groups) {
-                status = RE_ERROR_MEMORY;
-                break;
+            /* Did we get the same match as the best so far? */
+            same = state->match_pos == best_match_pos && state->text_pos ==
+              best_text_pos;
+            for (g = 0; same && g < pattern->group_count; g++) {
+                same = state->groups[g].span.start == best_groups[g].span.start
+                  && state->groups[g].span.end == best_groups[g].span.end;
             }
 
-            best_match_pos = state->match_pos;
-            best_text_pos = state->text_pos;
+            if (same)
+                break;
+        }
 
-            if (!get_best) {
-                /* We have the first match, but can we reduce the cost of it?
-                 */
-                if (pattern->flags & RE_FLAG_REVERSE)
-                    state->slice_start = state->text_pos;
-                else
-                    state->slice_end = state->text_pos;
-            }
-        } else
-            /* Failed for this cost. */
-            low_cost = state->max_cost + 1;
+        /* Save the best result so far. */
+        best_groups = save_groups(safe_state, best_groups);
+        if (!best_groups) {
+            status = RE_ERROR_MEMORY;
+            break;
+        }
 
-        if (low_cost > high_cost || low_cost == high_cost && best_groups)
+        best_match_pos = state->match_pos;
+        best_text_pos = state->text_pos;
+
+        if (state->max_cost == 0)
             break;
 
-        state->max_cost = (low_cost + high_cost) / 2;
+        /* Reduce the maximum permitted cost and try again. */
+        state->max_cost = state->total_cost - 1;
     }
 
     state->slice_start = slice_start;
     state->slice_end = slice_end;
 
-    /* Restore the best results, if any. */
     if (best_groups) {
-        status = RE_ERROR_SUCCESS;
+        if (status == RE_ERROR_SUCCESS && state->total_cost == 0)
+            /* We have a perfect match, so the previous best match. */
+            discard_groups(safe_state, best_groups);
+        else {
+            /* Restore the previous best match. */
+            status = RE_ERROR_SUCCESS;
 
-        state->match_pos = best_match_pos;
-        state->text_pos = best_text_pos;
+            state->match_pos = best_match_pos;
+            state->text_pos = best_text_pos;
 
-        restore_groups(safe_state, best_groups);
+            restore_groups(safe_state, best_groups);
+        }
     }
 
     if (status == RE_ERROR_SUCCESS && state->too_few_errors) {
@@ -11730,11 +11887,11 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
      * immutable strings.
      */
     switch (concurrent) {
-    case RE_CONC_YES:
-        state->is_multithreaded = TRUE;
-        break;
     case RE_CONC_NO:
         state->is_multithreaded = FALSE;
+        break;
+    case RE_CONC_YES:
+        state->is_multithreaded = TRUE;
         break;
     default:
         state->is_multithreaded = PyUnicode_Check(string) || PyString_Check(string);
@@ -15474,17 +15631,10 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
         case RE_OP_ANY_REV:
         case RE_OP_ANY_U:
         case RE_OP_ANY_U_REV:
-        case RE_OP_BOUNDARY:
-        case RE_OP_DEFAULT_BOUNDARY:
-        case RE_OP_DEFAULT_END_OF_WORD:
-        case RE_OP_DEFAULT_START_OF_WORD:
-        case RE_OP_END_OF_LINE:
-        case RE_OP_END_OF_LINE_U:
-        case RE_OP_END_OF_STRING:
-        case RE_OP_END_OF_STRING_LINE:
-        case RE_OP_END_OF_STRING_LINE_U:
-        case RE_OP_END_OF_WORD:
-        case RE_OP_GRAPHEME_BOUNDARY:
+        case RE_OP_CHARACTER:
+        case RE_OP_CHARACTER_IGN:
+        case RE_OP_CHARACTER_IGN_REV:
+        case RE_OP_CHARACTER_REV:
         case RE_OP_PROPERTY:
         case RE_OP_PROPERTY_IGN:
         case RE_OP_PROPERTY_IGN_REV:
@@ -15493,7 +15643,6 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
         case RE_OP_RANGE_IGN:
         case RE_OP_RANGE_IGN_REV:
         case RE_OP_RANGE_REV:
-        case RE_OP_SEARCH_ANCHOR:
         case RE_OP_SET_DIFF:
         case RE_OP_SET_DIFF_IGN:
         case RE_OP_SET_DIFF_IGN_REV:
@@ -15510,10 +15659,10 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
         case RE_OP_SET_UNION_IGN:
         case RE_OP_SET_UNION_IGN_REV:
         case RE_OP_SET_UNION_REV:
-        case RE_OP_START_OF_LINE:
-        case RE_OP_START_OF_LINE_U:
-        case RE_OP_START_OF_STRING:
-        case RE_OP_START_OF_WORD:
+            if (node->match) {
+                pattern->do_check = !early;
+                return TRUE;
+            }
             early = FALSE;
             node = node->next_1.node;
             break;
@@ -15523,8 +15672,23 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
                 return TRUE;
             node = node->next_1.node;
             break;
-        case RE_OP_END_GROUP:
-        case RE_OP_START_GROUP:
+        case RE_OP_BOUNDARY:
+        case RE_OP_DEFAULT_BOUNDARY:
+        case RE_OP_DEFAULT_END_OF_WORD:
+        case RE_OP_DEFAULT_START_OF_WORD:
+        case RE_OP_END_OF_LINE:
+        case RE_OP_END_OF_LINE_U:
+        case RE_OP_END_OF_STRING:
+        case RE_OP_END_OF_STRING_LINE:
+        case RE_OP_END_OF_STRING_LINE_U:
+        case RE_OP_END_OF_WORD:
+        case RE_OP_GRAPHEME_BOUNDARY:
+        case RE_OP_SEARCH_ANCHOR:
+        case RE_OP_START_OF_LINE:
+        case RE_OP_START_OF_LINE_U:
+        case RE_OP_START_OF_STRING:
+        case RE_OP_START_OF_WORD:
+            early = FALSE;
             node = node->next_1.node;
             break;
         case RE_OP_BRANCH:
@@ -15533,21 +15697,14 @@ Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
                 return TRUE;
             node = node->nonstring.next_2.node;
             break;
-        case RE_OP_CHARACTER:
-        case RE_OP_CHARACTER_IGN:
-        case RE_OP_CHARACTER_IGN_REV:
-        case RE_OP_CHARACTER_REV:
-            if (node->match) {
-                pattern->do_check = !early;
-                return TRUE;
-            }
-            early = FALSE;
-            node = node->next_1.node;
-            break;
         case RE_OP_END_GREEDY_REPEAT:
         case RE_OP_END_LAZY_REPEAT:
             early = FALSE;
             node = node->nonstring.next_2.node;
+            break;
+        case RE_OP_END_GROUP:
+        case RE_OP_START_GROUP:
+            node = node->next_1.node;
             break;
         case RE_OP_GREEDY_REPEAT:
         case RE_OP_LAZY_REPEAT:
@@ -17194,16 +17351,6 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
             if (!build_SET(args))
                 return FALSE;
             break;
-        case RE_OP_STRING_SET:
-        case RE_OP_STRING_SET_FLD:
-        case RE_OP_STRING_SET_FLD_REV:
-        case RE_OP_STRING_SET_IGN:
-        case RE_OP_STRING_SET_IGN_REV:
-        case RE_OP_STRING_SET_REV:
-            /* A reference to a list. */
-            if (!build_STRING_SET(args))
-                return FALSE;
-            break;
         case RE_OP_STRING:
         case RE_OP_STRING_FLD:
         case RE_OP_STRING_FLD_REV:
@@ -17212,6 +17359,16 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
         case RE_OP_STRING_REV:
             /* A string literal. */
             if (!build_STRING(args, FALSE))
+                return FALSE;
+            break;
+        case RE_OP_STRING_SET:
+        case RE_OP_STRING_SET_FLD:
+        case RE_OP_STRING_SET_FLD_REV:
+        case RE_OP_STRING_SET_IGN:
+        case RE_OP_STRING_SET_IGN_REV:
+        case RE_OP_STRING_SET_REV:
+            /* A reference to a list. */
+            if (!build_STRING_SET(args))
                 return FALSE;
             break;
         case RE_OP_SUCCESS:
@@ -17814,7 +17971,6 @@ PyMODINIT_FUNC init_regex(void) {
     Splitter_Type.ob_type = &PyType_Type;
 
     error_exception = NULL;
-    max_iterations = 0;
 
     m = Py_InitModule("_" RE_MODULE, _functions);
     if (!m)

@@ -1,8 +1,4 @@
-The following is a list of the 79 properties which are supported by this module:
-
-ASCII
-    No [F, False, N]
-    Yes [T, True, Y]
+The following is a list of the 77 properties which are supported by this module:
 
 ASCII_Hex_Digit [AHex]
     No [F, False, N]
@@ -490,7 +486,7 @@ Hangul_Syllable_Type [hst]
     T [Trailing_Jamo]
     V [Vowel_Jamo]
 
-Hex_Digit [Hex]
+Hex_Digit [Hex, XDigit]
     No [F, False, N]
     Yes [T, True, Y]
 
@@ -1029,10 +1025,6 @@ Word_Break [WB]
     Newline [Nl]
     Numeric [NU]
     Other [XX]
-
-XDigit
-    No [F, False, N]
-    Yes [T, True, Y]
 
 XID_Continue [XIDC]
     No [F, False, N]

@@ -2729,8 +2729,9 @@ xyzabc
             (r'(?i)[M]+', 'MMM', '0', ascii('MMM')),
             (r'(?i)[m]+', 'MMM', '0', ascii('MMM')),
             # Bug 130748: ^* should be an error (nothing to repeat).
+            # In 'regex' we won't bother to complain about this.
             # 521
-            (r'^*', '', '', self.NOTHING_TO_REPEAT),
+            # (r'^*', '', '', self.NOTHING_TO_REPEAT),
             # Bug 133283: minimizing repeat problem.
             # 522
             (r'"(?:\\"|[^"])*?"', r'"\""', '0', ascii(r'"\""')),
@@ -2993,7 +2994,7 @@ xyzabc
         self.expect(lambda: regex.search('(?b)(fuu){i<=3,d<=3,e<=5}',
           text).span(0, 1), ascii(((9, 10), (9, 10))))
         self.expect(lambda: regex.search('(fuu){i<=2,d<=2,e<=5}', text).span(0,
-          1), ascii(((9, 10), (9, 10))))
+          1), ascii(((7, 10), (7, 10))))
         self.expect(lambda: regex.search('(fuu){i<=3,d<=3,e}', text).span(0,
           1), ascii(((0, 0), (0, 0))))
         self.expect(lambda: regex.search('(?b)(fuu){i<=3,d<=3,e}',
@@ -3006,7 +3007,7 @@ xyzabc
         # No cost limit.
         # 18..19
         self.expect(lambda: regex.search('(foobar){e}',
-          'xirefoabralfobarxie').span(0, 1), ascii(((4, 9), (4, 9))))
+          'xirefoabralfobarxie').span(0, 1), ascii(((0, 6), (0, 6))))
         self.expect(lambda: regex.search('(?b)(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), ascii(((11, 16), (11, 16))))
 
@@ -3089,7 +3090,7 @@ xyzabc
         text = ('www.cnn.com 64.236.16.20\nwww.slashdot.org 66.35.250.150\n'
           'For useful information, use www.slashdot.org\nthis is demo data!\n')
         self.expect(lambda: regex.search(r'(?s)^.*(dot.org){e}.*$',
-          text).span(0, 1), ascii(((0, 120), (93, 100))))
+          text).span(0, 1), ascii(((0, 120), (120, 120))))
         self.expect(lambda: regex.search(r'^.*(dot.org){e}.*$', text).span(0,
           1), ascii(((0, 119), (24, 101))))
 
@@ -3101,10 +3102,10 @@ xyzabc
           ascii(["cot", "dog"]))
         self.expect(lambda: regex.findall(r"\b\L<words>{e<=1}\b",
           " book dog cot desk ", words="cat dog".split()),
-          ascii(["dog", "cot"]))
+          ascii([" dog", "cot"]))
         self.expect(lambda: regex.findall(r"(?r)\b\L<words>{e<=1}\b",
           " book cot dog desk ", words="cat dog".split()),
-          ascii(["dog", "cot"]))
+          ascii(["dog ", "cot"]))
         self.expect(lambda: regex.findall(r"(?r)\b\L<words>{e<=1}\b",
           " book dog cot desk ", words="cat dog".split()),
           ascii(["cot", "dog"]))
@@ -3113,10 +3114,10 @@ xyzabc
           ascii([b"cot", b"dog"]))
         self.expect(lambda: regex.findall(br"\b\L<words>{e<=1}\b",
           b" book dog cot desk ", words=b"cat dog".split()),
-          ascii([b"dog", b"cot"]))
+          ascii([b" dog", b"cot"]))
         self.expect(lambda: regex.findall(br"(?r)\b\L<words>{e<=1}\b",
           b" book cot dog desk ", words=b"cat dog".split()),
-          ascii([b"dog", b"cot"]))
+          ascii([b"dog ", b"cot"]))
         self.expect(lambda: regex.findall(br"(?r)\b\L<words>{e<=1}\b",
           b" book dog cot desk ", words=b"cat dog".split()),
           ascii([b"cot", b"dog"]))
@@ -3131,9 +3132,9 @@ xyzabc
 
         # 59..60
         self.expect(lambda: regex.findall(r"(?:(?:QR)+){e}","abcde"),
-          ascii(["ab", "cd", "e", ""]))
-        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), ascii(["a", "b",
-          "c", ""]))
+          ascii(["abcde", ""]))
+        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), ascii(["abc",
+          ""]))
 
         # Hg issue 41
         # 61..65
@@ -3399,18 +3400,27 @@ xyzabc
         self.expect(lambda: regex.search("^(?:a?b?)*$", "ac"), ascii(None))
 
         # Hg issue 58
+        # 43
         self.expect(lambda: regex.compile("\\N{1}"), self.UNDEF_CHAR_NAME)
 
         # Hg issue 59
+        # 44
         self.expect(lambda: regex.search("\\Z", "a\na\n").span(0), ascii((4,
           4)))
 
         # Hg issue 60
+        # 45
         self.expect(lambda: regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}",
           "xayxay").group(0), ascii("xayxay"))
 
         # Hg issue 61
+        # 46
         self.expect(lambda: regex.search("(?i)[^a]", "A"), ascii(None))
+
+        # Hg issue 63
+        # 47
+        self.expect(lambda: regex.search("(?i)[[:ascii:]]",
+          "\N{KELVIN SIGN}"), ascii(None))
 
     def run(self):
         print("Performing tests")

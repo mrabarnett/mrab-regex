@@ -72,11 +72,6 @@ DEFAULT_VERSION = VERSION1
 ALL_VERSIONS = VERSION0 | VERSION1
 ALL_ENCODINGS = ASCII | LOCALE | UNICODE
 
-# The maximum number of iterations that the regex engine should perform. This
-# defines the threshold of 'excessive' backtracking, and may need to be raised
-# when working with very long texts.
-MAX_ITERATIONS = 1024 ** 2
-
 # The default flags for the various versions.
 DEFAULT_FLAGS = {VERSION0: 0, VERSION1: FULLCASE}
 
@@ -368,10 +363,6 @@ def parse_item(source, info):
     element = parse_element(source, info)
     counts = parse_quantifier(source, info)
     if counts:
-        # Is there an element to repeat?
-        if not element or not element.can_repeat():
-            raise error("nothing to repeat")
-
         min_count, max_count = counts
         here = source.pos
         ch = source.get()
@@ -1287,7 +1278,7 @@ def parse_property_name(source):
         name = []
         here = source.pos
         ch = source.get()
-        while ch and (ch in ALNUM or ch in " &_-."):
+        while ch and (ch in ALNUM or ch in " &_-./"):
             name.append(ch)
             here = source.pos
             ch = source.get()
@@ -1745,9 +1736,6 @@ class RegexBase(object):
     def contains_group(self):
         return False
 
-    def can_repeat(self):
-        return True
-
     def get_firstset(self, reverse):
         raise FirstSetError()
 
@@ -1773,9 +1761,6 @@ class ZeroWidthBase(RegexBase):
         self.positive = bool(positive)
 
         self._key = self.__class__, self.positive
-
-    def can_repeat(self):
-        return False
 
     def get_firstset(self, reverse):
         return set([None])

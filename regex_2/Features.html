@@ -321,9 +321,13 @@ ul.auto-toc {
 </div>
 <div class="section" id="change-of-behaviour">
 <h1>Change of behaviour</h1>
-<p><strong>Old vs new behaviour</strong></p>
+<p><strong>Fuzzy matching</strong></p>
+<p>When performing fuzzy matching, this release of the module is strict in that it will return the first match which meets the constraints. This is slightly different from the previous release, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth.</p>
+</div>
+<div class="section" id="old-vs-new-behaviour">
+<h1>Old vs new behaviour</h1>
 <p>This module has 2 behaviours:</p>
-<p>Version 0 behaviour (old behaviour, compatible with the current 're' module):</p>
+<p><strong>Version 0</strong> behaviour (old behaviour, compatible with the current re module):</p>
 <blockquote>
 <p>Indicated by the <tt class="docutils literal">VERSION0</tt> or <tt class="docutils literal">V0</tt> flag, or <tt class="docutils literal"><span class="pre">(?V0)</span></tt> in the pattern.</p>
 <p><tt class="docutils literal">.split</tt> won't split a string at a zero-width match.</p>
@@ -331,7 +335,7 @@ ul.auto-toc {
 <p>Only simple sets are supported.</p>
 <p>Case-insensitive matches in Unicode use simple case-folding by default.</p>
 </blockquote>
-<p>Version 1 behaviour (new behaviour, different from the current 're' module):</p>
+<p><strong>Version 1</strong> behaviour (new behaviour, different from the current re module):</p>
 <blockquote>
 <p>Indicated by the <tt class="docutils literal">VERSION1</tt> or <tt class="docutils literal">V1</tt> flag, or <tt class="docutils literal"><span class="pre">(?V1)</span></tt> in the pattern.</p>
 <p><tt class="docutils literal">.split</tt> will split a string at a zero-width match.</p>
@@ -340,18 +344,33 @@ ul.auto-toc {
 <p>Case-insensitive matches in Unicode use full case-folding by default.</p>
 </blockquote>
 <p>If no version is specified, the regex module will default to <tt class="docutils literal">regex.DEFAULT_VERSION</tt>. In the short term this will be <tt class="docutils literal">VERSION0</tt>, but in the longer term it will be <tt class="docutils literal">VERSION1</tt>.</p>
-<p><strong>Note</strong>: the <tt class="docutils literal">VERSION1</tt> flag replaces the <tt class="docutils literal">NEW</tt> flag in previous versions of this module. The <tt class="docutils literal">NEW</tt> flag has been removed. The decision about versions and making the change was made after discussion in the python-dev list.</p>
-<p><strong>Case-insensitive matches in Unicode</strong></p>
+</div>
+<div class="section" id="case-insensitive-matches-in-unicode">
+<h1>Case-insensitive matches in Unicode</h1>
 <p>The regex module supports both simple and full case-folding for case-insensitive matches in Unicode. Use of full case-folding can be turned on using the <tt class="docutils literal">FULLCASE</tt> or <tt class="docutils literal">F</tt> flag, or <tt class="docutils literal"><span class="pre">(?f)</span></tt> in the pattern. Please note that this flag affects how the <tt class="docutils literal">IGNORECASE</tt> flag works; the <tt class="docutils literal">FULLCASE</tt> flag itself does not turn on case-insensitive matching.</p>
 <p>In the version 0 behaviour, the flag is off by default.</p>
 <p>In the version 1 behaviour, the flag is on by default.</p>
-<p><strong>Nested sets and set operations</strong></p>
-<p>Previous releases supported both simple and nested sets at the same time. This occasionally lead to problems in practice when an unescaped &quot;[&quot; in a simple set was interpreted as being the start of a nested set. Therefore nested sets and set operations are now supported only in the version 1 behaviour.</p>
+</div>
+<div class="section" id="nested-sets-and-set-operations">
+<h1>Nested sets and set operations</h1>
+<p>It's not possible to support both simple sets, as used in the re module, and nested sets at the same time because of a difference in the meaning of an unescaped <tt class="docutils literal">&quot;[&quot;</tt> in a set.</p>
+<p>For example, the pattern <tt class="docutils literal"><span class="pre">[[a-z]--[aeiou]]</span></tt> is treated in the version 0 behaviour (simple sets, compatible with the re module) as:</p>
+<blockquote>
+<p>Set containing &quot;[&quot; and the letters &quot;a&quot; to &quot;z&quot;</p>
+<p>Literal &quot;--&quot;</p>
+<p>Set containing letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&quot;, &quot;u&quot;</p>
+</blockquote>
+<p>but in the version 1 behaviour (nested sets, enhanced behaviour) as:</p>
+<blockquote>
+<p>Set which is:</p>
+<blockquote>
+Set containing the letters &quot;a&quot; to &quot;z&quot;</blockquote>
+<p>but excluding:</p>
+<blockquote>
+Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&quot;, &quot;u&quot;</blockquote>
+</blockquote>
 <p>Version 0 behaviour: only simple sets are supported.</p>
 <p>Version 1 behaviour: nested sets and set operations are supported.</p>
-<p><strong>Fuzzy matching</strong></p>
-<p>When performing fuzzy matching, the previous release of this module searched for the best match. This proved to be confusing in practice when used with <tt class="docutils literal">.findall</tt>, for example.</p>
-<p>Therefore, the default behaviour has been changed to search for the first match which meets the constraints, and a new <tt class="docutils literal">BESTMATCH</tt> flag has been added to force it to search for the best match instead (the previous behaviour).</p>
 </div>
 <div class="section" id="flags">
 <h1>Flags</h1>
@@ -374,7 +393,7 @@ ul.auto-toc {
 </div>
 <div class="section" id="building-for-64-bits">
 <h1>Building for 64-bits</h1>
-<p>If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The 're' module appears to limit string positions to 32 bits, even on a 64-bit build.)</p>
+<p>If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The re module appears to limit string positions to 32 bits, even on a 64-bit build.)</p>
 </div>
 <div class="section" id="unicode">
 <h1>Unicode</h1>
@@ -469,7 +488,11 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 <p><tt class="docutils literal">{e&lt;4}</tt> permit fewer than 4 errors</p>
 <p><tt class="docutils literal">{0&lt;e&lt;4}</tt> permit more than 0 but fewer than 4 errors</p>
 <p>By default, fuzzy matching searches for the first match which meets the given constraints, but turning on the <tt class="docutils literal">BESTMATCH</tt> flag will make it search for the best match instead.</p>
-<p>When matching a fuzzy regex which contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then reject it, continuing from where the match finished, if there were too few errors.</p>
+<p>Further examples to note:</p>
+<p><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;cat&quot;</tt> because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 3 errors, which is within the limit (an unlimited number of errors is permitted).</p>
+<p><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot; dog&quot;</tt> (with a leading space) because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted).</p>
+<p>In both examples there are perfect matches later in the string, but in neither case is it the first possible match.</p>
+<p>Finally, when matching a fuzzy regex which contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then, if there were too few errors, reject it and continue searching from where that match finished.</p>
 </blockquote>
 </li>
 <li><p class="first">Named lists (Hg issue 11)</p>

@@ -11,11 +11,16 @@ Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3
 Change of behaviour
 -------------------
 
-**Old vs new behaviour**
+**Fuzzy matching**
+
+When performing fuzzy matching, this release of the module is strict in that it will return the first match which meets the constraints. This is slightly different from the previous release, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth.
+
+Old vs new behaviour
+--------------------
 
 This module has 2 behaviours:
 
-Version 0 behaviour (old behaviour, compatible with the current 're' module):
+**Version 0** behaviour (old behaviour, compatible with the current re module):
 
     Indicated by the ``VERSION0`` or ``V0`` flag, or ``(?V0)`` in the pattern.
 
@@ -27,7 +32,7 @@ Version 0 behaviour (old behaviour, compatible with the current 're' module):
 
     Case-insensitive matches in Unicode use simple case-folding by default.
 
-Version 1 behaviour (new behaviour, different from the current 're' module):
+**Version 1** behaviour (new behaviour, different from the current re module):
 
     Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
 
@@ -41,9 +46,8 @@ Version 1 behaviour (new behaviour, different from the current 're' module):
 
 If no version is specified, the regex module will default to ``regex.DEFAULT_VERSION``. In the short term this will be ``VERSION0``, but in the longer term it will be ``VERSION1``.
 
-**Note**: the ``VERSION1`` flag replaces the ``NEW`` flag in previous versions of this module. The ``NEW`` flag has been removed. The decision about versions and making the change was made after discussion in the python-dev list.
-
-**Case-insensitive matches in Unicode**
+Case-insensitive matches in Unicode
+-----------------------------------
 
 The regex module supports both simple and full case-folding for case-insensitive matches in Unicode. Use of full case-folding can be turned on using the ``FULLCASE`` or ``F`` flag, or ``(?f)`` in the pattern. Please note that this flag affects how the ``IGNORECASE`` flag works; the ``FULLCASE`` flag itself does not turn on case-insensitive matching.
 
@@ -51,20 +55,32 @@ In the version 0 behaviour, the flag is off by default.
 
 In the version 1 behaviour, the flag is on by default.
 
-**Nested sets and set operations**
+Nested sets and set operations
+------------------------------
 
-Previous releases supported both simple and nested sets at the same time. This occasionally lead to problems in practice when an unescaped "[" in a simple set was interpreted as being the start of a nested set. Therefore nested sets and set operations are now supported only in the version 1 behaviour.
+It's not possible to support both simple sets, as used in the re module, and nested sets at the same time because of a difference in the meaning of an unescaped ``"["`` in a set.
+
+For example, the pattern ``[[a-z]--[aeiou]]`` is treated in the version 0 behaviour (simple sets, compatible with the re module) as:
+
+    Set containing "[" and the letters "a" to "z"
+
+    Literal "--"
+
+    Set containing letters "a", "e", "i", "o", "u"
+
+but in the version 1 behaviour (nested sets, enhanced behaviour) as:
+
+    Set which is:
+
+        Set containing the letters "a" to "z"
+
+    but excluding:
+
+        Set containing the letters "a", "e", "i", "o", "u"
 
 Version 0 behaviour: only simple sets are supported.
 
 Version 1 behaviour: nested sets and set operations are supported.
-
-**Fuzzy matching**
-
-When performing fuzzy matching, the previous release of this module searched for the best match. This proved to be confusing in practice when used with ``.findall``, for example.
-
-Therefore, the default behaviour has been changed to search for the first match which meets the constraints, and a new ``BESTMATCH`` flag has been added to force it to search for the best match instead (the previous behaviour).
-
 
 Flags
 -----
@@ -101,7 +117,7 @@ The regex module releases the GIL during matching on instances of the built-in (
 Building for 64-bits
 --------------------
 
-If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The 're' module appears to limit string positions to 32 bits, even on a 64-bit build.)
+If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The re module appears to limit string positions to 32 bits, even on a 64-bit build.)
 
 
 Unicode
@@ -230,7 +246,15 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     By default, fuzzy matching searches for the first match which meets the given constraints, but turning on the ``BESTMATCH`` flag will make it search for the best match instead.
 
-    When matching a fuzzy regex which contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then reject it, continuing from where the match finished, if there were too few errors.
+    Further examples to note:
+
+    ``regex.search("(dog){e}", "cat and dog")[1]`` returns ``"cat"`` because that matches ``"dog"`` with 3 errors, which is within the limit (an unlimited number of errors is permitted).
+
+    ``regex.search("(dog){e<=1}", "cat and dog")[1]`` returns ``" dog"`` (with a leading space) because that matches ``"dog"`` with 1 error, which is within the limit (1 error is permitted).
+
+    In both examples there are perfect matches later in the string, but in neither case is it the first possible match.
+
+    Finally, when matching a fuzzy regex which contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then, if there were too few errors, reject it and continue searching from where that match finished.
 
 * Named lists (Hg issue 11)
 
