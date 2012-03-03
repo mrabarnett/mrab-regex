@@ -322,7 +322,8 @@ ul.auto-toc {
 <div class="section" id="change-of-behaviour">
 <h1>Change of behaviour</h1>
 <p><strong>Fuzzy matching</strong></p>
-<p>When performing fuzzy matching, this release of the module is strict in that it will return the first match which meets the constraints. This is slightly different from the previous release, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth.</p>
+<p>When performing fuzzy matching, this release of the module is strict in that it will return the first match that meets the constraints. This is slightly different from previous releases, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth as the default behaviour.</p>
+<p>There is a new flag, <tt class="docutils literal">ENHANCEMATCH</tt> or <tt class="docutils literal"><span class="pre">(?e)</span></tt>, which will cause the regex module to find the first match and then attempt to reduce the number of errors.</p>
 </div>
 <div class="section" id="old-vs-new-behaviour">
 <h1>Old vs new behaviour</h1>
@@ -376,9 +377,10 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Flags</h1>
 <p>There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.</p>
 <p>The scoped flags are: <tt class="docutils literal">FULLCASE</tt>, <tt class="docutils literal">IGNORECASE</tt>, <tt class="docutils literal">MULTILINE</tt>, <tt class="docutils literal">DOTALL</tt>, <tt class="docutils literal">VERBOSE</tt>, <tt class="docutils literal">WORD</tt>.</p>
-<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">BESTMATCH</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">VERSION0</tt>, <tt class="docutils literal">VERSION1</tt>.</p>
+<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">BESTMATCH</tt>, ENHANCEMATCH``, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">``REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">VERSION0</tt>, <tt class="docutils literal">VERSION1</tt>.</p>
 <p>If neither the <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt> nor <tt class="docutils literal">UNICODE</tt> flag is specified, it will default to <tt class="docutils literal">UNICODE</tt> if the regex pattern is a Unicode string and <tt class="docutils literal">ASCII</tt> if it's a bytestring.</p>
-<p>The <tt class="docutils literal">BESTMATCH</tt> flag makes fuzzy matching search for the best match instead of the next match which meets the given constraints.</p>
+<p>The <tt class="docutils literal">ENHANCEMATCH</tt> flag makes fuzzy matching attempt to improve the fit of the next match that it finds.</p>
+<p>The <tt class="docutils literal">BESTMATCH</tt> flag makes fuzzy matching search for the best match instead of the next match.</p>
 </div>
 <div class="section" id="notes-on-named-capture-groups">
 <h1>Notes on named capture groups</h1>
@@ -487,12 +489,14 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 <p><tt class="docutils literal"><span class="pre">{e&lt;=3}</span></tt> permit up to 3 errors</p>
 <p><tt class="docutils literal">{e&lt;4}</tt> permit fewer than 4 errors</p>
 <p><tt class="docutils literal">{0&lt;e&lt;4}</tt> permit more than 0 but fewer than 4 errors</p>
-<p>By default, fuzzy matching searches for the first match which meets the given constraints, but turning on the <tt class="docutils literal">BESTMATCH</tt> flag will make it search for the best match instead.</p>
+<p>By default, fuzzy matching searches for the first match that meets the given constraints. The <tt class="docutils literal">ENHANCEMATCH</tt> flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.</p>
+<p>The <tt class="docutils literal">BESTMATCH</tt> flag will make it search for the best match instead.</p>
 <p>Further examples to note:</p>
 <p><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;cat&quot;</tt> because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 3 errors, which is within the limit (an unlimited number of errors is permitted).</p>
 <p><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot; dog&quot;</tt> (with a leading space) because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted).</p>
-<p>In both examples there are perfect matches later in the string, but in neither case is it the first possible match.</p>
-<p>Finally, when matching a fuzzy regex which contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then, if there were too few errors, reject it and continue searching from where that match finished.</p>
+<p><tt class="docutils literal"><span class="pre">regex.search(&quot;(?e)(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;dog&quot;</tt> (without a leading space) because the fuzzy search matches <tt class="docutils literal">&quot; dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted), and the <tt class="docutils literal"><span class="pre">(?e)</span></tt> then makes it attempt a better fit.</p>
+<p>In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.</p>
+<p>Finally, when matching a fuzzy regex that contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then, if there were too few errors, reject it and continue searching from where that match finished.</p>
 </blockquote>
 </li>
 <li><p class="first">Named lists (Hg issue 11)</p>
@@ -503,7 +507,7 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 <pre class="literal-block">
 p = regex.compile(r&quot;first|second|third|fourth|fifth&quot;)
 </pre>
-<p>but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character which has a special meaning in a regex, and that if there is a shorter string which occurs initially in a longer string that the longer string is listed before the shorter one, for example, &quot;cats&quot; before &quot;cat&quot;.</p>
+<p>but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character that has a special meaning in a regex, and that if there is a shorter string that occurs initially in a longer string that the longer string is listed before the shorter one, for example, &quot;cats&quot; before &quot;cat&quot;.</p>
 <p>The new alternative is to use a named list:</p>
 <pre class="literal-block">
 option_set = [&quot;first&quot;, &quot;second&quot;, &quot;third&quot;, &quot;fourth&quot;, &quot;fifth&quot;]

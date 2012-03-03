@@ -13,7 +13,9 @@ Change of behaviour
 
 **Fuzzy matching**
 
-When performing fuzzy matching, this release of the module is strict in that it will return the first match which meets the constraints. This is slightly different from the previous release, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth.
+When performing fuzzy matching, this release of the module is strict in that it will return the first match that meets the constraints. This is slightly different from previous releases, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth as the default behaviour.
+
+There is a new flag, ``ENHANCEMATCH`` or ``(?e)``, which will cause the regex module to find the first match and then attempt to reduce the number of errors.
 
 Old vs new behaviour
 --------------------
@@ -89,12 +91,13 @@ There are 2 kinds of flag: scoped and global. Scoped flags can apply to only par
 
 The scoped flags are: ``FULLCASE``, ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
 
-The global flags are: ``ASCII``, ``BESTMATCH``, ``LOCALE``, ``REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
+The global flags are: ``ASCII``, ``BESTMATCH``, ENHANCEMATCH``, ``LOCALE``, ````REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
 
 If neither the ``ASCII``, ``LOCALE`` nor ``UNICODE`` flag is specified, it will default to ``UNICODE`` if the regex pattern is a Unicode string and ``ASCII`` if it's a bytestring.
 
-The ``BESTMATCH`` flag makes fuzzy matching search for the best match instead of the next match which meets the given constraints.
+The ``ENHANCEMATCH`` flag makes fuzzy matching attempt to improve the fit of the next match that it finds.
 
+The ``BESTMATCH`` flag makes fuzzy matching search for the best match instead of the next match.
 
 Notes on named capture groups
 -----------------------------
@@ -244,7 +247,9 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     ``{0<e<4}`` permit more than 0 but fewer than 4 errors
 
-    By default, fuzzy matching searches for the first match which meets the given constraints, but turning on the ``BESTMATCH`` flag will make it search for the best match instead.
+    By default, fuzzy matching searches for the first match that meets the given constraints. The ``ENHANCEMATCH`` flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
+
+    The ``BESTMATCH`` flag will make it search for the best match instead.
 
     Further examples to note:
 
@@ -252,9 +257,11 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     ``regex.search("(dog){e<=1}", "cat and dog")[1]`` returns ``" dog"`` (with a leading space) because that matches ``"dog"`` with 1 error, which is within the limit (1 error is permitted).
 
-    In both examples there are perfect matches later in the string, but in neither case is it the first possible match.
+    ``regex.search("(?e)(dog){e<=1}", "cat and dog")[1]`` returns ``"dog"`` (without a leading space) because the fuzzy search matches ``" dog"`` with 1 error, which is within the limit (1 error is permitted), and the ``(?e)`` then makes it attempt a better fit.
 
-    Finally, when matching a fuzzy regex which contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then, if there were too few errors, reject it and continue searching from where that match finished.
+    In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.
+
+    Finally, when matching a fuzzy regex that contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then, if there were too few errors, reject it and continue searching from where that match finished.
 
 * Named lists (Hg issue 11)
 
@@ -266,7 +273,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
         p = regex.compile(r"first|second|third|fourth|fifth")
 
-    but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character which has a special meaning in a regex, and that if there is a shorter string which occurs initially in a longer string that the longer string is listed before the shorter one, for example, "cats" before "cat".
+    but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character that has a special meaning in a regex, and that if there is a shorter string that occurs initially in a longer string that the longer string is listed before the shorter one, for example, "cats" before "cat".
 
     The new alternative is to use a named list::
 

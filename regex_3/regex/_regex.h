@@ -214,6 +214,7 @@ char* re_op_text[] = {
 #define RE_FLAG_BESTMATCH 0x1000
 #define RE_FLAG_DEBUG 0x200
 #define RE_FLAG_DOTALL 0x10
+#define RE_FLAG_ENHANCEMATCH 0x8000
 #define RE_FLAG_FULLCASE 0x4000
 #define RE_FLAG_IGNORECASE 0x2
 #define RE_FLAG_LOCALE 0x4

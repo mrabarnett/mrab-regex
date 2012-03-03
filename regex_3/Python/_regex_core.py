@@ -20,14 +20,14 @@ from collections import defaultdict
 
 import _regex
 
-__all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "F", "FULLCASE", "I",
-  "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "R", "REVERSE", "S", "DOTALL",
-  "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "W",
-  "WORD", "X", "VERBOSE", "error", "ALNUM", "NONLITERAL", "Fuzzy", "Info",
-  "Source", "FirstSetError", "UnscopedFlagSet", "OP", "Scanner",
-  "check_group_features", "compile_firstset", "compile_repl_escape",
-  "count_ones", "flatten_code", "fold_case", "parse_pattern", "shrink_cache",
-  "REGEX_FLAGS"]
+__all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH",
+  "F", "FULLCASE", "I", "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "R",
+  "REVERSE", "S", "DOTALL", "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0",
+  "V1", "VERSION1", "W", "WORD", "X", "VERBOSE", "error", "ALNUM",
+  "NONLITERAL", "Fuzzy", "Info", "Source", "FirstSetError", "UnscopedFlagSet",
+  "OP", "Scanner", "check_group_features", "compile_firstset",
+  "compile_repl_escape", "count_ones", "flatten_code", "fold_case",
+  "parse_pattern", "shrink_cache", "REGEX_FLAGS"]
 
 # The regex exception.
 class error(Exception):
@@ -51,21 +51,23 @@ class FirstSetError(Exception):
     pass
 
 # Flags.
-A = ASCII = 0x80        # Assume ASCII locale.
-B = BESTMATCH = 0x1000  # Best fuzzy match.
-D = DEBUG = 0x200       # Print parsed pattern.
-F = FULLCASE = 0x4000   # Unicode Full case-folding.
-I = IGNORECASE = 0x2    # Ignore case.
-L = LOCALE = 0x4        # Assume current 8-bit locale.
-M = MULTILINE = 0x8     # Make anchors look for newline.
-R = REVERSE = 0x400     # Search backwards.
-S = DOTALL = 0x10       # Make dot match newline.
-U = UNICODE = 0x20      # Assume Unicode locale.
-V0 = VERSION0 = 0x2000  # Old legacy behaviour.
-V1 = VERSION1 = 0x100   # New enhanced behaviour.
-W = WORD = 0x800        # Default Unicode word breaks.
-X = VERBOSE = 0x40      # Ignore whitespace and comments.
-T = TEMPLATE = 0x1      # Template (present because re module has it).
+A = ASCII = 0x80          # Assume ASCII locale.
+B = BESTMATCH = 0x1000    # Best fuzzy match.
+D = DEBUG = 0x200         # Print parsed pattern.
+E = ENHANCEMATCH = 0x8000 # Attempt to improve the fit after finding the first
+                          # fuzzy match.
+F = FULLCASE = 0x4000     # Unicode full case-folding.
+I = IGNORECASE = 0x2      # Ignore case.
+L = LOCALE = 0x4          # Assume current 8-bit locale.
+M = MULTILINE = 0x8       # Make anchors look for newline.
+R = REVERSE = 0x400       # Search backwards.
+S = DOTALL = 0x10         # Make dot match newline.
+U = UNICODE = 0x20        # Assume Unicode locale.
+V0 = VERSION0 = 0x2000    # Old legacy behaviour.
+V1 = VERSION1 = 0x100     # New enhanced behaviour.
+W = WORD = 0x800          # Default Unicode word breaks.
+X = VERBOSE = 0x40        # Ignore whitespace and comments.
+T = TEMPLATE = 0x1        # Template (present because re module has it).
 
 DEFAULT_VERSION = VERSION1
 
@@ -76,7 +78,8 @@ ALL_ENCODINGS = ASCII | LOCALE | UNICODE
 DEFAULT_FLAGS = {VERSION0: 0, VERSION1: FULLCASE}
 
 # The mask for the flags.
-GLOBAL_FLAGS = ALL_ENCODINGS | ALL_VERSIONS | BESTMATCH | DEBUG | REVERSE
+GLOBAL_FLAGS = (ALL_ENCODINGS | ALL_VERSIONS | BESTMATCH | DEBUG | ENHANCEMATCH
+  | REVERSE)
 SCOPED_FLAGS = FULLCASE | IGNORECASE | MULTILINE | DOTALL | WORD | VERBOSE
 
 ALPHA = frozenset(string.ascii_letters)
@@ -98,9 +101,9 @@ BITS_PER_CODE = BYTES_PER_CODE * 8
 UNLIMITED = (1 << BITS_PER_CODE) - 1
 
 # The regular expression flags.
-REGEX_FLAGS = {"a": ASCII, "b": BESTMATCH, "f": FULLCASE, "i": IGNORECASE, "L":
-  LOCALE, "m": MULTILINE, "r": REVERSE, "s": DOTALL, "u": UNICODE, "V0":
-  VERSION0, "V1": VERSION1, "w": WORD, "x": VERBOSE}
+REGEX_FLAGS = {"a": ASCII, "b": BESTMATCH, "e": ENHANCEMATCH, "f": FULLCASE,
+  "i": IGNORECASE, "L": LOCALE, "m": MULTILINE, "r": REVERSE, "s": DOTALL, "u":
+  UNICODE, "V0": VERSION0, "V1": VERSION1, "w": WORD, "x": VERBOSE}
 
 # The case flags.
 CASE_FLAGS = FULLCASE | IGNORECASE

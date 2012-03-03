@@ -11399,6 +11399,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     RE_FuzzyInfo* fuzzy_info;
     size_t available;
     BOOL get_best;
+    BOOL enhance_match;
     BOOL must_advance;
     RE_GroupData* best_groups;
     Py_ssize_t best_match_pos;
@@ -11433,6 +11434,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     }
 
     get_best = (pattern->flags & RE_FLAG_BESTMATCH) != 0;
+    enhance_match = (pattern->flags & RE_FLAG_ENHANCEMATCH) != 0 && !get_best;
 
 try_again:
     /* The maximum permitted cost. */
@@ -11484,7 +11486,7 @@ try_again:
           state->total_cost == 0)
             break;
 
-        if (!get_best)
+        if (!get_best && !enhance_match)
             break;
 
         if (!get_best && state->text_pos == state->match_pos)
@@ -11525,6 +11527,16 @@ try_again:
 
         /* Reduce the maximum permitted cost and try again. */
         state->max_cost = state->total_cost - 1;
+
+        if (enhance_match) {
+            if (state->reverse) {
+                state->slice_start = state->text_pos;
+                state->slice_end = state->match_pos;
+            } else {
+                state->slice_start = state->match_pos;
+                state->slice_end = state->text_pos;
+            }
+        }
     }
 
     state->slice_start = slice_start;
