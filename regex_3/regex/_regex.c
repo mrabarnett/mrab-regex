@@ -428,11 +428,22 @@ typedef struct RE_GroupCallFrame {
     RE_GuardList* guards;
 } RE_GroupCallFrame;
 
+/* Info about a string argument. */
+typedef struct RE_StringInfo {
+    Py_buffer view; /* View of the string if it's a buffer object. */
+    void* characters; /* Pointer to the characters of the string. */
+    Py_ssize_t length; /* Length of the string. */
+    Py_ssize_t charsize; /* Size of the characters in the string. */
+    BOOL unicode; /* Whether the string is Unicode. */
+    BOOL should_release; /* Whether the buffer should be released. */
+} RE_StringInfo;
+
 /* The state object used during matching. */
 typedef struct RE_State {
     struct PatternObject* pattern; /* Parent PatternObject. */
     /* Info about the string being matched. */
     PyObject* string;
+    Py_buffer view; /* View of the string if it's a buffer object. */
     Py_ssize_t charsize;
     void* text;
     Py_ssize_t text_length;
@@ -478,6 +489,7 @@ typedef struct RE_State {
     size_t iterations;
     size_t capture_change;
     BOOL unicode; /* Whether the string to be matched is Unicode. */
+    BOOL should_release; /* Whether the buffer should be released. */
     BOOL overlapped; /* Whether the matches can be overlapped. */
     BOOL reverse; /* Whether it's a reverse pattern. */
     BOOL visible_captures; /* Whether the 'captures' method will be visible. */
@@ -11608,9 +11620,13 @@ try_again:
     return status;
 }
 
-/* Gets a string from a Python object. */
-Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
-  Py_ssize_t* length, Py_ssize_t* charsize, BOOL* unicode) {
+/* Gets a string from a Python object.
+ *
+ * If the function returns true and str_info->should_release is true then it's
+ * the responsibility of the caller to release the buffer when it's no longer
+ * needed.
+ */
+Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
     /* Given a Python object, return a data pointer, a length (in characters),
      * and a character size. Return FALSE if the object is not a string (or not
      * compatible).
@@ -11618,7 +11634,6 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
     PyBufferProcs* buffer;
     Py_ssize_t bytes;
     Py_ssize_t size;
-    Py_buffer view;
 
     /* Unicode objects do not support the buffer API. So, get the data directly
      * instead.
@@ -11626,45 +11641,46 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
     if (PyUnicode_Check(string)) {
         /* Unicode strings doesn't always support the buffer interface. */
 #if PY_VERSION_HEX < 0x03030000
-        *characters = (void*)PyUnicode_AS_DATA(string);
-        *length = PyUnicode_GET_SIZE(string);
-        *charsize = sizeof(Py_UNICODE);
+        str_info->characters = (void*)PyUnicode_AS_DATA(string);
+        str_info->length = PyUnicode_GET_SIZE(string);
+        str_info->charsize = sizeof(Py_UNICODE);
 #else
         if (PyUnicode_READY(string) == -1)
             return FALSE;
 
-        *characters = (void*)PyUnicode_DATA(string);
-        *length = PyUnicode_GET_LENGTH(string);
-        *charsize = PyUnicode_KIND(string);
+        str_info->characters = (void*)PyUnicode_DATA(string);
+        str_info->length = PyUnicode_GET_LENGTH(string);
+        str_info->charsize = PyUnicode_KIND(string);
 #endif
-        *unicode = TRUE;
+        str_info->unicode = TRUE;
+        str_info->should_release = FALSE;
         return TRUE;
     }
 
     /* Get pointer to string buffer. */
     buffer = Py_TYPE(string)->tp_as_buffer;
-    view.len = -1;
+    str_info->view.len = -1;
     if (!buffer || !buffer->bf_getbuffer || (*buffer->bf_getbuffer)(string,
-      &view, PyBUF_SIMPLE) < 0) {
+      &str_info->view, PyBUF_SIMPLE) < 0) {
         PyErr_SetString(PyExc_TypeError, "expected string or buffer");
         return FALSE;
     }
 
+    str_info->should_release = TRUE;
+
+
     /* Determine buffer size. */
-    bytes = view.len;
-    *characters = view.buf;
+    bytes = str_info->view.len;
+    str_info->characters = str_info->view.buf;
 
-    /* Release the buffer immediately --- possibly dangerous but doing
-     * something else would require some re-factoring.
-     */
-    PyBuffer_Release(&view);
-
-    if (*characters == NULL) {
+    if (str_info->characters == NULL) {
+        PyBuffer_Release(&str_info->view);
         PyErr_SetString(PyExc_ValueError, "buffer is NULL");
         return FALSE;
     }
 
     if (bytes < 0) {
+        PyBuffer_Release(&str_info->view);
         PyErr_SetString(PyExc_TypeError, "buffer has negative size");
         return FALSE;
     }
@@ -11673,14 +11689,15 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, void** characters,
     size = PyObject_Size(string);
 
     if (PyBytes_Check(string) || bytes == size)
-        *charsize = 1;
+        str_info->charsize = 1;
     else {
+        PyBuffer_Release(&str_info->view);
         PyErr_SetString(PyExc_TypeError, "buffer size mismatch");
         return FALSE;
     }
 
-    *length = size;
-    *unicode = FALSE;
+    str_info->length = size;
+    str_info->unicode = FALSE;
 
     return TRUE;
 }
@@ -11711,9 +11728,8 @@ Py_LOCAL_INLINE(void) dealloc_guards(RE_GuardList* guards, size_t count) {
 
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
-  PyObject* string, void* characters, Py_ssize_t length, Py_ssize_t charsize,
-  BOOL unicode, Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int
-  concurrent, BOOL use_lock) {
+  PyObject* string, RE_StringInfo* str_info, Py_ssize_t start, Py_ssize_t end,
+  BOOL overlapped, int concurrent, BOOL use_lock) {
     Py_ssize_t final_pos;
 
     state->groups = NULL;
@@ -11788,25 +11804,27 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
 
     /* Adjust boundaries. */
     if (start < 0)
-        start += length;
+        start += str_info->length;
     if (start < 0)
         start = 0;
-    else if (start > length)
-        start = length;
+    else if (start > str_info->length)
+        start = str_info->length;
 
     if (end < 0)
-        end += length;
+        end += str_info->length;
     if (end < 0)
         end = 0;
-    else if (end > length)
-        end = length;
+    else if (end > str_info->length)
+        end = str_info->length;
 
     state->overlapped = overlapped;
     state->min_width = pattern->min_width;
 
     /* Initialise the getters and setters for the character size. */
-    state->charsize = charsize;
-    state->unicode = unicode;
+    state->charsize = str_info->charsize;
+    state->unicode = str_info->unicode;
+    state->should_release = str_info->should_release;
+    state->view = str_info->view;
     switch (state->charsize) {
     case 1:
         state->char_at = bytes1_char_at;
@@ -11835,7 +11853,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
      * The documentation says that the end of the slice behaves like the end of
      * the string.
      */
-    state->text = characters;
+    state->text = str_info->characters;
     state->text_length = end;
 
     state->reverse = (pattern->flags & RE_FLAG_REVERSE) != 0;
@@ -11963,24 +11981,41 @@ Py_LOCAL_INLINE(BOOL) check_compatible(PatternObject* pattern, BOOL unicode) {
     return TRUE;
 }
 
+/* Releases the string's buffer, if necessary. */
+Py_LOCAL_INLINE(void) release_buffer(RE_StringInfo* str_info) {
+    if (str_info->should_release)
+        PyBuffer_Release(&str_info->view);
+}
+
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
   PyObject* string, Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int
   concurrent, BOOL use_lock) {
-    void* characters;
-    Py_ssize_t length;
-    Py_ssize_t charsize;
-    BOOL unicode;
+    RE_StringInfo str_info;
 
     /* Get the string to search or match. */
-    if (!get_string(string, &characters, &length, &charsize, &unicode))
+    if (!get_string(string, &str_info))
         return FALSE;
 
-    if (!check_compatible(pattern, unicode))
+    /* If we fail to initialise the state then we need to release the buffer if
+     * the string is a buffer object.
+     */
+    if (!check_compatible(pattern, str_info.unicode)) {
+        release_buffer(&str_info);
         return FALSE;
+    }
 
-    return state_init_2(state, pattern, string, characters, length, charsize,
-      unicode, start, end, overlapped, concurrent, use_lock);
+    if (!state_init_2(state, pattern, string, &str_info, start, end,
+      overlapped, concurrent, use_lock)) {
+        release_buffer(&str_info);
+
+        return FALSE;
+    }
+
+    /* The state has been initialised successfully, so now the state has the
+     * responsibility of releasing the buffer if the string is a buffer object.
+     */
+    return TRUE;
 }
 
 /* Deallocates repeat data. */
@@ -12096,6 +12131,9 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
 
     Py_DECREF(state->pattern);
     Py_DECREF(state->string);
+
+    if (state->should_release)
+        PyBuffer_Release(&state->view);
 }
 
 /* Converts a string index to an integer.
@@ -14004,10 +14042,7 @@ Py_LOCAL_INLINE(BOOL) get_limits(PyObject* pos, PyObject* endpos, Py_ssize_t
 /* PatternObject's 'search' method. */
 static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
   kw) {
-    void* characters;
-    Py_ssize_t length;
-    Py_ssize_t charsize;
-    BOOL unicode;
+    RE_StringInfo str_info;
     Py_ssize_t start;
     Py_ssize_t end;
     int conc;
@@ -14026,32 +14061,45 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
         return NULL;
 
     /* Get the string. */
-    if (!get_string(string, &characters, &length, &charsize, &unicode))
+    if (!get_string(string, &str_info))
         return NULL;
 
-    if (!check_compatible(self, unicode))
+    if (!check_compatible(self, str_info.unicode)) {
+        release_buffer(&str_info);
         return NULL;
+    }
 
     /* Get the limits of the search. */
-    if (!get_limits(pos, endpos, length, &start, &end))
+    if (!get_limits(pos, endpos, str_info.length, &start, &end)) {
+        release_buffer(&str_info);
+
         return NULL;
+    }
 
     /* If the pattern is too long for the string, then take a shortcut, unless
      * it's a fuzzy pattern.
      */
     if (!self->is_fuzzy && (Py_ssize_t)self->min_width > end - start) {
         /* No match. */
+        release_buffer(&str_info);
+
         Py_INCREF(Py_None);
         return Py_None;
     }
 
     conc = decode_concurrent(concurrent);
-    if (conc < 0)
-        return NULL;
+    if (conc < 0) {
+        release_buffer(&str_info);
 
-    if (!state_init_2(&state, self, string, characters, length, charsize,
-      unicode, start, end, FALSE, conc, FALSE))
         return NULL;
+    }
+
+    if (!state_init_2(&state, self, string, &str_info, start, end, FALSE, conc,
+      FALSE)) {
+        release_buffer(&str_info);
+
+        return NULL;
+    }
 
     /* Initialise the "safe state" structure. */
     safe_state.re_state = &state;
@@ -14060,6 +14108,7 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
     status = do_match(&safe_state, TRUE);
     if (status < 0) {
         state_fini(&state);
+
         return NULL;
     }
 
@@ -14138,17 +14187,14 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
  * Returns its length if it is a literal, otherwise -1.
  */
 Py_LOCAL_INLINE(Py_ssize_t) check_template(PyObject* str_template) {
-    void* characters;
-    Py_ssize_t length;
-    Py_ssize_t charsize;
-    BOOL unicode;
+    RE_StringInfo str_info;
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     Py_ssize_t pos;
 
-    if (!get_string(str_template, &characters, &length, &charsize, &unicode))
+    if (!get_string(str_template, &str_info))
         return -1;
 
-    switch (charsize) {
+    switch (str_info.charsize) {
     case 1:
         char_at = bytes1_char_at;
         break;
@@ -14159,25 +14205,29 @@ Py_LOCAL_INLINE(Py_ssize_t) check_template(PyObject* str_template) {
         char_at = bytes4_char_at;
         break;
     default:
+        release_buffer(&str_info);
+
         return -1;
     }
 
-    for (pos = 0; pos < length; pos++) {
-        if (char_at(characters, pos) == '\\')
+    for (pos = 0; pos < str_info.length; pos++) {
+        if (char_at(str_info.characters, pos) == '\\') {
+            release_buffer(&str_info);
+
             return -1;
+        }
     }
 
-    return length;
+    release_buffer(&str_info);
+
+    return str_info.length;
 }
 
 /* PatternObject's 'subx' method. */
 Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
   str_template, PyObject* string, Py_ssize_t maxsub, Py_ssize_t subn, PyObject*
   pos, PyObject* endpos, int concurrent) {
-    void* characters;
-    Py_ssize_t length;
-    Py_ssize_t charsize;
-    BOOL unicode;
+    RE_StringInfo str_info;
     Py_ssize_t start;
     Py_ssize_t end;
     BOOL is_callable;
@@ -14192,26 +14242,38 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     Py_ssize_t end_pos;
 
     /* Get the string. */
-    if (!get_string(string, &characters, &length, &charsize, &unicode))
+    if (!get_string(string, &str_info))
         return NULL;
 
-    if (!check_compatible(self, unicode))
+    if (!check_compatible(self, str_info.unicode)) {
+        release_buffer(&str_info);
+
         return NULL;
+    }
 
     /* Get the limits of the search. */
-    if (!get_limits(pos, endpos, length, &start, &end))
+    if (!get_limits(pos, endpos, str_info.length, &start, &end)) {
+        release_buffer(&str_info);
+
         return NULL;
+    }
 
     /* If the pattern is too long for the string, then take a shortcut, unless
      * it's a fuzzy pattern.
      */
     if (!self->is_fuzzy && (Py_ssize_t)self->min_width > end - start) {
+        PyObject* result;
+
         Py_INCREF(string);
 
         if (subn)
-            return Py_BuildValue("Nn", string, 0);
+            result = Py_BuildValue("Nn", string, 0);
+        else
+            result = string;
 
-        return string;
+        release_buffer(&str_info);
+
+        return result;
     }
 
     if (maxsub == 0)
@@ -14249,13 +14311,17 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
              */
             replacement = call(RE_MODULE, "compile_replacement",
               PyTuple_Pack(2, self, str_template));
-            if (!replacement)
+            if (!replacement) {
+                release_buffer(&str_info);
                 return NULL;
+            }
         }
     }
 
-    if (!state_init_2(&state, self, string, characters, length, charsize,
-      unicode, start, end, FALSE, concurrent, FALSE)) {
+    if (!state_init_2(&state, self, string, &str_info, start, end, FALSE,
+      concurrent, FALSE)) {
+        release_buffer(&str_info);
+
         Py_DECREF(replacement);
         return NULL;
     }
@@ -14390,7 +14456,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
      * 'text_length' because the latter is truncated to 'slice_end', a
      * documented idiosyncracy of the 're' module.
      */
-    end_pos = state.reverse ? 0 : length;
+    end_pos = state.reverse ? 0 : str_info.length;
     if (last != end_pos) {
         int status;
 
@@ -14398,7 +14464,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         if (state.reverse)
             item = PySequence_GetSlice(string, 0, last);
         else
-            item = PySequence_GetSlice(string, last, length);
+            item = PySequence_GetSlice(string, last, str_info.length);
         if (!item)
             goto error;
         status = add_item(&join_info, item);
@@ -14409,12 +14475,13 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         }
     }
 
-    state_fini(&state);
-
     Py_DECREF(replacement);
 
     /* Convert the list to a single string (also cleans up join_info). */
     item = join_list_info(&join_info, string);
+
+    state_fini(&state);
+
     if (!item)
         return NULL;
 
@@ -17522,10 +17589,7 @@ static PyObject* get_properties(PyObject* self_, PyObject* args) {
 
 /* Folds the case of a string. */
 static PyObject* fold_case(PyObject* self_, PyObject* args) {
-    void* characters;
-    Py_ssize_t length;
-    Py_ssize_t charsize;
-    BOOL unicode;
+    RE_StringInfo str_info;
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     Py_ssize_t folded_charsize;
     void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
@@ -17546,10 +17610,10 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     }
 
     /* Get the string. */
-    if (!get_string(string, &characters, &length, &charsize, &unicode))
+    if (!get_string(string, &str_info))
         return NULL;
 
-    switch (charsize) {
+    switch (str_info.charsize) {
     case 1:
         char_at = bytes1_char_at;
         break;
@@ -17560,15 +17624,17 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
         char_at = bytes4_char_at;
         break;
     default:
+        release_buffer(&str_info);
+
         return NULL;
     }
 
 #if PY_VERSION_HEX < 0x03030000
     /* The folded string will have the same width as the original string. */
-    folded_charsize = charsize;
+    folded_charsize = str_info.charsize;
 #else
     /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max_int(charsize, sizeof(Py_UCS2));
+    folded_charsize = max_int(str_info.charsize, sizeof(Py_UCS2));
 #endif
 
     switch (folded_charsize) {
@@ -17582,6 +17648,8 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
         set_char_at = bytes4_set_char_at;
         break;
     default:
+        release_buffer(&str_info);
+
         return NULL;
     }
 
@@ -17597,13 +17665,16 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
 
     /* Allocate a buffer for the folded string. */
     if (flags & RE_FLAG_FULLCASE)
-        buf_size = length * RE_MAX_FOLDED;
+        buf_size = str_info.length * RE_MAX_FOLDED;
     else
-        buf_size = length;
+        buf_size = str_info.length;
 
     folded = re_alloc(buf_size * folded_charsize);
-    if (!folded)
+    if (!folded) {
+        release_buffer(&str_info);
+
         return NULL;
+    }
 
     /* Fold the case of the string. */
     folded_len = 0;
@@ -17615,11 +17686,11 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
 
         full_case_fold = encoding->full_case_fold;
 
-        for (i = 0; i < length; i++) {
+        for (i = 0; i < str_info.length; i++) {
             int count;
             int j;
 
-            count = full_case_fold(char_at(characters, i), codepoints);
+            count = full_case_fold(char_at(str_info.characters, i), codepoints);
             for (j = 0; j < count; j++)
                 set_char_at(folded, folded_len + j, codepoints[j]);
 
@@ -17631,23 +17702,25 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
 
         simple_case_fold = encoding->simple_case_fold;
 
-        for (i = 0; i < length; i++) {
+        for (i = 0; i < str_info.length; i++) {
             Py_UCS4 ch;
 
-            ch = simple_case_fold(char_at(characters, i));
+            ch = simple_case_fold(char_at(str_info.characters, i));
             set_char_at(folded, i, ch);
         }
 
-        folded_len = length;
+        folded_len = str_info.length;
     }
 
     /* Build the result string. */
-    if (unicode)
+    if (str_info.unicode)
         result = build_unicode_value(folded, folded_len, folded_charsize);
     else
         result = build_bytes_value(folded, folded_len);
 
     re_dealloc(folded);
+
+    release_buffer(&str_info);
 
     return result;
 }
