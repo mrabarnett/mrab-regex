@@ -555,6 +555,12 @@ class Test:
         self.expect(lambda: type(regex.match("(a)", "a").re),
           self.PATTERN_CLASS)
 
+        # 16
+        # Issue 14260
+        p = regex.compile(r'abc(?P<n>def)')
+        p.groupindex["n"] = 0
+        self.expect(lambda: p.groupindex["n"], ascii(1))
+
     def test_special_escapes(self):
         # 1..6
         self.expect(lambda: regex.search(r"\b(b.)\b", "abcd abc bcd bx")[1],

@@ -15113,11 +15113,23 @@ error:
     return NULL;
 }
 
+static PyObject* pattern_groupindex_get(PyObject* self_) {
+    PatternObject* self;
+
+    self = (PatternObject*)self_;
+
+    return PyDict_Copy(self->groupindex);
+}
+
+static PyGetSetDef pattern_getset[] = {
+    {"groupindex", (getter)pattern_groupindex_get, (setter)NULL},
+    {NULL}  /* Sentinel */
+};
+
 static PyMemberDef pattern_members[] = {
     {"pattern",     T_OBJECT,   offsetof(PatternObject, pattern),     READONLY},
     {"flags",       T_INT,      offsetof(PatternObject, flags),       READONLY},
     {"groups",      T_PYSSIZET, offsetof(PatternObject, group_count), READONLY},
-    {"groupindex",  T_OBJECT,   offsetof(PatternObject, groupindex),  READONLY},
     {"named_lists", T_OBJECT,   offsetof(PatternObject, named_lists), READONLY},
     {NULL}  /* Sentinel */
 };
@@ -17973,6 +17985,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
     Pattern_Type.tp_weaklistoffset = offsetof(PatternObject, weakreflist);
     Pattern_Type.tp_methods = pattern_methods;
     Pattern_Type.tp_members = pattern_members;
+    Pattern_Type.tp_getset = pattern_getset;
 
     /* Initialise Match_Type. */
     Match_Type.tp_dealloc = match_dealloc;

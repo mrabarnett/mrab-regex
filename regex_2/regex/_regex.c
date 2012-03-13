@@ -15225,6 +15225,10 @@ static PyObject* pattern_getattr(PyObject* self_, char* name) {
 
     PyErr_Clear();
 
+    if (!strcmp(name, "groupindex")) {
+        return PyDict_Copy(self->groupindex);
+    }
+
     if (!strcmp(name, "pattern")) {
         Py_INCREF(self->pattern);
         return (PyObject*)self->pattern;
@@ -15235,11 +15239,6 @@ static PyObject* pattern_getattr(PyObject* self_, char* name) {
 
     if (!strcmp(name, "groups"))
         return Py_BuildValue("i", self->group_count);
-
-    if (!strcmp(name, "groupindex")) {
-        Py_INCREF(self->groupindex);
-        return (PyObject*)self->groupindex;
-    }
 
     if (!strcmp(name, "named_lists")) {
         Py_INCREF(self->named_lists);

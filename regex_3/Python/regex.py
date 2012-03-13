@@ -262,7 +262,11 @@ def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
 
 def split(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
     """Split the source string by the occurrences of the pattern, returning a
-    list containing the resulting substrings."""
+    list containing the resulting substrings.  If capturing parentheses are used
+    in pattern, then the text of all groups in the pattern are also returned as
+    part of the resulting list.  If maxsplit is nonzero, at most maxsplit splits
+    occur, and the remainder of the string is returned as the final element of
+    the list."""
     return _compile(pattern, flags, kwargs).split(string, maxsplit, concurrent)
 
 def splititer(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
