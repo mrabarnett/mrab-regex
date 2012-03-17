@@ -304,13 +304,6 @@ typedef struct RE_SavedGroups {
     size_t* counts;
 } RE_SavedGroups;
 
-/* Storage for saved guards. */
-typedef struct RE_SavedGuards {
-    struct RE_SavedGuards* previous;
-    struct RE_SavedGuards* next;
-    struct RE_GuardList* guards;
-} RE_SavedGuards;
-
 /* Storage for info around a recursive by 'basic'match'. */
 typedef struct RE_Info {
     RE_BacktrackBlock* current_backtrack_block;
@@ -392,6 +385,13 @@ typedef struct RE_RepeatData {
     size_t capture_change;
 } RE_RepeatData;
 
+/* Storage for saved repeats. */
+typedef struct RE_SavedRepeats {
+    struct RE_SavedRepeats* previous;
+    struct RE_SavedRepeats* next;
+    RE_RepeatData* repeats;
+} RE_SavedRepeats;
+
 /* Guards for fuzzy sections. */
 typedef struct RE_FuzzyGuards {
     RE_GuardList body_guard_list;
@@ -425,7 +425,7 @@ typedef struct RE_GroupCallFrame {
     struct RE_GroupCallFrame* next;
     RE_Node* node;
     RE_GroupData* groups;
-    RE_GuardList* guards;
+    RE_RepeatData* repeats;
 } RE_GroupCallFrame;
 
 /* Info about a string argument. */
@@ -469,8 +469,8 @@ typedef struct RE_State {
     /* Storage for saved capture groups. */
     RE_SavedGroups* first_saved_groups;
     RE_SavedGroups* current_saved_groups;
-    RE_SavedGuards* first_saved_guards;
-    RE_SavedGuards* current_saved_guards;
+    RE_SavedRepeats* first_saved_repeats;
+    RE_SavedRepeats* current_saved_repeats;
     size_t min_width; /* The minimum width of the string to match (assuming it's not a fuzzy pattern). */
     RE_EncodingTable* encoding; /* The 'encoding' of the string being searched. */
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
@@ -2549,6 +2549,25 @@ Py_LOCAL_INLINE(BOOL) copy_guard_data(RE_SafeState* safe_state, RE_GuardList*
     return TRUE;
 }
 
+/* Copies a repeat. */
+Py_LOCAL_INLINE(BOOL) copy_repeat_data(RE_SafeState* safe_state, RE_RepeatData*
+  dst, RE_RepeatData* src) {
+    if (!copy_guard_data(safe_state, &dst->body_guard_list,
+      &src->body_guard_list) || !copy_guard_data(safe_state,
+      &dst->tail_guard_list, &src->tail_guard_list)) {
+        safe_dealloc(safe_state, dst->body_guard_list.spans);
+        safe_dealloc(safe_state, dst->tail_guard_list.spans);
+
+        return FALSE;
+    }
+
+    dst->count = src->count;
+    dst->start = src->start;
+    dst->capture_change = src->capture_change;
+
+    return TRUE;
+}
+
 /* Pushes a return node onto the group call stack. */
 Py_LOCAL_INLINE(BOOL) push_group_return(RE_SafeState* safe_state, RE_Node*
   return_node) {
@@ -2575,19 +2594,19 @@ Py_LOCAL_INLINE(BOOL) push_group_return(RE_SafeState* safe_state, RE_Node*
 
         frame->groups = (RE_GroupData*)safe_alloc(safe_state,
           pattern->group_count * sizeof(RE_GroupData));
-        frame->guards = (RE_GuardList*)safe_alloc(safe_state,
-          pattern->repeat_count * 2 * sizeof(RE_GuardList));
-        if (!frame->groups || !frame->guards) {
+        frame->repeats = (RE_RepeatData*)safe_alloc(safe_state,
+          pattern->repeat_count * sizeof(RE_RepeatData));
+        if (!frame->groups || !frame->repeats) {
             safe_dealloc(safe_state, frame->groups);
-            safe_dealloc(safe_state, frame->guards);
+            safe_dealloc(safe_state, frame->repeats);
             safe_dealloc(safe_state, frame);
 
             return FALSE;
         }
 
         memset(frame->groups, 0, pattern->group_count * sizeof(RE_GroupData));
-        memset(frame->guards, 0, pattern->repeat_count * 2 *
-          sizeof(RE_GuardList));
+        memset(frame->repeats, 0, pattern->repeat_count *
+          sizeof(RE_RepeatData));
 
         frame->previous = state->current_group_call_frame;
         frame->next = NULL;
@@ -2612,11 +2631,8 @@ Py_LOCAL_INLINE(BOOL) push_group_return(RE_SafeState* safe_state, RE_Node*
         }
 
         for (r = 0; r < pattern->repeat_count; r++) {
-            if (!copy_guard_data(safe_state, &frame->guards[r * 2],
-                &state->repeats[r].body_guard_list))
-                return FALSE;
-            if (!copy_guard_data(safe_state, &frame->guards[r * 2 + 1],
-                &state->repeats[r].tail_guard_list))
+            if (!copy_repeat_data(safe_state, &frame->repeats[r],
+                &state->repeats[r]))
                 return FALSE;
         }
     }
@@ -2632,7 +2648,7 @@ Py_LOCAL_INLINE(RE_Node*) pop_group_return(RE_State* state) {
 
     frame = state->current_group_call_frame;
 
-    /* Pop the groups and guards. */
+    /* Pop the groups and repeats. */
     if (frame->node) {
         PatternObject* pattern;
         Py_ssize_t g;
@@ -2643,12 +2659,8 @@ Py_LOCAL_INLINE(RE_Node*) pop_group_return(RE_State* state) {
         for (g = 0; g < pattern->group_count; g++)
             copy_group_data(NULL, &state->groups[g], &frame->groups[g]);
 
-        for (r = 0; r < pattern->repeat_count; r++) {
-            copy_guard_data(NULL, &state->repeats[r].body_guard_list,
-              &frame->guards[r * 2]);
-            copy_guard_data(NULL, &state->repeats[r].tail_guard_list,
-              &frame->guards[r * 2 + 1]);
-        }
+        for (r = 0; r < pattern->repeat_count; r++)
+            copy_repeat_data(NULL, &state->repeats[r], &frame->repeats[r]);
     }
 
     /* Withdraw to previous frame. */
@@ -5694,12 +5706,12 @@ Py_LOCAL_INLINE(void) drop_groups(RE_State* state) {
     state->current_saved_groups = state->current_saved_groups->previous;
 }
 
-/* Pushes the guards for backtracking. */
-Py_LOCAL_INLINE(BOOL) push_guards(RE_SafeState* safe_state) {
+/* Pushes the repeats for backtracking. */
+Py_LOCAL_INLINE(BOOL) push_repeats(RE_SafeState* safe_state) {
     RE_State* state;
     PatternObject* pattern;
     Py_ssize_t repeat_count;
-    RE_SavedGuards* current;
+    RE_SavedRepeats* current;
     Py_ssize_t r;
 
     state = safe_state->re_state;
@@ -5709,28 +5721,30 @@ Py_LOCAL_INLINE(BOOL) push_guards(RE_SafeState* safe_state) {
     if (repeat_count == 0)
         return TRUE;
 
-    current = state->current_saved_guards;
+    current = state->current_saved_repeats;
 
     if (current && current->next)
         current = current->next;
-    else if (!current && state->first_saved_guards)
-        current = state->first_saved_guards;
+    else if (!current && state->first_saved_repeats)
+        current = state->first_saved_repeats;
     else {
-        RE_SavedGuards* new_block;
+        RE_SavedRepeats* new_block;
 
-        new_block = (RE_SavedGuards*)safe_alloc(safe_state,
-          sizeof(RE_SavedGuards));
+        new_block = (RE_SavedRepeats*)safe_alloc(safe_state,
+          sizeof(RE_SavedRepeats));
         if (!new_block)
             return FALSE;
 
-        new_block->guards = (RE_GuardList*)safe_alloc(safe_state, repeat_count
-          * 2 * sizeof(RE_GuardList));
-        if (!new_block->guards) {
+        memset(new_block, 0, sizeof(RE_SavedRepeats));
+
+        new_block->repeats = (RE_RepeatData*)safe_alloc(safe_state, repeat_count
+          * sizeof(RE_RepeatData));
+        if (!new_block->repeats) {
             safe_dealloc(safe_state, new_block);
             return FALSE;
         }
 
-        memset(new_block->guards, 0, repeat_count * 2 * sizeof(RE_GuardList));
+        memset(new_block->repeats, 0, repeat_count * sizeof(RE_RepeatData));
 
         new_block->previous = current;
         new_block->next = NULL;
@@ -5738,30 +5752,27 @@ Py_LOCAL_INLINE(BOOL) push_guards(RE_SafeState* safe_state) {
         if (new_block->previous)
             new_block->previous->next = new_block;
         else
-            state->first_saved_guards = new_block;
+            state->first_saved_repeats = new_block;
 
         current = new_block;
     }
 
     for (r = 0; r < repeat_count; r++) {
-        if (!copy_guard_data(safe_state, &current->guards[r * 2],
-            &state->repeats[r].body_guard_list))
-            return FALSE;
-        if (!copy_guard_data(safe_state, &current->guards[r * 2 + 1],
-            &state->repeats[r].tail_guard_list))
+        if (!copy_repeat_data(safe_state, &current->repeats[r],
+          &state->repeats[r]))
             return FALSE;
     }
 
-    state->current_saved_guards = current;
+    state->current_saved_repeats = current;
 
     return TRUE;
 }
 
-/* Pops the guards for backtracking. */
-Py_LOCAL_INLINE(void) pop_guards(RE_State* state) {
+/* Pops the repeats for backtracking. */
+Py_LOCAL_INLINE(void) pop_repeats(RE_State* state) {
     PatternObject* pattern;
     Py_ssize_t repeat_count;
-    RE_SavedGuards* current;
+    RE_SavedRepeats* current;
     Py_ssize_t r;
 
     pattern = state->pattern;
@@ -5770,16 +5781,12 @@ Py_LOCAL_INLINE(void) pop_guards(RE_State* state) {
     if (repeat_count == 0)
         return;
 
-    current = state->current_saved_guards;
+    current = state->current_saved_repeats;
 
-    for (r = 0; r < repeat_count; r++) {
-        copy_guard_data(NULL, &state->repeats[r].body_guard_list,
-          &current->guards[r * 2]);
-        copy_guard_data(NULL, &state->repeats[r].tail_guard_list,
-          &current->guards[r * 2 + 1]);
-    }
+    for (r = 0; r < repeat_count; r++)
+        copy_repeat_data(NULL, &state->repeats[r], &current->repeats[r]);
 
-    state->current_saved_guards = current->previous;
+    state->current_saved_repeats = current->previous;
 }
 
 /* Saves state info before a recusive call by 'basic_match'. */
@@ -8890,8 +8897,8 @@ advance:
                 if (!push_groups(safe_state))
                     return RE_ERROR_MEMORY;
 
-                /* Save the repeat guards. */
-                if (!push_guards(safe_state))
+                /* Save the repeats. */
+                if (!push_repeats(safe_state))
                     return RE_ERROR_MEMORY;
 
                 pop_group_return(state);
@@ -10806,8 +10813,8 @@ backtrack:
                 pop_groups(state);
                 state->capture_change = bt_data->group_call.capture_change;
 
-                /* Restore the repeat guards. */
-                pop_guards(state);
+                /* Restore the repeats. */
+                pop_repeats(state);
             }
 
             discard_backtrack(state);
@@ -11741,8 +11748,8 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->backtrack_allocated = RE_BACKTRACK_BLOCK_SIZE;
     state->first_saved_groups = NULL;
     state->current_saved_groups = NULL;
-    state->first_saved_guards = NULL;
-    state->current_saved_guards = NULL;
+    state->first_saved_repeats = NULL;
+    state->current_saved_repeats = NULL;
     state->lock = NULL;
     state->fuzzy_guards = NULL;
     state->first_group_call_frame = NULL;
@@ -12055,7 +12062,7 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
     RE_BacktrackBlock* current;
     PatternObject* pattern;
     RE_SavedGroups* saved_groups;
-    RE_SavedGuards* saved_guards;
+    RE_SavedRepeats* saved_repeats;
     RE_GroupCallFrame* frame;
     Py_ssize_t i;
 
@@ -12087,16 +12094,16 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
         saved_groups = next;
     }
 
-    saved_guards = state->first_saved_guards;
-    while (saved_guards) {
-        RE_SavedGuards* next;
+    saved_repeats = state->first_saved_repeats;
+    while (saved_repeats) {
+        RE_SavedRepeats* next;
 
-        next = saved_guards->next;
+        next = saved_repeats->next;
 
-        dealloc_guards(saved_guards->guards, pattern->repeat_count * 2);
+        dealloc_repeats(saved_repeats->repeats, pattern->repeat_count);
 
-        re_dealloc(saved_guards);
-        saved_guards = next;
+        re_dealloc(saved_repeats);
+        saved_repeats = next;
     }
 
     if (pattern->groups_storage)
@@ -12116,7 +12123,7 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
         next = frame->next;
 
         dealloc_groups(frame->groups, pattern->group_count);
-        dealloc_guards(frame->guards, pattern->repeat_count * 2);
+        dealloc_repeats(frame->repeats, pattern->repeat_count);
 
         re_dealloc(frame);
         frame = next;

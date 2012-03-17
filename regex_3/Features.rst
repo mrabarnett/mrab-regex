@@ -13,7 +13,7 @@ Change of behaviour
 
 **Fuzzy matching**
 
-When performing fuzzy matching, this release of the module is strict in that it will return the first match that meets the constraints. This is slightly different from previous releases, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth as the default behaviour.
+When performing fuzzy matching, the module is strict in that it will return the first match that meets the constraints. This is slightly different from some earlier releases, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth as the default behaviour.
 
 There is a new flag, ``ENHANCEMATCH`` or ``(?e)``, which will cause the regex module to find the first match and then attempt to reduce the number of errors.
 

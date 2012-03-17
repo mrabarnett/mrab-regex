@@ -322,7 +322,7 @@ ul.auto-toc {
 <div class="section" id="change-of-behaviour">
 <h1>Change of behaviour</h1>
 <p><strong>Fuzzy matching</strong></p>
-<p>When performing fuzzy matching, this release of the module is strict in that it will return the first match that meets the constraints. This is slightly different from previous releases, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth as the default behaviour.</p>
+<p>When performing fuzzy matching, the module is strict in that it will return the first match that meets the constraints. This is slightly different from some earlier releases, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth as the default behaviour.</p>
 <p>There is a new flag, <tt class="docutils literal">ENHANCEMATCH</tt> or <tt class="docutils literal"><span class="pre">(?e)</span></tt>, which will cause the regex module to find the first match and then attempt to reduce the number of errors.</p>
 </div>
 <div class="section" id="old-vs-new-behaviour">

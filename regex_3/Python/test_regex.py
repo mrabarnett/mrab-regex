@@ -3446,6 +3446,11 @@ xyzabc
         self.expect(lambda: regex.search("(?i)[[:ascii:]]",
           "\N{KELVIN SIGN}"), ascii(None))
 
+        # Hg issue 66
+        # 48
+        self.expect(lambda: regex.search("((a|b(?1)c){3,5})",
+          "baaaaca").group(0, 1, 2), ascii(('aaaa', 'aaaa', 'a')))
+
     def run(self):
         print("Performing tests")
         print("================")
