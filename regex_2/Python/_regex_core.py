@@ -2581,8 +2581,11 @@ class GreedyRepeat(RegexBase):
         else:
             repeat.append(self.max_count)
 
-        return ([tuple(repeat)] + self.subpattern.compile(reverse, fuzzy) +
-          [(OP.END, )])
+        subpattern = self.subpattern.compile(reverse, fuzzy)
+        if not subpattern:
+            return []
+
+        return ([tuple(repeat)] + subpattern + [(OP.END, )])
 
     def dump(self, indent=0, reverse=False):
         if self.max_count is None:
@@ -3344,6 +3347,9 @@ class StringSet(RegexBase):
         items = self.info.kwargs[self.name]
 
         case_flags = self.case_flags
+
+        if not items:
+            return []
 
         if fuzzy or (case_flags & IGNORECASE):
             encoding = self.info.flags & ALL_ENCODINGS

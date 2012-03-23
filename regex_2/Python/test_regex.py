@@ -1,74 +1,114 @@
+from __future__ import with_statement
 import regex
 import string
-import sys
-import unicodedata
 from weakref import proxy
+import unittest
+from test.test_support import run_unittest
+import re
 
-class Test:
+# _AssertRaisesContext is defined here because the class doesn't exist before
+# Python 2.7.
+class _AssertRaisesContext(object):
+    """A context manager used to implement TestCase.assertRaises* methods."""
+
+    def __init__(self, expected, test_case, expected_regexp=None):
+        self.expected = expected
+        self.failureException = test_case.failureException
+        self.expected_regexp = expected_regexp
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, tb):
+        if exc_type is None:
+            try:
+                exc_name = self.expected.__name__
+            except AttributeError:
+                exc_name = str(self.expected)
+            raise self.failureException(
+                "{0} not raised".format(exc_name))
+        if not issubclass(exc_type, self.expected):
+            # let unexpected exceptions pass through
+            return False
+        self.exception = exc_value # store for later retrieval
+        if self.expected_regexp is None:
+            return True
+
+        expected_regexp = self.expected_regexp
+        if isinstance(expected_regexp, basestring):
+            expected_regexp = re.compile(expected_regexp)
+        if not expected_regexp.search(str(exc_value)):
+            raise self.failureException('"%s" does not match "%s"' %
+                     (expected_regexp.pattern, str(exc_value)))
+        return True
+
+class RegexTests(unittest.TestCase):
     MATCH_CLASS = "<type '_regex.Match'>"
     PATTERN_CLASS = "<type '_regex.Pattern'>"
-    FLAGS_WITH_COMPILED_PAT = """ValueError("can't process flags argument with a compiled pattern",)"""
-    INVALID_GROUP_REF = "error('invalid group reference',)"
-    MISSING_GT = "error('missing >',)"
-    BAD_GROUP_NAME = "error('bad group name',)"
-    MISSING_LT = "error('missing <',)"
-    UNKNOWN_GROUP_I = "IndexError('unknown group',)"
-    UNKNOWN_GROUP = "error('unknown group',)"
-    BAD_ESCAPE = "error('bad escape',)"
-    BAD_OCTAL_ESCAPE = "error('bad octal escape',)"
-    BAD_SET = "error('bad set',)"
-    STR_PAT_ON_BYTES = """TypeError("can't use a string pattern on a bytes-like object",)"""
-    BYTES_PAT_ON_STR = """TypeError("can't use a bytes pattern on a string-like object",)"""
-    STR_PAT_BYTES_TEMPL = """TypeError('sequence item 0: expected str instance, bytes found',)"""
-    BYTES_PAT_STR_TEMPL = """TypeError('sequence item 0: expected bytes, str found',)"""
-    BYTES_PAT_UNI_FLAG = """ValueError("can't use UNICODE flag with a bytes pattern",)"""
-    MIXED_FLAGS = """ValueError('ASCII, LOCALE and UNICODE flags are mutually incompatible',)"""
-    SYNTAX_ERROR = "SYNTAX_ERROR"
-    MISSING_RPAREN = "error('missing )',)"
-    TRAILING_CHARS = "error('trailing characters in pattern',)"
-    BAD_CHAR_RANGE = "error('bad character range',)"
-    NOTHING_TO_REPEAT = "error('nothing to repeat',)"
-    OPEN_GROUP = """error("can't refer to an open group",)"""
-    DUPLICATE_GROUP = "error('duplicate group',)"
-    CANT_TURN_OFF = """error("bad inline flags: can't turn flags off",)"""
-    UNDEF_CHAR_NAME = """error('undefined character name',)"""
+    FLAGS_WITH_COMPILED_PAT = "can't process flags argument with a compiled pattern"
+    INVALID_GROUP_REF = "invalid group reference"
+    MISSING_GT = "missing >"
+    BAD_GROUP_NAME = "bad group name"
+    MISSING_LT = "missing <"
+    UNKNOWN_GROUP_I = "unknown group"
+    UNKNOWN_GROUP = "unknown group"
+    BAD_ESCAPE = "bad escape"
+    BAD_OCTAL_ESCAPE = "bad octal escape"
+    BAD_SET = "bad set"
+    STR_PAT_ON_BYTES = "can't use a string pattern on a bytes-like object"
+    BYTES_PAT_ON_STR = "can't use a bytes pattern on a string-like object"
+    STR_PAT_BYTES_TEMPL = "sequence item 0: expected str instance, bytes found"
+    BYTES_PAT_STR_TEMPL = "sequence item 0: expected bytes, str found"
+    BYTES_PAT_UNI_FLAG = "can't use UNICODE flag with a bytes pattern"
+    MIXED_FLAGS = "ASCII, LOCALE and UNICODE flags are mutually incompatible"
+    MISSING_RPAREN = "missing \\)" # Need to escape parenthesis for unittest.
+    TRAILING_CHARS = "trailing characters in pattern"
+    BAD_CHAR_RANGE = "bad character range"
+    NOTHING_TO_REPEAT = "nothing to repeat"
+    OPEN_GROUP = "can't refer to an open group"
+    DUPLICATE_GROUP = "duplicate group"
+    CANT_TURN_OFF = "bad inline flags: can't turn flags off"
+    UNDEF_CHAR_NAME = "undefined character name"
 
-    def __init__(self):
-        pass
+    # assertRaisesRegex is defined here because the method isn't in the
+    # superclass before Python 2.7.
+    def assertRaisesRegex(self, expected_exception, expected_regexp,
+                           callable_obj=None, *args, **kwargs):
+        """Asserts that the message in a raised exception matches a regexp.
 
-    def expect(self, code, expected_result):
-        self.index += 1
-        try:
-            actual_result = repr(code())
-        except Exception, e:
-            actual_result = repr(e)
-        if actual_result != expected_result:
-            self.record_failure("Expected %s but got %s instead" %
-              (expected_result, actual_result))
-
-    def record_failure(self, message="Failed"):
-        self.failed_tests.append((self.performing, self.index, message))
+        Args:
+            expected_exception: Exception class expected to be raised.
+            expected_regexp: Regexp (re pattern object or string) expected
+                    to be found in error message.
+            callable_obj: Function to be called.
+            args: Extra args.
+            kwargs: Extra kwargs.
+        """
+        context = _AssertRaisesContext(expected_exception, self, expected_regexp)
+        if callable_obj is None:
+            return context
+        with context:
+            callable_obj(*args, **kwargs)
 
     def test_weakref(self):
-        self.index += 1
         s = 'QabbbcR'
         x = regex.compile('ab+c')
         y = proxy(x)
         if x.findall('QabbbcR') != y.findall('QabbbcR'):
-            self.record_failure()
+            self.fail()
 
     def test_search_star_plus(self):
         # 1..10
-        self.expect(lambda: regex.search('a*', 'xxx').span(0), repr((0, 0)))
-        self.expect(lambda: regex.search('x*', 'axx').span(), repr((0, 0)))
-        self.expect(lambda: regex.search('x+', 'axx').span(0), repr((1, 3)))
-        self.expect(lambda: regex.search('x+', 'axx').span(), repr((1, 3)))
-        self.expect(lambda: regex.search('x', 'aaa'), repr(None))
-        self.expect(lambda: regex.match('a*', 'xxx').span(0), repr((0, 0)))
-        self.expect(lambda: regex.match('a*', 'xxx').span(), repr((0, 0)))
-        self.expect(lambda: regex.match('x*', 'xxxa').span(0), repr((0, 3)))
-        self.expect(lambda: regex.match('x*', 'xxxa').span(), repr((0, 3)))
-        self.expect(lambda: regex.match('a+', 'xxx'), repr(None))
+        self.assertEquals(regex.search('a*', 'xxx').span(0), (0, 0))
+        self.assertEquals(regex.search('x*', 'axx').span(), (0, 0))
+        self.assertEquals(regex.search('x+', 'axx').span(0), (1, 3))
+        self.assertEquals(regex.search('x+', 'axx').span(), (1, 3))
+        self.assertEquals(regex.search('x', 'aaa'), None)
+        self.assertEquals(regex.match('a*', 'xxx').span(0), (0, 0))
+        self.assertEquals(regex.match('a*', 'xxx').span(), (0, 0))
+        self.assertEquals(regex.match('x*', 'xxxa').span(0), (0, 3))
+        self.assertEquals(regex.match('x*', 'xxxa').span(), (0, 3))
+        self.assertEquals(regex.match('a+', 'xxx'), None)
 
     def bump_num(self, matchobj):
         int_value = int(matchobj[0])
@@ -76,70 +116,65 @@ class Test:
 
     def test_basic_regex_sub(self):
         # 1..3
-        self.expect(lambda: regex.sub("(?i)b+", "x", "bbbb BBBB"), repr('x x'))
-        self.expect(lambda: regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y'),
-          repr('9.3 -3 24x100y'))
-        self.expect(lambda: regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y',
-          3), repr('9.3 -3 23x99y'))
+        self.assertEquals(regex.sub("(?i)b+", "x", "bbbb BBBB"), 'x x')
+        self.assertEquals(regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y'),
+          '9.3 -3 24x100y')
+        self.assertEquals(regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y',
+          3), '9.3 -3 23x99y')
 
         # 4..5
-        self.expect(lambda: regex.sub('.', lambda m: r"\n", 'x'), repr("\\n"))
-        self.expect(lambda: regex.sub('.', r"\n", 'x'), repr("\n"))
+        self.assertEquals(regex.sub('.', lambda m: r"\n", 'x'), "\\n")
+        self.assertEquals(regex.sub('.', r"\n", 'x'), "\n")
 
         # 6..9
-        self.expect(lambda: regex.sub('(?P<a>x)', r'\g<a>\g<a>', 'xx'),
-          repr('xxxx'))
-        self.expect(lambda: regex.sub('(?P<a>x)', r'\g<a>\g<1>', 'xx'),
-          repr('xxxx'))
-        self.expect(lambda: regex.sub('(?P<unk>x)', r'\g<unk>\g<unk>', 'xx'),
-          repr('xxxx'))
-        self.expect(lambda: regex.sub('(?P<unk>x)', r'\g<1>\g<1>', 'xx'),
-          repr('xxxx'))
+        self.assertEquals(regex.sub('(?P<a>x)', r'\g<a>\g<a>', 'xx'), 'xxxx')
+        self.assertEquals(regex.sub('(?P<a>x)', r'\g<a>\g<1>', 'xx'), 'xxxx')
+        self.assertEquals(regex.sub('(?P<unk>x)', r'\g<unk>\g<unk>', 'xx'),
+          'xxxx')
+        self.assertEquals(regex.sub('(?P<unk>x)', r'\g<1>\g<1>', 'xx'), 'xxxx')
 
         # 10..12
-        self.expect(lambda: regex.sub('a',
-          r'\t\n\v\r\f\a\b\B\Z\a\A\w\W\s\S\d\D', 'a'),
-          repr("\t\n\v\r\f\a\b\\B\\Z\a\\A\\w\\W\\s\\S\\d\\D"))
-        self.expect(lambda: regex.sub('a', '\t\n\v\r\f\a', 'a'),
-          repr("\t\n\v\r\f\a"))
-        self.expect(lambda: regex.sub('a', '\t\n\v\r\f\a', 'a'), repr(chr(9) +
-          chr(10) + chr(11) + chr(13) + chr(12) + chr(7)))
+        self.assertEquals(regex.sub('a', r'\t\n\v\r\f\a\b\B\Z\a\A\w\W\s\S\d\D',
+          'a'), "\t\n\v\r\f\a\b\\B\\Z\a\\A\\w\\W\\s\\S\\d\\D")
+        self.assertEquals(regex.sub('a', '\t\n\v\r\f\a', 'a'), "\t\n\v\r\f\a")
+        self.assertEquals(regex.sub('a', '\t\n\v\r\f\a', 'a'), chr(9) + chr(10)
+          + chr(11) + chr(13) + chr(12) + chr(7))
 
         # 13
-        self.expect(lambda: regex.sub(r'^\s*', 'X', 'test'), repr('Xtest'))
+        self.assertEquals(regex.sub(r'^\s*', 'X', 'test'), 'Xtest')
 
         # 14..17
-        self.expect(lambda: regex.sub(ur"x", ur"\x0A", u"x"), repr(u"\n"))
-        self.expect(lambda: regex.sub(ur"x", ur"\u000A", u"x"), repr(u"\n"))
-        self.expect(lambda: regex.sub(ur"x", ur"\U0000000A", u"x"),
-          repr(u"\n"))
-        self.expect(lambda: regex.sub(ur"x", ur"\N{LATIN CAPITAL LETTER A}",
-          u"x"), repr(u"A"))
+        self.assertEquals(regex.sub(ur"x", ur"\x0A", u"x"), u"\n")
+        self.assertEquals(regex.sub(ur"x", ur"\u000A", u"x"), u"\n")
+        self.assertEquals(regex.sub(ur"x", ur"\U0000000A", u"x"), u"\n")
+        self.assertEquals(regex.sub(ur"x", ur"\N{LATIN CAPITAL LETTER A}", u"x"),
+          u"A")
 
         # 18..21
-        self.expect(lambda: regex.sub(r"x", r"\x0A", "x"), repr("\n"))
-        self.expect(lambda: regex.sub(r"x", r"\u000A", "x"), repr("\\u000A"))
-        self.expect(lambda: regex.sub(r"x", r"\U0000000A", "x"),
-          repr("\\U0000000A"))
-        self.expect(lambda: regex.sub(r"x", r"\N{LATIN CAPITAL LETTER A}",
-          "x"), repr("\\N{LATIN CAPITAL LETTER A}"))
+        self.assertEquals(regex.sub(r"x", r"\x0A", "x"), "\n")
+        self.assertEquals(regex.sub(r"x", r"\u000A", "x"), "\\u000A")
+        self.assertEquals(regex.sub(r"x", r"\U0000000A", "x"),
+          "\\U0000000A")
+        self.assertEquals(regex.sub(r"x", r"\N{LATIN CAPITAL LETTER A}",
+          "x"), "\\N{LATIN CAPITAL LETTER A}")
 
     def test_bug_449964(self):
         # Fails for group followed by other escape.
-        self.expect(lambda: regex.sub(r'(?P<unk>x)', r'\g<1>\g<1>\b', 'xx'),
-          repr("xx\bxx\b"))
+        # 1
+        self.assertEquals(regex.sub(r'(?P<unk>x)', r'\g<1>\g<1>\b', 'xx'),
+          "xx\bxx\b")
 
     def test_bug_449000(self):
         # Test for sub() on escaped characters.
         # 1..4
-        self.expect(lambda: regex.sub(r'\r\n', r'\n', 'abc\r\ndef\r\n'),
-          repr("abc\ndef\n"))
-        self.expect(lambda: regex.sub('\r\n', r'\n', 'abc\r\ndef\r\n'),
-          repr("abc\ndef\n"))
-        self.expect(lambda: regex.sub(r'\r\n', '\n', 'abc\r\ndef\r\n'),
-          repr("abc\ndef\n"))
-        self.expect(lambda: regex.sub('\r\n', '\n', 'abc\r\ndef\r\n'),
-          repr("abc\ndef\n"))
+        self.assertEquals(regex.sub(r'\r\n', r'\n', 'abc\r\ndef\r\n'),
+          "abc\ndef\n")
+        self.assertEquals(regex.sub('\r\n', r'\n', 'abc\r\ndef\r\n'),
+          "abc\ndef\n")
+        self.assertEquals(regex.sub(r'\r\n', '\n', 'abc\r\ndef\r\n'),
+          "abc\ndef\n")
+        self.assertEquals(regex.sub('\r\n', '\n', 'abc\r\ndef\r\n'),
+          "abc\ndef\n")
 
     def test_bug_1140(self):
         # regex.sub(x, y, u'') should return u'', not '', and
@@ -151,788 +186,742 @@ class Test:
         for x in 'x', u'x':
             for y in 'y', u'y':
                 z = regex.sub(x, y, u'')
-                self.expect(lambda: (type(z), z), repr((unicode, u'')))
+                self.assertEquals((type(z), z), (unicode, u''))
                 z = regex.sub(x, y, '')
-                self.expect(lambda: (type(z), z), repr((str, '')))
+                self.assertEquals((type(z), z), (str, ''))
                 z = regex.sub(x, y, unicode(x))
-                self.expect(lambda: (type(z), z), repr((unicode, unicode(y))))
+                self.assertEquals((type(z), z), (unicode, unicode(y)))
                 z = regex.sub(x, y, str(x))
-                self.expect(lambda: (type(z), z), repr((type(y), y)))
+                self.assertEquals((type(z), z), (type(y), y))
 
     def test_bug_1661(self):
         # Verify that flags do not get silently ignored with compiled patterns
         pattern = regex.compile('.')
         # 1..4
-        self.expect(lambda: regex.match(pattern, 'A', regex.I),
-          self.FLAGS_WITH_COMPILED_PAT)
-        self.expect(lambda: regex.search(pattern, 'A', regex.I),
-          self.FLAGS_WITH_COMPILED_PAT)
-        self.expect(lambda: regex.findall(pattern, 'A', regex.I),
-          self.FLAGS_WITH_COMPILED_PAT)
-        self.expect(lambda: regex.compile(pattern, regex.I),
-          self.FLAGS_WITH_COMPILED_PAT)
+        self.assertRaisesRegex(ValueError, self.FLAGS_WITH_COMPILED_PAT,
+          lambda: regex.match(pattern, 'A', regex.I))
+        self.assertRaisesRegex(ValueError, self.FLAGS_WITH_COMPILED_PAT,
+          lambda: regex.search(pattern, 'A', regex.I))
+        self.assertRaisesRegex(ValueError, self.FLAGS_WITH_COMPILED_PAT,
+          lambda: regex.findall(pattern, 'A', regex.I))
+        self.assertRaisesRegex(ValueError, self.FLAGS_WITH_COMPILED_PAT,
+          lambda: regex.compile(pattern, regex.I))
 
     def test_bug_3629(self):
         # A regex that triggered a bug in the sre-code validator
-        self.expect(lambda: type(regex.compile("(?P<quote>)(?(quote))")),
+        # 1
+        self.assertEquals(repr(type(regex.compile("(?P<quote>)(?(quote))"))),
           self.PATTERN_CLASS)
 
     def test_sub_template_numeric_escape(self):
         # Bug 776311 and friends.
         # 1..7
-        self.expect(lambda: regex.sub('x', r'\0', 'x'), repr("\0"))
-        self.expect(lambda: regex.sub('x', r'\000', 'x'), repr("\000"))
-        self.expect(lambda: regex.sub('x', r'\001', 'x'), repr("\001"))
-        self.expect(lambda: regex.sub('x', r'\008', 'x'), repr("\0" + "8"))
-        self.expect(lambda: regex.sub('x', r'\009', 'x'), repr("\0" + "9"))
-        self.expect(lambda: regex.sub('x', r'\111', 'x'), repr("\111"))
-        self.expect(lambda: regex.sub('x', r'\117', 'x'), repr("\117"))
+        self.assertEquals(regex.sub('x', r'\0', 'x'), "\0")
+        self.assertEquals(regex.sub('x', r'\000', 'x'), "\000")
+        self.assertEquals(regex.sub('x', r'\001', 'x'), "\001")
+        self.assertEquals(regex.sub('x', r'\008', 'x'), "\0" + "8")
+        self.assertEquals(regex.sub('x', r'\009', 'x'), "\0" + "9")
+        self.assertEquals(regex.sub('x', r'\111', 'x'), "\111")
+        self.assertEquals(regex.sub('x', r'\117', 'x'), "\117")
 
         # 8..9
-        self.expect(lambda: regex.sub('x', r'\1111', 'x'), repr("\1111"))
-        self.expect(lambda: regex.sub('x', r'\1111', 'x'), repr("\111" + "1"))
+        self.assertEquals(regex.sub('x', r'\1111', 'x'), "\1111")
+        self.assertEquals(regex.sub('x', r'\1111', 'x'), "\111" + "1")
 
         # 10..14
-        self.expect(lambda: regex.sub('x', r'\00', 'x'), repr('\x00'))
-        self.expect(lambda: regex.sub('x', r'\07', 'x'), repr('\x07'))
-        self.expect(lambda: regex.sub('x', r'\08', 'x'), repr("\0" + "8"))
-        self.expect(lambda: regex.sub('x', r'\09', 'x'), repr("\0" + "9"))
-        self.expect(lambda: regex.sub('x', r'\0a', 'x'), repr("\0" + "a"))
+        self.assertEquals(regex.sub('x', r'\00', 'x'), '\x00')
+        self.assertEquals(regex.sub('x', r'\07', 'x'), '\x07')
+        self.assertEquals(regex.sub('x', r'\08', 'x'), "\0" + "8")
+        self.assertEquals(regex.sub('x', r'\09', 'x'), "\0" + "9")
+        self.assertEquals(regex.sub('x', r'\0a', 'x'), "\0" + "a")
 
         # 15..18
-        self.expect(lambda: regex.sub('x', r'\400', 'x'), repr("\x00"))
-        self.expect(lambda: regex.sub('x', r'\777', 'x'), repr("\xFF"))
-        self.expect(lambda: regex.sub(u'x', ur'\400', u'x'), repr(u"\u0100"))
-        self.expect(lambda: regex.sub(u'x', ur'\777', u'x'), repr(u"\u01FF"))
+        self.assertEquals(regex.sub('x', r'\400', 'x'), "\x00")
+        self.assertEquals(regex.sub('x', r'\777', 'x'), "\xFF")
+        self.assertEquals(regex.sub(u'x', ur'\400', u'x'), u"\u0100")
+        self.assertEquals(regex.sub(u'x', ur'\777', u'x'), u"\u01FF")
 
         # 19..30
-        self.expect(lambda: regex.sub('x', r'\1', 'x'), self.INVALID_GROUP_REF)
-        self.expect(lambda: regex.sub('x', r'\8', 'x'), self.INVALID_GROUP_REF)
-        self.expect(lambda: regex.sub('x', r'\9', 'x'), self.INVALID_GROUP_REF)
-        self.expect(lambda: regex.sub('x', r'\11', 'x'),
-          self.INVALID_GROUP_REF)
-        self.expect(lambda: regex.sub('x', r'\18', 'x'),
-          self.INVALID_GROUP_REF)
-        self.expect(lambda: regex.sub('x', r'\1a', 'x'),
-          self.INVALID_GROUP_REF)
-        self.expect(lambda: regex.sub('x', r'\90', 'x'),
-          self.INVALID_GROUP_REF)
-        self.expect(lambda: regex.sub('x', r'\99', 'x'),
-          self.INVALID_GROUP_REF)
-        self.expect(lambda: regex.sub('x', r'\118', 'x'),
-          self.INVALID_GROUP_REF) # r'\11' + '8'
-        self.expect(lambda: regex.sub('x', r'\11a', 'x'),
-          self.INVALID_GROUP_REF)
-        self.expect(lambda: regex.sub('x', r'\181', 'x'),
-          self.INVALID_GROUP_REF) # r'\18' + '1'
-        self.expect(lambda: regex.sub('x', r'\800', 'x'),
-          self.INVALID_GROUP_REF) # r'\80' + '0'
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\1', 'x'))
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\8', 'x'))
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\9', 'x'))
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\11', 'x'))
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\18', 'x'))
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\1a', 'x'))
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\90', 'x'))
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\99', 'x'))
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\118', 'x')) # r'\11' + '8'
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\11a', 'x'))
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\181', 'x')) # r'\18' + '1'
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
+          regex.sub('x', r'\800', 'x')) # r'\80' + '0'
 
         # In Python 2.3 (etc), these loop endlessly in sre_parser.py.
         # 31..33
-        self.expect(lambda: regex.sub('(((((((((((x)))))))))))', r'\11', 'x'),
-          repr('x'))
-        self.expect(lambda: regex.sub('((((((((((y))))))))))(.)', r'\118',
-          'xyz'), repr('xz8'))
-        self.expect(lambda: regex.sub('((((((((((y))))))))))(.)', r'\11a',
-          'xyz'), repr('xza'))
+        self.assertEquals(regex.sub('(((((((((((x)))))))))))', r'\11', 'x'),
+          'x')
+        self.assertEquals(regex.sub('((((((((((y))))))))))(.)', r'\118',
+          'xyz'), 'xz8')
+        self.assertEquals(regex.sub('((((((((((y))))))))))(.)', r'\11a',
+          'xyz'), 'xza')
 
     def test_qualified_re_sub(self):
         # 1..2
-        self.expect(lambda: regex.sub('a', 'b', 'aaaaa'), repr('bbbbb'))
-        self.expect(lambda: regex.sub('a', 'b', 'aaaaa', 1), repr('baaaa'))
+        self.assertEquals(regex.sub('a', 'b', 'aaaaa'), 'bbbbb')
+        self.assertEquals(regex.sub('a', 'b', 'aaaaa', 1), 'baaaa')
 
     def test_bug_114660(self):
-        self.expect(lambda: regex.sub(r'(\S)\s+(\S)', r'\1 \2',
-          'hello  there'), repr('hello there'))
+        # 1
+        self.assertEquals(regex.sub(r'(\S)\s+(\S)', r'\1 \2', 'hello  there'),
+          'hello there')
 
     def test_bug_462270(self):
         # Test for empty sub() behaviour, see SF bug #462270
         # 1..2
-        self.expect(lambda: regex.sub('x*', '-', 'abxd'), repr('-a-b--d-'))
-        self.expect(lambda: regex.sub('x+', '-', 'abxd'), repr('ab-d'))
+        self.assertEquals(regex.sub('x*', '-', 'abxd'), '-a-b--d-')
+        self.assertEquals(regex.sub('x+', '-', 'abxd'), 'ab-d')
 
     def test_symbolic_refs(self):
         # 1..6
-        self.expect(lambda: regex.sub('(?P<a>x)', r'\g<a', 'xx'),
-          self.MISSING_GT)
-        self.expect(lambda: regex.sub('(?P<a>x)', r'\g<', 'xx'),
-          self.BAD_GROUP_NAME)
-        self.expect(lambda: regex.sub('(?P<a>x)', r'\g', 'xx'),
-          self.MISSING_LT)
-        self.expect(lambda: regex.sub('(?P<a>x)', r'\g<a a>', 'xx'),
-          self.MISSING_GT)
-        self.expect(lambda: regex.sub('(?P<a>x)', r'\g<1a1>', 'xx'),
-          self.BAD_GROUP_NAME)
-        self.expect(lambda: regex.sub('(?P<a>x)', r'\g<ab>', 'xx'),
-          self.UNKNOWN_GROUP_I)
+        self.assertRaisesRegex(regex.error, self.MISSING_GT, lambda:
+          regex.sub('(?P<a>x)', r'\g<a', 'xx'))
+        self.assertRaisesRegex(regex.error, self.BAD_GROUP_NAME, lambda:
+          regex.sub('(?P<a>x)', r'\g<', 'xx'))
+        self.assertRaisesRegex(regex.error, self.MISSING_LT, lambda:
+          regex.sub('(?P<a>x)', r'\g', 'xx'))
+        self.assertRaisesRegex(regex.error, self.MISSING_GT, lambda:
+          regex.sub('(?P<a>x)', r'\g<a a>', 'xx'))
+        self.assertRaisesRegex(regex.error, self.BAD_GROUP_NAME, lambda:
+          regex.sub('(?P<a>x)', r'\g<1a1>', 'xx'))
+        self.assertRaisesRegex(IndexError, self.UNKNOWN_GROUP_I, lambda:
+          regex.sub('(?P<a>x)', r'\g<ab>', 'xx'))
 
         # The new behaviour of unmatched but valid groups is to treat them like
         # empty matches in the replacement template, like in Perl.
         # 7..8
-        self.expect(lambda: regex.sub('(?P<a>x)|(?P<b>y)', r'\g<b>', 'xx'),
-          repr(''))
-        self.expect(lambda: regex.sub('(?P<a>x)|(?P<b>y)', r'\2', 'xx'),
-          repr(''))
+        self.assertEquals(regex.sub('(?P<a>x)|(?P<b>y)', r'\g<b>', 'xx'), '')
+        self.assertEquals(regex.sub('(?P<a>x)|(?P<b>y)', r'\2', 'xx'), '')
 
         # The old behaviour was to raise it as an IndexError.
         # 9
-        self.expect(lambda: regex.sub('(?P<a>x)', r'\g<-1>', 'xx'),
-          self.BAD_GROUP_NAME)
+        self.assertRaisesRegex(regex.error, self.BAD_GROUP_NAME, lambda:
+          regex.sub('(?P<a>x)', r'\g<-1>', 'xx'))
 
     def test_re_subn(self):
         # 1..5
-        self.expect(lambda: regex.subn("(?i)b+", "x", "bbbb BBBB"),
-          repr(('x x', 2)))
-        self.expect(lambda: regex.subn("b+", "x", "bbbb BBBB"), repr(('x BBBB',
-          1)))
-        self.expect(lambda: regex.subn("b+", "x", "xyz"), repr(('xyz', 0)))
-        self.expect(lambda: regex.subn("b*", "x", "xyz"), repr(('xxxyxzx', 4)))
-        self.expect(lambda: regex.subn("b*", "x", "xyz", 2), repr(('xxxyz',
-          2)))
+        self.assertEquals(regex.subn("(?i)b+", "x", "bbbb BBBB"), ('x x', 2))
+        self.assertEquals(regex.subn("b+", "x", "bbbb BBBB"), ('x BBBB', 1))
+        self.assertEquals(regex.subn("b+", "x", "xyz"), ('xyz', 0))
+        self.assertEquals(regex.subn("b*", "x", "xyz"), ('xxxyxzx', 4))
+        self.assertEquals(regex.subn("b*", "x", "xyz", 2), ('xxxyz', 2))
 
     def test_re_split(self):
         # 1..8
-        self.expect(lambda: regex.split(":", ":a:b::c"), repr(['', 'a', 'b',
-          '', 'c']))
-        self.expect(lambda: regex.split(":*", ":a:b::c"), repr(['', 'a', 'b',
-          'c']))
-        self.expect(lambda: regex.split("(:*)", ":a:b::c"), repr(['', ':', 'a',
-          ':', 'b', '::', 'c']))
-        self.expect(lambda: regex.split("(?::*)", ":a:b::c"), repr(['', 'a',
-          'b', 'c']))
-        self.expect(lambda: regex.split("(:)*", ":a:b::c"), repr(['', ':', 'a',
-          ':', 'b', ':', 'c']))
-        self.expect(lambda: regex.split("([b:]+)", ":a:b::c"), repr(['', ':',
-          'a', ':b::', 'c']))
-        self.expect(lambda: regex.split("(b)|(:+)", ":a:b::c"), repr(['', None,
-          ':', 'a', None, ':', '', 'b', None, '', None, '::', 'c']))
-        self.expect(lambda: regex.split("(?:b)|(?::+)", ":a:b::c"), repr(['',
-          'a', '', '', 'c']))
+        self.assertEquals(regex.split(":", ":a:b::c"), ['', 'a', 'b', '', 'c'])
+        self.assertEquals(regex.split(":*", ":a:b::c"), ['', 'a', 'b', 'c'])
+        self.assertEquals(regex.split("(:*)", ":a:b::c"), ['', ':', 'a', ':',
+          'b', '::', 'c'])
+        self.assertEquals(regex.split("(?::*)", ":a:b::c"), ['', 'a', 'b',
+          'c'])
+        self.assertEquals(regex.split("(:)*", ":a:b::c"), ['', ':', 'a', ':',
+          'b', ':', 'c'])
+        self.assertEquals(regex.split("([b:]+)", ":a:b::c"), ['', ':', 'a',
+          ':b::', 'c'])
+        self.assertEquals(regex.split("(b)|(:+)", ":a:b::c"), ['', None, ':',
+          'a', None, ':', '', 'b', None, '', None, '::', 'c'])
+        self.assertEquals(regex.split("(?:b)|(?::+)", ":a:b::c"), ['', 'a', '',
+          '', 'c'])
 
         # 9..10
-        self.expect(lambda: regex.split("x", "xaxbxc"), repr(['', 'a', 'b',
-          'c']))
-        self.expect(lambda: [m for m in regex.splititer("x", "xaxbxc")],
-          repr(['', 'a', 'b', 'c']))
+        self.assertEquals(regex.split("x", "xaxbxc"), ['', 'a', 'b', 'c'])
+        self.assertEquals([m for m in regex.splititer("x", "xaxbxc")], ['',
+          'a', 'b', 'c'])
 
         # 11..12
-        self.expect(lambda: regex.split("(?r)x", "xaxbxc"), repr(['c', 'b',
-          'a', '']))
-        self.expect(lambda: [m for m in regex.splititer("(?r)x", "xaxbxc")],
-          repr(['c', 'b', 'a', '']))
+        self.assertEquals(regex.split("(?r)x", "xaxbxc"), ['c', 'b', 'a', ''])
+        self.assertEquals([m for m in regex.splititer("(?r)x", "xaxbxc")],
+          ['c', 'b', 'a', ''])
 
         # 13..14
-        self.expect(lambda: regex.split("(x)|(y)", "xaxbxc"), repr(['', 'x',
-          None, 'a', 'x', None, 'b', 'x', None, 'c']))
-        self.expect(lambda: [m for m in regex.splititer("(x)|(y)", "xaxbxc")],
-          repr(['', 'x', None, 'a', 'x', None, 'b', 'x', None, 'c']))
+        self.assertEquals(regex.split("(x)|(y)", "xaxbxc"), ['', 'x', None,
+          'a', 'x', None, 'b', 'x', None, 'c'])
+        self.assertEquals([m for m in regex.splititer("(x)|(y)", "xaxbxc")],
+          ['', 'x', None, 'a', 'x', None, 'b', 'x', None, 'c'])
 
         # 15..16
-        self.expect(lambda: regex.split("(?r)(x)|(y)", "xaxbxc"), repr(['c',
-          'x', None, 'b', 'x', None, 'a', 'x', None, '']))
-        self.expect(lambda: [m for m in regex.splititer("(?r)(x)|(y)",
-          "xaxbxc")], repr(['c', 'x', None, 'b', 'x', None, 'a', 'x', None,
-          '']))
+        self.assertEquals(regex.split("(?r)(x)|(y)", "xaxbxc"), ['c', 'x',
+          None, 'b', 'x', None, 'a', 'x', None, ''])
+        self.assertEquals([m for m in regex.splititer("(?r)(x)|(y)",
+          "xaxbxc")], ['c', 'x', None, 'b', 'x', None, 'a', 'x', None, ''])
 
         # 17..19
-        self.expect(lambda: regex.split(r"(?V1)\b", "a b c"), repr(['', 'a',
-          ' ', 'b', ' ', 'c', '']))
-        self.expect(lambda: regex.split(r"(?V1)\m", "a b c"), repr(['', 'a ',
-          'b ', 'c']))
-        self.expect(lambda: regex.split(r"(?V1)\M", "a b c"), repr(['a', ' b',
-          ' c', '']))
+        self.assertEquals(regex.split(r"(?V1)\b", "a b c"), ['', 'a', ' ', 'b',
+          ' ', 'c', ''])
+        self.assertEquals(regex.split(r"(?V1)\m", "a b c"), ['', 'a ', 'b ',
+          'c'])
+        self.assertEquals(regex.split(r"(?V1)\M", "a b c"), ['a', ' b', ' c',
+          ''])
 
     def test_qualified_re_split(self):
         # 1..4
-        self.expect(lambda: regex.split(":", ":a:b::c", 2), repr(['', 'a',
-          'b::c']))
-        self.expect(lambda: regex.split(':', 'a:b:c:d', 2), repr(['a', 'b',
-          'c:d']))
-        self.expect(lambda: regex.split("(:)", ":a:b::c", 2), repr(['', ':',
-          'a', ':', 'b::c']))
-        self.expect(lambda: regex.split("(:*)", ":a:b::c", 2), repr(['', ':',
-          'a', ':', 'b::c']))
+        self.assertEquals(regex.split(":", ":a:b::c", 2), ['', 'a', 'b::c'])
+        self.assertEquals(regex.split(':', 'a:b:c:d', 2), ['a', 'b', 'c:d'])
+        self.assertEquals(regex.split("(:)", ":a:b::c", 2), ['', ':', 'a', ':',
+          'b::c'])
+        self.assertEquals(regex.split("(:*)", ":a:b::c", 2), ['', ':', 'a',
+          ':', 'b::c'])
 
     def test_re_findall(self):
         # 1..4
-        self.expect(lambda: regex.findall(":+", "abc"), repr([]))
-        self.expect(lambda: regex.findall(":+", "a:b::c:::d"), repr([':', '::',
-          ':::']))
-        self.expect(lambda: regex.findall("(:+)", "a:b::c:::d"), repr([':',
-          '::', ':::']))
-        self.expect(lambda: regex.findall("(:)(:*)", "a:b::c:::d"), repr([(':',
-          ''), (':', ':'), (':', '::')]))
+        self.assertEquals(regex.findall(":+", "abc"), [])
+        self.assertEquals(regex.findall(":+", "a:b::c:::d"), [':', '::',
+          ':::'])
+        self.assertEquals(regex.findall("(:+)", "a:b::c:::d"), [':', '::',
+          ':::'])
+        self.assertEquals(regex.findall("(:)(:*)", "a:b::c:::d"), [(':', ''),
+          (':', ':'), (':', '::')])
 
         # 5..7
-        self.expect(lambda: regex.findall(r"\((?P<test>.{0,5}?TEST)\)",
-          "(MY TEST)"), repr(["MY TEST"]))
-        self.expect(lambda: regex.findall(r"\((?P<test>.{0,3}?TEST)\)",
-          "(MY TEST)"), repr(["MY TEST"]))
-        self.expect(lambda: regex.findall(r"\((?P<test>.{0,3}?T)\)",
-          "(MY T)"), repr(["MY T"]))
+        self.assertEquals(regex.findall(r"\((?P<test>.{0,5}?TEST)\)",
+          "(MY TEST)"), ["MY TEST"])
+        self.assertEquals(regex.findall(r"\((?P<test>.{0,3}?TEST)\)",
+          "(MY TEST)"), ["MY TEST"])
+        self.assertEquals(regex.findall(r"\((?P<test>.{0,3}?T)\)", "(MY T)"),
+          ["MY T"])
 
         # 8..10
-        self.expect(lambda: regex.findall(r"[^a]{2}[A-Z]", "\n  S"),
-          repr(['  S']))
-        self.expect(lambda: regex.findall(r"[^a]{2,3}[A-Z]", "\n  S"),
-          repr(['\n  S']))
-        self.expect(lambda: regex.findall(r"[^a]{2,3}[A-Z]", "\n   S"),
-          repr(['   S']))
+        self.assertEquals(regex.findall(r"[^a]{2}[A-Z]", "\n  S"), ['  S'])
+        self.assertEquals(regex.findall(r"[^a]{2,3}[A-Z]", "\n  S"), ['\n  S'])
+        self.assertEquals(regex.findall(r"[^a]{2,3}[A-Z]", "\n   S"), ['   S'])
 
-        # 11..12
-        self.expect(lambda: regex.findall(r"X(Y[^Y]+?){1,2}( |Q)+DEF",
-          "XYABCYPPQ\nQ DEF"), repr([('YPPQ\n', ' ')]))
+        # 11
+        self.assertEquals(regex.findall(r"X(Y[^Y]+?){1,2}( |Q)+DEF",
+          "XYABCYPPQ\nQ DEF"), [('YPPQ\n', ' ')])
 
-        self.expect(lambda: regex.findall(r"(\nTest(\n+.+?){0,2}?)?\n+End",
-          "\nTest\nxyz\nxyz\nEnd"), repr([('\nTest\nxyz\nxyz', '\nxyz')]))
+        # 12
+        self.assertEquals(regex.findall(r"(\nTest(\n+.+?){0,2}?)?\n+End",
+          "\nTest\nxyz\nxyz\nEnd"), [('\nTest\nxyz\nxyz', '\nxyz')])
 
     def test_bug_117612(self):
-        self.expect(lambda: regex.findall(r"(a|(b))", "aba"), repr([('a', ''),
-          ('b', 'b'), ('a', '')]))
+        # 1
+        self.assertEquals(regex.findall(r"(a|(b))", "aba"), [('a', ''), ('b',
+          'b'), ('a', '')])
 
     def test_re_match(self):
         # 1..5
-        self.expect(lambda: regex.match('a', 'a')[:], repr(('a',)))
-        self.expect(lambda: regex.match('(a)', 'a')[:], repr(('a', 'a')))
-        self.expect(lambda: regex.match(r'(a)', 'a')[0], repr('a'))
-        self.expect(lambda: regex.match(r'(a)', 'a')[1], repr('a'))
-        self.expect(lambda: regex.match(r'(a)', 'a').group(1, 1), repr(('a',
-          'a')))
+        self.assertEquals(regex.match('a', 'a')[:], ('a',))
+        self.assertEquals(regex.match('(a)', 'a')[:], ('a', 'a'))
+        self.assertEquals(regex.match(r'(a)', 'a')[0], 'a')
+        self.assertEquals(regex.match(r'(a)', 'a')[1], 'a')
+        self.assertEquals(regex.match(r'(a)', 'a').group(1, 1), ('a', 'a'))
 
         pat = regex.compile('((a)|(b))(c)?')
         # 6..10
-        self.expect(lambda: pat.match('a')[:], repr(('a', 'a', 'a', None,
-          None)))
-        self.expect(lambda: pat.match('b')[:], repr(('b', 'b', None, 'b',
-          None)))
-        self.expect(lambda: pat.match('ac')[:], repr(('ac', 'a', 'a', None,
-          'c')))
-        self.expect(lambda: pat.match('bc')[:], repr(('bc', 'b', None, 'b',
-          'c')))
-        self.expect(lambda: pat.match('bc')[:], repr(('bc', 'b', None, 'b',
-          'c')))
+        self.assertEquals(pat.match('a')[:], ('a', 'a', 'a', None, None))
+        self.assertEquals(pat.match('b')[:], ('b', 'b', None, 'b', None))
+        self.assertEquals(pat.match('ac')[:], ('ac', 'a', 'a', None, 'c'))
+        self.assertEquals(pat.match('bc')[:], ('bc', 'b', None, 'b', 'c'))
+        self.assertEquals(pat.match('bc')[:], ('bc', 'b', None, 'b', 'c'))
 
         # A single group.
         m = regex.match('(a)', 'a')
         # 11..14
-        self.expect(lambda: m.group(), repr('a'))
-        self.expect(lambda: m.group(0), repr('a'))
-        self.expect(lambda: m.group(1), repr('a'))
-        self.expect(lambda: m.group(1, 1), repr(('a', 'a')))
+        self.assertEquals(m.group(), 'a')
+        self.assertEquals(m.group(0), 'a')
+        self.assertEquals(m.group(1), 'a')
+        self.assertEquals(m.group(1, 1), ('a', 'a'))
 
         pat = regex.compile('(?:(?P<a1>a)|(?P<b2>b))(?P<c3>c)?')
         # 15..17
-        self.expect(lambda: pat.match('a').group(1, 2, 3), repr(('a', None,
-          None)))
-        self.expect(lambda: pat.match('b').group('a1', 'b2', 'c3'), repr((None,
-          'b', None)))
-        self.expect(lambda: pat.match('ac').group(1, 'b2', 3), repr(('a', None,
-          'c')))
+        self.assertEquals(pat.match('a').group(1, 2, 3), ('a', None, None))
+        self.assertEquals(pat.match('b').group('a1', 'b2', 'c3'), (None, 'b',
+          None))
+        self.assertEquals(pat.match('ac').group(1, 'b2', 3), ('a', None, 'c'))
 
     def test_re_groupref_exists(self):
         # 1..8
-        self.expect(lambda: regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a)')[:],
-          repr(('(a)', '(', 'a')))
-        self.expect(lambda: regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a')[:],
-          repr(('a', None, 'a')))
-        self.expect(lambda: regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a)'),
-          repr(None))
-        self.expect(lambda: regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a'),
-          repr(None))
-        self.expect(lambda: regex.match('^(?:(a)|c)((?(1)b|d))$', 'ab')[:],
-          repr(('ab', 'a', 'b')))
-        self.expect(lambda: regex.match('^(?:(a)|c)((?(1)b|d))$', 'cd')[:],
-          repr(('cd', None, 'd')))
-        self.expect(lambda: regex.match('^(?:(a)|c)((?(1)|d))$', 'cd')[:],
-          repr(('cd', None, 'd')))
-        self.expect(lambda: regex.match('^(?:(a)|c)((?(1)|d))$', 'a')[:],
-          repr(('a', 'a', '')))
+        self.assertEquals(regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a)')[:],
+          ('(a)', '(', 'a'))
+        self.assertEquals(regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a')[:],
+          ('a', None, 'a'))
+        self.assertEquals(regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a)'), None)
+        self.assertEquals(regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a'), None)
+        self.assertEquals(regex.match('^(?:(a)|c)((?(1)b|d))$', 'ab')[:],
+          ('ab', 'a', 'b'))
+        self.assertEquals(regex.match('^(?:(a)|c)((?(1)b|d))$', 'cd')[:],
+          ('cd', None, 'd'))
+        self.assertEquals(regex.match('^(?:(a)|c)((?(1)|d))$', 'cd')[:], ('cd',
+          None, 'd'))
+        self.assertEquals(regex.match('^(?:(a)|c)((?(1)|d))$', 'a')[:], ('a',
+          'a', ''))
 
         # Tests for bug #1177831: exercise groups other than the first group.
         p = regex.compile('(?P<g1>a)(?P<g2>b)?((?(g2)c|d))')
         # 9..12
-        self.expect(lambda: p.match('abc')[:], repr(('abc', 'a', 'b', 'c')))
-        self.expect(lambda: p.match('ad')[:], repr(('ad', 'a', None, 'd')))
-        self.expect(lambda: p.match('abd'), repr(None))
-        self.expect(lambda: p.match('ac'), repr(None))
+        self.assertEquals(p.match('abc')[:], ('abc', 'a', 'b', 'c'))
+        self.assertEquals(p.match('ad')[:], ('ad', 'a', None, 'd'))
+        self.assertEquals(p.match('abd'), None)
+        self.assertEquals(p.match('ac'), None)
 
     def test_re_groupref(self):
         # 1..6
-        self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1$', '|a|')[:],
-          repr(('|a|', '|', 'a')))
-        self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1?$', 'a')[:],
-          repr(('a', None, 'a')))
-        self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1$', 'a|'),
-          repr(None))
-        self.expect(lambda: regex.match(r'^(\|)?([^()]+)\1$', '|a'),
-          repr(None))
-        self.expect(lambda: regex.match(r'^(?:(a)|c)(\1)$', 'aa')[:],
-          repr(('aa', 'a', 'a')))
-        self.expect(lambda: regex.match(r'^(?:(a)|c)(\1)?$', 'c')[:],
-          repr(('c', None, None)))
+        self.assertEquals(regex.match(r'^(\|)?([^()]+)\1$', '|a|')[:], ('|a|',
+          '|', 'a'))
+        self.assertEquals(regex.match(r'^(\|)?([^()]+)\1?$', 'a')[:], ('a',
+          None, 'a'))
+        self.assertEquals(regex.match(r'^(\|)?([^()]+)\1$', 'a|'), None)
+        self.assertEquals(regex.match(r'^(\|)?([^()]+)\1$', '|a'), None)
+        self.assertEquals(regex.match(r'^(?:(a)|c)(\1)$', 'aa')[:], ('aa', 'a',
+          'a'))
+        self.assertEquals(regex.match(r'^(?:(a)|c)(\1)?$', 'c')[:], ('c', None,
+          None))
 
         # 7
-        self.expect(lambda:
-          regex.findall("(?i)(.{1,40}?),(.{1,40}?)(?:;)+(.{1,80}).{1,40}?\\3(\ |;)+(.{1,80}?)\\1",
-          "TEST, BEST; LEST ; Lest 123 Test, Best"), repr([('TEST', ' BEST',
-          ' LEST', ' ', '123 ')]))
+        self.assertEquals(regex.findall("(?i)(.{1,40}?),(.{1,40}?)(?:;)+(.{1,80}).{1,40}?\\3(\ |;)+(.{1,80}?)\\1",
+          "TEST, BEST; LEST ; Lest 123 Test, Best"), [('TEST', ' BEST',
+          ' LEST', ' ', '123 ')])
 
     def test_groupdict(self):
-        self.expect(lambda: regex.match('(?P<first>first) (?P<second>second)',
-          'first second').groupdict(), repr({'first': 'first', 'second':
-          'second'}))
+        # 1
+        self.assertEquals(regex.match('(?P<first>first) (?P<second>second)',
+          'first second').groupdict(), {'first': 'first', 'second': 'second'})
 
     def test_expand(self):
-        self.expect(lambda: regex.match("(?P<first>first) (?P<second>second)",
+        # 1
+        self.assertEquals(regex.match("(?P<first>first) (?P<second>second)",
           "first second").expand(r"\2 \1 \g<second> \g<first>"),
-          repr('second first second first'))
+          'second first second first')
 
     def test_repeat_minmax(self):
         # 1..4
-        self.expect(lambda: regex.match(r"^(\w){1}$", "abc"), repr(None))
-        self.expect(lambda: regex.match(r"^(\w){1}?$", "abc"), repr(None))
-        self.expect(lambda: regex.match(r"^(\w){1,2}$", "abc"), repr(None))
-        self.expect(lambda: regex.match(r"^(\w){1,2}?$", "abc"), repr(None))
+        self.assertEquals(regex.match(r"^(\w){1}$", "abc"), None)
+        self.assertEquals(regex.match(r"^(\w){1}?$", "abc"), None)
+        self.assertEquals(regex.match(r"^(\w){1,2}$", "abc"), None)
+        self.assertEquals(regex.match(r"^(\w){1,2}?$", "abc"), None)
 
         # 5..12
-        self.expect(lambda: regex.match(r"^(\w){3}$", "abc")[1], repr('c'))
-        self.expect(lambda: regex.match(r"^(\w){1,3}$", "abc")[1], repr('c'))
-        self.expect(lambda: regex.match(r"^(\w){1,4}$", "abc")[1], repr('c'))
-        self.expect(lambda: regex.match(r"^(\w){3,4}?$", "abc")[1], repr('c'))
-        self.expect(lambda: regex.match(r"^(\w){3}?$", "abc")[1], repr('c'))
-        self.expect(lambda: regex.match(r"^(\w){1,3}?$", "abc")[1], repr('c'))
-        self.expect(lambda: regex.match(r"^(\w){1,4}?$", "abc")[1], repr('c'))
-        self.expect(lambda: regex.match(r"^(\w){3,4}?$", "abc")[1], repr('c'))
+        self.assertEquals(regex.match(r"^(\w){3}$", "abc")[1], 'c')
+        self.assertEquals(regex.match(r"^(\w){1,3}$", "abc")[1], 'c')
+        self.assertEquals(regex.match(r"^(\w){1,4}$", "abc")[1], 'c')
+        self.assertEquals(regex.match(r"^(\w){3,4}?$", "abc")[1], 'c')
+        self.assertEquals(regex.match(r"^(\w){3}?$", "abc")[1], 'c')
+        self.assertEquals(regex.match(r"^(\w){1,3}?$", "abc")[1], 'c')
+        self.assertEquals(regex.match(r"^(\w){1,4}?$", "abc")[1], 'c')
+        self.assertEquals(regex.match(r"^(\w){3,4}?$", "abc")[1], 'c')
 
         # 13..16
-        self.expect(lambda: regex.match("^x{1}$", "xxx"), repr(None))
-        self.expect(lambda: regex.match("^x{1}?$", "xxx"), repr(None))
-        self.expect(lambda: regex.match("^x{1,2}$", "xxx"), repr(None))
-        self.expect(lambda: regex.match("^x{1,2}?$", "xxx"), repr(None))
+        self.assertEquals(regex.match("^x{1}$", "xxx"), None)
+        self.assertEquals(regex.match("^x{1}?$", "xxx"), None)
+        self.assertEquals(regex.match("^x{1,2}$", "xxx"), None)
+        self.assertEquals(regex.match("^x{1,2}?$", "xxx"), None)
 
         # 17..20
-        self.expect(lambda: regex.match("^x{1}", "xxx")[0], repr('x'))
-        self.expect(lambda: regex.match("^x{1}?", "xxx")[0], repr('x'))
-        self.expect(lambda: regex.match("^x{0,1}", "xxx")[0], repr('x'))
-        self.expect(lambda: regex.match("^x{0,1}?", "xxx")[0], repr(''))
+        self.assertEquals(regex.match("^x{1}", "xxx")[0], 'x')
+        self.assertEquals(regex.match("^x{1}?", "xxx")[0], 'x')
+        self.assertEquals(regex.match("^x{0,1}", "xxx")[0], 'x')
+        self.assertEquals(regex.match("^x{0,1}?", "xxx")[0], '')
 
         # 21..28
-        self.expect(lambda: type(regex.match("^x{3}$", "xxx")),
+        self.assertEquals(repr(type(regex.match("^x{3}$", "xxx"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match("^x{1,3}$", "xxx")),
+        self.assertEquals(repr(type(regex.match("^x{1,3}$", "xxx"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match("^x{1,4}$", "xxx")),
+        self.assertEquals(repr(type(regex.match("^x{1,4}$", "xxx"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match("^x{3,4}?$", "xxx")),
+        self.assertEquals(repr(type(regex.match("^x{3,4}?$", "xxx"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match("^x{3}?$", "xxx")),
+        self.assertEquals(repr(type(regex.match("^x{3}?$", "xxx"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match("^x{1,3}?$", "xxx")),
+        self.assertEquals(repr(type(regex.match("^x{1,3}?$", "xxx"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match("^x{1,4}?$", "xxx")),
+        self.assertEquals(repr(type(regex.match("^x{1,4}?$", "xxx"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match("^x{3,4}?$", "xxx")),
+        self.assertEquals(repr(type(regex.match("^x{3,4}?$", "xxx"))),
           self.MATCH_CLASS)
 
         # 29..30
-        self.expect(lambda: regex.match("^x{}$", "xxx"), repr(None))
-        self.expect(lambda: type(regex.match("^x{}$", "x{}")),
+        self.assertEquals(regex.match("^x{}$", "xxx"), None)
+        self.assertEquals(repr(type(regex.match("^x{}$", "x{}"))),
           self.MATCH_CLASS)
 
     def test_getattr(self):
-        # 1..6
-        self.expect(lambda: regex.compile("(?i)(a)(b)").pattern,
-          repr('(?i)(a)(b)'))
-        self.expect(lambda: regex.compile("(?i)(a)(b)").flags, repr(regex.A |
-          regex.I | regex.DEFAULT_VERSION))
-        self.expect(lambda: regex.compile(u"(?i)(a)(b)").flags, repr(regex.I |
-          regex.U | regex.DEFAULT_VERSION))
-        self.expect(lambda: regex.compile("(?i)(a)(b)").groups, repr(2))
-        self.expect(lambda: regex.compile("(?i)(a)(b)").groupindex, repr({}))
-        self.expect(lambda:
-          regex.compile("(?i)(?P<first>a)(?P<other>b)").groupindex,
-          repr({'first': 1, 'other': 2}))
+        # 1
+        self.assertEquals(regex.compile("(?i)(a)(b)").pattern, '(?i)(a)(b)')
+        # 2..3
+        self.assertEquals(regex.compile("(?i)(a)(b)").flags, regex.A | regex.I
+          | regex.DEFAULT_VERSION)
+        self.assertEquals(regex.compile(u"(?i)(a)(b)").flags, regex.I | regex.U
+          | regex.DEFAULT_VERSION)
+        # 4..5
+        self.assertEquals(regex.compile("(?i)(a)(b)").groups, 2)
+        self.assertEquals(regex.compile("(?i)(a)(b)").groupindex, {})
+
+        # 6
+        self.assertEquals(regex.compile("(?i)(?P<first>a)(?P<other>b)").groupindex,
+          {'first': 1, 'other': 2})
 
         # 7..8
-        self.expect(lambda: regex.match("(a)", "a").pos, repr(0))
-        self.expect(lambda: regex.match("(a)", "a").endpos, repr(1))
+        self.assertEquals(regex.match("(a)", "a").pos, 0)
+        self.assertEquals(regex.match("(a)", "a").endpos, 1)
 
         # 9..12
-        self.expect(lambda: regex.search("b(c)", "abcdef").pos, repr(0))
-        self.expect(lambda: regex.search("b(c)", "abcdef").endpos, repr(6))
-        self.expect(lambda: regex.search("b(c)", "abcdef").span(), repr((1,
-          3)))
-        self.expect(lambda: regex.search("b(c)", "abcdef").span(1), repr((2,
-          3)))
+        self.assertEquals(regex.search("b(c)", "abcdef").pos, 0)
+        self.assertEquals(regex.search("b(c)", "abcdef").endpos, 6)
+        self.assertEquals(regex.search("b(c)", "abcdef").span(), (1, 3))
+        self.assertEquals(regex.search("b(c)", "abcdef").span(1), (2, 3))
 
         # 13..15
-        self.expect(lambda: regex.match("(a)", "a").string, repr('a'))
-        self.expect(lambda: regex.match("(a)", "a").regs, repr(((0, 1), (0,
-          1))))
-        self.expect(lambda: type(regex.match("(a)", "a").re),
+        self.assertEquals(regex.match("(a)", "a").string, 'a')
+        self.assertEquals(regex.match("(a)", "a").regs, ((0, 1), (0, 1)))
+        self.assertEquals(repr(type(regex.match("(a)", "a").re)),
           self.PATTERN_CLASS)
 
         # 16
         # Issue 14260
         p = regex.compile(r'abc(?P<n>def)')
         p.groupindex["n"] = 0
-        self.expect(lambda: p.groupindex["n"], repr(1))
+        self.assertEquals(p.groupindex["n"], 1)
 
     def test_special_escapes(self):
-        # 1..6
-        self.expect(lambda: regex.search(r"\b(b.)\b", "abcd abc bcd bx")[1],
-          repr('bx'))
-        self.expect(lambda: regex.search(r"\B(b.)\B", "abc bcd bc abxd")[1],
-          repr('bx'))
-        self.expect(lambda: regex.search(r"\b(b.)\b", "abcd abc bcd bx",
-          regex.LOCALE)[1], repr('bx'))
-        self.expect(lambda: regex.search(r"\B(b.)\B", "abc bcd bc abxd",
-          regex.LOCALE)[1], repr('bx'))
-        self.expect(lambda: regex.search(ur"\b(b.)\b", u"abcd abc bcd bx",
-          regex.UNICODE)[1], repr(u'bx'))
-        self.expect(lambda: regex.search(ur"\B(b.)\B", u"abc bcd bc abxd",
-          regex.UNICODE)[1], repr(u'bx'))
+        # 1..2
+        self.assertEquals(regex.search(r"\b(b.)\b", "abcd abc bcd bx")[1],
+          'bx')
+        self.assertEquals(regex.search(r"\B(b.)\B", "abc bcd bc abxd")[1],
+          'bx')
+        # 3..6
+        self.assertEquals(regex.search(r"\b(b.)\b", "abcd abc bcd bx",
+          regex.LOCALE)[1], 'bx')
+        self.assertEquals(regex.search(r"\B(b.)\B", "abc bcd bc abxd",
+          regex.LOCALE)[1], 'bx')
+        self.assertEquals(regex.search(ur"\b(b.)\b", u"abcd abc bcd bx",
+          regex.UNICODE)[1], u'bx')
+        self.assertEquals(regex.search(ur"\B(b.)\B", u"abc bcd bc abxd",
+          regex.UNICODE)[1], u'bx')
 
         # 7..9
-        self.expect(lambda: regex.search(r"^abc$", "\nabc\n", regex.M)[0],
-          repr('abc'))
-        self.expect(lambda: regex.search(r"^\Aabc\Z$", "abc", regex.M)[0],
-          repr('abc'))
-        self.expect(lambda: regex.search(r"^\Aabc\Z$", "\nabc\n", regex.M),
-          repr(None))
+        self.assertEquals(regex.search(r"^abc$", "\nabc\n", regex.M)[0], 'abc')
+        self.assertEquals(regex.search(r"^\Aabc\Z$", "abc", regex.M)[0], 'abc')
+        self.assertEquals(regex.search(r"^\Aabc\Z$", "\nabc\n", regex.M), None)
 
         # 10..14
-        self.expect(lambda: regex.search(ur"\b(b.)\b", u"abcd abc bcd bx")[1],
-          repr(u'bx'))
-        self.expect(lambda: regex.search(ur"\B(b.)\B", u"abc bcd bc abxd")[1],
-          repr(u'bx'))
-        self.expect(lambda: regex.search(ur"^abc$", u"\nabc\n", regex.M)[0],
-          repr(u'abc'))
-        self.expect(lambda: regex.search(ur"^\Aabc\Z$", u"abc", regex.M)[0],
-          repr(u'abc'))
-        self.expect(lambda: regex.search(ur"^\Aabc\Z$", u"\nabc\n", regex.M),
-          repr(None))
+        self.assertEquals(regex.search(ur"\b(b.)\b", u"abcd abc bcd bx")[1],
+          u'bx')
+        self.assertEquals(regex.search(ur"\B(b.)\B", u"abc bcd bc abxd")[1],
+          u'bx')
+        self.assertEquals(regex.search(ur"^abc$", u"\nabc\n", regex.M)[0],
+          u'abc')
+        self.assertEquals(regex.search(ur"^\Aabc\Z$", u"abc", regex.M)[0],
+          u'abc')
+        self.assertEquals(regex.search(ur"^\Aabc\Z$", u"\nabc\n", regex.M),
+          None)
 
-        # 15..17
-        self.expect(lambda: regex.search(r"\d\D\w\W\s\S", "1aa! a")[0],
-          repr('1aa! a'))
-        self.expect(lambda: regex.search(r"\d\D\w\W\s\S", "1aa! a",
-          regex.LOCALE)[0], repr('1aa! a'))
-        self.expect(lambda: regex.search(ur"\d\D\w\W\s\S", u"1aa! a",
-          regex.UNICODE)[0], repr(u'1aa! a'))
+        # 15
+        self.assertEquals(regex.search(r"\d\D\w\W\s\S", "1aa! a")[0], '1aa! a')
+        # 16..17
+        self.assertEquals(regex.search(r"\d\D\w\W\s\S", "1aa! a",
+          regex.LOCALE)[0], '1aa! a')
+        self.assertEquals(regex.search(ur"\d\D\w\W\s\S", u"1aa! a",
+          regex.UNICODE)[0], u'1aa! a')
 
     def test_bigcharset(self):
         # 1..5
-        self.expect(lambda: regex.match(ur"(?u)([\u2222\u2223])",
-          u"\u2222")[1], repr(u'\u2222'))
-        self.expect(lambda: regex.match(ur"(?u)([\u2222\u2223])", u"\u2222",
-          regex.UNICODE)[1], repr(u'\u2222'))
-        self.expect(lambda: u"".join(regex.findall(u".",
+        self.assertEquals(regex.match(ur"(?u)([\u2222\u2223])", u"\u2222")[1],
+          u'\u2222')
+        self.assertEquals(regex.match(ur"(?u)([\u2222\u2223])", u"\u2222",
+          regex.UNICODE)[1], u'\u2222')
+        self.assertEquals(u"".join(regex.findall(u".",
           u"e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
-          repr(u'e\xe8\xe9\xea\xeb\u0113\u011b\u0117'))
-        self.expect(lambda:
-          u"".join(regex.findall(ur"[e\xe8\xe9\xea\xeb\u0113\u011b\u0117]",
+          u'e\xe8\xe9\xea\xeb\u0113\u011b\u0117')
+        self.assertEquals(u"".join(regex.findall(ur"[e\xe8\xe9\xea\xeb\u0113\u011b\u0117]",
           u"e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
-          repr(u'e\xe8\xe9\xea\xeb\u0113\u011b\u0117'))
-        self.expect(lambda:
-          u"".join(regex.findall(ur"e|\xe8|\xe9|\xea|\xeb|\u0113|\u011b|\u0117",
+          u'e\xe8\xe9\xea\xeb\u0113\u011b\u0117')
+        self.assertEquals(u"".join(regex.findall(ur"e|\xe8|\xe9|\xea|\xeb|\u0113|\u011b|\u0117",
           u"e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
-          repr(u'e\xe8\xe9\xea\xeb\u0113\u011b\u0117'))
+          u'e\xe8\xe9\xea\xeb\u0113\u011b\u0117')
 
     def test_anyall(self):
         # 1..2
-        self.expect(lambda: regex.match("a.b", "a\nb", regex.DOTALL)[0],
-          repr("a\nb"))
-        self.expect(lambda: regex.match("a.*b", "a\n\nb", regex.DOTALL)[0],
-          repr("a\n\nb"))
+        self.assertEquals(regex.match("a.b", "a\nb", regex.DOTALL)[0], "a\nb")
+        self.assertEquals(regex.match("a.*b", "a\n\nb", regex.DOTALL)[0],
+          "a\n\nb")
 
     def test_non_consuming(self):
         # 1..7
-        self.expect(lambda: regex.match(r"(a(?=\s[^a]))", "a b")[1], repr('a'))
-        self.expect(lambda: regex.match(r"(a(?=\s[^a]*))", "a b")[1],
-          repr('a'))
-        self.expect(lambda: regex.match(r"(a(?=\s[abc]))", "a b")[1],
-          repr('a'))
-        self.expect(lambda: regex.match(r"(a(?=\s[abc]*))", "a bc")[1],
-          repr('a'))
-        self.expect(lambda: regex.match(r"(a)(?=\s\1)", "a a")[1], repr('a'))
-        self.expect(lambda: regex.match(r"(a)(?=\s\1*)", "a aa")[1], repr('a'))
-        self.expect(lambda: regex.match(r"(a)(?=\s(abc|a))", "a a")[1],
-          repr('a'))
+        self.assertEquals(regex.match(r"(a(?=\s[^a]))", "a b")[1], 'a')
+        self.assertEquals(regex.match(r"(a(?=\s[^a]*))", "a b")[1], 'a')
+        self.assertEquals(regex.match(r"(a(?=\s[abc]))", "a b")[1], 'a')
+        self.assertEquals(regex.match(r"(a(?=\s[abc]*))", "a bc")[1], 'a')
+        self.assertEquals(regex.match(r"(a)(?=\s\1)", "a a")[1], 'a')
+        self.assertEquals(regex.match(r"(a)(?=\s\1*)", "a aa")[1], 'a')
+        self.assertEquals(regex.match(r"(a)(?=\s(abc|a))", "a a")[1], 'a')
 
         # 8..11
-        self.expect(lambda: regex.match(r"(a(?!\s[^a]))", "a a")[1], repr('a'))
-        self.expect(lambda: regex.match(r"(a(?!\s[abc]))", "a d")[1],
-          repr('a'))
-        self.expect(lambda: regex.match(r"(a)(?!\s\1)", "a b")[1], repr('a'))
-        self.expect(lambda: regex.match(r"(a)(?!\s(abc|a))", "a b")[1],
-          repr('a'))
+        self.assertEquals(regex.match(r"(a(?!\s[^a]))", "a a")[1], 'a')
+        self.assertEquals(regex.match(r"(a(?!\s[abc]))", "a d")[1], 'a')
+        self.assertEquals(regex.match(r"(a)(?!\s\1)", "a b")[1], 'a')
+        self.assertEquals(regex.match(r"(a)(?!\s(abc|a))", "a b")[1], 'a')
 
     def test_ignore_case(self):
-        # 1..2
-        self.expect(lambda: regex.match("abc", "ABC", regex.I)[0], repr('ABC'))
-        self.expect(lambda: regex.match(u"abc", u"ABC", regex.I)[0],
-          repr(u'ABC'))
+        # 1
+        self.assertEquals(regex.match("abc", "ABC", regex.I)[0], 'ABC')
+        # 2
+        self.assertEquals(regex.match(u"abc", u"ABC", regex.I)[0], u'ABC')
 
         # 3..9
-        self.expect(lambda: regex.match(r"(a\s[^a]*)", "a bb", regex.I)[1],
-          repr('a bb'))
-        self.expect(lambda: regex.match(r"(a\s[abc])", "a b", regex.I)[1],
-          repr('a b'))
-        self.expect(lambda: regex.match(r"(a\s[abc]*)", "a bb", regex.I)[1],
-          repr('a bb'))
-        self.expect(lambda: regex.match(r"((a)\s\2)", "a a", regex.I)[1],
-          repr('a a'))
-        self.expect(lambda: regex.match(r"((a)\s\2*)", "a aa", regex.I)[1],
-          repr('a aa'))
-        self.expect(lambda: regex.match(r"((a)\s(abc|a))", "a a", regex.I)[1],
-          repr('a a'))
-        self.expect(lambda: regex.match(r"((a)\s(abc|a)*)", "a aa",
-          regex.I)[1], repr('a aa'))
+        self.assertEquals(regex.match(r"(a\s[^a]*)", "a bb", regex.I)[1],
+          'a bb')
+        self.assertEquals(regex.match(r"(a\s[abc])", "a b", regex.I)[1], 'a b')
+        self.assertEquals(regex.match(r"(a\s[abc]*)", "a bb", regex.I)[1],
+          'a bb')
+        self.assertEquals(regex.match(r"((a)\s\2)", "a a", regex.I)[1], 'a a')
+        self.assertEquals(regex.match(r"((a)\s\2*)", "a aa", regex.I)[1],
+          'a aa')
+        self.assertEquals(regex.match(r"((a)\s(abc|a))", "a a", regex.I)[1],
+          'a a')
+        self.assertEquals(regex.match(r"((a)\s(abc|a)*)", "a aa", regex.I)[1],
+          'a aa')
 
         # Issue #3511.
         # 10..11
-        self.expect(lambda: regex.match(r"[Z-a]", "_").span(), repr((0, 1)))
-        self.expect(lambda: regex.match(r"(?i)[Z-a]", "_").span(), repr((0,
-          1)))
+        self.assertEquals(regex.match(r"[Z-a]", "_").span(), (0, 1))
+        self.assertEquals(regex.match(r"(?i)[Z-a]", "_").span(), (0, 1))
 
         # 12..15
-        self.expect(lambda: type(regex.match(ur"(?iu)nao", u"nAo")),
+        self.assertEquals(repr(type(regex.match(ur"(?iu)nao", u"nAo"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur"(?iu)n\xE3o", u"n\xC3o")),
+        self.assertEquals(repr(type(regex.match(ur"(?iu)n\xE3o", u"n\xC3o"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur"(?iu)n\xE3o", u"N\xC3O")),
+        self.assertEquals(repr(type(regex.match(ur"(?iu)n\xE3o", u"N\xC3O"))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur"(?iu)s", u"\u017F")),
+        self.assertEquals(repr(type(regex.match(ur"(?iu)s", u"\u017F"))),
           self.MATCH_CLASS)
 
     def test_case_folding(self):
         # 1..4
-        self.expect(lambda: regex.search(ur"(?fiu)ss", u"SS").span(),
-          repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?fiu)SS", u"ss").span(),
-          repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?fiu)SS",
-          u"\N{LATIN SMALL LETTER SHARP S}").span(), repr((0, 1)))
-        self.expect(lambda:
-          regex.search(ur"(?fi)\N{LATIN SMALL LETTER SHARP S}", u"SS").span(),
-          repr((0, 2)))
+        self.assertEquals(regex.search(ur"(?fiu)ss", u"SS").span(), (0, 2))
+        self.assertEquals(regex.search(ur"(?fiu)SS", u"ss").span(), (0, 2))
+        self.assertEquals(regex.search(ur"(?fiu)SS",
+          u"\N{LATIN SMALL LETTER SHARP S}").span(), (0, 1))
+        self.assertEquals(regex.search(ur"(?fi)\N{LATIN SMALL LETTER SHARP S}", u"SS").span(),
+          (0, 2))
 
         # 5..7
-        self.expect(lambda: regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
-          u"ST").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?fiu)ST",
-          u"\N{LATIN SMALL LIGATURE ST}").span(), repr((0, 1)))
-        self.expect(lambda: regex.search(ur"(?fiu)ST",
-          u"\N{LATIN SMALL LIGATURE LONG S T}").span(), repr((0, 1)))
+        self.assertEquals(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
+          u"ST").span(), (0, 2))
+        self.assertEquals(regex.search(ur"(?fiu)ST",
+          u"\N{LATIN SMALL LIGATURE ST}").span(), (0, 1))
+        self.assertEquals(regex.search(ur"(?fiu)ST",
+          u"\N{LATIN SMALL LIGATURE LONG S T}").span(), (0, 1))
 
         # 8..12
-        self.expect(lambda: regex.search(ur"(?fiu)SST",
-          u"\N{LATIN SMALL LETTER SHARP S}t").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?fiu)SST",
-          u"s\N{LATIN SMALL LIGATURE LONG S T}").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?fiu)SST",
-          u"s\N{LATIN SMALL LIGATURE ST}").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
-          u"SST").span(), repr((1, 3)))
-        self.expect(lambda: regex.search(ur"(?fiu)SST",
-          u"s\N{LATIN SMALL LIGATURE ST}").span(), repr((0, 2)))
+        self.assertEquals(regex.search(ur"(?fiu)SST",
+          u"\N{LATIN SMALL LETTER SHARP S}t").span(), (0, 2))
+        self.assertEquals(regex.search(ur"(?fiu)SST",
+          u"s\N{LATIN SMALL LIGATURE LONG S T}").span(), (0, 2))
+        self.assertEquals(regex.search(ur"(?fiu)SST",
+          u"s\N{LATIN SMALL LIGATURE ST}").span(), (0, 2))
+        self.assertEquals(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
+          u"SST").span(), (1, 3))
+        self.assertEquals(regex.search(ur"(?fiu)SST",
+          u"s\N{LATIN SMALL LIGATURE ST}").span(), (0, 2))
 
         # 13..18
-        self.expect(lambda: regex.search(ur"(?fiu)FFI",
-          u"\N{LATIN SMALL LIGATURE FFI}").span(), repr((0, 1)))
-        self.expect(lambda: regex.search(ur"(?fiu)FFI",
-          u"\N{LATIN SMALL LIGATURE FF}i").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(ur"(?fiu)FFI",
-          u"f\N{LATIN SMALL LIGATURE FI}").span(), repr((0, 2)))
-        self.expect(lambda:
-          regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FFI}", u"FFI").span(),
-          repr((0, 3)))
-        self.expect(lambda:
-          regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FF}i", u"FFI").span(),
-          repr((0, 3)))
-        self.expect(lambda:
-          regex.search(ur"(?fiu)f\N{LATIN SMALL LIGATURE FI}", u"FFI").span(),
-          repr((0, 3)))
+        self.assertEquals(regex.search(ur"(?fiu)FFI",
+          u"\N{LATIN SMALL LIGATURE FFI}").span(), (0, 1))
+        self.assertEquals(regex.search(ur"(?fiu)FFI",
+          u"\N{LATIN SMALL LIGATURE FF}i").span(), (0, 2))
+        self.assertEquals(regex.search(ur"(?fiu)FFI",
+          u"f\N{LATIN SMALL LIGATURE FI}").span(), (0, 2))
+        self.assertEquals(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FFI}",
+          u"FFI").span(), (0, 3))
+        self.assertEquals(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FF}i",
+          u"FFI").span(), (0, 3))
+        self.assertEquals(regex.search(ur"(?fiu)f\N{LATIN SMALL LIGATURE FI}",
+          u"FFI").span(), (0, 3))
 
         # 19..27
         sigma = u"\u03A3\u03C3\u03C2"
         for ch1 in sigma:
             for ch2 in sigma:
-                self.index += 1
                 if not regex.match(ur"(?fiu)" + ch1, ch2):
-                    self.record_failure()
+                    self.fail()
 
         # 28..39
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
-          repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)ff", u"\uFB01\uFB00")),
-          repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
-          repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fi", u"\uFB01\uFB00")),
-          repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fffi",
-          u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB03",
-          u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
-          repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
-          repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)fffi",
-          u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB03",
-          u"\uFB00\uFB01")), repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
-          repr(True))
-        self.expect(lambda: bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
-          repr(True))
+        self.assertEquals(bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)ff", u"\uFB01\uFB00")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)fi", u"\uFB01\uFB00")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)fffi", u"\uFB00\uFB01")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)f\uFB03", u"\uFB00\uFB01")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)fffi", u"\uFB00\uFB01")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)f\uFB03", u"\uFB00\uFB01")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
+          True)
+        self.assertEquals(bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
+          True)
 
         # 40..41
-        self.expect(lambda:
-          regex.findall(ur"(?iuV0)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
-          u"word word2 word word3 word word234 word23 word"), repr([u"word234",
-          u"word23"]))
-        self.expect(lambda:
-          regex.findall(ur"(?iuV1)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
-          u"word word2 word word3 word word234 word23 word"), repr([u"word234",
-          u"word23"]))
+        self.assertEquals(regex.findall(ur"(?iuV0)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
+          u"word word2 word word3 word word234 word23 word"), [u"word234",
+          u"word23"])
+        self.assertEquals(regex.findall(ur"(?iuV1)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
+          u"word word2 word word3 word word234 word23 word"), [u"word234",
+          u"word23"])
 
     def test_category(self):
-        self.expect(lambda: regex.match(r"(\s)", " ")[1], repr(' '))
+        # 1
+        self.assertEquals(regex.match(r"(\s)", " ")[1], ' ')
 
     def test_not_literal(self):
         # 1..2
-        self.expect(lambda: regex.search(r"\s([^a])", " b")[1], repr('b'))
-        self.expect(lambda: regex.search(r"\s([^a]*)", " bb")[1], repr('bb'))
+        self.assertEquals(regex.search(r"\s([^a])", " b")[1], 'b')
+        self.assertEquals(regex.search(r"\s([^a]*)", " bb")[1], 'bb')
 
     def test_search_coverage(self):
         # 1..2
-        self.expect(lambda: regex.search(r"\s(b)", " b")[1], repr('b'))
-        self.expect(lambda: regex.search(r"a\s", "a ")[0], repr('a '))
+        self.assertEquals(regex.search(r"\s(b)", " b")[1], 'b')
+        self.assertEquals(regex.search(r"a\s", "a ")[0], 'a ')
 
     def test_re_escape(self):
         p = ""
-        self.expect(lambda: regex.escape(p), repr(p))
+        self.assertEquals(regex.escape(p), p)
         for i in range(0, 256):
             p += chr(i)
-            self.expect(lambda: type(regex.match(regex.escape(chr(i)),
-              chr(i))), self.MATCH_CLASS)
-            self.expect(lambda: regex.match(regex.escape(chr(i)),
-              chr(i)).span(), repr((0, 1)))
+            self.assertEquals(repr(type(regex.match(regex.escape(chr(i)),
+              chr(i)))), self.MATCH_CLASS)
+            self.assertEquals(regex.match(regex.escape(chr(i)), chr(i)).span(),
+              (0, 1))
 
         pat = regex.compile(regex.escape(p))
-        self.expect(lambda: pat.match(p).span(), repr((0, 256)))
+        self.assertEquals(pat.match(p).span(), (0, 256))
 
     def test_constants(self):
-        self.index += 1
         if regex.I != regex.IGNORECASE:
-            self.record_failure()
-        self.index += 1
+            self.fail()
         if regex.L != regex.LOCALE:
-            self.record_failure()
-        self.index += 1
+            self.fail()
         if regex.M != regex.MULTILINE:
-            self.record_failure()
-        self.index += 1
+            self.fail()
         if regex.S != regex.DOTALL:
-            self.record_failure()
-        self.index += 1
+            self.fail()
         if regex.X != regex.VERBOSE:
-            self.record_failure()
+            self.fail()
 
     def test_flags(self):
         for flag in [regex.I, regex.M, regex.X, regex.S, regex.L]:
-            self.expect(lambda: type(regex.compile('^pattern$', flag)),
+            self.assertEquals(repr(type(regex.compile('^pattern$', flag))),
               self.PATTERN_CLASS)
 
     def test_sre_character_literals(self):
         for i in [0, 8, 16, 32, 64, 127, 128, 255]:
-            self.expect(lambda: type(regex.match(r"\%03o" % i, chr(i))),
+            self.assertEquals(repr(type(regex.match(r"\%03o" % i, chr(i)))),
               self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"\%03o0" % i, chr(i) + "0")),
+            self.assertEquals(repr(type(regex.match(r"\%03o0" % i, chr(i) +
+              "0"))), self.MATCH_CLASS)
+            self.assertEquals(repr(type(regex.match(r"\%03o8" % i, chr(i) +
+              "8"))), self.MATCH_CLASS)
+            self.assertEquals(repr(type(regex.match(r"\x%02x" % i, chr(i)))),
               self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"\%03o8" % i, chr(i) + "8")),
-              self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"\x%02x" % i, chr(i))),
-              self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"\x%02x0" % i, chr(i) +
-              "0")), self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"\x%02xz" % i, chr(i) +
-              "z")), self.MATCH_CLASS)
-        self.expect(lambda: regex.match(r"\911", ""), self.UNKNOWN_GROUP)
+            self.assertEquals(repr(type(regex.match(r"\x%02x0" % i, chr(i) +
+              "0"))), self.MATCH_CLASS)
+            self.assertEquals(repr(type(regex.match(r"\x%02xz" % i, chr(i) +
+              "z"))), self.MATCH_CLASS)
+
+        self.assertRaisesRegex(regex.error, self.UNKNOWN_GROUP, lambda:
+          regex.match(r"\911", ""))
 
     def test_sre_character_class_literals(self):
         for i in [0, 8, 16, 32, 64, 127, 128, 255]:
-            self.expect(lambda: type(regex.match(r"[\%03o]" % i, chr(i))),
+            self.assertEquals(repr(type(regex.match(r"[\%03o]" % i, chr(i)))),
               self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"[\%03o0]" % i, chr(i))),
-              self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"[\%03o8]" % i, chr(i))),
-              self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"[\x%02x]" % i, chr(i))),
-              self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"[\x%02x0]" % i, chr(i))),
-              self.MATCH_CLASS)
-            self.expect(lambda: type(regex.match(r"[\x%02xz]" % i, chr(i))),
-              self.MATCH_CLASS)
-        self.expect(lambda: regex.match(r"[\911]", ""), self.BAD_OCTAL_ESCAPE)
+            self.assertEquals(repr(type(regex.match(r"[\%03o0]" % i,
+              chr(i)))), self.MATCH_CLASS)
+            self.assertEquals(repr(type(regex.match(r"[\%03o8]" % i,
+              chr(i)))), self.MATCH_CLASS)
+            self.assertEquals(repr(type(regex.match(r"[\x%02x]" % i,
+              chr(i)))), self.MATCH_CLASS)
+            self.assertEquals(repr(type(regex.match(r"[\x%02x0]" % i,
+              chr(i)))), self.MATCH_CLASS)
+            self.assertEquals(repr(type(regex.match(r"[\x%02xz]" % i,
+              chr(i)))), self.MATCH_CLASS)
+
+        self.assertRaisesRegex(regex.error, self.BAD_OCTAL_ESCAPE, lambda:
+              regex.match(r"[\911]", ""))
 
     def test_bug_113254(self):
         # 1..3
-        self.expect(lambda: regex.match(r'(a)|(b)', 'b').start(1), repr(-1))
-        self.expect(lambda: regex.match(r'(a)|(b)', 'b').end(1), repr(-1))
-        self.expect(lambda: regex.match(r'(a)|(b)', 'b').span(1), repr((-1,
-          -1)))
+        self.assertEquals(regex.match(r'(a)|(b)', 'b').start(1), -1)
+        self.assertEquals(regex.match(r'(a)|(b)', 'b').end(1), -1)
+        self.assertEquals(regex.match(r'(a)|(b)', 'b').span(1), (-1, -1))
 
     def test_bug_527371(self):
         # Bug described in patches 527371/672491.
         # 1..5
-        self.expect(lambda: regex.match(r'(a)?a','a').lastindex, repr(None))
-        self.expect(lambda: regex.match(r'(a)(b)?b','ab').lastindex, repr(1))
-        self.expect(lambda: regex.match(r'(?P<a>a)(?P<b>b)?b','ab').lastgroup,
-          repr('a'))
-        self.expect(lambda: regex.match("(?P<a>a(b))", "ab").lastgroup,
-          repr('a'))
-        self.expect(lambda: regex.match("((a))", "a").lastindex, repr(1))
+        self.assertEquals(regex.match(r'(a)?a','a').lastindex, None)
+        self.assertEquals(regex.match(r'(a)(b)?b','ab').lastindex, 1)
+        self.assertEquals(regex.match(r'(?P<a>a)(?P<b>b)?b','ab').lastgroup,
+          'a')
+        self.assertEquals(regex.match("(?P<a>a(b))", "ab").lastgroup, 'a')
+        self.assertEquals(regex.match("((a))", "a").lastindex, 1)
 
     def test_bug_545855(self):
         # Bug 545855 -- This pattern failed to cause a compile error as it
         # should, instead provoking a TypeError.
-        self.expect(lambda: regex.compile('foo[a-'), self.BAD_SET)
+        # 1
+        self.assertRaisesRegex(regex.error, self.BAD_SET, lambda:
+          regex.compile('foo[a-'))
 
     def test_bug_418626(self):
         # Bugs 418626 at al. -- Testing Greg Chapman's addition of op code
         # SRE_OP_MIN_REPEAT_ONE for eliminating recursion on simple uses of
         # pattern '*?' on a long string.
-        # 1..3
-        self.expect(lambda: regex.match('.*?c', 10000 * 'ab' + 'cd').end(0),
-          repr(20001))
-        self.expect(lambda: regex.match('.*?cd', 5000 * 'ab' + 'c' + 5000 *
-          'ab' + 'cde').end(0), repr(20003))
-        self.expect(lambda: regex.match('.*?cd', 20000 * 'abc' + 'de').end(0),
-          repr(60001))
+        # 1..4
+        self.assertEquals(regex.match('.*?c', 10000 * 'ab' + 'cd').end(0),
+          20001)
+        self.assertEquals(regex.match('.*?cd', 5000 * 'ab' + 'c' + 5000 * 'ab'
+          + 'cde').end(0), 20003)
+        self.assertEquals(regex.match('.*?cd', 20000 * 'abc' + 'de').end(0),
+          60001)
         # Non-simple '*?' still used to hit the recursion limit, before the
         # non-recursive scheme was implemented.
-        # 4
-        self.expect(lambda: regex.search('(a|b)*?c', 10000 * 'ab' +
-          'cd').end(0), repr(20001))
+        self.assertEquals(regex.search('(a|b)*?c', 10000 * 'ab' + 'cd').end(0),
+          20001)
 
     def test_bug_612074(self):
         pat = u"[" + regex.escape(u"\u2039") + u"]"
-        self.expect(lambda: regex.compile(pat) and 1, repr(1))
+        # 1
+        self.assertEquals(regex.compile(pat) and 1, 1)
 
     def test_stack_overflow(self):
         # Nasty cases that used to overflow the straightforward recursive
         # implementation of repeated groups.
         # 1..3
-        self.expect(lambda: regex.match('(x)*', 50000 * 'x')[1], repr('x'))
-        self.expect(lambda: regex.match('(x)*y', 50000 * 'x' + 'y')[1],
-          repr('x'))
-        self.expect(lambda: regex.match('(x)*?y', 50000 * 'x' + 'y')[1],
-          repr('x'))
+        self.assertEquals(regex.match('(x)*', 50000 * 'x')[1], 'x')
+        self.assertEquals(regex.match('(x)*y', 50000 * 'x' + 'y')[1], 'x')
+        self.assertEquals(regex.match('(x)*?y', 50000 * 'x' + 'y')[1], 'x')
 
     def test_scanner(self):
         def s_ident(scanner, token): return token
@@ -940,102 +929,101 @@ class Test:
         def s_float(scanner, token): return float(token)
         def s_int(scanner, token): return int(token)
 
-        scanner = regex.Scanner([
-          (r"[a-zA-Z_]\w*", s_ident), (r"\d+\.\d*", s_float), (r"\d+", s_int),
-          (r"=|\+|-|\*|/", s_operator), (r"\s+", None),
-        ])
+        scanner = regex.Scanner([(r"[a-zA-Z_]\w*", s_ident), (r"\d+\.\d*",
+          s_float), (r"\d+", s_int), (r"=|\+|-|\*|/", s_operator), (r"\s+",
+            None), ])
 
         # 1
-        self.expect(lambda: type(scanner.scanner.scanner("").pattern),
+        self.assertEquals(repr(type(scanner.scanner.scanner("").pattern)),
           self.PATTERN_CLASS)
 
         # 2
-        self.expect(lambda: scanner.scan("sum = 3*foo + 312.50 + bar"),
-          repr((['sum', 'op=', 3, 'op*', 'foo', 'op+', 312.5, 'op+', 'bar'],
-          '')))
+        self.assertEquals(scanner.scan("sum = 3*foo + 312.50 + bar"), (['sum',
+          'op=', 3, 'op*', 'foo', 'op+', 312.5, 'op+', 'bar'], ''))
 
     def test_bug_448951(self):
         # Bug 448951 (similar to 429357, but with single char match).
         # (Also test greedy matches.)
         for op in '', '?', '*':
-            self.expect(lambda: regex.match(r'((.%s):)?z' % op, 'z')[:],
-              repr(('z', None, None)))
-            self.expect(lambda: regex.match(r'((.%s):)?z' % op, 'a:z')[:],
-              repr(('a:z', 'a:', 'a')))
+            self.assertEquals(regex.match(r'((.%s):)?z' % op, 'z')[:], ('z',
+              None, None))
+            self.assertEquals(regex.match(r'((.%s):)?z' % op, 'a:z')[:],
+              ('a:z', 'a:', 'a'))
 
     def test_bug_725106(self):
         # Capturing groups in alternatives in repeats.
         # 1..8
-        self.expect(lambda: regex.match('^((a)|b)*', 'abc')[:], repr(('ab',
-          'b', 'a')))
-        self.expect(lambda: regex.match('^(([ab])|c)*', 'abc')[:], repr(('abc',
-          'c', 'b')))
-        self.expect(lambda: regex.match('^((d)|[ab])*', 'abc')[:], repr(('ab',
-          'b', None)))
-        self.expect(lambda: regex.match('^((a)c|[ab])*', 'abc')[:], repr(('ab',
-          'b', None)))
-        self.expect(lambda: regex.match('^((a)|b)*?c', 'abc')[:], repr(('abc',
-          'b', 'a')))
-        self.expect(lambda: regex.match('^(([ab])|c)*?d', 'abcd')[:],
-          repr(('abcd', 'c', 'b')))
-        self.expect(lambda: regex.match('^((d)|[ab])*?c', 'abc')[:],
-          repr(('abc', 'b', None)))
-        self.expect(lambda: regex.match('^((a)c|[ab])*?c', 'abc')[:],
-          repr(('abc', 'b', None)))
+        self.assertEquals(regex.match('^((a)|b)*', 'abc')[:], ('ab', 'b', 'a'))
+        self.assertEquals(regex.match('^(([ab])|c)*', 'abc')[:], ('abc', 'c',
+          'b'))
+        self.assertEquals(regex.match('^((d)|[ab])*', 'abc')[:], ('ab', 'b',
+          None))
+        self.assertEquals(regex.match('^((a)c|[ab])*', 'abc')[:], ('ab', 'b',
+          None))
+        self.assertEquals(regex.match('^((a)|b)*?c', 'abc')[:], ('abc', 'b',
+          'a'))
+        self.assertEquals(regex.match('^(([ab])|c)*?d', 'abcd')[:], ('abcd',
+          'c', 'b'))
+        self.assertEquals(regex.match('^((d)|[ab])*?c', 'abc')[:], ('abc', 'b',
+          None))
+        self.assertEquals(regex.match('^((a)c|[ab])*?c', 'abc')[:], ('abc',
+          'b', None))
 
     def test_bug_725149(self):
         # Mark_stack_base restoring before restoring marks.
         # 1..2
-        self.expect(lambda: regex.match('(a)(?:(?=(b)*)c)*', 'abb')[:],
-          repr(('a', 'a', None)))
-        self.expect(lambda: regex.match('(a)((?!(b)*))*', 'abb')[:], repr(('a',
-          'a', None, None)))
+        self.assertEquals(regex.match('(a)(?:(?=(b)*)c)*', 'abb')[:], ('a',
+          'a', None))
+        self.assertEquals(regex.match('(a)((?!(b)*))*', 'abb')[:], ('a', 'a',
+          None, None))
 
     def test_bug_764548(self):
         # Bug 764548, regex.compile() barfs on str/unicode subclasses.
-        class my_unicode(unicode): pass
+        class my_unicode(str): pass
         pat = regex.compile(my_unicode("abc"))
-        self.expect(lambda: pat.match("xyz"), repr(None))
+        # 1
+        self.assertEquals(pat.match("xyz"), None)
 
     def test_finditer(self):
         it = regex.finditer(r":+", "a:b::c:::d")
-        self.expect(lambda: [item[0] for item in it], repr([':', '::', ':::']))
+        # 1
+        self.assertEquals([item[0] for item in it], [':', '::', ':::'])
 
     def test_bug_926075(self):
-        self.index += 1
         if regex.compile('bug_926075') is regex.compile(u'bug_926075'):
-            self.record_failure()
+            self.fail()
 
     def test_bug_931848(self):
         pattern = u"[\u002E\u3002\uFF0E\uFF61]"
-        self.expect(lambda: regex.compile(pattern).split("a.b.c"), repr(['a',
-          'b', 'c']))
+        # 1
+        self.assertEquals(regex.compile(pattern).split("a.b.c"), ['a', 'b',
+          'c'])
 
     def test_bug_581080(self):
         it = regex.finditer(r"\s", "a b")
         # 1..2
-        self.expect(lambda: it.next().span(), repr((1, 2)))
-        self.expect(lambda: it.next(), repr(StopIteration()))
+        self.assertEquals(it.next().span(), (1, 2))
+        self.assertRaises(StopIteration, lambda: it.next())
 
         scanner = regex.compile(r"\s").scanner("a b")
         # 3..4
-        self.expect(lambda: scanner.search().span(), repr((1, 2)))
-        self.expect(lambda: scanner.search(), repr(None))
+        self.assertEquals(scanner.search().span(), (1, 2))
+        self.assertEquals(scanner.search(), None)
 
     def test_bug_817234(self):
         it = regex.finditer(r".*", "asdf")
         # 1..3
-        self.expect(lambda: it.next().span(), repr((0, 4)))
-        self.expect(lambda: it.next().span(), repr((4, 4)))
-        self.expect(lambda: it.next(), repr(StopIteration()))
+        self.assertEquals(it.next().span(), (0, 4))
+        self.assertEquals(it.next().span(), (4, 4))
+        self.assertRaises(StopIteration, lambda: it.next())
 
     def test_empty_array(self):
         # SF buf 1647541.
         import array
         for typecode in 'cbBuhHiIlLfd':
             a = array.array(typecode)
-            self.expect(lambda: regex.compile("bla").match(a), repr(None))
-            self.expect(lambda: regex.compile("").match(a)[1 : ], repr(()))
+            self.assertEquals(regex.compile("bla").match(a), None)
+            self.assertEquals(regex.compile("").match(a)[1 : ], ())
 
     def test_inline_flags(self):
         # Bug #1700.
@@ -1044,248 +1032,241 @@ class Test:
 
         p = regex.compile(upper_char, regex.I | regex.U)
         # 1
-        self.expect(lambda: type(p.match(lower_char)), self.MATCH_CLASS)
+        self.assertEquals(repr(type(p.match(lower_char))), self.MATCH_CLASS)
 
         # 2
         p = regex.compile(lower_char, regex.I | regex.U)
-        self.expect(lambda: type(p.match(upper_char)), self.MATCH_CLASS)
+        self.assertEquals(repr(type(p.match(upper_char))), self.MATCH_CLASS)
 
         p = regex.compile('(?i)' + upper_char, regex.U)
         # 3
-        self.expect(lambda: type(p.match(lower_char)), self.MATCH_CLASS)
+        self.assertEquals(repr(type(p.match(lower_char))), self.MATCH_CLASS)
 
         p = regex.compile('(?i)' + lower_char, regex.U)
         # 4
-        self.expect(lambda: type(p.match(upper_char)), self.MATCH_CLASS)
+        self.assertEquals(repr(type(p.match(upper_char))), self.MATCH_CLASS)
 
         p = regex.compile('(?iu)' + upper_char)
         # 5
-        self.expect(lambda: type(p.match(lower_char)), self.MATCH_CLASS)
+        self.assertEquals(repr(type(p.match(lower_char))), self.MATCH_CLASS)
 
         p = regex.compile('(?iu)' + lower_char)
         # 6
-        self.expect(lambda: type(p.match(upper_char)), self.MATCH_CLASS)
+        self.assertEquals(repr(type(p.match(upper_char))), self.MATCH_CLASS)
 
         # 7..10
-        self.expect(lambda: type(regex.match(r"(?i)a", "A")), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(r"a(?i)", "A")), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(r"(?iV1)a", "A")),
+        self.assertEquals(repr(type(regex.match(r"(?i)a", "A"))),
           self.MATCH_CLASS)
-        self.expect(lambda: regex.match(r"a(?iV1)", "A"), repr(None))
+        self.assertEquals(repr(type(regex.match(r"a(?i)", "A"))),
+          self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(r"(?iV1)a", "A"))),
+          self.MATCH_CLASS)
+        self.assertEquals(regex.match(r"a(?iV1)", "A"), None)
 
     def test_dollar_matches_twice(self):
         # $ matches the end of string, and just before the terminating \n.
         pattern = regex.compile('$')
         # 1..3
-        self.expect(lambda: pattern.sub('#', 'a\nb\n'), repr('a\nb#\n#'))
-        self.expect(lambda: pattern.sub('#', 'a\nb\nc'), repr('a\nb\nc#'))
-        self.expect(lambda: pattern.sub('#', '\n'), repr('#\n#'))
+        self.assertEquals(pattern.sub('#', 'a\nb\n'), 'a\nb#\n#')
+        self.assertEquals(pattern.sub('#', 'a\nb\nc'), 'a\nb\nc#')
+        self.assertEquals(pattern.sub('#', '\n'), '#\n#')
 
         pattern = regex.compile('$', regex.MULTILINE)
         # 4..6
-        self.expect(lambda: pattern.sub('#', 'a\nb\n' ), repr('a#\nb#\n#'))
-        self.expect(lambda: pattern.sub('#', 'a\nb\nc'), repr('a#\nb#\nc#'))
-        self.expect(lambda: pattern.sub('#', '\n'), repr('#\n#'))
+        self.assertEquals(pattern.sub('#', 'a\nb\n' ), 'a#\nb#\n#')
+        self.assertEquals(pattern.sub('#', 'a\nb\nc'), 'a#\nb#\nc#')
+        self.assertEquals(pattern.sub('#', '\n'), '#\n#')
 
     def test_ascii_and_unicode_flag(self):
         # Unicode patterns.
         # 1..4
         for flags in (0, regex.UNICODE):
             pat = regex.compile(u'\xc0', flags | regex.IGNORECASE)
-            self.expect(lambda: type(pat.match(u'\xe0')), self.MATCH_CLASS)
+            self.assertEquals(str(type(pat.match(u'\xe0'))), self.MATCH_CLASS)
             pat = regex.compile(u'\w', flags)
-            self.expect(lambda: type(pat.match(u'\xe0')), self.MATCH_CLASS)
+            self.assertEquals(str(type(pat.match(u'\xe0'))), self.MATCH_CLASS)
 
         pat = regex.compile(u'\xc0', regex.ASCII | regex.IGNORECASE)
         # 5..8
-        self.expect(lambda: pat.match(u'\xe0'), repr(None))
+        self.assertEquals(pat.match(u'\xe0'), None)
         pat = regex.compile(u'(?a)\xc0', regex.IGNORECASE)
-        self.expect(lambda: pat.match(u'\xe0'), repr(None))
+        self.assertEquals(pat.match(u'\xe0'), None)
         pat = regex.compile(u'\w', regex.ASCII)
-        self.expect(lambda: pat.match(u'\xe0'), repr(None))
+        self.assertEquals(pat.match(u'\xe0'), None)
         pat = regex.compile(u'(?a)\w')
-        self.expect(lambda: pat.match(u'\xe0'), repr(None))
+        self.assertEquals(pat.match(u'\xe0'), None)
 
         # String patterns.
         # 9..12
         for flags in (0, regex.ASCII):
             pat = regex.compile('\xc0', flags | regex.IGNORECASE)
-            self.expect(lambda: pat.match('\xe0'), repr(None))
+            self.assertEquals(pat.match('\xe0'), None)
             pat = regex.compile('\w')
-            self.expect(lambda: pat.match('\xe0'), repr(None))
+            self.assertEquals(pat.match('\xe0'), None)
         # 13
-        self.expect(lambda: regex.compile('(?au)\w'), self.MIXED_FLAGS)
+        self.assertRaisesRegex(ValueError, self.MIXED_FLAGS, lambda:
+          regex.compile('(?au)\w'))
 
     def test_subscripting_match(self):
-        self.index += 1
         m = regex.match(r'(?<a>\w)', 'xy')
         if not m:
-            self.record_failure("Failed: expected match but returned None")
+            self.fail("Failed: expected match but returned None")
         elif not m or m[0] != m.group(0) or m[1] != m.group(1):
-            self.record_failure("Failed")
-        self.index += 1
+            self.fail("Failed")
         if not m:
-            self.record_failure("Failed: expected match but returned None")
+            self.fail("Failed: expected match but returned None")
         elif m[:] != ('x', 'x'):
-            self.record_failure("Failed: expected \"('x', 'x')\" but got %s instead"
-             % repr(m[:]))
+            self.fail("Failed: expected \"('x', 'x')\" but got %s instead" % repr(m[:]))
 
     def test_new_named_groups(self):
-        self.index += 1
         m0 = regex.match(r'(?P<a>\w)', 'x')
         m1 = regex.match(r'(?<a>\w)', 'x')
         if not (m0 and m1 and m0[:] == m1[:]):
-            self.record_failure("Failed")
+            self.fail("Failed")
 
     def test_properties(self):
         # 1..4
-        self.expect(lambda: regex.match('(?i)\xC0', '\xE0'), repr(None))
-        self.expect(lambda: regex.match(r'(?i)\xC0', '\xE0'), repr(None))
-        self.expect(lambda: regex.match(r'\w', '\xE0'), repr(None))
-        self.expect(lambda: type(regex.match(ur'(?u)\w', u'\xE0')),
+        self.assertEquals(regex.match('(?i)\xC0', '\xE0'), None)
+        self.assertEquals(regex.match(r'(?i)\xC0', '\xE0'), None)
+        self.assertEquals(regex.match(r'\w', '\xE0'), None)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'\xE0'))),
           self.MATCH_CLASS)
 
         # 5
-        self.expect(lambda: regex.match(r'(?L)\w', '\xE0'), repr(None))
+        self.assertEquals(regex.match(r'(?L)\w', '\xE0'), None)
 
         # 6..11
-        self.expect(lambda: type(regex.match(r'(?L)\d', '0')),
+        self.assertEquals(repr(type(regex.match(r'(?L)\d', '0'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(r'(?L)\s', ' ')),
+        self.assertEquals(repr(type(regex.match(r'(?L)\s', ' '))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(r'(?L)\w', 'a')),
+        self.assertEquals(repr(type(regex.match(r'(?L)\w', 'a'))),
           self.MATCH_CLASS)
-        self.expect(lambda: regex.match(r'(?L)\d', '?'), repr(None))
-        self.expect(lambda: regex.match(r'(?L)\s', '?'), repr(None))
-        self.expect(lambda: regex.match(r'(?L)\w', '?'), repr(None))
+        self.assertEquals(regex.match(r'(?L)\d', '?'), None)
+        self.assertEquals(regex.match(r'(?L)\s', '?'), None)
+        self.assertEquals(regex.match(r'(?L)\w', '?'), None)
 
         # 12..17
-        self.expect(lambda: regex.match(r'(?L)\D', '0'), repr(None))
-        self.expect(lambda: regex.match(r'(?L)\S', ' '), repr(None))
-        self.expect(lambda: regex.match(r'(?L)\W', 'a'), repr(None))
-        self.expect(lambda: type(regex.match(r'(?L)\D', '?')),
+        self.assertEquals(regex.match(r'(?L)\D', '0'), None)
+        self.assertEquals(regex.match(r'(?L)\S', ' '), None)
+        self.assertEquals(regex.match(r'(?L)\W', 'a'), None)
+        self.assertEquals(repr(type(regex.match(r'(?L)\D', '?'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(r'(?L)\S', '?')),
+        self.assertEquals(repr(type(regex.match(r'(?L)\S', '?'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(r'(?L)\W', '?')),
+        self.assertEquals(repr(type(regex.match(r'(?L)\W', '?'))),
           self.MATCH_CLASS)
 
         # 18..27
-        self.expect(lambda: type(regex.match(ur'(?u)\p{Cyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{IsCyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{Script=Cyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{InCyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{Block=Cyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:Cyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:IsCyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:Script=Cyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:InCyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:Block=Cyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{IsCyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Script=Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{InCyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Block=Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:Cyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:IsCyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:Script=Cyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:InCyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:Block=Cyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
 
         # 28..42
-        self.expect(lambda: type(regex.match(ur'(?u)\P{Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\P{IsCyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\P{Script=Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\P{InCyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\P{Block=Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{^Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{^IsCyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{^Script=Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{^InCyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{^Block=Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:^Cyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:^IsCyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:^Script=Cyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:^InCyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)[[:^Block=Cyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}')), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\P{Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\P{IsCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\P{Script=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\P{InCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\P{Block=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^IsCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^Script=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^InCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^Block=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^Cyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^IsCyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^Script=Cyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^InCyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^Block=Cyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
 
         # 43..45
-        self.expect(lambda: type(regex.match(ur'(?u)\d', u'0')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\d', u'0'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\s', u' ')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\s', u' '))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\w', u'A')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'A'))),
           self.MATCH_CLASS)
-
-        # 46..54
-        self.expect(lambda: regex.match(ur"(?u)\d", u"?"), repr(None))
-        self.expect(lambda: regex.match(ur"(?u)\s", u"?"), repr(None))
-        self.expect(lambda: regex.match(ur"(?u)\w", u"?"), repr(None))
-        self.expect(lambda: regex.match(ur"(?u)\D", u"0"), repr(None))
-        self.expect(lambda: regex.match(ur"(?u)\S", u" "), repr(None))
-        self.expect(lambda: regex.match(ur"(?u)\W", u"A"), repr(None))
-        self.expect(lambda: type(regex.match(ur'(?u)\D', u'?')),
+        self.assertEquals(regex.match(ur"(?u)\d", u"?"), None)
+        self.assertEquals(regex.match(ur"(?u)\s", u"?"), None)
+        self.assertEquals(regex.match(ur"(?u)\w", u"?"), None)
+        self.assertEquals(regex.match(ur"(?u)\D", u"0"), None)
+        self.assertEquals(regex.match(ur"(?u)\S", u" "), None)
+        self.assertEquals(regex.match(ur"(?u)\W", u"A"), None)
+        self.assertEquals(repr(type(regex.match(ur'(?u)\D', u'?'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\S', u'?')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\S', u'?'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\W', u'?')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\W', u'?'))),
           self.MATCH_CLASS)
 
         # 55..58
-        self.expect(lambda: type(regex.match(ur'(?u)\p{L}', u'A')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{L}', u'A'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{L}', u'a')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{L}', u'a'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{Lu}', u'A')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Lu}', u'A'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\p{Ll}', u'a')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Ll}', u'a'))),
           self.MATCH_CLASS)
 
         # 59..60
-        self.expect(lambda: type(regex.match(ur'(?u)(?i)a', u'a')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)(?i)a', u'a'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)(?i)a', u'A')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)(?i)a', u'A'))),
           self.MATCH_CLASS)
 
         # 61..63
-        self.expect(lambda: type(regex.match(ur'(?u)\w', u'0')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'0'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\w', u'a')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'a'))),
           self.MATCH_CLASS)
-        self.expect(lambda: type(regex.match(ur'(?u)\w', u'_')),
+        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'_'))),
           self.MATCH_CLASS)
 
         # 64..68
-        self.expect(lambda: regex.match(ur"(?u)\X", u"\xE0").span(), repr((0,
-          1)))
-        self.expect(lambda: regex.match(ur"(?u)\X", u"a\u0300").span(),
-          repr((0, 2)))
-        self.expect(lambda: regex.findall(ur"(?u)\X",
-          u"a\xE0a\u0300e\xE9e\u0301"), repr([u'a', u'\xe0', u'a\u0300', u'e',
-          u'\xe9', u'e\u0301']))
-        self.expect(lambda: regex.findall(ur"(?u)\X{3}",
-          u"a\xE0a\u0300e\xE9e\u0301"), repr([u'a\xe0a\u0300',
-          u'e\xe9e\u0301']))
-        self.expect(lambda: regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"),
-          repr([u'\r', u'\r\n', u'\u0301', u'A\u0301']))
+        self.assertEquals(regex.match(ur"(?u)\X", u"\xE0").span(), (0, 1))
+        self.assertEquals(regex.match(ur"(?u)\X", u"a\u0300").span(), (0, 2))
+        self.assertEquals(regex.findall(ur"(?u)\X", u"a\xE0a\u0300e\xE9e\u0301"),
+         [u'a', u'\xe0', u'a\u0300', u'e', u'\xe9', u'e\u0301'])
+        self.assertEquals(regex.findall(ur"(?u)\X{3}", u"a\xE0a\u0300e\xE9e\u0301"),
+          [u'a\xe0a\u0300', u'e\xe9e\u0301'])
+        self.assertEquals(regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"), [u'\r',
+          u'\r\n', u'\u0301', u'A\u0301'])
 
-        # 69.
-        self.expect(lambda: type(regex.match(ur'(?u)\p{Ll}', u'a')),
+        # 69
+        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Ll}', u'a'))),
           self.MATCH_CLASS)
 
         chars_u = u"-09AZaz_\u0393\u03b3"
@@ -1343,666 +1324,595 @@ class Test:
             (r"[[:^xdigit:]]", chars_b, "-Zz_"),
         ]
         for pattern, chars, expected in tests:
-            self.index += 1
             try:
                 if chars[ : 0].join(regex.findall(pattern, chars)) != expected:
-                    self.record_failure("Failed: %s" % pattern)
+                    self.fail("Failed: %s" % pattern)
             except Exception, e:
-                self.record_failure("Failed: %s raised %s" % (pattern,
-                  repr(e)))
+                self.fail("Failed: %s raised %s" % (pattern, repr(e)))
 
     def test_word_class(self):
-        self.expect(lambda: regex.findall(ur"(?u)\w+",
+        # 1..4
+        self.assertEquals(regex.findall(ur"(?u)\w+",
           u" \u0939\u093f\u0928\u094d\u0926\u0940,"),
-          repr([u'\u0939\u093f\u0928\u094d\u0926\u0940']))
-        self.expect(lambda: regex.findall(ur"(?u)\W+",
-          u" \u0939\u093f\u0928\u094d\u0926\u0940,"), repr([u' ', u',']))
-        self.expect(lambda: regex.split(ur"(?uV1)\b",
-          u" \u0939\u093f\u0928\u094d\u0926\u0940,"), repr([u' ',
-          u'\u0939\u093f\u0928\u094d\u0926\u0940', u',']))
-        self.expect(lambda: regex.split(ur"(?uV1)\B",
-          u" \u0939\u093f\u0928\u094d\u0926\u0940,"), repr([u'', u' \u0939',
-          u'\u093f', u'\u0928', u'\u094d', u'\u0926', u'\u0940,', u'']))
+          [u'\u0939\u093f\u0928\u094d\u0926\u0940'])
+        self.assertEquals(regex.findall(ur"(?u)\W+",
+          u" \u0939\u093f\u0928\u094d\u0926\u0940,"), [u' ', u','])
+        self.assertEquals(regex.split(ur"(?uV1)\b",
+          u" \u0939\u093f\u0928\u094d\u0926\u0940,"), [u' ',
+          u'\u0939\u093f\u0928\u094d\u0926\u0940', u','])
+        self.assertEquals(regex.split(ur"(?uV1)\B",
+          u" \u0939\u093f\u0928\u094d\u0926\u0940,"), [u'', u' \u0939', u'\u093f',
+          u'\u0928', u'\u094d', u'\u0926', u'\u0940,', u''])
 
     def test_search_anchor(self):
-        self.expect(lambda: regex.findall(r"\G\w{2}", "abcd ef"), repr(['ab',
-          'cd']))
+        # 1
+        self.assertEquals(regex.findall(r"\G\w{2}", "abcd ef"), ['ab', 'cd'])
 
     def test_search_reverse(self):
         # 1..5
-        self.expect(lambda: regex.findall(r"(?r).", "abc"), repr(['c', 'b',
-          'a']))
-        self.expect(lambda: regex.findall(r"(?r).", "abc", overlapped=True),
-          repr(['c', 'b', 'a']))
-        self.expect(lambda: regex.findall(r"(?r)..", "abcde"), repr(['de',
-          'bc']))
-        self.expect(lambda: regex.findall(r"(?r)..", "abcde", overlapped=True),
-          repr(['de', 'cd', 'bc', 'ab']))
-        self.expect(lambda: regex.findall(r"(?r)(.)(-)(.)", "a-b-c",
-          overlapped=True), repr([("b", "-", "c"), ("a", "-", "b")]))
+        self.assertEquals(regex.findall(r"(?r).", "abc"), ['c', 'b', 'a'])
+        self.assertEquals(regex.findall(r"(?r).", "abc", overlapped=True),
+          ['c', 'b', 'a'])
+        self.assertEquals(regex.findall(r"(?r)..", "abcde"), ['de', 'bc'])
+        self.assertEquals(regex.findall(r"(?r)..", "abcde", overlapped=True),
+          ['de', 'cd', 'bc', 'ab'])
+        self.assertEquals(regex.findall(r"(?r)(.)(-)(.)", "a-b-c",
+          overlapped=True), [("b", "-", "c"), ("a", "-", "b")])
 
         # 6..9
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r).", "abc")],
-          repr(['c', 'b', 'a']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)..", "abcde",
-          overlapped=True)], repr(['de', 'cd', 'bc', 'ab']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r).", "abc")],
-         repr(['c', 'b', 'a']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)..", "abcde",
-          overlapped=True)],repr(['de', 'cd', 'bc', 'ab']))
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r).", "abc")],
+          ['c', 'b', 'a'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r)..", "abcde",
+          overlapped=True)], ['de', 'cd', 'bc', 'ab'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r).", "abc")],
+          ['c', 'b', 'a'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r)..", "abcde",
+          overlapped=True)], ['de', 'cd', 'bc', 'ab'])
 
         # 10..13
-        self.expect(lambda: regex.findall(r"^|\w+", "foo bar"), repr(['',
-          'foo', 'bar']))
-        self.expect(lambda: regex.findall(r"(?V1)^|\w+", "foo bar"), repr(['',
-          'foo', 'bar']))
-        self.expect(lambda: regex.findall(r"(?r)^|\w+", "foo bar"),
-          repr(['bar', 'foo', '']))
-        self.expect(lambda: regex.findall(r"(?rV1)^|\w+", "foo bar"),
-          repr(['bar', 'foo', '']))
+        self.assertEquals(regex.findall(r"^|\w+", "foo bar"), ['', 'foo',
+          'bar'])
+        self.assertEquals(regex.findall(r"(?V1)^|\w+", "foo bar"), ['', 'foo',
+          'bar'])
+        self.assertEquals(regex.findall(r"(?r)^|\w+", "foo bar"), ['bar',
+          'foo', ''])
+        self.assertEquals(regex.findall(r"(?rV1)^|\w+", "foo bar"), ['bar',
+          'foo', ''])
 
         # 14..17
-        self.expect(lambda: [m[0] for m in regex.finditer(r"^|\w+",
-          "foo bar")], repr(['', 'foo', 'bar']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?V1)^|\w+",
-          "foo bar")], repr(['', 'foo', 'bar']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)^|\w+",
-          "foo bar")], repr(['bar', 'foo', '']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?rV1)^|\w+",
-          "foo bar")], repr(['bar', 'foo', '']))
+        self.assertEquals([m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
+          ['', 'foo', 'bar'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?V1)^|\w+",
+          "foo bar")], ['', 'foo', 'bar'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r)^|\w+",
+          "foo bar")], ['bar', 'foo', ''])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?rV1)^|\w+",
+          "foo bar")], ['bar', 'foo', ''])
 
         # 18..21
-        self.expect(lambda: regex.findall(r"\G\w{2}", "abcd ef"), repr(['ab',
-          'cd']))
-        self.expect(lambda: regex.findall(r".{2}(?<=\G.*)", "abcd"),
-          repr(['ab', 'cd']))
-        self.expect(lambda: regex.findall(r"(?r)\G\w{2}", "abcd ef"), repr([]))
-        self.expect(lambda: regex.findall(r"(?r)\w{2}\G", "abcd ef"),
-          repr(['ef']))
+        self.assertEquals(regex.findall(r"\G\w{2}", "abcd ef"), ['ab', 'cd'])
+        self.assertEquals(regex.findall(r".{2}(?<=\G.*)", "abcd"), ['ab',
+          'cd'])
+        self.assertEquals(regex.findall(r"(?r)\G\w{2}", "abcd ef"), [])
+        self.assertEquals(regex.findall(r"(?r)\w{2}\G", "abcd ef"), ['ef'])
 
         # 22..25
-        self.expect(lambda: regex.findall(r"q*", "qqwe"), repr(['qq', '', '',
-          '']))
-        self.expect(lambda: regex.findall(r"(?V1)q*", "qqwe"), repr(['qq', '',
-          '', '']))
-        self.expect(lambda: regex.findall(r"(?r)q*", "qqwe"), repr(['', '',
-          'qq', '']))
-        self.expect(lambda: regex.findall(r"(?rV1)q*", "qqwe"), repr(['', '',
-          'qq', '']))
+        self.assertEquals(regex.findall(r"q*", "qqwe"), ['qq', '', '', ''])
+        self.assertEquals(regex.findall(r"(?V1)q*", "qqwe"), ['qq', '', '',
+          ''])
+        self.assertEquals(regex.findall(r"(?r)q*", "qqwe"), ['', '', 'qq', ''])
+        self.assertEquals(regex.findall(r"(?rV1)q*", "qqwe"), ['', '', 'qq',
+          ''])
 
         # 26..29
-        self.expect(lambda: regex.findall(".", "abcd", pos=1, endpos=3),
-          repr(['b', 'c']))
-        self.expect(lambda: regex.findall(".", "abcd", pos=1, endpos=-1),
-          repr(['b', 'c']))
-        self.expect(lambda: [m[0] for m in regex.finditer(".", "abcd", pos=1,
-          endpos=3)], repr(['b', 'c']))
-        self.expect(lambda: [m[0] for m in regex.finditer(".", "abcd", pos=1,
-          endpos=-1)], repr(['b', 'c']))
+        self.assertEquals(regex.findall(".", "abcd", pos=1, endpos=3), ['b',
+          'c'])
+        self.assertEquals(regex.findall(".", "abcd", pos=1, endpos=-1), ['b',
+          'c'])
+        self.assertEquals([m[0] for m in regex.finditer(".", "abcd", pos=1,
+          endpos=3)], ['b', 'c'])
+        self.assertEquals([m[0] for m in regex.finditer(".", "abcd", pos=1,
+          endpos=-1)], ['b', 'c'])
 
         # 30..33
-        self.expect(lambda: [m[0] for m in regex.finditer("(?r).", "abcd",
-          pos=1, endpos=3)], repr(['c', 'b']))
-        self.expect(lambda: [m[0] for m in regex.finditer("(?r).", "abcd",
-          pos=1, endpos=-1)], repr(['c', 'b']))
-        self.expect(lambda: regex.findall("(?r).", "abcd", pos=1, endpos=3),
-          repr(['c', 'b']))
-        self.expect(lambda: regex.findall("(?r).", "abcd", pos=1, endpos=-1),
-          repr(['c', 'b']))
+        self.assertEquals([m[0] for m in regex.finditer("(?r).", "abcd", pos=1,
+          endpos=3)], ['c', 'b'])
+        self.assertEquals([m[0] for m in regex.finditer("(?r).", "abcd", pos=1,
+          endpos=-1)], ['c', 'b'])
+        self.assertEquals(regex.findall("(?r).", "abcd", pos=1, endpos=3),
+          ['c', 'b'])
+        self.assertEquals(regex.findall("(?r).", "abcd", pos=1, endpos=-1),
+          ['c', 'b'])
 
         # 34..35
-        self.expect(lambda: regex.findall(r"[ab]", "aB", regex.I), repr(['a',
-          'B']))
-        self.expect(lambda: regex.findall(r"(?r)[ab]", "aB", regex.I),
-          repr(['B', 'a']))
+        self.assertEquals(regex.findall(r"[ab]", "aB", regex.I), ['a', 'B'])
+        self.assertEquals(regex.findall(r"(?r)[ab]", "aB", regex.I), ['B',
+          'a'])
 
         # 36..39
-        self.expect(lambda: regex.findall(r"(?r).{2}", "abc"), repr(['bc']))
-        self.expect(lambda: regex.findall(r"(?r).{2}", "abc", overlapped=True),
-          repr(['bc', 'ab']))
-        self.expect(lambda: regex.findall(r"(\w+) (\w+)",
-          "first second third fourth fifth"), repr([('first', 'second'),
-          ('third', 'fourth')]))
-        self.expect(lambda: regex.findall(r"(?r)(\w+) (\w+)",
-          "first second third fourth fifth"), repr([('fourth', 'fifth'),
-          ('second', 'third')]))
+        self.assertEquals(regex.findall(r"(?r).{2}", "abc"), ['bc'])
+        self.assertEquals(regex.findall(r"(?r).{2}", "abc", overlapped=True),
+          ['bc', 'ab'])
+        self.assertEquals(regex.findall(r"(\w+) (\w+)",
+          "first second third fourth fifth"), [('first', 'second'), ('third',
+          'fourth')])
+        self.assertEquals(regex.findall(r"(?r)(\w+) (\w+)",
+          "first second third fourth fifth"), [('fourth', 'fifth'), ('second',
+          'third')])
 
         # 40..43
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r).{2}", "abc")],
-          repr(['bc']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r).{2}", "abc",
-          overlapped=True)], repr(['bc', 'ab']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(\w+) (\w+)",
-          "first second third fourth fifth")], repr(['first second',
-          'third fourth']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)(\w+) (\w+)",
-          "first second third fourth fifth")], repr(['fourth fifth',
-          'second third']))
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r).{2}", "abc")],
+          ['bc'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r).{2}", "abc",
+          overlapped=True)], ['bc', 'ab'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(\w+) (\w+)",
+          "first second third fourth fifth")], ['first second',
+          'third fourth'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r)(\w+) (\w+)",
+          "first second third fourth fifth")], ['fourth fifth',
+          'second third'])
 
         # 44..47
-        self.expect(lambda: regex.search("abcdef", "abcdef").span(), repr((0,
-          6)))
-        self.expect(lambda: regex.search("(?r)abcdef", "abcdef").span(),
-          repr((0, 6)))
-        self.expect(lambda: regex.search("(?i)abcdef", "ABCDEF").span(),
-          repr((0, 6)))
-        self.expect(lambda: regex.search("(?ir)abcdef", "ABCDEF").span(),
-          repr((0, 6)))
+        self.assertEquals(regex.search("abcdef", "abcdef").span(), (0, 6))
+        self.assertEquals(regex.search("(?r)abcdef", "abcdef").span(), (0, 6))
+        self.assertEquals(regex.search("(?i)abcdef", "ABCDEF").span(), (0, 6))
+        self.assertEquals(regex.search("(?ir)abcdef", "ABCDEF").span(), (0, 6))
 
         # 48..49
-        self.expect(lambda: regex.sub(r"(.)", r"\1", "abc"), repr('abc'))
-        self.expect(lambda: regex.sub(r"(?r)(.)", r"\1", "abc"), repr('abc'))
+        self.assertEquals(regex.sub(r"(.)", r"\1", "abc"), 'abc')
+        self.assertEquals(regex.sub(r"(?r)(.)", r"\1", "abc"), 'abc')
 
     def test_atomic(self):
         # Issue 433030.
-        self.expect(lambda: regex.search(r"(?>a*)a", "aa"), repr(None))
+        # 1
+        self.assertEquals(regex.search(r"(?>a*)a", "aa"), None)
 
     def test_possessive(self):
         # Single-character non-possessive.
         # 1..4
-        self.expect(lambda: regex.search(r"a?a", "a").span(), repr((0, 1)))
-        self.expect(lambda: regex.search(r"a*a", "aaa").span(), repr((0, 3)))
-        self.expect(lambda: regex.search(r"a+a", "aaa").span(), repr((0, 3)))
-        self.expect(lambda: regex.search(r"a{1,3}a", "aaa").span(), repr((0,
-          3)))
+        self.assertEquals(regex.search(r"a?a", "a").span(), (0, 1))
+        self.assertEquals(regex.search(r"a*a", "aaa").span(), (0, 3))
+        self.assertEquals(regex.search(r"a+a", "aaa").span(), (0, 3))
+        self.assertEquals(regex.search(r"a{1,3}a", "aaa").span(), (0, 3))
 
         # Multiple-character non-possessive.
         # 5..8
-        self.expect(lambda: regex.search(r"(?:ab)?ab", "ab").span(), repr((0,
-          2)))
-        self.expect(lambda: regex.search(r"(?:ab)*ab", "ababab").span(),
-          repr((0, 6)))
-        self.expect(lambda: regex.search(r"(?:ab)+ab", "ababab").span(),
-          repr((0, 6)))
-        self.expect(lambda: regex.search(r"(?:ab){1,3}ab", "ababab").span(),
-          repr((0, 6)))
+        self.assertEquals(regex.search(r"(?:ab)?ab", "ab").span(), (0, 2))
+        self.assertEquals(regex.search(r"(?:ab)*ab", "ababab").span(), (0, 6))
+        self.assertEquals(regex.search(r"(?:ab)+ab", "ababab").span(), (0, 6))
+        self.assertEquals(regex.search(r"(?:ab){1,3}ab", "ababab").span(), (0,
+          6))
 
         # Single-character possessive.
         # 9..12
-        self.expect(lambda: regex.search(r"a?+a", "a"), repr(None))
-        self.expect(lambda: regex.search(r"a*+a", "aaa"), repr(None))
-        self.expect(lambda: regex.search(r"a++a", "aaa"), repr(None))
-        self.expect(lambda: regex.search(r"a{1,3}+a", "aaa"), repr(None))
+        self.assertEquals(regex.search(r"a?+a", "a"), None)
+        self.assertEquals(regex.search(r"a*+a", "aaa"), None)
+        self.assertEquals(regex.search(r"a++a", "aaa"), None)
+        self.assertEquals(regex.search(r"a{1,3}+a", "aaa"), None)
 
         # Multiple-character possessive.
         # 13..16
-        self.expect(lambda: regex.search(r"(?:ab)?+ab", "ab"), repr(None))
-        self.expect(lambda: regex.search(r"(?:ab)*+ab", "ababab"), repr(None))
-        self.expect(lambda: regex.search(r"(?:ab)++ab", "ababab"), repr(None))
-        self.expect(lambda: regex.search(r"(?:ab){1,3}+ab", "ababab"),
-          repr(None))
+        self.assertEquals(regex.search(r"(?:ab)?+ab", "ab"), None)
+        self.assertEquals(regex.search(r"(?:ab)*+ab", "ababab"), None)
+        self.assertEquals(regex.search(r"(?:ab)++ab", "ababab"), None)
+        self.assertEquals(regex.search(r"(?:ab){1,3}+ab", "ababab"), None)
 
     def test_zerowidth(self):
         # Issue 3262.
         # 1..2
-        self.expect(lambda: regex.split(r"\b", "a b"), repr(['a b']))
-        self.expect(lambda: regex.split(r"(?V1)\b", "a b"), repr(['', 'a', ' ',
-          'b', '']))
+        self.assertEquals(regex.split(r"\b", "a b"), ['a b'])
+        self.assertEquals(regex.split(r"(?V1)\b", "a b"), ['', 'a', ' ', 'b',
+          ''])
 
         # Issue 1647489.
         # 3..10
-        self.expect(lambda: regex.findall(r"^|\w+", "foo bar"), repr(['',
-          'foo', 'bar']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"^|\w+",
-          "foo bar")], repr(['', 'foo', 'bar']))
-        self.expect(lambda: regex.findall(r"(?r)^|\w+", "foo bar"),
-          repr(['bar', 'foo', '']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)^|\w+",
-          "foo bar")], repr(['bar', 'foo', '']))
-        self.expect(lambda: regex.findall(r"(?V1)^|\w+", "foo bar"), repr(['',
-          'foo', 'bar']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?V1)^|\w+",
-          "foo bar")], repr(['', 'foo', 'bar']))
-        self.expect(lambda: regex.findall(r"(?rV1)^|\w+", "foo bar"),
-          repr(['bar', 'foo', '']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?rV1)^|\w+",
-          "foo bar")], repr(['bar', 'foo', '']))
+        self.assertEquals(regex.findall(r"^|\w+", "foo bar"), ['', 'foo',
+          'bar'])
+        self.assertEquals([m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
+          ['', 'foo', 'bar'])
+        self.assertEquals(regex.findall(r"(?r)^|\w+", "foo bar"), ['bar',
+          'foo', ''])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r)^|\w+",
+          "foo bar")], ['bar', 'foo', ''])
+        self.assertEquals(regex.findall(r"(?V1)^|\w+", "foo bar"), ['', 'foo',
+          'bar'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?V1)^|\w+",
+          "foo bar")], ['', 'foo', 'bar'])
+        self.assertEquals(regex.findall(r"(?rV1)^|\w+", "foo bar"), ['bar',
+          'foo', ''])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?rV1)^|\w+",
+          "foo bar")], ['bar', 'foo', ''])
 
         # 11..12
-        self.expect(lambda: regex.split("", "xaxbxc"), repr(['xaxbxc']))
-        self.expect(lambda: [m for m in regex.splititer("", "xaxbxc")],
-          repr(['xaxbxc']))
+        self.assertEquals(regex.split("", "xaxbxc"), ['xaxbxc'])
+        self.assertEquals([m for m in regex.splititer("", "xaxbxc")],
+          ['xaxbxc'])
 
         # 13..14
-        self.expect(lambda: regex.split("(?r)", "xaxbxc"), repr(['xaxbxc']))
-        self.expect(lambda: [m for m in regex.splititer("(?r)", "xaxbxc")],
-          repr(['xaxbxc']))
+        self.assertEquals(regex.split("(?r)", "xaxbxc"), ['xaxbxc'])
+        self.assertEquals([m for m in regex.splititer("(?r)", "xaxbxc")],
+          ['xaxbxc'])
 
         # 15..16
-        self.expect(lambda: regex.split("(?V1)", "xaxbxc"), repr(['', 'x', 'a',
-          'x', 'b', 'x', 'c', '']))
-        self.expect(lambda: [m for m in regex.splititer("(?V1)", "xaxbxc")],
-          repr(['', 'x', 'a', 'x', 'b', 'x', 'c', '']))
+        self.assertEquals(regex.split("(?V1)", "xaxbxc"), ['', 'x', 'a', 'x',
+          'b', 'x', 'c', ''])
+        self.assertEquals([m for m in regex.splititer("(?V1)", "xaxbxc")], ['',
+          'x', 'a', 'x', 'b', 'x', 'c', ''])
 
         # 17..18
-        self.expect(lambda: regex.split("(?rV1)", "xaxbxc"), repr(['', 'c',
-          'x', 'b', 'x', 'a', 'x', '']))
-        self.expect(lambda: [m for m in regex.splititer("(?rV1)", "xaxbxc")],
-          repr(['', 'c', 'x', 'b', 'x', 'a', 'x', '']))
+        self.assertEquals(regex.split("(?rV1)", "xaxbxc"), ['', 'c', 'x', 'b',
+          'x', 'a', 'x', ''])
+        self.assertEquals([m for m in regex.splititer("(?rV1)", "xaxbxc")],
+          ['', 'c', 'x', 'b', 'x', 'a', 'x', ''])
 
     def test_scoped_and_inline_flags(self):
         # Issues 433028, #433024, #433027.
         # 1..4
-        self.expect(lambda: regex.search(r"(?i)Ab", "ab").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(r"(?i:A)b", "ab").span(), repr((0,
-          2)))
-        self.expect(lambda: regex.search(r"A(?i)b", "ab").span(), repr((0, 2)))
-        self.expect(lambda: regex.search(r"A(?iV1)b", "ab"), repr(None))
+        self.assertEquals(regex.search(r"(?i)Ab", "ab").span(), (0, 2))
+        self.assertEquals(regex.search(r"(?i:A)b", "ab").span(), (0, 2))
+        self.assertEquals(regex.search(r"A(?i)b", "ab").span(), (0, 2))
+        self.assertEquals(regex.search(r"A(?iV1)b", "ab"), None)
 
         # 5..8
-        self.expect(lambda: regex.search(r"(?V0-i)Ab", "ab",
-          flags=regex.I), self.CANT_TURN_OFF)
-        self.expect(lambda: regex.search(r"(?V1-i)Ab", "ab", flags=regex.I),
-          repr(None))
-        self.expect(lambda: regex.search(r"(?-i:A)b", "ab", flags=regex.I),
-          repr(None))
-        self.expect(lambda: regex.search(r"A(?V1-i)b", "ab",
-          flags=regex.I).span(), repr((0, 2)))
+        self.assertRaisesRegex(regex.error, self.CANT_TURN_OFF, lambda:
+          regex.search(r"(?V0-i)Ab", "ab", flags=regex.I))
+        self.assertEquals(regex.search(r"(?V1-i)Ab", "ab", flags=regex.I),
+          None)
+        self.assertEquals(regex.search(r"(?-i:A)b", "ab", flags=regex.I), None)
+        self.assertEquals(regex.search(r"A(?V1-i)b", "ab",
+          flags=regex.I).span(), (0, 2))
 
     def test_repeated_repeats(self):
         # Issue 2537.
         # 1..2
-        self.expect(lambda: regex.search(r"(?:a+)+", "aaa").span(), repr((0,
-          3)))
-        self.expect(lambda: regex.search(r"(?:(?:ab)+c)+", "abcabc").span(),
-          repr((0, 6)))
+        self.assertEquals(regex.search(r"(?:a+)+", "aaa").span(), (0, 3))
+        self.assertEquals(regex.search(r"(?:(?:ab)+c)+", "abcabc").span(), (0,
+          6))
 
     def test_lookbehind(self):
         # 1..4
-        self.expect(lambda: regex.search(r"123(?<=a\d+)", "a123").span(),
-          repr((1, 4)))
-        self.expect(lambda: regex.search(r"123(?<=a\d+)", "b123"), repr(None))
-        self.expect(lambda: regex.search(r"123(?<!a\d+)", "a123"), repr(None))
-        self.expect(lambda: regex.search(r"123(?<!a\d+)", "b123").span(),
-          repr((1, 4)))
+        self.assertEquals(regex.search(r"123(?<=a\d+)", "a123").span(), (1, 4))
+        self.assertEquals(regex.search(r"123(?<=a\d+)", "b123"), None)
+        self.assertEquals(regex.search(r"123(?<!a\d+)", "a123"), None)
+        self.assertEquals(regex.search(r"123(?<!a\d+)", "b123").span(), (1, 4))
 
         # 5..8
-        self.expect(lambda: type(regex.match("(a)b(?<=b)(c)", "abc")),
+        self.assertEquals(repr(type(regex.match("(a)b(?<=b)(c)", "abc"))),
           self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(a)b(?<=c)(c)", "abc"), repr(None))
-        self.expect(lambda: type(regex.match("(a)b(?=c)(c)", "abc")),
+        self.assertEquals(regex.match("(a)b(?<=c)(c)", "abc"), None)
+        self.assertEquals(repr(type(regex.match("(a)b(?=c)(c)", "abc"))),
           self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(a)b(?=b)(c)", "abc"), repr(None))
+        self.assertEquals(regex.match("(a)b(?=b)(c)", "abc"), None)
 
         # 9..13
-        self.expect(lambda: regex.match("(?:(a)|(x))b(?<=(?(2)x|c))c", "abc"),
-          repr(None))
-        self.expect(lambda: regex.match("(?:(a)|(x))b(?<=(?(2)b|x))c", "abc"),
-          repr(None))
-        self.expect(lambda: type(regex.match("(?:(a)|(x))b(?<=(?(2)x|b))c",
-          "abc")), self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(?:(a)|(x))b(?<=(?(1)c|x))c", "abc"),
-          repr(None))
-        self.expect(lambda: type(regex.match("(?:(a)|(x))b(?<=(?(1)b|x))c",
-          "abc")), self.MATCH_CLASS)
+        self.assertEquals(regex.match("(?:(a)|(x))b(?<=(?(2)x|c))c", "abc"),
+          None)
+        self.assertEquals(regex.match("(?:(a)|(x))b(?<=(?(2)b|x))c", "abc"),
+          None)
+        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?<=(?(2)x|b))c",
+          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(regex.match("(?:(a)|(x))b(?<=(?(1)c|x))c", "abc"),
+          None)
+        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?<=(?(1)b|x))c",
+          "abc"))), self.MATCH_CLASS)
 
         # 14..18
-        self.expect(lambda: type(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
-          "abc")), self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(?:(a)|(x))b(?=(?(2)c|x))c", "abc"),
-          repr(None))
-        self.expect(lambda: type(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
-          "abc")), self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(?:(a)|(x))b(?=(?(1)b|x))c", "abc"),
-          repr(None))
-        self.expect(lambda: type(regex.match("(?:(a)|(x))b(?=(?(1)c|x))c",
-          "abc")), self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
+          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(regex.match("(?:(a)|(x))b(?=(?(2)c|x))c", "abc"),
+          None)
+        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
+          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(regex.match("(?:(a)|(x))b(?=(?(1)b|x))c", "abc"),
+          None)
+        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?=(?(1)c|x))c",
+          "abc"))), self.MATCH_CLASS)
 
         # 19..22
-        self.expect(lambda: regex.match("(a)b(?<=(?(2)x|c))(c)", "abc"),
-          repr(None))
-        self.expect(lambda: regex.match("(a)b(?<=(?(2)b|x))(c)", "abc"),
-          repr(None))
-        self.expect(lambda: regex.match("(a)b(?<=(?(1)c|x))(c)", "abc"),
-          repr(None))
-        self.expect(lambda: type(regex.match("(a)b(?<=(?(1)b|x))(c)", "abc")),
-          self.MATCH_CLASS)
+        self.assertEquals(regex.match("(a)b(?<=(?(2)x|c))(c)", "abc"), None)
+        self.assertEquals(regex.match("(a)b(?<=(?(2)b|x))(c)", "abc"), None)
+        self.assertEquals(regex.match("(a)b(?<=(?(1)c|x))(c)", "abc"), None)
+        self.assertEquals(repr(type(regex.match("(a)b(?<=(?(1)b|x))(c)",
+          "abc"))), self.MATCH_CLASS)
 
         # 23..25
-        self.expect(lambda: type(regex.match("(a)b(?=(?(2)x|c))(c)", "abc")),
-          self.MATCH_CLASS)
-        self.expect(lambda: regex.match("(a)b(?=(?(2)b|x))(c)", "abc"),
-          repr(None))
-        self.expect(lambda: type(regex.match("(a)b(?=(?(1)c|x))(c)", "abc")),
-          self.MATCH_CLASS)
+        self.assertEquals(repr(type(regex.match("(a)b(?=(?(2)x|c))(c)",
+          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(regex.match("(a)b(?=(?(2)b|x))(c)", "abc"), None)
+        self.assertEquals(repr(type(regex.match("(a)b(?=(?(1)c|x))(c)",
+          "abc"))), self.MATCH_CLASS)
 
         # 26
-        self.expect(lambda: type(regex.compile(r"(a)\2(b)")),
+        self.assertEquals(repr(type(regex.compile(r"(a)\2(b)"))),
           self.PATTERN_CLASS)
 
     def test_unmatched_in_sub(self):
         # Issue 1519638.
         # 1..3
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "xy"),
-          repr('y-x-'))
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "x"), repr('-x-'))
-        self.expect(lambda: regex.sub(r"(x)?(y)?", r"\2-\1", "y"), repr('y--'))
+        self.assertEquals(regex.sub(r"(x)?(y)?", r"\2-\1", "xy"), 'y-x-')
+        self.assertEquals(regex.sub(r"(x)?(y)?", r"\2-\1", "x"), '-x-')
+        self.assertEquals(regex.sub(r"(x)?(y)?", r"\2-\1", "y"), 'y--')
 
     def test_bug_10328 (self):
         # Issue 10328.
         pat = regex.compile(r'(?m)(?P<trailing_ws>[ \t]+\r*$)|(?P<no_final_newline>(?<=[^\n])\Z)')
         # 1..2
-        self.expect(lambda: pat.subn(lambda m: '<' + m.lastgroup + '>',
-          'foobar '), repr(('foobar<trailing_ws><no_final_newline>', 2)))
-        self.expect(lambda: [m.group() for m in pat.finditer('foobar ')],
-          repr([' ', '']))
+        self.assertEquals(pat.subn(lambda m: '<' + m.lastgroup + '>',
+          'foobar '), ('foobar<trailing_ws><no_final_newline>', 2))
+        self.assertEquals([m.group() for m in pat.finditer('foobar ')], [' ',
+          ''])
 
     def test_overlapped(self):
         # 1..5
-        self.expect(lambda: regex.findall(r"..", "abcde"), repr(['ab', 'cd']))
-        self.expect(lambda: regex.findall(r"..", "abcde", overlapped=True),
-          repr(['ab', 'bc', 'cd', 'de']))
-        self.expect(lambda: regex.findall(r"(?r)..", "abcde"), repr(['de',
-          'bc']))
-        self.expect(lambda: regex.findall(r"(?r)..", "abcde", overlapped=True),
-          repr(['de', 'cd', 'bc', 'ab']))
-        self.expect(lambda: regex.findall(r"(.)(-)(.)", "a-b-c",
-          overlapped=True), repr([("a", "-", "b"), ("b", "-", "c")]))
+        self.assertEquals(regex.findall(r"..", "abcde"), ['ab', 'cd'])
+        self.assertEquals(regex.findall(r"..", "abcde", overlapped=True),
+          ['ab', 'bc', 'cd', 'de'])
+        self.assertEquals(regex.findall(r"(?r)..", "abcde"), ['de', 'bc'])
+        self.assertEquals(regex.findall(r"(?r)..", "abcde", overlapped=True),
+          ['de', 'cd', 'bc', 'ab'])
+        self.assertEquals(regex.findall(r"(.)(-)(.)", "a-b-c",
+          overlapped=True), [("a", "-", "b"), ("b", "-", "c")])
 
         # 6..9
-        self.expect(lambda: [m[0] for m in regex.finditer(r"..", "abcde")],
-          repr(['ab', 'cd']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"..", "abcde",
-          overlapped=True)], repr(['ab', 'bc', 'cd', 'de']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)..", "abcde")],
-          repr(['de', 'bc']))
-        self.expect(lambda: [m[0] for m in regex.finditer(r"(?r)..", "abcde",
-          overlapped=True)], repr(['de', 'cd', 'bc', 'ab']))
+        self.assertEquals([m[0] for m in regex.finditer(r"..", "abcde")],
+          ['ab', 'cd'])
+        self.assertEquals([m[0] for m in regex.finditer(r"..", "abcde",
+          overlapped=True)], ['ab', 'bc', 'cd', 'de'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r)..", "abcde")],
+          ['de', 'bc'])
+        self.assertEquals([m[0] for m in regex.finditer(r"(?r)..", "abcde",
+          overlapped=True)], ['de', 'cd', 'bc', 'ab'])
 
         # 10..11
-        self.expect(lambda: [m.groups() for m in regex.finditer(r"(.)(-)(.)",
-          "a-b-c", overlapped=True)], repr([("a", "-", "b"), ("b", "-", "c")]))
-        self.expect(lambda: [m.groups() for m in
-          regex.finditer(r"(?r)(.)(-)(.)", "a-b-c", overlapped=True)],
-          repr([("b", "-", "c"), ("a", "-", "b")]))
+        self.assertEquals([m.groups() for m in regex.finditer(r"(.)(-)(.)",
+          "a-b-c", overlapped=True)], [("a", "-", "b"), ("b", "-", "c")])
+        self.assertEquals([m.groups() for m in regex.finditer(r"(?r)(.)(-)(.)",
+          "a-b-c", overlapped=True)], [("b", "-", "c"), ("a", "-", "b")])
 
     def test_splititer(self):
         # 1..2
-        self.expect(lambda: regex.split(r",", "a,b,,c,"), repr(['a', 'b', '',
-          'c', '']))
-        self.expect(lambda: [m for m in regex.splititer(r",", "a,b,,c,")],
-          repr(['a', 'b', '', 'c', '']))
+        self.assertEquals(regex.split(r",", "a,b,,c,"), ['a', 'b', '', 'c',
+          ''])
+        self.assertEquals([m for m in regex.splititer(r",", "a,b,,c,")], ['a',
+          'b', '', 'c', ''])
 
     def test_grapheme(self):
         # 1..2
-        self.expect(lambda: regex.match(ur"(?u)\X", u"\xE0").span(), repr((0,
-          1)))
-        self.expect(lambda: regex.match(ur"(?u)\X", u"a\u0300").span(),
-          repr((0, 2)))
+        self.assertEquals(regex.match(ur"(?u)\X", u"\xE0").span(), (0, 1))
+        self.assertEquals(regex.match(ur"(?u)\X", u"a\u0300").span(), (0, 2))
 
         # 3..5
-        self.expect(lambda: regex.findall(ur"(?u)\X",
-          u"a\xE0a\u0300e\xE9e\u0301"), repr([u'a', u'\xe0', u'a\u0300', u'e',
-          u'\xe9', u'e\u0301']))
-        self.expect(lambda: regex.findall(ur"(?u)\X{3}",
-          u"a\xE0a\u0300e\xE9e\u0301"), repr([u'a\xe0a\u0300',
-          u'e\xe9e\u0301']))
-        self.expect(lambda: regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"),
-          repr([u'\r', u'\r\n', u'\u0301', u'A\u0301']))
+        self.assertEquals(regex.findall(ur"(?u)\X", u"a\xE0a\u0300e\xE9e\u0301"),
+          [u'a', u'\xe0', u'a\u0300', u'e', u'\xe9', u'e\u0301'])
+        self.assertEquals(regex.findall(ur"(?u)\X{3}", u"a\xE0a\u0300e\xE9e\u0301"),
+          [u'a\xe0a\u0300', u'e\xe9e\u0301'])
+        self.assertEquals(regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"), [u'\r',
+          u'\r\n', u'\u0301', u'A\u0301'])
 
     def test_word_boundary(self):
         text = u'The quick ("brown") fox can\'t jump 32.3 feet, right?'
         # 1..2
-        self.expect(lambda: regex.split(ur'(?V1)\b', text), repr([u'', u'The',
-          u' ', u'quick', u' ("', u'brown', u'") ', u'fox', u' ', u'can', u"'",
-          u't', u' ', u'jump', u' ', u'32', u'.', u'3', u' ', u'feet', u', ',
-          u'right', u'?']))
-        self.expect(lambda: regex.split(ur'(?V1w)\b', text), repr([u'', u'The',
-          u' ', u'quick', u' ', u'(', u'"', u'brown', u'"', u')', u' ', u'fox',
-          u' ', u"can't", u' ', u'jump', u' ', u'32.3', u' ', u'feet', u',',
-          u' ', u'right', u'?', u'']))
+        self.assertEquals(regex.split(ur'(?V1)\b', text), [u'', u'The', u' ',
+          u'quick', u' ("', u'brown', u'") ', u'fox', u' ', u'can', u"'", u't', u' ',
+          u'jump', u' ', u'32', u'.', u'3', u' ', u'feet', u', ', u'right', u'?'])
+        self.assertEquals(regex.split(ur'(?V1w)\b', text), [u'', u'The', u' ',
+          u'quick', u' ', u'(', u'"', u'brown', u'"', u')', u' ', u'fox', u' ', u"can't", u' ',
+          u'jump', u' ', u'32.3', u' ', u'feet', u',', u' ', u'right', u'?', u''])
 
         text = u"The  fox"
         # 3..4
-        self.expect(lambda: regex.split(ur'(?V1)\b', text), repr([u'', u'The',
-          u'  ', u'fox', u'']))
-        self.expect(lambda: regex.split(ur'(?V1w)\b', text), repr([u'', u'The',
-          u' ', u' ', u'fox', u'']))
+        self.assertEquals(regex.split(ur'(?V1)\b', text), [u'', u'The', u'  ',
+          u'fox', u''])
+        self.assertEquals(regex.split(ur'(?V1w)\b', text), [u'', u'The', u' ', u' ',
+          u'fox', u''])
 
         text = u"can't aujourd'hui l'objectif"
         # 5..6
-        self.expect(lambda: regex.split(ur'(?V1)\b', text), repr([u'', u'can',
-          u"'", u't', u' ', u'aujourd', u"'", u'hui', u' ', u'l', u"'",
-          u'objectif', u'']))
-        self.expect(lambda: regex.split(ur'(?V1w)\b', text), repr([u'',
-          u"can't", u' ', u"aujourd'hui", u' ', u"l'", u'objectif', u'']))
+        self.assertEquals(regex.split(ur'(?V1)\b', text), [u'', u'can', u"'", u't',
+          u' ', u'aujourd', u"'", u'hui', u' ', u'l', u"'", u'objectif', u''])
+        self.assertEquals(regex.split(ur'(?V1w)\b', text), [u'', u"can't", u' ',
+          u"aujourd'hui", u' ', u"l'", u'objectif', u''])
 
     def test_line_boundary(self):
         # 1..6
-        self.expect(lambda: regex.findall(r".+", "Line 1\nLine 2\n"),
-          repr(["Line 1", "Line 2"]))
-        self.expect(lambda: regex.findall(r".+", "Line 1\rLine 2\r"),
-          repr(["Line 1\rLine 2\r"]))
-        self.expect(lambda: regex.findall(r".+", "Line 1\r\nLine 2\r\n"),
-          repr(["Line 1\r", "Line 2\r"]))
-        self.expect(lambda: regex.findall(r"(?w).+", "Line 1\nLine 2\n"),
-          repr(["Line 1", "Line 2"]))
-        self.expect(lambda: regex.findall(r"(?w).+", "Line 1\rLine 2\r"),
-          repr(["Line 1", "Line 2"]))
-        self.expect(lambda: regex.findall(r"(?w).+", "Line 1\r\nLine 2\r\n"),
-          repr(["Line 1", "Line 2"]))
+        self.assertEquals(regex.findall(r".+", "Line 1\nLine 2\n"), ["Line 1",
+          "Line 2"])
+        self.assertEquals(regex.findall(r".+", "Line 1\rLine 2\r"),
+          ["Line 1\rLine 2\r"])
+        self.assertEquals(regex.findall(r".+", "Line 1\r\nLine 2\r\n"),
+          ["Line 1\r", "Line 2\r"])
+        self.assertEquals(regex.findall(r"(?w).+", "Line 1\nLine 2\n"),
+          ["Line 1", "Line 2"])
+        self.assertEquals(regex.findall(r"(?w).+", "Line 1\rLine 2\r"),
+          ["Line 1", "Line 2"])
+        self.assertEquals(regex.findall(r"(?w).+", "Line 1\r\nLine 2\r\n"),
+          ["Line 1", "Line 2"])
 
         # 7..12
-        self.expect(lambda: regex.search(r"^abc", "abc").start(), repr(0))
-        self.expect(lambda: regex.search(r"^abc", "\nabc"), repr(None))
-        self.expect(lambda: regex.search(r"^abc", "\rabc"), repr(None))
-        self.expect(lambda: regex.search(r"(?w)^abc", "abc").start(), repr(0))
-        self.expect(lambda: regex.search(r"(?w)^abc", "\nabc"), repr(None))
-        self.expect(lambda: regex.search(r"(?w)^abc", "\rabc"), repr(None))
+        self.assertEquals(regex.search(r"^abc", "abc").start(), 0)
+        self.assertEquals(regex.search(r"^abc", "\nabc"), None)
+        self.assertEquals(regex.search(r"^abc", "\rabc"), None)
+        self.assertEquals(regex.search(r"(?w)^abc", "abc").start(), 0)
+        self.assertEquals(regex.search(r"(?w)^abc", "\nabc"), None)
+        self.assertEquals(regex.search(r"(?w)^abc", "\rabc"), None)
 
         # 13..18
-        self.expect(lambda: regex.search(r"abc$", "abc").start(), repr(0))
-        self.expect(lambda: regex.search(r"abc$", "abc\n").start(), repr(0))
-        self.expect(lambda: regex.search(r"abc$", "abc\r"), repr(None))
-        self.expect(lambda: regex.search(r"(?w)abc$", "abc").start(), repr(0))
-        self.expect(lambda: regex.search(r"(?w)abc$", "abc\n").start(),
-          repr(0))
-        self.expect(lambda: regex.search(r"(?w)abc$", "abc\r").start(),
-          repr(0))
+        self.assertEquals(regex.search(r"abc$", "abc").start(), 0)
+        self.assertEquals(regex.search(r"abc$", "abc\n").start(), 0)
+        self.assertEquals(regex.search(r"abc$", "abc\r"), None)
+        self.assertEquals(regex.search(r"(?w)abc$", "abc").start(), 0)
+        self.assertEquals(regex.search(r"(?w)abc$", "abc\n").start(), 0)
+        self.assertEquals(regex.search(r"(?w)abc$", "abc\r").start(), 0)
 
         # 19..24
-        self.expect(lambda: regex.search(r"(?m)^abc", "abc").start(), repr(0))
-        self.expect(lambda: regex.search(r"(?m)^abc", "\nabc").start(),
-          repr(1))
-        self.expect(lambda: regex.search(r"(?m)^abc", "\rabc"), repr(None))
-        self.expect(lambda: regex.search(r"(?mw)^abc", "abc").start(), repr(0))
-        self.expect(lambda: regex.search(r"(?mw)^abc", "\nabc").start(),
-          repr(1))
-        self.expect(lambda: regex.search(r"(?mw)^abc", "\rabc").start(),
-          repr(1))
+        self.assertEquals(regex.search(r"(?m)^abc", "abc").start(), 0)
+        self.assertEquals(regex.search(r"(?m)^abc", "\nabc").start(), 1)
+        self.assertEquals(regex.search(r"(?m)^abc", "\rabc"), None)
+        self.assertEquals(regex.search(r"(?mw)^abc", "abc").start(), 0)
+        self.assertEquals(regex.search(r"(?mw)^abc", "\nabc").start(), 1)
+        self.assertEquals(regex.search(r"(?mw)^abc", "\rabc").start(), 1)
 
         # 25..30
-        self.expect(lambda: regex.search(r"(?m)abc$", "abc").start(), repr(0))
-        self.expect(lambda: regex.search(r"(?m)abc$", "abc\n").start(),
-          repr(0))
-        self.expect(lambda: regex.search(r"(?m)abc$", "abc\r"), repr(None))
-        self.expect(lambda: regex.search(r"(?mw)abc$", "abc").start(),
-          repr(0))
-        self.expect(lambda: regex.search(r"(?mw)abc$", "abc\n").start(),
-          repr(0))
-        self.expect(lambda: regex.search(r"(?mw)abc$", "abc\r").start(),
-          repr(0))
+        self.assertEquals(regex.search(r"(?m)abc$", "abc").start(), 0)
+        self.assertEquals(regex.search(r"(?m)abc$", "abc\n").start(), 0)
+        self.assertEquals(regex.search(r"(?m)abc$", "abc\r"), None)
+        self.assertEquals(regex.search(r"(?mw)abc$", "abc").start(), 0)
+        self.assertEquals(regex.search(r"(?mw)abc$", "abc\n").start(), 0)
+        self.assertEquals(regex.search(r"(?mw)abc$", "abc\r").start(), 0)
 
     def test_branch_reset(self):
         # 1..4
-        self.expect(lambda: regex.match(r"(?:(a)|(b))(c)", "ac").groups(),
-          repr(('a', None, 'c')))
-        self.expect(lambda: regex.match(r"(?:(a)|(b))(c)", "bc").groups(),
-          repr((None, 'b', 'c')))
-        self.expect(lambda: regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)",
-          "ac").groups(), repr(('a', None, 'c')))
-        self.expect(lambda: regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)",
-          "bc").groups(), repr((None, 'b', 'c')))
+        self.assertEquals(regex.match(r"(?:(a)|(b))(c)", "ac").groups(), ('a',
+          None, 'c'))
+        self.assertEquals(regex.match(r"(?:(a)|(b))(c)", "bc").groups(), (None,
+          'b', 'c'))
+        self.assertEquals(regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)",
+          "ac").groups(), ('a', None, 'c'))
+        self.assertEquals(regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)",
+          "bc").groups(), (None, 'b', 'c'))
 
         # 5..7
-        self.expect(lambda: regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)",
-          "abd").groups(), repr(('a', 'b', None, 'd')))
-        self.expect(lambda: regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)",
-          "acd").groups(), repr(('a', None, 'c', 'd')))
-        self.expect(lambda: regex.match(r"(a)(?:(b)|(c))(d)", "abd").groups(),
-         repr(('a', 'b', None, 'd')))
+        self.assertEquals(regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)",
+          "abd").groups(), ('a', 'b', None, 'd'))
+        self.assertEquals(regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)",
+          "acd").groups(), ('a', None, 'c', 'd'))
+        self.assertEquals(regex.match(r"(a)(?:(b)|(c))(d)", "abd").groups(),
+          ('a', 'b', None, 'd'))
 
         # 8..12
-        self.expect(lambda: regex.match(r"(a)(?:(b)|(c))(d)", "acd").groups(),
-          repr(('a', None, 'c', 'd')))
-        self.expect(lambda: regex.match(r"(a)(?|(b)|(b))(d)", "abd").groups(),
-          repr(('a', 'b', 'd')))
-        self.expect(lambda: regex.match(r"(?|(?<a>a)|(?<b>b))(c)",
-          "ac").groups(), repr(('a', None, 'c')))
-        self.expect(lambda: regex.match(r"(?|(?<a>a)|(?<b>b))(c)",
-          "bc").groups(), repr((None, 'b', 'c')))
-        self.expect(lambda: regex.match(r"(?|(?<a>a)|(?<a>b))(c)",
-          "ac").groups(), repr(('a', 'c')))
+        self.assertEquals(regex.match(r"(a)(?:(b)|(c))(d)", "acd").groups(),
+          ('a', None, 'c', 'd'))
+        self.assertEquals(regex.match(r"(a)(?|(b)|(b))(d)", "abd").groups(),
+          ('a', 'b', 'd'))
+        self.assertEquals(regex.match(r"(?|(?<a>a)|(?<b>b))(c)",
+          "ac").groups(), ('a', None, 'c'))
+        self.assertEquals(regex.match(r"(?|(?<a>a)|(?<b>b))(c)",
+          "bc").groups(), (None, 'b', 'c'))
+        self.assertEquals(regex.match(r"(?|(?<a>a)|(?<a>b))(c)",
+          "ac").groups(), ('a', 'c'))
 
         # 13
-        self.expect(lambda: regex.match(r"(?|(?<a>a)|(?<a>b))(c)",
-          "bc").groups(), repr(('b', 'c')))
+        self.assertEquals(regex.match(r"(?|(?<a>a)|(?<a>b))(c)",
+          "bc").groups(), ('b', 'c'))
 
         # 14..21
-        self.expect(lambda:
-          regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)", "abe").groups(),
-          repr(('a', 'b', 'e')))
-        self.expect(lambda:
-          regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)", "cde").groups(),
-          repr(('d', 'c', 'e')))
-        self.expect(lambda:
-          regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)", "abe").groups(),
-          repr(('a', 'b', 'e')))
-        self.expect(lambda: regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)",
-          "cde").groups(), repr(('d', 'c', 'e')))
-        self.expect(lambda:
-          regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)", "abe").groups(),
-          repr(('a', 'b', 'e')))
-        self.expect(lambda:
-          regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)", "cde").groups(),
-          repr(('c', 'd', 'e')))
-        self.expect(lambda: regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
-          "abe"), self.DUPLICATE_GROUP)
-        self.expect(lambda: regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
-          "cde"), self.DUPLICATE_GROUP)
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)",
+          "abe").groups(), ('a', 'b', 'e'))
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)",
+          "cde").groups(), ('d', 'c', 'e'))
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)",
+          "abe").groups(), ('a', 'b', 'e'))
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)",
+          "cde").groups(), ('d', 'c', 'e'))
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)",
+          "abe").groups(), ('a', 'b', 'e'))
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)",
+          "cde").groups(), ('c', 'd', 'e'))
+        self.assertRaisesRegex(regex.error, self.DUPLICATE_GROUP, lambda:
+          regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)", "abe"))
+        self.assertRaisesRegex(regex.error, self.DUPLICATE_GROUP, lambda:
+          regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)", "cde"))
 
     def test_set(self):
         # 1..4
-        self.expect(lambda: regex.match(r"[a]", "a").span(), repr((0, 1)))
-        self.expect(lambda: regex.match(r"(?i)[a]", "A").span(), repr((0, 1)))
-        self.expect(lambda: regex.match(r"[a-b]", r"a").span(), repr((0, 1)))
-        self.expect(lambda: regex.match(r"(?i)[a-b]", r"A").span(), repr((0,
-          1)))
+        self.assertEquals(regex.match(r"[a]", "a").span(), (0, 1))
+        self.assertEquals(regex.match(r"(?i)[a]", "A").span(), (0, 1))
+        self.assertEquals(regex.match(r"[a-b]", r"a").span(), (0, 1))
+        self.assertEquals(regex.match(r"(?i)[a-b]", r"A").span(), (0, 1))
 
         # 5
-        self.expect(lambda: regex.sub(r"(?V0)([][])", r"-", "a[b]c"),
-          repr("a-b-c"))
+        self.assertEquals(regex.sub(r"(?V0)([][])", r"-", "a[b]c"), "a-b-c")
 
         # 6..7
-        self.expect(lambda: regex.findall(ur"[\p{Alpha}]", u"a0"),
-          repr([u"a"]))
-        self.expect(lambda: regex.findall(ur"(?i)[\p{Alpha}]", u"A0"),
-          repr([u"A"]))
+        self.assertEquals(regex.findall(ur"[\p{Alpha}]", u"a0"), [u"a"])
+        self.assertEquals(regex.findall(ur"(?i)[\p{Alpha}]", u"A0"), [u"A"])
 
         # 8..11
-        self.expect(lambda: regex.findall(ur"[a\p{Alpha}]", u"ab0"),
-          repr([u"a", u"b"]))
-        self.expect(lambda: regex.findall(ur"[a\P{Alpha}]", u"ab0"),
-          repr([u"a", u"0"]))
-        self.expect(lambda: regex.findall(ur"(?i)[a\p{Alpha}]", u"ab0"),
-          repr([u"a", u"b"]))
-        self.expect(lambda: regex.findall(ur"(?i)[a\P{Alpha}]", u"ab0"),
-          repr([u"a", u"0"]))
+        self.assertEquals(regex.findall(ur"[a\p{Alpha}]", u"ab0"), [u"a", u"b"])
+        self.assertEquals(regex.findall(ur"[a\P{Alpha}]", u"ab0"), [u"a", u"0"])
+        self.assertEquals(regex.findall(ur"(?i)[a\p{Alpha}]", u"ab0"), [u"a", u"b"])
+        self.assertEquals(regex.findall(ur"(?i)[a\P{Alpha}]", u"ab0"), [u"a", u"0"])
 
         # 12..13
-        self.expect(lambda: regex.findall(ur"[a-b\p{Alpha}]", u"abC0"),
-          repr([u"a", u"b", u"C"]))
-        self.expect(lambda: regex.findall(ur"(?i)[a-b\p{Alpha}]", u"AbC0"),
-          repr([u"A", u"b", u"C"]))
+        self.assertEquals(regex.findall(ur"[a-b\p{Alpha}]", u"abC0"), [u"a", u"b", u"C"])
+        self.assertEquals(regex.findall(ur"(?i)[a-b\p{Alpha}]", u"AbC0"), [u"A", u"b", u"C"])
 
         # 14..17
-        self.expect(lambda: regex.findall(ur"[\p{Alpha}]", u"a0"),
-          repr([u"a"]))
-        self.expect(lambda: regex.findall(ur"[\P{Alpha}]", u"a0"),
-          repr([u"0"]))
-        self.expect(lambda: regex.findall(ur"[^\p{Alpha}]", u"a0"),
-          repr([u"0"]))
-        self.expect(lambda: regex.findall(ur"[^\P{Alpha}]", u"a0"),
-          repr([u"a"]))
+        self.assertEquals(regex.findall(ur"[\p{Alpha}]", u"a0"), [u"a"])
+        self.assertEquals(regex.findall(ur"[\P{Alpha}]", u"a0"), [u"0"])
+        self.assertEquals(regex.findall(ur"[^\p{Alpha}]", u"a0"), [u"0"])
+        self.assertEquals(regex.findall(ur"[^\P{Alpha}]", u"a0"), [u"a"])
 
         # 18..23
-        self.expect(lambda: "".join(regex.findall(r"[^\d-h]", "a^b12c-h")),
-          repr('a^bc'))
-        self.expect(lambda: "".join(regex.findall(r"[^\dh]", "a^b12c-h")),
-          repr('a^bc-'))
-        self.expect(lambda: "".join(regex.findall(r"[^h\s\db]", "a^b 12c-h")),
-          repr('a^c-'))
-        self.expect(lambda: "".join(regex.findall(r"[^b\w]", "a b")),
-          repr(' '))
-        self.expect(lambda: "".join(regex.findall(r"[^b\S]", "a b")),
-          repr(' '))
-        self.expect(lambda: "".join(regex.findall(r"[^8\d]", "a 1b2")),
-          repr('a b'))
+        self.assertEquals("".join(regex.findall(r"[^\d-h]", "a^b12c-h")),
+          'a^bc')
+        self.assertEquals("".join(regex.findall(r"[^\dh]", "a^b12c-h")),
+          'a^bc-')
+        self.assertEquals("".join(regex.findall(r"[^h\s\db]", "a^b 12c-h")),
+          'a^c-')
+        self.assertEquals("".join(regex.findall(r"[^b\w]", "a b")), ' ')
+        self.assertEquals("".join(regex.findall(r"[^b\S]", "a b")), ' ')
+        self.assertEquals("".join(regex.findall(r"[^8\d]", "a 1b2")), 'a b')
 
-        all_chars = "".join(unichr(c) for c in range(0x100))
-        # 24..37
-        self.expect(lambda: len(regex.findall(ur"(?u)\p{ASCII}", all_chars)),
-          repr(128))
-        self.expect(lambda: len(regex.findall(ur"(?u)\p{Letter}", all_chars)),
-          repr(117))
-        self.expect(lambda: len(regex.findall(ur"(?u)\p{Digit}", all_chars)),
-          repr(10))
-        self.expect(lambda:
-          len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Letter}]", all_chars)),
-          repr(52))
-        self.expect(lambda:
-          len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Letter}]",
-          all_chars)), repr(52))
-        self.expect(lambda:
-          len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Digit}]",
-          all_chars)), repr(10))
-        self.expect(lambda: len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Cc}]",
-          all_chars)), repr(33))
-        self.expect(lambda: len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Graph}]",
-          all_chars)), repr(94))
-        self.expect(lambda: len(regex.findall(ur"(?uV1)[\p{ASCII}--\p{Cc}]",
-          all_chars)), repr(95))
-        self.expect(lambda: len(regex.findall(ur"(?u)[\p{Letter}\p{Digit}]",
-          all_chars)), repr(127))
-        self.expect(lambda:
-          len(regex.findall(ur"(?uV1)[\p{Letter}||\p{Digit}]", all_chars)),
-          repr(127))
-        self.expect(lambda: len(regex.findall(ur"(?u)\p{HexDigit}",
-          all_chars)), repr(22))
-        self.expect(lambda:
-          len(regex.findall(ur"(?uV1)[\p{HexDigit}~~\p{Digit}]", all_chars)),
-          repr(12))
-        self.expect(lambda:
-          len(regex.findall(ur"(?uV1)[\p{Digit}~~\p{HexDigit}]", all_chars)),
-          repr(12))
+        all_chars = u"".join(unichr(c) for c in range(0x100))
+        # 24..26
+        self.assertEquals(len(regex.findall(ur"(?u)\p{ASCII}", all_chars)), 128)
+        self.assertEquals(len(regex.findall(ur"(?u)\p{Letter}", all_chars)), 117)
+        self.assertEquals(len(regex.findall(ur"(?u)\p{Digit}", all_chars)), 10)
+
+        # Set operators
+        # 27..37
+        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Letter}]",
+          all_chars)), 52)
+        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Letter}]",
+          all_chars)), 52)
+        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Digit}]",
+          all_chars)), 10)
+        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Cc}]",
+          all_chars)), 33)
+        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Graph}]",
+          all_chars)), 94)
+        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}--\p{Cc}]",
+          all_chars)), 95)
+        self.assertEquals(len(regex.findall(ur"(?u)[\p{Letter}\p{Digit}]",
+          all_chars)), 127)
+        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{Letter}||\p{Digit}]",
+          all_chars)), 127)
+        self.assertEquals(len(regex.findall(ur"(?u)\p{HexDigit}", all_chars)), 22)
+        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{HexDigit}~~\p{Digit}]",
+          all_chars)), 12)
+        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{Digit}~~\p{HexDigit}]",
+          all_chars)), 12)
 
         # 38..42
-        self.expect(lambda: type(regex.compile(r"(?V0)([][-])")),
+        self.assertEquals(repr(type(regex.compile(r"(?V0)([][-])"))),
           self.PATTERN_CLASS)
-        self.expect(lambda: regex.findall(r"(?V1)[[a-z]--[aei]]", "abc"),
-          repr(["b", "c"]))
-        self.expect(lambda: regex.findall(r"(?iV1)[[a-z]--[aei]]", "abc"),
-          repr(["b", "c"]))
-        self.expect(lambda: regex.findall("(?V1)[\w--a]","abc"), repr(["b",
-          "c"]))
-        self.expect(lambda: regex.findall("(?iV1)[\w--a]","abc"), repr(["b",
-          "c"]))
+        self.assertEquals(regex.findall(r"(?V1)[[a-z]--[aei]]", "abc"), ["b",
+          "c"])
+        self.assertEquals(regex.findall(r"(?iV1)[[a-z]--[aei]]", "abc"), ["b",
+          "c"])
+        self.assertEquals(regex.findall("(?V1)[\w--a]","abc"), ["b", "c"])
+        self.assertEquals(regex.findall("(?iV1)[\w--a]","abc"), ["b", "c"])
 
     def test_various(self):
         tests = [
             # Test ?P< and ?P= extensions.
             # 1..4
-            ('(?P<foo_123', '', '', self.MISSING_GT),      # Unterminated group identifier.
-            ('(?P<1>a)', '', '', self.BAD_GROUP_NAME),     # Begins with a digit.
-            ('(?P<!>a)', '', '', self.BAD_GROUP_NAME),     # Begins with an illegal char.
-            ('(?P<foo!>a)', '', '', self.MISSING_GT),      # Begins with an illegal char.
+            ('(?P<foo_123', '', '', regex.error, self.MISSING_GT),      # Unterminated group identifier.
+            ('(?P<1>a)', '', '', regex.error, self.BAD_GROUP_NAME),     # Begins with a digit.
+            ('(?P<!>a)', '', '', regex.error, self.BAD_GROUP_NAME),     # Begins with an illegal char.
+            ('(?P<foo!>a)', '', '', regex.error, self.MISSING_GT),      # Begins with an illegal char.
 
             # Same tests, for the ?P= form.
             # 5..8
-            ('(?P<foo_123>a)(?P=foo_123', 'aa', '', self.MISSING_RPAREN),
-            ('(?P<foo_123>a)(?P=1)', 'aa', '', self.BAD_GROUP_NAME),
-            ('(?P<foo_123>a)(?P=!)', 'aa', '', self.BAD_GROUP_NAME),
-            ('(?P<foo_123>a)(?P=foo_124)', 'aa', '', self.UNKNOWN_GROUP),  # Backref to undefined group.
+            ('(?P<foo_123>a)(?P=foo_123', 'aa', '', regex.error,
+              self.MISSING_RPAREN),
+            ('(?P<foo_123>a)(?P=1)', 'aa', '', regex.error,
+              self.BAD_GROUP_NAME),
+            ('(?P<foo_123>a)(?P=!)', 'aa', '', regex.error,
+              self.BAD_GROUP_NAME),
+            ('(?P<foo_123>a)(?P=foo_124)', 'aa', '', regex.error,
+              self.UNKNOWN_GROUP),  # Backref to undefined group.
 
             # 9..10
             ('(?P<foo_123>a)', 'a', '1', repr('a')),
@@ -2013,7 +1923,8 @@ class Test:
             (r'(?<foo_123>a)\g<foo_123', 'aa', '', repr(None)),
             (r'(?<foo_123>a)\g<1>', 'aa', '1', repr('a')),
             (r'(?<foo_123>a)\g<!>', 'aa', '', repr(None)),
-            (r'(?<foo_123>a)\g<foo_124>', 'aa', '', self.UNKNOWN_GROUP),  # Backref to undefined group.
+            (r'(?<foo_123>a)\g<foo_124>', 'aa', '', regex.error,
+              self.UNKNOWN_GROUP),  # Backref to undefined group.
 
             # 15..16
             ('(?<foo_123>a)', 'a', '1', repr('a')),
@@ -2021,7 +1932,7 @@ class Test:
 
             # Test octal escapes.
             # 17..21
-            ('\\1', 'a', '', self.UNKNOWN_GROUP),    # Backreference.
+            ('\\1', 'a', '', regex.error, self.UNKNOWN_GROUP),    # Backreference.
             ('[\\1]', '\1', '0', "'\\x01'"),  # Character.
             ('\\09', chr(0) + '9', '0', repr(chr(0) + '9')),
             ('\\141', 'a', '0', repr('a')),
@@ -2044,6 +1955,7 @@ class Test:
             (r'\c\e\g\h\i\j\k\o\p\q\y\z', 'ceghijkopqyz', '0',
               repr('ceghijkopqyz')),
             (r'\xff', '\377', '0', repr(chr(255))),
+
             # New \x semantics.
             # 30..32
             (r'\x00ffffffffffffff', '\377', '', repr(None)),
@@ -2082,7 +1994,7 @@ class Test:
             ('(?s)a.{4,5}b', 'acc\nccb', '0', repr('acc\nccb')),
 
             # 51..60
-            (')', '', '', self.TRAILING_CHARS),           # Unmatched right bracket.
+            (')', '', '', regex.error, self.TRAILING_CHARS),           # Unmatched right bracket.
             ('', '', '0', "''"),    # Empty pattern.
             ('abc', 'abc', '0', repr('abc')),
             ('abc', 'xbc', '', repr(None)),
@@ -2127,13 +2039,13 @@ class Test:
             ('a[-b]', 'a-', '0', repr('a-')),
             ('a[\\-b]', 'a-', '0', repr('a-')),
             ('a[b-]', 'a-', '0', repr('a-')),
-            ('a[]b', '-', '', self.BAD_SET),
+            ('a[]b', '-', '', regex.error, self.BAD_SET),
 
             # 91..100
-            ('a[', '-', '', self.BAD_SET),
-            ('a\\', '-', '', self.BAD_ESCAPE),
-            ('abc)', '-', '', self.TRAILING_CHARS),
-            ('(abc', '-', '', self.MISSING_RPAREN),
+            ('a[', '-', '', regex.error, self.BAD_SET),
+            ('a\\', '-', '', regex.error, self.BAD_ESCAPE),
+            ('abc)', '-', '', regex.error, self.TRAILING_CHARS),
+            ('(abc', '-', '', regex.error, self.MISSING_RPAREN),
             ('a]', 'a]', '0', repr('a]')),
             ('a[]]b', 'a]b', '0', repr('a]b')),
             ('a[]]b', 'a]b', '0', repr('a]b')),
@@ -2184,7 +2096,7 @@ class Test:
             ('(a+|b)*', 'ab', '0,1', repr(('ab', 'b'))),
             ('(a+|b)+', 'ab', '0,1', repr(('ab', 'b'))),
             ('(a+|b)?', 'ab', '0,1', repr(('a', 'a'))),
-            (')(', '-', '', self.TRAILING_CHARS),
+            (')(', '-', '', regex.error, self.TRAILING_CHARS),
             ('[^ab]*', 'cde', '0', repr('cde')),
             ('abc', '', '', repr(None)),
             ('a*', '', '0', repr('')),
@@ -2217,7 +2129,8 @@ class Test:
             ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', repr(('bh', None))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effgz', '0,1,2', repr(('effgz',
               'effgz', None))),
-            ('(bc+d$|ef*g.|h?i(j|k))', 'ij', '0,1,2', repr(('ij', 'ij', 'j'))),
+            ('(bc+d$|ef*g.|h?i(j|k))', 'ij', '0,1,2', repr(('ij', 'ij',
+              'j'))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effg', '', repr(None)),
             ('(bc+d$|ef*g.|h?i(j|k))', 'bcdd', '', repr(None)),
             ('(bc+d$|ef*g.|h?i(j|k))', 'reffgz', '0,1,2', repr(('effgz',
@@ -2269,15 +2182,15 @@ class Test:
 
             # Test symbolic groups.
             # 201..204
-            ('(?P<i d>aaa)a', 'aaaa', '', self.MISSING_GT),
+            ('(?P<i d>aaa)a', 'aaaa', '', regex.error, self.MISSING_GT),
             ('(?P<id>aaa)a', 'aaaa', '0,id', repr(('aaaa', 'aaa'))),
             ('(?P<id>aa)(?P=id)', 'aaaa', '0,id', repr(('aaaa', 'aa'))),
-            ('(?P<id>aa)(?P=xd)', 'aaaa', '', self.UNKNOWN_GROUP),
+            ('(?P<id>aa)(?P=xd)', 'aaaa', '', regex.error, self.UNKNOWN_GROUP),
 
             # Character properties.
             # 205..214
             (ur"\g", u"g", '0', repr(u'g')),
-            (ur"\g<1>", u"g", '', self.UNKNOWN_GROUP),
+            (ur"\g<1>", u"g", '', regex.error, self.UNKNOWN_GROUP),
             (ur"(.)\g<1>", u"gg", '0', repr(u'gg')),
             (ur"(.)\g<1>", u"gg", '', repr((u'gg', u'g'))),
             (ur"\N", u"N", '0', repr(u'N')),
@@ -2341,11 +2254,11 @@ class Test:
             ('a[b-d]', 'aac', '0', repr('ac')),
             ('a[-b]', 'a-', '0', repr('a-')),
             ('a[b-]', 'a-', '0', repr('a-')),
-            ('a[b-a]', '-', '', self.BAD_CHAR_RANGE),
-            ('a[]b', '-', '', self.BAD_SET),
+            ('a[b-a]', '-', '', regex.error, self.BAD_CHAR_RANGE),
+            ('a[]b', '-', '', regex.error, self.BAD_SET),
 
             # 261..270
-            ('a[', '-', '', self.BAD_SET),
+            ('a[', '-', '', regex.error, self.BAD_SET),
             ('a]', 'a]', '0', repr('a]')),
             ('a[]]b', 'a]b', '0', repr('a]b')),
             ('a[^bc]d', 'aed', '0', repr('aed')),
@@ -2359,23 +2272,23 @@ class Test:
             # 271..280
             ('ab|cd', 'abcd', '0', repr('ab')),
             ('()ef', 'def', '0,1', repr(('ef', ''))),
-            ('*a', '-', '', self.NOTHING_TO_REPEAT),
-            ('(*)b', '-', '', self.NOTHING_TO_REPEAT),
+            ('*a', '-', '', regex.error, self.NOTHING_TO_REPEAT),
+            ('(*)b', '-', '', regex.error, self.NOTHING_TO_REPEAT),
             ('$b', 'b', '', repr(None)),
-            ('a\\', '-', '', self.BAD_ESCAPE),
+            ('a\\', '-', '', regex.error, self.BAD_ESCAPE),
             ('a\\(b', 'a(b', '', repr(('a(b',))),
             ('a\\(*b', 'ab', '0', repr('ab')),
             ('a\\(*b', 'a((b', '0', repr('a((b')),
             ('a\\\\b', 'a\\b', '0', repr('a\\b')),
 
             # 281..290
-            ('abc)', '-', '', self.TRAILING_CHARS),
-            ('(abc', '-', '', self.MISSING_RPAREN),
+            ('abc)', '-', '', regex.error, self.TRAILING_CHARS),
+            ('(abc', '-', '', regex.error, self.MISSING_RPAREN),
             ('((a))', 'abc', '0,1,2', repr(('a', 'a', 'a'))),
             ('(a)b(c)', 'abc', '0,1,2', repr(('abc', 'a', 'c'))),
             ('a+b+c', 'aabbabc', '0', repr('abc')),
             ('a{1,}b{1,}c', 'aabbabc', '0', repr('abc')),
-            ('a**', '-', '', self.NOTHING_TO_REPEAT),
+            ('a**', '-', '', regex.error, self.NOTHING_TO_REPEAT),
             ('a.+?c', 'abcabc', '0', repr('abc')),
             ('(a+|b)*', 'ab', '0,1', repr(('ab', 'b'))),
             ('(a+|b){0,}', 'ab', '0,1', repr(('ab', 'b'))),
@@ -2385,7 +2298,7 @@ class Test:
             ('(a+|b){1,}', 'ab', '0,1', repr(('ab', 'b'))),
             ('(a+|b)?', 'ab', '0,1', repr(('a', 'a'))),
             ('(a+|b){0,1}', 'ab', '0,1', repr(('a', 'a'))),
-            (')(', '-', '', self.TRAILING_CHARS),
+            (')(', '-', '', regex.error, self.TRAILING_CHARS),
             ('[^ab]*', 'cde', '0', repr('cde')),
             ('abc', '', '', repr(None)),
             ('a*', '', '0', repr('')),
@@ -2420,7 +2333,8 @@ class Test:
             ('^a(bc+|b[eh])g|.h$', 'abh', '0,1', repr(('bh', None))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effgz', '0,1,2', repr(('effgz',
               'effgz', None))),
-            ('(bc+d$|ef*g.|h?i(j|k))', 'ij', '0,1,2', repr(('ij', 'ij', 'j'))),
+            ('(bc+d$|ef*g.|h?i(j|k))', 'ij', '0,1,2', repr(('ij', 'ij',
+              'j'))),
             ('(bc+d$|ef*g.|h?i(j|k))', 'effg', '', repr(None)),
             ('(bc+d$|ef*g.|h?i(j|k))', 'bcdd', '', repr(None)),
             ('(bc+d$|ef*g.|h?i(j|k))', 'reffgz', '0,1,2', repr(('effgz',
@@ -2432,8 +2346,10 @@ class Test:
             #    ('((((((((((a))))))))))\\41', 'aa', '', repr(None)),
             #    ('((((((((((a))))))))))\\41', 'a!', '0', repr('a!')),
             # 329..330
-            ('((((((((((a))))))))))\\41', '', '', self.UNKNOWN_GROUP),
-            ('(?i)((((((((((a))))))))))\\41', '', '', self.UNKNOWN_GROUP),
+            ('((((((((((a))))))))))\\41', '', '', regex.error,
+              self.UNKNOWN_GROUP),
+            ('(?i)((((((((((a))))))))))\\41', '', '', regex.error,
+              self.UNKNOWN_GROUP),
 
             # 331..340
             ('(((((((((a)))))))))', 'a', '0', repr('a')),
@@ -2500,9 +2416,9 @@ class Test:
             ('(?i)a[b-d]', 'AAC', '0', repr('AC')),
             ('(?i)a[-b]', 'A-', '0', repr('A-')),
             ('(?i)a[b-]', 'A-', '0', repr('A-')),
-            ('(?i)a[b-a]', '-', '', self.BAD_CHAR_RANGE),
-            ('(?i)a[]b', '-', '', self.BAD_SET),
-            ('(?i)a[', '-', '', self.BAD_SET),
+            ('(?i)a[b-a]', '-', '', regex.error, self.BAD_CHAR_RANGE),
+            ('(?i)a[]b', '-', '', regex.error, self.BAD_SET),
+            ('(?i)a[', '-', '', regex.error, self.BAD_SET),
             ('(?i)a]', 'A]', '0', repr('A]')),
             ('(?i)a[]]b', 'A]B', '0', repr('A]B')),
             ('(?i)a[^bc]d', 'AED', '0', repr('AED')),
@@ -2516,25 +2432,25 @@ class Test:
             ('(?i)ab|cd', 'ABC', '0', repr('AB')),
             ('(?i)ab|cd', 'ABCD', '0', repr('AB')),
             ('(?i)()ef', 'DEF', '0,1', repr(('EF', ''))),
-            ('(?i)*a', '-', '', self.NOTHING_TO_REPEAT),
-            ('(?i)(*)b', '-', '', self.NOTHING_TO_REPEAT),
+            ('(?i)*a', '-', '', regex.error, self.NOTHING_TO_REPEAT),
+            ('(?i)(*)b', '-', '', regex.error, self.NOTHING_TO_REPEAT),
             ('(?i)$b', 'B', '', repr(None)),
 
             # 401..410
-            ('(?i)a\\', '-', '', self.BAD_ESCAPE),
+            ('(?i)a\\', '-', '', regex.error, self.BAD_ESCAPE),
             ('(?i)a\\(b', 'A(B', '', repr(('A(B',))),
             ('(?i)a\\(*b', 'AB', '0', repr('AB')),
             ('(?i)a\\(*b', 'A((B', '0', repr('A((B')),
             ('(?i)a\\\\b', 'A\\B', '0', repr('A\\B')),
-            ('(?i)abc)', '-', '', self.TRAILING_CHARS),
-            ('(?i)(abc', '-', '', self.MISSING_RPAREN),
+            ('(?i)abc)', '-', '', regex.error, self.TRAILING_CHARS),
+            ('(?i)(abc', '-', '', regex.error, self.MISSING_RPAREN),
             ('(?i)((a))', 'ABC', '0,1,2', repr(('A', 'A', 'A'))),
             ('(?i)(a)b(c)', 'ABC', '0,1,2', repr(('ABC', 'A', 'C'))),
             ('(?i)a+b+c', 'AABBABC', '0', repr('ABC')),
 
             # 411..420
             ('(?i)a{1,}b{1,}c', 'AABBABC', '0', repr('ABC')),
-            ('(?i)a**', '-', '', self.NOTHING_TO_REPEAT),
+            ('(?i)a**', '-', '', regex.error, self.NOTHING_TO_REPEAT),
             ('(?i)a.+?c', 'ABCABC', '0', repr('ABC')),
             ('(?i)a.*?c', 'ABCABC', '0', repr('ABC')),
             ('(?i)a.{0,5}?c', 'ABCABC', '0', repr('ABC')),
@@ -2547,7 +2463,7 @@ class Test:
             # 421..430
             ('(?i)(a+|b){0,1}', 'AB', '0,1', repr(('A', 'A'))),
             ('(?i)(a+|b){0,1}?', 'AB', '0,1', repr(('', None))),
-            ('(?i))(', '-', '', self.TRAILING_CHARS),
+            ('(?i))(', '-', '', regex.error, self.TRAILING_CHARS),
             ('(?i)[^ab]*', 'CDE', '0', repr('CDE')),
             ('(?i)abc', '', '', repr(None)),
             ('(?i)a*', '', '0', repr('')),
@@ -2603,7 +2519,7 @@ class Test:
 
             # 461..464
             ('(?i)multiple words', 'MULTIPLE WORDS, YEAH', '0',
-              repr('MULTIPLE WORDS')),
+             repr('MULTIPLE WORDS')),
             ('(?i)(.*)c(.*)', 'ABCDE', '0,1,2', repr(('ABCDE', 'AB', 'DE'))),
             ('(?i)\\((.*), (.*)\\)', '(A, B)', '2,1', repr(('B', 'A'))),
             ('(?i)[k]', 'AB', '', repr(None)),
@@ -2636,7 +2552,7 @@ class Test:
             # Comments using the (?#...) syntax.
 
             # 478..479
-            ('w(?# comment', 'w', '', self.MISSING_RPAREN),
+            ('w(?# comment', 'w', '', regex.error, self.MISSING_RPAREN),
             ('w(?# comment 1)xy(?# comment 2)z', 'wxyz', '0', repr('wxyz')),
 
             # Check odd placement of embedded pattern modifiers.
@@ -2685,7 +2601,7 @@ xyzabc
             ('[\\D]+', '1234abc5678', '0', repr('abc')),
             ('[\\da-fA-F]+', '123abc', '0', repr('123abc')),
             # Not an error under PCRE/PRE:
-            # ('[\\d-x]', '-', '', self.SYNTAX_ERROR),
+            # ('[\\d-x]', '-', '', regex.error, self.SYNTAX_ERROR),
             # 497..498
             (r'([\s]*)([\S]*)([\s]*)', ' testing!1972', '3,2,1', repr(('',
               'testing!1972', ' '))),
@@ -2701,13 +2617,13 @@ xyzabc
               'smil'))),
             # Bug 110866: reference to undefined group.
             # 500
-            (r'((.)\1+)', '', '', self.OPEN_GROUP),
+            (r'((.)\1+)', '', '', regex.error, self.OPEN_GROUP),
             # Bug 111869: search (PRE/PCRE fails on this one, SRE doesn't).
             # 501
             (r'.*d', 'abc\nabd', '0', repr('abd')),
             # Bug 112468: various expected syntax errors.
             # 502..503
-            (r'(', '', '', self.MISSING_RPAREN),
+            (r'(', '', '', regex.error, self.MISSING_RPAREN),
             (r'[\41]', '!', '0', repr('!')),
             # Bug 114033: nothing to repeat.
             # 504
@@ -2745,7 +2661,7 @@ xyzabc
             # Bug 130748: ^* should be an error (nothing to repeat).
             # In 'regex' we won't bother to complain about this.
             # 521
-            # (r'^*', '', '', self.NOTHING_TO_REPEAT),
+            # (r'^*', '', '', regex.error, self.NOTHING_TO_REPEAT),
             # Bug 133283: minimizing repeat problem.
             # 522
             (r'"(?:\\"|[^"])*?"', r'"\""', '0', repr(r'"\""')),
@@ -2776,13 +2692,15 @@ xyzabc
         ]
 
         for t in tests:
-            self.index += 1
+            excval = None
             try:
-                pattern, string, groups, expected = t
+                if len(t) == 4:
+                    pattern, string, groups, expected = t
+                else:
+                    pattern, string, groups, expected, excval = t
             except ValueError:
                 fields = ", ".join([repr(f) for f in t[ : 3]] + ["..."])
-                self.record_failure("Incorrect number of test fields: (%s)" %
-                  fields)
+                self.fail("Incorrect number of test fields: (%s)" % fields)
             else:
                 group_list = []
                 if groups:
@@ -2792,7 +2710,10 @@ xyzabc
                         except ValueError:
                             group_list.append(group)
 
-                try:
+                if excval is not None:
+                    self.assertRaisesRegex(expected, excval,
+                                           regex.search, pattern, string)
+                else:
                     m = regex.search(pattern, string)
                     if m:
                         if group_list:
@@ -2801,86 +2722,78 @@ xyzabc
                             actual = repr(m[:])
                     else:
                         actual = repr(m)
-                except Exception, e:
-                    actual = repr(e)
 
-                if actual != expected:
-                    fields = ", ".join([repr(f) for f in t[ : 3]] + ["..."])
-                    self.record_failure("Expected %s but got %s instead: (%s)" %
-                      (expected, actual, fields))
+                    self.assertEqual(actual, expected)
 
     def test_replacement(self):
         # 1..2
-        self.expect(lambda: regex.sub("test\?", "result\?\.\a\q\m\n", "test?"),
-          repr("result\?\.\a\q\m\n"))
-        self.expect(lambda: regex.sub(r"test\?", "result\?\.\a\q\m\n",
-          "test?"), repr("result\?\.\a\q\m\n"))
+        self.assertEquals(regex.sub("test\?", "result\?\.\a\q\m\n", "test?"),
+          "result\?\.\a\q\m\n")
+        self.assertEquals(regex.sub(r"test\?", "result\?\.\a\q\m\n", "test?"),
+          "result\?\.\a\q\m\n")
 
         # 3..6
-        self.expect(lambda: regex.sub('(.)', r"\1\1", 'x'), repr('xx'))
-        self.expect(lambda: regex.sub('(.)', regex.escape(r"\1\1"), 'x'),
-          repr(r"\1\1"))
-        self.expect(lambda: regex.sub('(.)', r"\\1\\1", 'x'), repr(r"\1\1"))
-        self.expect(lambda: regex.sub('(.)', lambda m: r"\1\1", 'x'),
-          repr(r"\1\1"))
+        self.assertEquals(regex.sub('(.)', r"\1\1", 'x'), 'xx')
+        self.assertEquals(regex.sub('(.)', regex.escape(r"\1\1"), 'x'),
+          r"\1\1")
+        self.assertEquals(regex.sub('(.)', r"\\1\\1", 'x'), r"\1\1")
+        self.assertEquals(regex.sub('(.)', lambda m: r"\1\1", 'x'), r"\1\1")
 
     def test_common_prefix(self):
         # Very long common prefix
         all = string.ascii_lowercase + string.digits + string.ascii_uppercase
         side = all * 4
         regexp = '(' + side + '|' + side + ')'
-        self.expect(lambda: type(regex.compile(regexp)), self.PATTERN_CLASS)
+        # 1
+        self.assertEquals(repr(type(regex.compile(regexp))),
+          self.PATTERN_CLASS)
 
     def test_captures(self):
         # 1..5
-        self.expect(lambda: regex.search(r"(\w)+", "abc").captures(1),
-          repr(['a', 'b', 'c']))
-        self.expect(lambda: regex.search(r"(\w{3})+", "abcdef").captures(0, 1),
-          repr((['abcdef'], ['abc', 'def'])))
-        self.expect(lambda: regex.search(r"^(\d{1,3})(?:\.(\d{1,3})){3}$",
-          "192.168.0.1").captures(1, 2), repr((['192', ], ['168', '0', '1'])))
-        self.expect(lambda: regex.match(r"^([0-9A-F]{2}){4} ([a-z]\d){5}$",
-          "3FB52A0C a2c4g3k9d3").captures(1, 2), repr((['3F', 'B5', '2A',
-          '0C'], ['a2', 'c4', 'g3', 'k9', 'd3'])))
-        self.expect(lambda: regex.match("([a-z]W)([a-z]X)+([a-z]Y)",
-          "aWbXcXdXeXfY").captures(1, 2, 3), repr((['aW'], ['bX', 'cX', 'dX',
-          'eX'], ['fY'])))
+        self.assertEquals(regex.search(r"(\w)+", "abc").captures(1), ['a', 'b',
+          'c'])
+        self.assertEquals(regex.search(r"(\w{3})+", "abcdef").captures(0, 1),
+          (['abcdef'], ['abc', 'def']))
+        self.assertEquals(regex.search(r"^(\d{1,3})(?:\.(\d{1,3})){3}$",
+          "192.168.0.1").captures(1, 2), (['192', ], ['168', '0', '1']))
+        self.assertEquals(regex.match(r"^([0-9A-F]{2}){4} ([a-z]\d){5}$",
+          "3FB52A0C a2c4g3k9d3").captures(1, 2), (['3F', 'B5', '2A', '0C'],
+          ['a2', 'c4', 'g3', 'k9', 'd3']))
+        self.assertEquals(regex.match("([a-z]W)([a-z]X)+([a-z]Y)",
+          "aWbXcXdXeXfY").captures(1, 2, 3), (['aW'], ['bX', 'cX', 'dX', 'eX'],
+          ['fY']))
 
         # 6..8
-        self.expect(lambda: regex.search(r".*?(?=(.)+)b", "ab").captures(1),
-          repr(['b']))
-        self.expect(lambda: regex.search(r".*?(?>(.){0,2})d",
-          "abcd").captures(1), repr(['b', 'c']))
-        self.expect(lambda: regex.search(r"(.)+", "a").captures(1),
-          repr(['a']))
+        self.assertEquals(regex.search(r".*?(?=(.)+)b", "ab").captures(1),
+          ['b'])
+        self.assertEquals(regex.search(r".*?(?>(.){0,2})d",
+          "abcd").captures(1), ['b', 'c'])
+        self.assertEquals(regex.search(r"(.)+", "a").captures(1), ['a'])
 
     def test_guards(self):
         m = regex.search(r"(X.*?Y\s*){3}(X\s*)+AB:",
           "XY\nX Y\nX  Y\nXY\nXX AB:")
         # 1
-        self.expect(lambda: m.span(0, 1, 2), repr(((3, 21), (12, 15), (16,
-          18))))
+        self.assertEquals(m.span(0, 1, 2), ((3, 21), (12, 15), (16, 18)))
 
         m = regex.search(r"(X.*?Y\s*){3,}(X\s*)+AB:",
           "XY\nX Y\nX  Y\nXY\nXX AB:")
         # 2
-        self.expect(lambda: m.span(0, 1, 2), repr(((0, 21), (12, 15), (16,
-          18))))
+        self.assertEquals(m.span(0, 1, 2), ((0, 21), (12, 15), (16, 18)))
 
         m = regex.search(r'\d{4}(\s*\w)?\W*((?!\d)\w){2}', "9999XX")
         # 3
-        self.expect(lambda: m.span(0, 1, 2), repr(((0, 6), (-1, -1), (5, 6))))
+        self.assertEquals(m.span(0, 1, 2), ((0, 6), (-1, -1), (5, 6)))
 
         m = regex.search(r'A\s*?.*?(\n+.*?\s*?){0,2}\(X', 'A\n1\nS\n1 (X')
         # 4
-        self.expect(lambda: m.span(0, 1), repr(((0, 10), (5, 8))))
+        self.assertEquals(m.span(0, 1), ((0, 10), (5, 8)))
 
         m = regex.search('Derde\s*:', 'aaaaaa:\nDerde:')
-        # 5
-        self.expect(lambda: m.span(), repr((8, 14)))
+        # 5..6
+        self.assertEquals(m.span(), (8, 14))
         m = regex.search('Derde\s*:', 'aaaaa:\nDerde:')
-        # 6
-        self.expect(lambda: m.span(), repr((7, 13)))
+        self.assertEquals(m.span(), (7, 13))
 
     def test_turkic(self):
         # Turkish has dotted and dotless I/i.
@@ -2898,618 +2811,537 @@ xyzabc
 
         for ch1 in all_chars:
             for ch2 in all_chars:
-                self.index += 1
                 m = regex.match(ur"(?iu)\A" + ch1 + ur"\Z", ch2)
                 if m:
                     if (ch1, ch2) not in matching:
-                        self.record_failure("%s matching %s" % (repr(ch1),
+                        self.fail("%s matching %s" % (repr(ch1),
                           repr(ch2)))
                 else:
                     if (ch1, ch2) in matching:
-                        self.record_failure("%s not matching %s" % (repr(ch1),
+                        self.fail("%s not matching %s" % (repr(ch1),
                           repr(ch2)))
 
     def test_named_lists(self):
         options = [u"one", u"two", u"three"]
         # 1..3
-        self.expect(lambda: regex.match(ur"333\L<bar>444", u"333one444",
-          bar=options).group(), repr(u"333one444"))
-        self.expect(lambda: regex.match(ur"(?i)333\L<bar>444", u"333TWO444",
-          bar=options).group(), repr(u"333TWO444"))
-        self.expect(lambda: regex.match(ur"333\L<bar>444", u"333four444",
-          bar=options), repr(None))
+        self.assertEquals(regex.match(ur"333\L<bar>444", u"333one444",
+          bar=options).group(), u"333one444")
+        self.assertEquals(regex.match(ur"(?i)333\L<bar>444", u"333TWO444",
+          bar=options).group(), u"333TWO444")
+        self.assertEquals(regex.match(ur"333\L<bar>444", u"333four444",
+          bar=options), None)
 
         options = ["one", "two", "three"]
         # 4..6
-        self.expect(lambda: regex.match(r"333\L<bar>444", "333one444",
-          bar=options).group(), repr("333one444"))
-        self.expect(lambda: regex.match(r"(?i)333\L<bar>444", "333TWO444",
-          bar=options).group(), repr("333TWO444"))
-        self.expect(lambda: regex.match(r"333\L<bar>444", "333four444",
-          bar=options), repr(None))
+        self.assertEquals(regex.match(r"333\L<bar>444", "333one444",
+          bar=options).group(), "333one444")
+        self.assertEquals(regex.match(r"(?i)333\L<bar>444", "333TWO444",
+          bar=options).group(), "333TWO444")
+        self.assertEquals(regex.match(r"333\L<bar>444", "333four444",
+          bar=options), None)
 
         # 7
-        self.expect(lambda: type(regex.compile(r"3\L<bar>4\L<bar>+5",
-          bar=["one", "two", "three"])), self.PATTERN_CLASS)
+        self.assertEquals(repr(type(regex.compile(r"3\L<bar>4\L<bar>+5",
+          bar=["one", "two", "three"]))), self.PATTERN_CLASS)
 
         # 8..9
-        self.expect(lambda: regex.findall(r"^\L<options>", "solid QWERT",
-          options=set(['good', 'brilliant', '+s\\ol[i}d'])), repr([]))
-        self.expect(lambda: regex.findall(r"^\L<options>", "+solid QWERT",
-          options=set(['good', 'brilliant', '+solid'])), repr(['+solid']))
+        self.assertEquals(regex.findall(r"^\L<options>", "solid QWERT",
+          options=set(['good', 'brilliant', '+s\\ol[i}d'])), [])
+        self.assertEquals(regex.findall(r"^\L<options>", "+solid QWERT",
+          options=set(['good', 'brilliant', '+solid'])), ['+solid'])
 
         options = [u"STRASSE"]
         # 10
-        self.expect(lambda: regex.match(ur"(?fiu)\L<words>",
-          u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(),
-          repr((0, 6)))
+        self.assertEquals(regex.match(ur"(?fiu)\L<words>",
+          u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(), (0, 6))
 
         options = [u"STRASSE", u"stress"]
         # 11
-        self.expect(lambda: regex.match(ur"(?fiu)\L<words>",
-          u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(),
-          repr((0, 6)))
+        self.assertEquals(regex.match(ur"(?fiu)\L<words>",
+          u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(), (0, 6))
 
         options = [u"stra\N{LATIN SMALL LETTER SHARP S}e"]
         # 12
-        self.expect(lambda: regex.match(ur"(?fiu)\L<words>", u"STRASSE",
-          words=options).span(), repr((0, 7)))
+        self.assertEquals(regex.match(ur"(?fiu)\L<words>", u"STRASSE",
+          words=options).span(), (0, 7))
 
         options = ["kit"]
         # 13..14
-        self.expect(lambda: regex.search(ur"(?iu)\L<words>", u"SKITS",
-          words=options).span(), repr((1, 4)))
-        self.expect(lambda: regex.search(ur"(?iu)\L<words>",
+        self.assertEquals(regex.search(ur"(?iu)\L<words>", u"SKITS",
+          words=options).span(), (1, 4))
+        self.assertEquals(regex.search(ur"(?iu)\L<words>",
           u"SK\N{LATIN CAPITAL LETTER I WITH DOT ABOVE}TS",
-          words=options).span(), repr((1, 4)))
+          words=options).span(), (1, 4))
 
         # 15..16
-        self.expect(lambda: regex.search(ur"(?fiu)\b(\w+) +\1\b",
-          u" stra\N{LATIN SMALL LETTER SHARP S}e STRASSE ").span(), repr((1,
-          15)))
-        self.expect(lambda: regex.search(ur"(?fiu)\b(\w+) +\1\b",
-          u" STRASSE stra\N{LATIN SMALL LETTER SHARP S}e ").span(), repr((1,
-          15)))
+        self.assertEquals(regex.search(ur"(?fiu)\b(\w+) +\1\b",
+          u" stra\N{LATIN SMALL LETTER SHARP S}e STRASSE ").span(), (1, 15))
+        self.assertEquals(regex.search(ur"(?fiu)\b(\w+) +\1\b",
+          u" STRASSE stra\N{LATIN SMALL LETTER SHARP S}e ").span(), (1, 15))
+
+        # 17
+        self.assertEquals(regex.search(r"^\L<options>$", "",
+          options=[]).span(), (0, 0))
 
     def test_fuzzy(self):
         # Some tests borrowed from TRE library tests.
         # 1..6
-        self.expect(lambda: type(regex.compile('(fou){s,e<=1}')),
+        self.assertEquals(repr(type(regex.compile('(fou){s,e<=1}'))),
           self.PATTERN_CLASS)
-        self.expect(lambda: type(regex.compile('(fuu){s}')),
+        self.assertEquals(repr(type(regex.compile('(fuu){s}'))),
           self.PATTERN_CLASS)
-        self.expect(lambda: type(regex.compile('(fuu){s,e}')),
+        self.assertEquals(repr(type(regex.compile('(fuu){s,e}'))),
           self.PATTERN_CLASS)
-        self.expect(lambda: type(regex.compile('(anaconda){1i+1d<1,s<=1}')),
+        self.assertEquals(repr(type(regex.compile('(anaconda){1i+1d<1,s<=1}'))),
           self.PATTERN_CLASS)
-        self.expect(lambda:
-          type(regex.compile('(anaconda){1i+1d<1,s<=1,e<=10}')),
+        self.assertEquals(repr(type(regex.compile('(anaconda){1i+1d<1,s<=1,e<=10}'))),
           self.PATTERN_CLASS)
-        self.expect(lambda:
-          type(regex.compile('(anaconda){s<=1,e<=1,1i+1d<1}')),
+        self.assertEquals(repr(type(regex.compile('(anaconda){s<=1,e<=1,1i+1d<1}'))),
           self.PATTERN_CLASS)
 
         text = 'molasses anaconda foo bar baz smith anderson '
         # 7..11
-        self.expect(lambda: regex.search('(znacnda){s<=1,e<=3,1i+1d<1}', text),
-          repr(None))
-        self.expect(lambda: regex.search('(znacnda){s<=1,e<=3,1i+1d<2}',
-          text).span(0, 1), repr(((9, 17), (9, 17))))
-        self.expect(lambda: regex.search('(ananda){1i+1d<2}', text),
-          repr(None))
-        self.expect(lambda: regex.search(r"(?:\bznacnda){e<=2}", text)[0],
-          repr("anaconda"))
-        self.expect(lambda: regex.search(r"(?:\bnacnda){e<=2}", text)[0],
-          repr("anaconda"))
+        self.assertEquals(regex.search('(znacnda){s<=1,e<=3,1i+1d<1}', text),
+          None)
+        self.assertEquals(regex.search('(znacnda){s<=1,e<=3,1i+1d<2}',
+          text).span(0, 1), ((9, 17), (9, 17)))
+        self.assertEquals(regex.search('(ananda){1i+1d<2}', text), None)
+        self.assertEquals(regex.search(r"(?:\bznacnda){e<=2}", text)[0],
+          "anaconda")
+        self.assertEquals(regex.search(r"(?:\bnacnda){e<=2}", text)[0],
+          "anaconda")
 
         text = 'anaconda foo bar baz smith anderson'
         # 12..17
-        self.expect(lambda: regex.search('(fuu){i<=3,d<=3,e<=5}', text).span(0,
-          1), repr(((0, 0), (0, 0))))
-        self.expect(lambda: regex.search('(?b)(fuu){i<=3,d<=3,e<=5}',
-          text).span(0, 1), repr(((9, 10), (9, 10))))
-        self.expect(lambda: regex.search('(fuu){i<=2,d<=2,e<=5}', text).span(0,
-          1), repr(((7, 10), (7, 10))))
-        self.expect(lambda: regex.search('(?e)(fuu){i<=2,d<=2,e<=5}',
-          text).span(0, 1), repr(((9, 10), (9, 10))))
-        self.expect(lambda: regex.search('(fuu){i<=3,d<=3,e}', text).span(0,
-          1), repr(((0, 0), (0, 0))))
-        self.expect(lambda: regex.search('(?b)(fuu){i<=3,d<=3,e}',
-          text).span(0, 1), repr(((9, 10), (9, 10))))
+        self.assertEquals(regex.search('(fuu){i<=3,d<=3,e<=5}', text).span(0,
+          1), ((0, 0), (0, 0)))
+        self.assertEquals(regex.search('(?b)(fuu){i<=3,d<=3,e<=5}',
+          text).span(0, 1), ((9, 10), (9, 10)))
+        self.assertEquals(regex.search('(fuu){i<=2,d<=2,e<=5}', text).span(0,
+          1), ((7, 10), (7, 10)))
+        self.assertEquals(regex.search('(?e)(fuu){i<=2,d<=2,e<=5}',
+          text).span(0, 1), ((9, 10), (9, 10)))
+        self.assertEquals(regex.search('(fuu){i<=3,d<=3,e}', text).span(0, 1),
+          ((0, 0), (0, 0)))
+        self.assertEquals(regex.search('(?b)(fuu){i<=3,d<=3,e}', text).span(0,
+          1), ((9, 10), (9, 10)))
 
         # 18
-        self.expect(lambda: type(regex.compile('(approximate){s<=3,1i+1d<3}')),
+        self.assertEquals(repr(type(regex.compile('(approximate){s<=3,1i+1d<3}'))),
           self.PATTERN_CLASS)
 
         # No cost limit.
         # 19..21
-        self.expect(lambda: regex.search('(foobar){e}',
-          'xirefoabralfobarxie').span(0, 1), repr(((0, 6), (0, 6))))
-        self.expect(lambda: regex.search('(?e)(foobar){e}',
-          'xirefoabralfobarxie').span(0, 1), repr(((0, 3), (0, 3))))
-        self.expect(lambda: regex.search('(?b)(foobar){e}',
-          'xirefoabralfobarxie').span(0, 1), repr(((11, 16), (11, 16))))
+        self.assertEquals(regex.search('(foobar){e}',
+          'xirefoabralfobarxie').span(0, 1), ((0, 6), (0, 6)))
+        self.assertEquals(regex.search('(?e)(foobar){e}',
+          'xirefoabralfobarxie').span(0, 1), ((0, 3), (0, 3)))
+        self.assertEquals(regex.search('(?b)(foobar){e}',
+          'xirefoabralfobarxie').span(0, 1), ((11, 16), (11, 16)))
 
         # At most two errors.
         # 22..23
-        self.expect(lambda: regex.search('(foobar){e<=2}',
-          'xirefoabrzlfd').span(0, 1), repr(((4, 9), (4, 9))))
-        self.expect(lambda: regex.search('(foobar){e<=2}', 'xirefoabzlfd'),
-          repr(None))
+        self.assertEquals(regex.search('(foobar){e<=2}',
+          'xirefoabrzlfd').span(0, 1), ((4, 9), (4, 9)))
+        self.assertEquals(regex.search('(foobar){e<=2}', 'xirefoabzlfd'), None)
 
         # At most two inserts or substitutions and max two errors total.
         # 24
-        self.expect(lambda: regex.search('(foobar){i<=2,s<=2,e<=2}',
-          'oobargoobaploowap').span(0, 1), repr(((5, 11), (5, 11))))
+        self.assertEquals(regex.search('(foobar){i<=2,s<=2,e<=2}',
+          'oobargoobaploowap').span(0, 1), ((5, 11), (5, 11)))
 
         # Find best whole word match for "foobar".
         # 25..27
-        self.expect(lambda: regex.search('\\b(foobar){e}\\b',
-          'zfoobarz').span(0, 1), repr(((0, 8), (0, 8))))
-        self.expect(lambda: regex.search('\\b(foobar){e}\\b',
-          'boing zfoobarz goobar woop').span(0, 1), repr(((0, 6), (0, 6))))
-        self.expect(lambda: regex.search('(?b)\\b(foobar){e}\\b',
-          'boing zfoobarz goobar woop').span(0, 1), repr(((15, 21), (15, 21))))
+        self.assertEquals(regex.search('\\b(foobar){e}\\b', 'zfoobarz').span(0,
+          1), ((0, 8), (0, 8)))
+        self.assertEquals(regex.search('\\b(foobar){e}\\b',
+          'boing zfoobarz goobar woop').span(0, 1), ((0, 6), (0, 6)))
+        self.assertEquals(regex.search('(?b)\\b(foobar){e}\\b',
+          'boing zfoobarz goobar woop').span(0, 1), ((15, 21), (15, 21)))
 
         # Match whole string, allow only 1 error.
         # 28..42
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'foobar').span(0,
-          1), repr(((0, 6), (0, 6))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'xfoobar').span(0,
-          1), repr(((0, 7), (0, 7))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$',
-         'foobarx').span(0, 1), repr(((0, 7), (0, 7))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'fooxbar').span(0,
-          1), repr(((0, 7), (0, 7))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'foxbar').span(0,
-          1), repr(((0, 6), (0, 6))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'xoobar').span(0,
-          1), repr(((0, 6), (0, 6))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'foobax').span(0,
-          1), repr(((0, 6), (0, 6))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'oobar').span(0,
-          1), repr(((0, 5), (0, 5))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'fobar').span(0,
-          1), repr(((0, 5), (0, 5))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'fooba').span(0,
-          1), repr(((0, 5), (0, 5))))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'xfoobarx'),
-          repr(None))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'foobarxx'),
-          repr(None))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'xxfoobar'),
-          repr(None))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'xfoxbar'),
-          repr(None))
-        self.expect(lambda: regex.search('^(foobar){e<=1}$', 'foxbarx'),
-          repr(None))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foobar').span(0,
+          1), ((0, 6), (0, 6)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xfoobar').span(0,
+          1), ((0, 7), (0, 7)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foobarx').span(0,
+          1), ((0, 7), (0, 7)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'fooxbar').span(0,
+          1), ((0, 7), (0, 7)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foxbar').span(0,
+          1), ((0, 6), (0, 6)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xoobar').span(0,
+          1), ((0, 6), (0, 6)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foobax').span(0,
+          1), ((0, 6), (0, 6)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'oobar').span(0, 1),
+          ((0, 5), (0, 5)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'fobar').span(0, 1),
+          ((0, 5), (0, 5)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'fooba').span(0, 1),
+          ((0, 5), (0, 5)))
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xfoobarx'), None)
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foobarxx'), None)
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xxfoobar'), None)
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xfoxbar'), None)
+        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foxbarx'), None)
 
         # At most one insert, two deletes, and three substitutions.
         # Additionally, deletes cost two and substitutes one, and total
         # cost must be less than 4.
         # 43..44
-        self.expect(lambda: regex.search('(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
-          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), repr(((6,
-          13), (6, 13))))
-        self.expect(lambda:
-          regex.search('(?b)(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
-          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), repr(((26,
-          33), (26, 33))))
+        self.assertEquals(regex.search('(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
+          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((6, 13), (6,
+          13)))
+        self.assertEquals(regex.search('(?b)(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
+          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((26, 33),
+          (26, 33)))
 
         # Partially fuzzy matches.
-        # 45..48
-        self.expect(lambda: regex.search('foo(bar){e<=1}zap',
-          'foobarzap').span(0, 1), repr(((0, 9), (3, 6))))
-        self.expect(lambda: regex.search('foo(bar){e<=1}zap', 'fobarzap'),
-          repr(None))
-        self.expect(lambda: regex.search('foo(bar){e<=1}zap',
-          'foobrzap').span(0, 1), repr(((0, 8), (3, 5))))
+        # 45..47
+        self.assertEquals(regex.search('foo(bar){e<=1}zap',
+          'foobarzap').span(0, 1), ((0, 9), (3, 6)))
+        self.assertEquals(regex.search('foo(bar){e<=1}zap', 'fobarzap'), None)
+        self.assertEquals(regex.search('foo(bar){e<=1}zap', 'foobrzap').span(0,
+          1), ((0, 8), (3, 5)))
 
         # 48..50
         text = ('www.cnn.com 64.236.16.20\nwww.slashdot.org 66.35.250.150\n'
           'For useful information, use www.slashdot.org\nthis is demo data!\n')
-        self.expect(lambda: regex.search(r'(?s)^.*(dot.org){e}.*$',
-          text).span(0, 1), repr(((0, 120), (120, 120))))
-        self.expect(lambda: regex.search(r'(?es)^.*(dot.org){e}.*$',
-          text).span(0, 1), repr(((0, 120), (93, 100))))
-        self.expect(lambda: regex.search(r'^.*(dot.org){e}.*$', text).span(0,
-          1), repr(((0, 119), (24, 101))))
+        self.assertEquals(regex.search(r'(?s)^.*(dot.org){e}.*$', text).span(0,
+          1), ((0, 120), (120, 120)))
+        self.assertEquals(regex.search(r'(?es)^.*(dot.org){e}.*$',
+          text).span(0, 1), ((0, 120), (93, 100)))
+        self.assertEquals(regex.search(r'^.*(dot.org){e}.*$', text).span(0, 1),
+          ((0, 119), (24, 101)))
 
-        # 51..62
+        # 51..56
         # Behaviour is unexpectd, but arguably not wrong. It first finds the
         # best match, then the best in what follows, etc.
-        self.expect(lambda: regex.findall(r"\b\L<words>{e<=1}\b",
-          " book cot dog desk ", words="cat dog".split()),
-          repr(["cot", "dog"]))
-        self.expect(lambda: regex.findall(r"\b\L<words>{e<=1}\b",
-          " book dog cot desk ", words="cat dog".split()),
-          repr([" dog", "cot"]))
-        self.expect(lambda: regex.findall(r"(?e)\b\L<words>{e<=1}\b",
-          " book dog cot desk ", words="cat dog".split()),
-          repr(["dog", "cot"]))
-        self.expect(lambda: regex.findall(r"(?r)\b\L<words>{e<=1}\b",
-          " book cot dog desk ", words="cat dog".split()),
-          repr(["dog ", "cot"]))
-        self.expect(lambda: regex.findall(r"(?er)\b\L<words>{e<=1}\b",
-          " book cot dog desk ", words="cat dog".split()),
-          repr(["dog", "cot"]))
-        self.expect(lambda: regex.findall(r"(?r)\b\L<words>{e<=1}\b",
-          " book dog cot desk ", words="cat dog".split()),
-          repr(["cot", "dog"]))
-        self.expect(lambda: regex.findall(ur"\b\L<words>{e<=1}\b",
-          u" book cot dog desk ", words=u"cat dog".split()),
-          repr([u"cot", u"dog"]))
-        self.expect(lambda: regex.findall(ur"\b\L<words>{e<=1}\b",
-          u" book dog cot desk ", words=u"cat dog".split()),
-          repr([u" dog", u"cot"]))
-        self.expect(lambda: regex.findall(ur"(?e)\b\L<words>{e<=1}\b",
-          u" book dog cot desk ", words=u"cat dog".split()),
-          repr([u"dog", u"cot"]))
-        self.expect(lambda: regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
-          u" book cot dog desk ", words=u"cat dog".split()),
-          repr([u"dog ", u"cot"]))
-        self.expect(lambda: regex.findall(ur"(?er)\b\L<words>{e<=1}\b",
-          u" book cot dog desk ", words=u"cat dog".split()),
-          repr([u"dog", u"cot"]))
-        self.expect(lambda: regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
-          u" book dog cot desk ", words=u"cat dog".split()),
-          repr([u"cot", u"dog"]))
+        self.assertEquals(regex.findall(r"\b\L<words>{e<=1}\b",
+          " book cot dog desk ", words="cat dog".split()), ["cot", "dog"])
+        self.assertEquals(regex.findall(r"\b\L<words>{e<=1}\b",
+          " book dog cot desk ", words="cat dog".split()), [" dog", "cot"])
+        self.assertEquals(regex.findall(r"(?e)\b\L<words>{e<=1}\b",
+          " book dog cot desk ", words="cat dog".split()), ["dog", "cot"])
+        self.assertEquals(regex.findall(r"(?r)\b\L<words>{e<=1}\b",
+          " book cot dog desk ", words="cat dog".split()), ["dog ", "cot"])
+        self.assertEquals(regex.findall(r"(?er)\b\L<words>{e<=1}\b",
+          " book cot dog desk ", words="cat dog".split()), ["dog", "cot"])
+        self.assertEquals(regex.findall(r"(?r)\b\L<words>{e<=1}\b",
+          " book dog cot desk ", words="cat dog".split()), ["cot", "dog"])
+        # 57..62
+        self.assertEquals(regex.findall(ur"\b\L<words>{e<=1}\b",
+          u" book cot dog desk ", words=u"cat dog".split()), [u"cot", u"dog"])
+        self.assertEquals(regex.findall(ur"\b\L<words>{e<=1}\b",
+          u" book dog cot desk ", words=u"cat dog".split()), [u" dog", u"cot"])
+        self.assertEquals(regex.findall(ur"(?e)\b\L<words>{e<=1}\b",
+          u" book dog cot desk ", words=u"cat dog".split()), [u"dog", u"cot"])
+        self.assertEquals(regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
+          u" book cot dog desk ", words=u"cat dog".split()), [u"dog ", u"cot"])
+        self.assertEquals(regex.findall(ur"(?er)\b\L<words>{e<=1}\b",
+          u" book cot dog desk ", words=u"cat dog".split()), [u"dog", u"cot"])
+        self.assertEquals(regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
+          u" book dog cot desk ", words=u"cat dog".split()), [u"cot", u"dog"])
 
-        # 63..65
-        self.expect(lambda: regex.search(r"(\w+) (\1{e<=1})",
-          "foo fou").groups(), repr(("foo", "fou")))
-        self.expect(lambda: regex.search(r"(?r)(\2{e<=1}) (\w+)",
-          "foo fou").groups(), repr(("foo", "fou")))
-        self.expect(lambda: regex.search(ur"(\w+) (\1{e<=1})",
-          u"foo fou").groups(), repr((u"foo", u"fou")))
+        # 63..64
+        self.assertEquals(regex.search(r"(\w+) (\1{e<=1})",
+          "foo fou").groups(), ("foo", "fou"))
+        self.assertEquals(regex.search(r"(?r)(\2{e<=1}) (\w+)",
+          "foo fou").groups(), ("foo", "fou"))
+        # 65
+        self.assertEquals(regex.search(ur"(\w+) (\1{e<=1})",
+          u"foo fou").groups(), (u"foo", u"fou"))
 
         # 66..67
-        self.expect(lambda: regex.findall(r"(?:(?:QR)+){e}","abcde"),
-          repr(["abcde", ""]))
-        self.expect(lambda: regex.findall(r"(?:Q+){e}","abc"), repr(["abc",
-          ""]))
+        self.assertEquals(regex.findall(r"(?:(?:QR)+){e}","abcde"), ["abcde",
+          ""])
+        self.assertEquals(regex.findall(r"(?:Q+){e}","abc"), ["abc", ""])
 
         # Hg issue 41
         # 68..72
-        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
-          "servic detection").span(), repr((0, 16)))
-        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
-          "service detect").span(), repr((0, 14)))
-        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
-          "service detecti").span(), repr((0, 15)))
-        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
-          "service detection"), repr(None))
-        self.expect(lambda: regex.match(r"(?:service detection){0<e<5}",
-          "in service detection").span(), repr((0, 20)))
+        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+          "servic detection").span(), (0, 16))
+        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+          "service detect").span(), (0, 14))
+        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+          "service detecti").span(), (0, 15))
+        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+          "service detection"), None)
+        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+          "in service detection").span(), (0, 20))
 
     def test_recursive(self):
         # 1..6
-        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
-          "xx")[ : ], repr(("xx", "x", "")))
-        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
-          "aba")[ : ], repr(("aba", "a", "b")))
-        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
-          "abba")[ : ], repr(("abba", "a", None)))
-        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
-          "kayak")[ : ], repr(("kayak", "k", None)))
-        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
-          "paper")[ : ], repr(("pap", "p", "a")))
-        self.expect(lambda: regex.search(r"(\w)(?:(?R)|(\w?))\1",
-          "dontmatchme"), repr(None))
+        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "xx")[ : ],
+          ("xx", "x", ""))
+        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "aba")[ : ],
+          ("aba", "a", "b"))
+        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "abba")[ : ],
+          ("abba", "a", None))
+        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "kayak")[ : ],
+          ("kayak", "k", None))
+        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "paper")[ : ],
+          ("pap", "p", "a"))
+        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "dontmatchme"),
+          None)
 
         # 7..12
-        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
-          "xx")[ : ], repr(("xx", "", "x")))
-        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
-          "aba")[ : ], repr(("aba", "b", "a")))
-        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
-          "abba")[ : ], repr(("abba", None, "a")))
-        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
-          "kayak")[ : ], repr(("kayak", None, "k")))
-        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
-          "paper")[ : ], repr(("pap", "a", "p")))
-        self.expect(lambda: regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
-          "dontmatchme"), repr(None))
+        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "xx")[ : ],
+          ("xx", "", "x"))
+        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "aba")[ :
+          ], ("aba", "b", "a"))
+        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "abba")[ :
+          ], ("abba", None, "a"))
+        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "kayak")[ :
+          ], ("kayak", None, "k"))
+        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "paper")[ :
+          ], ("pap", "a", "p"))
+        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
+          "dontmatchme"), None)
 
         # 13..14
-        self.expect(lambda: regex.search(r"\(((?>[^()]+)|(?R))*\)",
-          "(ab(cd)ef)")[ : ], repr(("(ab(cd)ef)", "ef")))
-        self.expect(lambda: regex.search(r"\(((?>[^()]+)|(?R))*\)",
-          "(ab(cd)ef)").captures(1), repr(["ab", "(cd)", "ef"]))
+        self.assertEquals(regex.search(r"\(((?>[^()]+)|(?R))*\)",
+          "(ab(cd)ef)")[ : ], ("(ab(cd)ef)", "ef"))
+        self.assertEquals(regex.search(r"\(((?>[^()]+)|(?R))*\)",
+          "(ab(cd)ef)").captures(1), ["ab", "(cd)", "ef"])
 
         # 15..16
-        self.expect(lambda: regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
-          "(ab(cd)ef)")[ : ], repr(("(ab(cd)ef)", "ab")))
-        self.expect(lambda: regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
-          "(ab(cd)ef)").captures(1), repr(["ef", "(cd)", "ab"]))
+        self.assertEquals(regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
+          "(ab(cd)ef)")[ : ], ("(ab(cd)ef)", "ab"))
+        self.assertEquals(regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
+          "(ab(cd)ef)").captures(1), ["ef", "(cd)", "ab"])
 
         # 17
-        self.expect(lambda: regex.search(r"\(([^()]+|(?R))*\)",
-          "some text (a(b(c)d)e) more text")[ : ], repr(("(a(b(c)d)e)",  "e")))
+        self.assertEquals(regex.search(r"\(([^()]+|(?R))*\)",
+          "some text (a(b(c)d)e) more text")[ : ], ("(a(b(c)d)e)",  "e"))
 
         # 18
-        self.expect(lambda: regex.search(r"(?r)\(((?R)|[^()]+)*\)",
-          "some text (a(b(c)d)e) more text")[ : ], repr(("(a(b(c)d)e)",  "a")))
+        self.assertEquals(regex.search(r"(?r)\(((?R)|[^()]+)*\)",
+          "some text (a(b(c)d)e) more text")[ : ], ("(a(b(c)d)e)",  "a"))
 
         # 19
-        self.expect(lambda: regex.search(r"(foo(\(((?:(?>[^()]+)|(?2))*)\)))",
-          "foo(bar(baz)+baz(bop))")[ : ], repr(("foo(bar(baz)+baz(bop))",
+        self.assertEquals(regex.search(r"(foo(\(((?:(?>[^()]+)|(?2))*)\)))",
+          "foo(bar(baz)+baz(bop))")[ : ], ("foo(bar(baz)+baz(bop))",
           "foo(bar(baz)+baz(bop))", "(bar(baz)+baz(bop))",
-          "bar(baz)+baz(bop)")))
+          "bar(baz)+baz(bop)"))
 
         # 20
-        self.expect(lambda: regex.search(r"(?r)(foo(\(((?:(?2)|(?>[^()]+))*)\)))",
-          "foo(bar(baz)+baz(bop))")[ : ], repr(("foo(bar(baz)+baz(bop))",
+        self.assertEquals(regex.search(r"(?r)(foo(\(((?:(?2)|(?>[^()]+))*)\)))",
+          "foo(bar(baz)+baz(bop))")[ : ], ("foo(bar(baz)+baz(bop))",
           "foo(bar(baz)+baz(bop))", "(bar(baz)+baz(bop))",
-          "bar(baz)+baz(bop)")))
+          "bar(baz)+baz(bop)"))
 
         # 21..25
         rgx = regex.compile(r"""^\s*(<\s*([a-zA-Z:]+)(?:\s*[a-zA-Z:]*\s*=\s*(?:'[^']*'|"[^"]*"))*\s*(/\s*)?>(?:[^<>]*|(?1))*(?(3)|<\s*/\s*\2\s*>))\s*$""")
-        self.expect(lambda: bool(rgx.search('<foo><bar></bar></foo>')),
-          repr(True))
-        self.expect(lambda: bool(rgx.search('<foo><bar></foo></bar>')),
-          repr(False))
-        self.expect(lambda: bool(rgx.search('<foo><bar/></foo>')), repr(True))
-        self.expect(lambda: bool(rgx.search('<foo><bar></foo>')), repr(False))
-        self.expect(lambda: bool(rgx.search('<foo bar=baz/>')), repr(False))
+        self.assertEquals(bool(rgx.search('<foo><bar></bar></foo>')), True)
+        self.assertEquals(bool(rgx.search('<foo><bar></foo></bar>')), False)
+        self.assertEquals(bool(rgx.search('<foo><bar/></foo>')), True)
+        self.assertEquals(bool(rgx.search('<foo><bar></foo>')), False)
+        self.assertEquals(bool(rgx.search('<foo bar=baz/>')), False)
 
-        # 26..30
-        self.expect(lambda: bool(rgx.search('<foo bar="baz">')), repr(False))
-        self.expect(lambda: bool(rgx.search('<foo bar="baz"/>')), repr(True))
-        self.expect(lambda: bool(rgx.search('<    fooo   /  >')), repr(True))
+        # 26..29
+        self.assertEquals(bool(rgx.search('<foo bar="baz">')), False)
+        self.assertEquals(bool(rgx.search('<foo bar="baz"/>')), True)
+        self.assertEquals(bool(rgx.search('<    fooo   /  >')), True)
         # The next regex should and does match. Perl 5.14 agrees.
-        #self.expect(lambda: bool(rgx.search('<foo/>foo')), repr(False))
-        self.expect(lambda: bool(rgx.search('foo<foo/>')), repr(False))
+        #self.assertEquals(bool(rgx.search('<foo/>foo')), False)
+        self.assertEquals(bool(rgx.search('foo<foo/>')), False)
 
         # 30..32
-        self.expect(lambda: bool(rgx.search('<foo>foo</foo>')), repr(True))
-        self.expect(lambda: bool(rgx.search('<foo><bar/>foo</foo>')),
-          repr(True))
-        self.expect(lambda: bool(rgx.search('<a><b><c></c></b></a>')),
-          repr(True))
+        self.assertEquals(bool(rgx.search('<foo>foo</foo>')), True)
+        self.assertEquals(bool(rgx.search('<foo><bar/>foo</foo>')), True)
+        self.assertEquals(bool(rgx.search('<a><b><c></c></b></a>')), True)
 
     def test_hg_bugs(self):
         # Hg issue 28
         # 1
-        self.expect(lambda: bool(regex.compile("(?>b)", flags=regex.V1)),
-          repr(True))
+        self.assertEquals(bool(regex.compile("(?>b)", flags=regex.V1)), True)
 
         # Hg issue 29
         # 2
-        self.expect(lambda: bool(regex.compile("^((?>\w+)|(?>\s+))*$",
-          flags=regex.V1)), repr(True))
+        self.assertEquals(bool(regex.compile("^((?>\w+)|(?>\s+))*$",
+          flags=regex.V1)), True)
 
         # Hg issue 31
         # 3..8
-        self.expect(lambda: regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
-          "a(bcd(e)f)g(h)"), repr(['(bcd(e)f)', '(h)']))
-        self.expect(lambda: regex.findall(r"\((?:(?:[^()]+)|(?R))*\)",
-          "a(bcd(e)f)g(h)"), repr(['(bcd(e)f)', '(h)']))
-        self.expect(lambda: regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
-          "a(b(cd)e)f)g)h"), repr(['(b(cd)e)']))
-        self.expect(lambda: regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
-          "a(bc(d(e)f)gh"), repr(['(d(e)f)']))
-        self.expect(lambda: regex.findall(r"(?r)\((?:(?>[^()]+)|(?R))*\)",
-          "a(bc(d(e)f)gh"), repr(['(d(e)f)']))
-        self.expect(lambda: [m.group() for m in
+        self.assertEquals(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
+          "a(bcd(e)f)g(h)"), ['(bcd(e)f)', '(h)'])
+        self.assertEquals(regex.findall(r"\((?:(?:[^()]+)|(?R))*\)",
+          "a(bcd(e)f)g(h)"), ['(bcd(e)f)', '(h)'])
+        self.assertEquals(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
+          "a(b(cd)e)f)g)h"), ['(b(cd)e)'])
+        self.assertEquals(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
+          "a(bc(d(e)f)gh"), ['(d(e)f)'])
+        self.assertEquals(regex.findall(r"(?r)\((?:(?>[^()]+)|(?R))*\)",
+          "a(bc(d(e)f)gh"), ['(d(e)f)'])
+        self.assertEquals([m.group() for m in
           regex.finditer(r"\((?:[^()]*+|(?0))*\)", "a(b(c(de)fg)h")],
-          repr(['(c(de)fg)']))
+          ['(c(de)fg)'])
 
         # Hg issue 32
         # 9
-        self.expect(lambda: regex.search("a(bc)d", "abcd", regex.I |
-          regex.V1).group(0), repr("abcd"))
+        self.assertEquals(regex.search("a(bc)d", "abcd", regex.I |
+          regex.V1).group(0), "abcd")
 
         # Hg issue 33
         # 10..11
-        self.expect(lambda: regex.search("([\da-f:]+)$", "E", regex.I |
-          regex.V1).group(0), repr("E"))
-        self.expect(lambda: regex.search("([\da-f:]+)$", "e", regex.I |
-          regex.V1).group(0), repr("e"))
+        self.assertEquals(regex.search("([\da-f:]+)$", "E", regex.I |
+          regex.V1).group(0), "E")
+        self.assertEquals(regex.search("([\da-f:]+)$", "e", regex.I |
+          regex.V1).group(0), "e")
 
         # Hg issue 34
         # 12
-        self.expect(lambda: regex.search("^(?=ab(de))(abd)(e)",
-          "abde").groups(), repr(('de', 'abd', 'e')))
+        self.assertEquals(regex.search("^(?=ab(de))(abd)(e)", "abde").groups(),
+          ('de', 'abd', 'e'))
 
         # Hg issue 35
         # 13
-        self.expect(lambda: bool(regex.match(r"\ ", " ", flags=regex.X)),
-          repr(True))
+        self.assertEquals(bool(regex.match(r"\ ", " ", flags=regex.X)), True)
 
         # Hg issue 36
         # 14
-        self.expect(lambda: regex.search(r"^(a|)\1{2}b", "b").group(0, 1),
-          repr(('b', '')))
+        self.assertEquals(regex.search(r"^(a|)\1{2}b", "b").group(0, 1), ('b',
+          ''))
 
         # Hg issue 37
         # 15
-        self.expect(lambda: regex.search("^(a){0,0}", "abc").group(0, 1),
-          repr(('', None)))
+        self.assertEquals(regex.search("^(a){0,0}", "abc").group(0, 1), ('',
+          None))
 
         # Hg issue 38
         # 16
-        self.expect(lambda: regex.search("(?>.*/)b", "a/b").group(0),
-          repr("a/b"))
+        self.assertEquals(regex.search("(?>.*/)b", "a/b").group(0), "a/b")
 
         # Hg issue 39
         # 17..18
-        self.expect(lambda: regex.search(r"(?V0)((?i)blah)\s+\1",
-          "blah BLAH").group(0, 1), repr(("blah BLAH", "blah")))
-        self.expect(lambda: regex.search(r"(?V1)((?i)blah)\s+\1", "blah BLAH"),
-          repr(None))
+        self.assertEquals(regex.search(r"(?V0)((?i)blah)\s+\1",
+          "blah BLAH").group(0, 1), ("blah BLAH", "blah"))
+        self.assertEquals(regex.search(r"(?V1)((?i)blah)\s+\1", "blah BLAH"),
+          None)
 
         # Hg issue 40
         # 19
-        self.expect(lambda: regex.search(r"(\()?[^()]+(?(1)\)|)",
-          "(abcd").group(0), repr("abcd"))
+        self.assertEquals(regex.search(r"(\()?[^()]+(?(1)\)|)",
+          "(abcd").group(0), "abcd")
 
         # Hg issue 42
         # 20..22
-        self.expect(lambda: regex.search("(a*)*", "a").span(1), repr((1, 1)))
-        self.expect(lambda: regex.search("(a*)*", "aa").span(1), repr((2, 2)))
-        self.expect(lambda: regex.search("(a*)*", "aaa").span(1), repr((3, 3)))
+        self.assertEquals(regex.search("(a*)*", "a").span(1), (1, 1))
+        self.assertEquals(regex.search("(a*)*", "aa").span(1), (2, 2))
+        self.assertEquals(regex.search("(a*)*", "aaa").span(1), (3, 3))
 
         # Hg issue 43
         # 23
-        self.expect(lambda: regex.search("a(?#xxx)*", "aaa").group(),
-          repr("aaa"))
+        self.assertEquals(regex.search("a(?#xxx)*", "aaa").group(), "aaa")
 
         # Hg issue 44
         # 24
-        self.expect(lambda: regex.search("(?=abc){3}abc", "abcabcabc").span(),
-          repr((0, 3)))
+        self.assertEquals(regex.search("(?=abc){3}abc", "abcabcabc").span(),
+          (0, 3))
 
         # Hg issue 45
         # 25..26
-        self.expect(lambda: regex.search("^(?:a(?:(?:))+)+", "a").span(),
-          repr((0, 1)))
-        self.expect(lambda: regex.search("^(?:a(?:(?:))+)+", "aa").span(),
-          repr((0, 2)))
+        self.assertEquals(regex.search("^(?:a(?:(?:))+)+", "a").span(), (0, 1))
+        self.assertEquals(regex.search("^(?:a(?:(?:))+)+", "aa").span(), (0,
+          2))
 
         # Hg issue 46
         # 27
-        self.expect(lambda: regex.search("a(?x: b c )d", "abcd").group(0),
-          repr("abcd"))
+        self.assertEquals(regex.search("a(?x: b c )d", "abcd").group(0),
+          "abcd")
 
         # Hg issue 47
         # 28
-        self.expect(lambda: regex.search("a#comment\n*", "aaa",
-          flags=regex.X).group(0), repr("aaa"))
+        self.assertEquals(regex.search("a#comment\n*", "aaa",
+          flags=regex.X).group(0), "aaa")
 
         # Hg issue 48
         # 29..32
-        self.expect(lambda: regex.search(r"(?V1)(a(?(1)\1)){1}",
-          "aaaaaaaaaa").span(0, 1), repr(((0, 1), (0, 1))))
-        self.expect(lambda: regex.search(r"(?V1)(a(?(1)\1)){2}",
-          "aaaaaaaaaa").span(0, 1), repr(((0, 3), (1, 3))))
-        self.expect(lambda: regex.search(r"(?V1)(a(?(1)\1)){3}",
-          "aaaaaaaaaa").span(0, 1), repr(((0, 6), (3, 6))))
-        self.expect(lambda: regex.search(r"(?V1)(a(?(1)\1)){4}",
-          "aaaaaaaaaa").span(0, 1), repr(((0, 10), (6, 10))))
+        self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){1}",
+          "aaaaaaaaaa").span(0, 1), ((0, 1), (0, 1)))
+        self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){2}",
+          "aaaaaaaaaa").span(0, 1), ((0, 3), (1, 3)))
+        self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){3}",
+          "aaaaaaaaaa").span(0, 1), ((0, 6), (3, 6)))
+        self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){4}",
+          "aaaaaaaaaa").span(0, 1), ((0, 10), (6, 10)))
 
         # Hg issue 49
         # 33
-        self.expect(lambda: regex.search("(?V1)(a)(?<=b(?1))", "baz").group(0),
-          repr("a"))
+        self.assertEquals(regex.search("(?V1)(a)(?<=b(?1))", "baz").group(0),
+          "a")
 
         # Hg issue 50
         # 34..37
-        self.expect(lambda: regex.findall(ur'(?fi)\L<keywords>',
+        self.assertEquals(regex.findall(ur'(?fi)\L<keywords>',
           u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05',
-          keywords=['post','pos']), repr([u'POST', u'Post', u'post',
-          u'po\u017Ft', u'po\uFB06', u'po\uFB05']))
-        self.expect(lambda: regex.findall(ur'(?fi)pos|post',
-          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'),
-          repr([u'POS', u'Pos', u'pos', u'po\u017F', u'po\uFB06',
-          u'po\uFB05']))
-        self.expect(lambda: regex.findall(ur'(?fi)post|pos',
-          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'),
-          repr([u'POST', u'Post', u'post', u'po\u017Ft', u'po\uFB06',
-          u'po\uFB05']))
-        self.expect(lambda: regex.findall(ur'(?fi)post|another',
-          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'),
-          repr([u'POST', u'Post', u'post', u'po\u017Ft', u'po\uFB06',
-          u'po\uFB05']))
+          keywords=['post','pos']), [u'POST', u'Post', u'post', u'po\u017Ft',
+          u'po\uFB06', u'po\uFB05'])
+        self.assertEquals(regex.findall(ur'(?fi)pos|post',
+          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'), [u'POS',
+          u'Pos', u'pos', u'po\u017F', u'po\uFB06', u'po\uFB05'])
+        self.assertEquals(regex.findall(ur'(?fi)post|pos',
+          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'), [u'POST',
+          u'Post', u'post', u'po\u017Ft', u'po\uFB06', u'po\uFB05'])
+        self.assertEquals(regex.findall(ur'(?fi)post|another',
+          u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'), [u'POST',
+          u'Post', u'post', u'po\u017Ft', u'po\uFB06', u'po\uFB05'])
 
         # Hg issue 51
         # 38
-        self.expect(lambda: regex.search("(?V1)((a)(?1)|(?2))", "a").group(0,
-          1, 2), repr(('a', 'a', None)))
+        self.assertEquals(regex.search("(?V1)((a)(?1)|(?2))", "a").group(0, 1,
+          2), ('a', 'a', None))
 
         # Hg issue 52
         # 39
-        self.expect(lambda: regex.search(r"(?V1)(\1xx|){6}", "xx").span(0, 1),
-          repr(((0, 2), (2, 2))))
+        self.assertEquals(regex.search(r"(?V1)(\1xx|){6}", "xx").span(0, 1),
+          ((0, 2), (2, 2)))
 
         # Hg issue 53
         # 40
-        self.expect(lambda: regex.search("(a|)+", "a").group(0, 1),
-          repr(("a", "")))
+        self.assertEquals(regex.search("(a|)+", "a").group(0, 1), ("a", ""))
 
         # Hg issue 54
         # 41
-        self.expect(lambda: regex.search(r"(a|)*\d", "a" * 80), repr(None))
+        self.assertEquals(regex.search(r"(a|)*\d", "a" * 80), None)
 
         # Hg issue 55
         # 42
-        self.expect(lambda: regex.search("^(?:a?b?)*$", "ac"), repr(None))
+        self.assertEquals(regex.search("^(?:a?b?)*$", "ac"), None)
 
         # Hg issue 58
         # 43
-        self.expect(lambda: regex.compile("\\N{1}"), self.UNDEF_CHAR_NAME)
+        self.assertRaisesRegex(regex.error, self.UNDEF_CHAR_NAME, lambda:
+          regex.compile("\\N{1}"))
 
         # Hg issue 59
         # 44
-        self.expect(lambda: regex.search("\\Z", "a\na\n").span(0), repr((4,
-          4)))
+        self.assertEquals(regex.search("\\Z", "a\na\n").span(0), (4, 4))
 
         # Hg issue 60
         # 45
-        self.expect(lambda: regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}",
-          "xayxay").group(0), repr("xayxay"))
+        self.assertEquals(regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}",
+          "xayxay").group(0), "xayxay")
 
         # Hg issue 61
         # 46
-        self.expect(lambda: regex.search("(?i)[^a]", "A"), repr(None))
+        self.assertEquals(regex.search("(?i)[^a]", "A"), None)
 
         # Hg issue 63
         # 47
-        self.expect(lambda: regex.search(u"(?iu)[[:ascii:]]",
-          u"\N{KELVIN SIGN}"), repr(None))
+        self.assertEquals(regex.search(u"(?iu)[[:ascii:]]", u"\N{KELVIN SIGN}"),
+          None)
 
         # Hg issue 66
         # 48
-        self.expect(lambda: regex.search("((a|b(?1)c){3,5})",
-          "baaaaca").group(0, 1, 2), repr(('aaaa', 'aaaa', 'a')))
+        self.assertEquals(regex.search("((a|b(?1)c){3,5})", "baaaaca").group(0,
+          1, 2), ('aaaa', 'aaaa', 'a'))
 
-    def run(self):
-        print "Performing tests"
-        print "================"
-
-        def make_key(name):
-            pos = len(name)
-            while name[pos - 1].isdigit():
-                pos -= 1
-            return (name[ : pos], int(name[pos : ] or "0"))
-
-        funcs = [name for name in dir(self) if name.startswith("test_")]
-        funcs.sort(key=make_key)
-
-        self.failed_tests = []
-        performed_count = 0
-
-        for name in funcs:
-            obj = getattr(self, name)
-            if hasattr(obj, "__call__"):
-                self.performing = name
-                performed_count += 1
-                self.index = 0
-                print self.performing
-                sys.stdout.flush()
-                obj()
-
-        print
-        print "Performed %s" % performed_count
-        print
-
-        if self.failed_tests:
-            print "Failures"
-            print "========"
-            current = ""
-            failed_count = 0
-            for name, index, message in self.failed_tests:
-                if name != current:
-                    if current:
-                        print
-                    current = name
-                    failed_count += 1
-                    print current
-                print "\t%s) %s" % (index, message)
-            print
-            print "Failed %s" % failed_count
-        else:
-            print "Passed"
+def test_main():
+    run_unittest(RegexTests)
 
 if __name__ == "__main__":
-    Test().run()
+    test_main()
