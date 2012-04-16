@@ -3355,14 +3355,20 @@ class StringSet(RegexBase):
             encoding = self.info.flags & ALL_ENCODINGS
             fold_flags = encoding | case_flags
 
-            branches = []
+            choices = []
             for i in items:
-                string = []
                 if isinstance(i, unicode):
                     string = [ord(c) for c in _regex.fold_case(fold_flags, i)]
                 else:
                     string = [ord(c) for c in i]
 
+                choices.append(string)
+
+            # Sort from longest to shortest.
+            choices.sort(key=lambda s: (-len(s), s))
+
+            branches = []
+            for string in choices:
                 branches.append(Sequence([Character(c, case_flags=case_flags)
                   for c in string]))
 
