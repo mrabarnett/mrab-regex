@@ -438,10 +438,10 @@ def _compile(pattern, flags=0, kwargs=None):
 
     # Check the global flags for conflicts.
     version = (info.flags & ALL_VERSIONS) or DEFAULT_VERSION
-    if count_ones(version) > 1:
+    if version not in (0, VERSION0, VERSION1):
         raise ValueError("VERSION0 and VERSION1 flags are mutually incompatible")
 
-    if count_ones(info.flags & ALL_ENCODINGS) > 1:
+    if (info.flags & ALL_ENCODINGS) not in (0, ASCII, LOCALE, UNICODE):
         raise ValueError("ASCII, LOCALE and UNICODE flags are mutually incompatible")
 
     if not (info.flags & ALL_ENCODINGS):
@@ -479,7 +479,7 @@ def _compile(pattern, flags=0, kwargs=None):
     if flags & DEBUG:
         parsed.dump(indent=0, reverse=reverse)
 
-    # Check of the features of the groups.
+    # Check the features of the groups.
     check_group_features(info, parsed)
 
     # Compile the parsed pattern. The result is a list of tuples.

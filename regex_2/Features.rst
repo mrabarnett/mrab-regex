@@ -136,6 +136,10 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
+* Characters in a group name (issue #14462)
+
+    A group name can now contain the same characters as an identifier. These are different in Python 2 and Python 3.
+
 * Recursive patterns (Hg issue 27)
 
     Recursive regexes are supported. For example::

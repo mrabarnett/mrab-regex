@@ -217,6 +217,13 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.sub('x*', '-', 'abxd'), '-a-b--d-')
         self.assertEquals(regex.sub('x+', '-', 'abxd'), 'ab-d')
 
+    def test_bug_14462(self):
+        # 1
+        # chr(255) is a valid identifier in Python 3.
+        group_name = '\xFF'
+        self.assertEquals(regex.search(r'(?P<' + group_name + '>a)',
+          'abc').group(group_name), 'a')
+
     def test_symbolic_refs(self):
         # 1..6
         self.assertRaisesRegex(regex.error, self.MISSING_GT, lambda:
@@ -225,7 +232,7 @@ class RegexTests(unittest.TestCase):
           regex.sub('(?P<a>x)', r'\g<', 'xx'))
         self.assertRaisesRegex(regex.error, self.MISSING_LT, lambda:
           regex.sub('(?P<a>x)', r'\g', 'xx'))
-        self.assertRaisesRegex(regex.error, self.MISSING_GT, lambda:
+        self.assertRaisesRegex(regex.error, self.BAD_GROUP_NAME, lambda:
           regex.sub('(?P<a>x)', r'\g<a a>', 'xx'))
         self.assertRaisesRegex(regex.error, self.BAD_GROUP_NAME, lambda:
           regex.sub('(?P<a>x)', r'\g<1a1>', 'xx'))
@@ -1880,7 +1887,7 @@ class RegexTests(unittest.TestCase):
             ('(?P<foo_123', '', '', regex.error, self.MISSING_GT),      # Unterminated group identifier.
             ('(?P<1>a)', '', '', regex.error, self.BAD_GROUP_NAME),     # Begins with a digit.
             ('(?P<!>a)', '', '', regex.error, self.BAD_GROUP_NAME),     # Begins with an illegal char.
-            ('(?P<foo!>a)', '', '', regex.error, self.MISSING_GT),      # Begins with an illegal char.
+            ('(?P<foo!>a)', '', '', regex.error, self.BAD_GROUP_NAME),  # Begins with an illegal char.
 
             # Same tests, for the ?P= form.
             # 5..8
@@ -2161,7 +2168,7 @@ class RegexTests(unittest.TestCase):
 
             # Test symbolic groups.
             # 201..204
-            ('(?P<i d>aaa)a', 'aaaa', '', regex.error, self.MISSING_GT),
+            ('(?P<i d>aaa)a', 'aaaa', '', regex.error, self.BAD_GROUP_NAME),
             ('(?P<id>aaa)a', 'aaaa', '0,id', ascii(('aaaa', 'aaa'))),
             ('(?P<id>aa)(?P=id)', 'aaaa', '0,id', ascii(('aaaa', 'aa'))),
             ('(?P<id>aa)(?P=xd)', 'aaaa', '', regex.error, self.UNKNOWN_GROUP),

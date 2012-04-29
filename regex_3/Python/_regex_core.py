@@ -26,8 +26,8 @@ __all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH",
   "V1", "VERSION1", "W", "WORD", "X", "VERBOSE", "error", "ALNUM",
   "NONLITERAL", "Fuzzy", "Info", "Source", "FirstSetError", "UnscopedFlagSet",
   "OP", "Scanner", "check_group_features", "compile_firstset",
-  "compile_repl_escape", "count_ones", "flatten_code", "fold_case",
-  "parse_pattern", "shrink_cache", "REGEX_FLAGS"]
+  "compile_repl_escape", "flatten_code", "fold_case", "parse_pattern",
+  "shrink_cache", "REGEX_FLAGS"]
 
 # The regex exception.
 class error(Exception):
@@ -288,15 +288,6 @@ def compile_firstset(info, fs):
 
     # Compile the firstset.
     return fs.compile(bool(info.flags & REVERSE))
-
-def count_ones(n):
-    "Counts the number of set bits in an int."
-    count = 0
-    while n:
-        count += 1
-        n &= n - 1
-
-    return count
 
 def flatten_code(code):
     "Flattens the code from a list of tuples."
@@ -1043,8 +1034,9 @@ def parse_name(source, allow_numeric=False):
     saved_ignore = source.ignore_space
     source.ignore_space = False
     try:
+        here = source.pos
         ch = source.get()
-        while ch in ALNUM or ch == "_":
+        while ch and ch not in ")>":
             name.append(ch)
             here = source.pos
             ch = source.get()
@@ -1052,15 +1044,16 @@ def parse_name(source, allow_numeric=False):
         source.ignore_space = saved_ignore
 
     source.pos = here
-    name = "".join(name)
-    if not name or name[0].isdigit() and not name.isdigit():
+
+    if not name:
         raise error("bad group name")
 
+    name = "".join(name)
     if name.isdigit():
         if not allow_numeric:
             raise error("bad group name")
     else:
-        if name[0].isdigit():
+        if not name.isidentifier():
             raise error("bad group name")
 
     return name
@@ -3630,7 +3623,7 @@ class Scanner:
 
         # Check the global flags for conflicts.
         version = (info.flags & ALL_VERSIONS) or DEFAULT_VERSION
-        if count_ones(version) > 1:
+        if version not in (0, VERSION0, VERSION1):
             raise ValueError("VERSION0 and VERSION1 flags are mutually incompatible")
 
         # Create the PatternObject.

@@ -96,20 +96,19 @@ typedef unsigned short RE_STATUS_T;
 /* The maximum number of backtrack entries to allocate. */
 #define RE_MAX_BACKTRACK_ALLOC (1024 * 1024)
 
-/* The nominal number of capture counts per allocated block. */
-#define RE_CAPTURES_BLOCK_SIZE 1024
+/* The initial maximum capacity of the guard block. */
+#define RE_INIT_GUARDS_BLOCK_SIZE 16
 
-/* The nominal number of guard counts per allocated block. */
-#define RE_GUARDS_BLOCK_SIZE 1024
+/* The initial maximum capacity of the node list. */
+#define RE_INIT_NODE_LIST_SIZE 16
 
-#define RE_BITS_PER_INDEX 16
-#define RE_BITS_PER_CODE 32
-#define RE_BITS_PER_CODE_SHIFT 5
-#define RE_BITS_PER_CODE_MASK 0x1F
-#define RE_INDEXES_PER_CODE 2
-#define RE_INDEXES_PER_CODE_SHIFT 1
-#define RE_INDEXES_PER_CODE_MASK 0x1
+/* The size increment for various allocation lists. */
+#define RE_LIST_SIZE_INC 16
 
+/* The initial maximum capacity of the capture groups. */
+#define RE_INIT_CAPTURE_SIZE 16
+
+/* Node bitflags. */
 #define RE_POSITIVE_OP 0x1
 #define RE_ZEROWIDTH_OP 0x2
 #define RE_FUZZY_OP 0x4
@@ -490,7 +489,7 @@ typedef struct RE_State {
     RE_GroupCallFrame* first_group_call_frame;
     RE_GroupCallFrame* current_group_call_frame;
     RE_GuardList* group_call_guard_list;
-    size_t iterations;
+    unsigned short iterations;
     size_t capture_change;
     BOOL unicode; /* Whether the string to be matched is Unicode. */
     BOOL should_release; /* Whether the buffer should be released. */
@@ -4309,14 +4308,15 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
 
     test = next->test;
-    text = state->text;
-    char_at = state->char_at;
 
     if (test->status & RE_STATUS_FUZZY) {
         next_position->node = next->node;
         next_position->text_pos = text_pos;
         return TRUE;
     }
+
+    text = state->text;
+    char_at = state->char_at;
 
     switch (test->op) {
     case RE_OP_ANY: /* Any character, except a newline. */
@@ -5582,7 +5582,7 @@ Py_LOCAL_INLINE(BOOL) save_capture(RE_SafeState* safe_state, size_t index) {
      */
     group = &state->groups[index - 1];
 
-    /* Will the repeated captures never be visible? */
+    /* Will the repeated captures ever be visible? */
     if (!state->visible_captures) {
         group->captures[0] = group->span;
         group->capture_count = 1;
@@ -5595,8 +5595,8 @@ Py_LOCAL_INLINE(BOOL) save_capture(RE_SafeState* safe_state, size_t index) {
         RE_GroupSpan* new_captures;
 
         new_capacity = group->capture_capacity * 2;
-        if (new_capacity < 16)
-            new_capacity = 16;
+        if (new_capacity < RE_INIT_CAPTURE_SIZE)
+            new_capacity = RE_INIT_CAPTURE_SIZE;
         new_captures = (RE_GroupSpan*)safe_realloc(safe_state, group->captures,
           new_capacity * sizeof(RE_GroupSpan));
         if (!new_captures)
@@ -5822,7 +5822,7 @@ Py_LOCAL_INLINE(BOOL) insert_guard_span(RE_SafeState* safe_state, RE_GuardList*
 
         new_capacity = guard_list->capacity * 2;
         if (new_capacity == 0)
-            new_capacity = 16;
+            new_capacity = RE_INIT_GUARDS_BLOCK_SIZE;
         new_spans = (RE_GuardSpan*)safe_realloc(safe_state, guard_list->spans,
           new_capacity * sizeof(RE_GuardSpan));
         if (!new_spans)
@@ -6093,8 +6093,7 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
 
 /* Builds a Unicode string. */
 Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t len,
-  Py_ssize_t buffer_charsize)
-{
+  Py_ssize_t buffer_charsize) {
 #if PY_VERSION_HEX < 0x03030000
     return PyUnicode_FromUnicode(buffer, len);
 #else
@@ -8042,7 +8041,7 @@ advance:
         /* Should we abort the matching? */
         ++state->iterations;
 
-        if ((state->iterations & 0xFFFF) == 0 && safe_check_signals(safe_state))
+        if (state->iterations == 0 && safe_check_signals(safe_state))
             return RE_ERROR_INTERRUPTED;
 
         switch (node->op) {
@@ -8091,7 +8090,7 @@ advance:
         case RE_OP_ANY_REV: /* Any character, except a newline. */
             TRACE(("%s\n", re_op_text[node->op]))
 
-            if (text_pos > slice_start && char_at(text, text_pos) != '\n') {
+            if (text_pos > slice_start && char_at(text, text_pos - 1) != '\n') {
                 --text_pos;
                 node = node->next_1.node;
             } else if (node->status & RE_STATUS_FUZZY) {
@@ -8191,9 +8190,9 @@ advance:
 
             try_first = try_match(state, &node->next_1, text_pos,
               &next_first_position);
-            try_second = try_match(state, &node->nonstring.next_2, text_pos,
-              &next_second_position);
             if (try_first) {
+                try_second = try_match(state, &node->nonstring.next_2, text_pos,
+                  &next_second_position);
                 if (try_second) {
                     if (!add_backtrack(safe_state, RE_OP_BRANCH))
                         return RE_ERROR_BACKTRACKING;
@@ -8201,13 +8200,8 @@ advance:
                 }
                 node = next_first_position.node;
                 text_pos = next_first_position.text_pos;
-            } else {
-                if (try_second) {
-                    node = next_second_position.node;
-                    text_pos = next_second_position.text_pos;
-                } else
-                    goto backtrack;
-            }
+            } else
+                node = node->nonstring.next_2.node;
             break;
         }
         case RE_OP_CALL_REF: /* A group call reference. */
@@ -8437,32 +8431,33 @@ advance:
         case RE_OP_END_GROUP: /* End of a capture group. */
         {
             size_t index;
+            RE_GroupData* group;
             RE_BacktrackData* bt_data;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
-
-            index = node->values[0];
 
             /* Capture group indexes are 1-based (excluding group 0, which is
              * the entire matched string).
              */
+            index = node->values[0];
+            group = &state->groups[index - 1];
+
             if (!add_backtrack(safe_state, RE_OP_END_GROUP))
                 return RE_ERROR_BACKTRACKING;
             bt_data = state->backtrack;
             bt_data->group.index = index;
-            bt_data->group.text_pos = state->groups[index - 1].span.end;
+            bt_data->group.text_pos = group->span.end;
             bt_data->group.capture = node->values[1];
 
-            if (pattern->group_info[index - 1].referenced && state->groups[index
-              - 1].span.end != text_pos)
+            if (pattern->group_info[index - 1].referenced && group->span.end
+              != text_pos)
                 ++state->capture_change;
-            state->groups[index - 1].span.end = text_pos;
+            group->span.end = text_pos;
 
             /* Save the capture? */
             if (node->values[1] && !save_capture(safe_state, index))
                 return RE_ERROR_MEMORY;
 
             node = node->next_1.node;
-            --state->iterations;
             break;
         }
         case RE_OP_END_LAZY_REPEAT: /* End of a lazy repeat. */
@@ -9192,8 +9187,8 @@ advance:
             break;
         case RE_OP_RANGE: /* A range. */
             /* values are: lower, upper */
-            TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
-              node->values[0]))
+            TRACE(("%s %d %d %d\n", re_op_text[node->op], node->match,
+              node->values[0], node->values[1]))
 
             if (text_pos < slice_end && in_range(node->values[0],
               node->values[1], char_at(text, text_pos)) == node->match) {
@@ -9210,7 +9205,7 @@ advance:
         case RE_OP_RANGE_IGN: /* A range, ignoring case. */
             /* values are: lower, upper */
             TRACE(("%s %d %d %d\n", re_op_text[node->op], node->match,
-              node->values[0]))
+              node->values[0], node->values[1]))
 
             if (text_pos < slice_end && in_range_ign(encoding, node->values[0],
               node->values[1], char_at(text, text_pos)) == node->match) {
@@ -9226,8 +9221,8 @@ advance:
             break;
         case RE_OP_RANGE_IGN_REV: /* A range, ignoring case. */
             /* values are: lower, upper */
-            TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
-              node->values[0]))
+            TRACE(("%s %d %d %d\n", re_op_text[node->op], node->match,
+              node->values[0], node->values[1]))
 
             if (text_pos > slice_start && in_range_ign(encoding,
               node->values[0], node->values[1], char_at(text, text_pos - 1)) ==
@@ -9245,7 +9240,7 @@ advance:
         case RE_OP_RANGE_REV: /* A range. */
             /* values are: lower, upper */
             TRACE(("%s %d %d %d\n", re_op_text[node->op], node->match,
-              node->values[0]))
+              node->values[0], node->values[1]))
 
             if (text_pos > slice_start && in_range(node->values[0],
               node->values[1], char_at(text, text_pos - 1)) == node->match) {
@@ -9278,10 +9273,12 @@ advance:
             if (group->capture_count == 0)
                 goto backtrack;
 
-            /* Are there enough characters? */
             span = &group->captures[group->capture_count - 1];
+
+            /* Are there enough characters? */
             available = state->slice_end - text_pos;
-            if (span->end - span->start > available)
+            if (!(node->status & RE_STATUS_FUZZY) && span->end - span->start >
+              available)
                 goto backtrack;
 
             if (string_pos < 0)
@@ -9289,14 +9286,15 @@ advance:
 
             /* Try comparing. */
             while (string_pos < span->end) {
-                if (char_at(text, text_pos) == char_at(text, string_pos)) {
+                if (text_pos < slice_end && char_at(text, text_pos) ==
+                  char_at(text, string_pos)) {
                     ++string_pos;
                     ++text_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
                     BOOL matched;
 
-                    if (!fuzzy_match_string(safe_state, search, &text_pos,
-                      node, &string_pos, &matched, 1))
+                    if (!fuzzy_match_string(safe_state, search, &text_pos, node,
+                      &string_pos, &matched, 1))
                         return RE_ERROR_BACKTRACKING;
                     if (!matched) {
                         string_pos = -1;
@@ -9331,6 +9329,7 @@ advance:
              * Check whether the captured text, if any, exists at this position
              * in the string.
              */
+
             /* Did the group capture anything? */
             group = &state->groups[node->values[0] - 1];
             if (group->capture_count == 0)
@@ -9356,8 +9355,11 @@ advance:
             while (string_pos < span->end) {
                 /* Case-fold at current position in text. */
                 if (folded_pos >= folded_len) {
-                    folded_len = full_case_fold(char_at(text, text_pos),
-                      folded);
+                    if (text_pos < slice_end)
+                        folded_len = full_case_fold(char_at(text, text_pos),
+                          folded);
+                    else
+                        folded_len = 0;
                     folded_pos = 0;
                 }
 
@@ -9368,7 +9370,8 @@ advance:
                     gfolded_pos = 0;
                 }
 
-                if (folded[folded_pos] == gfolded[gfolded_pos]) {
+                if (folded_pos < folded_len && folded[folded_pos] ==
+                  gfolded[gfolded_pos]) {
                     ++folded_pos;
                     ++gfolded_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
@@ -9387,7 +9390,7 @@ advance:
                     goto backtrack;
                 }
 
-                if (folded_pos >= folded_len)
+                if (folded_pos >= folded_len && folded_len > 0)
                     ++text_pos;
 
                 if (gfolded_pos >= gfolded_len)
@@ -9447,8 +9450,11 @@ advance:
             while (string_pos > span->start) {
                 /* Case-fold at current position in text. */
                 if (folded_pos <= 0) {
-                    folded_len = full_case_fold(char_at(text, text_pos - 1),
-                      folded);
+                    if (text_pos > slice_start)
+                        folded_len = full_case_fold(char_at(text, text_pos - 1),
+                          folded);
+                    else
+                        folded_len = 0;
                     folded_pos = folded_len;
                 }
 
@@ -9459,14 +9465,15 @@ advance:
                     gfolded_pos = gfolded_len;
                 }
 
-                if (folded[folded_pos - 1] == gfolded[gfolded_pos - 1]) {
+                if (folded_pos > 0 && folded[folded_pos - 1] ==
+                  gfolded[gfolded_pos - 1]) {
                     --folded_pos;
                     --gfolded_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
                     BOOL matched;
 
                     if (!fuzzy_match_string_fld2(safe_state, search, &text_pos,
-                      node,&folded_pos, folded_len,  &string_pos, &gfolded_pos,
+                      node, &folded_pos, folded_len, &string_pos, &gfolded_pos,
                       gfolded_len, &matched, -1))
                         return RE_ERROR_BACKTRACKING;
                     if (!matched) {
@@ -9478,7 +9485,7 @@ advance:
                     goto backtrack;
                 }
 
-                if (folded_pos <= 0)
+                if (folded_pos <= 0 && folded_len > 0)
                     --text_pos;
 
                 if (gfolded_pos <= 0)
@@ -9498,6 +9505,7 @@ advance:
         {
             RE_GroupData* group;
             RE_GroupSpan* span;
+            Py_ssize_t available;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Capture group indexes are 1-based (excluding group 0, which is
@@ -9514,20 +9522,26 @@ advance:
 
             span = &group->captures[group->capture_count - 1];
 
+            /* Are there enough characters? */
+            available = state->slice_end - text_pos;
+            if (!(node->status & RE_STATUS_FUZZY) && span->end - span->start >
+              available)
+                goto backtrack;
+
             if (string_pos < 0)
                 string_pos = span->start;
 
             /* Try comparing. */
             while (string_pos < span->end) {
-                if (same_char_ign(encoding, char_at(text, text_pos),
-                  char_at(text, string_pos))) {
+                if (text_pos < slice_end && same_char_ign(encoding,
+                  char_at(text, text_pos), char_at(text, string_pos))) {
                     ++string_pos;
                     ++text_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
                     BOOL matched;
 
-                    if (!fuzzy_match_string(safe_state, search, &text_pos,
-                      node, &string_pos, &matched, 1))
+                    if (!fuzzy_match_string(safe_state, search, &text_pos, node,
+                      &string_pos, &matched, 1))
                         return RE_ERROR_BACKTRACKING;
                     if (!matched) {
                         string_pos = -1;
@@ -9540,6 +9554,8 @@ advance:
             }
 
             string_pos = -1;
+
+            /* Successful match. */
             node = node->next_1.node;
             break;
         }
@@ -9547,6 +9563,7 @@ advance:
         {
             RE_GroupData* group;
             RE_GroupSpan* span;
+            Py_ssize_t available;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Capture group indexes are 1-based (excluding group 0, which is
@@ -9563,20 +9580,27 @@ advance:
 
             span = &group->captures[group->capture_count - 1];
 
+            /* Are there enough characters? */
+            available = text_pos - state->slice_start;
+            if (!(node->status & RE_STATUS_FUZZY) && span->end - span->start >
+              available)
+                goto backtrack;
+
             if (string_pos < 0)
                 string_pos = span->end;
 
             /* Try comparing. */
             while (string_pos > span->start) {
-                if (same_char_ign(encoding, char_at(text, text_pos - 1),
-                  char_at(text, string_pos - 1))) {
+                if (text_pos > slice_start && same_char_ign(encoding,
+                  char_at(text, text_pos - 1), char_at(text, string_pos - 1)))
+                  {
                     --string_pos;
                     --text_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
                     BOOL matched;
 
-                    if (!fuzzy_match_string(safe_state, search, &text_pos,
-                      node, &string_pos, &matched, -1))
+                    if (!fuzzy_match_string(safe_state, search, &text_pos, node,
+                      &string_pos, &matched, -1))
                         return RE_ERROR_BACKTRACKING;
                     if (!matched) {
                         string_pos = -1;
@@ -9589,6 +9613,8 @@ advance:
             }
 
             string_pos = -1;
+
+            /* Successful match. */
             node = node->next_1.node;
             break;
         }
@@ -9615,7 +9641,8 @@ advance:
 
             /* Are there enough characters? */
             available = text_pos - state->slice_start;
-            if (span->end - span->start > available)
+            if (!(node->status & RE_STATUS_FUZZY) && span->end - span->start >
+              available)
                 goto backtrack;
 
             if (string_pos < 0)
@@ -9623,15 +9650,15 @@ advance:
 
             /* Try comparing. */
             while (string_pos > span->start) {
-                if (char_at(text, text_pos - 1) == char_at(text, string_pos -
-                  1)) {
+                if (text_pos > slice_start && char_at(text, text_pos - 1) ==
+                  char_at(text, string_pos - 1)) {
                     --string_pos;
                     --text_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
                     BOOL matched;
 
-                    if (!fuzzy_match_string(safe_state, search, &text_pos,
-                      node, &string_pos, &matched, -1))
+                    if (!fuzzy_match_string(safe_state, search, &text_pos, node,
+                      &string_pos, &matched, -1))
                         return RE_ERROR_BACKTRACKING;
                     if (!matched) {
                         string_pos = -1;
@@ -9686,8 +9713,8 @@ advance:
         case RE_OP_SET_UNION_IGN:
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
-            if (text_pos < slice_end && in_set_ign(encoding, node,
-              char_at(text, text_pos)) == node->match) {
+            if (text_pos < slice_end && in_set_ign(encoding, node, char_at(text,
+              text_pos)) == node->match) {
                 text_pos += node->step;
                 node = node->next_1.node;
             } else if (node->status & RE_STATUS_FUZZY) {
@@ -9737,32 +9764,33 @@ advance:
         case RE_OP_START_GROUP: /* Start of capture group. */
         {
             size_t index;
+            RE_GroupData* group;
             RE_BacktrackData* bt_data;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
-
-            index = node->values[0];
 
             /* Capture group indexes are 1-based (excluding group 0, which is
              * the entire matched string).
              */
+            index = node->values[0];
+            group = &state->groups[index - 1];
+
             if (!add_backtrack(safe_state, RE_OP_START_GROUP))
                 return RE_ERROR_BACKTRACKING;
             bt_data = state->backtrack;
             bt_data->group.index = node->values[0];
-            bt_data->group.text_pos = state->groups[index - 1].span.start;
+            bt_data->group.text_pos = group->span.start;
             bt_data->group.capture = node->values[1];
 
-            if (pattern->group_info[index - 1].referenced && state->groups[index
-              - 1].span.start != text_pos)
+            if (pattern->group_info[index - 1].referenced &&
+              group->span.start != text_pos)
                 ++state->capture_change;
-            state->groups[index - 1].span.start = text_pos;
+            group->span.start = text_pos;
 
             /* Save the capture? */
-            if (node->values[1] && !save_capture(safe_state, node->values[0]))
+            if (node->values[1] && !save_capture(safe_state, index))
                 return RE_ERROR_MEMORY;
 
             node = node->next_1.node;
-            --state->iterations;
             break;
         }
         case RE_OP_START_OF_LINE: /* At the start of a line. */
@@ -10307,7 +10335,7 @@ backtrack:
         /* Should we abort the matching? */
         ++state->iterations;
 
-        if ((state->iterations & 0xFFFF) == 0 && safe_check_signals(safe_state))
+        if (state->iterations == 0 && safe_check_signals(safe_state))
             return RE_ERROR_INTERRUPTED;
 
         bt_data = last_backtrack(state);
@@ -10456,7 +10484,6 @@ backtrack:
             state->groups[index - 1].span.end = bt_data->group.text_pos;
 
             discard_backtrack(state);
-            --state->iterations;
             break;
         }
         case RE_OP_FAILURE:
@@ -11273,7 +11300,6 @@ backtrack:
             state->groups[index - 1].span.start = bt_data->group.text_pos;
 
             discard_backtrack(state);
-            --state->iterations;
             break;
         }
         case RE_OP_STRING_FLD: /* A string literal, ignoring case. */
@@ -11762,12 +11788,12 @@ Py_LOCAL_INLINE(void) dealloc_guards(RE_GuardList* guards, size_t count) {
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
   PyObject* string, RE_StringInfo* str_info, Py_ssize_t start, Py_ssize_t end,
-  BOOL overlapped, int concurrent, BOOL use_lock) {
+  BOOL overlapped, int concurrent, BOOL use_lock, BOOL visible_captures) {
     Py_ssize_t final_pos;
 
     state->groups = NULL;
     state->repeats = NULL;
-    state->visible_captures = TRUE;
+    state->visible_captures = visible_captures;
     state->backtrack_block.previous = NULL;
     state->backtrack_block.next = NULL;
     state->backtrack_block.capacity = RE_BACKTRACK_BLOCK_SIZE;
@@ -11795,12 +11821,13 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
 
     /* The capture groups. */
     if (pattern->group_count) {
+        Py_ssize_t g;
+
         if (pattern->groups_storage) {
             state->groups = pattern->groups_storage;
             pattern->groups_storage = NULL;
         } else {
             Py_ssize_t capacity;
-            Py_ssize_t g;
 
             state->groups = (RE_GroupData*)re_alloc(pattern->group_count *
               sizeof(RE_GroupData));
@@ -11809,10 +11836,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
             memset(state->groups, 0, pattern->group_count *
               sizeof(RE_GroupData));
 
-            if (state->visible_captures)
-                capacity = 16;
-            else
-                capacity = 1;
+            capacity = visible_captures ? RE_INIT_CAPTURE_SIZE : 1;
 
             for (g = 0; g < pattern->group_count; g++) {
                 RE_GroupSpan* captures;
@@ -11822,11 +11846,10 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
                 if (!captures) {
                     Py_ssize_t i;
 
-                    i = 0;
-                    while (i < g)
-                        re_dealloc(state->groups[i++].captures);
+                    for (i = 0; i < g; i++)
+                        re_dealloc(state->groups[i].captures);
 
-                    return FALSE;
+                    goto error;
                 }
 
                 state->groups[g].captures = captures;
@@ -11857,9 +11880,13 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->charsize = str_info->charsize;
     state->unicode = str_info->unicode;
 #if PY_VERSION_HEX >= 0x02060000
+
+    /* Are we using a buffer object? If so, we need to copy the info. */
     state->should_release = str_info->should_release;
-    state->view = str_info->view;
+    if (state->should_release)
+        state->view = str_info->view;
 #endif
+
     switch (state->charsize) {
     case 1:
         state->char_at = bytes1_char_at;
@@ -12008,7 +12035,7 @@ Py_LOCAL_INLINE(void) release_buffer(RE_StringInfo* str_info) {
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
   PyObject* string, Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int
-  concurrent, BOOL use_lock) {
+  concurrent, BOOL use_lock, BOOL visible_captures) {
     RE_StringInfo str_info;
 
     /* Get the string to search or match. */
@@ -12019,7 +12046,7 @@ Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
      * the string is a buffer object.
      */
     if (!state_init_2(state, pattern, string, &str_info, start, end,
-      overlapped, concurrent, use_lock)) {
+      overlapped, concurrent, use_lock, visible_captures)) {
 #if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
 
@@ -13762,8 +13789,9 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
     self->pattern = pattern;
     Py_INCREF(self->pattern);
 
+    /* The MatchObject, and therefore repeated captures, will be visible. */
     if (!state_init(&self->state, pattern, string, start, end, overlapped != 0,
-      conc, TRUE)) {
+      conc, TRUE, TRUE)) {
         PyObject_DEL(self);
         return NULL;
     }
@@ -14033,8 +14061,9 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
 
     state = &self->state;
 
+    /* The MatchObject, and therefore repeated captures, will not be visible. */
     if (!state_init(state, pattern, string, 0, PY_SSIZE_T_MAX, FALSE, conc,
-      TRUE)) {
+      TRUE, FALSE)) {
         PyObject_DEL(self);
         return NULL;
     }
@@ -14044,10 +14073,6 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
     self->split_count = 0;
     self->index = 0;
     self->status = 1;
-
-    /* The MatchObject, and therefore repeated captures, will never be visible.
-     */
-    state->visible_captures = FALSE;
 
     return (PyObject*) self;
 }
@@ -14081,7 +14106,8 @@ static PyObject* pattern_match(PatternObject* self, PyObject* args, PyObject*
     if (conc < 0)
         return NULL;
 
-    if (!state_init(&state, self, string, start, end, FALSE, conc, FALSE))
+    /* The MatchObject, and therefore repeated captures, will be visible. */
+    if (!state_init(&state, self, string, start, end, FALSE, conc, FALSE, TRUE))
         return NULL;
 
     /* Initialise the "safe state" structure. */
@@ -14189,8 +14215,9 @@ static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
         return NULL;
     }
 
+    /* The MatchObject, and therefore repeated captures, will be visible. */
     if (!state_init_2(&state, self, string, &str_info, start, end, FALSE, conc,
-      FALSE)) {
+      FALSE, TRUE)) {
 #if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
 
@@ -14422,8 +14449,11 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         }
     }
 
+    /* The MatchObject, and therefore repeated captures, will be visible only if
+     * the replacement is callable.
+     */
     if (!state_init_2(&state, self, string, &str_info, start, end, FALSE,
-      concurrent, FALSE)) {
+      concurrent, FALSE, is_callable)) {
 #if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
 
@@ -14435,12 +14465,6 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     /* Initialise the "safe state" structure. */
     safe_state.re_state = &state;
     safe_state.thread_state = NULL;
-
-    if (!is_callable)
-        /* The MatchObject, and therefore repeated captures, will never be
-         * visible.
-         */
-        state.visible_captures = FALSE;
 
     join_info.item = NULL;
     join_info.list = NULL;
@@ -14684,17 +14708,14 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
     if (conc < 0)
         return NULL;
 
-    if (!state_init(&state, self, string, 0, PY_SSIZE_T_MAX, FALSE, conc,
+    /* The MatchObject, and therefore repeated captures, will not be visible. */
+    if (!state_init(&state, self, string, 0, PY_SSIZE_T_MAX, FALSE, conc, FALSE,
       FALSE))
         return NULL;
 
     /* Initialise the "safe state" structure. */
     safe_state.re_state = &state;
     safe_state.thread_state = NULL;
-
-    /* The MatchObject, and therefore repeated captures, will never be visible.
-     */
-    state.visible_captures = FALSE;
 
     list = PyList_New(0);
     if (!list) {
@@ -14867,17 +14888,14 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     if (conc < 0)
         return NULL;
 
+    /* The MatchObject, and therefore repeated captures, will not be visible. */
     if (!state_init(&state, self, string, start, end, overlapped != 0, conc,
-      FALSE))
+      FALSE, FALSE))
         return NULL;
 
     /* Initialise the "safe state" structure. */
     safe_state.re_state = &state;
     safe_state.thread_state = NULL;
-
-    /* The MatchObject, and therefore repeated captures, will never be visible.
-     */
-    state.visible_captures = FALSE;
 
     list = PyList_New(0);
     if (!list) {
@@ -15980,7 +15998,9 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_UINT8 op,
     if (pattern->node_count >= pattern->node_capacity) {
         RE_Node** new_node_list;
 
-        pattern->node_capacity += 16;
+        pattern->node_capacity *= 2;
+        if (pattern->node_capacity == 0)
+            pattern->node_capacity = RE_INIT_NODE_LIST_SIZE;
         new_node_list = (RE_Node**)re_realloc(pattern->node_list,
           pattern->node_capacity * sizeof(RE_Node*));
         if (!new_node_list)
@@ -16023,7 +16043,7 @@ Py_LOCAL_INLINE(BOOL) ensure_group(PatternObject* pattern, Py_ssize_t group) {
     old_capacity = pattern->group_info_capacity;
     new_capacity = pattern->group_info_capacity;
     while (group > new_capacity)
-        new_capacity += 16;
+        new_capacity += RE_LIST_SIZE_INC;
 
     if (new_capacity > old_capacity) {
         new_group_info = (RE_GroupInfo*)re_realloc(pattern->group_info,
@@ -16094,7 +16114,7 @@ Py_LOCAL_INLINE(BOOL) ensure_call_ref(PatternObject* pattern, Py_ssize_t
     old_capacity = pattern->call_ref_info_capacity;
     new_capacity = pattern->call_ref_info_capacity;
     while (call_ref >= new_capacity)
-        new_capacity += 16;
+        new_capacity += RE_LIST_SIZE_INC;
 
     if (new_capacity > old_capacity) {
         new_call_ref_info = (RE_CallRefInfo*)re_realloc(pattern->call_ref_info,
@@ -16196,7 +16216,7 @@ Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, int index, size_t
     old_capacity = pattern->repeat_info_capacity;
     new_capacity = pattern->repeat_info_capacity;
     while (index >= new_capacity)
-        new_capacity += 16;
+        new_capacity += RE_LIST_SIZE_INC;
 
     if (new_capacity > old_capacity) {
         RE_RepeatInfo* new_repeat_info;
