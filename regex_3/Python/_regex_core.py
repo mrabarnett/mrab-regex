@@ -259,6 +259,7 @@ def fold_case(info, string):
     flags = info.flags
     if (flags & ALL_ENCODINGS) == 0:
         flags |= info.guess_encoding
+
     return _regex.fold_case(flags, string)
 
 def is_cased(info, char):
@@ -283,7 +284,7 @@ def compile_firstset(info, fs):
         members.add(i.with_flags(case_flags=NOCASE))
 
     # Build the firstset.
-    fs = SetUnion(list(members), zerowidth=True)
+    fs = SetUnion(info, list(members), zerowidth=True)
     fs = fs.optimise(info, in_set=True)
 
     # Compile the firstset.
@@ -1323,7 +1324,7 @@ def parse_set_union(source, info):
 
     if len(items) == 1:
         return items[0]
-    return SetUnion(items)
+    return SetUnion(info, items)
 
 def parse_set_symm_diff(source, info):
     "Parses a set symmetric difference ([x~~y])."
@@ -1333,7 +1334,7 @@ def parse_set_symm_diff(source, info):
 
     if len(items) == 1:
         return items[0]
-    return SetSymDiff(items)
+    return SetSymDiff(info, items)
 
 def parse_set_inter(source, info):
     "Parses a set intersection ([x&&y])."
@@ -1343,7 +1344,7 @@ def parse_set_inter(source, info):
 
     if len(items) == 1:
         return items[0]
-    return SetInter(items)
+    return SetInter(info, items)
 
 def parse_set_diff(source, info):
     "Parses a set difference ([x--y])."
@@ -1353,7 +1354,7 @@ def parse_set_diff(source, info):
 
     if len(items) == 1:
         return items[0]
-    return SetDiff(items)
+    return SetDiff(info, items)
 
 def parse_set_imp_union(source, info):
     "Parses a set implicit union ([xy])."
@@ -1376,7 +1377,7 @@ def parse_set_imp_union(source, info):
 
     if len(items) == 1:
         return items[0]
-    return SetUnion(items)
+    return SetUnion(info, items)
 
 def parse_set_member(source, info):
     "Parses a member in a character set."
@@ -1393,13 +1394,13 @@ def parse_set_member(source, info):
         # We've reached the end of the set, so return both the character and
         # hyphen.
         source.pos = here
-        return SetUnion([start, Character(ord("-"))])
+        return SetUnion(info, [start, Character(ord("-"))])
 
     # Parse a set item.
     end = parse_set_item(source, info)
     if not isinstance(end, Character) or not end.positive:
         # It's not a range, so return the character, hyphen and property.
-        return SetUnion([start, Character(ord("-")), end])
+        return SetUnion(info, [start, Character(ord("-")), end])
 
     # It _is_ a range.
     if start.value > end.value:
@@ -2182,7 +2183,7 @@ class Branch(RegexBase):
         if len(items) == 1:
             item = list(items)[0]
         else:
-            item = SetUnion(list(items)).optimise(info)
+            item = SetUnion(info, list(items)).optimise(info)
 
         new_branches.append(item.with_flags(case_flags=case_flags))
 
@@ -2283,6 +2284,12 @@ class Character(RegexBase):
         self.case_flags = case_flags
         self.zerowidth = bool(zerowidth)
 
+        if (self.positive and (self.case_flags & FULLIGNORECASE) ==
+          FULLIGNORECASE):
+            self.folded = _regex.fold_case(FULL_CASE_FOLDING, chr(self.value))
+        else:
+            self.folded = chr(self.value)
+
         self._key = (self.__class__, self.value, self.positive,
           self.case_flags, self.zerowidth)
 
@@ -2310,14 +2317,10 @@ class Character(RegexBase):
         code = PrecompiledCode([self._opcode[self.case_flags, reverse], flags,
           self.value])
 
-        if (self.positive and (self.case_flags & FULLIGNORECASE) ==
-          FULLIGNORECASE):
-            # Get the folded character.
-            folded = _regex.fold_case(FULL_CASE_FOLDING, chr(self.value))
-            if len(folded) > 1:
-                # The character expands on full case-folding.
-                code = Branch([code, String([ord(c) for c in folded],
-                  case_flags=self.case_flags)])
+        if len(self.folded) > 1:
+            # The character expands on full case-folding.
+            code = Branch([code, String([ord(c) for c in self.folded],
+              case_flags=self.case_flags)])
 
         return code.compile(reverse, fuzzy)
 
@@ -2329,7 +2332,7 @@ class Character(RegexBase):
         return (ch == self.value) == self.positive
 
     def max_width(self):
-        return 1
+        return len(self.folded)
 
 class Conditional(RegexBase):
     def __new__(cls, info, group, yes_item, no_item):
@@ -3111,19 +3114,23 @@ class Sequence(RegexBase):
         return offset, None
 
 class SetBase(RegexBase):
-    def __init__(self, items, positive=True, case_flags=NOCASE,
+    def __init__(self, info, items, positive=True, case_flags=NOCASE,
       zerowidth=False):
         RegexBase.__init__(self)
+        self.info = info
         self.items = tuple(items)
         self.positive = bool(positive)
         self.case_flags = case_flags
         self.zerowidth = bool(zerowidth)
 
+        self.char_width = 1
+
         self._key = (self.__class__, self.items, self.positive,
           self.case_flags, self.zerowidth)
 
     def rebuild(self, positive, case_flags, zerowidth):
-        return type(self)(self.items, positive, case_flags, zerowidth)
+        return type(self)(self.info, self.items, positive, case_flags,
+          zerowidth).optimise(self.info)
 
     def get_firstset(self, reverse):
         return set([self])
@@ -3159,7 +3166,8 @@ class SetBase(RegexBase):
             return self
 
         # Is full case-folding possible?
-        if (not (info.flags & UNICODE) or (self.case_flags & FULLIGNORECASE) !=
+        if (not (self.info.flags & UNICODE) or (self.case_flags &
+           FULLIGNORECASE) !=
           FULLIGNORECASE):
             return self
 
@@ -3184,7 +3192,29 @@ class SetBase(RegexBase):
         return Branch([self] + items)
 
     def max_width(self):
-        return 1
+        # Is the set case-sensitive?
+        if not self.positive or not (self.case_flags & IGNORECASE):
+            return 1
+
+        # Is full case-folding possible?
+        if (not (self.info.flags & UNICODE) or (self.case_flags &
+          FULLIGNORECASE) != FULLIGNORECASE):
+            return 1
+
+        # Get the characters which expand to multiple codepoints on folding.
+        expanding_chars = _regex.get_expand_on_folding()
+
+        # Get the folded characters in the set.
+        seen = set()
+        for ch in expanding_chars:
+            if self.matches(ord(ch)):
+                folded = _regex.fold_case(FULL_CASE_FOLDING, ch)
+                seen.add(folded)
+
+        if not seen:
+            return 1
+
+        return max(len(folded) for folded in seen)
 
 class SetDiff(SetBase):
     _opcode = {(NOCASE, False): OP.SET_DIFF, (IGNORECASE, False):
@@ -3197,7 +3227,7 @@ class SetDiff(SetBase):
     def optimise(self, info, in_set=False):
         items = self.items
         if len(items) > 2:
-            items = [items[0], SetUnion(items[1 : ])]
+            items = [items[0], SetUnion(info, items[1 : ])]
 
         if len(items) == 1:
             return items[0].with_flags(case_flags=self.case_flags,
@@ -3368,6 +3398,16 @@ class String(RegexBase):
         self.characters = tuple(characters)
         self.case_flags = case_flags
 
+        if (self.case_flags & FULLIGNORECASE) == FULLIGNORECASE:
+            folded_characters = []
+            for char in self.characters:
+                folded = _regex.fold_case(FULL_CASE_FOLDING, chr(char))
+                folded_characters.extend(ord(c) for c in folded)
+        else:
+            folded_characters = self.characters
+
+        self.folded_characters = tuple(folded_characters)
+
         self._key = self.__class__, self.characters, self.case_flags
 
     def get_firstset(self, reverse):
@@ -3382,19 +3422,11 @@ class String(RegexBase):
         return True
 
     def compile(self, reverse=False, fuzzy=False):
-        if (self.case_flags & FULLIGNORECASE) == FULLIGNORECASE:
-            characters = []
-            for char in self.characters:
-                folded = _regex.fold_case(FULL_CASE_FOLDING, chr(char))
-                characters.extend(ord(c) for c in folded)
-        else:
-            characters = self.characters
-
         flags = 0
         if fuzzy:
             flags |= FUZZY_OP
         return [(self._opcode[self.case_flags, reverse], flags,
-          len(characters)) + tuple(characters)]
+          len(self.folded_characters)) + self.folded_characters]
 
     def dump(self, indent=0, reverse=False):
         chars = " ".join(map(str, self.characters[ : 9]))
@@ -3405,7 +3437,7 @@ class String(RegexBase):
           CASE_TEXT[self.case_flags]))
 
     def max_width(self):
-        return len(self.characters)
+        return len(self.folded_characters)
 
     def get_required_string(self, reverse):
         return 0, self
@@ -3681,15 +3713,7 @@ def get_required_string(parsed, flags):
         if not (flags & UNICODE):
             req_flags &= ~UNICODE
 
-        if req_flags == FULLIGNORECASE:
-            req_chars = []
-            for char in required.characters:
-                folded = _regex.fold_case(FULL_CASE_FOLDING, chr(char))
-                req_chars.extend(ord(c) for c in folded)
-
-            req_chars = tuple(req_chars)
-        else:
-            req_chars = required.characters
+        req_chars = required.folded_characters
     else:
         req_offset = 0
         req_chars = ()
@@ -3724,6 +3748,10 @@ class Scanner:
         parsed = parsed.optimise(info)
         parsed = parsed.pack_characters(info)
 
+        # Get the required string.
+        req_offset, req_chars, req_flags = get_required_string(parsed,
+          info.flags)
+
         # Check of the features of the groups.
         check_group_features(info, parsed)
 
@@ -3736,10 +3764,6 @@ class Scanner:
 
         # Compile the compound pattern. The result is a list of tuples.
         code = parsed.compile(reverse) + [(OP.SUCCESS, )]
-
-        # Get the required string.
-        req_offset, req_chars, req_flags = get_required_string(parsed,
-          info.flags)
 
         # Flatten the code into a list of ints.
         code = flatten_code(code)
