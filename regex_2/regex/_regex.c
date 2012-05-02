@@ -499,7 +499,6 @@ typedef struct RE_State {
     BOOL zero_width; /* Whether to enable the correct handling of zero-width matches. */
     BOOL must_advance; /* Whether the end of the match must advance past its start. */
     BOOL is_multithreaded; /* Whether to release the GIL while matching. */
-    BOOL do_check; /* Whether to do a quick pre-check before searching. */
     BOOL too_few_errors; /* Whether there were too few fuzzy errors. */
 } RE_State;
 
@@ -552,7 +551,8 @@ typedef struct PatternObject {
     RE_GroupData* groups_storage;
     RE_RepeatData* repeats_storage;
     Py_ssize_t fuzzy_count; /* The number of fuzzy sections. */
-    BOOL do_check; /* Whether to do a quick pre-check before searching. */
+    Py_ssize_t req_offset; /* The offset to the required string. */
+    RE_Node* req_string; /* The required string. */
     BOOL is_fuzzy; /* Whether it's a fuzzy pattern. */
     BOOL do_search_start; /* Whether to do an initial search. */
     BOOL recursive; /* Whether the entire pattern is recursive. */
@@ -7886,9 +7886,128 @@ found:
     return TRUE;
 }
 
+/* Locates the required string, if there's one. */
+Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
+    RE_State* state;
+    PatternObject* pattern;
+    Py_ssize_t found_pos;
+
+    state = safe_state->re_state;
+    pattern = state->pattern;
+
+    if (!pattern->req_string)
+        /* There isn't a required string, so start matching from the current
+         * position.
+         */
+        return state->text_pos;
+
+    /* Search for the required string and calculate where to start matching. */
+    switch (pattern->req_string->op) {
+    case RE_OP_STRING:
+        found_pos = string_search(safe_state, pattern->req_string,
+          state->text_pos, state->slice_end);
+        if (found_pos < 0)
+            /* The required string wasn't found. */
+            return -1;
+
+        if (pattern->req_offset >= 0) {
+            /* Step back from the required string to where we should start
+             * matching.
+             */
+            found_pos -= pattern->req_offset;
+            if (found_pos > state->text_pos)
+                return found_pos;
+        }
+        break;
+    case RE_OP_STRING_FLD:
+        found_pos = string_search_fld(safe_state, pattern->req_string,
+          state->text_pos, state->slice_end, NULL);
+        if (found_pos < 0)
+            /* The required string wasn't found. */
+            return -1;
+
+        if (pattern->req_offset >= 0) {
+            /* Step back from the required string to where we should start
+             * matching.
+             */
+            found_pos -= pattern->req_offset;
+            if (found_pos > state->text_pos)
+                return found_pos;
+        }
+        break;
+    case RE_OP_STRING_FLD_REV:
+        found_pos = string_search_fld_rev(safe_state, pattern->req_string,
+          state->text_pos, state->slice_start, NULL);
+        if (found_pos < 0)
+            /* The required string wasn't found. */
+            return -1;
+
+        if (pattern->req_offset >= 0) {
+            /* Step back from the required string to where we should start
+             * matching.
+             */
+            found_pos += pattern->req_offset;
+            if (found_pos < state->text_pos)
+                return found_pos;
+        }
+        break;
+    case RE_OP_STRING_IGN:
+        found_pos = string_search_ign(safe_state, pattern->req_string,
+          state->text_pos, state->slice_end);
+        if (found_pos < 0)
+            /* The required string wasn't found. */
+            return -1;
+
+        if (pattern->req_offset >= 0) {
+            /* Step back from the required string to where we should start
+             * matching.
+             */
+            found_pos -= pattern->req_offset;
+            if (found_pos > state->text_pos)
+                return found_pos;
+        }
+        break;
+    case RE_OP_STRING_IGN_REV:
+        found_pos = string_search_ign_rev(safe_state, pattern->req_string,
+          state->text_pos, state->slice_start);
+        if (found_pos < 0)
+            /* The required string wasn't found. */
+            return -1;
+
+        if (pattern->req_offset >= 0) {
+            /* Step back from the required string to where we should start
+             * matching.
+             */
+            found_pos += pattern->req_offset;
+            if (found_pos < state->text_pos)
+                return found_pos;
+        }
+        break;
+    case RE_OP_STRING_REV:
+        found_pos = string_search_rev(safe_state, pattern->req_string,
+          state->text_pos, state->slice_start);
+        if (found_pos < 0)
+            /* The required string wasn't found. */
+            return -1;
+
+        if (pattern->req_offset >= 0) {
+            /* Step back from the required string to where we should start
+             * matching.
+             */
+            found_pos += pattern->req_offset;
+            if (found_pos < state->text_pos)
+                return found_pos;
+        }
+        break;
+    }
+
+    /* Start matching from the current position. */
+    return state->text_pos;
+}
+
 /* Performs a depth-first match or search from the context. */
 Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
-  BOOL search) {
+  BOOL search, BOOL recursive_call) {
     RE_State* state;
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
@@ -7904,6 +8023,7 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     Py_ssize_t step;
     Py_ssize_t string_pos;
     BOOL do_search_start;
+    Py_ssize_t found_pos;
     int folded_pos;
     int gfolded_pos;
     RE_Node* node;
@@ -7973,7 +8093,20 @@ start_match:
         guard_list->last_text_pos = -1;
     }
 
+    /* Locate the required string, if there's one, unless this is a recursive
+     * call of 'basic_match'.
+     */
+    if (recursive_call)
+        found_pos = state->text_pos;
+    else {
+        found_pos = locate_required_string(safe_state);
+        if (found_pos < 0)
+            return RE_ERROR_FAILURE;
+    }
+
     if (search) {
+        state->text_pos = found_pos;
+
         if (do_search_start) {
             RE_Position new_position;
 
@@ -8030,8 +8163,13 @@ next_match_2:
                 goto next_match_2;
             }
         }
-    } else
+    } else {
+        /* The start position is anchored to the current position. */
+        if (found_pos != state->text_pos)
+            return RE_ERROR_FAILURE;
+
         node = start_node;
+    }
 
 advance:
     /* The main matching loop. */
@@ -8151,8 +8289,8 @@ advance:
             state->text_pos = text_pos;
             state->must_advance = FALSE;
 
-            status = basic_match(safe_state, node->nonstring.next_2.node,
-              FALSE);
+            status = basic_match(safe_state, node->nonstring.next_2.node, FALSE,
+              TRUE);
             if (status < 0)
                 return status;
 
@@ -9063,8 +9201,8 @@ advance:
 
             too_few_errors = state->too_few_errors;
 
-            status = basic_match(safe_state, node->nonstring.next_2.node,
-              FALSE);
+            status = basic_match(safe_state, node->nonstring.next_2.node, FALSE,
+              TRUE);
             if (status < 0)
                 return status;
 
@@ -11514,18 +11652,11 @@ try_again:
             if (available < state->min_width || available == 0 &&
               state->must_advance)
                 status = RE_ERROR_FAILURE;
-            else if (state->do_check) {
-                state->do_check = FALSE;
-
-                if (!general_check(safe_state, state->pattern->check_node,
-                  state->text_pos))
-                    status = RE_ERROR_FAILURE;
-            }
         }
 
         if (status == RE_ERROR_SUCCESS)
-            status = basic_match(safe_state, state->pattern->start_node,
-              search);
+            status = basic_match(safe_state, state->pattern->start_node, search,
+              FALSE);
 
         /* Has an error occurred? */
         if (status < 0)
@@ -11958,7 +12089,6 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
      */
     state->zero_width = (pattern->flags & RE_FLAG_VERSION1) != 0;
     state->must_advance = FALSE;
-    state->do_check = pattern->do_check;
 
     state->pattern = pattern;
     state->string = string;
@@ -15784,143 +15914,6 @@ Py_LOCAL_INLINE(void) set_test_nodes(PatternObject* pattern) {
     }
 }
 
-/* Checks whether the matcher should do the initial check.
- *
- * It sets pattern->do_check accordingly and returns TRUE when it has done so.
- */
-Py_LOCAL_INLINE(BOOL) should_do_check(PatternObject* pattern, RE_Node* node,
-  BOOL early) {
-    for (;;) {
-        switch (node->op) {
-        case RE_OP_ANY:
-        case RE_OP_ANY_ALL:
-        case RE_OP_ANY_ALL_REV:
-        case RE_OP_ANY_REV:
-        case RE_OP_ANY_U:
-        case RE_OP_ANY_U_REV:
-        case RE_OP_CHARACTER:
-        case RE_OP_CHARACTER_IGN:
-        case RE_OP_CHARACTER_IGN_REV:
-        case RE_OP_CHARACTER_REV:
-        case RE_OP_PROPERTY:
-        case RE_OP_PROPERTY_IGN:
-        case RE_OP_PROPERTY_IGN_REV:
-        case RE_OP_PROPERTY_REV:
-        case RE_OP_RANGE:
-        case RE_OP_RANGE_IGN:
-        case RE_OP_RANGE_IGN_REV:
-        case RE_OP_RANGE_REV:
-        case RE_OP_SET_DIFF:
-        case RE_OP_SET_DIFF_IGN:
-        case RE_OP_SET_DIFF_IGN_REV:
-        case RE_OP_SET_DIFF_REV:
-        case RE_OP_SET_INTER:
-        case RE_OP_SET_INTER_IGN:
-        case RE_OP_SET_INTER_IGN_REV:
-        case RE_OP_SET_INTER_REV:
-        case RE_OP_SET_SYM_DIFF:
-        case RE_OP_SET_SYM_DIFF_IGN:
-        case RE_OP_SET_SYM_DIFF_IGN_REV:
-        case RE_OP_SET_SYM_DIFF_REV:
-        case RE_OP_SET_UNION:
-        case RE_OP_SET_UNION_IGN:
-        case RE_OP_SET_UNION_IGN_REV:
-        case RE_OP_SET_UNION_REV:
-            if (node->match) {
-                pattern->do_check = !early;
-                return TRUE;
-            }
-            early = FALSE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_ATOMIC:
-            early = FALSE;
-            if (should_do_check(pattern, node->nonstring.next_2.node, early))
-                return TRUE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_BOUNDARY:
-        case RE_OP_DEFAULT_BOUNDARY:
-        case RE_OP_DEFAULT_END_OF_WORD:
-        case RE_OP_DEFAULT_START_OF_WORD:
-        case RE_OP_END_OF_LINE:
-        case RE_OP_END_OF_LINE_U:
-        case RE_OP_END_OF_STRING:
-        case RE_OP_END_OF_STRING_LINE:
-        case RE_OP_END_OF_STRING_LINE_U:
-        case RE_OP_END_OF_WORD:
-        case RE_OP_GRAPHEME_BOUNDARY:
-        case RE_OP_SEARCH_ANCHOR:
-        case RE_OP_START_OF_LINE:
-        case RE_OP_START_OF_LINE_U:
-        case RE_OP_START_OF_STRING:
-        case RE_OP_START_OF_WORD:
-            early = FALSE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_BRANCH:
-            early = FALSE;
-            if (should_do_check(pattern, node->next_1.node, early))
-                return TRUE;
-            node = node->nonstring.next_2.node;
-            break;
-        case RE_OP_END_GREEDY_REPEAT:
-        case RE_OP_END_LAZY_REPEAT:
-            early = FALSE;
-            node = node->nonstring.next_2.node;
-            break;
-        case RE_OP_END_GROUP:
-        case RE_OP_START_GROUP:
-            node = node->next_1.node;
-            break;
-        case RE_OP_GREEDY_REPEAT:
-        case RE_OP_LAZY_REPEAT:
-            early = FALSE;
-            if (node->values[1] >= 1 && should_do_check(pattern,
-              node->nonstring.next_2.node, early))
-                return TRUE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_GREEDY_REPEAT_ONE:
-        case RE_OP_LAZY_REPEAT_ONE:
-            early = FALSE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_GROUP_EXISTS:
-            early = FALSE;
-            if (should_do_check(pattern, node->next_1.node, early))
-                return TRUE;
-            node = node->nonstring.next_2.node;
-            break;
-        case RE_OP_LOOKAROUND:
-            early = FALSE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_REF_GROUP:
-        case RE_OP_REF_GROUP_FLD:
-        case RE_OP_REF_GROUP_FLD_REV:
-        case RE_OP_REF_GROUP_IGN:
-        case RE_OP_REF_GROUP_IGN_REV:
-        case RE_OP_REF_GROUP_REV:
-            early = FALSE;
-            node = node->next_1.node;
-            break;
-        case RE_OP_STRING:
-        case RE_OP_STRING_FLD:
-        case RE_OP_STRING_FLD_REV:
-        case RE_OP_STRING_IGN:
-        case RE_OP_STRING_IGN_REV:
-        case RE_OP_STRING_REV:
-            pattern->do_check = !early;
-            return TRUE;
-        case RE_OP_SUCCESS:
-            return FALSE;
-        default:
-            return FALSE;
-        }
-    }
-}
-
 /* Optimises the pattern. */
 Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     Py_ssize_t i;
@@ -15960,15 +15953,6 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     /* Mark all the group that are named. */
     if (!mark_named_groups(pattern))
         return FALSE;
-
-    /* Check whether an initial check should be done when matching. */
-    pattern->do_check = FALSE;
-    should_do_check(pattern, pattern->start_node, TRUE);
-    if (pattern->do_check) {
-        pattern->check_node = next_check(pattern->start_node);
-        if (!pattern->check_node)
-            pattern->do_check = FALSE;
-    }
 
     return TRUE;
 }
@@ -17605,6 +17589,73 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     return TRUE;
 }
 
+/* Gets the required characters for a regex.
+ *
+ * In the event of an error, it just pretends that there are no required
+ * characters.
+ */
+Py_LOCAL_INLINE(void) get_required_chars(PyObject* required_chars, RE_CODE**
+  req_chars, Py_ssize_t* req_length) {
+    Py_ssize_t len;
+    RE_CODE* chars;
+    Py_ssize_t i;
+
+    *req_chars = NULL;
+    *req_length = 0;
+
+    len = PyTuple_GET_SIZE(required_chars);
+    if (len == 0 || PyErr_Occurred())
+        return;
+
+    chars = (RE_CODE*)re_alloc(len * sizeof(RE_CODE));
+    if (!chars)
+        goto error;
+
+    for (i = 0; i < len; i++) {
+        PyObject* o = PyTuple_GET_ITEM(required_chars, i);
+        size_t value;
+
+        value = PyLong_AsUnsignedLong(o);
+        if (PyErr_Occurred())
+            goto error;
+
+        chars[i] = (RE_CODE)value;
+        if (chars[i] != value || PyErr_Occurred())
+            goto error;
+    }
+
+    *req_chars = chars;
+    *req_length = len;
+
+    return;
+
+error:
+    PyErr_Clear();
+    re_dealloc(chars);
+}
+
+/* Makes a STRING node. */
+Py_LOCAL_INLINE(RE_Node*) make_STRING_node(PatternObject* pattern, RE_UINT8 op,
+  Py_ssize_t length, RE_CODE* chars) {
+    Py_ssize_t step;
+    RE_Node* node;
+    Py_ssize_t i;
+
+    step = get_step(op);
+
+    /* Create the node. */
+    node = create_node(pattern, op, 0, step * length, length);
+    if (!node)
+        return NULL;
+
+    node->status |= RE_STATUS_STRING;
+
+    for (i = 0; i < length; i++)
+        node->values[i] = chars[i];
+
+    return node;
+}
+
 /* Compiles regular expression code to a PatternObject.
  *
  * The regular expression code is provided as a list and is then compiled to
@@ -17619,6 +17670,11 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     PyObject* indexgroup;
     PyObject* named_lists;
     PyObject* named_list_indexes;
+    Py_ssize_t req_offset;
+    PyObject* required_chars;
+    Py_ssize_t req_length;
+    RE_CODE* req_chars;
+    Py_ssize_t req_flags;
     Py_ssize_t code_len;
     RE_CODE* code;
     Py_ssize_t i;
@@ -17628,11 +17684,12 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     BOOL unicode;
     BOOL ok;
 
-    if (!PyArg_ParseTuple(args, "OnOOOOO", &pattern, &flags, &code_list,
-      &groupindex, &indexgroup, &named_lists, &named_list_indexes))
+    if (!PyArg_ParseTuple(args, "OnOOOOOnOn", &pattern, &flags, &code_list,
+      &groupindex, &indexgroup, &named_lists, &named_list_indexes, &req_offset,
+      &required_chars, &req_flags))
         return NULL;
 
-    /* Read the regular expression code. */
+    /* Read the regex code. */
     code_len = PyList_GET_SIZE(code_list);
     code = (RE_CODE*)re_alloc(code_len * sizeof(RE_CODE));
     if (!code)
@@ -17651,10 +17708,14 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
             goto error;
     }
 
+    /* Get the required characters. */
+    get_required_chars(required_chars, &req_chars, &req_length);
+
     /* Create the PatternObject. */
     self = PyObject_NEW(PatternObject, &Pattern_Type);
     if (!self) {
         set_error(RE_ERROR_MEMORY, NULL);
+        re_dealloc(req_chars);
         re_dealloc(code);
         return NULL;
     }
@@ -17685,6 +17746,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->repeats_storage = NULL;
     self->fuzzy_count = 0;
     self->recursive = FALSE;
+    self->req_offset = req_offset;
+    self->req_string = NULL;
     Py_INCREF(self->pattern);
     Py_INCREF(self->groupindex);
     Py_INCREF(self->indexgroup);
@@ -17719,8 +17782,50 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
             set_error(RE_ERROR_ILLEGAL, NULL);
 
         Py_DECREF(self);
+        re_dealloc(req_chars);
         return NULL;
     }
+
+    /* Make a node for the required string, if there's one. */
+    if (req_chars) {
+        /* Remove the FULLCASE flag if it's not a Unicode pattern. */
+        if (!(self->flags & RE_FLAG_UNICODE))
+            req_flags &= ~RE_FLAG_FULLCASE;
+
+        if (self->flags & RE_FLAG_REVERSE) {
+            switch (req_flags) {
+            case 0:
+                self->req_string = make_STRING_node(self, RE_OP_STRING_REV,
+                  req_length, req_chars);
+                break;
+            case RE_FLAG_IGNORECASE | RE_FLAG_FULLCASE:
+                self->req_string = make_STRING_node(self, RE_OP_STRING_FLD_REV,
+                  req_length, req_chars);
+                break;
+            case RE_FLAG_IGNORECASE:
+                self->req_string = make_STRING_node(self, RE_OP_STRING_IGN_REV,
+                  req_length, req_chars);
+                break;
+            }
+        } else {
+            switch (req_flags) {
+            case 0:
+                self->req_string = make_STRING_node(self, RE_OP_STRING,
+                  req_length, req_chars);
+                break;
+            case RE_FLAG_IGNORECASE | RE_FLAG_FULLCASE:
+                self->req_string = make_STRING_node(self, RE_OP_STRING_FLD,
+                  req_length, req_chars);
+                break;
+            case RE_FLAG_IGNORECASE:
+                self->req_string = make_STRING_node(self, RE_OP_STRING_IGN,
+                  req_length, req_chars);
+                break;
+            }
+        }
+    }
+
+    re_dealloc(req_chars);
 
     return (PyObject*)self;
 

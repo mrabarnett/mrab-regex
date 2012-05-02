@@ -26,8 +26,8 @@ __all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH",
   "V1", "VERSION1", "W", "WORD", "X", "VERBOSE", "error", "ALNUM",
   "NONLITERAL", "Fuzzy", "Info", "Source", "FirstSetError", "UnscopedFlagSet",
   "OP", "Scanner", "check_group_features", "compile_firstset",
-  "compile_repl_escape", "flatten_code", "fold_case", "parse_pattern",
-  "shrink_cache", "REGEX_FLAGS"]
+  "compile_repl_escape", "flatten_code", "fold_case", "get_required_string",
+  "parse_pattern", "shrink_cache", "REGEX_FLAGS"]
 
 # The regex exception.
 class error(Exception):
@@ -1750,6 +1750,9 @@ class RegexBase:
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def get_required_string(self, reverse):
+        return self.max_width(), None
+
 # Base class for zero-width nodes.
 class ZeroWidthBase(RegexBase):
     def __init__(self, positive=True):
@@ -1775,6 +1778,9 @@ class ZeroWidthBase(RegexBase):
         print("{}{} {}".format(INDENT * indent, self._op_name,
           POS_TEXT[self.positive]))
 
+    def max_width(self):
+        return 0
+
 class Any(RegexBase):
     _opcode = {False: OP.ANY, True: OP.ANY_REV}
     _op_name = "ANY"
@@ -1790,6 +1796,9 @@ class Any(RegexBase):
 
     def dump(self, indent=0, reverse=False):
         print("{}{}".format(INDENT * indent, self._op_name))
+
+    def max_width(self):
+        return 1
 
 class AnyAll(Any):
     _opcode = {False: OP.ANY_ALL, True: OP.ANY_ALL_REV}
@@ -1848,6 +1857,12 @@ class Atomic(RegexBase):
     def __eq__(self, other):
         return (type(self) is type(other) and self.subpattern ==
           other.subpattern)
+
+    def max_width(self):
+        return self.subpattern.max_width()
+
+    def get_required_string(self, reverse):
+        return self.subpattern.get_required_string(reverse)
 
 class Boundary(ZeroWidthBase):
     _opcode = OP.BOUNDARY
@@ -2210,6 +2225,9 @@ class Branch(RegexBase):
     def __eq__(self, other):
         return type(self) is type(other) and self.branches == other.branches
 
+    def max_width(self):
+        return max(b.max_width() for b in self.branches)
+
 class CallGroup(RegexBase):
     def __init__(self, info, group):
         RegexBase.__init__(self)
@@ -2245,6 +2263,9 @@ class CallGroup(RegexBase):
 
     def __eq__(self, other):
         return type(self) is type(other) and self.group == other.group
+
+    def max_width(self):
+        return UNLIMITED
 
 class Character(RegexBase):
     _opcode = {(NOCASE, False): OP.CHARACTER, (IGNORECASE, False):
@@ -2306,6 +2327,9 @@ class Character(RegexBase):
 
     def matches(self, ch):
         return (ch == self.value) == self.positive
+
+    def max_width(self):
+        return 1
 
 class Conditional(RegexBase):
     def __new__(cls, info, group, yes_item, no_item):
@@ -2389,6 +2413,9 @@ class Conditional(RegexBase):
     def __eq__(self, other):
         return type(self) is type(other) and (self.group, self.yes_item,
           self.no_item) == (other.group, other.yes_item, other.no_item)
+
+    def max_width(self):
+        return max(self.yes_item.max_width(), self.no_item.max_width())
 
 class DefaultBoundary(ZeroWidthBase):
     _opcode = OP.DEFAULT_BOUNDARY
@@ -2513,6 +2540,9 @@ class Fuzzy(RegexBase):
         return (type(self) is type(other) and self.subpattern ==
           other.subpattern)
 
+    def max_width(self):
+        return UNLIMITED
+
 class Grapheme(RegexBase):
     _op_name = "GRAPHEME"
 
@@ -2527,6 +2557,9 @@ class Grapheme(RegexBase):
 
     def dump(self, indent=0, reverse=False):
         print("{}{}".format(INDENT * indent, self._op_name))
+
+    def max_width(self):
+        return UNLIMITED
 
 class GreedyRepeat(RegexBase):
     _opcode = OP.GREEDY_REPEAT
@@ -2598,6 +2631,22 @@ class GreedyRepeat(RegexBase):
           self.max_count) == (other.subpattern, other.min_count,
           other.max_count)
 
+    def max_width(self):
+        if self.max_count is None:
+            return UNLIMITED
+
+        return self.subpattern.max_width() * self.max_count
+
+    def get_required_string(self, reverse):
+        ofs, req = self.subpattern.get_required_string(reverse)
+        if self.min_count > 0 and req:
+            return ofs, req
+
+        if self.max_count is None:
+            return UNLIMITED, None
+
+        return ofs * self.max_count, None
+
 class Group(RegexBase):
     def __init__(self, info, group, subpattern):
         RegexBase.__init__(self)
@@ -2662,6 +2711,12 @@ class Group(RegexBase):
         return (type(self) is type(other) and (self.group, self.subpattern) ==
           (other.group, other.subpattern))
 
+    def max_width(self):
+        return self.subpattern.max_width()
+
+    def get_required_string(self, reverse):
+        return self.subpattern.get_required_string(reverse)
+
 class LazyRepeat(GreedyRepeat):
     _opcode = OP.LAZY_REPEAT
     _op_name = "LAZY_REPEAT"
@@ -2721,6 +2776,9 @@ class LookAround(RegexBase):
         return type(self) is type(other) and (self.behind, self.positive,
           self.subpattern) == (other.behind, other.positive, other.subpattern)
 
+    def max_width(self):
+        return 0
+
 class PrecompiledCode(RegexBase):
     def __init__(self, code):
         self.code = code
@@ -2776,6 +2834,9 @@ class Property(RegexBase):
 
     def matches(self, ch):
         return _regex.has_property_value(self.value, ch) == self.positive
+
+    def max_width(self):
+        return 1
 
 class Range(RegexBase):
     _opcode = {(NOCASE, False): OP.RANGE, (IGNORECASE, False): OP.RANGE_IGN,
@@ -2849,6 +2910,9 @@ class Range(RegexBase):
     def matches(self, ch):
         return (self.lower <= ch <= self.upper) == self.positive
 
+    def max_width(self):
+        return 1
+
 class RefGroup(RegexBase):
     _opcode = {(NOCASE, False): OP.REF_GROUP, (IGNORECASE, False):
       OP.REF_GROUP_IGN, (FULLCASE, False): OP.REF_GROUP, (FULLIGNORECASE,
@@ -2891,6 +2955,9 @@ class RefGroup(RegexBase):
     def dump(self, indent=0, reverse=False):
         print("{}{} {}{}".format(INDENT * indent, self._op_name, self.group,
           CASE_TEXT[self.case_flags]))
+
+    def max_width(self):
+        return UNLIMITED
 
 class SearchAnchor(ZeroWidthBase):
     _opcode = OP.SEARCH_ANCHOR
@@ -3025,6 +3092,24 @@ class Sequence(RegexBase):
     def __eq__(self, other):
         return type(self) is type(other) and self.items == other.items
 
+    def max_width(self):
+        return sum(s.max_width() for s in self.items)
+
+    def get_required_string(self, reverse):
+        seq = self.items
+        if reverse:
+            seq = seq[::-1]
+
+        offset = 0
+
+        for s in seq:
+            ofs, req = s.get_required_string(reverse)
+            offset += ofs
+            if req:
+                return offset, req
+
+        return offset, None
+
 class SetBase(RegexBase):
     def __init__(self, items, positive=True, case_flags=NOCASE,
       zerowidth=False):
@@ -3097,6 +3182,9 @@ class SetBase(RegexBase):
             return self
 
         return Branch([self] + items)
+
+    def max_width(self):
+        return 1
 
 class SetDiff(SetBase):
     _opcode = {(NOCASE, False): OP.SET_DIFF, (IGNORECASE, False):
@@ -3316,6 +3404,12 @@ class String(RegexBase):
         print("{}{} {}{}".format(INDENT * indent, self._op_name, chars,
           CASE_TEXT[self.case_flags]))
 
+    def max_width(self):
+        return len(self.characters)
+
+    def get_required_string(self, reverse):
+        return 0, self
+
 class StringSet(RegexBase):
     _opcode = {(NOCASE, False): OP.STRING_SET, (IGNORECASE, False):
       OP.STRING_SET_IGN, (FULLCASE, False): OP.STRING_SET, (FULLIGNORECASE,
@@ -3403,6 +3497,12 @@ class StringSet(RegexBase):
                   case_flags=self.case_flags)]
 
             self._flatten(seq[-1])
+
+    def max_width(self):
+        if not self.info.kwargs[self.name]:
+            return 0
+
+        return max(len(i) for i in self.info.kwargs[self.name])
 
 class Source:
     "Scanner for the regular expression source string."
@@ -3569,6 +3669,34 @@ def check_group_features(info, parsed):
     info.call_refs = call_refs
     info.additional_groups = additional_groups
 
+def get_required_string(parsed, flags):
+    "Gets the required string and related info of a parsed pattern."
+
+    req_offset, required = parsed.get_required_string(bool(flags & REVERSE))
+    if required:
+        if req_offset >= UNLIMITED:
+            req_offset = -1
+
+        req_flags = required.case_flags
+        if not (flags & UNICODE):
+            req_flags &= ~UNICODE
+
+        if req_flags == FULLIGNORECASE:
+            req_chars = []
+            for char in required.characters:
+                folded = _regex.fold_case(FULL_CASE_FOLDING, chr(char))
+                req_chars.extend(ord(c) for c in folded)
+
+            req_chars = tuple(req_chars)
+        else:
+            req_chars = required.characters
+    else:
+        req_offset = 0
+        req_chars = ()
+        req_flags = 0
+
+    return req_offset, req_chars, req_flags
+
 class Scanner:
     def __init__(self, lexicon, flags=0):
         self.lexicon = lexicon
@@ -3609,6 +3737,10 @@ class Scanner:
         # Compile the compound pattern. The result is a list of tuples.
         code = parsed.compile(reverse) + [(OP.SUCCESS, )]
 
+        # Get the required string.
+        req_offset, req_chars, req_flags = get_required_string(parsed,
+          info.flags)
+
         # Flatten the code into a list of ints.
         code = flatten_code(code)
 
@@ -3633,7 +3765,7 @@ class Scanner:
         # LOCALE _don't_ affect the code generation but _are_ needed by the
         # PatternObject.
         self.scanner = _regex.compile(None, (flags & GLOBAL_FLAGS) | version,
-          code, {}, {}, {}, [])
+          code, {}, {}, {}, [], req_offset, req_chars, req_flags)
 
     def scan(self, string):
         result = []

@@ -460,6 +460,9 @@ def _compile(pattern, flags=0, kwargs=None):
     parsed = parsed.optimise(info)
     parsed = parsed.pack_characters(info)
 
+    # Get the required string.
+    req_offset, req_chars, req_flags = get_required_string(parsed, info.flags)
+
     # Build the named lists.
     named_lists = {}
     named_list_indexes = [None] * len(info.named_lists_used)
@@ -519,7 +522,8 @@ def _compile(pattern, flags=0, kwargs=None):
     # by the PatternObject itself. Conversely, global flags like LOCALE _don't_
     # affect the code generation but _are_ needed by the PatternObject.
     compiled_pattern = _regex.compile(pattern, info.flags | version, code,
-      info.group_index, index_group, named_lists, named_list_indexes)
+      info.group_index, index_group, named_lists, named_list_indexes,
+      req_offset, req_chars, req_flags)
 
     # Do we need to reduce the size of the cache?
     if len(_cache) >= _MAXCACHE:
