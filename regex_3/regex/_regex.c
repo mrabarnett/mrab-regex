@@ -3994,6 +3994,7 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables_rev(RE_EncodingTable* encoding,
 Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_SafeState* safe_state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit) {
     RE_State* state;
+    Py_ssize_t found_pos;
 
     state = safe_state->re_state;
 
@@ -4017,11 +4018,11 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_SafeState* safe_state, RE_Node*
     }
 
     if (node->string.bad_character_offset)
-        text_pos = fast_string_search(state, node, text_pos, limit);
+        found_pos = fast_string_search(state, node, text_pos, limit);
     else
-        text_pos = simple_string_search(state, node, text_pos, limit);
+        found_pos = simple_string_search(state, node, text_pos, limit);
 
-    return text_pos;
+    return found_pos;
 }
 
 /* Performs a string search, ignoring case. */
@@ -7901,7 +7902,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
     switch (pattern->req_string->op) {
     case RE_OP_STRING:
         found_pos = string_search(safe_state, pattern->req_string,
-          state->text_pos, state->slice_end);
+          state->text_pos, state->slice_end - pattern->req_string->value_count);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -7949,7 +7950,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
         break;
     case RE_OP_STRING_IGN:
         found_pos = string_search_ign(safe_state, pattern->req_string,
-          state->text_pos, state->slice_end);
+          state->text_pos, state->slice_end - pattern->req_string->value_count);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -7965,7 +7966,8 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
         break;
     case RE_OP_STRING_IGN_REV:
         found_pos = string_search_ign_rev(safe_state, pattern->req_string,
-          state->text_pos, state->slice_start);
+          state->text_pos, state->slice_start +
+          pattern->req_string->value_count);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -7981,7 +7983,8 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
         break;
     case RE_OP_STRING_REV:
         found_pos = string_search_rev(safe_state, pattern->req_string,
-          state->text_pos, state->slice_start);
+          state->text_pos, state->slice_start +
+          pattern->req_string->value_count);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
