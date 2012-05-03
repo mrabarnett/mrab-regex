@@ -1688,6 +1688,7 @@ POSITIVE_OP = 0x1
 ZEROWIDTH_OP = 0x2
 FUZZY_OP = 0x4
 REVERSE_OP = 0x8
+REQUIRED_OP = 0x10
 
 POS_TEXT = {False: "NON-MATCH", True: "MATCH"}
 CASE_TEXT = {NOCASE: "", IGNORECASE: " SIMPLE_IGNORE_CASE", FULLCASE: "",
@@ -3418,6 +3419,7 @@ class String(RegexBase):
             folded_characters = self.characters
 
         self.folded_characters = tuple(folded_characters)
+        self.required = False
 
         self._key = self.__class__, self.characters, self.case_flags
 
@@ -3436,6 +3438,8 @@ class String(RegexBase):
         flags = 0
         if fuzzy:
             flags |= FUZZY_OP
+        if self.required:
+            flags |= REQUIRED_OP
         return [(self._opcode[self.case_flags, reverse], flags,
           len(self.folded_characters)) + self.folded_characters]
 
@@ -3717,6 +3721,7 @@ def get_required_string(parsed, flags):
 
     req_offset, required = parsed.get_required_string(bool(flags & REVERSE))
     if required:
+        required.required = True
         if req_offset >= UNLIMITED:
             req_offset = -1
 
