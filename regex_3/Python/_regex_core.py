@@ -3538,7 +3538,12 @@ class StringSet(RegexBase):
         if not self.info.kwargs[self.name]:
             return 0
 
-        return max(len(i) for i in self.info.kwargs[self.name])
+        if self.case_flags & IGNORECASE:
+            fold_flags = (self.info.flags & ALL_ENCODINGS) | self.case_flags
+            return max(len(_regex.fold_case(fold_flags, i)) for i in
+              self.info.kwargs[self.name])
+        else:
+            return max(len(i) for i in self.info.kwargs[self.name])
 
 class Source:
     "Scanner for the regular expression source string."

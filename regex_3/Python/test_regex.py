@@ -723,13 +723,15 @@ class RegexTests(unittest.TestCase):
           "word word2 word word3 word word234 word23 word"), ["word234",
           "word23"])
 
-        # 42..44
+        # 42..45
         self.assertEquals(regex.search(r"(?fi)a\N{LATIN SMALL LIGATURE FFI}ne",
           "  affine  ").span(), (2, 8))
         self.assertEquals(regex.search(r"(?fi)a(?:\N{LATIN SMALL LIGATURE FFI}|x)ne",
            "  affine  ").span(), (2, 8))
         self.assertEquals(regex.search(r"(?fi)a(?:\N{LATIN SMALL LIGATURE FFI}|xy)ne",
            "  affine  ").span(), (2, 8))
+        self.assertEquals(regex.search(r"(?fi)a\L<options>ne", "affine",
+          options=["\N{LATIN SMALL LIGATURE FFI}"]).span(), (0, 6))
 
     def test_category(self):
         # 1
