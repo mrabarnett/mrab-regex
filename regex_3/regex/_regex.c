@@ -642,7 +642,7 @@ static Py_UCS4 bytes1_char_at(void* text, Py_ssize_t pos) {
 
 /* Sets a character at the given position assuming 1 byte per character. */
 static void bytes1_set_char_at(void* text, Py_ssize_t pos, Py_UCS4 ch) {
-    *((Py_UCS1*)text + pos) = ch;
+    *((Py_UCS1*)text + pos) = (Py_UCS1)ch;
 }
 
 /* Gets a pointer to the character at the given position assuming 1 byte per
@@ -659,7 +659,7 @@ static Py_UCS4 bytes2_char_at(void* text, Py_ssize_t pos) {
 
 /* Sets a character at the given position assuming 2 bytes per character. */
 static void bytes2_set_char_at(void* text, Py_ssize_t pos, Py_UCS4 ch) {
-    *((Py_UCS2*)text + pos) = ch;
+    *((Py_UCS2*)text + pos) = (Py_UCS2)ch;
 }
 
 /* Gets a pointer to the character at the given position assuming 2 bytes per
@@ -1957,7 +1957,7 @@ Py_LOCAL_INLINE(BOOL) safe_check_signals(RE_SafeState* safe_state) {
 
     acquire_GIL(safe_state);
 
-    result = PyErr_CheckSignals();
+    result = (BOOL)PyErr_CheckSignals();
 
     release_GIL(safe_state);
 
@@ -2009,7 +2009,7 @@ Py_LOCAL_INLINE(BOOL) has_property_ign(RE_EncodingTable* encoding, RE_CODE
             return value == RE_PROP_LU || value == RE_PROP_LL || value ==
               RE_PROP_LT;
         } else if (prop == RE_PROP_UPPERCASE || prop == RE_PROP_LOWERCASE)
-            return re_get_cased(ch);
+            return (BOOL)re_get_cased(ch);
 
         /* The property is case-insensitive. */
         return unicode_has_property(property, ch);
@@ -2024,7 +2024,7 @@ Py_LOCAL_INLINE(BOOL) has_property_ign(RE_EncodingTable* encoding, RE_CODE
             return value == RE_PROP_LU || value == RE_PROP_LL || value ==
               RE_PROP_LT;
         } else if (prop == RE_PROP_UPPERCASE || prop == RE_PROP_LOWERCASE)
-            return re_get_cased(ch);
+            return (BOOL)re_get_cased(ch);
 
         /* The property is case-insensitive. */
         return ascii_has_property(property, ch);
@@ -2724,8 +2724,8 @@ Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
 }
 
 /* Matches many ANYs. */
-Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY(RE_State* state, RE_Node* node,
-  Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
+Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY(RE_State* state, Py_ssize_t text_pos,
+  Py_ssize_t limit, BOOL match) {
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
 
@@ -2739,8 +2739,8 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY(RE_State* state, RE_Node* node,
 }
 
 /* Matches many ANYs backwards. */
-Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_REV(RE_State* state, RE_Node* node,
-  Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
+Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_REV(RE_State* state, Py_ssize_t
+  text_pos, Py_ssize_t limit, BOOL match) {
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
 
@@ -2757,8 +2757,8 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_REV(RE_State* state, RE_Node* node,
 }
 
 /* Matches many ANY_Us. */
-Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U(RE_State* state, RE_Node* node,
-  Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
+Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U(RE_State* state, Py_ssize_t
+  text_pos, Py_ssize_t limit, BOOL match) {
     BOOL (*is_line_sep)(Py_UCS4 ch);
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
@@ -2774,8 +2774,8 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U(RE_State* state, RE_Node* node,
 }
 
 /* Matches many ANY_Us backwards. */
-Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U_REV(RE_State* state, RE_Node*
-  node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
+Py_LOCAL_INLINE(Py_ssize_t) match_many_ANY_U_REV(RE_State* state, Py_ssize_t
+  text_pos, Py_ssize_t limit, BOOL match) {
     BOOL (*is_line_sep)(Py_UCS4 ch);
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
@@ -3157,7 +3157,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         if (max_count > available)
             max_count = available;
 
-        return match_many_ANY(state, node, text_pos, text_pos + max_count,
+        return match_many_ANY(state, text_pos, text_pos + max_count,
           TRUE) - text_pos;
     case RE_OP_ANY_ALL:
         available = state->slice_end - text_pos;
@@ -3176,22 +3176,22 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         if (max_count > available)
             max_count = available;
 
-        return text_pos - match_many_ANY_REV(state, node, text_pos, text_pos -
+        return text_pos - match_many_ANY_REV(state, text_pos, text_pos -
           max_count, TRUE);
     case RE_OP_ANY_U:
         available = state->slice_end - text_pos;
         if (max_count > available)
             max_count = available;
 
-        return match_many_ANY_U(state, node, text_pos, text_pos + max_count,
-          TRUE) - text_pos;
+        return match_many_ANY_U(state, text_pos, text_pos + max_count, TRUE) -
+          text_pos;
     case RE_OP_ANY_U_REV:
         available = text_pos - state->slice_start;
         if (max_count > available)
             max_count = available;
 
-        return text_pos - match_many_ANY_U_REV(state, node, text_pos, text_pos
-          - max_count, TRUE);
+        return text_pos - match_many_ANY_U_REV(state, text_pos, text_pos -
+          max_count, TRUE);
     case RE_OP_CHARACTER:
         available = state->slice_end - text_pos;
         if (max_count > available)
@@ -4815,7 +4815,7 @@ again:
 
     switch (test->op) {
     case RE_OP_ANY: /* Any character, except a newline. */
-        start_pos = match_many_ANY(state, node, start_pos, limit + 1, FALSE);
+        start_pos = match_many_ANY(state, start_pos, limit + 1, FALSE);
         if (start_pos > limit)
             return FALSE;
         break;
@@ -4824,19 +4824,17 @@ again:
     case RE_OP_ANY_ALL_REV: /* Any character at all backwards. */
         break;
     case RE_OP_ANY_REV: /* Any character backwards, except a newline. */
-        start_pos = match_many_ANY_REV(state, node, start_pos, limit - 1,
-          FALSE);
+        start_pos = match_many_ANY_REV(state, start_pos, limit - 1, FALSE);
         if (start_pos < limit)
             return FALSE;
         break;
     case RE_OP_ANY_U: /* Any character, except a line separator. */
-        start_pos = match_many_ANY_U(state, node, start_pos, limit + 1, FALSE);
+        start_pos = match_many_ANY_U(state, start_pos, limit + 1, FALSE);
         if (start_pos > limit)
             return FALSE;
         break;
     case RE_OP_ANY_U_REV: /* Any character backwards, except a line separator. */
-        start_pos = match_many_ANY_U_REV(state, node, start_pos, limit - 1,
-          FALSE);
+        start_pos = match_many_ANY_U_REV(state, start_pos, limit - 1, FALSE);
         if (start_pos < limit)
             return FALSE;
         break;
@@ -5259,7 +5257,8 @@ again:
     case RE_OP_STRING_IGN_REV: /* A string literal backwards, ignoring case. */
         if (!(test->status & RE_STATUS_REQUIRED) || start_pos != state->req_pos)
           {
-            start_pos = string_search_ign_rev(safe_state, test, start_pos, limit);
+            start_pos = string_search_ign_rev(safe_state, test, start_pos,
+              limit);
             if (start_pos < 0)
                 return FALSE;
         }
@@ -5588,8 +5587,8 @@ Py_LOCAL_INLINE(void) delete_guard_span(RE_GuardList* guard_list, Py_ssize_t
 }
 
 /* Checks whether a position is guarded against further matching. */
-Py_LOCAL_INLINE(BOOL) is_guarded(RE_SafeState* safe_state, RE_GuardList*
-  guard_list, Py_ssize_t text_pos) {
+Py_LOCAL_INLINE(BOOL) is_guarded(RE_GuardList* guard_list, Py_ssize_t text_pos)
+  {
     size_t low;
     size_t high;
 
@@ -5714,7 +5713,7 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_SafeState* safe_state, size_t index,
     else
         guard_list = &state->repeats[index].tail_guard_list;
 
-    return is_guarded(safe_state, guard_list, text_pos);
+    return is_guarded(guard_list, text_pos);
 }
 
 /* Guards a position against further matching for a fuzzy section. */
@@ -5750,7 +5749,7 @@ Py_LOCAL_INLINE(BOOL) is_fuzzy_guarded(RE_SafeState* safe_state, size_t index,
     else
         guard_list = &state->fuzzy_guards[index].tail_guard_list;
 
-    return is_guarded(safe_state, guard_list, text_pos);
+    return is_guarded(guard_list, text_pos);
 }
 
 /* Checks whether a position is guarded against further matching for a group
@@ -5765,7 +5764,7 @@ Py_LOCAL_INLINE(BOOL) is_group_call_guarded(RE_SafeState* safe_state, size_t
 
     guard_list = &state->group_call_guard_list[index];
 
-    return is_guarded(safe_state, guard_list, text_pos);
+    return is_guarded(guard_list, text_pos);
 }
 
 /* Guards a position against further matching for a group call. */
@@ -6145,7 +6144,7 @@ error:
 /* Tries to match a string at the current position with a member of a string
  * set, ignoring case.
  */
-Py_LOCAL_INLINE(BOOL) string_set_match_fld_rev(RE_SafeState* safe_state,
+Py_LOCAL_INLINE(int) string_set_match_fld_rev(RE_SafeState* safe_state,
   RE_Node* node) {
     Py_ssize_t index;
     Py_ssize_t min_len;
@@ -6395,7 +6394,7 @@ error:
 /* Tries to match a string at the current position with a member of a string
  * set, ignoring case.
  */
-Py_LOCAL_INLINE(BOOL) string_set_match_ign_rev(RE_SafeState* safe_state,
+Py_LOCAL_INLINE(int) string_set_match_ign_rev(RE_SafeState* safe_state,
   RE_Node* node) {
     Py_ssize_t index;
     Py_ssize_t min_len;
@@ -6504,7 +6503,7 @@ error:
 /* Tries to match a string at the current position with a member of a string
  * set.
  */
-Py_LOCAL_INLINE(BOOL) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
+Py_LOCAL_INLINE(int) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
   node) {
     Py_ssize_t index;
     Py_ssize_t min_len;
@@ -6672,8 +6671,8 @@ found:
     bt_data = state->backtrack;
     bt_data->fuzzy_one.position.text_pos = *text_pos;
     bt_data->fuzzy_one.position.node = *node;
-    bt_data->fuzzy_one.fuzzy_type = fuzzy_type;
-    bt_data->fuzzy_one.step = step;
+    bt_data->fuzzy_one.fuzzy_type = (RE_INT8)fuzzy_type;
+    bt_data->fuzzy_one.step = (RE_INT8)step;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -6757,7 +6756,7 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_match_one(RE_SafeState* safe_state, BOOL
     return TRUE;
 
 found:
-    bt_data->fuzzy_one.fuzzy_type = fuzzy_type;
+    bt_data->fuzzy_one.fuzzy_type = (RE_INT8)fuzzy_type;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -6845,7 +6844,7 @@ found:
     bt_data = state->backtrack;
     bt_data->fuzzy_zero.position.text_pos = *text_pos;
     bt_data->fuzzy_zero.position.node = *node;
-    bt_data->fuzzy_zero.fuzzy_type = fuzzy_type;
+    bt_data->fuzzy_zero.fuzzy_type = (RE_INT8)fuzzy_type;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -6933,7 +6932,7 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_match_zero(RE_SafeState* safe_state, BOOL
     return TRUE;
 
 found:
-    bt_data->fuzzy_zero.fuzzy_type = fuzzy_type;
+    bt_data->fuzzy_zero.fuzzy_type = (RE_INT8)fuzzy_type;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -7125,8 +7124,8 @@ found:
     bt_data->fuzzy_string.position.text_pos = *text_pos;
     bt_data->fuzzy_string.position.node = node;
     bt_data->fuzzy_string.string_pos = *string_pos;
-    bt_data->fuzzy_string.fuzzy_type = fuzzy_type;
-    bt_data->fuzzy_string.step = step;
+    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)fuzzy_type;
+    bt_data->fuzzy_string.step = (RE_INT8)step;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -7214,7 +7213,7 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_match_string(RE_SafeState* safe_state, BOOL
     return TRUE;
 
 found:
-    bt_data->fuzzy_string.fuzzy_type = fuzzy_type;
+    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)fuzzy_type;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -7307,10 +7306,10 @@ found:
     bt_data->fuzzy_string.position.text_pos = *text_pos;
     bt_data->fuzzy_string.position.node = node;
     bt_data->fuzzy_string.string_pos = *string_pos;
-    bt_data->fuzzy_string.folded_pos = *folded_pos;
-    bt_data->fuzzy_string.folded_len = folded_len;
-    bt_data->fuzzy_string.fuzzy_type = fuzzy_type;
-    bt_data->fuzzy_string.step = step;
+    bt_data->fuzzy_string.folded_pos = (RE_INT8)(*folded_pos);
+    bt_data->fuzzy_string.folded_len = (RE_INT8)folded_len;
+    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)fuzzy_type;
+    bt_data->fuzzy_string.step = (RE_INT8)step;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -7405,7 +7404,7 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_match_string_fld(RE_SafeState* safe_state,
     return TRUE;
 
 found:
-    bt_data->fuzzy_string.fuzzy_type = fuzzy_type;
+    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)fuzzy_type;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -7502,12 +7501,12 @@ found:
     bt_data->fuzzy_string.position.text_pos = *text_pos;
     bt_data->fuzzy_string.position.node = node;
     bt_data->fuzzy_string.string_pos = *group_pos;
-    bt_data->fuzzy_string.folded_pos = *folded_pos;
-    bt_data->fuzzy_string.folded_len = folded_len;
-    bt_data->fuzzy_string.gfolded_pos = *gfolded_pos;
-    bt_data->fuzzy_string.gfolded_len = gfolded_len;
-    bt_data->fuzzy_string.fuzzy_type = fuzzy_type;
-    bt_data->fuzzy_string.step = step;
+    bt_data->fuzzy_string.folded_pos = (RE_INT8)(*folded_pos);
+    bt_data->fuzzy_string.folded_len = (RE_INT8)folded_len;
+    bt_data->fuzzy_string.gfolded_pos = (RE_INT8)(*gfolded_pos);
+    bt_data->fuzzy_string.gfolded_len = (RE_INT8)gfolded_len;
+    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)fuzzy_type;
+    bt_data->fuzzy_string.step = (RE_INT8)step;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -7602,7 +7601,7 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_match_string_fld2(RE_SafeState* safe_state,
     return TRUE;
 
 found:
-    bt_data->fuzzy_string.fuzzy_type = fuzzy_type;
+    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)fuzzy_type;
 
     ++fuzzy_info->counts[fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -8348,7 +8347,7 @@ advance:
             bt_data = state->backtrack;
             bt_data->group.index = index;
             bt_data->group.text_pos = group->span.end;
-            bt_data->group.capture = node->values[1];
+            bt_data->group.capture = (BOOL)node->values[1];
 
             if (pattern->group_info[index - 1].referenced && group->span.end
               != text_pos)
@@ -9681,7 +9680,7 @@ advance:
             bt_data = state->backtrack;
             bt_data->group.index = node->values[0];
             bt_data->group.text_pos = group->span.start;
-            bt_data->group.capture = node->values[1];
+            bt_data->group.capture = (BOOL)node->values[1];
 
             if (pattern->group_info[index - 1].referenced &&
               group->span.start != text_pos)
@@ -9814,8 +9813,8 @@ advance:
                 /* Are there enough characters to match? */
                 length = node->value_count;
                 available = slice_end - text_pos;
-                if (possible_unfolded_length(length) > available && !(node->status
-                  & RE_STATUS_FUZZY))
+                if (possible_unfolded_length(length) > available &&
+                  !(node->status & RE_STATUS_FUZZY))
                     goto backtrack;
 
                 full_case_fold = encoding->full_case_fold;
@@ -9825,7 +9824,8 @@ advance:
                     folded_pos = 0;
                     folded_len = 0;
                 } else {
-                    folded_len = full_case_fold(char_at(text, text_pos), folded);
+                    folded_len = full_case_fold(char_at(text, text_pos),
+                      folded);
                     if (folded_pos >= folded_len) {
                         if (text_pos >= slice_end)
                             goto backtrack;
@@ -9856,8 +9856,9 @@ advance:
                     } else if (node->status & RE_STATUS_FUZZY) {
                         BOOL matched;
 
-                        if (!fuzzy_match_string_fld(safe_state, search, &text_pos,
-                          node, &string_pos, &folded_pos, folded_len, &matched, 1))
+                        if (!fuzzy_match_string_fld(safe_state, search,
+                          &text_pos, node, &string_pos, &folded_pos, folded_len,
+                          &matched, 1))
                             return RE_ERROR_BACKTRACKING;
                         if (!matched) {
                             string_pos = -1;
@@ -9876,8 +9877,9 @@ advance:
                     while (folded_pos < folded_len) {
                         BOOL matched;
 
-                        if (!fuzzy_match_string_fld(safe_state, search, &text_pos,
-                          node, &string_pos, &folded_pos, folded_len, &matched, 1))
+                        if (!fuzzy_match_string_fld(safe_state, search,
+                          &text_pos, node, &string_pos, &folded_pos, folded_len,
+                          &matched, 1))
                             return RE_ERROR_BACKTRACKING;
 
                         if (!matched) {
@@ -9919,8 +9921,8 @@ advance:
                 /* Are there enough characters to match? */
                 length = node->value_count;
                 available = text_pos - slice_start;
-                if (possible_unfolded_length(length) > available && !(node->status
-                  & RE_STATUS_FUZZY))
+                if (possible_unfolded_length(length) > available &&
+                  !(node->status & RE_STATUS_FUZZY))
                     goto backtrack;
 
                 full_case_fold = encoding->full_case_fold;
@@ -9961,9 +9963,9 @@ advance:
                     } else if (node->status & RE_STATUS_FUZZY) {
                         BOOL matched;
 
-                        if (!fuzzy_match_string_fld(safe_state, search, &text_pos,
-                          node, &string_pos, &folded_pos, folded_len, &matched,
-                          -1))
+                        if (!fuzzy_match_string_fld(safe_state, search,
+                          &text_pos, node, &string_pos, &folded_pos, folded_len,
+                          &matched, -1))
                             return RE_ERROR_BACKTRACKING;
                         if (!matched) {
                             string_pos = -1;
@@ -9982,9 +9984,9 @@ advance:
                     while (folded_pos > 0) {
                         BOOL matched;
 
-                        if (!fuzzy_match_string_fld(safe_state, search, &text_pos,
-                          node, &string_pos, &folded_pos, folded_len, &matched,
-                          -1))
+                        if (!fuzzy_match_string_fld(safe_state, search,
+                          &text_pos, node, &string_pos, &folded_pos, folded_len,
+                          &matched, -1))
                             return RE_ERROR_BACKTRACKING;
 
                         if (!matched) {
@@ -11906,7 +11908,8 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
         state->is_multithreaded = TRUE;
         break;
     default:
-        state->is_multithreaded = PyUnicode_Check(string) || PyBytes_Check(string);
+        state->is_multithreaded = PyUnicode_Check(string) ||
+          PyBytes_Check(string);
         break;
     }
 
@@ -12123,8 +12126,7 @@ Py_LOCAL_INLINE(Py_ssize_t) as_string_index(PyObject* obj, Py_ssize_t def) {
 }
 
 /* Deallocates the groups of a MatchObject. */
-Py_LOCAL_INLINE(void) dealloc_match_groups(RE_GroupData* groups, size_t
-  group_count) {
+Py_LOCAL_INLINE(void) dealloc_match_groups(RE_GroupData* groups) {
     if (!groups)
         return;
 
@@ -12146,7 +12148,7 @@ static void match_dealloc(PyObject* self_) {
 
     Py_XDECREF(self->string);
     Py_DECREF(self->pattern);
-    dealloc_match_groups(self->groups, self->group_count);
+    dealloc_match_groups(self->groups);
     Py_XDECREF(self->regs);
     PyObject_DEL(self);
 }
@@ -14668,24 +14670,7 @@ error:
 /* PatternObject's 'splititer' method. */
 static PyObject* pattern_splititer(PatternObject* pattern, PyObject* args,
   PyObject* kw) {
-    PyObject* splitter;
-    PyObject* split;
-    PyObject* iterator;
-
-    splitter = pattern_splitter(pattern, args, kw);
-    return splitter;
-    if (!splitter)
-        return NULL;
-
-    split = PyObject_GetAttrString(splitter, "split");
-    Py_DECREF(splitter);
-    if (!split)
-        return NULL;
-
-    iterator = PyCallIter_New(split, Py_False);
-    Py_DECREF(split);
-
-    return iterator;
+    return pattern_splitter(pattern, args, kw);
 }
 
 /* PatternObject's 'findall' method. */
@@ -15087,7 +15072,7 @@ static PyGetSetDef pattern_getset[] = {
 
 static PyMemberDef pattern_members[] = {
     {"pattern",     T_OBJECT,   offsetof(PatternObject, pattern),     READONLY},
-    {"flags",       T_INT,      offsetof(PatternObject, flags),       READONLY},
+    {"flags",       T_PYSSIZET, offsetof(PatternObject, flags),       READONLY},
     {"groups",      T_PYSSIZET, offsetof(PatternObject, group_count), READONLY},
     {"named_lists", T_OBJECT,   offsetof(PatternObject, named_lists), READONLY},
     {NULL}  /* Sentinel */
@@ -15170,7 +15155,8 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             body_result = add_repeat_guards(pattern,
               node->nonstring.next_2.node);
             tail_result = add_repeat_guards(pattern, node->next_1.node);
-            status = max_int(max_int(result, body_result), tail_result);
+            status = (RE_STATUS_T)max_int(max_int(result, body_result),
+              tail_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
@@ -15183,7 +15169,8 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             branch_1_result = add_repeat_guards(pattern, node->next_1.node);
             branch_2_result = add_repeat_guards(pattern,
               node->nonstring.next_2.node);
-            status = max_int(max_int(result, branch_1_result), branch_2_result);
+            status = (RE_STATUS_T)max_int(max_int(result, branch_1_result),
+              branch_2_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
@@ -15214,10 +15201,11 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             if (tail_result != RE_STATUS_REF)
                 repeat_info->status |= RE_STATUS_TAIL;
             if (limited)
-                result = max_int(result, RE_STATUS_LIMITED);
+                result = (RE_STATUS_T)max_int(result, RE_STATUS_LIMITED);
             else
-                result = max_int(result, RE_STATUS_REPEAT);
-            status = max_int(max_int(result, body_result), tail_result);
+                result = (RE_STATUS_T)max_int(result, RE_STATUS_REPEAT);
+            status = (RE_STATUS_T)max_int(max_int(result, body_result),
+              tail_result);
             node->status |= RE_STATUS_VISITED_AG | status;
             return status;
         }
@@ -15237,10 +15225,11 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             if (tail_result != RE_STATUS_REF)
                 repeat_info->status |= RE_STATUS_TAIL;
             if (limited)
-                result = max_int(result, RE_STATUS_LIMITED);
+                result = (RE_STATUS_T)max_int(result, RE_STATUS_LIMITED);
             else
-                result = max_int(result, RE_STATUS_REPEAT);
-            status = max_int(max_int(result, RE_STATUS_REPEAT), tail_result);
+                result = (RE_STATUS_T)max_int(result, RE_STATUS_REPEAT);
+            status = (RE_STATUS_T)max_int(max_int(result, RE_STATUS_REPEAT),
+              tail_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
@@ -15253,7 +15242,8 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             branch_1_result = add_repeat_guards(pattern, node->next_1.node);
             branch_2_result = add_repeat_guards(pattern,
               node->nonstring.next_2.node);
-            status = max_int(max_int(max_int(result, branch_1_result),
+            status = (RE_STATUS_T)max_int(max_int(max_int(result,
+              branch_1_result),
               branch_2_result), RE_STATUS_REF);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
@@ -15485,7 +15475,8 @@ Py_LOCAL_INLINE(BOOL) mark_named_groups(PatternObject* pattern) {
         index = Py_BuildValue("n", i + 1);
         if (!index)
             return FALSE;
-        group_info->has_name = PyDict_Contains(pattern->indexgroup, index);
+        group_info->has_name = (BOOL)PyDict_Contains(pattern->indexgroup,
+          index);
         Py_DECREF(index);
     }
 
@@ -15663,7 +15654,7 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_UINT8 op,
 
     node->op = op;
     node->match = (flags & RE_POSITIVE_OP) != 0;
-    node->status = flags << RE_STATUS_SHIFT;
+    node->status = (RE_STATUS_T)(flags << RE_STATUS_SHIFT);
     node->step = step;
 
     /* Ensure that there's enough storage to record the new node. */
@@ -15975,7 +15966,7 @@ Py_LOCAL_INLINE(BOOL) build_ANY(RE_CompileArgs* args) {
     if (args->code + 1 > args->end_code)
         return FALSE;
 
-    op = args->code[0];
+    op = (RE_UINT8)args->code[0];
     flags = args->code[1];
 
     step = get_step(op);
@@ -16136,7 +16127,7 @@ Py_LOCAL_INLINE(BOOL) build_BOUNDARY(RE_CompileArgs* args) {
     if (args->code + 1 > args->end_code)
         return FALSE;
 
-    op = args->code[0];
+    op = (RE_UINT8)args->code[0];
     flags = args->code[1];
 
     args->code += 2;
@@ -16291,7 +16282,7 @@ Py_LOCAL_INLINE(BOOL) build_CHARACTER(RE_CompileArgs* args) {
     if (args->code + 2 > args->end_code)
         return FALSE;
 
-    op = args->code[0];
+    op = (RE_UINT8)args->code[0];
     flags = args->code[1];
 
     step = get_step(op);
@@ -16496,7 +16487,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
 /* Builds LOOKAROUND. */
 Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
     RE_CODE flags;
-    RE_CODE forward;
+    BOOL forward;
     RE_Node* lookaround_node;
     RE_Node* success_node;
     RE_CompileArgs subargs;
@@ -16506,7 +16497,7 @@ Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
         return FALSE;
 
     flags = args->code[1];
-    forward = args->code[2];
+    forward = (BOOL)args->code[2];
 
     /* Create a node for the lookaround. */
     lookaround_node = create_node(args->pattern, RE_OP_LOOKAROUND, flags, 0,
@@ -16568,7 +16559,7 @@ Py_LOCAL_INLINE(BOOL) build_PROPERTY(RE_CompileArgs* args) {
     if (args->code + 2 > args->end_code)
         return FALSE;
 
-    op = args->code[0];
+    op = (RE_UINT8)args->code[0];
     flags = args->code[1];
 
     step = get_step(op);
@@ -16606,7 +16597,7 @@ Py_LOCAL_INLINE(BOOL) build_RANGE(RE_CompileArgs* args) {
     if (args->code + 3 > args->end_code)
         return FALSE;
 
-    op = args->code[0];
+    op = (RE_UINT8)args->code[0];
     flags = args->code[1];
 
     step = get_step(op);
@@ -16646,7 +16637,7 @@ Py_LOCAL_INLINE(BOOL) build_REF_GROUP(RE_CompileArgs* args) {
 
     flags = args->code[1];
     group = args->code[2];
-    node = create_node(args->pattern, args->code[0], flags, 0, 1);
+    node = create_node(args->pattern, (RE_UINT8)args->code[0], flags, 0, 1);
     if (!node)
         return FALSE;
 
@@ -16855,7 +16846,7 @@ Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args, BOOL is_charset) {
     if (args->code + 2 + length > args->end_code)
         return FALSE;
 
-    op = args->code[0];
+    op = (RE_UINT8)args->code[0];
 
     step = get_step(op);
 
@@ -16895,7 +16886,7 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
     size_t saved_min_width;
 
     /* codes: opcode, flags, members. */
-    op = args->code[0];
+    op = (RE_UINT8)args->code[0];
     flags = args->code[1];
 
     step = get_step(op);
@@ -16985,7 +16976,7 @@ Py_LOCAL_INLINE(BOOL) build_STRING_SET(RE_CompileArgs* args) {
     index = args->code[1];
     min_len = args->code[2];
     max_len = args->code[3];
-    node = create_node(args->pattern, args->code[0], 0, 0, 3);
+    node = create_node(args->pattern, (RE_UINT8)args->code[0], 0, 0, 3);
     if (!node)
         return FALSE;
 
@@ -17033,7 +17024,7 @@ Py_LOCAL_INLINE(BOOL) build_zerowidth(RE_CompileArgs* args) {
     flags = args->code[1];
 
     /* Create the node. */
-    node = create_node(args->pattern, args->code[0], flags, 0, 0);
+    node = create_node(args->pattern, (RE_UINT8)args->code[0], flags, 0, 0);
     if (!node)
         return FALSE;
 
@@ -17804,7 +17795,7 @@ static PyMethodDef _functions[] = {
 };
 
 /* Initialises the property dictionary. */
-static BOOL init_property_dict() {
+static BOOL init_property_dict(void) {
     int value_set_count;
     int i;
     PyObject** value_dicts;
