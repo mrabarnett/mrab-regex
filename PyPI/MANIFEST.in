@@ -1,3 +1,4 @@
 include PKG-INFO README setup.py
 recursive-include Python2 *
 recursive-include Python3 *
+recursive-include tools *

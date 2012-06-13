@@ -219,7 +219,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "match", "purge",
   "REVERSE", "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1",
   "VERSION1", "X", "VERBOSE", "W", "WORD", "error"]
 
-__version__ = "2.4.0"
+__version__ = "2.4.1"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -391,6 +391,9 @@ def _compile(pattern, flags=0, kwargs=None):
     if kwargs is None:
         kwargs = {}
 
+    # Set the default version in the core code in case it has been changed.
+    _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
+
     # Do we know what keyword arguments are needed?
     args_key = pattern, type(pattern), flags
     args_needed = _named_args.get(args_key)
@@ -403,7 +406,8 @@ def _compile(pattern, flags=0, kwargs=None):
             args_supplied.add((k, frozenset(kwargs[k])))
 
         # Have we already seen this regular expression and named list?
-        pattern_key = pattern, type(pattern), flags, frozenset(args_supplied)
+        pattern_key = (pattern, type(pattern), flags, frozenset(args_supplied),
+          DEFAULT_VERSION)
         compiled_pattern = _cache.get(pattern_key)
         if compiled_pattern:
             return compiled_pattern
@@ -534,7 +538,7 @@ def _compile(pattern, flags=0, kwargs=None):
     args_needed = frozenset(args_needed)
 
     # Store this regular expression and named list.
-    pattern_key = pattern, type(pattern), flags, args_needed
+    pattern_key = (pattern, type(pattern), flags, args_needed, DEFAULT_VERSION)
     _cache[pattern_key] = compiled_pattern
 
     # Store what keyword arguments are needed.

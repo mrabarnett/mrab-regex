@@ -12,18 +12,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PKG_BASE = 'Python%i' % MAJOR
 SRC_DIR = os.path.join(BASE_DIR, PKG_BASE)
 
-if (MAJOR, MINOR) in ((2,5), (2,6), (2,7), (3,1), (3,2)):
-    unicodedata_db_h = os.path.join(SRC_DIR, 'Python%i%i' % (MAJOR, MINOR),
-                                    'unicodedata_db.h')
-    shutil.copy(unicodedata_db_h, SRC_DIR)
-else:
-    sys.exit("No unicodedata_db.h could be prepared for Python %s"
-             % sys.version)
-
 setup(
     name='regex',
-    version='0.1.20110510',
-    description='Alternate regular expression module, to replace re.',
+    version='0.1.20120613',
+    description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(SRC_DIR, 'Features.rst')).read(),
 
     # PyPI does spam protection on email addresses, no need to do it here
@@ -33,7 +25,7 @@ setup(
     maintainer='Matthew Barnett',
     maintainer_email='regex@mrabarnett.plus.com',
 
-    url='http://bugs.python.org/issue2636',
+    url='https://code.google.com/p/mrab-regex-hg/',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -44,6 +36,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.1',
         'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
         'Topic :: Scientific/Engineering :: Information Analysis',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Text Processing',
@@ -51,8 +44,8 @@ setup(
         ],
     license='Python Software Foundation License',
 
-    py_modules = ['regex', '_regex_core'],
+    py_modules = ['regex', '_regex_core', 'test_regex'],
     package_dir={'': PKG_BASE},
 
-    ext_modules=[Extension('_regex', [os.path.join(PKG_BASE, '_regex.c'), os.path.join(PKG_BASE, '_regex_unicode.c')])] 
+    ext_modules=[Extension('_regex', [os.path.join(PKG_BASE, '_regex.c'), os.path.join(PKG_BASE, '_regex_unicode.c')])],
     )

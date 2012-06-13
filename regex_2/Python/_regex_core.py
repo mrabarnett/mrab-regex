@@ -251,8 +251,8 @@ def shrink_cache(cache_dict, args_dict, max_length, divisor=5):
 
     # Rebuild the arguments dictionary.
     args_dict.clear()
-    for pattern, pattern_type, flags, args in cache_dict:
-        args_dict[pattern, pattern_type, flags] = args
+    for pattern, pattern_type, flags, args, default_version in cache_dict:
+        args_dict[pattern, pattern_type, flags, default_version] = args
 
 def fold_case(info, string):
     "Folds the case of a string."
