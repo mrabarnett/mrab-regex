@@ -3336,6 +3336,17 @@ xyzabc
         self.assertEquals(regex.search("((a|b(?1)c){3,5})", "baaaaca").group(0,
           1, 2), ('aaaa', 'aaaa', 'a'))
 
+        # Hg issue 71
+        # 49..52
+        self.assertEquals(regex.findall(r"(?<=:\S+ )\w+", ":9 abc :10 def"),
+          ['abc', 'def'])
+        self.assertEquals(regex.findall(r"(?<=:\S* )\w+", ":9 abc :10 def"),
+          ['abc', 'def'])
+        self.assertEquals(regex.findall(r"(?<=:\S+? )\w+", ":9 abc :10 def"),
+          ['abc', 'def'])
+        self.assertEquals(regex.findall(r"(?<=:\S*? )\w+", ":9 abc :10 def"),
+          ['abc', 'def'])
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp

@@ -7783,7 +7783,7 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
     RE_GroupInfo* group_info;
-    Py_ssize_t step;
+    Py_ssize_t pattern_step; /* The overall step of the pattern (forwards or backwards). */
     Py_ssize_t string_pos;
     BOOL do_search_start;
     Py_ssize_t found_pos;
@@ -7836,7 +7836,7 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     char_at = state->char_at;
     has_property = encoding->has_property;
     group_info = pattern->group_info;
-    step = state->reverse ? -1 : 1;
+    pattern_step = state->reverse ? -1 : 1;
     string_pos = -1;
     do_search_start = pattern->do_search_start;
 
@@ -7891,7 +7891,7 @@ next_match_1:
                     return RE_ERROR_SUCCESS;
                 }
 
-                state->text_pos = state->match_pos + step;
+                state->text_pos = state->match_pos + pattern_step;
                 goto next_match_1;
             }
 
@@ -7922,7 +7922,7 @@ next_match_2:
                     return RE_ERROR_SUCCESS;
                 }
 
-                text_pos = state->match_pos + step;
+                text_pos = state->match_pos + pattern_step;
                 goto next_match_2;
             }
         }
@@ -8936,7 +8936,7 @@ advance:
             }
 
             /* Advance into the tail. */
-            text_pos += (Py_ssize_t)count * step;
+            text_pos += (Py_ssize_t)count * node->step;
             node = node->next_1.node;
             break;
         }
@@ -10460,13 +10460,13 @@ backtrack:
                  * characters.
                  */
                 if (count < start_node->values[2])
-                    text_pos += (Py_ssize_t)count * step;
+                    text_pos += (Py_ssize_t)count * pattern_step;
                 break;
             }
             }
 
             /* Advance and try to match again. */
-            state->text_pos = text_pos + step;
+            state->text_pos = text_pos + pattern_step;
 
             goto start_match;
         }
@@ -11392,7 +11392,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     BOOL must_advance;
     RE_GroupData* best_groups;
     Py_ssize_t best_match_pos;
-    Py_ssize_t best_text_pos;
+    Py_ssize_t best_text_pos = 0; /* Initialise to stop compiler warning. */
     int status;
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
@@ -13689,7 +13689,7 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
 static PyObject* splitter_split(SplitterObject* self, PyObject *unused) {
     RE_State* state;
     RE_SafeState safe_state;
-    PyObject* result;
+    PyObject* result = NULL; /* Initialise to stop compiler warning. */
 
     state = &self->state;
 
