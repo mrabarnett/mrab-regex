@@ -2657,10 +2657,15 @@ class GreedyRepeat(RegexBase):
         if self.min_count > 0 and req:
             return ofs, req
 
-        if self.max_count is None:
-            return UNLIMITED, None
+        max_count = self.max_count
+        if max_count is None:
+            max_count = UNLIMITED
 
-        return ofs * self.max_count, None
+        ofs += self.subpattern.max_width() * max_count
+        if ofs > UNLIMITED:
+            ofs = UNLIMITED
+
+        return ofs, None
 
 class Group(RegexBase):
     def __init__(self, info, group, subpattern):
