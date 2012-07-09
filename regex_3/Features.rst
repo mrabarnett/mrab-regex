@@ -91,7 +91,7 @@ There are 2 kinds of flag: scoped and global. Scoped flags can apply to only par
 
 The scoped flags are: ``FULLCASE``, ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
 
-The global flags are: ``ASCII``, ``BESTMATCH``, ENHANCEMATCH``, ``LOCALE``, ````REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
+The global flags are: ``ASCII``, ``BESTMATCH``, ``ENHANCEMATCH``, ``LOCALE``, ``REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
 
 If neither the ``ASCII``, ``LOCALE`` nor ``UNICODE`` flag is specified, it will default to ``UNICODE`` if the regex pattern is a Unicode string and ``ASCII`` if it's a bytestring.
 
@@ -142,17 +142,26 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * Recursive patterns (Hg issue 27)
 
-    Recursive regexes are supported. For example::
-
-        >>> m = regex.search(r"(\w)(?:(?R)|(\w?))\1", "kayak")
-        >>> m.group(0, 1, 2)
-        ('kayak', 'k', None)
+    Recursive and repeated patterns are supported.
 
     ``(?R)`` or ``(?0)`` tries to match the entire regex recursively. ``(?1)``, ``(?2)``, etc, try to match the relevant capture group.
 
     ``(?&name)`` tries to match the named capture group.
 
-    It's possible to backtrack into a recursed group.
+    Examples::
+
+        >>> regex.match(r"(Tarzan|Jane) loves (?1)", "Tarzan loves Jane").groups()
+        ('Tarzan',)
+        >>> regex.match(r"(Tarzan|Jane) loves (?1)", "Jane loves Tarzan").groups()
+        ('Jane',)
+
+        >>> m = regex.search(r"(\w)(?:(?R)|(\w?))\1", "kayak")
+        >>> m.group(0, 1, 2)
+        ('kayak', 'k', None)
+
+    The first two examples show how the subpattern within the capture group is reused, but is _not_ itself a capture group. In other words, ``"(Tarzan|Jane) loves (?1)"`` is equivalent to ``"(Tarzan|Jane) loves (?:Tarzan|Jane)"``.
+
+    Note: it's possible to backtrack into a recursed or repeated group.
 
     The alternative forms ``(?P>name)`` and ``(?P&name)`` are also supported.
 

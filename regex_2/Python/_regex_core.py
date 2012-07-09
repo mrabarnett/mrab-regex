@@ -2337,8 +2337,9 @@ class Character(RegexBase):
         return code.compile(reverse, fuzzy)
 
     def dump(self, indent=0, reverse=False):
+        display = repr(unichr(self.value)).lstrip("bu")
         print "%s%s %s %s%s" % (INDENT * indent, self._op_name,
-          POS_TEXT[self.positive], self.value, CASE_TEXT[self.case_flags])
+          POS_TEXT[self.positive], display, CASE_TEXT[self.case_flags])
 
     def matches(self, ch):
         return (ch == self.value) == self.positive
@@ -2848,9 +2849,10 @@ class Property(RegexBase):
         return [(self._opcode[self.case_flags, reverse], flags, self.value)]
 
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s %s=%s%s" % (INDENT * indent, self._op_name,
-          POS_TEXT[self.positive], self.value >> 16, self.value & 0xFFFF,
-          CASE_TEXT[self.case_flags])
+        prop = PROPERTY_NAMES[self.value >> 16]
+        name, value = prop[0], prop[1][self.value & 0xFFFF]
+        print "%s%s %s %s:%s%s" % (INDENT * indent, self._op_name,
+          POS_TEXT[self.positive], name, value, CASE_TEXT[self.case_flags])
 
     def matches(self, ch):
         return _regex.has_property_value(self.value, ch) == self.positive
@@ -2923,9 +2925,10 @@ class Range(RegexBase):
           self.upper)]
 
     def dump(self, indent=0, reverse=False):
-        print "%sRANGE %s %s..%s%s" % (INDENT * indent,
-          POS_TEXT[self.positive], self.lower, self.upper,
-          CASE_TEXT[self.case_flags])
+        display_lower = repr(unichr(self.lower)).lstrip("bu")
+        display_upper = repr(unichr(self.upper)).lstrip("bu")
+        print "%sRANGE %s %s %s%s" % (INDENT * indent, POS_TEXT[self.positive],
+          display_lower, display_upper, CASE_TEXT[self.case_flags])
 
     def matches(self, ch):
         return (self.lower <= ch <= self.upper) == self.positive
@@ -3172,7 +3175,7 @@ class SetBase(RegexBase):
         return code
 
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s %s%s" % (INDENT * indent, self._op_name,
+        print "%s%s %s%s" % (INDENT * indent, self._op_name,
           POS_TEXT[self.positive], CASE_TEXT[self.case_flags])
         for i in self.items:
             i.dump(indent + 1)
@@ -3449,11 +3452,8 @@ class String(RegexBase):
           len(self.folded_characters)) + self.folded_characters]
 
     def dump(self, indent=0, reverse=False):
-        chars = " ".join(map(str, self.characters[ : 9]))
-        if len(self.characters) > 9:
-            chars += " ..."
-
-        print "%s%s %s%s" % (INDENT * indent, self._op_name[reverse], chars,
+        display = repr("".join(unichr(c) for c in self.characters)).lstrip("bu")
+        print "%s%s %s%s" % (INDENT * indent, self._op_name[reverse], display,
           CASE_TEXT[self.case_flags])
 
     def max_width(self):
@@ -3839,7 +3839,19 @@ class Scanner:
 
         return result, string[i : ]
 
+# Get the known properties dict.
 PROPERTIES = _regex.get_properties()
+
+# Build the inverse of the properties dict.
+PROPERTY_NAMES = {}
+for prop_name, (prop_id, values) in PROPERTIES.items():
+    name, prop_values = PROPERTY_NAMES.get(prop_id, ("", {}))
+    name = max(name, prop_name, key=len)
+    PROPERTY_NAMES[prop_id] = name, prop_values
+
+    for val_name, val_id in values.items():
+        prop_values[val_id] = max(prop_values.get(val_id, ""), val_name,
+      key=len)
 
 # Character escape sequences.
 CHARACTER_ESCAPES = {

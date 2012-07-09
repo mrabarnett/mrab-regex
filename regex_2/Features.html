@@ -377,7 +377,7 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Flags</h1>
 <p>There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.</p>
 <p>The scoped flags are: <tt class="docutils literal">FULLCASE</tt>, <tt class="docutils literal">IGNORECASE</tt>, <tt class="docutils literal">MULTILINE</tt>, <tt class="docutils literal">DOTALL</tt>, <tt class="docutils literal">VERBOSE</tt>, <tt class="docutils literal">WORD</tt>.</p>
-<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">BESTMATCH</tt>, ENHANCEMATCH``, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">``REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">VERSION0</tt>, <tt class="docutils literal">VERSION1</tt>.</p>
+<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">BESTMATCH</tt>, <tt class="docutils literal">ENHANCEMATCH</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">VERSION0</tt>, <tt class="docutils literal">VERSION1</tt>.</p>
 <p>If neither the <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt> nor <tt class="docutils literal">UNICODE</tt> flag is specified, it will default to <tt class="docutils literal">UNICODE</tt> if the regex pattern is a Unicode string and <tt class="docutils literal">ASCII</tt> if it's a bytestring.</p>
 <p>The <tt class="docutils literal">ENHANCEMATCH</tt> flag makes fuzzy matching attempt to improve the fit of the next match that it finds.</p>
 <p>The <tt class="docutils literal">BESTMATCH</tt> flag makes fuzzy matching search for the best match instead of the next match.</p>
@@ -413,15 +413,22 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 </li>
 <li><p class="first">Recursive patterns (Hg issue 27)</p>
 <blockquote>
-<p>Recursive regexes are supported. For example:</p>
+<p>Recursive and repeated patterns are supported.</p>
+<p><tt class="docutils literal"><span class="pre">(?R)</span></tt> or <tt class="docutils literal"><span class="pre">(?0)</span></tt> tries to match the entire regex recursively. <tt class="docutils literal"><span class="pre">(?1)</span></tt>, <tt class="docutils literal"><span class="pre">(?2)</span></tt>, etc, try to match the relevant capture group.</p>
+<p><tt class="docutils literal"><span class="pre">(?&amp;name)</span></tt> tries to match the named capture group.</p>
+<p>Examples:</p>
 <pre class="literal-block">
+&gt;&gt;&gt; regex.match(r&quot;(Tarzan|Jane) loves (?1)&quot;, &quot;Tarzan loves Jane&quot;).groups()
+('Tarzan',)
+&gt;&gt;&gt; regex.match(r&quot;(Tarzan|Jane) loves (?1)&quot;, &quot;Jane loves Tarzan&quot;).groups()
+('Jane',)
+
 &gt;&gt;&gt; m = regex.search(r&quot;(\w)(?:(?R)|(\w?))\1&quot;, &quot;kayak&quot;)
 &gt;&gt;&gt; m.group(0, 1, 2)
 ('kayak', 'k', None)
 </pre>
-<p><tt class="docutils literal"><span class="pre">(?R)</span></tt> or <tt class="docutils literal"><span class="pre">(?0)</span></tt> tries to match the entire regex recursively. <tt class="docutils literal"><span class="pre">(?1)</span></tt>, <tt class="docutils literal"><span class="pre">(?2)</span></tt>, etc, try to match the relevant capture group.</p>
-<p><tt class="docutils literal"><span class="pre">(?&amp;name)</span></tt> tries to match the named capture group.</p>
-<p>It's possible to backtrack into a recursed group.</p>
+<p>The first two examples show how the subpattern within the capture group is reused, but is _not_ itself a capture group. In other words, <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?1)&quot;</span></tt> is equivalent to <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?:Tarzan|Jane)&quot;</span></tt>.</p>
+<p>Note: it's possible to backtrack into a recursed or repeated group.</p>
 <p>The alternative forms <tt class="docutils literal"><span class="pre">(?P&gt;name)</span></tt> and <tt class="docutils literal"><span class="pre">(?P&amp;name)</span></tt> are also supported.</p>
 </blockquote>
 </li>
