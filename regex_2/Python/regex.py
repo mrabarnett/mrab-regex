@@ -219,7 +219,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "match", "purge",
   "REVERSE", "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1",
   "VERSION1", "X", "VERBOSE", "W", "WORD", "error"]
 
-__version__ = "2.4.4"
+__version__ = "2.4.5"
 
 # --------------------------------------------------------------------
 # Public interface.

@@ -2286,7 +2286,6 @@ class Character(RegexBase):
       False): OP.CHARACTER_IGN, (NOCASE, True): OP.CHARACTER_REV, (IGNORECASE,
       True): OP.CHARACTER_IGN_REV, (FULLCASE, True): OP.CHARACTER_REV,
       (FULLIGNORECASE, True): OP.CHARACTER_IGN_REV}
-    _op_name = "CHARACTER"
 
     def __init__(self, value, positive=True, case_flags=NOCASE,
       zerowidth=False):
@@ -2338,7 +2337,7 @@ class Character(RegexBase):
 
     def dump(self, indent=0, reverse=False):
         display = repr(unichr(self.value)).lstrip("bu")
-        print "%s%s %s %s%s" % (INDENT * indent, self._op_name,
+        print "%sCHARACTER %s %s%s" % (INDENT * indent,
           POS_TEXT[self.positive], display, CASE_TEXT[self.case_flags])
 
     def matches(self, ch):
@@ -2546,7 +2545,10 @@ class Fuzzy(RegexBase):
           self.subpattern.compile(reverse, True) + [(OP.END,)])
 
     def dump(self, indent=0, reverse=False):
-        print "%sFUZZY" % (INDENT * indent)
+        constraints = self._constraints_to_string()
+        if constraints:
+            constraints = " " + constraints
+        print "%sFUZZY%s" % (INDENT * indent, constraints)
         self.subpattern.dump(indent + 1, reverse)
 
     def is_empty(self):
@@ -2559,9 +2561,40 @@ class Fuzzy(RegexBase):
     def max_width(self):
         return UNLIMITED
 
-class Grapheme(RegexBase):
-    _op_name = "GRAPHEME"
+    def _constraints_to_string(self):
+        constraints = []
 
+        for name in "ids":
+            min, max = self.constraints[name]
+            if max == 0:
+                continue
+
+            con = ""
+
+            if min > 0:
+                con = "%s<=" % min
+
+            con += name
+
+            if max is not None:
+                con += "<=%s" % max
+
+            constraints.append(con)
+
+        cost = []
+        for name in "ids":
+            coeff = self.constraints["cost"][name]
+            if coeff > 0:
+                cost.append("%s%s" % (coeff, name))
+
+        limit = self.constraints["cost"]["max"]
+        if limit is not None and limit > 0:
+            cost = "%s<=%s" % ("+".join(cost), limit)
+            constraints.append(cost)
+
+        return ",".join(constraints)
+
+class Grapheme(RegexBase):
     def compile(self, reverse=False, fuzzy=False):
         # Match at least 1 character until a grapheme boundary is reached. Note
         # that this is the same whether matching forwards or backwards.
@@ -2572,7 +2605,7 @@ class Grapheme(RegexBase):
         return character_matcher + boundary_matcher
 
     def dump(self, indent=0, reverse=False):
-        print "%s%s" % (INDENT * indent, self._op_name)
+        print "%sGRAPHEME" % (INDENT * indent)
 
     def max_width(self):
         return UNLIMITED
@@ -2813,7 +2846,6 @@ class Property(RegexBase):
       OP.PROPERTY_IGN, (NOCASE, True): OP.PROPERTY_REV, (IGNORECASE, True):
       OP.PROPERTY_IGN_REV, (FULLCASE, True): OP.PROPERTY_REV, (FULLIGNORECASE,
       True): OP.PROPERTY_IGN_REV}
-    _op_name = "PROPERTY"
 
     def __init__(self, value, positive=True, case_flags=NOCASE,
       zerowidth=False):
@@ -2851,7 +2883,7 @@ class Property(RegexBase):
     def dump(self, indent=0, reverse=False):
         prop = PROPERTY_NAMES[self.value >> 16]
         name, value = prop[0], prop[1][self.value & 0xFFFF]
-        print "%s%s %s %s:%s%s" % (INDENT * indent, self._op_name,
+        print "%sPROPERTY %s %s:%s%s" % (INDENT * indent,
           POS_TEXT[self.positive], name, value, CASE_TEXT[self.case_flags])
 
     def matches(self, ch):
@@ -2942,7 +2974,6 @@ class RefGroup(RegexBase):
       False): OP.REF_GROUP_FLD, (NOCASE, True): OP.REF_GROUP_REV, (IGNORECASE,
       True): OP.REF_GROUP_IGN_REV, (FULLCASE, True): OP.REF_GROUP_REV,
       (FULLIGNORECASE, True): OP.REF_GROUP_FLD_REV}
-    _op_name = "REF_GROUP"
 
     def __init__(self, info, group, case_flags=NOCASE):
         RegexBase.__init__(self)
@@ -2976,7 +3007,7 @@ class RefGroup(RegexBase):
         return [(self._opcode[self.case_flags, reverse], flags, self.group)]
 
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s%s" % (INDENT * indent, self._op_name, self.group,
+        print "%sREF_GROUP %s%s" % (INDENT * indent, self.group,
           CASE_TEXT[self.case_flags])
 
     def max_width(self):
@@ -3412,7 +3443,6 @@ class String(RegexBase):
       (NOCASE, True): OP.STRING_REV, (IGNORECASE, True): OP.STRING_IGN_REV,
       (FULLCASE, True): OP.STRING_REV, (FULLIGNORECASE, True):
       OP.STRING_FLD_REV}
-    _op_name = "STRING"
 
     def __init__(self, characters, case_flags=NOCASE):
         self.characters = tuple(characters)
@@ -3453,7 +3483,7 @@ class String(RegexBase):
 
     def dump(self, indent=0, reverse=False):
         display = repr("".join(unichr(c) for c in self.characters)).lstrip("bu")
-        print "%s%s %s%s" % (INDENT * indent, self._op_name[reverse], display,
+        print "%sSTRING %s%s" % (INDENT * indent, display,
           CASE_TEXT[self.case_flags])
 
     def max_width(self):
@@ -3468,7 +3498,6 @@ class StringSet(RegexBase):
       False): OP.STRING_SET_FLD, (NOCASE, True): OP.STRING_SET_REV,
       (IGNORECASE, True): OP.STRING_SET_IGN_REV, (FULLCASE, True):
       OP.STRING_SET_REV, (FULLIGNORECASE, True): OP.STRING_SET_FLD_REV}
-    _op_name = "STRING_SET"
 
     def __init__(self, info, name, case_flags=NOCASE):
         self.info = info
@@ -3526,7 +3555,7 @@ class StringSet(RegexBase):
               max_len)]
 
     def dump(self, indent=0, reverse=False):
-        print "%s%s %s%s" % (INDENT * indent, self._op_name, self.name,
+        print "%sSTRING_SET %s%s" % (INDENT * indent, self.name,
           CASE_TEXT[self.case_flags])
 
     def _flatten(self, s):
