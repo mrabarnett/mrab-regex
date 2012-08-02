@@ -213,13 +213,13 @@ This module also defines an exception 'error'.
 
 # Public symbols.
 __all__ = ["compile", "escape", "findall", "finditer", "match", "purge",
-  "search", "split", "splititer", "sub", "subn", "template", "A", "ASCII", "B",
-  "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH", "S", "DOTALL", "F",
-  "FULLCASE", "I", "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "R",
+  "search", "split", "splititer", "sub", "subn", "template", "Scanner", "A",
+  "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH", "S", "DOTALL",
+  "F", "FULLCASE", "I", "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "R",
   "REVERSE", "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1",
-  "VERSION1", "X", "VERBOSE", "W", "WORD", "error"]
+  "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex"]
 
-__version__ = "2.4.5"
+__version__ = "2.4.6"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -309,7 +309,7 @@ def escape(pattern, special_only=False):
         s = []
         if special_only:
             for c in pattern:
-                if c in NONLITERAL:
+                if c in _NONLITERAL:
                     s.append("\\")
                     s.append(c)
                 elif c == "\x00":
@@ -318,7 +318,7 @@ def escape(pattern, special_only=False):
                     s.append(c)
         else:
             for c in pattern:
-                if c in ALNUM:
+                if c in _ALNUM:
                     s.append(c)
                 elif c == "\x00":
                     s.append("\\000")
@@ -331,7 +331,7 @@ def escape(pattern, special_only=False):
         s = []
         if special_only:
             for c in pattern:
-                if chr(c) in NONLITERAL:
+                if chr(c) in _NONLITERAL:
                     s.extend(b"\\")
                     s.append(c)
                 elif c == 0:
@@ -340,7 +340,7 @@ def escape(pattern, special_only=False):
                     s.append(c)
         else:
             for c in pattern:
-                if chr(c) in ALNUM:
+                if chr(c) in _ALNUM:
                     s.append(c)
                 elif c == 0:
                     s.extend(b"\\000")
@@ -356,14 +356,21 @@ def escape(pattern, special_only=False):
 import _regex_core
 import _regex
 from _regex_core import *
+from _regex_core import _ALL_VERSIONS, _ALL_ENCODINGS
+from _regex_core import _FirstSetError, _UnscopedFlagSet
+from _regex_core import _check_group_features, _compile_firstset, \
+  _compile_replacement, _flatten_code, _fold_case, _get_required_string, \
+  _parse_pattern, _shrink_cache
+
+from _regex_core import ALNUM as _ALNUM, Info as _Info, OP as _OP, Source as \
+  _Source, Fuzzy as _Fuzzy
 
 # Version 0 is the old behaviour, compatible with the original 're' module.
 # Version 1 is the new behaviour, which differs slightly.
 
 DEFAULT_VERSION = VERSION0
 
-ALL_VERSIONS = VERSION0 | VERSION1
-ALL_ENCODINGS = ASCII | LOCALE | UNICODE
+_NONLITERAL = frozenset("()[]{}?*+|^$\\.")
 
 _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
 
@@ -376,12 +383,12 @@ _MAXCACHE = 500
 
 def _compile(pattern, flags=0, kwargs=None):
     "Compiles a regular expression to a PatternObject."
-    # We're checking in this order because pattern_type isn't defined when
+    # We're checking in this order because _pattern_type isn't defined when
     # _compile() is first called, with a string pattern, but only after the
     # support objects are defined.
     if isinstance(pattern, (str, bytes)):
         pass
-    elif isinstance(pattern, pattern_type):
+    elif isinstance(pattern, _pattern_type):
         if flags:
             raise ValueError("can't process flags argument with a compiled pattern")
         return pattern
@@ -422,18 +429,18 @@ def _compile(pattern, flags=0, kwargs=None):
 
     # Parse the pattern. In the old behaviour the inline flags are global and
     # the pattern will need to be reparsed if a flag becomes turned on.
-    version = (flags & ALL_VERSIONS) or DEFAULT_VERSION
+    version = (flags & _ALL_VERSIONS) or DEFAULT_VERSION
     global_flags = flags | _regex_core.DEFAULT_FLAGS.get(version, 0)
 
     while True:
         try:
-            source = Source(pattern)
-            info = Info(global_flags, source.char_type, kwargs)
+            source = _Source(pattern)
+            info = _Info(global_flags, source.char_type, kwargs)
             info.guess_encoding = guess_encoding
             source.ignore_space = bool(info.flags & VERBOSE)
-            parsed = parse_pattern(source, info)
+            parsed = _parse_pattern(source, info)
             break
-        except UnscopedFlagSet as e:
+        except _UnscopedFlagSet as e:
             # Remember the global flags for the next attempt.
             global_flags = e.global_flags | flags
 
@@ -441,23 +448,23 @@ def _compile(pattern, flags=0, kwargs=None):
         raise error("trailing characters in pattern")
 
     # Check the global flags for conflicts.
-    version = (info.flags & ALL_VERSIONS) or DEFAULT_VERSION
+    version = (info.flags & _ALL_VERSIONS) or DEFAULT_VERSION
     if version not in (0, VERSION0, VERSION1):
         raise ValueError("VERSION0 and VERSION1 flags are mutually incompatible")
 
-    if (info.flags & ALL_ENCODINGS) not in (0, ASCII, LOCALE, UNICODE):
+    if (info.flags & _ALL_ENCODINGS) not in (0, ASCII, LOCALE, UNICODE):
         raise ValueError("ASCII, LOCALE and UNICODE flags are mutually incompatible")
 
     if isinstance(pattern, bytes) and (info.flags & UNICODE):
         raise ValueError("can't use UNICODE flag with a bytes pattern")
-    if not (info.flags & ALL_ENCODINGS):
+    if not (info.flags & _ALL_ENCODINGS):
         if isinstance(pattern, str):
             info.flags |= UNICODE
         else:
             info.flags |= ASCII
 
     reverse = bool(info.flags & REVERSE)
-    fuzzy = isinstance(parsed, Fuzzy)
+    fuzzy = isinstance(parsed, _Fuzzy)
 
     # Fix the group references.
     parsed.fix_groups(reverse, False)
@@ -467,7 +474,7 @@ def _compile(pattern, flags=0, kwargs=None):
     parsed = parsed.pack_characters(info)
 
     # Get the required string.
-    req_offset, req_chars, req_flags = get_required_string(parsed, info.flags)
+    req_offset, req_chars, req_flags = _get_required_string(parsed, info.flags)
 
     # Build the named lists.
     named_lists = {}
@@ -477,7 +484,7 @@ def _compile(pattern, flags=0, kwargs=None):
         name, case_flags = key
         values = frozenset(kwargs[name])
         if case_flags:
-            items = frozenset(fold_case(info, v) for v in values)
+            items = frozenset(_fold_case(info, v) for v in values)
         else:
             items = values
         named_lists[name] = values
@@ -489,7 +496,7 @@ def _compile(pattern, flags=0, kwargs=None):
         parsed.dump(indent=0, reverse=reverse)
 
     # Check the features of the groups.
-    check_group_features(info, parsed)
+    _check_group_features(info, parsed)
 
     # Compile the parsed pattern. The result is a list of tuples.
     code = parsed.compile(reverse)
@@ -498,25 +505,25 @@ def _compile(pattern, flags=0, kwargs=None):
     key = (0, reverse, fuzzy)
     ref = info.call_refs.get(key)
     if ref is not None:
-        code = [(OP.CALL_REF, ref)] + code + [(OP.END, )]
+        code = [(_OP.CALL_REF, ref)] + code + [(_OP.END, )]
 
     # Add the final 'success' opcode.
-    code += [(OP.SUCCESS, )]
+    code += [(_OP.SUCCESS, )]
 
     # Compile the additional copies of the groups that we need.
     for group, rev, fuz in info.additional_groups:
         code += group.compile(rev, fuz)
 
     # Flatten the code into a list of ints.
-    code = flatten_code(code)
+    code = _flatten_code(code)
 
     if not parsed.has_simple_start():
         # Get the first set, if possible.
         try:
-            fs_code = compile_firstset(info, parsed.get_firstset(reverse))
-            fs_code = flatten_code(fs_code)
+            fs_code = _compile_firstset(info, parsed.get_firstset(reverse))
+            fs_code = _flatten_code(fs_code)
             code = fs_code + code
-        except FirstSetError:
+        except _FirstSetError:
             pass
 
     # The named capture groups.
@@ -533,7 +540,7 @@ def _compile(pattern, flags=0, kwargs=None):
 
     # Do we need to reduce the size of the cache?
     if len(_cache) >= _MAXCACHE:
-        shrink_cache(_cache, _named_args, _MAXCACHE)
+        _shrink_cache(_cache, _named_args, _MAXCACHE)
 
     args_needed = frozenset(args_needed)
 
@@ -546,11 +553,11 @@ def _compile(pattern, flags=0, kwargs=None):
 
     return compiled_pattern
 
-def compile_replacement(pattern, template):
+def _compile_replacement_helper(pattern, template):
     "Compiles a replacement template."
     # This function is called by the _regex module.
     is_unicode = isinstance(template, str)
-    source = Source(template)
+    source = _Source(template)
     if is_unicode:
         def make_string(char_codes):
             return "".join(chr(c) for c in char_codes)
@@ -565,10 +572,10 @@ def compile_replacement(pattern, template):
         if not ch:
             break
         if ch == "\\":
-            # 'compile_repl_escape' will return either an int group reference
+            # '_compile_replacement' will return either an int group reference
             # or a string literal. It returns items (plural) in order to handle
             # a 2-character literal (an invalid escape sequence).
-            is_group, items = compile_repl_escape(source, pattern, is_unicode)
+            is_group, items = _compile_replacement(source, pattern, is_unicode)
             if is_group:
                 # It's a group, so first flush the literal.
                 if literal:
@@ -585,17 +592,17 @@ def compile_replacement(pattern, template):
         compiled.append(make_string(literal))
     return compiled
 
-# We define pattern_type here after all the support objects have been defined.
-pattern_type = type(_compile("", 0, {}))
+# We define _pattern_type here after all the support objects have been defined.
+_pattern_type = type(_compile("", 0, {}))
 
 # We'll define an alias for the 'compile' function so that the repr of a
 # pattern object is eval-able.
 Regex = compile
 
 # Register myself for pickling.
-import copyreg
+import copyreg as _copy_reg
 
-def pickle(p):
+def _pickle(p):
     return _compile, (p.pattern, p.flags)
 
-copyreg.pickle(pattern_type, pickle, _compile)
+_copy_reg.pickle(_pattern_type, _pickle, _compile)
