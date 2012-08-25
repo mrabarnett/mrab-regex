@@ -562,7 +562,9 @@ typedef struct PatternObject {
 /* The MatchObject created when a match is found. */
 typedef struct MatchObject {
     PyObject_HEAD
-    PyObject* string; /* Link to the target string. */
+    PyObject* string; /* Link to the target string or NULL if detached. */
+    PyObject* substring; /* Link to (a substring of) the target string. */
+    Py_ssize_t substring_offset; /* Offset into the target string. */
     PatternObject* pattern; /* Link to the regex (pattern) object. */
     Py_ssize_t pos; /* Start of current slice. */
     Py_ssize_t endpos; /* End of current slice. */
@@ -13224,6 +13226,7 @@ static void match_dealloc(PyObject* self_) {
     self = (MatchObject*)self_;
 
     Py_XDECREF(self->string);
+    Py_XDECREF(self->substring);
     Py_DECREF(self->pattern);
     re_dealloc(self->groups);
     Py_XDECREF(self->regs);
@@ -13242,21 +13245,22 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_by_index(MatchObject* self,
     }
 
     if (index == 0)
-        return PySequence_GetSlice(self->string, self->match_start,
-          self->match_end);
+        return PySequence_GetSlice(self->substring, self->match_start -
+          self->substring_offset, self->match_end - self->substring_offset);
 
     /* Capture group indexes are 1-based (excluding group 0, which is the
      * entire matched string).
      */
     span = &self->groups[index - 1].span;
 
-    if (self->string == Py_None || span->start < 0 || span->end < 0) {
+    if (span->start < 0 || span->end < 0) {
         /* Return default value if the string or group is undefined. */
         Py_INCREF(def);
         return def;
     }
 
-    return PySequence_GetSlice(self->string, span->start, span->end);
+    return PySequence_GetSlice(self->substring, span->start -
+      self->substring_offset, span->end - self->substring_offset);
 }
 
 /* Gets a MatchObject's start by integer index. */
@@ -13489,8 +13493,8 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         if (!result)
             return NULL;
 
-        slice = PySequence_GetSlice(self->string, self->match_start,
-          self->match_end);
+        slice = PySequence_GetSlice(self->substring, self->match_start -
+          self->substring_offset, self->match_end - self->substring_offset);
         if (!slice)
             goto error;
         PyList_SET_ITEM(result, 0, slice);
@@ -13508,8 +13512,9 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         return NULL;
 
     for (i = 0; i < group->capture_count; i++) {
-        slice = PySequence_GetSlice(self->string, group->captures[i].start,
-          group->captures[i].end);
+        slice = PySequence_GetSlice(self->substring, group->captures[i].start -
+          self->substring_offset, group->captures[i].end -
+          self->substring_offset);
         if (!slice)
             goto error;
         PyList_SET_ITEM(result, i, slice);
@@ -13823,7 +13828,7 @@ Py_LOCAL_INLINE(PyObject*) call(char* module_name, char* function_name,
  * The replacement item could be a string literal or a group.
  */
 Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
-  item, PyObject* string, Py_ssize_t group_count) {
+  item, Py_ssize_t group_count) {
     Py_ssize_t index;
 
     if (PyUnicode_Check(item) || PyBytes_Check(item)) {
@@ -13842,7 +13847,8 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
 
     if (index == 0) {
         /* The entire matched portion of the string. */
-        return PySequence_GetSlice(string, self->match_start, self->match_end);
+        return PySequence_GetSlice(self->substring, self->match_start -
+          self->substring_offset, self->match_end - self->substring_offset);
     } else if (index >= 1 && index <= group_count) {
         /* A group. If it didn't match then return None instead. */
         RE_GroupData* group;
@@ -13850,8 +13856,8 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
         group = &self->groups[index - 1];
 
         if (group->capture_count > 0)
-            return PySequence_GetSlice(string, group->span.start,
-              group->span.end);
+            return PySequence_GetSlice(self->substring, group->span.start -
+              self->substring_offset, group->span.end - self->substring_offset);
         else {
             Py_INCREF(Py_None);
             return Py_None;
@@ -14021,8 +14027,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
         PyObject* str_item;
 
         item = PyList_GET_ITEM(replacement, i);
-        str_item = get_match_replacement(self, item, self->string,
-          self->group_count);
+        str_item = get_match_replacement(self, item, self->group_count);
         if (!str_item)
             goto error;
 
@@ -14044,7 +14049,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     Py_DECREF(replacement);
 
     /* Convert the list to a single string (also cleans up join_info). */
-    return join_list_info(&join_info, self->string);
+    return join_list_info(&join_info, self->substring);
 
 error:
     Py_XDECREF(join_info.list);
@@ -14053,16 +14058,16 @@ error:
     return NULL;
 }
 
+Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self);
+
 /* MatchObject's 'copy' method. */
 static PyObject* match_copy(MatchObject* self, PyObject *unused) {
-    PyErr_SetString(PyExc_TypeError, "cannot copy this MatchObject");
-    return NULL;
+    return make_match_copy(self);
 }
 
 /* MatchObject's 'deepcopy' method. */
 static PyObject* match_deepcopy(MatchObject* self, PyObject* memo) {
-    PyErr_SetString(PyExc_TypeError, "cannot deepcopy this MatchObject");
-    return NULL;
+    return make_match_copy(self);
 }
 
 /* MatchObject's 'regs' method. */
@@ -14152,6 +14157,67 @@ static PyObject* match_subscript(MatchObject* self, PyObject* item) {
     return match_get_group(self, item, Py_None, TRUE);
 }
 
+/* Determines the portion of the target string which is covered by the group
+ * captures.
+ */
+Py_LOCAL_INLINE(void) determine_target_substring(MatchObject* match, Py_ssize_t*
+  slice_start, Py_ssize_t* slice_end) {
+    Py_ssize_t start;
+    Py_ssize_t end;
+    Py_ssize_t g;
+
+    start = match->pos;
+    end = match->endpos;
+
+    for (g = 0; g < match->group_count; g++) {
+        RE_GroupSpan* span;
+        size_t c;
+
+        span = &match->groups[g].span;
+        if (span->start >= 0 && span->start < start)
+            start = span->start;
+        if (span->end >= 0 && span->end > end)
+            end = span->end;
+
+        for (c = 0; c < match->groups[g].capture_count; c++) {
+            RE_GroupSpan* span;
+
+            span = match->groups[g].captures;
+            if (span->start >= 0 && span->start < start)
+                start = span->start;
+            if (span->end >= 0 && span->end > end)
+                end = span->end;
+        }
+    }
+
+    *slice_start = start;
+    *slice_end = end;
+}
+
+/* MatchObject's detach_string method. */
+static PyObject* match_detach_string(MatchObject* self, PyObject* item) {
+    if (self->string) {
+        Py_ssize_t start;
+        Py_ssize_t end;
+        PyObject* substring;
+
+        determine_target_substring(self, &start, &end);
+
+        substring = PySequence_GetSlice(self->string, start, end);
+        if (substring) {
+            Py_XDECREF(self->substring);
+            self->substring = substring;
+            self->substring_offset = start;
+
+            Py_XDECREF(self->string);
+            self->string = NULL;
+        }
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 /* The documentation of a MatchObject. */
 PyDoc_STRVAR(match_group_doc,
     "group([group1, ...]) --> string or tuple of strings.\n\
@@ -14235,6 +14301,11 @@ PyDoc_STRVAR(match_spans_doc,
     arguments, the spans of the captures of the whole match is returned.  Group\n\
     0 is the whole match.");
 
+PyDoc_STRVAR(match_detach_string_doc,
+    "detach_string()\n\
+    Detaches the target string from the match object. The 'string' attribute\n\
+    will become None.");
+
 /* MatchObject's methods. */
 static PyMethodDef match_methods[] = {
     {"group", (PyCFunction)match_group, METH_VARARGS, match_group_doc},
@@ -14251,6 +14322,8 @@ static PyMethodDef match_methods[] = {
     {"starts", (PyCFunction)match_starts, METH_VARARGS, match_starts_doc},
     {"ends", (PyCFunction)match_ends, METH_VARARGS, match_ends_doc},
     {"spans", (PyCFunction)match_spans, METH_VARARGS, match_spans_doc},
+    {"detach_string", (PyCFunction)match_detach_string, METH_NOARGS,
+      match_detach_string_doc},
     {"__copy__", (PyCFunction)match_copy, METH_NOARGS},
     {"__deepcopy__", (PyCFunction)match_deepcopy, METH_O},
     {"__getitem__", (PyCFunction)match_subscript, METH_O|METH_COEXIST},
@@ -14336,9 +14409,6 @@ static PyMappingMethods match_as_mapping = {
     0,                           /* mp_ass_subscript */
 };
 
-/* FIXME: implement setattr("string", None) as a special case (to detach the
- * associated string, if any.
- */
 static PyTypeObject Match_Type = {
     PyVarObject_HEAD_INIT(NULL,0)
     "_" RE_MODULE "." "Match",
@@ -14394,6 +14464,56 @@ Py_LOCAL_INLINE(RE_GroupData*) copy_groups(RE_GroupData* groups, Py_ssize_t
     return groups_copy;
 }
 
+/* Makes a copy of a MatchObject. */
+Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self) {
+    MatchObject* match;
+
+    if (!self->string) {
+        /* The target string has been detached, so the MatchObject is now
+         * immutable.
+         */
+        Py_INCREF(self);
+        return (PyObject*)self;
+    }
+
+    /* Create a MatchObject. */
+    match = PyObject_NEW(MatchObject, &Match_Type);
+    if (!match)
+        return NULL;
+
+    match->string = self->string;
+    match->substring = self->substring;
+    match->substring_offset = self->substring_offset;
+    match->pattern = self->pattern;
+    match->regs = self->regs;
+    Py_INCREF(match->string);
+    Py_INCREF(match->substring);
+    Py_INCREF(match->pattern);
+
+    /* Copy the groups to the MatchObject. */
+    if (self->group_count > 0) {
+        match->groups = copy_groups(self->groups, self->group_count);
+        if (!match->groups) {
+            Py_DECREF(match);
+            return NULL;
+        }
+    } else
+        match->groups = NULL;
+
+    match->group_count = self->group_count;
+
+    match->pos = self->pos;
+    match->endpos = self->endpos;
+
+    match->match_start = self->match_start;
+    match->match_end = self->match_end;
+
+    match->lastindex = match->lastindex;
+    match->lastgroup = match->lastgroup;
+
+    return (PyObject*)match;
+}
+
 /* Creates a new MatchObject. */
 Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
   state, int status) {
@@ -14407,9 +14527,12 @@ Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
             return NULL;
 
         match->string = state->string;
+        match->substring = state->string;
+        match->substring_offset = 0;
         match->pattern = pattern;
         match->regs = NULL;
         Py_INCREF(match->string);
+        Py_INCREF(match->substring);
         Py_INCREF(match->pattern);
 
         /* Copy the groups to the MatchObject. */
@@ -14645,10 +14768,31 @@ static PyObject* scanner_iternext(PyObject* self) {
     return match;
 }
 
+/* Makes a copy of a ScannerObject.
+ *
+ * It actually doesn't make a copy, just returns the original object.
+ */
+Py_LOCAL_INLINE(PyObject*) make_scanner_copy(ScannerObject* self) {
+    Py_INCREF(self);
+    return (PyObject*)self;
+}
+
+/* ScannerObject's 'copy' method. */
+static PyObject* scanner_copy(ScannerObject* self, PyObject *unused) {
+    return make_scanner_copy(self);
+}
+
+/* ScannerObject's 'deepcopy' method. */
+static PyObject* scanner_deepcopy(ScannerObject* self, PyObject* memo) {
+    return make_scanner_copy(self);
+}
+
 /* ScannerObject's methods. */
 static PyMethodDef scanner_methods[] = {
     {"match", (PyCFunction)scanner_match, METH_NOARGS},
     {"search", (PyCFunction)scanner_search, METH_NOARGS},
+    {"__copy__", (PyCFunction)scanner_copy, METH_NOARGS},
+    {"__deepcopy__", (PyCFunction)scanner_deepcopy, METH_O},
     {NULL, NULL}
 };
 
@@ -14903,9 +15047,30 @@ static PyObject* splitter_iternext(PyObject* self) {
     return result;
 }
 
+/* Makes a copy of a SplitterObject.
+ *
+ * It actually doesn't make a copy, just returns the original object.
+ */
+Py_LOCAL_INLINE(PyObject*) make_splitter_copy(SplitterObject* self) {
+    Py_INCREF(self);
+    return (PyObject*)self;
+}
+
+/* SplitterObject's 'copy' method. */
+static PyObject* splitter_copy(SplitterObject* self, PyObject *unused) {
+    return make_splitter_copy(self);
+}
+
+/* SplitterObject's 'deepcopy' method. */
+static PyObject* splitter_deepcopy(SplitterObject* self, PyObject* memo) {
+    return make_splitter_copy(self);
+}
+
 /* SplitterObject's methods. */
 static PyMethodDef splitter_methods[] = {
     {"split", (PyCFunction)splitter_split, METH_NOARGS},
+    {"__copy__", (PyCFunction)splitter_copy, METH_NOARGS},
+    {"__deepcopy__", (PyCFunction)splitter_deepcopy, METH_O},
     {NULL, NULL}
 };
 
@@ -15855,16 +16020,20 @@ static PyObject* pattern_finditer(PatternObject* pattern, PyObject* args,
     return pattern_scanner(pattern, args, kw);
 }
 
+/* Makes a copy of a PatternObject. */
+Py_LOCAL_INLINE(PyObject*) make_pattern_copy(PatternObject* self) {
+    Py_INCREF(self);
+    return (PyObject*)self;
+}
+
 /* PatternObject's 'copy' method. */
 static PyObject* pattern_copy(PatternObject* self, PyObject *unused) {
-    PyErr_SetString(PyExc_TypeError, "cannot copy this PatternObject");
-    return NULL;
+    return make_pattern_copy(self);
 }
 
 /* PatternObject's 'deepcopy' method. */
 static PyObject* pattern_deepcopy(PatternObject* self, PyObject* memo) {
-    PyErr_SetString(PyExc_TypeError, "cannot deepcopy this PatternObject");
-    return NULL;
+    return make_pattern_copy(self);
 }
 
 /* The documentation of a PatternObject. */

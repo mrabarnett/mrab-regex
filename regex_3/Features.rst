@@ -136,6 +136,24 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
+* Detach searched string
+
+    A match object contains a reference to the string that was searched, via its ``string`` attribute. The match object now has a ``detach_string`` method that will 'detach' that string, making it available for garbage collection (this might save valuable memory if that string is very large).
+
+    Example::
+
+        >>> import regex
+        >>> m = regex.search(r"\w+", "Hello world")
+        >>> print(m.group())
+        Hello
+        >>> print(m.string)
+        Hello world
+        >>> m.detach_string()
+        >>> print(m.group())
+        Hello
+        >>> print(m.string)
+        None
+
 * Characters in a group name (issue #14462)
 
     A group name can now contain the same characters as an identifier. These are different in Python 2 and Python 3.

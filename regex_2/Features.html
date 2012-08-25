@@ -406,6 +406,25 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Detach searched string</p>
+<blockquote>
+<p>A match object contains a reference to the string that was searched, via its <tt class="docutils literal">string</tt> attribute. The match object now has a <tt class="docutils literal">detach_string</tt> method that will 'detach' that string, making it available for garbage collection (this might save valuable memory if that string is very large).</p>
+<p>Example:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; import regex
+&gt;&gt;&gt; m = regex.search(r&quot;\w+&quot;, &quot;Hello world&quot;)
+&gt;&gt;&gt; print(m.group())
+Hello
+&gt;&gt;&gt; print(m.string)
+Hello world
+&gt;&gt;&gt; m.detach_string()
+&gt;&gt;&gt; print(m.group())
+Hello
+&gt;&gt;&gt; print(m.string)
+None
+</pre>
+</blockquote>
+</li>
 <li><p class="first">Characters in a group name (issue #14462)</p>
 <blockquote>
 <p>A group name can now contain the same characters as an identifier. These are different in Python 2 and Python 3.</p>

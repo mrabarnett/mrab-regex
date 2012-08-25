@@ -14,7 +14,7 @@ SRC_DIR = os.path.join(BASE_DIR, PKG_BASE)
 
 setup(
     name='regex',
-    version='0.1.20120803',
+    version='0.1.20120825',
     description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(SRC_DIR, 'Features.rst')).read(),
 

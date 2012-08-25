@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: regex
-Version: 0.1.20120803
+Version: 0.1.20120825
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://code.google.com/p/mrab-regex-hg/
 Author: Matthew Barnett
@@ -143,6 +143,24 @@ Description: Introduction
         -------------------
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+        
+        * Detach searched string
+        
+            A match object contains a reference to the string that was searched, via its ``string`` attribute. The match object now has a ``detach_string`` method that will 'detach' that string, making it available for garbage collection (this might save valuable memory if that string is very large).
+        
+            Example::
+        
+                >>> import regex
+                >>> m = regex.search(r"\w+", "Hello world")
+                >>> print(m.group())
+                Hello
+                >>> print(m.string)
+                Hello world
+                >>> m.detach_string()
+                >>> print(m.group())
+                Hello
+                >>> print(m.string)
+                None
         
         * Characters in a group name (issue #14462)
         

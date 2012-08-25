@@ -2,6 +2,7 @@ import regex
 import string
 from weakref import proxy
 import unittest
+import copy
 from test.support import run_unittest
 import sys
 
@@ -2812,6 +2813,49 @@ xyzabc
         self.assertEquals(bool(rgx.search('<foo>foo</foo>')), True)
         self.assertEquals(bool(rgx.search('<foo><bar/>foo</foo>')), True)
         self.assertEquals(bool(rgx.search('<a><b><c></c></b></a>')), True)
+
+    def test_copy(self):
+        # PatternObjects are immutable, therefore there's no need to clone them.
+        r = regex.compile("a")
+        self.assert_(copy.copy(r) is r)
+        self.assert_(copy.deepcopy(r) is r)
+
+        # MatchObjects are normally mutable because the target string can be
+        # detached. However, after the target string has been detached, a
+        # MatchObject becomes immutable, so there's no need to clone it.
+        m = r.match("a")
+        self.assert_(copy.copy(m) is not m)
+        self.assert_(copy.deepcopy(m) is not m)
+
+        self.assert_(m.string is not None)
+        m2 = copy.copy(m)
+        m2.detach_string()
+        self.assert_(m.string is not None)
+        self.assert_(m2.string is None)
+
+        # The following behaviour matches that of the re module.
+        it = regex.finditer(".", "ab")
+        it2 = copy.copy(it)
+        self.assertEquals(next(it).group(), "a")
+        self.assertEquals(next(it2).group(), "b")
+
+        # The following behaviour matches that of the re module.
+        it = regex.finditer(".", "ab")
+        it2 = copy.deepcopy(it)
+        self.assertEquals(next(it).group(), "a")
+        self.assertEquals(next(it2).group(), "b")
+
+        # The following behaviour is designed to match that of copying 'finditer'.
+        it = regex.splititer(" ", "a b")
+        it2 = copy.copy(it)
+        self.assertEquals(next(it), "a")
+        self.assertEquals(next(it2), "b")
+
+        # The following behaviour is designed to match that of copying 'finditer'.
+        it = regex.splititer(" ", "a b")
+        it2 = copy.deepcopy(it)
+        self.assertEquals(next(it), "a")
+        self.assertEquals(next(it2), "b")
 
     def test_hg_bugs(self):
         # Hg issue 28
