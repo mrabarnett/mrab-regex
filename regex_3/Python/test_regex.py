@@ -2773,12 +2773,12 @@ xyzabc
         self.assertEquals(regex.search(r"\(((?>[^()]+)|(?R))*\)",
           "(ab(cd)ef)")[ : ], ("(ab(cd)ef)", "ef"))
         self.assertEquals(regex.search(r"\(((?>[^()]+)|(?R))*\)",
-          "(ab(cd)ef)").captures(1), ["ab", "(cd)", "ef"])
+          "(ab(cd)ef)").captures(1), ["ab", "cd", "(cd)", "ef"])
 
         self.assertEquals(regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
           "(ab(cd)ef)")[ : ], ("(ab(cd)ef)", "ab"))
         self.assertEquals(regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
-          "(ab(cd)ef)").captures(1), ["ef", "(cd)", "ab"])
+          "(ab(cd)ef)").captures(1), ["ef", "cd", "(cd)", "ab"])
 
         self.assertEquals(regex.search(r"\(([^()]+|(?R))*\)",
           "some text (a(b(c)d)e) more text")[ : ], ("(a(b(c)d)e)",  "e"))
@@ -3028,6 +3028,11 @@ xyzabc
           regex.finditer(r"(fe)?male: h(?(1)(er)|(is)) (\w+)",
           "female: her dog; male: his cat. asdsasda")], ['female: her dog',
           'male: his cat'])
+
+        # Hg issue 78
+        self.assertEquals(regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))',
+          'aaa(((1+0)+1)+1)bbb').captures('rec'), ['(1+0)', '((1+0)+1)',
+          '(((1+0)+1)+1)'])
 
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.

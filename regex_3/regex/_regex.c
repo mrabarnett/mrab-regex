@@ -264,6 +264,7 @@ typedef struct RE_BacktrackData {
         } fuzzy_zero;
         struct {
             Py_ssize_t text_pos;
+            Py_ssize_t current_capture;
             RE_UINT32 index;
             BOOL capture;
         } group;
@@ -375,6 +376,7 @@ typedef struct RE_GroupData {
     RE_GroupSpan span;
     size_t capture_count;
     size_t capture_capacity;
+    Py_ssize_t current_capture;
     RE_GroupSpan* captures;
 } RE_GroupData;
 
@@ -2422,6 +2424,7 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
         group->span.start = -1;
         group->span.end = -1;
         group->capture_count = 0;
+        group->current_capture = -1;
     }
 
     /* Reset the guards for the group calls. */
@@ -2631,14 +2634,13 @@ Py_LOCAL_INLINE(BOOL) push_group_return(RE_SafeState* safe_state, RE_Node*
         Py_ssize_t r;
 
         for (g = 0; g < pattern->group_count; g++) {
-            if (!copy_group_data(safe_state, &frame->groups[g],
-              &state->groups[g]))
-                return FALSE;
+            frame->groups[g].span = state->groups[g].span;
+            frame->groups[g].current_capture = state->groups[g].current_capture;
         }
 
         for (r = 0; r < pattern->repeat_count; r++) {
             if (!copy_repeat_data(safe_state, &frame->repeats[r],
-                &state->repeats[r]))
+              &state->repeats[r]))
                 return FALSE;
         }
     }
@@ -2662,8 +2664,10 @@ Py_LOCAL_INLINE(RE_Node*) pop_group_return(RE_State* state) {
 
         pattern = state->pattern;
 
-        for (g = 0; g < pattern->group_count; g++)
-            copy_group_data(NULL, &state->groups[g], &frame->groups[g]);
+        for (g = 0; g < pattern->group_count; g++) {
+            state->groups[g].span = frame->groups[g].span;
+            state->groups[g].current_capture = frame->groups[g].current_capture;
+        }
 
         for (r = 0; r < pattern->repeat_count; r++)
             copy_repeat_data(NULL, &state->repeats[r], &frame->repeats[r]);
@@ -9356,15 +9360,19 @@ advance:
             bt_data->group.index = index;
             bt_data->group.text_pos = group->span.end;
             bt_data->group.capture = (BOOL)node->values[1];
+            bt_data->group.current_capture = group->current_capture;
 
-            if (pattern->group_info[index - 1].referenced && group->span.end
-              != text_pos)
+            if (pattern->group_info[index - 1].referenced && group->span.end !=
+              text_pos)
                 ++state->capture_change;
             group->span.end = text_pos;
 
             /* Save the capture? */
-            if (node->values[1] && !save_capture(safe_state, index))
-                return RE_ERROR_MEMORY;
+            if (node->values[1]) {
+                group->current_capture = group->capture_count;
+                if (!save_capture(safe_state, index))
+                    return RE_ERROR_MEMORY;
+            }
 
             node = node->next_1.node;
             break;
@@ -9742,7 +9750,7 @@ advance:
                 group = &state->groups[g];
                 group->span.start = -1;
                 group->span.end = -1;
-                group->capture_count = 0;
+                group->current_capture = -1;
             }
 
             /* Clear the repeat guards for the group call. They'll be restored
@@ -9777,7 +9785,7 @@ advance:
              * in the string.
              */
             group = &state->groups[node->values[0] - 1];
-            if (group->capture_count > 0)
+            if (group->current_capture >= 0)
                 node = node->next_1.node;
             else
                 node = node->nonstring.next_2.node;
@@ -9808,14 +9816,11 @@ advance:
                 /* Save the repeats. */
                 if (!push_repeats(safe_state))
                     return RE_ERROR_MEMORY;
-
-                pop_group_return(state);
-            } else {
+            } else
                 /* The group was not called. */
                 node = node->next_1.node;
 
-                pop_group_return(state);
-            }
+            pop_group_return(state);
             break;
         }
         case RE_OP_LAZY_REPEAT: /* Lazy repeat. */
@@ -10179,10 +10184,10 @@ advance:
 
             /* Did the group capture anything? */
             group = &state->groups[node->values[0] - 1];
-            if (group->capture_count == 0)
+            if (group->current_capture < 0)
                 goto backtrack;
 
-            span = &group->captures[group->capture_count - 1];
+            span = &group->captures[group->current_capture];
 
             /* Are there enough characters? */
             available = state->slice_end - text_pos;
@@ -10241,10 +10246,10 @@ advance:
 
             /* Did the group capture anything? */
             group = &state->groups[node->values[0] - 1];
-            if (group->capture_count == 0)
+            if (group->current_capture < 0)
                 goto backtrack;
 
-            span = &group->captures[group->capture_count - 1];
+            span = &group->captures[group->current_capture];
 
             full_case_fold = encoding->full_case_fold;
 
@@ -10335,10 +10340,10 @@ advance:
 
             /* Did the group capture anything? */
             group = &state->groups[node->values[0] - 1];
-            if (group->capture_count == 0)
+            if (group->current_capture < 0)
                 goto backtrack;
 
-            span = &group->captures[group->capture_count - 1];
+            span = &group->captures[group->current_capture];
 
             full_case_fold = encoding->full_case_fold;
 
@@ -10426,10 +10431,10 @@ advance:
 
             /* Did the group capture anything? */
             group = &state->groups[node->values[0] - 1];
-            if (group->capture_count == 0)
+            if (group->current_capture < 0)
                 goto backtrack;
 
-            span = &group->captures[group->capture_count - 1];
+            span = &group->captures[group->current_capture];
 
             /* Are there enough characters? */
             available = state->slice_end - text_pos;
@@ -10484,10 +10489,10 @@ advance:
 
             /* Did the group capture anything? */
             group = &state->groups[node->values[0] - 1];
-            if (group->capture_count == 0)
+            if (group->current_capture < 0)
                 goto backtrack;
 
-            span = &group->captures[group->capture_count - 1];
+            span = &group->captures[group->current_capture];
 
             /* Are there enough characters? */
             available = text_pos - state->slice_start;
@@ -10543,10 +10548,10 @@ advance:
 
             /* Did the group capture anything? */
             group = &state->groups[node->values[0] - 1];
-            if (group->capture_count == 0)
+            if (group->current_capture < 0)
                 goto backtrack;
 
-            span = &group->captures[group->capture_count - 1];
+            span = &group->captures[group->current_capture];
 
             /* Are there enough characters? */
             available = text_pos - state->slice_start;
@@ -10689,15 +10694,19 @@ advance:
             bt_data->group.index = node->values[0];
             bt_data->group.text_pos = group->span.start;
             bt_data->group.capture = (BOOL)node->values[1];
+            bt_data->group.current_capture = group->current_capture;
 
-            if (pattern->group_info[index - 1].referenced &&
-              group->span.start != text_pos)
+            if (pattern->group_info[index - 1].referenced && group->span.start
+              != text_pos)
                 ++state->capture_change;
             group->span.start = text_pos;
 
             /* Save the capture? */
-            if (node->values[1] && !save_capture(safe_state, index))
-                return RE_ERROR_MEMORY;
+            if (node->values[1]) {
+                group->current_capture = group->capture_count;
+                if (!save_capture(safe_state, index))
+                    return RE_ERROR_MEMORY;
+            }
 
             node = node->next_1.node;
             break;
@@ -11418,18 +11427,21 @@ backtrack:
         case RE_OP_END_GROUP: /* End of capture group. */
         {
             size_t index;
+            RE_GroupData* group;
             TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.index))
 
             index = bt_data->group.index;
+            group = &state->groups[index - 1];
 
             /* Unsave the capture? */
             if (bt_data->group.capture)
                 unsave_capture(state, bt_data->group.index);
 
-            if (pattern->group_info[index - 1].referenced && state->groups[index
-              - 1].span.end != bt_data->group.text_pos)
+            if (pattern->group_info[index - 1].referenced && group->span.end !=
+              bt_data->group.text_pos)
                 --state->capture_change;
-            state->groups[index - 1].span.end = bt_data->group.text_pos;
+            group->span.end = bt_data->group.text_pos;
+            group->current_capture = bt_data->group.current_capture;
 
             discard_backtrack(state);
             break;
@@ -12304,18 +12316,21 @@ backtrack:
         case RE_OP_START_GROUP: /* Start of capture group. */
         {
             size_t index;
+            RE_GroupData* group;
             TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.index))
 
             index = bt_data->group.index;
+            group = &state->groups[index - 1];
 
             /* Unsave the capture? */
             if (bt_data->group.capture)
                 unsave_capture(state, index);
 
-            if (pattern->group_info[index - 1].referenced && state->groups[index
-              - 1].span.start != bt_data->group.text_pos)
+            if (pattern->group_info[index - 1].referenced && group->span.start
+              != bt_data->group.text_pos)
                 --state->capture_change;
-            state->groups[index - 1].span.start = bt_data->group.text_pos;
+            group->span.start = bt_data->group.text_pos;
+            group->current_capture = bt_data->group.current_capture;
 
             discard_backtrack(state);
             break;
