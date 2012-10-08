@@ -1218,6 +1218,13 @@ class RegexTests(unittest.TestCase):
             except Exception, e:
                 self.fail("Failed: %s raised %s" % (pattern, repr(e)))
 
+        self.assertEquals(bool(regex.match(ur"(?u)\p{NumericValue=0}", u"0")),
+          True)
+        self.assertEquals(bool(regex.match(ur"(?u)\p{NumericValue=1/2}",
+          u"\N{VULGAR FRACTION ONE HALF}")), True)
+        self.assertEquals(bool(regex.match(ur"(?u)\p{NumericValue=0.5}",
+          u"\N{VULGAR FRACTION ONE HALF}")), True)
+
     def test_word_class(self):
         self.assertEquals(regex.findall(ur"(?u)\w+",
           u" \u0939\u093f\u0928\u094d\u0926\u0940,"),
@@ -2880,6 +2887,20 @@ xyzabc
         self.assertEquals(it.next(), "a")
         self.assertEquals(it2.next(), "b")
 
+    def test_format(self):
+        self.assertEquals(regex.subf(r"(\w+) (\w+)", "{0} => {2} {1}",
+          "foo bar"), "foo bar => bar foo")
+        self.assertEquals(regex.subf(r"(?<word1>\w+) (?<word2>\w+)",
+          "{word2} {word1}", "foo bar"), "bar foo")
+
+        self.assertEquals(regex.subfn(r"(\w+) (\w+)", "{0} => {2} {1}",
+          "foo bar"), ("foo bar => bar foo", 1))
+        self.assertEquals(regex.subfn(r"(?<word1>\w+) (?<word2>\w+)",
+          "{word2} {word1}", "foo bar"), ("bar foo", 1))
+
+        self.assertEquals(regex.match(r"(\w+) (\w+)",
+          "foo bar").expandf("{0} => {2} {1}"), "foo bar => bar foo")
+
     def test_hg_bugs(self):
         # Hg issue 28
         self.assertEquals(bool(regex.compile("(?>b)", flags=regex.V1)), True)
@@ -3056,6 +3077,10 @@ xyzabc
         self.assertEquals(regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))',
           'aaa(((1+0)+1)+1)bbb').captures('rec'), ['(1+0)', '((1+0)+1)',
           '(((1+0)+1)+1)'])
+
+if not hasattr(str, "format"):
+    # Strings don't have the .format method (below Python 2.6).
+    del RegexTests.test_format
 
 def test_main():
     run_unittest(RegexTests)

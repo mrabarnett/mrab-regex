@@ -2,9 +2,6 @@
 PKG-INFO
 README
 setup.py
-Python2\Features.html
-Python2\Features.rst
-Python2\UnicodeProperties.txt
 Python2\_regex.c
 Python2\_regex.h
 Python2\_regex_core.py
@@ -15,9 +12,6 @@ Python2\test_regex.py
 Python2\Python25\_regex.pyd
 Python2\Python26\_regex.pyd
 Python2\Python27\_regex.pyd
-Python3\Features.html
-Python3\Features.rst
-Python3\UnicodeProperties.txt
 Python3\_regex.c
 Python3\_regex.h
 Python3\_regex_core.py
@@ -28,4 +22,7 @@ Python3\test_regex.py
 Python3\Python31\_regex.pyd
 Python3\Python32\_regex.pyd
 Python3\Python33\_regex.pyd
+docs\Features.html
+docs\Features.rst
+docs\UnicodeProperties.txt
 tools\build_regex_unicode.py

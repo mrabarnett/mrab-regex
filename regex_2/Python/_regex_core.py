@@ -412,9 +412,6 @@ def parse_quantifier(source, info):
             # A comment.
             parse_comment(source)
             continue
-        if ch == "#" and (info.flags & VERBOSE):
-            parse_hash_comment(source)
-            continue
 
         # Neither a quantifier nor a comment.
         break
@@ -422,17 +419,6 @@ def parse_quantifier(source, info):
     # Parse it later, perhaps as a literal.
     source.pos = here
     return None
-
-def parse_hash_comment(source):
-    "Parses a single-line 'hash' comment."
-    source.ignore_space = False
-    try:
-        # Ignore characters until a newline or the end of the
-        # pattern.
-        while source.get() not in "\n":
-            pass
-    finally:
-        source.ignore_space = True
 
 def parse_limited_quantifier(source):
     "Parses a limited quantifier."
@@ -475,9 +461,6 @@ def parse_fuzzy(source):
         source.pos = here
         return None
 
-    saved_ignore = source.ignore_space
-    source.ignore_space = True
-
     constraints = {}
     try:
         parse_fuzzy_item(source, constraints)
@@ -487,8 +470,6 @@ def parse_fuzzy(source):
         source.pos = here
 
         return None
-    finally:
-        source.ignore_space = saved_ignore
 
     if not source.match("}"):
         raise error("expected }")
@@ -625,16 +606,7 @@ def parse_cost_term(source, cost):
 
 def parse_count(source):
     "Parses a quantifier's count, which can be empty."
-    count = []
-    here = source.pos
-    ch = source.get()
-    while ch in DIGITS:
-        count.append(ch)
-        here = source.pos
-        ch = source.get()
-
-    source.pos = here
-    return "".join(count)
+    return source.get_while(DIGITS)
 
 def parse_element(source, info):
     """Parses an element. An element might actually be a flag, eg. '(?i)', in
@@ -703,9 +675,6 @@ def parse_element(source, info):
             elif ch in "?*+":
                 # A quantifier where we expected an element.
                 raise error("nothing to repeat")
-            elif ch == "#" and (info.flags & VERBOSE):
-                # A comment.
-                parse_hash_comment(source)
             else:
                 # A literal.
                 return make_character(info, ord(ch))
@@ -834,12 +803,8 @@ def parse_extension(source, info):
 
 def parse_comment(source):
     "Parses a comment."
-    ch = source.get()
-    while ch not in ")":
-        ch = source.get()
-
-    if not ch:
-        raise error("missing )")
+    source.skip_while(set(")"), include=False)
+    source.expect(")")
 
     return COMMENT
 
@@ -921,20 +886,11 @@ def parse_common(source, info):
 def parse_call_group(source, info, ch):
     "Parses a call to a group."
     if ch == "R":
-        source.expect(")")
         group = "0"
     else:
-        group = [ch]
+        group = ch + source.get_while(DIGITS)
 
-        ch = source.get()
-        while "0" <= ch <= "9":
-            group.append(ch)
-            ch = source.get()
-
-        if ch != ")":
-            raise error("expected )")
-
-        group = "".join(group)
+    source.expect(")")
 
     return CallGroup(info, group)
 
@@ -1026,26 +982,11 @@ def parse_flags_subpattern(source, info):
 
 def parse_name(source, allow_numeric=False):
     "Parses a name."
-    name = []
-    here = source.pos
-    saved_ignore = source.ignore_space
-    source.ignore_space = False
-    try:
-        here = source.pos
-        ch = source.get()
-        while ch and ch not in ")>":
-            name.append(ch)
-            here = source.pos
-            ch = source.get()
-    finally:
-        source.ignore_space = saved_ignore
-
-    source.pos = here
+    name = source.get_while(set(")>"), include=False)
 
     if not name:
         raise error("bad group name")
 
-    name = "".join(name)
     if name.isdigit():
         if not allow_numeric:
             raise error("bad group name")
@@ -1227,17 +1168,11 @@ def parse_string_set(source, info):
 def parse_named_char(source, info, in_set):
     "Parses a named character."
     here = source.pos
-    ch = source.get()
-    if ch == "{":
-        name = []
-        ch = source.get()
-        while ch in NAMED_CHAR_PART:
-            name.append(ch)
-            ch = source.get()
-
-        if ch == "}":
+    if source.match("{"):
+        name = source.get_while(NAMED_CHAR_PART)
+        if source.match("}"):
             try:
-                value = unicodedata.lookup("".join(name))
+                value = unicodedata.lookup(name)
                 return make_character(info, ord(value), in_set)
             except KeyError:
                 raise error("undefined character name")
@@ -1268,29 +1203,20 @@ def parse_property(source, info, positive, in_set):
 
 def parse_property_name(source):
     "Parses a property name, which may be qualified."
-    name = []
+    name = source.get_while(PROPERTY_NAME_PART)
     here = source.pos
-    ch = source.get()
-    while ch in PROPERTY_NAME_PART:
-        name.append(ch)
-        here = source.pos
-        ch = source.get()
 
-    here2 = here
+    ch = source.get()
     if ch and ch in ":=":
         prop_name = name
-        name = []
-        here = source.pos
-        ch = source.get()
-        while ch and (ch in ALNUM or ch in " &_-./"):
-            name.append(ch)
-            here = source.pos
-            ch = source.get()
+        name = source.get_while(ALNUM | set(" &_-./")).strip()
 
-        if all(ch == " " for ch in name):
+        if name:
+            # Name after the ":" or "=", so it's a qualified name.
+            here = source.pos
+        else:
             # No name after the ":" or "=", so assume it's an unqualified name.
             prop_name, name = None, prop_name
-            here = here2
     else:
         prop_name = None
 
@@ -1491,9 +1417,11 @@ def numeric_to_rational(numeric):
     else:
         raise ValueError()
 
-    format = "{}{}" if den == 1 else "{}{}/{}"
+    result = "%s%s/%s" % (sign, num, den)
+    if result.endswith("/1"):
+        return result[ : -2]
 
-    return format.format(sign, num, den)
+    return result
 
 def standardise_name(name):
     "Standardises a property or value name."
@@ -1641,17 +1569,12 @@ def parse_repl_hex_escape(source, expected_len):
 def parse_repl_named_char(source):
     "Parses a named character in a replacement string."
     here = source.pos
-    ch = source.get()
-    if ch == "{":
-        name = []
-        ch = source.get()
-        while ch in ALPHA or ch == " ":
-            name.append(ch)
-            ch = source.get()
+    if source.match("{"):
+        name = source.get_while(ALPHA | set(" "))
 
-        if ch == "}":
+        if source.match("}"):
             try:
-                value = unicodedata.lookup("".join(name))
+                value = unicodedata.lookup(name)
                 return ord(value)
             except KeyError:
                 raise error("undefined character name")
@@ -1663,6 +1586,7 @@ def compile_repl_group(source, pattern):
     "Compiles a replacement template group reference."
     source.expect("<")
     name = parse_name(source, True)
+
     source.expect(">")
     if name.isdigit():
         index = int(name)
@@ -3601,57 +3525,211 @@ class Source(object):
         self.sep = string[ : 0]
 
     def get(self):
+        string = self.string
+        pos = self.pos
+
         try:
             if self.ignore_space:
-                while self.string[self.pos].isspace():
-                    self.pos += 1
+                while True:
+                    if string[pos].isspace():
+                        # Skip over the whitespace.
+                        pos += 1
+                    elif string[pos] == "#":
+                        # Skip over the comment to the end of the line.
+                        pos = string.index("\n", pos)
+                    else:
+                        break
 
-            ch = self.string[self.pos]
-            self.pos += 1
+            ch = string[pos]
+            self.pos = pos + 1
             return ch
         except IndexError:
-            return self.string[ : 0]
+            # We've reached the end of the string.
+            self.pos = pos
+            return string[ : 0]
+        except ValueError:
+            # The comment extended to the end of the string.
+            self.pos = len(string)
+            return string[ : 0]
 
-    def match(self, substring):
+    def get_many(self, count=1):
+        string = self.string
+        pos = self.pos
+
         try:
             if self.ignore_space:
-                pos = self.pos
+                substring = []
 
-                for c in substring:
-                    # Ignore any whitespace before the character.
-                    while self.string[pos].isspace():
+                while len(substring) < count:
+                    while True:
+                        if string[pos].isspace():
+                            # Skip over the whitespace.
+                            pos += 1
+                        elif string[pos] == "#":
+                            # Skip over the comment to the end of the line.
+                            pos = string.index("\n", pos)
+                        else:
+                            break
+
+                    substring.append(string[pos])
+                    pos += 1
+
+                substring = "".join(substring)
+            else:
+                substring = string[pos : pos + count]
+                pos += len(substring)
+
+            self.pos = pos
+            return substring
+        except IndexError:
+            # We've reached the end of the string.
+            self.pos = len(string)
+            return "".join(substring)
+        except ValueError:
+            # The comment extended to the end of the string.
+            self.pos = len(string)
+            return "".join(substring)
+
+    def get_while(self, test_set, include=True):
+        string = self.string
+        pos = self.pos
+
+        if self.ignore_space:
+            try:
+                substring = []
+
+                while True:
+                    if string[pos].isspace():
+                        # Skip over the whitespace.
                         pos += 1
+                    elif string[pos] == "#":
+                        # Skip over the comment to the end of the line.
+                        pos = string.index("\n", pos)
+                    elif (string[pos] in test_set) == include:
+                        substring.append(string[pos])
+                        pos += 1
+                    else:
+                        break
 
-                    # Does the character match?
-                    if c != self.string[pos]:
+                self.pos = pos
+            except IndexError:
+                # We've reached the end of the string.
+                self.pos = len(string)
+            except ValueError:
+                # The comment extended to the end of the string.
+                self.pos = len(string)
+
+            return "".join(substring)
+        else:
+            try:
+                while (string[pos] in test_set) == include:
+                    pos += 1
+
+                substring = string[self.pos : pos]
+
+                self.pos = pos
+
+                return substring
+            except IndexError:
+                # We've reached the end of the string.
+                substring = string[self.pos : pos]
+
+                self.pos = pos
+
+                return substring
+
+    def skip_while(self, test_set, include=True):
+        string = self.string
+        pos = self.pos
+
+        try:
+            if self.ignore_space:
+                while True:
+                    if string[pos].isspace():
+                        # Skip over the whitespace.
+                        pos += 1
+                    elif string[pos] == "#":
+                        # Skip over the comment to the end of the line.
+                        pos = string.index("\n", pos)
+                    elif (string[pos] in test_set) == include:
+                        pos += 1
+                    else:
+                        break
+            else:
+                while (string[pos] in test_set) == include:
+                    pos += 1
+
+            self.pos = pos
+        except IndexError:
+            # We've reached the end of the string.
+            self.pos = len(string)
+        except ValueError:
+            # The comment extended to the end of the string.
+            self.pos = len(string)
+
+    def match(self, substring):
+        string = self.string
+        pos = self.pos
+
+        if self.ignore_space:
+            try:
+                for c in substring:
+                    while True:
+                        if string[pos].isspace():
+                            # Skip over the whitespace.
+                            pos += 1
+                        elif string[pos] == "#":
+                            # Skip over the comment to the end of the line.
+                            pos = string.index("\n", pos)
+                        else:
+                            break
+
+                    if string[pos] != c:
                         return False
 
                     pos += 1
 
                 self.pos = pos
-                return True
-            else:
-                if not self.string.startswith(substring, self.pos):
-                    return False
 
-                self.pos += len(substring)
                 return True
-        except IndexError:
-            return False
+            except IndexError:
+                # We've reached the end of the string.
+                return False
+            except ValueError:
+                # The comment extended to the end of the string.
+                return False
+        else:
+            if not string.startswith(substring, pos):
+                return False
+
+            self.pos = pos + len(substring)
+
+            return True
 
     def expect(self, substring):
         if not self.match(substring):
             raise error("missing %s" % substring)
 
     def at_end(self):
+        string = self.string
         pos = self.pos
+
         try:
             if self.ignore_space:
-                while self.string[pos].isspace():
-                    pos += 1
+                while True:
+                    if string[pos].isspace():
+                        pos += 1
+                    elif string[pos] == "#":
+                        pos = string.index("\n", pos)
+                    else:
+                        break
 
-            return pos >= len(self.string)
+            return pos >= len(string)
         except IndexError:
+            # We've reached the end of the string.
+            return True
+        except ValueError:
+            # The comment extended to the end of the string.
             return True
 
 class Info(object):

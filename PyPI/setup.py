@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import shutil
 import sys
 
 from distutils.core import setup, Extension
@@ -10,13 +9,13 @@ MAJOR, MINOR = sys.version_info[:2]
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 PKG_BASE = 'Python%i' % MAJOR
-SRC_DIR = os.path.join(BASE_DIR, PKG_BASE)
+DOCS_DIR = os.path.join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='0.1.20120904',
+    version='0.1.20121008',
     description='Alternative regular expression module, to replace re.',
-    long_description=open(os.path.join(SRC_DIR, 'Features.rst')).read(),
+    long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
 
     # PyPI does spam protection on email addresses, no need to do it here
     author='Matthew Barnett',

@@ -158,8 +158,12 @@ second character.
 This module exports the following functions:
     match      Match a regular expression pattern at the beginning of a string.
     search     Search a string for the presence of a pattern.
-    sub        Substitute occurrences of a pattern found in a string.
+    sub        Substitute occurrences of a pattern found in a string using a
+               template string.
+    subf       Substitute occurrences of a pattern found in a string using a
+               format string.
     subn       Same as sub, but also return the number of substitutions made.
+    subfn      Same as subf, but also return the number of substitutions made.
     split      Split a string by the occurrences of a pattern. VERSION1: will
                split at zero-width match; VERSION0: won't split at zero-width
                match.
@@ -213,13 +217,13 @@ This module also defines an exception 'error'.
 
 # Public symbols.
 __all__ = ["compile", "escape", "findall", "finditer", "match", "purge",
-  "search", "split", "splititer", "sub", "subn", "template", "Scanner", "A",
-  "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH", "S", "DOTALL",
-  "F", "FULLCASE", "I", "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "R",
-  "REVERSE", "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1",
-  "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex"]
+  "search", "split", "splititer", "sub", "subf", "subfn", "subn", "template",
+  "Scanner", "A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH",
+  "S", "DOTALL", "F", "FULLCASE", "I", "IGNORECASE", "L", "LOCALE", "M",
+  "MULTILINE", "R", "REVERSE", "T", "TEMPLATE", "U", "UNICODE", "V0",
+  "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex"]
 
-__version__ = "2.4.8"
+__version__ = "2.4.9"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -248,6 +252,16 @@ def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
     return _compile(pattern, flags, kwargs).sub(repl, string, count, pos,
       endpos, concurrent)
 
+def subf(pattern, format, string, count=0, flags=0, pos=None, endpos=None,
+  concurrent=None, **kwargs):
+    """Return the string obtained by replacing the leftmost (or rightmost with a
+    reverse pattern) non-overlapping occurrences of the pattern in string by the
+    replacement format. format can be either a string or a callable; if a string,
+    it's treated as a format string; if a callable, it's passed the match object
+    and must return a replacement string to be used."""
+    return _compile(pattern, flags, kwargs).subf(format, string, count, pos,
+      endpos, concurrent)
+
 def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
   concurrent=None, **kwargs):
     """Return a 2-tuple containing (new_string, number). new_string is the string
@@ -258,6 +272,18 @@ def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
     are processed; if a callable, it's passed the match object and must return a
     replacement string to be used."""
     return _compile(pattern, flags, kwargs).subn(repl, string, count, pos,
+      endpos, concurrent)
+
+def subfn(pattern, format, string, count=0, flags=0, pos=None, endpos=None,
+  concurrent=None, **kwargs):
+    """Return a 2-tuple containing (new_string, number). new_string is the string
+    obtained by replacing the leftmost (or rightmost with a reverse pattern)
+    non-overlapping occurrences of the pattern in the source string by the
+    replacement format. number is the number of substitutions that were made. format
+    can be either a string or a callable; if a string, it's treated as a format
+    string; if a callable, it's passed the match object and must return a
+    replacement string to be used."""
+    return _compile(pattern, flags, kwargs).subfn(format, string, count, pos,
       endpos, concurrent)
 
 def split(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
@@ -356,14 +382,12 @@ def escape(pattern, special_only=False):
 import _regex_core
 import _regex
 from _regex_core import *
-from _regex_core import _ALL_VERSIONS, _ALL_ENCODINGS
-from _regex_core import _FirstSetError, _UnscopedFlagSet
-from _regex_core import _check_group_features, _compile_firstset, \
-  _compile_replacement, _flatten_code, _fold_case, _get_required_string, \
-  _parse_pattern, _shrink_cache
-
-from _regex_core import ALNUM as _ALNUM, Info as _Info, OP as _OP, Source as \
-  _Source, Fuzzy as _Fuzzy
+from _regex_core import (_ALL_VERSIONS, _ALL_ENCODINGS, _FirstSetError,
+  _UnscopedFlagSet, _check_group_features, _compile_firstset,
+  _compile_replacement, _flatten_code, _fold_case, _get_required_string,
+  _parse_pattern, _shrink_cache)
+from _regex_core import (ALNUM as _ALNUM, Info as _Info, OP as _OP, Source as
+  _Source, Fuzzy as _Fuzzy)
 
 # Version 0 is the old behaviour, compatible with the original 're' module.
 # Version 1 is the new behaviour, which differs slightly.
@@ -604,3 +628,22 @@ def _pickle(p):
     return _compile, (p.pattern, p.flags)
 
 _copy_reg.pickle(_pattern_type, _pickle, _compile)
+
+if not hasattr(str, "format"):
+    # Strings don't have the .format method (below Python 2.6).
+    while True:
+        _start = __doc__.find("    subf")
+        if _start < 0:
+            break
+
+        _end = __doc__.find("\n", _start) + 1
+        while __doc__.startswith("     ", _end):
+            _end = __doc__.find("\n", _end) + 1
+
+        __doc__ = __doc__[ : _start] + __doc__[_end : ]
+
+    __all__ = [_name for _name in __all__ if not _name.startswith("subf")]
+
+    del _start, _end
+
+    del subf, subfn

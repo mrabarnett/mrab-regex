@@ -1191,6 +1191,12 @@ class RegexTests(unittest.TestCase):
             except Exception as e:
                 self.fail("Failed: {} raised {}".format(pattern, ascii(e)))
 
+        self.assertEquals(bool(regex.match(r"\p{NumericValue=0}", "0")), True)
+        self.assertEquals(bool(regex.match(r"\p{NumericValue=1/2}",
+          "\N{VULGAR FRACTION ONE HALF}")), True)
+        self.assertEquals(bool(regex.match(r"\p{NumericValue=0.5}",
+          "\N{VULGAR FRACTION ONE HALF}")), True)
+
     def test_word_class(self):
         self.assertEquals(regex.findall(r"\w+",
           " \u0939\u093f\u0928\u094d\u0926\u0940,"),
@@ -2856,6 +2862,20 @@ xyzabc
         it2 = copy.deepcopy(it)
         self.assertEquals(next(it), "a")
         self.assertEquals(next(it2), "b")
+
+    def test_format(self):
+        self.assertEquals(regex.subf(r"(\w+) (\w+)", "{0} => {2} {1}",
+          "foo bar"), "foo bar => bar foo")
+        self.assertEquals(regex.subf(r"(?<word1>\w+) (?<word2>\w+)",
+          "{word2} {word1}", "foo bar"), "bar foo")
+
+        self.assertEquals(regex.subfn(r"(\w+) (\w+)", "{0} => {2} {1}",
+          "foo bar"), ("foo bar => bar foo", 1))
+        self.assertEquals(regex.subfn(r"(?<word1>\w+) (?<word2>\w+)",
+          "{word2} {word1}", "foo bar"), ("bar foo", 1))
+
+        self.assertEquals(regex.match(r"(\w+) (\w+)",
+          "foo bar").expandf("{0} => {2} {1}"), "foo bar => bar foo")
 
     def test_hg_bugs(self):
         # Hg issue 28

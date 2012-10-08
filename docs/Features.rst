@@ -136,6 +136,33 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
+* Added ``subf`` and ``subfn`` **(Python 2.6 and above)**
+
+    ``subf`` and ``subfn`` are alternatives to ``sub`` and ``subn`` respectively. When passed a replacement string, they treat it as a format string.
+
+    Examples::
+
+        >>> import regex
+        >>> regex.subf(r"(\w+) (\w+)", "{0} => {2} {1}", "foo bar")
+        'foo bar => bar foo'
+        >>> regex.subf(r"(?P<word1>\w+) (?P<word2>\w+)", "{word2} {word1}", "foo bar")
+        'bar foo'
+
+* Added ``expandf`` to match object **(Python 2.6 and above)**
+
+    ``expandf`` is an alternative to ``expand``. When passed a replacement string, it treats it as a format string.
+
+    Examples::
+
+        >>> import regex
+        >>> m = regex.match(r"(\w+) (\w+)", "foo bar")
+        >>> m.expandf("{0} => {2} {1}")
+        'foo bar => bar foo'
+        >>>
+        >>> m = regex.match(r"(?P<word1>\w+) (?P<word2>\w+)", "foo bar")
+        >>> m.expandf("{word2} {word1}")
+        'bar foo'
+
 * Detach searched string
 
     A match object contains a reference to the string that was searched, via its ``string`` attribute. The match object now has a ``detach_string`` method that will 'detach' that string, making it available for garbage collection (this might save valuable memory if that string is very large).
