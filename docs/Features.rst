@@ -136,6 +136,27 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
+* Added ``fullmatch`` (issue #16203)
+
+    ``fullmatch`` behaves like ``match``, except that it must match all of the string.
+
+    Examples::
+
+        >>> import regex
+        >>> print(regex.fullmatch(r"abc", "abc").span())
+        (0, 3)
+        >>> print(regex.fullmatch(r"abc", "abcx"))
+        None
+        >>> print(regex.fullmatch(r"abc", "abcx", endpos=3).span())
+        (0, 3)
+        >>> print(regex.fullmatch(r"abc", "xabcy", pos=1, endpos=4).span())
+        (1, 4)
+        >>>
+        >>> regex.match(r"a.*?", "abcd").group(0)
+        'a'
+        >>> regex.fullmatch(r"a.*?", "abcd").group(0)
+        'abcd'
+
 * Added ``subf`` and ``subfn`` **(Python 2.6 and above)**
 
     ``subf`` and ``subfn`` are alternatives to ``sub`` and ``subn`` respectively. When passed a replacement string, they treat it as a format string.

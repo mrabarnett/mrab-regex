@@ -157,6 +157,7 @@ second character.
 
 This module exports the following functions:
     match      Match a regular expression pattern at the beginning of a string.
+    fullmatch  Match a regular expression pattern against all of a string.
     search     Search a string for the presence of a pattern.
     sub        Substitute occurrences of a pattern found in a string using a
                template string.
@@ -216,14 +217,15 @@ This module also defines an exception 'error'.
 """
 
 # Public symbols.
-__all__ = ["compile", "escape", "findall", "finditer", "match", "purge",
-  "search", "split", "splititer", "sub", "subf", "subfn", "subn", "template",
-  "Scanner", "A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH",
-  "S", "DOTALL", "F", "FULLCASE", "I", "IGNORECASE", "L", "LOCALE", "M",
-  "MULTILINE", "R", "REVERSE", "T", "TEMPLATE", "U", "UNICODE", "V0",
-  "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex"]
+__all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
+  "purge", "search", "split", "splititer", "sub", "subf", "subfn", "subn",
+  "template", "Scanner", "A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E",
+  "ENHANCEMATCH", "S", "DOTALL", "F", "FULLCASE", "I", "IGNORECASE", "L",
+  "LOCALE", "M", "MULTILINE", "R", "REVERSE", "T", "TEMPLATE", "U", "UNICODE",
+  "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
+  "Regex"]
 
-__version__ = "2.4.9"
+__version__ = "2.4.10"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -233,6 +235,13 @@ def match(pattern, string, flags=0, pos=None, endpos=None, concurrent=None,
     """Try to apply the pattern at the start of the string, returning a match
     object, or None if no match was found."""
     return _compile(pattern, flags, kwargs).match(string, pos, endpos,
+      concurrent)
+
+def fullmatch(pattern, string, flags=0, pos=None, endpos=None, concurrent=None,
+  **kwargs):
+    """Try to apply the pattern against all of the string, returning a match
+    object, or None if no match was found."""
+    return _compile(pattern, flags, kwargs).fullmatch(string, pos, endpos,
       concurrent)
 
 def search(pattern, string, flags=0, pos=None, endpos=None, concurrent=None,

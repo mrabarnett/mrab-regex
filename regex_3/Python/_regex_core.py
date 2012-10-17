@@ -1540,6 +1540,10 @@ def _compile_replacement(source, pattern, is_unicode):
         # An escaped backslash is a backslash.
         return False, [ord("\\")]
 
+    if not ch:
+        # A trailing backslash.
+        raise error("bad escape")
+
     # An escaped non-backslash is a backslash followed by the literal.
     return False, [ord("\\"), ord(ch)]
 

@@ -2901,6 +2901,29 @@ xyzabc
         self.assertEquals(regex.match(r"(\w+) (\w+)",
           "foo bar").expandf("{0} => {2} {1}"), "foo bar => bar foo")
 
+    def test_fullmatch(self):
+        self.assertEquals(bool(regex.fullmatch(r"abc", "abc")), True)
+        self.assertEquals(bool(regex.fullmatch(r"abc", "abcx")), False)
+        self.assertEquals(bool(regex.fullmatch(r"abc", "abcx", endpos=3)),
+          True)
+
+        self.assertEquals(bool(regex.fullmatch(r"abc", "xabc", pos=1)), True)
+        self.assertEquals(bool(regex.fullmatch(r"abc", "xabcy", pos=1)), False)
+        self.assertEquals(bool(regex.fullmatch(r"abc", "xabcy", pos=1,
+          endpos=4)), True)
+
+        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "abc")), True)
+        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "abcx")), False)
+        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "abcx", endpos=3)),
+          True)
+
+        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "xabc", pos=1)),
+          True)
+        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "xabcy", pos=1)),
+          False)
+        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "xabcy", pos=1,
+          endpos=4)), True)
+
     def test_hg_bugs(self):
         # Hg issue 28
         self.assertEquals(bool(regex.compile("(?>b)", flags=regex.V1)), True)
@@ -3077,6 +3100,10 @@ xyzabc
         self.assertEquals(regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))',
           'aaa(((1+0)+1)+1)bbb').captures('rec'), ['(1+0)', '((1+0)+1)',
           '(((1+0)+1)+1)'])
+
+        # Hg issue 80
+        self.assertRaisesRegex(regex.error, self.BAD_ESCAPE, lambda:
+          regex.sub('x', '\\', 'x'), )
 
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).

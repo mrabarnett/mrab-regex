@@ -406,6 +406,28 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Added <tt class="docutils literal">fullmatch</tt> (issue #16203)</p>
+<blockquote>
+<p><tt class="docutils literal">fullmatch</tt> behaves like <tt class="docutils literal">match</tt>, except that it must match all of the string.</p>
+<p>Examples:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; import regex
+&gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;abc&quot;).span())
+(0, 3)
+&gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;abcx&quot;))
+None
+&gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;abcx&quot;, endpos=3).span())
+(0, 3)
+&gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;xabcy&quot;, pos=1, endpos=4).span())
+(1, 4)
+&gt;&gt;&gt;
+&gt;&gt;&gt; regex.match(r&quot;a.*?&quot;, &quot;abcd&quot;).group(0)
+'a'
+&gt;&gt;&gt; regex.fullmatch(r&quot;a.*?&quot;, &quot;abcd&quot;).group(0)
+'abcd'
+</pre>
+</blockquote>
+</li>
 <li><p class="first">Added <tt class="docutils literal">subf</tt> and <tt class="docutils literal">subfn</tt> <strong>(Python 2.6 and above)</strong></p>
 <blockquote>
 <p><tt class="docutils literal">subf</tt> and <tt class="docutils literal">subfn</tt> are alternatives to <tt class="docutils literal">sub</tt> and <tt class="docutils literal">subn</tt> respectively. When passed a replacement string, they treat it as a format string.</p>

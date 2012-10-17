@@ -1,3 +1,4 @@
+#define CHECK_DEALLOC_NULL 0
 /* Secret Labs' Regular Expression Engine
  *
  * regular expression matching engine
@@ -513,6 +514,7 @@ typedef struct RE_State {
     BOOL must_advance; /* Whether the end of the match must advance past its start. */
     BOOL is_multithreaded; /* Whether to release the GIL while matching. */
     BOOL too_few_errors; /* Whether there were too few fuzzy errors. */
+    BOOL match_all; /* Whether to match all of the string. */
 } RE_State;
 
 /* Storage for the regex state and thread state.
@@ -7036,8 +7038,7 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
     return status;
 
 error:
-    if (!folded)
-        re_dealloc(folded);
+    re_dealloc(folded);
 
     release_GIL(safe_state);
 
@@ -7177,8 +7178,7 @@ Py_LOCAL_INLINE(int) string_set_match_fld_rev(RE_SafeState* safe_state,
     return status;
 
 error:
-    if (!folded)
-        re_dealloc(folded);
+    re_dealloc(folded);
 
     release_GIL(safe_state);
 
@@ -7298,8 +7298,7 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
     return status;
 
 error:
-    if (!folded)
-        re_dealloc(folded);
+    re_dealloc(folded);
 
     release_GIL(safe_state);
 
@@ -8588,7 +8587,7 @@ start_match:
     /* Locate the required string, if there's one, unless this is a recursive
      * call of 'basic_match'.
      */
-    if (recursive_call)
+    if (!pattern->req_string || recursive_call)
         found_pos = state->text_pos;
     else {
         found_pos = locate_required_string(safe_state);
@@ -8647,8 +8646,21 @@ next_match_2:
             if (node->op == RE_OP_SUCCESS) {
                 /* Must the match advance past its start? */
                 if (text_pos != state->search_anchor || !state->must_advance) {
-                    state->text_pos = text_pos;
-                    return RE_ERROR_SUCCESS;
+                    BOOL success;
+
+                    if (state->match_all && !recursive_call) {
+                        /* We want to match all of the slice. */
+                        if (state->reverse)
+                            success = text_pos == slice_start;
+                        else
+                            success = text_pos == slice_end;
+                    } else
+                        success = TRUE;
+
+                    if (success) {
+                        state->text_pos = text_pos;
+                        return RE_ERROR_SUCCESS;
+                    }
                 }
 
                 text_pos = state->match_pos + pattern_step;
@@ -10993,6 +11005,18 @@ advance:
 
             if (text_pos == state->search_anchor && state->must_advance)
                 goto backtrack;
+
+            if (state->match_all && !recursive_call) {
+                /* We want to match all of the slice. */
+                if (state->reverse) {
+                    if (text_pos != slice_start)
+                        goto backtrack;
+                } else {
+                    if (text_pos != slice_end)
+                        goto backtrack;
+                }
+            }
+
             state->text_pos = text_pos;
             return RE_ERROR_SUCCESS;
         default: /* Illegal opcode! */
@@ -12531,12 +12555,14 @@ Py_LOCAL_INLINE(void) dealloc_guards(RE_GuardList* guards, size_t count) {
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
   PyObject* string, RE_StringInfo* str_info, Py_ssize_t start, Py_ssize_t end,
-  BOOL overlapped, int concurrent, BOOL use_lock, BOOL visible_captures) {
+  BOOL overlapped, int concurrent, BOOL use_lock, BOOL visible_captures, BOOL
+  match_all) {
     Py_ssize_t final_pos;
 
     state->groups = NULL;
     state->repeats = NULL;
     state->visible_captures = visible_captures;
+    state->match_all = match_all;
     state->backtrack_block.previous = NULL;
     state->backtrack_block.next = NULL;
     state->backtrack_block.capacity = RE_BACKTRACK_BLOCK_SIZE;
@@ -12570,8 +12596,6 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
             state->groups = pattern->groups_storage;
             pattern->groups_storage = NULL;
         } else {
-            Py_ssize_t capacity;
-
             state->groups = (RE_GroupData*)re_alloc(pattern->group_count *
               sizeof(RE_GroupData));
             if (!state->groups)
@@ -12579,14 +12603,10 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
             memset(state->groups, 0, pattern->group_count *
               sizeof(RE_GroupData));
 
-            //capacity = visible_captures ? RE_INIT_CAPTURE_SIZE : 1;
-            capacity = 1;
-
             for (g = 0; g < pattern->group_count; g++) {
                 RE_GroupSpan* captures;
 
-                captures = (RE_GroupSpan*)re_alloc(capacity *
-                  sizeof(RE_GroupSpan));
+                captures = (RE_GroupSpan*)re_alloc(sizeof(RE_GroupSpan));
                 if (!captures) {
                     Py_ssize_t i;
 
@@ -12597,7 +12617,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
                 }
 
                 state->groups[g].captures = captures;
-                state->groups[g].capture_capacity = capacity;
+                state->groups[g].capture_capacity = 1;
             }
         }
     }
@@ -12779,7 +12799,7 @@ Py_LOCAL_INLINE(void) release_buffer(RE_StringInfo* str_info) {
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
   PyObject* string, Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int
-  concurrent, BOOL use_lock, BOOL visible_captures) {
+  concurrent, BOOL use_lock, BOOL visible_captures, BOOL match_all) {
     RE_StringInfo str_info;
 
     /* Get the string to search or match. */
@@ -12790,7 +12810,7 @@ Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
      * the string is a buffer object.
      */
     if (!state_init_2(state, pattern, string, &str_info, start, end,
-      overlapped, concurrent, use_lock, visible_captures)) {
+      overlapped, concurrent, use_lock, visible_captures, match_all)) {
 #if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
 
@@ -12911,9 +12931,11 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
     for (i = 0; i < pattern->call_ref_info_count; i++)
         re_dealloc(state->group_call_guard_list[i].spans);
 
-    re_dealloc(state->group_call_guard_list);
+    if (state->group_call_guard_list)
+        re_dealloc(state->group_call_guard_list);
 
-    dealloc_fuzzy_guards(state->fuzzy_guards, pattern->fuzzy_count);
+    if (state->fuzzy_guards)
+        dealloc_fuzzy_guards(state->fuzzy_guards, pattern->fuzzy_count);
 
     Py_DECREF(state->pattern);
     Py_DECREF(state->string);
@@ -12972,7 +12994,8 @@ static void match_dealloc(PyObject* self_) {
     Py_XDECREF(self->string);
     Py_XDECREF(self->substring);
     Py_DECREF(self->pattern);
-    re_dealloc(self->groups);
+    if (self->groups)
+        re_dealloc(self->groups);
     Py_XDECREF(self->regs);
     PyObject_DEL(self);
 }
@@ -14704,7 +14727,7 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
 
     /* The MatchObject, and therefore repeated captures, will be visible. */
     if (!state_init(&self->state, pattern, string, start, end, overlapped != 0,
-      conc, TRUE, TRUE)) {
+      conc, TRUE, TRUE, FALSE)) {
         PyObject_DEL(self);
         return NULL;
     }
@@ -14997,7 +15020,7 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
 
     /* The MatchObject, and therefore repeated captures, will not be visible. */
     if (!state_init(state, pattern, string, 0, PY_SSIZE_T_MAX, FALSE, conc,
-      TRUE, FALSE)) {
+      TRUE, FALSE, FALSE)) {
         PyObject_DEL(self);
         return NULL;
     }
@@ -15012,7 +15035,7 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
 }
 
 static PyObject* pattern_search_or_match(PatternObject* self, PyObject* args,
-  PyObject* kw, char* args_desc, BOOL search) {
+  PyObject* kw, char* args_desc, BOOL search, BOOL match_all) {
     Py_ssize_t start;
     Py_ssize_t end;
     int conc;
@@ -15040,7 +15063,8 @@ static PyObject* pattern_search_or_match(PatternObject* self, PyObject* args,
         return NULL;
 
     /* The MatchObject, and therefore repeated captures, will be visible. */
-    if (!state_init(&state, self, string, start, end, FALSE, conc, FALSE, TRUE))
+    if (!state_init(&state, self, string, start, end, FALSE, conc, FALSE, TRUE,
+      match_all))
         return NULL;
 
     /* Initialise the "safe state" structure. */
@@ -15063,13 +15087,20 @@ static PyObject* pattern_search_or_match(PatternObject* self, PyObject* args,
 /* PatternObject's 'match' method. */
 static PyObject* pattern_match(PatternObject* self, PyObject* args, PyObject*
   kw) {
-    return pattern_search_or_match(self, args, kw, "O|OOO:match", FALSE);
+    return pattern_search_or_match(self, args, kw, "O|OOO:match", FALSE, FALSE);
+}
+
+/* PatternObject's 'fullmatch' method. */
+static PyObject* pattern_fullmatch(PatternObject* self, PyObject* args,
+  PyObject* kw) {
+    return pattern_search_or_match(self, args, kw, "O|OOO:fullmatch", FALSE,
+      TRUE);
 }
 
 /* PatternObject's 'search' method. */
 static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
   kw) {
-    return pattern_search_or_match(self, args, kw, "O|OOO:search", TRUE);
+    return pattern_search_or_match(self, args, kw, "O|OOO:search", TRUE, FALSE);
 }
 
 /* Gets the limits of the matching. */
@@ -15342,7 +15373,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
      * the replacement is callable.
      */
     if (!state_init_2(&state, self, string, &str_info, start, end, FALSE,
-      concurrent, FALSE, is_callable)) {
+      concurrent, FALSE, is_callable, FALSE)) {
 #if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
 
@@ -15704,7 +15735,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
 
     /* The MatchObject, and therefore repeated captures, will not be visible. */
     if (!state_init(&state, self, string, 0, PY_SSIZE_T_MAX, FALSE, conc, FALSE,
-      FALSE))
+      FALSE, FALSE))
         return NULL;
 
     /* Initialise the "safe state" structure. */
@@ -15867,7 +15898,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
 
     /* The MatchObject, and therefore repeated captures, will not be visible. */
     if (!state_init(&state, self, string, start, end, overlapped != 0, conc,
-      FALSE, FALSE))
+      FALSE, FALSE, FALSE))
         return NULL;
 
     /* Initialise the "safe state" structure. */
@@ -15979,6 +16010,10 @@ PyDoc_STRVAR(pattern_match_doc,
     "match(string, pos=None, endpos=None, concurrent=None) --> MatchObject or None.\n\
     Match zero or more characters at the beginning of the string.");
 
+PyDoc_STRVAR(pattern_fullmatch_doc,
+    "fullmatch(string, pos=None, endpos=None, concurrent=None) --> MatchObject or None.\n\
+    Match zero or more characters against all of the string.");
+
 PyDoc_STRVAR(pattern_search_doc,
     "search(string, pos=None, endpos=None, concurrent=None) --> MatchObject or None.\n\
     Search through string looking for a match, and return a corresponding\n\
@@ -16035,6 +16070,8 @@ PyDoc_STRVAR(pattern_finditer_doc,
 static PyMethodDef pattern_methods[] = {
     {"match", (PyCFunction)pattern_match, METH_VARARGS|METH_KEYWORDS,
       pattern_match_doc},
+    {"fullmatch", (PyCFunction)pattern_fullmatch, METH_VARARGS|METH_KEYWORDS,
+      pattern_fullmatch_doc},
     {"search", (PyCFunction)pattern_search, METH_VARARGS|METH_KEYWORDS,
       pattern_search_doc},
     {"sub", (PyCFunction)pattern_sub, METH_VARARGS|METH_KEYWORDS,

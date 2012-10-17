@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: regex
-Version: 0.1.20121008
+Version: 0.1.20121017
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://code.google.com/p/mrab-regex-hg/
 Author: Matthew Barnett
@@ -143,6 +143,27 @@ Description: Introduction
         -------------------
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+        
+        * Added ``fullmatch`` (issue #16203)
+        
+            ``fullmatch`` behaves like ``match``, except that it must match all of the string.
+        
+            Examples::
+        
+                >>> import regex
+                >>> print(regex.fullmatch(r"abc", "abc").span())
+                (0, 3)
+                >>> print(regex.fullmatch(r"abc", "abcx"))
+                None
+                >>> print(regex.fullmatch(r"abc", "abcx", endpos=3).span())
+                (0, 3)
+                >>> print(regex.fullmatch(r"abc", "xabcy", pos=1, endpos=4).span())
+                (1, 4)
+                >>>
+                >>> regex.match(r"a.*?", "abcd").group(0)
+                'a'
+                >>> regex.fullmatch(r"a.*?", "abcd").group(0)
+                'abcd'
         
         * Added ``subf`` and ``subfn`` **(Python 2.6 and above)**
         
