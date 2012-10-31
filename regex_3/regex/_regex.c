@@ -1,4 +1,3 @@
-#define CHECK_DEALLOC_NULL 0
 /* Secret Labs' Regular Expression Engine
  *
  * regular expression matching engine
@@ -447,6 +446,16 @@ typedef struct RE_StringInfo {
     BOOL should_release; /* Whether the buffer should be released. */
 } RE_StringInfo;
 
+#define MAX_SEARCH_POSITIONS 7
+
+/* Info about where the next match was found, starting from a certain search
+ * position. This is used when a pattern starts with a BRANCH.
+ */
+typedef struct {
+    Py_ssize_t start_pos;
+    Py_ssize_t match_pos;
+} RE_SearchPosition;
+
 /* The state object used during matching. */
 typedef struct RE_State {
     struct PatternObject* pattern; /* Parent PatternObject. */
@@ -495,6 +504,7 @@ typedef struct RE_State {
     RE_GroupCallFrame* first_group_call_frame;
     RE_GroupCallFrame* current_group_call_frame;
     RE_GuardList* group_call_guard_list;
+    RE_SearchPosition search_positions[MAX_SEARCH_POSITIONS]; /* Where the search matches next. */
     unsigned short iterations;
     size_t capture_change;
     Py_ssize_t req_pos; /* The position where the required string matched. */
@@ -5656,9 +5666,83 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     return TRUE;
 }
 
+Py_LOCAL_INLINE(BOOL) search_start(RE_SafeState* safe_state, RE_NextNode* next,
+  RE_Position* new_position, int search_index);
+
+/* Searches for the next position where a BRANCH could match. */
+Py_LOCAL_INLINE(BOOL) get_next_position(RE_SafeState* safe_state, RE_Node* node,
+  RE_Position* new_position, int search_index) {
+    int first_search_index;
+    int second_search_index;
+    RE_State* state;
+    RE_Position first_position;
+    RE_Position second_position;
+
+    state = safe_state->re_state;
+
+    first_search_index = search_index * 2 + 1;
+    second_search_index = search_index * 2 + 2;
+
+    if (second_search_index >= MAX_SEARCH_POSITIONS) {
+        first_search_index = MAX_SEARCH_POSITIONS;
+        second_search_index = MAX_SEARCH_POSITIONS;
+    }
+
+    if (search_start(safe_state, &node->next_1, &first_position,
+      first_search_index)) {
+        Py_ssize_t first_match_pos;
+
+        first_match_pos = state->match_pos;
+
+        /* Found a match for the first branch. */
+        if (search_start(safe_state, &node->nonstring.next_2, &second_position,
+          second_search_index))
+          {
+            /* Found a match for both branches, so pick the earlier one. */
+            if (state->reverse) {
+                /* When searching backwards, pick the greater position. */
+                if (first_position.text_pos >= second_position.text_pos) {
+                    /* The first position is earlier. We need to restore the
+                     * corresponding match_pos for that.
+                     */
+                    state->match_pos = first_match_pos;
+                    *new_position = first_position;
+                } else
+                    *new_position = second_position;
+            } else {
+                /* When searching forwards, pick the lesser position. */
+                if (first_position.text_pos <= second_position.text_pos) {
+                    /* The first position is earlier. We need to restore the
+                     * corresponding match_pos for that.
+                     */
+                    state->match_pos = first_match_pos;
+                    *new_position = first_position;
+                } else
+                    *new_position = second_position;
+            }
+
+            return TRUE;
+        } else {
+            /* Found a match for only the first branch. */
+            *new_position = first_position;
+            return TRUE;
+        }
+    } else {
+        /* Didn't find a match for the first branch. */
+        if (search_start(safe_state, &node->nonstring.next_2, &second_position,
+          second_search_index)) {
+            /* Found a match for only the second branch. */
+            *new_position = second_position;
+            return TRUE;
+        } else
+            /* Didn't find a match for either branch. */
+            return FALSE;
+    }
+}
+
 /* Searches for the start of a match. */
 Py_LOCAL_INLINE(BOOL) search_start(RE_SafeState* safe_state, RE_NextNode* next,
-  RE_Position* new_position) {
+  RE_Position* new_position, int search_index) {
     RE_State* state;
     Py_ssize_t text_pos;
     RE_Node* test;
@@ -5666,6 +5750,7 @@ Py_LOCAL_INLINE(BOOL) search_start(RE_SafeState* safe_state, RE_NextNode* next,
     Py_ssize_t start_pos;
     Py_ssize_t step;
     Py_ssize_t limit;
+    RE_SearchPosition* info;
 
     state = safe_state->re_state;
 
@@ -5712,6 +5797,34 @@ again:
             return FALSE;
     }
 
+    if (search_index < MAX_SEARCH_POSITIONS) {
+        info = &state->search_positions[search_index];
+        if (state->reverse) {
+            if (info->start_pos >= 0 && info->start_pos >= start_pos &&
+              start_pos >= info->match_pos) {
+
+                state->match_pos = info->match_pos;
+
+                new_position->text_pos = state->match_pos;
+                new_position->node = node;
+
+                return TRUE;
+            }
+        } else {
+            if (info->start_pos >= 0 && info->start_pos <= start_pos &&
+              start_pos <= info->match_pos) {
+
+                state->match_pos = info->match_pos;
+
+                new_position->text_pos = state->match_pos;
+                new_position->node = node;
+
+                return TRUE;
+            }
+        }
+    } else
+        info = NULL;
+
     switch (test->op) {
     case RE_OP_ANY: /* Any character, except a newline. */
         start_pos = match_many_ANY(state, start_pos, limit + 1, FALSE);
@@ -5755,6 +5868,26 @@ again:
             start_pos += step;
         }
         break;
+    }
+    case RE_OP_BRANCH: /* 2-way branch. */
+    {
+        BOOL found;
+
+        /* Search along both of the branches and get the earliest match. */
+        found = get_next_position(safe_state, test, new_position, search_index);
+
+        new_position->text_pos = state->match_pos;
+        new_position->node = node;
+
+        if (!found)
+            return FALSE;
+
+        if (info) {
+            info->start_pos = state->text_pos;
+            info->match_pos = state->match_pos;
+        }
+
+        return TRUE;
     }
     case RE_OP_CHARACTER: /* A character literal. */
         start_pos = match_many_CHARACTER(state, test, start_pos, limit + 1,
@@ -6198,6 +6331,11 @@ again:
 
     /* It's a possible match. */
     state->match_pos = start_pos;
+
+    if (info) {
+        info->start_pos = state->text_pos;
+        info->match_pos = state->match_pos;
+    }
 
     return TRUE;
 }
@@ -8600,7 +8738,7 @@ next_match_1:
              * a fast search for the next possible match. This enables us to
              * avoid the overhead of the call subsequently.
              */
-            if (!search_start(safe_state, &start_pair, &new_position))
+            if (!search_start(safe_state, &start_pair, &new_position, 0))
                 return RE_ERROR_FAILURE;
 
             node = new_position.node;
@@ -11311,6 +11449,10 @@ backtrack:
                         break;
                 }
             } else {
+                /* A repeated single-character match is often followed by a
+                 * literal, so checking specially for it can be a good
+                 * optimisation when working with long strings.
+                 */
                 switch (test->op) {
                 case RE_OP_CHARACTER:
                 {
@@ -11384,19 +11526,29 @@ backtrack:
                 }
                 case RE_OP_STRING:
                 {
-                    Py_UCS4 ch;
+                    Py_ssize_t length;
 
-                    ch = test->values[0];
+                    length = test->value_count;
+
+                    match = FALSE;
 
                     for (;;) {
-                        RE_Position next_position;
+                        Py_ssize_t found;
 
                         pos -= step;
-                        match = char_at(text, pos) == ch && try_match(state,
-                          &node->next_1, pos, &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        found = string_search_rev(safe_state, test, pos +
+                          length, limit);
+                        if (found < 0)
                             break;
+
+                        pos = found - length;
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
                         if (pos == limit)
                             break;
                     }
@@ -11455,20 +11607,29 @@ backtrack:
                 }
                 case RE_OP_STRING_IGN:
                 {
-                    Py_UCS4 ch;
+                    Py_ssize_t length;
 
-                    ch = test->values[0];
+                    length = test->value_count;
+
+                    match = FALSE;
 
                     for (;;) {
-                        RE_Position next_position;
+                        Py_ssize_t found;
 
                         pos -= step;
-                        match = same_char_ign(encoding, char_at(text, pos), ch)
-                          && try_match(state, &node->next_1, pos,
-                          &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        found = string_search_ign_rev(safe_state, test, pos +
+                          length, limit);
+                        if (found < 0)
                             break;
+
+                        pos = found - length;
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
                         if (pos == limit)
                             break;
                     }
@@ -11476,20 +11637,29 @@ backtrack:
                 }
                 case RE_OP_STRING_IGN_REV:
                 {
-                    Py_UCS4 ch;
+                    Py_ssize_t length;
 
-                    ch = test->values[test->value_count - 1];
+                    length = test->value_count;
+
+                    match = FALSE;
 
                     for (;;) {
-                        RE_Position next_position;
+                        Py_ssize_t found;
 
                         pos -= step;
-                        match = same_char_ign(encoding, char_at(text, pos - 1),
-                          ch) && try_match(state, &node->next_1, pos,
-                          &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        found = string_search_ign(safe_state, test, pos -
+                          length, limit);
+                        if (found < 0)
                             break;
+
+                        pos = found + length;
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
                         if (pos == limit)
                             break;
                     }
@@ -11497,19 +11667,29 @@ backtrack:
                 }
                 case RE_OP_STRING_REV:
                 {
-                    Py_UCS4 ch;
+                    Py_ssize_t length;
 
-                    ch = test->values[test->value_count - 1];
+                    length = test->value_count;
+
+                    match = FALSE;
 
                     for (;;) {
-                        RE_Position next_position;
+                        Py_ssize_t found;
 
                         pos -= step;
-                        match = char_at(text, pos - 1) == ch &&
-                          try_match(state, &node->next_1, pos, &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        found = string_search(safe_state, test, pos - length,
+                          limit);
+                        if (found < 0)
                             break;
+
+                        pos = found + length;
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
                         if (pos == limit)
                             break;
                     }
@@ -11647,6 +11827,10 @@ backtrack:
                         break;
                 }
             } else {
+                /* A repeated single-character match is often followed by a
+                 * literal, so checking specially for it can be a good
+                 * optimisation when working with long strings.
+                 */
                 switch (test->op) {
                 case RE_OP_CHARACTER:
                 {
@@ -11752,28 +11936,33 @@ backtrack:
                 }
                 case RE_OP_STRING:
                 {
-                    Py_UCS4 ch;
-                    size_t extra;
-
-                    ch = test->values[0];
-
-                    extra = available - max_count;
-                    if (extra < (size_t)test->value_count)
-                        limit -= (test->value_count - (Py_ssize_t)extra) *
-                          step;
+                    match = FALSE;
 
                     for (;;) {
-                        RE_Position next_position;
+                        Py_ssize_t found;
 
-                        match = match_one(state, repeated, pos);
-                        if (!match)
-                            break;
                         pos += step;
-                        match = char_at(text, pos) == ch && try_match(state,
-                          &node->next_1, pos, &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        found = string_search(safe_state, test, pos, limit);
+                        if (found < 0)
                             break;
+
+                        if (repeated->op == RE_OP_ANY_ALL)
+                            pos = found;
+                        else {
+                            while (pos != found && match_one(state, repeated,
+                              pos))
+                                pos += step;
+
+                            if (pos != found)
+                                break;
+                        }
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
                         if (pos == limit)
                             break;
                     }
@@ -11838,23 +12027,33 @@ backtrack:
                 }
                 case RE_OP_STRING_IGN:
                 {
-                    Py_UCS4 ch;
-
-                    ch = test->values[0];
+                    match = FALSE;
 
                     for (;;) {
-                        RE_Position next_position;
+                        Py_ssize_t found;
 
-                        match = match_one(state, repeated, pos);
-                        if (!match)
-                            break;
                         pos += step;
-                        match = same_char_ign(encoding, char_at(text, pos), ch)
-                          && try_match(state, &node->next_1, pos,
-                          &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        found = string_search_ign(safe_state, test, pos, limit);
+                        if (found < 0)
                             break;
+
+                        if (repeated->op == RE_OP_ANY_ALL)
+                            pos = found;
+                        else {
+                            while (pos != found && match_one(state, repeated,
+                              pos))
+                                pos += step;
+
+                            if (pos != found)
+                                break;
+                        }
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
                         if (pos == limit)
                             break;
                     }
@@ -11862,23 +12061,34 @@ backtrack:
                 }
                 case RE_OP_STRING_IGN_REV:
                 {
-                    Py_UCS4 ch;
-
-                    ch = test->values[test->value_count - 1];
+                    match = FALSE;
 
                     for (;;) {
-                        RE_Position next_position;
+                        Py_ssize_t found;
 
-                        match = match_one(state, repeated, pos);
-                        if (!match)
-                            break;
                         pos += step;
-                        match = same_char_ign(encoding, char_at(text, pos - 1),
-                          ch) && try_match(state, &node->next_1, pos,
-                          &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        found = string_search_ign_rev(safe_state, test, pos,
+                          limit);
+                        if (found < 0)
                             break;
+
+                        if (repeated->op == RE_OP_ANY_ALL)
+                            pos = found;
+                        else {
+                            while (pos != found && match_one(state, repeated,
+                              pos))
+                                pos += step;
+
+                            if (pos != found)
+                                break;
+                        }
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
                         if (pos == limit)
                             break;
                     }
@@ -11886,30 +12096,33 @@ backtrack:
                 }
                 case RE_OP_STRING_REV:
                 {
-                    Py_UCS4 ch;
-                    size_t extra;
-
-                    ch = test->values[test->value_count - 1];
-
-                    extra = available - max_count;
-                    if (extra < (size_t)test->value_count)
-                        limit -= (test->value_count - (Py_ssize_t)extra) *
-                          step;
-
-                    ch = test->values[test->value_count - 1];
+                    match = FALSE;
 
                     for (;;) {
-                        RE_Position next_position;
+                        Py_ssize_t found;
 
-                        match = match_one(state, repeated, pos);
-                        if (!match)
-                            break;
                         pos += step;
-                        match = char_at(text, pos - 1) == ch &&
-                          try_match(state, &node->next_1, pos, &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        found = string_search_rev(safe_state, test, pos, limit);
+                        if (found < 0)
                             break;
+
+                        if (repeated->op == RE_OP_ANY_ALL)
+                            pos = found;
+                        else {
+                            while (pos != found && match_one(state, repeated,
+                              pos))
+                                pos += step;
+
+                            if (pos != found)
+                                break;
+                        }
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
                         if (pos == limit)
                             break;
                     }
@@ -12530,6 +12743,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
   BOOL overlapped, int concurrent, BOOL use_lock, BOOL visible_captures, BOOL
   match_all) {
     Py_ssize_t final_pos;
+    int i;
 
     state->groups = NULL;
     state->repeats = NULL;
@@ -12744,6 +12958,9 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
      */
     if (state->is_multithreaded && use_lock)
         state->lock = PyThread_allocate_lock();
+
+    for (i = 0; i < MAX_SEARCH_POSITIONS; i++)
+        state->search_positions[i].start_pos = -1;
 
     return TRUE;
 
