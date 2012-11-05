@@ -179,7 +179,7 @@ typedef unsigned short RE_STATUS_T;
 #define RE_FULL_CASE_FOLDING (RE_FLAG_UNICODE | RE_FLAG_FULLCASE | RE_FLAG_IGNORECASE)
 
 /* The shortest string prefix for which we'll use a fast string search. */
-#define RE_MIN_FAST_LENGTH 3
+#define RE_MIN_FAST_LENGTH 5
 
 static char copyright[] =
     " RE 2.3.0 Copyright (c) 1997-2002 by Secret Labs AB ";
@@ -11435,16 +11435,21 @@ backtrack:
             m = test->match;
             index = node->values[0];
 
+            match = FALSE;
+
             if (test->status & RE_STATUS_FUZZY) {
                 for (;;) {
                     RE_Position next_position;
 
                     pos -= step;
-                    match = try_match(state, &node->next_1, pos,
-                      &next_position);
-                    if (match && !is_repeat_guarded(safe_state, index, pos,
-                      RE_STATUS_TAIL))
+
+                    if (try_match(state, &node->next_1, pos, &next_position) &&
+                      !is_repeat_guarded(safe_state, index, pos,
+                      RE_STATUS_TAIL)) {
+                        match = TRUE;
                         break;
+                    }
+
                     if (pos == limit)
                         break;
                 }
@@ -11461,11 +11466,15 @@ backtrack:
                     ch = test->values[0];
 
                     for (;;) {
-                        pos -= step;
-                        match = (char_at(text, pos) == ch) == m;
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+                        --pos;
+
+                        if ((char_at(text, pos) == ch) == m &&
+                          !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11478,12 +11487,15 @@ backtrack:
                     ch = test->values[0];
 
                     for (;;) {
-                        pos -= step;
-                        match = same_char_ign(encoding, char_at(text, pos), ch)
-                          == m;
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+                        --pos;
+
+                        if (same_char_ign(encoding, char_at(text, pos), ch) == m
+                          && !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11496,12 +11508,15 @@ backtrack:
                     ch = test->values[0];
 
                     for (;;) {
-                        pos -= step;
-                        match = same_char_ign(encoding, char_at(text, pos - 1),
-                          ch) == m;
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+                        ++pos;
+
+                        if (same_char_ign(encoding, char_at(text, pos - 1), ch)
+                          == m && !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11514,11 +11529,15 @@ backtrack:
                     ch = test->values[0];
 
                     for (;;) {
-                        pos -= step;
-                        match = (char_at(text, pos - 1) == ch) == m;
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+                        ++pos;
+
+                        if ((char_at(text, pos - 1) == ch) == m &&
+                          !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11530,12 +11549,10 @@ backtrack:
 
                     length = test->value_count;
 
-                    match = FALSE;
-
                     for (;;) {
                         Py_ssize_t found;
 
-                        pos -= step;
+                        --pos;
 
                         found = string_search_rev(safe_state, test, pos +
                           length, limit);
@@ -11549,6 +11566,7 @@ backtrack:
                             match = TRUE;
                             break;
                         }
+
                         if (pos == limit)
                             break;
                     }
@@ -11557,23 +11575,36 @@ backtrack:
                 case RE_OP_STRING_FLD:
                 {
                     int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
-                    Py_UCS4 ch;
+                    Py_ssize_t folded_length;
+                    Py_ssize_t i;
                     Py_UCS4 folded[RE_MAX_FOLDED];
 
                     full_case_fold = encoding->full_case_fold;
-                    ch = test->values[0];
+
+                    folded_length = 0;
+                    for (i = 0; i < test->value_count; i++)
+                        folded_length += full_case_fold(test->values[i],
+                          folded);
 
                     for (;;) {
-                        int count;
-                        RE_Position next_position;
+                        Py_ssize_t found;
+                        Py_ssize_t new_pos;
 
-                        pos -= step;
-                        count = full_case_fold(char_at(text, pos), folded);
-                        match = same_char_ign(encoding, folded[0], ch) &&
-                          try_match(state, &node->next_1, pos, &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+                        --pos;
+
+                        found = string_search_fld_rev(safe_state, test, pos +
+                          folded_length, limit, &new_pos);
+                        if (found < 0)
                             break;
+
+                        pos = new_pos;
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11582,24 +11613,36 @@ backtrack:
                 case RE_OP_STRING_FLD_REV:
                 {
                     int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
-                    Py_UCS4 ch;
+                    Py_ssize_t folded_length;
+                    Py_ssize_t i;
                     Py_UCS4 folded[RE_MAX_FOLDED];
 
                     full_case_fold = encoding->full_case_fold;
-                    ch = test->values[test->value_count - 1];
+
+                    folded_length = 0;
+                    for (i = 0; i < test->value_count; i++)
+                        folded_length += full_case_fold(test->values[i],
+                          folded);
 
                     for (;;) {
-                        int count;
-                        RE_Position next_position;
+                        Py_ssize_t found;
+                        Py_ssize_t new_pos;
 
-                        pos -= step;
-                        count = full_case_fold(char_at(text, pos - 1), folded);
-                        match = same_char_ign(encoding, folded[count - 1], ch)
-                          && try_match(state, &node->next_1, pos,
-                          &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+                        ++pos;
+
+                        found = string_search_fld(safe_state, test, pos -
+                          folded_length, limit, &new_pos);
+                        if (found < 0)
                             break;
+
+                        pos = new_pos;
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
+                            break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11611,12 +11654,10 @@ backtrack:
 
                     length = test->value_count;
 
-                    match = FALSE;
-
                     for (;;) {
                         Py_ssize_t found;
 
-                        pos -= step;
+                        --pos;
 
                         found = string_search_ign_rev(safe_state, test, pos +
                           length, limit);
@@ -11630,6 +11671,7 @@ backtrack:
                             match = TRUE;
                             break;
                         }
+
                         if (pos == limit)
                             break;
                     }
@@ -11641,12 +11683,10 @@ backtrack:
 
                     length = test->value_count;
 
-                    match = FALSE;
-
                     for (;;) {
                         Py_ssize_t found;
 
-                        pos -= step;
+                        ++pos;
 
                         found = string_search_ign(safe_state, test, pos -
                           length, limit);
@@ -11660,6 +11700,7 @@ backtrack:
                             match = TRUE;
                             break;
                         }
+
                         if (pos == limit)
                             break;
                     }
@@ -11671,12 +11712,10 @@ backtrack:
 
                     length = test->value_count;
 
-                    match = FALSE;
-
                     for (;;) {
                         Py_ssize_t found;
 
-                        pos -= step;
+                        ++pos;
 
                         found = string_search(safe_state, test, pos - length,
                           limit);
@@ -11690,6 +11729,7 @@ backtrack:
                             match = TRUE;
                             break;
                         }
+
                         if (pos == limit)
                             break;
                     }
@@ -11700,11 +11740,14 @@ backtrack:
                         RE_Position next_position;
 
                         pos -= step;
-                        match = try_match(state, &node->next_1, pos,
-                          &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        if (try_match(state, &node->next_1, pos, &next_position)
+                          && !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11810,19 +11853,24 @@ backtrack:
             m = test->match;
             index = node->values[0];
 
+            match = FALSE;
+
             if (test->status & RE_STATUS_FUZZY) {
                 for (;;) {
                     RE_Position next_position;
 
-                    match = match_one(state, repeated, pos);
-                    if (!match)
+                    if (!match_one(state, repeated, pos))
                         break;
+
                     pos += step;
-                    match = try_match(state, &node->next_1, pos,
-                      &next_position);
-                    if (match && !is_repeat_guarded(safe_state, index, pos,
-                      RE_STATUS_TAIL))
+
+                    if (try_match(state, &node->next_1, pos, &next_position) &&
+                      !is_repeat_guarded(safe_state, index, pos,
+                      RE_STATUS_TAIL)) {
+                        match = TRUE;
                         break;
+                    }
+
                     if (pos == limit)
                         break;
                 }
@@ -11841,17 +11889,21 @@ backtrack:
 
                     extra = available - max_count;
                     if (extra < 1)
-                        limit -= (1 - (Py_ssize_t)extra) * step;
+                        limit -= 1 - (Py_ssize_t)extra;
 
                     for (;;) {
-                        match = match_one(state, repeated, pos);
-                        if (!match)
+                        if (!match_one(state, repeated, pos))
                             break;
-                        pos += step;
-                        match = (char_at(text, pos) == ch) == m;
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        ++pos;
+
+                        if ((char_at(text, pos) == ch) == m &&
+                          !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11866,18 +11918,21 @@ backtrack:
 
                     extra = available - max_count;
                     if (extra < 1)
-                        limit -= (1 - (Py_ssize_t)extra) * step;
+                        limit -= 1 - (Py_ssize_t)extra;
 
                     for (;;) {
-                        match = match_one(state, repeated, pos);
-                        if (!match)
+                        if (!match_one(state, repeated, pos))
                             break;
-                        pos += step;
-                        match = same_char_ign(encoding, char_at(text, pos), ch)
-                          == m;
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        ++pos;
+
+                        if (same_char_ign(encoding, char_at(text, pos), ch) == m
+                          && !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11892,18 +11947,21 @@ backtrack:
 
                     extra = available - max_count;
                     if (extra < 1)
-                        limit -= (1 - (Py_ssize_t)extra) * step;
+                        limit += 1 - (Py_ssize_t)extra;
 
                     for (;;) {
-                        match = match_one(state, repeated, pos);
-                        if (!match)
+                        if (!match_one(state, repeated, pos))
                             break;
-                        pos += step;
-                        match = same_char_ign(encoding, char_at(text, pos - 1),
-                          ch) == m;
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        --pos;
+
+                        if (same_char_ign(encoding, char_at(text, pos - 1), ch)
+                          == m && !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11918,17 +11976,21 @@ backtrack:
 
                     extra = available - max_count;
                     if (extra < 1)
-                        limit -= (1 - (Py_ssize_t)extra) * step;
+                        limit += 1 - (Py_ssize_t)extra;
 
                     for (;;) {
-                        match = match_one(state, repeated, pos);
-                        if (!match)
+                        if (!match_one(state, repeated, pos))
                             break;
-                        pos += step;
-                        match = (char_at(text, pos - 1) == ch) == m;
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        --pos;
+
+                        if ((char_at(text, pos - 1) == ch) == m &&
+                          !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11936,25 +11998,25 @@ backtrack:
                 }
                 case RE_OP_STRING:
                 {
-                    match = FALSE;
-
                     for (;;) {
                         Py_ssize_t found;
 
-                        pos += step;
-
-                        found = string_search(safe_state, test, pos, limit);
+                        /* Look for the tail string. */
+                        found = string_search(safe_state, test, pos + 1, limit);
                         if (found < 0)
                             break;
 
                         if (repeated->op == RE_OP_ANY_ALL)
+                            /* Anything can precede the tail. */
                             pos = found;
                         else {
+                            /* Check that what precedes the tail will match. */
                             while (pos != found && match_one(state, repeated,
                               pos))
-                                pos += step;
+                                ++pos;
 
                             if (pos != found)
+                                /* Something preceding the tail didn't match. */
                                 break;
                         }
 
@@ -11963,6 +12025,7 @@ backtrack:
                             match = TRUE;
                             break;
                         }
+
                         if (pos == limit)
                             break;
                     }
@@ -11970,27 +12033,35 @@ backtrack:
                 }
                 case RE_OP_STRING_FLD:
                 {
-                    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
-                    Py_UCS4 ch;
-                    Py_UCS4 folded[RE_MAX_FOLDED];
-
-                    full_case_fold = encoding->full_case_fold;
-                    ch = test->values[0];
-
                     for (;;) {
-                        int count;
-                        RE_Position next_position;
+                        Py_ssize_t found;
+                        Py_ssize_t new_pos;
 
-                        match = match_one(state, repeated, pos);
-                        if (!match)
+                        found = string_search_fld(safe_state, test, pos + 1,
+                          limit, &new_pos);
+                        if (found < 0)
                             break;
-                        pos += step;
-                        count = full_case_fold(char_at(text, pos), folded);
-                        match = same_char_ign(encoding, folded[0], ch) &&
-                          try_match(state, &node->next_1, pos, &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        if (repeated->op == RE_OP_ANY_ALL)
+                            /* Anything can precede the tail. */
+                            pos = found;
+                        else {
+                            /* Check that what precedes the tail will match. */
+                            while (pos != found && match_one(state, repeated,
+                              pos))
+                                ++pos;
+
+                            if (pos != found)
+                                /* Something preceding the tail didn't match. */
+                                break;
+                        }
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -11998,28 +12069,35 @@ backtrack:
                 }
                 case RE_OP_STRING_FLD_REV:
                 {
-                    int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
-                    Py_UCS4 ch;
-                    Py_UCS4 folded[RE_MAX_FOLDED];
-
-                    full_case_fold = encoding->full_case_fold;
-                    ch = test->values[test->value_count - 1];
-
                     for (;;) {
-                        int count;
-                        RE_Position next_position;
+                        Py_ssize_t found;
+                        Py_ssize_t new_pos;
 
-                        match = match_one(state, repeated, pos);
-                        if (!match)
+                        found = string_search_fld_rev(safe_state, test, pos - 1,
+                          limit, &new_pos);
+                        if (found < 0)
                             break;
-                        pos += step;
-                        count = full_case_fold(char_at(text, pos - 1), folded);
-                        match = same_char_ign(encoding, folded[count - 1], ch)
-                          && try_match(state, &node->next_1, pos,
-                          &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        if (repeated->op == RE_OP_ANY_ALL)
+                            /* Anything can precede the tail. */
+                            pos = found;
+                        else {
+                            /* Check that what precedes the tail will match. */
+                            while (pos != found && match_one(state, repeated,
+                              pos))
+                                --pos;
+
+                            if (pos != found)
+                                /* Something preceding the tail didn't match. */
+                                break;
+                        }
+
+                        if (!is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
@@ -12027,25 +12105,25 @@ backtrack:
                 }
                 case RE_OP_STRING_IGN:
                 {
-                    match = FALSE;
-
                     for (;;) {
                         Py_ssize_t found;
 
-                        pos += step;
-
-                        found = string_search_ign(safe_state, test, pos, limit);
+                        found = string_search_ign(safe_state, test, pos + 1,
+                          limit);
                         if (found < 0)
                             break;
 
                         if (repeated->op == RE_OP_ANY_ALL)
+                            /* Anything can precede the tail. */
                             pos = found;
                         else {
+                            /* Check that what precedes the tail will match. */
                             while (pos != found && match_one(state, repeated,
                               pos))
-                                pos += step;
+                                ++pos;
 
                             if (pos != found)
+                                /* Something preceding the tail didn't match. */
                                 break;
                         }
 
@@ -12054,6 +12132,7 @@ backtrack:
                             match = TRUE;
                             break;
                         }
+
                         if (pos == limit)
                             break;
                     }
@@ -12061,26 +12140,25 @@ backtrack:
                 }
                 case RE_OP_STRING_IGN_REV:
                 {
-                    match = FALSE;
-
                     for (;;) {
                         Py_ssize_t found;
 
-                        pos += step;
-
-                        found = string_search_ign_rev(safe_state, test, pos,
+                        found = string_search_ign_rev(safe_state, test, pos - 1,
                           limit);
                         if (found < 0)
                             break;
 
                         if (repeated->op == RE_OP_ANY_ALL)
+                            /* Anything can precede the tail. */
                             pos = found;
                         else {
+                            /* Check that what precedes the tail will match. */
                             while (pos != found && match_one(state, repeated,
                               pos))
-                                pos += step;
+                                --pos;
 
                             if (pos != found)
+                                /* Something preceding the tail didn't match. */
                                 break;
                         }
 
@@ -12089,6 +12167,7 @@ backtrack:
                             match = TRUE;
                             break;
                         }
+
                         if (pos == limit)
                             break;
                     }
@@ -12096,25 +12175,25 @@ backtrack:
                 }
                 case RE_OP_STRING_REV:
                 {
-                    match = FALSE;
-
                     for (;;) {
                         Py_ssize_t found;
 
-                        pos += step;
-
-                        found = string_search_rev(safe_state, test, pos, limit);
+                        found = string_search_rev(safe_state, test, pos - 1,
+                          limit);
                         if (found < 0)
                             break;
 
                         if (repeated->op == RE_OP_ANY_ALL)
+                            /* Anything can precede the tail. */
                             pos = found;
                         else {
+                            /* Check that what precedes the tail will match. */
                             while (pos != found && match_one(state, repeated,
                               pos))
-                                pos += step;
+                                --pos;
 
                             if (pos != found)
+                                /* Something preceding the tail didn't match. */
                                 break;
                         }
 
@@ -12123,6 +12202,7 @@ backtrack:
                             match = TRUE;
                             break;
                         }
+
                         if (pos == limit)
                             break;
                     }
@@ -12132,15 +12212,18 @@ backtrack:
                     for (;;) {
                         RE_Position next_position;
 
-                        match = match_one(state, repeated, pos);
-                        if (!match)
+                        if (!match_one(state, repeated, pos))
                             break;
+
                         pos += step;
-                        match = try_match(state, &node->next_1, pos,
-                          &next_position);
-                        if (match && !is_repeat_guarded(safe_state, index, pos,
-                          RE_STATUS_TAIL))
+
+                        if (try_match(state, &node->next_1, pos, &next_position)
+                          && !is_repeat_guarded(safe_state, index, pos,
+                          RE_STATUS_TAIL)) {
+                            match = TRUE;
                             break;
+                        }
+
                         if (pos == limit)
                             break;
                     }
