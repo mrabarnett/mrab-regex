@@ -53,8 +53,8 @@
 #if PY_VERSION_HEX < 0x03030000
 typedef unsigned char Py_UCS1;
 typedef unsigned short Py_UCS2;
-#endif
 
+#endif
 typedef RE_UINT32 RE_CODE;
 
 /* Case-sensitive letters in the General Category. */
@@ -65,17 +65,20 @@ typedef RE_UINT32 RE_CODE;
 /* Unlimited repeat count. */
 #define RE_UNLIMITED (~(RE_CODE)0)
 
+/* The status of a node. */
 typedef unsigned short RE_STATUS_T;
 
+/* Whether to match concurrently, i.e. release the GIL while matching. */
 #define RE_CONC_NO 0
 #define RE_CONC_YES 1
 #define RE_CONC_DEFAULT 2
 
+/* Flags for the kind of 'sub' call: 'sub', 'subn', 'subf', 'subfn'. */
 #define RE_SUB  0x0
 #define RE_SUBN 0x1
 #define RE_SUBF 0x2
 
-/* Name of this module, minus the leading underscore. */
+/* The name of this module, minus the leading underscore. */
 #define RE_MODULE "regex"
 #define RE_MODULE_UPPER "REGEX"
 
@@ -184,9 +187,10 @@ typedef unsigned short RE_STATUS_T;
 static char copyright[] =
     " RE 2.3.0 Copyright (c) 1997-2002 by Secret Labs AB ";
 
-/* The exception to return on error. */
+/* The exception to raise on error. */
 static PyObject* error_exception;
 
+/* The dictionary of Unicode properties. */
 static PyObject* property_dict;
 
 /* Handlers for ASCII, locale and Unicode. */
@@ -212,7 +216,7 @@ typedef struct RE_EncodingTable {
     int (*all_turkic_i)(Py_UCS4 ch, Py_UCS4* cases);
 } RE_EncodingTable;
 
-/* Position with the regex and text. */
+/* Position within the regex and text. */
 typedef struct RE_Position {
     struct RE_Node* node;
     Py_ssize_t text_pos;
@@ -326,7 +330,6 @@ typedef struct RE_Info {
 typedef struct RE_NextNode {
     struct RE_Node* node;
     struct RE_Node* test;
-    struct RE_Node* check;
     struct RE_Node* match_next;
     Py_ssize_t match_step;
 } RE_NextNode;
@@ -446,11 +449,11 @@ typedef struct RE_StringInfo {
     BOOL should_release; /* Whether the buffer should be released. */
 } RE_StringInfo;
 
-#define MAX_SEARCH_POSITIONS 7
-
 /* Info about where the next match was found, starting from a certain search
  * position. This is used when a pattern starts with a BRANCH.
  */
+#define MAX_SEARCH_POSITIONS 7
+
 typedef struct {
     Py_ssize_t start_pos;
     Py_ssize_t match_pos;
@@ -505,8 +508,8 @@ typedef struct RE_State {
     RE_GroupCallFrame* current_group_call_frame;
     RE_GuardList* group_call_guard_list;
     RE_SearchPosition search_positions[MAX_SEARCH_POSITIONS]; /* Where the search matches next. */
-    unsigned short iterations;
-    size_t capture_change;
+    unsigned short iterations; /* The number of iterations the matching engine has performed since checking for KeyboardInterrupt. */
+    size_t capture_change; /* Incremented every time a captive group changes. */
     Py_ssize_t req_pos; /* The position where the required string matched. */
     Py_ssize_t req_end; /* The end position where the required string matched. */
     BOOL unicode; /* Whether the string to be matched is Unicode. */
@@ -518,7 +521,7 @@ typedef struct RE_State {
     BOOL must_advance; /* Whether the end of the match must advance past its start. */
     BOOL is_multithreaded; /* Whether to release the GIL while matching. */
     BOOL too_few_errors; /* Whether there were too few fuzzy errors. */
-    BOOL match_all; /* Whether to match all of the string. */
+    BOOL match_all; /* Whether to match all of the string ('fullmatch'). */
 } RE_State;
 
 /* Storage for the regex state and thread state.
@@ -6864,9 +6867,7 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
 /* Builds a Unicode string. */
 Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t len,
   Py_ssize_t buffer_charsize) {
-#if PY_VERSION_HEX < 0x03030000
-    return PyUnicode_FromUnicode(buffer, len);
-#else
+#if PY_VERSION_HEX >= 0x03030000
     int kind;
 
     switch (buffer_charsize) {
@@ -6882,6 +6883,8 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t len,
     }
 
     return PyUnicode_FromKindAndData(kind, buffer, len);
+#else
+    return PyUnicode_FromUnicode(buffer, len);
 #endif
 }
 
@@ -7081,12 +7084,12 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
     encoding = state->encoding;
     full_case_fold = encoding->full_case_fold;
 
-#if PY_VERSION_HEX < 0x03030000
-    /* The folded string will have the same width as the original string. */
-    folded_charsize = state->charsize;
-#else
+#if PY_VERSION_HEX >= 0x03030000
     /* The folded string needs to be at least 2 bytes per character. */
     folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
+#else
+    /* The folded string will have the same width as the original string. */
+    folded_charsize = state->charsize;
 #endif
 
     switch (folded_charsize) {
@@ -7222,12 +7225,12 @@ Py_LOCAL_INLINE(int) string_set_match_fld_rev(RE_SafeState* safe_state,
 
     acquire_GIL(safe_state);
 
-#if PY_VERSION_HEX < 0x03030000
-    /* The folded string will have the same width as the original string. */
-    folded_charsize = state->charsize;
-#else
+#if PY_VERSION_HEX >= 0x03030000
     /* The folded string needs to be at least 2 bytes per character. */
     folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
+#else
+    /* The folded string will have the same width as the original string. */
+    folded_charsize = state->charsize;
 #endif
 
     switch (folded_charsize) {
@@ -7363,12 +7366,12 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
 
     acquire_GIL(safe_state);
 
-#if PY_VERSION_HEX < 0x03030000
-    /* The folded string will have the same width as the original string. */
-    folded_charsize = state->charsize;
-#else
+#if PY_VERSION_HEX >= 0x03030000
     /* The folded string needs to be at least 2 bytes per character. */
     folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
+#else
+    /* The folded string will have the same width as the original string. */
+    folded_charsize = state->charsize;
 #endif
 
     switch (folded_charsize) {
@@ -12734,17 +12737,17 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
      */
     if (PyUnicode_Check(string)) {
         /* Unicode strings doesn't always support the buffer interface. */
-#if PY_VERSION_HEX < 0x03030000
-        str_info->characters = (void*)PyUnicode_AS_DATA(string);
-        str_info->length = PyUnicode_GET_SIZE(string);
-        str_info->charsize = sizeof(Py_UNICODE);
-#else
+#if PY_VERSION_HEX >= 0x03030000
         if (PyUnicode_READY(string) == -1)
             return FALSE;
 
         str_info->characters = (void*)PyUnicode_DATA(string);
         str_info->length = PyUnicode_GET_LENGTH(string);
         str_info->charsize = PyUnicode_KIND(string);
+#else
+        str_info->characters = (void*)PyUnicode_AS_DATA(string);
+        str_info->length = PyUnicode_GET_SIZE(string);
+        str_info->charsize = sizeof(Py_UNICODE);
 #endif
         str_info->unicode = TRUE;
         str_info->should_release = FALSE;
@@ -12754,14 +12757,19 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
     /* Get pointer to string buffer. */
     buffer = Py_TYPE(string)->tp_as_buffer;
     str_info->view.len = -1;
-    if (!buffer || !buffer->bf_getbuffer || (*buffer->bf_getbuffer)(string,
+
+    if (!buffer) {
+        PyErr_SetString(PyExc_TypeError, "expected string or buffer");
+        return FALSE;
+    }
+
+    if (!buffer->bf_getbuffer || (*buffer->bf_getbuffer)(string,
       &str_info->view, PyBUF_SIMPLE) < 0) {
         PyErr_SetString(PyExc_TypeError, "expected string or buffer");
         return FALSE;
     }
 
     str_info->should_release = TRUE;
-
 
     /* Determine buffer size. */
     bytes = str_info->view.len;
@@ -14187,17 +14195,17 @@ error:
 
 Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self);
 
-/* MatchObject's 'copy' method. */
+/* MatchObject's '__copy__' method. */
 static PyObject* match_copy(MatchObject* self, PyObject *unused) {
     return make_match_copy(self);
 }
 
-/* MatchObject's 'deepcopy' method. */
+/* MatchObject's '__deepcopy__' method. */
 static PyObject* match_deepcopy(MatchObject* self, PyObject* memo) {
     return make_match_copy(self);
 }
 
-/* MatchObject's 'regs' method. */
+/* MatchObject's 'regs' attribute. */
 static PyObject* match_regs(MatchObject* self) {
     PyObject* regs;
     PyObject* item;
@@ -14240,12 +14248,12 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_slice(MatchObject* self, PyObject*
     Py_ssize_t step;
     Py_ssize_t slice_length;
 
-#if PY_VERSION_HEX < 0x03020000
-    if (PySlice_GetIndicesEx((PySliceObject*)slice, self->group_count + 1,
-      &start, &end, &step, &slice_length) < 0)
-#else
+#if PY_VERSION_HEX >= 0x03020000
     if (PySlice_GetIndicesEx(slice, self->group_count + 1, &start, &end, &step,
       &slice_length) < 0)
+#else
+    if (PySlice_GetIndicesEx((PySliceObject*)slice, self->group_count + 1,
+      &start, &end, &step, &slice_length) < 0)
 #endif
         return NULL;
 
@@ -14276,8 +14284,8 @@ static Py_ssize_t match_length(MatchObject* self) {
     return self->group_count + 1;
 }
 
-/* MatchObject's subscript method. */
-static PyObject* match_subscript(MatchObject* self, PyObject* item) {
+/* MatchObject's '__getitem__' method. */
+static PyObject* match_getitem(MatchObject* self, PyObject* item) {
     if (PySlice_Check(item))
         return match_get_group_slice(self, item);
 
@@ -14321,7 +14329,7 @@ Py_LOCAL_INLINE(void) determine_target_substring(MatchObject* match, Py_ssize_t*
     *slice_end = end;
 }
 
-/* MatchObject's detach_string method. */
+/* MatchObject's 'detach_string' method. */
 static PyObject* match_detach_string(MatchObject* self, PyObject* unused) {
     if (self->string) {
         Py_ssize_t start;
@@ -14459,11 +14467,14 @@ static PyMethodDef match_methods[] = {
       match_detach_string_doc},
     {"__copy__", (PyCFunction)match_copy, METH_NOARGS},
     {"__deepcopy__", (PyCFunction)match_deepcopy, METH_O},
-    {"__getitem__", (PyCFunction)match_subscript, METH_O|METH_COEXIST},
+    {"__getitem__", (PyCFunction)match_getitem, METH_O|METH_COEXIST},
     {NULL, NULL}
 };
 
-static PyObject* match_lastindex_get(PyObject* self_) {
+PyDoc_STRVAR(match_doc, "Match object");
+
+/* MatchObject's 'lastindex' attribute. */
+static PyObject* match_lastindex(PyObject* self_) {
     MatchObject* self;
 
     self = (MatchObject*)self_;
@@ -14475,7 +14486,8 @@ static PyObject* match_lastindex_get(PyObject* self_) {
     return Py_None;
 }
 
-static PyObject* match_lastgroup_get(PyObject* self_) {
+/* MatchObject's 'lastgroup' attribute. */
+static PyObject* match_lastgroup(PyObject* self_) {
     MatchObject* self;
 
     self = (MatchObject*)self_;
@@ -14495,19 +14507,8 @@ static PyObject* match_lastgroup_get(PyObject* self_) {
     return Py_None;
 }
 
-static PyObject* match_regs_get(PyObject* self_) {
-    MatchObject* self;
-
-    self = (MatchObject*)self_;
-
-    if (self->regs) {
-        Py_INCREF(self->regs);
-        return self->regs;
-    } else
-        return match_regs(self);
-}
-
-static PyObject* match_string_get(PyObject* self_) {
+/* MatchObject's 'string' attribute. */
+static PyObject* match_string(PyObject* self_) {
     MatchObject* self;
 
     self = (MatchObject*)self_;
@@ -14522,23 +14523,23 @@ static PyObject* match_string_get(PyObject* self_) {
 }
 
 static PyGetSetDef match_getset[] = {
-    {"lastindex", (getter)match_lastindex_get, (setter)NULL},
-    {"lastgroup", (getter)match_lastgroup_get, (setter)NULL},
-    {"regs",      (getter)match_regs_get,      (setter)NULL},
-    {"string",    (getter)match_string_get,    (setter)NULL},
+    {"lastindex", (getter)match_lastindex, (setter)NULL, "The group number of the last matched capturing group, or None."},
+    {"lastgroup", (getter)match_lastgroup, (setter)NULL, "The name of the last matched capturing group, or None."},
+    {"regs",      (getter)match_regs,      (setter)NULL, "A tuple of the spans of the capturing groups."},
+    {"string",    (getter)match_string,    (setter)NULL, "The string that was searched, or None if it has been detached."},
     {NULL}  /* Sentinel */
 };
 
 static PyMemberDef match_members[] = {
-    {"re",     T_OBJECT,   offsetof(MatchObject, pattern), READONLY},
-    {"pos",    T_PYSSIZET, offsetof(MatchObject, pos),     READONLY},
-    {"endpos", T_PYSSIZET, offsetof(MatchObject, endpos),  READONLY},
+    {"re",     T_OBJECT,   offsetof(MatchObject, pattern), READONLY, "The regex object that produced this match object."},
+    {"pos",    T_PYSSIZET, offsetof(MatchObject, pos),     READONLY, "The position at which the regex engine starting searching."},
+    {"endpos", T_PYSSIZET, offsetof(MatchObject, endpos),  READONLY, "The final position beyond which the regex engine won't search."},
     {NULL}  /* Sentinel */
 };
 
 static PyMappingMethods match_as_mapping = {
     (lenfunc)match_length,       /* mp_length */
-    (binaryfunc)match_subscript, /* mp_subscript */
+    (binaryfunc)match_getitem,   /* mp_subscript */
     0,                           /* mp_ass_subscript */
 };
 
@@ -14773,6 +14774,7 @@ Py_LOCAL_INLINE(void) release_state_lock(PyObject* owner, RE_SafeState*
     }
 }
 
+/* Implements the functionality of ScanObject's search and match methods. */
 static PyObject* scanner_search_or_match(ScannerObject* self, BOOL search) {
     RE_State* state;
     RE_SafeState safe_state;
@@ -14801,12 +14803,15 @@ static PyObject* scanner_search_or_match(ScannerObject* self, BOOL search) {
         return NULL;
     }
 
+    /* Look for another match. */
     self->status = do_match(&safe_state, search);
     if (self->status < 0) {
+        /* Internal error. */
         release_state_lock((PyObject*)self, &safe_state);
         return NULL;
     }
 
+    /* Create the match object. */
     match = pattern_new_match(self->pattern, state, self->status);
 
     if (search && state->overlapped) {
@@ -14871,24 +14876,35 @@ Py_LOCAL_INLINE(PyObject*) make_scanner_copy(ScannerObject* self) {
     return (PyObject*)self;
 }
 
-/* ScannerObject's 'copy' method. */
+/* ScannerObject's '__copy__' method. */
 static PyObject* scanner_copy(ScannerObject* self, PyObject *unused) {
     return make_scanner_copy(self);
 }
 
-/* ScannerObject's 'deepcopy' method. */
+/* ScannerObject's '__deepcopy__' method. */
 static PyObject* scanner_deepcopy(ScannerObject* self, PyObject* memo) {
     return make_scanner_copy(self);
 }
 
+/* The documentation of a ScannerObject. */
+PyDoc_STRVAR(scanner_match_doc,
+    "match() --> MatchObject or None.\n\
+    Match at the current position in the string.");
+
+PyDoc_STRVAR(scanner_search_doc,
+    "search() --> MatchObject or None.\n\
+    Search from the current position in the string.");
+
 /* ScannerObject's methods. */
 static PyMethodDef scanner_methods[] = {
-    {"match", (PyCFunction)scanner_match, METH_NOARGS},
-    {"search", (PyCFunction)scanner_search, METH_NOARGS},
+    {"match", (PyCFunction)scanner_match, METH_NOARGS, scanner_match_doc},
+    {"search", (PyCFunction)scanner_search, METH_NOARGS, scanner_search_doc},
     {"__copy__", (PyCFunction)scanner_copy, METH_NOARGS},
     {"__deepcopy__", (PyCFunction)scanner_deepcopy, METH_O},
     {NULL, NULL}
 };
+
+PyDoc_STRVAR(scanner_doc, "Scanner object");
 
 /* Deallocates a ScannerObject. */
 static void scanner_dealloc(PyObject* self_) {
@@ -14902,7 +14918,7 @@ static void scanner_dealloc(PyObject* self_) {
 }
 
 static PyMemberDef scanner_members[] = {
-    {"pattern", T_OBJECT, offsetof(ScannerObject, pattern), READONLY},
+    {"pattern", T_OBJECT, offsetof(ScannerObject, pattern), READONLY, "The regex object that produced this scanner object."},
     {NULL}  /* Sentinel */
 };
 
@@ -14977,8 +14993,8 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
     return (PyObject*) self;
 }
 
-/* SplitterObject's 'split' method. */
-static PyObject* splitter_split(SplitterObject* self, PyObject *unused) {
+/* Performs the split for the SplitterObject. */
+static PyObject* next_split_part(SplitterObject* self) {
     RE_State* state;
     RE_SafeState safe_state;
     PyObject* result = NULL; /* Initialise to stop compiler warning. */
@@ -15117,6 +15133,22 @@ error:
     return NULL;
 }
 
+/* SplitterObject's 'split' method. */
+static PyObject* splitter_split(SplitterObject* self, PyObject *unused) {
+    PyObject* result;
+
+    result = next_split_part(self);
+
+    if (result == Py_False) {
+        /* The sentinel. */
+        Py_DECREF(Py_False);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    return result;
+}
+
 /* Returns an iterator for a SplitterObject.
  *
  * The iterator is actually the SplitterObject itself.
@@ -15130,7 +15162,7 @@ static PyObject* splitter_iter(PyObject* self) {
 static PyObject* splitter_iternext(PyObject* self) {
     PyObject* result;
 
-    result = splitter_split((SplitterObject*)self, NULL);
+    result = next_split_part((SplitterObject*)self);
 
     if (result == Py_False) {
         /* No match. */
@@ -15150,23 +15182,30 @@ Py_LOCAL_INLINE(PyObject*) make_splitter_copy(SplitterObject* self) {
     return (PyObject*)self;
 }
 
-/* SplitterObject's 'copy' method. */
+/* SplitterObject's '__copy__' method. */
 static PyObject* splitter_copy(SplitterObject* self, PyObject *unused) {
     return make_splitter_copy(self);
 }
 
-/* SplitterObject's 'deepcopy' method. */
+/* SplitterObject's '__deepcopy__' method. */
 static PyObject* splitter_deepcopy(SplitterObject* self, PyObject* memo) {
     return make_splitter_copy(self);
 }
 
+/* The documentation of a SplitterObject. */
+PyDoc_STRVAR(splitter_split_doc,
+    "split() --> string or None.\n\
+    Return the next part of the split string.");
+
 /* SplitterObject's methods. */
 static PyMethodDef splitter_methods[] = {
-    {"split", (PyCFunction)splitter_split, METH_NOARGS},
+    {"split", (PyCFunction)splitter_split, METH_NOARGS, splitter_split_doc},
     {"__copy__", (PyCFunction)splitter_copy, METH_NOARGS},
     {"__deepcopy__", (PyCFunction)splitter_deepcopy, METH_O},
     {NULL, NULL}
 };
+
+PyDoc_STRVAR(splitter_doc, "Splitter object");
 
 /* Deallocates a SplitterObject. */
 static void splitter_dealloc(PyObject* self_) {
@@ -15180,7 +15219,7 @@ static void splitter_dealloc(PyObject* self_) {
 }
 
 static PyMemberDef splitter_members[] = {
-    {"pattern", T_OBJECT, offsetof(SplitterObject, pattern), READONLY},
+    {"pattern", T_OBJECT, offsetof(SplitterObject, pattern), READONLY, "The regex object that produced this splitter object."},
     {NULL}  /* Sentinel */
 };
 
@@ -15239,6 +15278,7 @@ static PyObject* pattern_splitter(PatternObject* pattern, PyObject* args,
     return (PyObject*) self;
 }
 
+/* Implements the functionality of PatternObject's search and match methods. */
 static PyObject* pattern_search_or_match(PatternObject* self, PyObject* args,
   PyObject* kw, char* args_desc, BOOL search, BOOL match_all) {
     Py_ssize_t start;
@@ -15282,6 +15322,7 @@ static PyObject* pattern_search_or_match(PatternObject* self, PyObject* args,
         return NULL;
     }
 
+    /* Create the match object. */
     match = pattern_new_match(self, &state, status);
 
     state_fini(&state);
@@ -15557,6 +15598,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
               PyTuple_Pack(2, self, str_template));
             if (!replacement) {
                 release_buffer(&str_info);
+
                 return NULL;
             }
         }
@@ -15862,6 +15904,7 @@ static PyObject* pattern_subn(PatternObject* self, PyObject* args, PyObject*
       conc);
 }
 
+/* PatternObject's 'subfn' method. */
 static PyObject* pattern_subfn(PatternObject* self, PyObject* args, PyObject*
   kw) {
     int conc;
@@ -16180,12 +16223,12 @@ Py_LOCAL_INLINE(PyObject*) make_pattern_copy(PatternObject* self) {
     return (PyObject*)self;
 }
 
-/* PatternObject's 'copy' method. */
+/* PatternObject's '__copy__' method. */
 static PyObject* pattern_copy(PatternObject* self, PyObject *unused) {
     return make_pattern_copy(self);
 }
 
-/* PatternObject's 'deepcopy' method. */
+/* PatternObject's '__deepcopy__' method. */
 static PyObject* pattern_deepcopy(PatternObject* self, PyObject* memo) {
     return make_pattern_copy(self);
 }
@@ -16247,6 +16290,11 @@ PyDoc_STRVAR(pattern_finditer_doc,
     matches may be overlapped if overlapped is True.  For each match, the\n\
     iterator returns a MatchObject.");
 
+PyDoc_STRVAR(pattern_scanner_doc,
+    "scanner(string, pos=None, endpos=None, overlapped=False, concurrent=None) --> scanner.\n\
+    Return an scanner for the RE pattern in string.  The matches may be overlapped\n\
+    if overlapped is True.");
+
 /* The methods of a PatternObject. */
 static PyMethodDef pattern_methods[] = {
     {"match", (PyCFunction)pattern_match, METH_VARARGS|METH_KEYWORDS,
@@ -16271,13 +16319,14 @@ static PyMethodDef pattern_methods[] = {
       pattern_findall_doc},
     {"finditer", (PyCFunction)pattern_finditer, METH_VARARGS|METH_KEYWORDS,
       pattern_finditer_doc},
-    {"scanner", (PyCFunction)pattern_scanner, METH_VARARGS|METH_KEYWORDS},
+    {"scanner", (PyCFunction)pattern_scanner, METH_VARARGS|METH_KEYWORDS,
+      pattern_scanner_doc},
     {"__copy__", (PyCFunction)pattern_copy, METH_NOARGS},
     {"__deepcopy__", (PyCFunction)pattern_deepcopy, METH_O},
     {NULL, NULL}
 };
 
-PyDoc_STRVAR(pattern_doc, "Compiled regular expression objects");
+PyDoc_STRVAR(pattern_doc, "Compiled regex object");
 
 /* Deallocates a PatternObject. */
 static void pattern_dealloc(PyObject* self_) {
@@ -16456,7 +16505,8 @@ error:
     return NULL;
 }
 
-static PyObject* pattern_groupindex_get(PyObject* self_) {
+/* PatternObject's 'groupindex' method. */
+static PyObject* pattern_groupindex(PyObject* self_) {
     PatternObject* self;
 
     self = (PatternObject*)self_;
@@ -16465,15 +16515,15 @@ static PyObject* pattern_groupindex_get(PyObject* self_) {
 }
 
 static PyGetSetDef pattern_getset[] = {
-    {"groupindex", (getter)pattern_groupindex_get, (setter)NULL},
+    {"groupindex", (getter)pattern_groupindex, (setter)NULL, "A dictionary mapping group names to group numbers."},
     {NULL}  /* Sentinel */
 };
 
 static PyMemberDef pattern_members[] = {
-    {"pattern",     T_OBJECT,   offsetof(PatternObject, pattern),     READONLY},
-    {"flags",       T_PYSSIZET, offsetof(PatternObject, flags),       READONLY},
-    {"groups",      T_PYSSIZET, offsetof(PatternObject, group_count), READONLY},
-    {"named_lists", T_OBJECT,   offsetof(PatternObject, named_lists), READONLY},
+    {"pattern",     T_OBJECT,   offsetof(PatternObject, pattern),     READONLY, "The pattern string from which the regex object was compiled."},
+    {"flags",       T_PYSSIZET, offsetof(PatternObject, flags),       READONLY, "The regex matching flags."},
+    {"groups",      T_PYSSIZET, offsetof(PatternObject, group_count), READONLY, "The number of capturing groups in the pattern."},
+    {"named_lists", T_OBJECT,   offsetof(PatternObject, named_lists), READONLY, "The named lists used by the regex."},
     {NULL}  /* Sentinel */
 };
 
@@ -18874,6 +18924,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     if (!get_string(string, &str_info))
         return NULL;
 
+    /* Get the function for reading from the original string. */
     switch (str_info.charsize) {
     case 1:
         char_at = bytes1_char_at;
@@ -18883,30 +18934,6 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
         break;
     case 4:
         char_at = bytes4_char_at;
-        break;
-    default:
-        release_buffer(&str_info);
-
-        return NULL;
-    }
-
-#if PY_VERSION_HEX < 0x03030000
-    /* The folded string will have the same width as the original string. */
-    folded_charsize = str_info.charsize;
-#else
-    /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max_int(str_info.charsize, sizeof(Py_UCS2));
-#endif
-
-    switch (folded_charsize) {
-    case 1:
-        set_char_at = bytes1_set_char_at;
-        break;
-    case 2:
-        set_char_at = bytes2_set_char_at;
-        break;
-    case 4:
-        set_char_at = bytes4_set_char_at;
         break;
     default:
         release_buffer(&str_info);
@@ -18924,8 +18951,44 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     else
         encoding = &unicode_encoding;
 
+#if PY_VERSION_HEX >= 0x03030000
+    /* Initially assume that the folded string will have the same width as the
+     * original string (usually true).
+     */
+    folded_charsize = str_info.charsize;
+
+    /* When folding a Unicode string, some codepoints in the range U+00..U+FF
+     * are transformed to codepoints in the range U+0100..U+FFFF.
+     */
+    if (encoding == &unicode_encoding && str_info.charsize == 1)
+        folded_charsize = 2;
+#else
+    /* The folded string will have the same width as the original string. */
+    folded_charsize = str_info.charsize;
+#endif
+
+    /* Get the function for writing to the folded string. */
+    switch (folded_charsize) {
+    case 1:
+        set_char_at = bytes1_set_char_at;
+        break;
+    case 2:
+        set_char_at = bytes2_set_char_at;
+        break;
+    case 4:
+        set_char_at = bytes4_set_char_at;
+        break;
+    default:
+        release_buffer(&str_info);
+
+        return NULL;
+    }
+
     /* Allocate a buffer for the folded string. */
     if (flags & RE_FLAG_FULLCASE)
+        /* When using full case-folding with Unicode, some single codepoints are
+         * transformed  to sequences of codepoints.
+         */
         buf_size = str_info.length * RE_MAX_FOLDED;
     else
         buf_size = str_info.length;
@@ -18941,6 +19004,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     folded_len = 0;
 
     if (flags & RE_FLAG_FULLCASE) {
+        /* Full case-folding. */
         int (*full_case_fold)(Py_UCS4 ch, Py_UCS4* folded);
         Py_ssize_t i;
         Py_UCS4 codepoints[RE_MAX_FOLDED];
@@ -18958,6 +19022,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
             folded_len += count;
         }
     } else {
+        /* Simple case-folding. */
         Py_UCS4 (*simple_case_fold)(Py_UCS4 ch);
         Py_ssize_t i;
 
@@ -18981,6 +19046,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
 
     re_dealloc(folded);
 
+    /* Release the original string's buffer. */
     release_buffer(&str_info);
 
     return result;
@@ -19002,20 +19068,16 @@ static PyObject* get_expand_on_folding(PyObject* self, PyObject* unused) {
         goto error;
 
     for (i = 0; i < count; i++) {
-#if PY_VERSION_HEX < 0x03030000
-        Py_UNICODE codepoint;
-#else
+#if PY_VERSION_HEX >= 0x03030000
         Py_UCS4 codepoint;
+#else
+        Py_UNICODE codepoint;
 #endif
         PyObject* item;
 
         codepoint = re_expand_on_folding[i];
 
-#if PY_VERSION_HEX < 0x03030000
-        item = build_unicode_value(&codepoint, 1, sizeof(Py_UNICODE));
-#else
-        item = build_unicode_value(&codepoint, 1, sizeof(Py_UCS4));
-#endif
+        item = build_unicode_value(&codepoint, 1, sizeof(codepoint));
         if (!item)
             goto error;
 
@@ -19183,7 +19245,7 @@ static BOOL init_property_dict(void) {
         PyDict_SetItemString(property_dict, re_strings[property->name], v);
     }
 
-    /* DECREF the value sets. Any unused ones will be destroyed. */
+    /* DECREF the value sets. Any unused ones will be deallocated. */
     for (i = 0; i < value_set_count; i++)
         Py_XDECREF(value_dicts[i]);
 
@@ -19240,6 +19302,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
     Match_Type.tp_dealloc = match_dealloc;
     Match_Type.tp_as_mapping = &match_as_mapping;
     Match_Type.tp_flags = Py_TPFLAGS_DEFAULT;
+    Match_Type.tp_doc = match_doc;
     Match_Type.tp_methods = match_methods;
     Match_Type.tp_members = match_members;
     Match_Type.tp_getset = match_getset;
@@ -19247,6 +19310,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
     /* Initialise Scanner_Type. */
     Scanner_Type.tp_dealloc = scanner_dealloc;
     Scanner_Type.tp_flags = Py_TPFLAGS_DEFAULT;
+    Scanner_Type.tp_doc = scanner_doc;
     Scanner_Type.tp_iter = scanner_iter;
     Scanner_Type.tp_iternext = scanner_iternext;
     Scanner_Type.tp_methods = scanner_methods;
@@ -19255,6 +19319,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
     /* Initialise Splitter_Type. */
     Splitter_Type.tp_dealloc = splitter_dealloc;
     Splitter_Type.tp_flags = Py_TPFLAGS_DEFAULT;
+    Splitter_Type.tp_doc = splitter_doc;
     Splitter_Type.tp_iter = splitter_iter;
     Splitter_Type.tp_iternext = splitter_iternext;
     Splitter_Type.tp_methods = splitter_methods;
@@ -19275,6 +19340,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
     m = PyModule_Create(&remodule);
     if (!m)
         return NULL;
+
     d = PyModule_GetDict(m);
 
     x = PyLong_FromLong(RE_MAGIC);
@@ -19295,6 +19361,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
         Py_DECREF(x);
     }
 
+    /* Initialise the property dictionary. */
     if (!init_property_dict())
         return NULL;
 

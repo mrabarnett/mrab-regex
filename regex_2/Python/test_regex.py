@@ -221,10 +221,10 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.sub('x', r'\09', 'x'), "\0" + "9")
         self.assertEquals(regex.sub('x', r'\0a', 'x'), "\0" + "a")
 
-        self.assertEquals(regex.sub('x', r'\400', 'x'), "\x00")
-        self.assertEquals(regex.sub('x', r'\777', 'x'), "\xFF")
         self.assertEquals(regex.sub(u'x', ur'\400', u'x'), u"\u0100")
         self.assertEquals(regex.sub(u'x', ur'\777', u'x'), u"\u01FF")
+        self.assertEquals(regex.sub('x', r'\400', 'x'), "\x00")
+        self.assertEquals(regex.sub('x', r'\777', 'x'), "\xFF")
 
         self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
           regex.sub('x', r'\1', 'x'))
