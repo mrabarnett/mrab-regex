@@ -399,7 +399,7 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 </div>
 <div class="section" id="unicode">
 <h1>Unicode</h1>
-<p>This module supports Unicode 6.1.</p>
+<p>This module supports Unicode 6.2.</p>
 <p>Full Unicode case-folding is supported.</p>
 </div>
 <div class="section" id="additional-features">
@@ -578,7 +578,6 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 <p><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot; dog&quot;</tt> (with a leading space) because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted).</p>
 <p><tt class="docutils literal"><span class="pre">regex.search(&quot;(?e)(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;dog&quot;</tt> (without a leading space) because the fuzzy search matches <tt class="docutils literal">&quot; dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted), and the <tt class="docutils literal"><span class="pre">(?e)</span></tt> then makes it attempt a better fit.</p>
 <p>In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.</p>
-<p>Finally, when matching a fuzzy regex that contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then, if there were too few errors, reject it and continue searching from where that match finished.</p>
 </blockquote>
 </li>
 <li><p class="first">Named lists (Hg issue 11)</p>

@@ -126,7 +126,7 @@ If the source files are built for a 64-bit target then the string positions will
 Unicode
 -------
 
-This module supports Unicode 6.1.
+This module supports Unicode 6.2.
 
 Full Unicode case-folding is supported.
 
@@ -339,8 +339,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
     ``regex.search("(?e)(dog){e<=1}", "cat and dog")[1]`` returns ``"dog"`` (without a leading space) because the fuzzy search matches ``" dog"`` with 1 error, which is within the limit (1 error is permitted), and the ``(?e)`` then makes it attempt a better fit.
 
     In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.
-
-    Finally, when matching a fuzzy regex that contains a minimum, the regex module will first attempt a match while ignoring the minimum, and then, if there were too few errors, reject it and continue searching from where that match finished.
 
 * Named lists (Hg issue 11)
 

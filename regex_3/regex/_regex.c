@@ -1269,17 +1269,23 @@ Py_LOCAL_INLINE(BOOL) is_unicode_vowel(Py_UCS4 ch) {
     }
 }
 
-/* Checks whether the current text position is on a default word boundary. */
+/* Checks whether the current text position is on a default word boundary.
+ *
+ * The rules are defined here:
+ * http://www.unicode.org/reports/tr29/#Default_Word_Boundaries
+ */
 static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     int prop;
     int prop_m1;
     Py_ssize_t pos_m1;
-    Py_ssize_t pos_p1;
-    int prop_p1;
     Py_ssize_t pos_m2;
     int prop_m2;
+    Py_ssize_t pos_p0;
+    int prop_p0;
+    Py_ssize_t pos_p1;
+    int prop_p1;
 
     /* Break at the start and end of the text. */
     if (text_pos <= 0 || text_pos >= state->text_length)
@@ -1301,10 +1307,6 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
       RE_BREAK_LF)
         return TRUE;
 
-    /* Don't break just before Format or Extend characters. */
-    if (prop == RE_BREAK_EXTEND || prop == RE_BREAK_FORMAT)
-        return FALSE;
-
     /* Get the property of the previous character. */
     pos_m1 = text_pos - 1;
     prop_m1 = RE_BREAK_OTHER;
@@ -1312,75 +1314,96 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
         prop_m1 = re_get_word_break(char_at(text, pos_m1));
         if (prop_m1 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT)
             break;
+
         --pos_m1;
     }
 
-    /* Don't break between most letters. */
-    if (prop_m1 == RE_BREAK_ALETTER && prop == RE_BREAK_ALETTER)
-        return FALSE;
+    /* Get the property of the preceding character. */
+    pos_m2 = pos_m1 - 1;
+    prop_m2 = RE_BREAK_OTHER;
+    while (pos_m2 >= 0) {
+        prop_m2 = re_get_word_break(char_at(text, pos_m2));
+        if (prop_m2 != RE_BREAK_EXTEND && prop_m2 != RE_BREAK_FORMAT)
+            break;
 
-    if (pos_m1 >= 0 && char_at(text, pos_m1) == '\'' &&
-      is_unicode_vowel(char_at(text, text_pos)))
-        return TRUE;
+        --pos_m2;
+    }
 
-    pos_p1 = text_pos + 1;
+    /* Get the property of the next character. */
+    pos_p0 = text_pos;
+    prop_p0 = prop;
+    while (pos_p0 < state->text_length) {
+        prop_p0 = re_get_word_break(char_at(text, pos_p0));
+        if (prop_p0 != RE_BREAK_EXTEND && prop_p0 != RE_BREAK_FORMAT)
+            break;
+
+        ++pos_p0;
+    }
+
+    /* Get the property of the following character. */
+    pos_p1 = pos_p0 + 1;
     prop_p1 = RE_BREAK_OTHER;
     while (pos_p1 < state->text_length) {
         prop_p1 = re_get_word_break(char_at(text, pos_p1));
         if (prop_p1 != RE_BREAK_EXTEND && prop_p1 != RE_BREAK_FORMAT)
             break;
-        --pos_p1;
+
+        ++pos_p1;
     }
 
-    /* Don't break letters across certain punctuation. */
-    if (prop_m1 == RE_BREAK_ALETTER && (prop == RE_BREAK_MIDLETTER || prop ==
-      RE_BREAK_MIDNUMLET) && prop_p1 == RE_BREAK_ALETTER)
+    /* Don't break between most letters. */
+    if (prop_m1 == RE_BREAK_ALETTER && prop_p0 == RE_BREAK_ALETTER)
         return FALSE;
 
-    pos_m2 = pos_m1 - 1;
-    prop_m2 = RE_BREAK_OTHER;
-    while (pos_m2 >= 0) {
-        prop_m2 = re_get_word_break(char_at(text, pos_m2));
-        if (prop_m2 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT)
-            break;
-        --pos_m2;
-    }
+    /* Break between apostrophe and vowels (French, Italian). */
+    if (pos_m1 >= 0 && char_at(text, pos_m1) == '\'' &&
+      is_unicode_vowel(char_at(text, text_pos)))
+        return TRUE;
 
-    if (prop_m2 == RE_BREAK_ALETTER && (prop_m1 == RE_BREAK_MIDLETTER ||
-      prop_m1 == RE_BREAK_MIDNUMLET) && prop == RE_BREAK_ALETTER)
+    /* Don't break letters across certain punctuation. */
+    if (prop_m1 == RE_BREAK_ALETTER && (prop_p0 == RE_BREAK_MIDLETTER || prop_p0
+      == RE_BREAK_MIDNUMLET) && prop_p1 == RE_BREAK_ALETTER)
+        return FALSE;
+    if (prop_m2 == RE_BREAK_ALETTER && (prop_m1 == RE_BREAK_MIDLETTER || prop_m1
+      == RE_BREAK_MIDNUMLET) && prop_p0 == RE_BREAK_ALETTER)
         return FALSE;
 
     /* Don't break within sequences of digits, or digits adjacent to letters
      * ("3a", or "A3").
      */
-    if ((prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_ALETTER) && prop ==
-      RE_BREAK_NUMERIC)
+    if ((prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_ALETTER) && prop_p0
+      == RE_BREAK_NUMERIC)
         return FALSE;
 
-    if (prop_m1 == RE_BREAK_NUMERIC && prop == RE_BREAK_ALETTER)
+    if (prop_m1 == RE_BREAK_NUMERIC && prop_p0 == RE_BREAK_ALETTER)
         return FALSE;
 
     /* Don't break within sequences, such as "3.2" or "3,456.789". */
     if (prop_m2 == RE_BREAK_NUMERIC && (prop_m1 == RE_BREAK_MIDNUM || prop_m1
-      == RE_BREAK_MIDNUMLET) && prop == RE_BREAK_NUMERIC)
+      == RE_BREAK_MIDNUMLET) && prop_p0 == RE_BREAK_NUMERIC)
         return FALSE;
 
-    if (prop_m1 == RE_BREAK_NUMERIC && (prop == RE_BREAK_MIDNUM || prop ==
+    if (prop_m1 == RE_BREAK_NUMERIC && (prop_p0 == RE_BREAK_MIDNUM || prop_p0 ==
       RE_BREAK_MIDNUMLET) && prop_p1 == RE_BREAK_NUMERIC)
         return FALSE;
 
     /* Don't break between Katakana. */
-    if (prop_m1 == RE_BREAK_KATAKANA && prop == RE_BREAK_KATAKANA)
+    if (prop_m1 == RE_BREAK_KATAKANA && prop_p0 == RE_BREAK_KATAKANA)
         return FALSE;
 
     /* Don't break from extenders. */
     if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_NUMERIC || prop_m1
-      == RE_BREAK_KATAKANA || prop_m1 == RE_BREAK_EXTENDNUMLET) && prop ==
+      == RE_BREAK_KATAKANA || prop_m1 == RE_BREAK_EXTENDNUMLET) && prop_p0 ==
       RE_BREAK_EXTENDNUMLET)
         return FALSE;
 
-    if (prop_m1 == RE_BREAK_EXTENDNUMLET && (prop == RE_BREAK_ALETTER || prop
-      == RE_BREAK_NUMERIC || prop == RE_BREAK_KATAKANA))
+    if (prop_m1 == RE_BREAK_EXTENDNUMLET && (prop_p0 == RE_BREAK_ALETTER ||
+      prop_p0 == RE_BREAK_NUMERIC || prop_p0 == RE_BREAK_KATAKANA))
+        return FALSE;
+
+    /* Don't break between regional indicator symbols. */
+    if (prop_m1 == RE_BREAK_REGIONALINDICATOR && prop_p0 ==
+      RE_BREAK_REGIONALINDICATOR)
         return FALSE;
 
     /* Otherwise, break everywhere (including around ideographs). */
@@ -1540,7 +1563,11 @@ static BOOL unicode_at_default_word_end(RE_State* state, Py_ssize_t text_pos) {
     return unicode_at_default_word_start_or_end(state, text_pos, FALSE);
 }
 
-/* Checks whether the current text position is on a grapheme boundary. */
+/* Checks whether the current text position is on a grapheme boundary.
+ *
+ * The rules are defined here:
+ * http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
+ */
 static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
   {
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
@@ -1577,6 +1604,11 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
         return FALSE;
     if ((prop_m1 == RE_GBREAK_LVT || prop_m1 == RE_GBREAK_T) && (prop ==
       RE_GBREAK_T))
+        return FALSE;
+
+    /* Don't break between regional indicator symbols. */
+    if (prop_m1 == RE_GBREAK_REGIONALINDICATOR && prop ==
+      RE_GBREAK_REGIONALINDICATOR)
         return FALSE;
 
     /* Don't break just before Extend characters. */
@@ -9104,6 +9136,12 @@ advance:
             if (!fuzzy_insert(safe_state, text_pos, node))
                 return RE_ERROR_BACKTRACKING;
 
+            /* If there were too few errors, in the fuzzy section, try again. */
+            if (state->too_few_errors) {
+                state->too_few_errors = FALSE;
+                goto backtrack;
+            }
+
             node = node->next_1.node;
             break;
         case RE_OP_END_GREEDY_REPEAT: /* End of a greedy repeat. */
@@ -11295,6 +11333,12 @@ backtrack:
             if (!retry_fuzzy_insert(safe_state, &text_pos, &node))
                 return RE_ERROR_BACKTRACKING;
 
+            /* If there were too few errors, in the fuzzy section, try again. */
+            if (state->too_few_errors) {
+                state->too_few_errors = FALSE;
+                goto backtrack;
+            }
+
             if (node) {
                 node = node->next_1.node;
                 goto advance;
@@ -12552,7 +12596,6 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     get_best = (pattern->flags & RE_FLAG_BESTMATCH) != 0;
     enhance_match = (pattern->flags & RE_FLAG_ENHANCEMATCH) != 0 && !get_best;
 
-try_again:
     /* The maximum permitted cost. */
     state->max_cost = pattern->is_fuzzy ? RE_UNLIMITED : 0;
 
@@ -12671,14 +12714,6 @@ try_again:
         PatternObject* pattern;
         RE_GroupInfo* group_info;
         Py_ssize_t g;
-
-        if (state->too_few_errors) {
-            /* It matched, but there were too few errors, so ignore that match and
-             * try again from where we finished.
-             */
-            state->must_advance = state->match_pos == state->text_pos;
-            goto try_again;
-        }
 
         /* Store the results. */
         state->lastindex = -1;

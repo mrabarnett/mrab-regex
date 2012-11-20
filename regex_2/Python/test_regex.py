@@ -2723,7 +2723,7 @@ xyzabc
         self.assertEquals(regex.search(r'^.*(dot.org){e}.*$', text).span(0, 1),
           ((0, 119), (24, 101)))
 
-        # Behaviour is unexpectd, but arguably not wrong. It first finds the
+        # Behaviour is unexpected, but arguably not wrong. It first finds the
         # best match, then the best in what follows, etc.
         self.assertEquals(regex.findall(r"\b\L<words>{e<=1}\b",
           " book cot dog desk ", words="cat dog".split()), ["cot", "dog"])
@@ -3104,6 +3104,12 @@ xyzabc
         # Hg issue 80
         self.assertRaisesRegex(regex.error, self.BAD_ESCAPE, lambda:
           regex.sub('x', '\\', 'x'), )
+
+        # Hg issue 82
+        fz = "(CAGCCTCCCATTTCAGAATATACATCC){1<e<=2}"
+        seq = "tcagacgagtgcgttgtaaaacgacggccagtCAGCCTCCCATTCAGAATATACATCCcgacggccagttaaaaacaatgccaaggaggtcatagctgtttcctgccagttaaaaacaatgccaaggaggtcatagctgtttcctgacgcactcgtctgagcgggctggcaagg"
+        self.assertEquals(regex.search(fz, seq, regex.BESTMATCH)[0],
+          "tCAGCCTCCCATTCAGAATATACATCC")
 
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
