@@ -3111,6 +3111,9 @@ xyzabc
         self.assertEquals(regex.search(fz, seq, regex.BESTMATCH)[0],
           "tCAGCCTCCCATTCAGAATATACATCC")
 
+        # Hg issue 83
+        self.assertEquals(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format

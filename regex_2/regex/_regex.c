@@ -11793,12 +11793,16 @@ backtrack:
                      */
                     rp_data->count = count;
                 else {
-                    /* We've reached the minimum, so we won't need to backtrack
-                     * the repeat again.
+                    /* We've reached or passed the minimum, so we won't need to
+                     * backtrack the repeat again.
                      */
                     rp_data->start = bt_data->repeat.text_pos;
                     rp_data->count = bt_data->repeat.count;
                     discard_backtrack(state);
+
+                    /* Have we passed the minimum? */
+                    if (count < node->values[1])
+                        goto backtrack;
                 }
 
                 node = node->next_1.node;
@@ -12270,12 +12274,16 @@ backtrack:
                      */
                     rp_data->count = count;
                 } else {
-                    /* We've reached the maximum, so we won't need to backtrack
-                     * the repeat again.
+                    /* We've reached or passed the maximum, so we won't need to
+                     * backtrack the repeat again.
                      */
                     rp_data->start = bt_data->repeat.text_pos;
                     rp_data->count = bt_data->repeat.count;
                     discard_backtrack(state);
+
+                    /* Have we passed the maximum? */
+                    if (count > max_count)
+                        goto backtrack;
                 }
 
                 node = node->next_1.node;

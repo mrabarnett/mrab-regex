@@ -3087,6 +3087,9 @@ xyzabc
         self.assertEquals(regex.search(fz, seq, regex.BESTMATCH)[0],
           "tCAGCCTCCCATTCAGAATATACATCC")
 
+        # Hg issue 83
+        self.assertEquals(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp
