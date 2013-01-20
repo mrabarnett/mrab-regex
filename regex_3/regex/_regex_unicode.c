@@ -10953,17 +10953,7 @@ RE_UINT32 re_get_indic_syllabic_category(RE_UINT32 ch) {
 /* Alphanumeric. */
 
 RE_UINT32 re_get_alphanumeric(RE_UINT32 ch) {
-    RE_UINT32 v;
-
-    v = re_get_alphabetic(ch);
-    if (v == 1)
-        return 1;
-
-    v = re_get_general_category(ch);
-    if (v == RE_PROP_ND)
-        return 1;
-
-    return 0;
+    return re_get_alphabetic(ch) || re_get_general_category(ch) == RE_PROP_ND;
 }
 
 /* Any. */
@@ -10984,97 +10974,40 @@ RE_UINT32 re_get_ascii(RE_UINT32 ch) {
 /* Assigned. */
 
 RE_UINT32 re_get_assigned(RE_UINT32 ch) {
-    if (re_get_general_category(ch) != RE_PROP_CN)
-        return 1;
-
-    return 0;
+    return re_get_general_category(ch) != RE_PROP_CN;
 }
 
 /* Blank. */
 
 RE_UINT32 re_get_blank(RE_UINT32 ch) {
-    RE_UINT32 v;
-
-    if (0x0A <= ch && ch <= 0x0D || ch == 0x85)
-        return 0;
-
-    v = re_get_white_space(ch);
-    if (v == 0)
-        return 0;
-
-    v = re_get_general_category(ch);
-    if ((RE_BLANK_MASK & (1 << v)) != 0)
-        return 0;
-
-    return 1;
+    return ch == 0x09 || re_get_general_category(ch) == RE_PROP_ZS;
 }
 
 /* Graph. */
 
 RE_UINT32 re_get_graph(RE_UINT32 ch) {
-    RE_UINT32 v;
-
-    v = re_get_white_space(ch);
-    if (v == 1)
-        return 0;
-
-    v = re_get_general_category(ch);
-    if ((RE_GRAPH_MASK & (1 << v)) != 0)
-        return 0;
-
-    return 1;
+    return !re_get_white_space(ch) &&
+      (RE_GRAPH_MASK & (1 << re_get_general_category(ch))) == 0;
 }
 
 /* Print. */
 
 RE_UINT32 re_get_print(RE_UINT32 ch) {
-    RE_UINT32 v;
-
-    v = re_get_general_category(ch);
-    if (v == RE_PROP_CC)
-        return 0;
-
-    v = re_get_graph(ch);
-    if (v == 1)
-        return 1;
-
-    v = re_get_blank(ch);
-    if (v == 1)
-        return 1;
-
-    return 0;
+    return (re_get_graph(ch) || re_get_blank(ch)) &&
+      re_get_general_category(ch) != RE_PROP_CC;
 }
 
 /* Word. */
 
 RE_UINT32 re_get_word(RE_UINT32 ch) {
-    RE_UINT32 v;
-
-    v = re_get_alphabetic(ch);
-    if (v == 1)
-        return 1;
-
-    v = re_get_general_category(ch);
-    if ((RE_WORD_MASK & (1 << v)) != 0)
-        return 1;
-
-    return 0;
+    return re_get_alphabetic(ch) || (RE_WORD_MASK & (1 <<
+      re_get_general_category(ch))) != 0 || re_get_join_control(ch);
 }
 
 /* XDigit. */
 
 RE_UINT32 re_get_xdigit(RE_UINT32 ch) {
-    RE_UINT32 v;
-
-    v = re_get_general_category(ch);
-    if (v == RE_PROP_ND)
-        return 1;
-
-    v = re_get_hex_digit(ch);
-    if (v == 1)
-        return 1;
-
-    return 0;
+    return re_get_general_category(ch) == RE_PROP_ND || re_get_hex_digit(ch);
 }
 
 /* All_Cases. */

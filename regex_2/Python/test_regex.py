@@ -3114,6 +3114,12 @@ xyzabc
         # Hg issue 83
         self.assertEquals(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
 
+        # Hg issue 85
+        self.assertEqual(repr(regex.sub(ur"(?u)(\w+)", ur"[\1]",
+          u'\u0905\u0928\u094d\u200d\u0928 \u0d28\u0d4d\u200d \u0915\u093f\u0928',
+          regex.WORD)),
+          repr(u'[\u0905\u0928\u094d\u200d\u0928] [\u0d28\u0d4d\u200d] [\u0915\u093f\u0928]'))
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format

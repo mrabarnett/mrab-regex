@@ -3090,6 +3090,12 @@ xyzabc
         # Hg issue 83
         self.assertEquals(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
 
+        # Hg issue 85
+        self.assertEqual(ascii(regex.sub(r"(\w+)", r"[\1]",
+          '\u0905\u0928\u094d\u200d\u0928 \u0d28\u0d4d\u200d \u0915\u093f\u0928',
+          regex.WORD)),
+          ascii('[\u0905\u0928\u094d\u200d\u0928] [\u0d28\u0d4d\u200d] [\u0915\u093f\u0928]'))
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp
