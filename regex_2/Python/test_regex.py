@@ -1646,10 +1646,16 @@ class RegexTests(unittest.TestCase):
           "abe").groups(), ('a', 'b', 'e'))
         self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)",
           "cde").groups(), ('c', 'd', 'e'))
-        self.assertRaisesRegex(regex.error, self.DUPLICATE_GROUP, lambda:
-          regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)", "abe"))
-        self.assertRaisesRegex(regex.error, self.DUPLICATE_GROUP, lambda:
-          regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)", "cde"))
+
+        # Hg issue #87: Allow duplicate names of groups.
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
+          "abe").groups(), ("a", "b", "e"))
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
+          "abe").capturesdict(), {"a": ["a"], "b": ["b"]})
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
+          "cde").groups(), ("d", None, "e"))
+        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
+          "cde").capturesdict(), {"a": ["c", "d"], "b": []})
 
     def test_set(self):
         self.assertEquals(regex.match(r"[a]", "a").span(), (0, 1))

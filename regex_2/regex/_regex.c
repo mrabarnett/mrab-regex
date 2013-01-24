@@ -9559,6 +9559,7 @@ advance:
             size_t index;
             RE_RepeatData* rp_data;
             size_t count;
+            BOOL match;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Repeat indexes are 0-based. */
@@ -9574,12 +9575,26 @@ advance:
               node->values[2]);
 
             /* Unmatch until it's not guarded. */
-            while (count > 0 && is_repeat_guarded(safe_state, index, text_pos +
-              (Py_ssize_t)count * node->step, RE_STATUS_TAIL))
-                --count;
+            match = FALSE;
+            for (;;) {
+                if (count < node->values[1])
+                    /* The number of repeats is below the minimum. */
+                    break;
 
-            /* Have we matched at least the minimum? */
-            if (count < node->values[1]) {
+                if (!is_repeat_guarded(safe_state, index, text_pos +
+                  (Py_ssize_t)count * node->step, RE_STATUS_TAIL)) {
+                    /* It's not guarded at this position. */
+                    match = TRUE;
+                    break;
+                }
+
+                if (count == 0)
+                    break;
+
+                --count;
+            }
+
+            if (!match) {
                 /* The repeat has failed to match at this position. */
                 if (!guard_repeat(safe_state, index, text_pos, RE_STATUS_BODY,
                   TRUE))
@@ -13856,9 +13871,10 @@ static PyObject* match_groupdict(MatchObject* self, PyObject* args, PyObject*
         goto failed;
 
     for (g = 0; g < PyList_GET_SIZE(keys); g++) {
-        int status;
         PyObject* key;
         PyObject* value;
+        int status;
+
         key = PyList_GET_ITEM(keys, g);
         if (!key)
             goto failed;
@@ -13869,6 +13885,55 @@ static PyObject* match_groupdict(MatchObject* self, PyObject* args, PyObject*
         }
         status = PyDict_SetItem(result, key, value);
         Py_DECREF(value);
+        if (status < 0)
+            goto failed;
+    }
+
+    Py_DECREF(keys);
+
+    return result;
+
+failed:
+    Py_XDECREF(keys);
+    Py_DECREF(result);
+    return NULL;
+}
+
+/* MatchObject's 'capturesdict' method. */
+static PyObject* match_capturesdict(MatchObject* self) {
+    PyObject* result;
+    PyObject* keys;
+    Py_ssize_t g;
+
+    result = PyDict_New();
+    if (!result || !self->pattern->groupindex)
+        return result;
+
+    keys = PyMapping_Keys(self->pattern->groupindex);
+    if (!keys)
+        goto failed;
+
+    for (g = 0; g < PyList_GET_SIZE(keys); g++) {
+        PyObject* key;
+        Py_ssize_t group;
+        PyObject* captures;
+        int status;
+
+        key = PyList_GET_ITEM(keys, g);
+        if (!key)
+            goto failed;
+        group = match_get_group_index(self, key, FALSE);
+        if (group < 0) {
+            Py_DECREF(key);
+            goto failed;
+        }
+        captures = match_get_captures_by_index(self, group);
+        if (!captures) {
+            Py_DECREF(key);
+            goto failed;
+        }
+        status = PyDict_SetItem(result, key, captures);
+        Py_DECREF(captures);
         if (status < 0)
             goto failed;
     }
@@ -14433,6 +14498,11 @@ PyDoc_STRVAR(match_groupdict_doc,
     by the subgroup name.  The argument is the value to be given for groups that\n\
     did not participate in the match.");
 
+PyDoc_STRVAR(match_capturesdict_doc,
+    "capturesdict() --> dict.\n\
+    Return a dictionary containing the captures of all the named subgroups of the\n\
+    match, keyed by the subgroup name.");
+
 PyDoc_STRVAR(match_expand_doc,
     "expand(template) --> string.\n\
     Return the string obtained by doing backslash substitution on the template,\n\
@@ -14493,6 +14563,8 @@ static PyMethodDef match_methods[] = {
       match_groups_doc},
     {"groupdict", (PyCFunction)match_groupdict, METH_VARARGS|METH_KEYWORDS,
       match_groupdict_doc},
+    {"capturesdict", (PyCFunction)match_capturesdict, METH_NOARGS,
+      match_capturesdict_doc},
     {"expand", (PyCFunction)match_expand, METH_O, match_expand_doc},
 #if PY_VERSION_HEX >= 0x02060000
     {"expandf", (PyCFunction)match_expandf, METH_O, match_expandf_doc},

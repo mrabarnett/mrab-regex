@@ -319,12 +319,6 @@ ul.auto-toc {
 <p>For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.</p>
 <p>Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.3 on 32-bit Windows.</p>
 </div>
-<div class="section" id="change-of-behaviour">
-<h1>Change of behaviour</h1>
-<p><strong>Fuzzy matching</strong></p>
-<p>When performing fuzzy matching, the module is strict in that it will return the first match that meets the constraints. This is slightly different from some earlier releases, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth as the default behaviour.</p>
-<p>There is a new flag, <tt class="docutils literal">ENHANCEMATCH</tt> or <tt class="docutils literal"><span class="pre">(?e)</span></tt>, which will cause the regex module to find the first match and then attempt to reduce the number of errors.</p>
-</div>
 <div class="section" id="old-vs-new-behaviour">
 <h1>Old vs new behaviour</h1>
 <p>This module has 2 behaviours:</p>
@@ -386,8 +380,16 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Notes on named capture groups</h1>
 <p>All capture groups have a group number, starting from 1.</p>
 <p>Groups with the same group name will have the same group number, and groups with a different group name will have a different group number.</p>
-<p>The same group name can be used on different branches of an alternation because they are mutually exclusive, eg. <tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;first)|(?P&lt;foo&gt;second)</span></tt>. They will, of course, have the same group number.</p>
-<p>Group numbers will be reused, where possible, across different branches of a branch reset, eg. <tt class="docutils literal"><span class="pre">(?|(first)|(second))</span></tt> has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. <tt class="docutils literal"><span class="pre">(?|(?P&lt;foo&gt;first)|(?P&lt;bar&gt;second))</span></tt> has group 1 (&quot;foo&quot;) and group 2 (&quot;bar&quot;).</p>
+<p>The same name can be used by more than one group, with later captures 'overwriting' earlier captures. All of the captures of the group will be available from the <tt class="docutils literal">captures</tt> method of the match object.</p>
+<p>Group numbers will be reused across different branches of a branch reset, eg. <tt class="docutils literal"><span class="pre">(?|(first)|(second))</span></tt> has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. <tt class="docutils literal"><span class="pre">(?|(?P&lt;foo&gt;first)|(?P&lt;bar&gt;second))</span></tt> has group 1 (&quot;foo&quot;) and group 2 (&quot;bar&quot;).</p>
+<p>In the regex <tt class="docutils literal"><span class="pre">(\s+)(?|(?P&lt;foo&gt;[A-Z]+)|(\w+)</span> <span class="pre">(?&lt;foo&gt;[0-9]+)</span></tt> there are 2 groups:</p>
+<ol class="arabic simple">
+<li><tt class="docutils literal">(\s+)</tt> is group 1.</li>
+<li><tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;[A-Z]+)</span></tt> is group 2, also called &quot;foo&quot;.</li>
+<li><tt class="docutils literal">(\w+)</tt> is group 2 because of the branch reset.</li>
+<li><tt class="docutils literal"><span class="pre">(?&lt;foo&gt;[0-9]+)</span></tt> is group 2 because it's called &quot;foo&quot;.</li>
+</ol>
+<p>If you want to prevent <tt class="docutils literal">(\w+)</tt> from being group 2, you need to name it (different name, different group number).</p>
 </div>
 <div class="section" id="multithreading">
 <h1>Multithreading</h1>
@@ -406,6 +408,78 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Added <tt class="docutils literal">capturesdict</tt> (Hg issue 86)</p>
+<blockquote>
+<p><tt class="docutils literal">capturesdict</tt> is a combination of <tt class="docutils literal">groupdict</tt> and <tt class="docutils literal">captures</tt>:</p>
+<p><tt class="docutils literal">groupdict</tt> returns a dict of the named groups and the last capture of those groups.</p>
+<p><tt class="docutils literal">captures</tt> returns a list of all the captures of a group</p>
+<p><tt class="docutils literal">capturesdict</tt> returns a dict of the named groups and lists of all the captures of those groups.</p>
+<p>Examples:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; import regex
+&gt;&gt;&gt; m = regex.match(r&quot;(?:(?P&lt;word&gt;\w+) (?P&lt;digits&gt;\d+)\n)+&quot;, &quot;one 1\ntwo 2\nthree 3\n&quot;)
+&gt;&gt;&gt; m.groupdict()
+{'word': 'three', 'digits': '3'}
+&gt;&gt;&gt; m.captures(&quot;word&quot;)
+['one', 'two', 'three']
+&gt;&gt;&gt; m.captures(&quot;digits&quot;)
+['1', '2', '3']
+&gt;&gt;&gt; m.capturesdict()
+{'word': ['one', 'two', 'three'], 'digits': ['1', '2', '3']}
+</pre>
+</blockquote>
+</li>
+<li><p class="first">Allow duplicate names of groups (Hg issue 87)</p>
+<blockquote>
+<p>Group names can now be duplicated.</p>
+<p>Examples:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; import regex
+&gt;&gt;&gt;
+&gt;&gt;&gt; # With optional groups:
+&gt;&gt;&gt;
+&gt;&gt;&gt; # Both groups capture, the second capture 'overwriting' the first.
+&gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;, &quot;first or second&quot;)
+&gt;&gt;&gt; m.group(&quot;item&quot;)
+'second'
+&gt;&gt;&gt; m.captures(&quot;item&quot;)
+['first', 'second']
+&gt;&gt;&gt; # Only the second group captures.
+&gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;, &quot; or second&quot;)
+&gt;&gt;&gt; m.group(&quot;item&quot;)
+'second'
+&gt;&gt;&gt; m.captures(&quot;item&quot;)
+['second']
+&gt;&gt;&gt; # Only the first group captures.
+&gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;, &quot;first or &quot;)
+&gt;&gt;&gt; m.group(&quot;item&quot;)
+'first'
+&gt;&gt;&gt; m.captures(&quot;item&quot;)
+['first']
+&gt;&gt;&gt;
+&gt;&gt;&gt; # With mandatory groups:
+&gt;&gt;&gt;
+&gt;&gt;&gt; # Both groups capture, the second capture 'overwriting' the first.
+&gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)?&quot;, &quot;first or second&quot;)
+&gt;&gt;&gt; m.group(&quot;item&quot;)
+'second'
+&gt;&gt;&gt; m.captures(&quot;item&quot;)
+['first', 'second']
+&gt;&gt;&gt; # Again, both groups capture, the second capture 'overwriting' the first.
+&gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;, &quot; or second&quot;)
+&gt;&gt;&gt; m.group(&quot;item&quot;)
+'second'
+&gt;&gt;&gt; m.captures(&quot;item&quot;)
+['', 'second']
+&gt;&gt;&gt; # And yet again, both groups capture, the second capture 'overwriting' the first.
+&gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;, &quot;first or &quot;)
+&gt;&gt;&gt; m.group(&quot;item&quot;)
+''
+&gt;&gt;&gt; m.captures(&quot;item&quot;)
+['first', '']
+</pre>
+</blockquote>
+</li>
 <li><p class="first">Added <tt class="docutils literal">fullmatch</tt> (issue #16203)</p>
 <blockquote>
 <p><tt class="docutils literal">fullmatch</tt> behaves like <tt class="docutils literal">match</tt>, except that it must match all of the string.</p>
@@ -498,7 +572,8 @@ None
 ('kayak', 'k', None)
 </pre>
 <p>The first two examples show how the subpattern within the capture group is reused, but is _not_ itself a capture group. In other words, <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?1)&quot;</span></tt> is equivalent to <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?:Tarzan|Jane)&quot;</span></tt>.</p>
-<p>Note: it's possible to backtrack into a recursed or repeated group.</p>
+<p>It's possible to backtrack into a recursed or repeated group.</p>
+<p>You can't call a group if there is more than one group with that group name or group number (<tt class="docutils literal">&quot;ambiguous group reference&quot;</tt>). For example, <tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;\w+)</span> <span class="pre">(?P&lt;foo&gt;\w+)</span> <span class="pre">(?&amp;foo)?</span></tt> has 2 groups called &quot;foo&quot; (both group 1) and <tt class="docutils literal"><span class="pre">(?|([A-Z]+)|([0-9]+))</span> <span class="pre">(?1)?</span></tt> has 2 groups with group number 1.</p>
 <p>The alternative forms <tt class="docutils literal"><span class="pre">(?P&gt;name)</span></tt> and <tt class="docutils literal"><span class="pre">(?P&amp;name)</span></tt> are also supported.</p>
 </blockquote>
 </li>
@@ -905,7 +980,14 @@ stu
 <li><p class="first">Branch reset</p>
 <blockquote>
 <p>(?|...|...)</p>
-<p>Capture group numbers will be reused across the alternatives.</p>
+<p>Capture group numbers will be reused across the alternatives, but groups with different names will have different group numbers.</p>
+<p>Examples::
+&gt;&gt;&gt; import regex
+&gt;&gt;&gt; regex.match(r&quot;(?|(first)|(second))&quot;, &quot;first&quot;).groups()
+('first',)
+&gt;&gt;&gt; regex.match(r&quot;(?|(first)|(second))&quot;, &quot;second&quot;).groups()
+('second',)</p>
+<p>Note that there is only one group.</p>
 </blockquote>
 </li>
 <li><p class="first">Default Unicode word boundary</p>

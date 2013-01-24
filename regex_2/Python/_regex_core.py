@@ -319,17 +319,9 @@ def make_property(info, prop, in_set):
 
 def _parse_pattern(source, info):
     "Parses a pattern, eg. 'a|b|c'."
-    # Capture group names can be duplicated provided that their matching is
-    # mutually exclusive.
-    previous_groups = info.used_groups.copy()
     branches = [parse_sequence(source, info)]
-    all_groups = info.used_groups
     while source.match("|"):
-        info.used_groups = previous_groups.copy()
         branches.append(parse_sequence(source, info))
-        all_groups |= info.used_groups
-
-    info.used_groups = all_groups
 
     if len(branches) == 1:
         return branches[0]
@@ -704,7 +696,7 @@ def parse_paren(source, info):
             # (?<...: a named capture group.
             source.pos = here3
             name = parse_name(source)
-            group = info.new_group(name)
+            group = info.open_group(name)
             source.expect(">")
             saved_flags = info.flags
             saved_ignore = source.ignore_space
@@ -715,7 +707,7 @@ def parse_paren(source, info):
                 info.flags = saved_flags
 
             source.expect(")")
-            info.close_group(group)
+            info.close_group()
             return Group(info, group, subpattern)
         if ch == "=":
             # (?=...: positive lookahead.
@@ -751,7 +743,7 @@ def parse_paren(source, info):
 
     # (...: an unnamed capture group.
     source.pos = here
-    group = info.new_group()
+    group = info.open_group()
     saved_flags = info.flags
     saved_ignore = source.ignore_space
     try:
@@ -761,7 +753,7 @@ def parse_paren(source, info):
         info.flags = saved_flags
 
     source.expect(")")
-    info.close_group(group)
+    info.close_group()
 
     return Group(info, group, subpattern)
 
@@ -772,7 +764,7 @@ def parse_extension(source, info):
     if ch == "<":
         # (?P<...: a named capture group.
         name = parse_name(source)
-        group = info.new_group(name)
+        group = info.open_group(name)
         source.expect(">")
         saved_flags = info.flags
         saved_ignore = source.ignore_space
@@ -783,7 +775,7 @@ def parse_extension(source, info):
             info.flags = saved_flags
 
         source.expect(")")
-        info.close_group(group)
+        info.close_group()
 
         return Group(info, group, subpattern)
     if ch == "=":
@@ -829,13 +821,9 @@ def parse_conditional(source, info):
     try:
         group = parse_name(source, True)
         source.expect(")")
-        previous_groups = info.used_groups.copy()
         yes_branch = parse_sequence(source, info)
         if source.match("|"):
-            yes_groups = info.used_groups
-            info.used_groups = previous_groups
             no_branch = parse_sequence(source, info)
-            info.used_groups |= yes_groups
         else:
             no_branch = Sequence()
     finally:
@@ -863,19 +851,14 @@ def parse_atomic(source, info):
 def parse_common(source, info):
     "Parses a common groups branch."
     # Capture group numbers in different branches can reuse the group numbers.
-    previous_groups = info.used_groups.copy()
     initial_group_count = info.group_count
     branches = [parse_sequence(source, info)]
     final_group_count = info.group_count
-    all_groups = info.used_groups
     while source.match("|"):
-        info.used_groups = previous_groups.copy()
         info.group_count = initial_group_count
         branches.append(parse_sequence(source, info))
         final_group_count = max(final_group_count, info.group_count)
-        all_groups |= info.used_groups
 
-    info.used_groups = all_groups
     info.group_count = final_group_count
     source.expect(")")
 
@@ -2184,6 +2167,9 @@ class CallGroup(RegexBase):
 
         if not 0 <= self.group <= self.info.group_count:
             raise error("unknown group")
+
+        if self.group > 0 and self.info.open_group_count[self.group] > 1:
+            raise error("ambiguous group reference")
 
         self.info.group_calls.append((self, reverse, fuzzy))
 
@@ -3738,8 +3724,6 @@ class Source(object):
 
 class Info(object):
     "Info about the regular expression."
-    OPEN = "OPEN"
-    CLOSED = "CLOSED"
 
     def __init__(self, flags=0, char_type=None, kwargs={}):
         self.flags = flags
@@ -3750,20 +3734,16 @@ class Info(object):
         self.group_count = 0
         self.group_index = {}
         self.group_name = {}
-        self.used_groups = set()
-        self.group_state = {}
         self.char_type = char_type
         self.named_lists_used = {}
-
+        self.open_groups = []
+        self.open_group_count = {}
         self.defined_groups = {}
         self.group_calls = []
 
-    def new_group(self, name=None):
+    def open_group(self, name=None):
         group = self.group_index.get(name)
-        if group is not None:
-            if group in self.used_groups:
-                raise error("duplicate group")
-        else:
+        if group is None:
             while True:
                 self.group_count += 1
                 if name is None or self.group_count not in self.group_name:
@@ -3774,12 +3754,13 @@ class Info(object):
                 self.group_index[name] = group
                 self.group_name[group] = name
 
-        self.used_groups.add(group)
-        self.group_state[group] = self.OPEN
+        self.open_groups.append(group)
+        self.open_group_count[group] = self.open_group_count.get(group, 0) + 1
+
         return group
 
-    def close_group(self, group):
-        self.group_state[group] = self.CLOSED
+    def close_group(self):
+        self.open_groups.pop()
 
     def is_open_group(self, name):
         # In version 1, a group reference can refer to an open group. We'll
@@ -3793,7 +3774,7 @@ class Info(object):
         else:
             group = self.group_index.get(name)
 
-        return self.group_state.get(group) == self.OPEN
+        return group in self.open_groups
 
 def _check_group_features(info, parsed):
     """Checks whether the reverse and fuzzy features of the group calls match

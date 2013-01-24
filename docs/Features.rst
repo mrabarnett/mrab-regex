@@ -8,15 +8,6 @@ For testing and comparison with the current 're' module the new implementation i
 Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.3 on 32-bit Windows.
 
 
-Change of behaviour
--------------------
-
-**Fuzzy matching**
-
-When performing fuzzy matching, the module is strict in that it will return the first match that meets the constraints. This is slightly different from some earlier releases, which tried to adjust the match to get a slightly better fit, but that behaviour proved too costly for its worth as the default behaviour.
-
-There is a new flag, ``ENHANCEMATCH`` or ``(?e)``, which will cause the regex module to find the first match and then attempt to reduce the number of errors.
-
 Old vs new behaviour
 --------------------
 
@@ -106,10 +97,21 @@ All capture groups have a group number, starting from 1.
 
 Groups with the same group name will have the same group number, and groups with a different group name will have a different group number.
 
-The same group name can be used on different branches of an alternation because they are mutually exclusive, eg. ``(?P<foo>first)|(?P<foo>second)``. They will, of course, have the same group number.
+The same name can be used by more than one group, with later captures 'overwriting' earlier captures. All of the captures of the group will be available from the ``captures`` method of the match object.
 
-Group numbers will be reused, where possible, across different branches of a branch reset, eg. ``(?|(first)|(second))`` has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. ``(?|(?P<foo>first)|(?P<bar>second))`` has group 1 ("foo") and group 2 ("bar").
+Group numbers will be reused across different branches of a branch reset, eg. ``(?|(first)|(second))`` has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. ``(?|(?P<foo>first)|(?P<bar>second))`` has group 1 ("foo") and group 2 ("bar").
 
+In the regex ``(\s+)(?|(?P<foo>[A-Z]+)|(\w+) (?<foo>[0-9]+)`` there are 2 groups:
+
+1. ``(\s+)`` is group 1.
+
+2. ``(?P<foo>[A-Z]+)`` is group 2, also called "foo".
+
+3. ``(\w+)`` is group 2 because of the branch reset.
+
+4. ``(?<foo>[0-9]+)`` is group 2 because it's called "foo".
+
+If you want to prevent ``(\w+)`` from being group 2, you need to name it (different name, different group number).
 
 Multithreading
 --------------
@@ -135,6 +137,79 @@ Additional features
 -------------------
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+
+* Added ``capturesdict`` (Hg issue 86)
+
+    ``capturesdict`` is a combination of ``groupdict`` and ``captures``:
+
+    ``groupdict`` returns a dict of the named groups and the last capture of those groups.
+
+    ``captures`` returns a list of all the captures of a group
+
+    ``capturesdict`` returns a dict of the named groups and lists of all the captures of those groups.
+
+    Examples::
+
+        >>> import regex
+        >>> m = regex.match(r"(?:(?P<word>\w+) (?P<digits>\d+)\n)+", "one 1\ntwo 2\nthree 3\n")
+        >>> m.groupdict()
+        {'word': 'three', 'digits': '3'}
+        >>> m.captures("word")
+        ['one', 'two', 'three']
+        >>> m.captures("digits")
+        ['1', '2', '3']
+        >>> m.capturesdict()
+        {'word': ['one', 'two', 'three'], 'digits': ['1', '2', '3']}
+
+* Allow duplicate names of groups (Hg issue 87)
+
+    Group names can now be duplicated.
+
+    Examples::
+
+        >>> import regex
+        >>>
+        >>> # With optional groups:
+        >>>
+        >>> # Both groups capture, the second capture 'overwriting' the first.
+        >>> m = regex.match(r"(?P<item>\w+)? or (?P<item>\w+)?", "first or second")
+        >>> m.group("item")
+        'second'
+        >>> m.captures("item")
+        ['first', 'second']
+        >>> # Only the second group captures.
+        >>> m = regex.match(r"(?P<item>\w+)? or (?P<item>\w+)?", " or second")
+        >>> m.group("item")
+        'second'
+        >>> m.captures("item")
+        ['second']
+        >>> # Only the first group captures.
+        >>> m = regex.match(r"(?P<item>\w+)? or (?P<item>\w+)?", "first or ")
+        >>> m.group("item")
+        'first'
+        >>> m.captures("item")
+        ['first']
+        >>>
+        >>> # With mandatory groups:
+        >>>
+        >>> # Both groups capture, the second capture 'overwriting' the first.
+        >>> m = regex.match(r"(?P<item>\w*) or (?P<item>\w*)?", "first or second")
+        >>> m.group("item")
+        'second'
+        >>> m.captures("item")
+        ['first', 'second']
+        >>> # Again, both groups capture, the second capture 'overwriting' the first.
+        >>> m = regex.match(r"(?P<item>\w*) or (?P<item>\w*)", " or second")
+        >>> m.group("item")
+        'second'
+        >>> m.captures("item")
+        ['', 'second']
+        >>> # And yet again, both groups capture, the second capture 'overwriting' the first.
+        >>> m = regex.match(r"(?P<item>\w*) or (?P<item>\w*)", "first or ")
+        >>> m.group("item")
+        ''
+        >>> m.captures("item")
+        ['first', '']
 
 * Added ``fullmatch`` (issue #16203)
 
@@ -227,7 +302,9 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     The first two examples show how the subpattern within the capture group is reused, but is _not_ itself a capture group. In other words, ``"(Tarzan|Jane) loves (?1)"`` is equivalent to ``"(Tarzan|Jane) loves (?:Tarzan|Jane)"``.
 
-    Note: it's possible to backtrack into a recursed or repeated group.
+    It's possible to backtrack into a recursed or repeated group.
+
+    You can't call a group if there is more than one group with that group name or group number (``"ambiguous group reference"``). For example, ``(?P<foo>\w+) (?P<foo>\w+) (?&foo)?`` has 2 groups called "foo" (both group 1) and ``(?|([A-Z]+)|([0-9]+)) (?1)?`` has 2 groups with group number 1.
 
     The alternative forms ``(?P>name)`` and ``(?P&name)`` are also supported.
 
@@ -660,7 +737,16 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     (?|...|...)
 
-    Capture group numbers will be reused across the alternatives.
+    Capture group numbers will be reused across the alternatives, but groups with different names will have different group numbers.
+
+    Examples::
+    >>> import regex
+    >>> regex.match(r"(?|(first)|(second))", "first").groups()
+    ('first',)
+    >>> regex.match(r"(?|(first)|(second))", "second").groups()
+    ('second',)
+
+    Note that there is only one group.
 
 * Default Unicode word boundary
 
