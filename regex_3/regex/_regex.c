@@ -9579,6 +9579,7 @@ advance:
             RE_RepeatData* rp_data;
             size_t count;
             BOOL match;
+            RE_BacktrackData* bt_data;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Repeat indexes are 0-based. */
@@ -9621,24 +9622,17 @@ advance:
                 goto backtrack;
             }
 
-            if (count > node->values[1]) {
-                /* The match is longer than the minimum, so we might need to
-                 * backtrack the repeat to consume less.
-                 */
-                RE_BacktrackData* bt_data;
+            /* Record the backtracking info. */
+            if (!add_backtrack(safe_state, RE_OP_GREEDY_REPEAT_ONE))
+                return RE_ERROR_BACKTRACKING;
+            bt_data = state->backtrack;
+            bt_data->repeat.position.node = node;
+            bt_data->repeat.index = index;
+            bt_data->repeat.text_pos = rp_data->start;
+            bt_data->repeat.count = rp_data->count;
 
-                /* Get the offset to the repeat values in the context. */
-                if (!add_backtrack(safe_state, RE_OP_GREEDY_REPEAT_ONE))
-                    return RE_ERROR_BACKTRACKING;
-                bt_data = state->backtrack;
-                bt_data->repeat.position.node = node;
-                bt_data->repeat.index = index;
-                bt_data->repeat.text_pos = rp_data->start;
-                bt_data->repeat.count = rp_data->count;
-
-                rp_data->start = text_pos;
-                rp_data->count = count;
-            }
+            rp_data->start = text_pos;
+            rp_data->count = count;
 
             /* Advance into the tail. */
             text_pos += (Py_ssize_t)count * node->step;
@@ -11492,6 +11486,14 @@ backtrack:
               RE_STATUS_TAIL, TRUE))
                 return RE_ERROR_MEMORY;
 
+            if (count == node->values[1]) {
+                /* We've backtracked the repeat as far as we can. */
+                rp_data->start = bt_data->repeat.text_pos;
+                rp_data->count = bt_data->repeat.count;
+                discard_backtrack(state);
+                break;
+            }
+
             test = node->next_1.test;
 
             m = test->match;
@@ -11622,6 +11624,8 @@ backtrack:
                             break;
 
                         pos = found - length;
+                        if (pos < limit)
+                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11660,6 +11664,8 @@ backtrack:
                             break;
 
                         pos = new_pos;
+                        if (pos < limit)
+                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11698,6 +11704,8 @@ backtrack:
                             break;
 
                         pos = new_pos;
+                        if (pos > limit)
+                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11727,6 +11735,8 @@ backtrack:
                             break;
 
                         pos = found - length;
+                        if (pos < limit)
+                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11756,6 +11766,8 @@ backtrack:
                             break;
 
                         pos = found + length;
+                        if (pos > limit)
+                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11785,6 +11797,8 @@ backtrack:
                             break;
 
                         pos = found + length;
+                        if (pos > limit)
+                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {

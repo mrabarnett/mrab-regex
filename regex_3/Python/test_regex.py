@@ -3102,6 +3102,9 @@ xyzabc
           regex.WORD)),
           ascii('[\u0905\u0928\u094d\u200d\u0928] [\u0d28\u0d4d\u200d] [\u0915\u093f\u0928]'))
 
+        # Hg issue 88
+        self.assertEquals(regex.match(r".*a.*ba.*aa", "ababba"), None)
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp

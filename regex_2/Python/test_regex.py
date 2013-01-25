@@ -3126,6 +3126,9 @@ xyzabc
           regex.WORD)),
           repr(u'[\u0905\u0928\u094d\u200d\u0928] [\u0d28\u0d4d\u200d] [\u0915\u093f\u0928]'))
 
+        # Hg issue 88
+        self.assertEquals(regex.match(r".*a.*ba.*aa", "ababba"), None)
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format
