@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.18"
+__version__ = "2.4.19"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -567,7 +567,7 @@ def _compile(pattern, flags=0, kwargs=None):
     # affect the code generation but _are_ needed by the PatternObject.
     compiled_pattern = _regex.compile(pattern, info.flags | version, code,
       info.group_index, index_group, named_lists, named_list_indexes,
-      req_offset, req_chars, req_flags)
+      req_offset, req_chars, req_flags, info.group_count)
 
     # Do we need to reduce the size of the cache?
     if len(_cache) >= _MAXCACHE:

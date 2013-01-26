@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: regex
-Version: 0.1.20130125
+Version: 0.1.20130126
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://code.google.com/p/mrab-regex-hg/
 Author: Matthew Barnett

@@ -2648,8 +2648,13 @@ class Group(RegexBase):
         if ref is not None:
             code += [(OP.CALL_REF, ref)]
 
-        code += [(OP.GROUP, self.group)] + self.subpattern.compile(reverse,
-          fuzzy) + [(OP.END, )]
+        public_group = private_group = self.group
+        if private_group < 0:
+            public_group = self.info.private_groups[private_group]
+            private_group = self.info.group_count - private_group
+
+        code += ([(OP.GROUP, private_group, public_group)] +
+          self.subpattern.compile(reverse, fuzzy) + [(OP.END, )])
 
         if ref is not None:
             code += [(OP.END, )]
@@ -2657,7 +2662,10 @@ class Group(RegexBase):
         return code
 
     def dump(self, indent=0, reverse=False):
-        print("{}GROUP {}".format(INDENT * indent, self.group))
+        group = self.group
+        if group < 0:
+            group = private_groups[group]
+        print("{}GROUP {}".format(INDENT * indent, group))
         self.subpattern.dump(indent + 1, reverse)
 
     def __eq__(self, other):
@@ -3730,6 +3738,7 @@ class Info:
         self.open_group_count = {}
         self.defined_groups = {}
         self.group_calls = []
+        self.private_groups = {}
 
     def open_group(self, name=None):
         group = self.group_index.get(name)
@@ -3743,6 +3752,14 @@ class Info:
             if name:
                 self.group_index[name] = group
                 self.group_name[group] = name
+
+        if group in self.open_groups:
+            # We have a nested named group. We'll assign it a private group
+            # number, initially negative until we can assign a proper
+            # (positive) number.
+            group_alias = -(len(self.private_groups) + 1)
+            self.private_groups[group_alias] = group
+            group = group_alias
 
         self.open_groups.append(group)
         self.open_group_count[group] = self.open_group_count.get(group, 0) + 1
@@ -3856,7 +3873,7 @@ class Scanner:
         req_offset, req_chars, req_flags = _get_required_string(parsed,
           info.flags)
 
-        # Check of the features of the groups.
+        # Check the features of the groups.
         _check_group_features(info, parsed)
 
         # Complain if there are any group calls. They are not supported by the
@@ -3893,7 +3910,8 @@ class Scanner:
         # LOCALE _don't_ affect the code generation but _are_ needed by the
         # PatternObject.
         self.scanner = _regex.compile(None, (flags & GLOBAL_FLAGS) | version,
-          code, {}, {}, {}, [], req_offset, req_chars, req_flags)
+          code, {}, {}, {}, [], req_offset, req_chars, req_flags,
+          len(patterns))
 
     def scan(self, string):
         result = []

@@ -458,7 +458,7 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(repr(type(regex.match("(a)", "a").re)),
           self.PATTERN_CLASS)
 
-        # Issue 14260
+        # Issue 14260.
         p = regex.compile(r'abc(?P<n>def)')
         p.groupindex["n"] = 0
         self.assertEquals(p.groupindex["n"], 1)
@@ -549,7 +549,7 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.match(r"((a)\s(abc|a)*)", "a aa", regex.I)[1],
           'a aa')
 
-        # Issue #3511.
+        # Issue 3511.
         self.assertEquals(regex.match(r"[Z-a]", "_").span(), (0, 1))
         self.assertEquals(regex.match(r"(?i)[Z-a]", "_").span(), (0, 1))
 
@@ -1387,7 +1387,7 @@ class RegexTests(unittest.TestCase):
           ['', 'c', 'x', 'b', 'x', 'a', 'x', ''])
 
     def test_scoped_and_inline_flags(self):
-        # Issues 433028, #433024, #433027.
+        # Issues 433028, 433024, 433027.
         self.assertEquals(regex.search(r"(?i)Ab", "ab").span(), (0, 2))
         self.assertEquals(regex.search(r"(?i:A)b", "ab").span(), (0, 2))
         self.assertEquals(regex.search(r"A(?i)b", "ab").span(), (0, 2))
@@ -1619,7 +1619,7 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)",
           "cde").groups(), ('c', 'd', 'e'))
 
-        # Hg issue #87: Allow duplicate names of groups.
+        # Hg issue 87.
         self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
           "abe").groups(), ("a", "b", "e"))
         self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
@@ -2743,7 +2743,7 @@ xyzabc
           ""])
         self.assertEquals(regex.findall(r"(?:Q+){e}","abc"), ["abc", ""])
 
-        # Hg issue 41
+        # Hg issue 41.
         self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
           "servic detection").span(), (0, 16))
         self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
@@ -2907,14 +2907,14 @@ xyzabc
           endpos=4)), True)
 
     def test_hg_bugs(self):
-        # Hg issue 28
+        # Hg issue 28.
         self.assertEquals(bool(regex.compile("(?>b)", flags=regex.V1)), True)
 
-        # Hg issue 29
+        # Hg issue 29.
         self.assertEquals(bool(regex.compile("^((?>\w+)|(?>\s+))*$",
           flags=regex.V1)), True)
 
-        # Hg issue 31
+        # Hg issue 31.
         self.assertEquals(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
           "a(bcd(e)f)g(h)"), ['(bcd(e)f)', '(h)'])
         self.assertEquals(regex.findall(r"\((?:(?:[^()]+)|(?R))*\)",
@@ -2929,70 +2929,70 @@ xyzabc
           regex.finditer(r"\((?:[^()]*+|(?0))*\)", "a(b(c(de)fg)h")],
           ['(c(de)fg)'])
 
-        # Hg issue 32
+        # Hg issue 32.
         self.assertEquals(regex.search("a(bc)d", "abcd", regex.I |
           regex.V1).group(0), "abcd")
 
-        # Hg issue 33
+        # Hg issue 33.
         self.assertEquals(regex.search("([\da-f:]+)$", "E", regex.I |
           regex.V1).group(0), "E")
         self.assertEquals(regex.search("([\da-f:]+)$", "e", regex.I |
           regex.V1).group(0), "e")
 
-        # Hg issue 34
+        # Hg issue 34.
         self.assertEquals(regex.search("^(?=ab(de))(abd)(e)", "abde").groups(),
           ('de', 'abd', 'e'))
 
-        # Hg issue 35
+        # Hg issue 35.
         self.assertEquals(bool(regex.match(r"\ ", " ", flags=regex.X)), True)
 
-        # Hg issue 36
+        # Hg issue 36.
         self.assertEquals(regex.search(r"^(a|)\1{2}b", "b").group(0, 1), ('b',
           ''))
 
-        # Hg issue 37
+        # Hg issue 37.
         self.assertEquals(regex.search("^(a){0,0}", "abc").group(0, 1), ('',
           None))
 
-        # Hg issue 38
+        # Hg issue 38.
         self.assertEquals(regex.search("(?>.*/)b", "a/b").group(0), "a/b")
 
-        # Hg issue 39
+        # Hg issue 39.
         self.assertEquals(regex.search(r"(?V0)((?i)blah)\s+\1",
           "blah BLAH").group(0, 1), ("blah BLAH", "blah"))
         self.assertEquals(regex.search(r"(?V1)((?i)blah)\s+\1", "blah BLAH"),
           None)
 
-        # Hg issue 40
+        # Hg issue 40.
         self.assertEquals(regex.search(r"(\()?[^()]+(?(1)\)|)",
           "(abcd").group(0), "abcd")
 
-        # Hg issue 42
+        # Hg issue 42.
         self.assertEquals(regex.search("(a*)*", "a").span(1), (1, 1))
         self.assertEquals(regex.search("(a*)*", "aa").span(1), (2, 2))
         self.assertEquals(regex.search("(a*)*", "aaa").span(1), (3, 3))
 
-        # Hg issue 43
+        # Hg issue 43.
         self.assertEquals(regex.search("a(?#xxx)*", "aaa").group(), "aaa")
 
-        # Hg issue 44
+        # Hg issue 44.
         self.assertEquals(regex.search("(?=abc){3}abc", "abcabcabc").span(),
           (0, 3))
 
-        # Hg issue 45
+        # Hg issue 45.
         self.assertEquals(regex.search("^(?:a(?:(?:))+)+", "a").span(), (0, 1))
         self.assertEquals(regex.search("^(?:a(?:(?:))+)+", "aa").span(), (0,
           2))
 
-        # Hg issue 46
+        # Hg issue 46.
         self.assertEquals(regex.search("a(?x: b c )d", "abcd").group(0),
           "abcd")
 
-        # Hg issue 47
+        # Hg issue 47.
         self.assertEquals(regex.search("a#comment\n*", "aaa",
           flags=regex.X).group(0), "aaa")
 
-        # Hg issue 48
+        # Hg issue 48.
         self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){1}",
           "aaaaaaaaaa").span(0, 1), ((0, 1), (0, 1)))
         self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){2}",
@@ -3002,11 +3002,11 @@ xyzabc
         self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){4}",
           "aaaaaaaaaa").span(0, 1), ((0, 10), (6, 10)))
 
-        # Hg issue 49
+        # Hg issue 49.
         self.assertEquals(regex.search("(?V1)(a)(?<=b(?1))", "baz").group(0),
           "a")
 
-        # Hg issue 50
+        # Hg issue 50.
         self.assertEquals(regex.findall(r'(?fi)\L<keywords>',
           'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05',
           keywords=['post','pos']), ['POST', 'Post', 'post', 'po\u017Ft',
@@ -3021,46 +3021,46 @@ xyzabc
           'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'), ['POST',
           'Post', 'post', 'po\u017Ft', 'po\uFB06', 'po\uFB05'])
 
-        # Hg issue 51
+        # Hg issue 51.
         self.assertEquals(regex.search("(?V1)((a)(?1)|(?2))", "a").group(0, 1,
           2), ('a', 'a', None))
 
-        # Hg issue 52
+        # Hg issue 52.
         self.assertEquals(regex.search(r"(?V1)(\1xx|){6}", "xx").span(0, 1),
           ((0, 2), (2, 2)))
 
-        # Hg issue 53
+        # Hg issue 53.
         self.assertEquals(regex.search("(a|)+", "a").group(0, 1), ("a", ""))
 
-        # Hg issue 54
+        # Hg issue 54.
         self.assertEquals(regex.search(r"(a|)*\d", "a" * 80), None)
 
-        # Hg issue 55
+        # Hg issue 55.
         self.assertEquals(regex.search("^(?:a?b?)*$", "ac"), None)
 
-        # Hg issue 58
+        # Hg issue 58.
         self.assertRaisesRegex(regex.error, self.UNDEF_CHAR_NAME, lambda:
           regex.compile("\\N{1}"))
 
-        # Hg issue 59
+        # Hg issue 59.
         self.assertEquals(regex.search("\\Z", "a\na\n").span(0), (4, 4))
 
-        # Hg issue 60
+        # Hg issue 60.
         self.assertEquals(regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}",
           "xayxay").group(0), "xayxay")
 
-        # Hg issue 61
+        # Hg issue 61.
         self.assertEquals(regex.search("(?i)[^a]", "A"), None)
 
-        # Hg issue 63
+        # Hg issue 63.
         self.assertEquals(regex.search("(?i)[[:ascii:]]", "\N{KELVIN SIGN}"),
           None)
 
-        # Hg issue 66
+        # Hg issue 66.
         self.assertEquals(regex.search("((a|b(?1)c){3,5})", "baaaaca").group(0,
           1, 2), ('aaaa', 'aaaa', 'a'))
 
-        # Hg issue 71
+        # Hg issue 71.
         self.assertEquals(regex.findall(r"(?<=:\S+ )\w+", ":9 abc :10 def"),
           ['abc', 'def'])
         self.assertEquals(regex.findall(r"(?<=:\S* )\w+", ":9 abc :10 def"),
@@ -3070,7 +3070,7 @@ xyzabc
         self.assertEquals(regex.findall(r"(?<=:\S*? )\w+", ":9 abc :10 def"),
           ['abc', 'def'])
 
-        # Hg issue 73
+        # Hg issue 73.
         self.assertEquals(regex.search(r"(?:fe)?male", "female").group(),
           "female")
         self.assertEquals([m.group() for m in
@@ -3078,32 +3078,36 @@ xyzabc
           "female: her dog; male: his cat. asdsasda")], ['female: her dog',
           'male: his cat'])
 
-        # Hg issue 78
+        # Hg issue 78.
         self.assertEquals(regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))',
           'aaa(((1+0)+1)+1)bbb').captures('rec'), ['(1+0)', '((1+0)+1)',
           '(((1+0)+1)+1)'])
 
-        # Hg issue 80
+        # Hg issue 80.
         self.assertRaisesRegex(regex.error, self.BAD_ESCAPE, lambda:
           regex.sub('x', '\\', 'x'), )
 
-        # Hg issue 82
+        # Hg issue 82.
         fz = "(CAGCCTCCCATTTCAGAATATACATCC){1<e<=2}"
         seq = "tcagacgagtgcgttgtaaaacgacggccagtCAGCCTCCCATTCAGAATATACATCCcgacggccagttaaaaacaatgccaaggaggtcatagctgtttcctgccagttaaaaacaatgccaaggaggtcatagctgtttcctgacgcactcgtctgagcgggctggcaagg"
         self.assertEquals(regex.search(fz, seq, regex.BESTMATCH)[0],
           "tCAGCCTCCCATTCAGAATATACATCC")
 
-        # Hg issue 83
+        # Hg issue 83.
         self.assertEquals(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
 
-        # Hg issue 85
+        # Hg issue 85.
         self.assertEqual(ascii(regex.sub(r"(\w+)", r"[\1]",
           '\u0905\u0928\u094d\u200d\u0928 \u0d28\u0d4d\u200d \u0915\u093f\u0928',
           regex.WORD)),
           ascii('[\u0905\u0928\u094d\u200d\u0928] [\u0d28\u0d4d\u200d] [\u0915\u093f\u0928]'))
 
-        # Hg issue 88
+        # Hg issue 88.
         self.assertEquals(regex.match(r".*a.*ba.*aa", "ababba"), None)
+
+        # Hg issue 87.
+        self.assertEquals(regex.match(r'(?<x>a(?<x>b))', "ab").spans("x"), [(1,
+          2), (0, 2)])
 
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
