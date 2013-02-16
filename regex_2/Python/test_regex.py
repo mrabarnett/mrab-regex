@@ -44,7 +44,6 @@ class _AssertRaisesContext(object):
         return True
 
 class RegexTests(unittest.TestCase):
-    MATCH_CLASS = "<type '_regex.Match'>"
     PATTERN_CLASS = "<type '_regex.Pattern'>"
     FLAGS_WITH_COMPILED_PAT = "can't process flags argument with a compiled pattern"
     INVALID_GROUP_REF = "invalid group reference"
@@ -487,26 +486,17 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.match("^x{0,1}", "xxx")[0], 'x')
         self.assertEquals(regex.match("^x{0,1}?", "xxx")[0], '')
 
-        self.assertEquals(repr(type(regex.match("^x{3}$", "xxx"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match("^x{1,3}$", "xxx"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match("^x{1,4}$", "xxx"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match("^x{3,4}?$", "xxx"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match("^x{3}?$", "xxx"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match("^x{1,3}?$", "xxx"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match("^x{1,4}?$", "xxx"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match("^x{3,4}?$", "xxx"))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("^x{3}$", "xxx")), True)
+        self.assertEquals(bool(regex.match("^x{1,3}$", "xxx")), True)
+        self.assertEquals(bool(regex.match("^x{1,4}$", "xxx")), True)
+        self.assertEquals(bool(regex.match("^x{3,4}?$", "xxx")), True)
+        self.assertEquals(bool(regex.match("^x{3}?$", "xxx")), True)
+        self.assertEquals(bool(regex.match("^x{1,3}?$", "xxx")), True)
+        self.assertEquals(bool(regex.match("^x{1,4}?$", "xxx")), True)
+        self.assertEquals(bool(regex.match("^x{3,4}?$", "xxx")), True)
 
         self.assertEquals(regex.match("^x{}$", "xxx"), None)
-        self.assertEquals(repr(type(regex.match("^x{}$", "x{}"))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("^x{}$", "x{}")), True)
 
     def test_getattr(self):
         self.assertEquals(regex.compile("(?i)(a)(b)").pattern, '(?i)(a)(b)')
@@ -628,14 +618,10 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.match(r"[Z-a]", "_").span(), (0, 1))
         self.assertEquals(regex.match(r"(?i)[Z-a]", "_").span(), (0, 1))
 
-        self.assertEquals(repr(type(regex.match(ur"(?iu)nao", u"nAo"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur"(?iu)n\xE3o", u"n\xC3o"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur"(?iu)n\xE3o", u"N\xC3O"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur"(?iu)s", u"\u017F"))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur"(?iu)nao", u"nAo")), True)
+        self.assertEquals(bool(regex.match(ur"(?iu)n\xE3o", u"n\xC3o")), True)
+        self.assertEquals(bool(regex.match(ur"(?iu)n\xE3o", u"N\xC3O")), True)
+        self.assertEquals(bool(regex.match(ur"(?iu)s", u"\u017F")), True)
 
     def test_case_folding(self):
         self.assertEquals(regex.search(ur"(?fiu)ss", u"SS").span(), (0, 2))
@@ -739,8 +725,8 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.escape(p), p)
         for i in range(0, 256):
             p += chr(i)
-            self.assertEquals(repr(type(regex.match(regex.escape(chr(i)),
-              chr(i)))), self.MATCH_CLASS)
+            self.assertEquals(bool(regex.match(regex.escape(chr(i)), chr(i))),
+              True)
             self.assertEquals(regex.match(regex.escape(chr(i)), chr(i)).span(),
               (0, 1))
 
@@ -766,36 +752,30 @@ class RegexTests(unittest.TestCase):
 
     def test_sre_character_literals(self):
         for i in [0, 8, 16, 32, 64, 127, 128, 255]:
-            self.assertEquals(repr(type(regex.match(r"\%03o" % i, chr(i)))),
-              self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"\%03o0" % i, chr(i) +
-              "0"))), self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"\%03o8" % i, chr(i) +
-              "8"))), self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"\x%02x" % i, chr(i)))),
-              self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"\x%02x0" % i, chr(i) +
-              "0"))), self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"\x%02xz" % i, chr(i) +
-              "z"))), self.MATCH_CLASS)
+            self.assertEquals(bool(regex.match(r"\%03o" % i, chr(i))), True)
+            self.assertEquals(bool(regex.match(r"\%03o0" % i, chr(i) + "0")),
+              True)
+            self.assertEquals(bool(regex.match(r"\%03o8" % i, chr(i) + "8")),
+              True)
+            self.assertEquals(bool(regex.match(r"\x%02x" % i, chr(i))), True)
+            self.assertEquals(bool(regex.match(r"\x%02x0" % i, chr(i) + "0")),
+              True)
+            self.assertEquals(bool(regex.match(r"\x%02xz" % i, chr(i) + "z")),
+              True)
 
         self.assertRaisesRegex(regex.error, self.UNKNOWN_GROUP, lambda:
           regex.match(r"\911", ""))
 
     def test_sre_character_class_literals(self):
         for i in [0, 8, 16, 32, 64, 127, 128, 255]:
-            self.assertEquals(repr(type(regex.match(r"[\%03o]" % i, chr(i)))),
-              self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"[\%03o0]" % i,
-              chr(i)))), self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"[\%03o8]" % i,
-              chr(i)))), self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"[\x%02x]" % i,
-              chr(i)))), self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"[\x%02x0]" % i,
-              chr(i)))), self.MATCH_CLASS)
-            self.assertEquals(repr(type(regex.match(r"[\x%02xz]" % i,
-              chr(i)))), self.MATCH_CLASS)
+            self.assertEquals(bool(regex.match(r"[\%03o]" % i, chr(i))), True)
+            self.assertEquals(bool(regex.match(r"[\%03o0]" % i, chr(i))), True)
+            self.assertEquals(bool(regex.match(r"[\%03o8]" % i, chr(i))), True)
+            self.assertEquals(bool(regex.match(r"[\x%02x]" % i, chr(i))), True)
+            self.assertEquals(bool(regex.match(r"[\x%02x0]" % i, chr(i))),
+              True)
+            self.assertEquals(bool(regex.match(r"[\x%02xz]" % i, chr(i))),
+              True)
 
         self.assertRaisesRegex(regex.error, self.BAD_OCTAL_ESCAPE, lambda:
               regex.match(r"[\911]", ""))
@@ -944,29 +924,26 @@ class RegexTests(unittest.TestCase):
         lower_char = unichr(0x1ea1) # Latin Small Letter A with Dot Below
 
         p = regex.compile(upper_char, regex.I | regex.U)
-        self.assertEquals(repr(type(p.match(lower_char))), self.MATCH_CLASS)
+        self.assertEquals(bool(p.match(lower_char)), True)
 
         p = regex.compile(lower_char, regex.I | regex.U)
-        self.assertEquals(repr(type(p.match(upper_char))), self.MATCH_CLASS)
+        self.assertEquals(bool(p.match(upper_char)), True)
 
         p = regex.compile('(?i)' + upper_char, regex.U)
-        self.assertEquals(repr(type(p.match(lower_char))), self.MATCH_CLASS)
+        self.assertEquals(bool(p.match(lower_char)), True)
 
         p = regex.compile('(?i)' + lower_char, regex.U)
-        self.assertEquals(repr(type(p.match(upper_char))), self.MATCH_CLASS)
+        self.assertEquals(bool(p.match(upper_char)), True)
 
         p = regex.compile('(?iu)' + upper_char)
-        self.assertEquals(repr(type(p.match(lower_char))), self.MATCH_CLASS)
+        self.assertEquals(bool(p.match(lower_char)), True)
 
         p = regex.compile('(?iu)' + lower_char)
-        self.assertEquals(repr(type(p.match(upper_char))), self.MATCH_CLASS)
+        self.assertEquals(bool(p.match(upper_char)), True)
 
-        self.assertEquals(repr(type(regex.match(r"(?i)a", "A"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(r"a(?i)", "A"))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(r"(?iV1)a", "A"))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(r"(?i)a", "A")), True)
+        self.assertEquals(bool(regex.match(r"a(?i)", "A")), True)
+        self.assertEquals(bool(regex.match(r"(?iV1)a", "A")), True)
         self.assertEquals(regex.match(r"a(?iV1)", "A"), None)
 
     def test_dollar_matches_twice(self):
@@ -985,9 +962,9 @@ class RegexTests(unittest.TestCase):
         # Unicode patterns.
         for flags in (0, regex.UNICODE):
             pat = regex.compile(u'\xc0', flags | regex.IGNORECASE)
-            self.assertEquals(str(type(pat.match(u'\xe0'))), self.MATCH_CLASS)
+            self.assertEquals(bool(pat.match(u'\xe0')), True)
             pat = regex.compile(u'\w', flags)
-            self.assertEquals(str(type(pat.match(u'\xe0'))), self.MATCH_CLASS)
+            self.assertEquals(bool(pat.match(u'\xe0')), True)
 
         pat = regex.compile(u'\xc0', regex.ASCII | regex.IGNORECASE)
         self.assertEquals(pat.match(u'\xe0'), None)
@@ -1028,17 +1005,14 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.match('(?i)\xC0', '\xE0'), None)
         self.assertEquals(regex.match(r'(?i)\xC0', '\xE0'), None)
         self.assertEquals(regex.match(r'\w', '\xE0'), None)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'\xE0'))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur'(?u)\w', u'\xE0')), True)
 
-        self.assertEquals(regex.match(r'(?L)\w', '\xE0'), None)
+        self.assertEquals(bool(regex.match(r'(?L)\w', '\xE0')),
+          '\xE0'.isalnum())
 
-        self.assertEquals(repr(type(regex.match(r'(?L)\d', '0'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(r'(?L)\s', ' '))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(r'(?L)\w', 'a'))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(r'(?L)\d', '0')), True)
+        self.assertEquals(bool(regex.match(r'(?L)\s', ' ')), True)
+        self.assertEquals(bool(regex.match(r'(?L)\w', 'a')), True)
         self.assertEquals(regex.match(r'(?L)\d', '?'), None)
         self.assertEquals(regex.match(r'(?L)\s', '?'), None)
         self.assertEquals(regex.match(r'(?L)\w', '?'), None)
@@ -1046,116 +1020,98 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.match(r'(?L)\D', '0'), None)
         self.assertEquals(regex.match(r'(?L)\S', ' '), None)
         self.assertEquals(regex.match(r'(?L)\W', 'a'), None)
-        self.assertEquals(repr(type(regex.match(r'(?L)\D', '?'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(r'(?L)\S', '?'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(r'(?L)\W', '?'))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(r'(?L)\D', '?')), True)
+        self.assertEquals(bool(regex.match(r'(?L)\S', '?')), True)
+        self.assertEquals(bool(regex.match(r'(?L)\W', '?')), True)
 
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Cyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{IsCyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Script=Cyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{InCyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Block=Cyrillic}',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:Cyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:IsCyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:Script=Cyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:InCyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:Block=Cyrillic:]]',
-          u'\N{CYRILLIC CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{IsCyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{Script=Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{InCyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{Block=Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:Cyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:IsCyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:Script=Cyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:InCyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:Block=Cyrillic:]]',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
 
-        self.assertEquals(repr(type(regex.match(ur'(?u)\P{Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\P{IsCyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\P{Script=Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\P{InCyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\P{Block=Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^IsCyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^Script=Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^InCyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{^Block=Cyrillic}',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^Cyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^IsCyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^Script=Cyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^InCyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)[[:^Block=Cyrillic:]]',
-          u'\N{LATIN CAPITAL LETTER A}'))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur'(?u)\P{Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\P{IsCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\P{Script=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\P{InCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\P{Block=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{^Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{^IsCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{^Script=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{^InCyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{^Block=Cyrillic}',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:^Cyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:^IsCyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:^Script=Cyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:^InCyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)[[:^Block=Cyrillic:]]',
+          u'\N{LATIN CAPITAL LETTER A}')), True)
 
-        self.assertEquals(repr(type(regex.match(ur'(?u)\d', u'0'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\s', u' '))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'A'))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur'(?u)\d', u'0')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\s', u' ')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\w', u'A')), True)
         self.assertEquals(regex.match(ur"(?u)\d", u"?"), None)
         self.assertEquals(regex.match(ur"(?u)\s", u"?"), None)
         self.assertEquals(regex.match(ur"(?u)\w", u"?"), None)
         self.assertEquals(regex.match(ur"(?u)\D", u"0"), None)
         self.assertEquals(regex.match(ur"(?u)\S", u" "), None)
         self.assertEquals(regex.match(ur"(?u)\W", u"A"), None)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\D', u'?'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\S', u'?'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\W', u'?'))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur'(?u)\D', u'?')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\S', u'?')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\W', u'?')), True)
 
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{L}', u'A'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{L}', u'a'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Lu}', u'A'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Ll}', u'a'))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{L}', u'A')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{L}', u'a')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{Lu}', u'A')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{Ll}', u'a')), True)
 
-        self.assertEquals(repr(type(regex.match(ur'(?u)(?i)a', u'a'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)(?i)a', u'A'))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur'(?u)(?i)a', u'a')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)(?i)a', u'A')), True)
 
-        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'0'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'a'))),
-          self.MATCH_CLASS)
-        self.assertEquals(repr(type(regex.match(ur'(?u)\w', u'_'))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur'(?u)\w', u'0')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\w', u'a')), True)
+        self.assertEquals(bool(regex.match(ur'(?u)\w', u'_')), True)
 
         self.assertEquals(regex.match(ur"(?u)\X", u"\xE0").span(), (0, 1))
         self.assertEquals(regex.match(ur"(?u)\X", u"a\u0300").span(), (0, 2))
-        self.assertEquals(regex.findall(ur"(?u)\X", u"a\xE0a\u0300e\xE9e\u0301"),
-         [u'a', u'\xe0', u'a\u0300', u'e', u'\xe9', u'e\u0301'])
-        self.assertEquals(regex.findall(ur"(?u)\X{3}", u"a\xE0a\u0300e\xE9e\u0301"),
-          [u'a\xe0a\u0300', u'e\xe9e\u0301'])
-        self.assertEquals(regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"), [u'\r',
-          u'\r\n', u'\u0301', u'A\u0301'])
+        self.assertEquals(regex.findall(ur"(?u)\X",
+          u"a\xE0a\u0300e\xE9e\u0301"), [u'a', u'\xe0', u'a\u0300', u'e',
+          u'\xe9', u'e\u0301'])
+        self.assertEquals(regex.findall(ur"(?u)\X{3}",
+          u"a\xE0a\u0300e\xE9e\u0301"), [u'a\xe0a\u0300', u'e\xe9e\u0301'])
+        self.assertEquals(regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"),
+          [u'\r', u'\r\n', u'\u0301', u'A\u0301'])
 
-        self.assertEquals(repr(type(regex.match(ur'(?u)\p{Ll}', u'a'))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match(ur'(?u)\p{Ll}', u'a')), True)
 
         chars_u = u"-09AZaz_\u0393\u03b3"
         chars_b = "-09AZaz_"
@@ -1441,46 +1397,44 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.search(r"123(?<!a\d+)", "a123"), None)
         self.assertEquals(regex.search(r"123(?<!a\d+)", "b123").span(), (1, 4))
 
-        self.assertEquals(repr(type(regex.match("(a)b(?<=b)(c)", "abc"))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(a)b(?<=b)(c)", "abc")), True)
         self.assertEquals(regex.match("(a)b(?<=c)(c)", "abc"), None)
-        self.assertEquals(repr(type(regex.match("(a)b(?=c)(c)", "abc"))),
-          self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(a)b(?=c)(c)", "abc")), True)
         self.assertEquals(regex.match("(a)b(?=b)(c)", "abc"), None)
 
         self.assertEquals(regex.match("(?:(a)|(x))b(?<=(?(2)x|c))c", "abc"),
           None)
         self.assertEquals(regex.match("(?:(a)|(x))b(?<=(?(2)b|x))c", "abc"),
           None)
-        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?<=(?(2)x|b))c",
-          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?<=(?(2)x|b))c",
+          "abc")), True)
         self.assertEquals(regex.match("(?:(a)|(x))b(?<=(?(1)c|x))c", "abc"),
           None)
-        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?<=(?(1)b|x))c",
-          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?<=(?(1)b|x))c",
+          "abc")), True)
 
-        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
-          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
+          "abc")), True)
         self.assertEquals(regex.match("(?:(a)|(x))b(?=(?(2)c|x))c", "abc"),
           None)
-        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
-          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
+          "abc")), True)
         self.assertEquals(regex.match("(?:(a)|(x))b(?=(?(1)b|x))c", "abc"),
           None)
-        self.assertEquals(repr(type(regex.match("(?:(a)|(x))b(?=(?(1)c|x))c",
-          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?=(?(1)c|x))c",
+          "abc")), True)
 
         self.assertEquals(regex.match("(a)b(?<=(?(2)x|c))(c)", "abc"), None)
         self.assertEquals(regex.match("(a)b(?<=(?(2)b|x))(c)", "abc"), None)
         self.assertEquals(regex.match("(a)b(?<=(?(1)c|x))(c)", "abc"), None)
-        self.assertEquals(repr(type(regex.match("(a)b(?<=(?(1)b|x))(c)",
-          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(a)b(?<=(?(1)b|x))(c)", "abc")),
+          True)
 
-        self.assertEquals(repr(type(regex.match("(a)b(?=(?(2)x|c))(c)",
-          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(a)b(?=(?(2)x|c))(c)", "abc")),
+          True)
         self.assertEquals(regex.match("(a)b(?=(?(2)b|x))(c)", "abc"), None)
-        self.assertEquals(repr(type(regex.match("(a)b(?=(?(1)c|x))(c)",
-          "abc"))), self.MATCH_CLASS)
+        self.assertEquals(bool(regex.match("(a)b(?=(?(1)c|x))(c)", "abc")),
+          True)
 
         self.assertEquals(repr(type(regex.compile(r"(a)\2(b)"))),
           self.PATTERN_CLASS)
