@@ -979,8 +979,10 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.match(br'(?a)\w', b'\xE0'), None)
         self.assertEquals(bool(regex.match(r'\w', '\xE0')), True)
 
-        self.assertEquals(bool(regex.match(br'(?L)\w', b'\xE0')),
-          b'\xE0'.isalnum())
+        # Dropped the following test. It's not possible to determine what the
+        # correct result should be in the general case.
+#        self.assertEquals(bool(regex.match(br'(?L)\w', b'\xE0')),
+#          b'\xE0'.isalnum())
 
         self.assertEquals(bool(regex.match(br'(?L)\d', b'0')), True)
         self.assertEquals(bool(regex.match(br'(?L)\s', b' ')), True)

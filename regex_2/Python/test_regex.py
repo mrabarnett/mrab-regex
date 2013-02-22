@@ -1007,8 +1007,10 @@ class RegexTests(unittest.TestCase):
         self.assertEquals(regex.match(r'\w', '\xE0'), None)
         self.assertEquals(bool(regex.match(ur'(?u)\w', u'\xE0')), True)
 
-        self.assertEquals(bool(regex.match(r'(?L)\w', '\xE0')),
-          '\xE0'.isalnum())
+        # Dropped the following test. It's not possible to determine what the
+        # correct result should be in the general case.
+#        self.assertEquals(bool(regex.match(r'(?L)\w', '\xE0')),
+#          '\xE0'.isalnum())
 
         self.assertEquals(bool(regex.match(r'(?L)\d', '0')), True)
         self.assertEquals(bool(regex.match(r'(?L)\s', ' ')), True)
