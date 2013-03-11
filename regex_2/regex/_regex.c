@@ -5921,6 +5921,7 @@ again:
         }
         break;
     }
+#if 0
     case RE_OP_BRANCH: /* 2-way branch. */
     {
         BOOL found;
@@ -5941,6 +5942,7 @@ again:
 
         return TRUE;
     }
+#endif
     case RE_OP_CHARACTER: /* A character literal. */
         start_pos = match_many_CHARACTER(state, test, start_pos, limit + 1,
           FALSE);
