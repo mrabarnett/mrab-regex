@@ -3063,6 +3063,11 @@ xyzabc
         self.assertEquals(regex.match(r'(?<x>a(?<x>b))', "ab").spans("x"), [(1,
           2), (0, 2)])
 
+        # Hg issue 91.
+        # Check that the replacement cache works.
+        self.assertEquals(regex.sub(r'(-)', lambda m: m.expand(r'x'), 'a-b-c'),
+          'axbxc')
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp

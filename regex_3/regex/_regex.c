@@ -85,7 +85,7 @@ typedef unsigned short RE_STATUS_T;
 /* Error codes. */
 #define RE_ERROR_SUCCESS 1 /* Successful match. */
 #define RE_ERROR_FAILURE 0 /* Unsuccessful match. */
-#define RE_ERROR_ILLEGAL -1 /* Illegal opcode. */
+#define RE_ERROR_ILLEGAL -1 /* Illegal code. */
 #define RE_ERROR_INTERNAL -2 /* Internal error. */
 #define RE_ERROR_CONCURRENT -3 /* "concurrent" invalid. */
 #define RE_ERROR_MEMORY -9 /* Out of memory. */
@@ -193,22 +193,24 @@ static PyObject* error_exception;
 /* The dictionary of Unicode properties. */
 static PyObject* property_dict;
 
+typedef struct RE_State* RE_StatePtr;
+
 /* Handlers for ASCII, locale and Unicode. */
 typedef struct RE_EncodingTable {
     BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
     Py_UCS4 (*lower)(Py_UCS4 ch);
     Py_UCS4 (*upper)(Py_UCS4 ch);
     Py_UCS4 (*title)(Py_UCS4 ch);
-    BOOL (*at_boundary)(struct RE_State* state, Py_ssize_t text_pos);
-    BOOL (*at_word_start)(struct RE_State* state, Py_ssize_t text_pos);
-    BOOL (*at_word_end)(struct RE_State* state, Py_ssize_t text_pos);
-    BOOL (*at_default_boundary)(struct RE_State* state, Py_ssize_t text_pos);
-    BOOL (*at_default_word_start)(struct RE_State* state, Py_ssize_t text_pos);
-    BOOL (*at_default_word_end)(struct RE_State* state, Py_ssize_t text_pos);
-    BOOL (*at_grapheme_boundary)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*at_boundary)(RE_StatePtr state, Py_ssize_t text_pos);
+    BOOL (*at_word_start)(RE_StatePtr state, Py_ssize_t text_pos);
+    BOOL (*at_word_end)(RE_StatePtr state, Py_ssize_t text_pos);
+    BOOL (*at_default_boundary)(RE_StatePtr state, Py_ssize_t text_pos);
+    BOOL (*at_default_word_start)(RE_StatePtr state, Py_ssize_t text_pos);
+    BOOL (*at_default_word_end)(RE_StatePtr state, Py_ssize_t text_pos);
+    BOOL (*at_grapheme_boundary)(RE_StatePtr state, Py_ssize_t text_pos);
     BOOL (*is_line_sep)(Py_UCS4 ch);
-    BOOL (*at_line_start)(struct RE_State* state, Py_ssize_t text_pos);
-    BOOL (*at_line_end)(struct RE_State* state, Py_ssize_t text_pos);
+    BOOL (*at_line_start)(RE_StatePtr state, Py_ssize_t text_pos);
+    BOOL (*at_line_end)(RE_StatePtr state, Py_ssize_t text_pos);
     BOOL (*possible_turkic)(Py_UCS4 ch);
     int (*all_cases)(Py_UCS4 ch, Py_UCS4* codepoints);
     Py_UCS4 (*simple_case_fold)(Py_UCS4 ch);
@@ -857,7 +859,7 @@ static int ascii_all_cases(Py_UCS4 ch, Py_UCS4* codepoints) {
 
     codepoints[count++] = ch;
 
-    if ('A' <= ch && ch <= 'Z' || 'a' <= ch && ch <= 'z')
+    if (('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z'))
         /* It's a letter, so add the other case. */
         codepoints[count++] = ch ^ 0x20;
 
@@ -1630,7 +1632,7 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
 
 /* Checks whether a character is a line separator. */
 static BOOL unicode_is_line_sep(Py_UCS4 ch) {
-    return 0x0A <= ch && ch <= 0x0D || ch == 0x85 || ch == 0x2028 || ch ==
+    return (0x0A <= ch && ch <= 0x0D) || ch == 0x85 || ch == 0x2028 || ch ==
       0x2029;
 }
 
@@ -1648,7 +1650,7 @@ static BOOL unicode_at_line_start(RE_State* state, Py_ssize_t text_pos) {
         return text_pos >= state->text_length || state->char_at(state->text,
           text_pos) != 0x0A;
 
-    return 0x0A <= ch && ch <= 0x0D || ch == 0x85 || ch == 0x2028 || ch ==
+    return (0x0A <= ch && ch <= 0x0D) || ch == 0x85 || ch == 0x2028 || ch ==
       0x2029;
 }
 
@@ -1666,7 +1668,7 @@ static BOOL unicode_at_line_end(RE_State* state, Py_ssize_t text_pos) {
         return text_pos >= 1 || state->char_at(state->text, text_pos - 1) !=
           0x0D;
 
-    return 0x0A <= ch && ch <= 0x0D || ch == 0x85 || ch == 0x2028 || ch ==
+    return (0x0A <= ch && ch <= 0x0D) || ch == 0x85 || ch == 0x2028 || ch ==
       0x2029;
 }
 
@@ -2440,33 +2442,6 @@ Py_LOCAL_INLINE(void) discard_backtrack(RE_State* state) {
     --current->count;
     if (current->count == 0 && current->previous)
         state->current_backtrack_block = current->previous;
-}
-
-/* Copies a group and its captures. */
-Py_LOCAL_INLINE(BOOL) copy_group_data(RE_SafeState* safe_state, RE_GroupData*
-  dst, RE_GroupData* src) {
-    if (dst->capture_capacity < src->capture_count) {
-        RE_GroupSpan* new_captures;
-
-        if (!safe_state)
-            return FALSE;
-
-        dst->capture_capacity = src->capture_count;
-        new_captures = (RE_GroupSpan*)safe_realloc(safe_state, dst->captures,
-          dst->capture_capacity * sizeof(RE_GroupSpan));
-        if (!new_captures)
-            return FALSE;
-
-        dst->captures = new_captures;
-    }
-
-    dst->capture_count = src->capture_count;
-    memmove(dst->captures, src->captures, dst->capture_count *
-      sizeof(RE_GroupSpan));
-
-    dst->span = src->span;
-
-    return TRUE;
 }
 
 /* Copies a repeat guard list. */
@@ -4245,13 +4220,11 @@ Py_LOCAL_INLINE(BOOL) match_one(RE_State* state, RE_Node* node, Py_ssize_t
 /* Performs a simple string search. */
 Py_LOCAL_INLINE(Py_ssize_t) simple_string_search(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
     Py_UCS4 first_char;
 
-    char_at = state->char_at;
     text = state->text;
     length = node->value_count;
     values = node->values;
@@ -4338,14 +4311,12 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search(RE_State* state, RE_Node*
 /* Performs a simple string search, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
     RE_EncodingTable* encoding;
     Py_UCS4 first_char;
 
-    char_at = state->char_at;
     text = state->text;
     length = node->value_count;
     values = node->values;
@@ -4755,6 +4726,7 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables(RE_EncodingTable* encoding, RE_Node*
     saved_start = FALSE;
     s = pos - 1;
     i = suffix_len - 1;
+    s_start = s;
     while (pos >= 0) {
         /* Look for another occurrence of the suffix. */
         while (i > 0) {
@@ -4879,6 +4851,7 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables_rev(RE_EncodingTable* encoding,
     saved_start = FALSE;
     s = pos + 1;
     i = suffix_len - 1;
+    s_start = s;
     while (pos < length) {
         /* Look for another occurrence of the suffix. */
         while (i > 0) {
@@ -5707,77 +5680,6 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
 Py_LOCAL_INLINE(BOOL) search_start(RE_SafeState* safe_state, RE_NextNode* next,
   RE_Position* new_position, int search_index);
 
-/* Searches for the next position where a BRANCH could match. */
-Py_LOCAL_INLINE(BOOL) get_next_position(RE_SafeState* safe_state, RE_Node* node,
-  RE_Position* new_position, int search_index) {
-    int first_search_index;
-    int second_search_index;
-    RE_State* state;
-    RE_Position first_position;
-    RE_Position second_position;
-
-    state = safe_state->re_state;
-
-    first_search_index = search_index * 2 + 1;
-    second_search_index = search_index * 2 + 2;
-
-    if (second_search_index >= MAX_SEARCH_POSITIONS) {
-        first_search_index = MAX_SEARCH_POSITIONS;
-        second_search_index = MAX_SEARCH_POSITIONS;
-    }
-
-    if (search_start(safe_state, &node->next_1, &first_position,
-      first_search_index)) {
-        Py_ssize_t first_match_pos;
-
-        first_match_pos = state->match_pos;
-
-        /* Found a match for the first branch. */
-        if (search_start(safe_state, &node->nonstring.next_2, &second_position,
-          second_search_index))
-          {
-            /* Found a match for both branches, so pick the earlier one. */
-            if (state->reverse) {
-                /* When searching backwards, pick the greater position. */
-                if (first_position.text_pos >= second_position.text_pos) {
-                    /* The first position is earlier. We need to restore the
-                     * corresponding match_pos for that.
-                     */
-                    state->match_pos = first_match_pos;
-                    *new_position = first_position;
-                } else
-                    *new_position = second_position;
-            } else {
-                /* When searching forwards, pick the lesser position. */
-                if (first_position.text_pos <= second_position.text_pos) {
-                    /* The first position is earlier. We need to restore the
-                     * corresponding match_pos for that.
-                     */
-                    state->match_pos = first_match_pos;
-                    *new_position = first_position;
-                } else
-                    *new_position = second_position;
-            }
-
-            return TRUE;
-        } else {
-            /* Found a match for only the first branch. */
-            *new_position = first_position;
-            return TRUE;
-        }
-    } else {
-        /* Didn't find a match for the first branch. */
-        if (search_start(safe_state, &node->nonstring.next_2, &second_position,
-          second_search_index)) {
-            /* Found a match for only the second branch. */
-            *new_position = second_position;
-            return TRUE;
-        } else
-            /* Didn't find a match for either branch. */
-            return FALSE;
-    }
-}
-
 /* Searches for the start of a match. */
 Py_LOCAL_INLINE(BOOL) search_start(RE_SafeState* safe_state, RE_NextNode* next,
   RE_Position* new_position, int search_index) {
@@ -5907,28 +5809,6 @@ again:
         }
         break;
     }
-#if 0
-    case RE_OP_BRANCH: /* 2-way branch. */
-    {
-        BOOL found;
-
-        /* Search along both of the branches and get the earliest match. */
-        found = get_next_position(safe_state, test, new_position, search_index);
-
-        new_position->text_pos = state->match_pos;
-        new_position->node = node;
-
-        if (!found)
-            return FALSE;
-
-        if (info) {
-            info->start_pos = state->text_pos;
-            info->match_pos = state->match_pos;
-        }
-
-        return TRUE;
-    }
-#endif
     case RE_OP_CHARACTER: /* A character literal. */
         start_pos = match_many_CHARACTER(state, test, start_pos, limit + 1,
           FALSE);
@@ -6792,70 +6672,6 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_SafeState* safe_state, size_t index,
     return is_guarded(guard_list, text_pos);
 }
 
-/* Guards a position against further matching for a fuzzy section. */
-Py_LOCAL_INLINE(BOOL) guard_fuzzy(RE_SafeState* safe_state, size_t index,
-  Py_ssize_t text_pos, RE_STATUS_T guard_type, BOOL protect) {
-    RE_State* state;
-    RE_GuardList* guard_list;
-
-    state = safe_state->re_state;
-
-    /* Which guard list? */
-    if (guard_type == RE_STATUS_BODY)
-        guard_list = &state->fuzzy_guards[index].body_guard_list;
-    else
-        guard_list = &state->fuzzy_guards[index].tail_guard_list;
-
-    return guard(safe_state, guard_list, text_pos, protect);
-}
-
-/* Checks whether a position is guarded against further matching for a fuzzy
- * section.
- */
-Py_LOCAL_INLINE(BOOL) is_fuzzy_guarded(RE_SafeState* safe_state, size_t index,
-  Py_ssize_t text_pos, RE_STATUS_T guard_type) {
-    RE_State* state;
-    RE_GuardList* guard_list;
-
-    state = safe_state->re_state;
-
-    /* Which guard list? */
-    if (guard_type == RE_STATUS_BODY)
-        guard_list = &state->fuzzy_guards[index].body_guard_list;
-    else
-        guard_list = &state->fuzzy_guards[index].tail_guard_list;
-
-    return is_guarded(guard_list, text_pos);
-}
-
-/* Checks whether a position is guarded against further matching for a group
- * call.
- */
-Py_LOCAL_INLINE(BOOL) is_group_call_guarded(RE_SafeState* safe_state, size_t
-  index, Py_ssize_t text_pos) {
-    RE_State* state;
-    RE_GuardList* guard_list;
-
-    state = safe_state->re_state;
-
-    guard_list = &state->group_call_guard_list[index];
-
-    return is_guarded(guard_list, text_pos);
-}
-
-/* Guards a position against further matching for a group call. */
-Py_LOCAL_INLINE(BOOL) guard_group_call(RE_SafeState* safe_state, size_t index,
-  Py_ssize_t text_pos, BOOL protect) {
-    RE_State* state;
-    RE_GuardList* guard_list;
-
-    state = safe_state->re_state;
-
-    guard_list = &state->group_call_guard_list[index];
-
-    return guard(safe_state, guard_list, text_pos, protect);
-}
-
 /* Resets the guards inside atomic subpatterns and lookarounds. */
 Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
     PatternObject* pattern;
@@ -6916,6 +6732,9 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t len,
     case 4:
         kind = PyUnicode_4BYTE_KIND;
         break;
+    default:
+        kind = PyUnicode_1BYTE_KIND;
+        break;
     }
 
     return PyUnicode_FromKindAndData(kind, buffer, len);
@@ -6952,6 +6771,10 @@ Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
     case 4:
         char_at = bytes4_char_at;
         set_char_at = bytes4_set_char_at;
+        break;
+    default:
+        char_at = bytes1_char_at;
+        set_char_at = bytes1_set_char_at;
         break;
     }
 
@@ -7095,7 +6918,6 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
     Py_ssize_t buf_size;
     Py_ssize_t folded_charsize;
     void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
-    void* (*point_to)(void* text, Py_ssize_t pos);
     void* folded;
     PyObject* string_set;
     int status;
@@ -7131,11 +6953,9 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
     switch (folded_charsize) {
     case 2:
         set_char_at = bytes2_set_char_at;
-        point_to = bytes2_point_to;
         break;
     case 4:
         set_char_at = bytes4_set_char_at;
-        point_to = bytes4_point_to;
         break;
     default:
         return 0;
@@ -8678,7 +8498,6 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     void* text;
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
-    RE_GroupInfo* group_info;
     Py_ssize_t pattern_step; /* The overall step of the pattern (forwards or backwards). */
     Py_ssize_t string_pos;
     BOOL do_search_start;
@@ -8734,7 +8553,6 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     text = state->text;
     char_at = state->char_at;
     has_property = encoding->has_property;
-    group_info = pattern->group_info;
     pattern_step = state->reverse ? -1 : 1;
     string_pos = -1;
     do_search_start = pattern->do_search_start;
@@ -11366,12 +11184,10 @@ backtrack:
         case RE_OP_END_GROUP: /* End of a capture group. */
         {
             size_t private_index;
-            size_t public_index;
             RE_GroupData* group;
             TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.public_index))
 
             private_index = bt_data->group.private_index;
-            public_index = bt_data->group.public_index;
             group = &state->groups[private_index - 1];
 
             /* Unsave the capture? */
@@ -11408,11 +11224,7 @@ backtrack:
             case RE_OP_GREEDY_REPEAT_ONE:
             case RE_OP_LAZY_REPEAT_ONE:
             {
-                size_t available;
                 size_t count;
-
-                available = state->reverse ? text_pos - slice_start : slice_end
-                  - text_pos;
 
                 /* How many characters did the repeat actually match? */
                 count = count_one(state, start_node->nonstring.next_2.node,
@@ -12444,12 +12256,10 @@ backtrack:
         case RE_OP_START_GROUP: /* Start of a capture group. */
         {
             size_t private_index;
-            size_t public_index;
             RE_GroupData* group;
             TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.public_index))
 
             private_index = bt_data->group.private_index;
-            public_index = bt_data->group.public_index;
             group = &state->groups[private_index - 1];
 
             /* Unsave the capture? */
@@ -12610,7 +12420,6 @@ Py_LOCAL_INLINE(void) discard_groups(RE_SafeState* safe_state, RE_GroupData*
 Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     RE_State* state;
     PatternObject* pattern;
-    RE_FuzzyInfo* fuzzy_info;
     size_t available;
     BOOL get_best;
     BOOL enhance_match;
@@ -12625,7 +12434,6 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
 
     state = safe_state->re_state;
     pattern = state->pattern;
-    fuzzy_info = &state->fuzzy_info;
 
     /* Release the GIL. */
     release_GIL(safe_state);
@@ -12675,8 +12483,8 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         status = RE_ERROR_SUCCESS;
         if (state->max_cost == 0) {
             /* An exact match. */
-            if (available < state->min_width || available == 0 &&
-              state->must_advance)
+            if (available < state->min_width || (available == 0 &&
+              state->must_advance))
                 status = RE_ERROR_FAILURE;
         }
 
@@ -12688,8 +12496,8 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         if (status < 0)
             break;
 
-        if (status == RE_ERROR_FAILURE || status == RE_ERROR_SUCCESS &&
-          state->total_cost == 0)
+        if (status == RE_ERROR_FAILURE || (status == RE_ERROR_SUCCESS &&
+          state->total_cost == 0))
             break;
 
         if (!get_best && !enhance_match)
@@ -12905,16 +12713,6 @@ Py_LOCAL_INLINE(void) dealloc_groups(RE_GroupData* groups, size_t group_count)
         re_dealloc(groups[g].captures);
 
     re_dealloc(groups);
-}
-
-/* Deallocates the guard list storage. */
-Py_LOCAL_INLINE(void) dealloc_guards(RE_GuardList* guards, size_t count) {
-    size_t r;
-
-    for (r = 0; r < count; r++)
-        re_dealloc(guards[r].spans);
-
-    re_dealloc(guards);
 }
 
 /* Initialises a state object. */
@@ -13349,21 +13147,6 @@ Py_LOCAL_INLINE(Py_ssize_t) as_string_index(PyObject* obj, Py_ssize_t def) {
     return 0;
 }
 
-/* Deallocates the groups of a MatchObject. */
-Py_LOCAL_INLINE(void) dealloc_match_groups(RE_GroupData* groups) {
-    if (!groups)
-        return;
-
-    /* The captures of a MatchObject are copied from the 'RE_State' struct into
-     * a contiguous array of spans.
-     *
-     * 'groups[0].captures' will always point to the start of that array.
-     */
-    re_dealloc(groups[0].captures);
-
-    re_dealloc(groups);
-}
-
 /* Deallocates a MatchObject. */
 static void match_dealloc(PyObject* self_) {
     MatchObject* self;
@@ -13682,7 +13465,7 @@ Py_LOCAL_INLINE(Py_ssize_t) as_group_index(PyObject* obj) {
         return value;
 
     set_error(RE_ERROR_INDEX, NULL);
-    return 0;
+    return -1;
 }
 
 /* Gets a MatchObject's group index.
@@ -13695,12 +13478,19 @@ Py_LOCAL_INLINE(Py_ssize_t) match_get_group_index(MatchObject* self, PyObject*
 
     /* Is the index an integer? */
     group = as_group_index(index);
-    if (!PyErr_Occurred()) {
-        /* Adjust negative indices where valid and allowed. */
-        if (allow_neg && -self->group_count <= group && group <= -1)
-            group += self->group_count + 1;
+    if (group != -1 || !PyErr_Occurred()) {
+        Py_ssize_t min_group = 0;
 
-        return group;
+        /* Adjust negative indices where valid and allowed. */
+        if (group < 0 && allow_neg) {
+            group += self->group_count + 1;
+            min_group = 1;
+        }
+
+        if (min_group <= group && group <= self->group_count)
+            return group;
+
+        return -1;
     }
 
     /* The index might be a group name. */
@@ -13712,10 +13502,9 @@ Py_LOCAL_INLINE(Py_ssize_t) match_get_group_index(MatchObject* self, PyObject*
         if (index) {
             /* Check that we have an integer. */
             group = as_group_index(index);
-            if (!PyErr_Occurred()) {
-                Py_DECREF(index);
+            Py_DECREF(index);
+            if (group != -1 || !PyErr_Occurred())
                 return group;
-            }
         }
     }
 
@@ -14035,7 +13824,7 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
 
     /* Is it a group reference? */
     index = as_group_index(item);
-    if (PyErr_Occurred()) {
+    if (index == -1 && PyErr_Occurred()) {
         /* Not a group either! */
         set_error(RE_ERROR_REPLACEMENT, NULL);
         return NULL;
@@ -14199,16 +13988,69 @@ Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info, PyObject*
     return PySequence_GetSlice(string, 0, 0);
 }
 
+/* Checks whether a string replacement is a literal.
+ *
+ * To keep it simple we'll say that a literal is a string which can be used
+ * as-is.
+ *
+ * Returns its length if it is a literal, otherwise -1.
+ */
+Py_LOCAL_INLINE(Py_ssize_t) check_replacement_string(PyObject* str_replacement,
+  char special_char) {
+    RE_StringInfo str_info;
+    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
+    Py_ssize_t pos;
+
+    if (!get_string(str_replacement, &str_info))
+        return -1;
+
+    switch (str_info.charsize) {
+    case 1:
+        char_at = bytes1_char_at;
+        break;
+    case 2:
+        char_at = bytes2_char_at;
+        break;
+    case 4:
+        char_at = bytes4_char_at;
+        break;
+    default:
+        release_buffer(&str_info);
+        break;
+    }
+
+    for (pos = 0; pos < str_info.length; pos++) {
+        if (char_at(str_info.characters, pos) == special_char) {
+            release_buffer(&str_info);
+
+            return -1;
+        }
+    }
+
+    release_buffer(&str_info);
+
+    return str_info.length;
+}
+
 /* MatchObject's 'expand' method. */
 static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
+    Py_ssize_t literal_length;
     PyObject* replacement;
     JoinInfo join_info;
     Py_ssize_t size;
     Py_ssize_t i;
 
+    /* Is the template just a literal? */
+    literal_length = check_replacement_string(str_template, '\\');
+    if (literal_length >= 0) {
+        /* It's a literal. */
+        Py_INCREF(str_template);
+        return str_template;
+    }
+
     /* Hand the template to the template compiler. */
-    replacement = call(RE_MODULE, "_compile_replacement_helper", PyTuple_Pack(2,
-      self->pattern, str_template));
+    replacement = call(RE_MODULE, "_compile_replacement_helper",
+      PyTuple_Pack(2, self->pattern, str_template));
     if (!replacement)
         return NULL;
 
@@ -14305,7 +14147,7 @@ static PyObject* match_expandf(MatchObject* self, PyObject* str_template) {
     PyObject* result;
 
     format_func = PyObject_GetAttrString(str_template, "format");
-    if(!format_func)
+    if (!format_func)
         return NULL;
 
     args = PyTuple_New(self->group_count + 1);
@@ -15120,8 +14962,11 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
         return NULL;
 
     start = as_string_index(pos, 0);
+    if (start == -1 && PyErr_Occurred())
+        return NULL;
+
     end = as_string_index(endpos, PY_SSIZE_T_MAX);
-    if (PyErr_Occurred())
+    if (end == -1 && PyErr_Occurred())
         return NULL;
 
     conc = decode_concurrent(concurrent);
@@ -15455,8 +15300,11 @@ static PyObject* pattern_search_or_match(PatternObject* self, PyObject* args,
         return NULL;
 
     start = as_string_index(pos, 0);
+    if (start == -1 && PyErr_Occurred())
+        return NULL;
+
     end = as_string_index(endpos, PY_SSIZE_T_MAX);
-    if (PyErr_Occurred())
+    if (end == -1 && PyErr_Occurred())
         return NULL;
 
     conc = decode_concurrent(concurrent);
@@ -15512,8 +15360,11 @@ Py_LOCAL_INLINE(BOOL) get_limits(PyObject* pos, PyObject* endpos, Py_ssize_t
     Py_ssize_t e;
 
     s = as_string_index(pos, 0);
+    if (s == -1 && PyErr_Occurred())
+        return FALSE;
+
     e = as_string_index(endpos, PY_SSIZE_T_MAX);
-    if (PyErr_Occurred())
+    if (e == -1 && PyErr_Occurred())
         return FALSE;
 
     /* Adjust boundaries. */
@@ -15555,7 +15406,7 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
 
     /* Is it a group reference? */
     index = as_group_index(item);
-    if (PyErr_Occurred()) {
+    if (index == -1 && PyErr_Occurred()) {
         /* Not a group either! */
         set_error(RE_ERROR_REPLACEMENT, NULL);
         return NULL;
@@ -15595,51 +15446,6 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
         set_error(RE_ERROR_INVALID_GROUP_REF, NULL);
         return NULL;
     }
-}
-
-/* Checks whether a string replacement is a literal.
- *
- * To keep it simple we'll say that a literal is a string which can be used
- * as-is.
- *
- * Returns its length if it is a literal, otherwise -1.
- */
-Py_LOCAL_INLINE(Py_ssize_t) check_replacement_string(PyObject* str_replacement,
-  char special_char) {
-    RE_StringInfo str_info;
-    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
-    Py_ssize_t pos;
-
-    if (!get_string(str_replacement, &str_info))
-        return -1;
-
-    switch (str_info.charsize) {
-    case 1:
-        char_at = bytes1_char_at;
-        break;
-    case 2:
-        char_at = bytes2_char_at;
-        break;
-    case 4:
-        char_at = bytes4_char_at;
-        break;
-    default:
-        release_buffer(&str_info);
-
-        return -1;
-    }
-
-    for (pos = 0; pos < str_info.length; pos++) {
-        if (char_at(str_info.characters, pos) == special_char) {
-            release_buffer(&str_info);
-
-            return -1;
-        }
-    }
-
-    release_buffer(&str_info);
-
-    return str_info.length;
 }
 
 /* PatternObject's 'subx' method. */
@@ -16272,8 +16078,11 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
         return NULL;
 
     start = as_string_index(pos, 0);
+    if (start == -1 && PyErr_Occurred())
+        return NULL;
+
     end = as_string_index(endpos, PY_SSIZE_T_MAX);
-    if (PyErr_Occurred())
+    if (end == -1 && PyErr_Occurred())
         return NULL;
 
     conc = decode_concurrent(concurrent);
@@ -17529,10 +17338,10 @@ Py_LOCAL_INLINE(Py_ssize_t) get_step(RE_CODE op) {
     return 0;
 }
 
-Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args);
+Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args);
 
 /* Builds an ANY node. */
-Py_LOCAL_INLINE(BOOL) build_ANY(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_ANY(RE_CompileArgs* args) {
     RE_UINT8 op;
     RE_CODE flags;
     Py_ssize_t step;
@@ -17540,7 +17349,7 @@ Py_LOCAL_INLINE(BOOL) build_ANY(RE_CompileArgs* args) {
 
     /* codes: opcode, flags. */
     if (args->code + 1 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     op = (RE_UINT8)args->code[0];
     flags = args->code[1];
@@ -17550,7 +17359,7 @@ Py_LOCAL_INLINE(BOOL) build_ANY(RE_CompileArgs* args) {
     /* Create the node. */
     node = create_node(args->pattern, op, flags, step, 0);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     args->code += 2;
 
@@ -17560,20 +17369,21 @@ Py_LOCAL_INLINE(BOOL) build_ANY(RE_CompileArgs* args) {
 
     ++args->min_width;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a FUZZY node. */
-Py_LOCAL_INLINE(BOOL) build_FUZZY(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_FUZZY(RE_CompileArgs* args) {
     RE_CODE flags;
     RE_Node* start_node;
     RE_Node* end_node;
     size_t index;
     RE_CompileArgs subargs;
+    int status;
 
     /* codes: opcode, flags, constraints, sequence, end. */
     if (args->code + 13 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     flags = args->code[1];
 
@@ -17581,7 +17391,7 @@ Py_LOCAL_INLINE(BOOL) build_FUZZY(RE_CompileArgs* args) {
     start_node = create_node(args->pattern, RE_OP_FUZZY, flags, 0, 9);
     end_node = create_node(args->pattern, RE_OP_END_FUZZY, flags, 0, 5);
     if (!start_node || !end_node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     index = args->pattern->fuzzy_count++;
     start_node->values[0] = index;
@@ -17613,11 +17423,12 @@ Py_LOCAL_INLINE(BOOL) build_FUZZY(RE_CompileArgs* args) {
     /* Compile the sequence and check that we've reached the end of the
      * subpattern.
      */
-    if (!build_sequence(&subargs))
-        return FALSE;
+    status = build_sequence(&subargs);
+    if (status != RE_ERROR_SUCCESS)
+        return status;
 
     if (subargs.code[0] != RE_OP_END)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
     args->min_width = subargs.min_width;
@@ -17633,22 +17444,23 @@ Py_LOCAL_INLINE(BOOL) build_FUZZY(RE_CompileArgs* args) {
 
     args->is_fuzzy = TRUE;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds an ATOMIC node. */
-Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_ATOMIC(RE_CompileArgs* args) {
     RE_Node* atomic_node;
     RE_CompileArgs subargs;
     RE_Node* success_node;
+    int status;
 
     /* codes: opcode, sequence, end. */
     if (args->code + 1 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     atomic_node = create_node(args->pattern, RE_OP_ATOMIC, 0, 0, 1);
     if (!atomic_node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* The number of repeat indexes. */
     atomic_node->values[0] = 0;
@@ -17662,16 +17474,17 @@ Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
     /* Compile the sequence and check that we've reached the end of the
      * subpattern.
      */
-    if (!build_sequence(&subargs))
-        return FALSE;
+    status = build_sequence(&subargs);
+    if (status != RE_ERROR_SUCCESS)
+        return status;
 
     if (subargs.code[0] != RE_OP_END)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     /* Create the success node to terminate the subpattern. */
     success_node = create_node(subargs.pattern, RE_OP_SUCCESS, 0, 0, 0);
     if (!success_node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* Append the SUCCESS node. */
     add_node(subargs.end, success_node);
@@ -17690,18 +17503,18 @@ Py_LOCAL_INLINE(BOOL) build_ATOMIC(RE_CompileArgs* args) {
     add_node(args->end, atomic_node);
     args->end = atomic_node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a BOUNDARY node. */
-Py_LOCAL_INLINE(BOOL) build_BOUNDARY(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_BOUNDARY(RE_CompileArgs* args) {
     RE_UINT8 op;
     RE_CODE flags;
     RE_Node* node;
 
     /* codes: opcode, flags. */
     if (args->code + 1 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     op = (RE_UINT8)args->code[0];
     flags = args->code[1];
@@ -17711,31 +17524,32 @@ Py_LOCAL_INLINE(BOOL) build_BOUNDARY(RE_CompileArgs* args) {
     /* Create the node. */
     node = create_node(args->pattern, op, flags, 0, 0);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* Append the node. */
     add_node(args->end, node);
     args->end = node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a BRANCH node. */
-Py_LOCAL_INLINE(BOOL) build_BRANCH(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_BRANCH(RE_CompileArgs* args) {
     RE_Node* branch_node;
     RE_Node* join_node;
     size_t smallest_min_width;
     RE_CompileArgs subargs;
+    int status;
 
     /* codes: opcode, branch, next, branch, end. */
     if (args->code + 2 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     /* Create nodes for the start and end of the branch sequence. */
     branch_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
     join_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
     if (!branch_node || !join_node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* Append the node. */
     add_node(args->end, branch_node);
@@ -17758,8 +17572,9 @@ Py_LOCAL_INLINE(BOOL) build_BRANCH(RE_CompileArgs* args) {
         subargs.min_width = 0;
         subargs.has_captures = FALSE;
         subargs.is_fuzzy = FALSE;
-        if (!build_sequence(&subargs))
-            return FALSE;
+        status = build_sequence(&subargs);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
 
         if (subargs.min_width < smallest_min_width)
             smallest_min_width = subargs.min_width;
@@ -17774,7 +17589,7 @@ Py_LOCAL_INLINE(BOOL) build_BRANCH(RE_CompileArgs* args) {
         /* Create a start node for the next sequence and append it. */
         next_branch_node = create_node(subargs.pattern, RE_OP_BRANCH, 0, 0, 0);
         if (!next_branch_node)
-            return FALSE;
+            return RE_ERROR_MEMORY;
 
         add_node(branch_node, next_branch_node);
         branch_node = next_branch_node;
@@ -17782,26 +17597,27 @@ Py_LOCAL_INLINE(BOOL) build_BRANCH(RE_CompileArgs* args) {
 
     /* We should have reached the end of the branch. */
     if (subargs.code[0] != RE_OP_END)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
 
     ++args->code;
     args->min_width += smallest_min_width;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a CALL_REF node. */
-Py_LOCAL_INLINE(BOOL) build_CALL_REF(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_CALL_REF(RE_CompileArgs* args) {
     RE_CODE call_ref;
     RE_Node* start_node;
     RE_Node* end_node;
     RE_CompileArgs subargs;
+    int status;
 
     /* codes: opcode, call_ref. */
     if (args->code + 1 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     call_ref = args->code[1];
 
@@ -17811,7 +17627,7 @@ Py_LOCAL_INLINE(BOOL) build_CALL_REF(RE_CompileArgs* args) {
     start_node = create_node(args->pattern, RE_OP_CALL_REF, 0, 0, 1);
     end_node = create_node(args->pattern, RE_OP_GROUP_RETURN, 0, 0, 0);
     if (!start_node || !end_node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     start_node->values[0] = call_ref;
 
@@ -17821,11 +17637,12 @@ Py_LOCAL_INLINE(BOOL) build_CALL_REF(RE_CompileArgs* args) {
     subargs = *args;
     subargs.has_captures = FALSE;
     subargs.is_fuzzy = FALSE;
-    if (!build_sequence(&subargs))
-        return FALSE;
+    status = build_sequence(&subargs);
+    if (status != RE_ERROR_SUCCESS)
+        return status;
 
     if (subargs.code[0] != RE_OP_END)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
     args->min_width = subargs.min_width;
@@ -17836,7 +17653,7 @@ Py_LOCAL_INLINE(BOOL) build_CALL_REF(RE_CompileArgs* args) {
 
     /* Record that we defined a call_ref. */
     if (!record_call_ref_defined(args->pattern, call_ref, start_node))
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* Append the node. */
     add_node(args->end, start_node);
@@ -17844,11 +17661,11 @@ Py_LOCAL_INLINE(BOOL) build_CALL_REF(RE_CompileArgs* args) {
     add_node(subargs.end, end_node);
     args->end = end_node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a CHARACTER or PROPERTY node. */
-Py_LOCAL_INLINE(BOOL) build_CHARACTER_or_PROPERTY(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_CHARACTER_or_PROPERTY(RE_CompileArgs* args) {
     RE_UINT8 op;
     RE_CODE flags;
     Py_ssize_t step;
@@ -17856,7 +17673,7 @@ Py_LOCAL_INLINE(BOOL) build_CHARACTER_or_PROPERTY(RE_CompileArgs* args) {
 
     /* codes: opcode, flags, value. */
     if (args->code + 2 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     op = (RE_UINT8)args->code[0];
     flags = args->code[1];
@@ -17869,7 +17686,7 @@ Py_LOCAL_INLINE(BOOL) build_CHARACTER_or_PROPERTY(RE_CompileArgs* args) {
     /* Create the node. */
     node = create_node(args->pattern, op, flags, step, 1);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     node->values[0] = args->code[2];
 
@@ -17882,20 +17699,21 @@ Py_LOCAL_INLINE(BOOL) build_CHARACTER_or_PROPERTY(RE_CompileArgs* args) {
     if (step != 0)
         ++args->min_width;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a GROUP node. */
-Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_GROUP(RE_CompileArgs* args) {
     RE_CODE private_group;
     RE_CODE public_group;
     RE_Node* start_node;
     RE_Node* end_node;
     RE_CompileArgs subargs;
+    int status;
 
     /* codes: opcode, private_group, public_group. */
     if (args->code + 2 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     private_group = args->code[1];
     public_group = args->code[2];
@@ -17908,7 +17726,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
     end_node = create_node(args->pattern, args->forward ? RE_OP_END_GROUP :
       RE_OP_START_GROUP, 0, 0, 3);
     if (!start_node || !end_node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     start_node->values[0] = private_group;
     end_node->values[0] = private_group;
@@ -17921,7 +17739,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
 
     /* Record that we have a new capture group. */
     if (!record_group(args->pattern, private_group, start_node))
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* Compile the sequence and check that we've reached the end of the capture
      * group.
@@ -17929,11 +17747,12 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
     subargs = *args;
     subargs.has_captures = FALSE;
     subargs.is_fuzzy = FALSE;
-    if (!build_sequence(&subargs))
-        return FALSE;
+    status = build_sequence(&subargs);
+    if (status != RE_ERROR_SUCCESS)
+        return status;
 
     if (subargs.code[0] != RE_OP_END)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
     args->min_width = subargs.min_width;
@@ -17951,24 +17770,24 @@ Py_LOCAL_INLINE(BOOL) build_GROUP(RE_CompileArgs* args) {
     add_node(subargs.end, end_node);
     args->end = end_node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a GROUP_CALL node. */
-Py_LOCAL_INLINE(BOOL) build_GROUP_CALL(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_GROUP_CALL(RE_CompileArgs* args) {
     RE_CODE call_ref;
     RE_Node* node;
 
     /* codes: opcode, call_ref. */
     if (args->code + 1 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     call_ref = args->code[1];
 
     /* Create the node. */
     node = create_node(args->pattern, RE_OP_GROUP_CALL, 0, 0, 1);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     node->values[0] = call_ref;
 
@@ -17976,26 +17795,27 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_CALL(RE_CompileArgs* args) {
 
     /* Record that we used a call_ref. */
     if (!record_call_ref_used(args->pattern, call_ref))
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* Append the node. */
     add_node(args->end, node);
     args->end = node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a GROUP_EXISTS node. */
-Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
     RE_CODE group;
     RE_Node* start_node;
     RE_Node* end_node;
     RE_CompileArgs subargs;
     size_t min_width;
+    int status;
 
     /* codes: opcode, sequence, next, sequence, end. */
     if (args->code + 2 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     group = args->code[1];
 
@@ -18005,7 +17825,7 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
     start_node = create_node(args->pattern, RE_OP_GROUP_EXISTS, 0, 0, 1);
     end_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
     if (!start_node || !end_node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     start_node->values[0] = group;
 
@@ -18013,8 +17833,9 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
     subargs.min_width = 0;
     subargs.has_captures = FALSE;
     subargs.is_fuzzy = FALSE;
-    if (!build_sequence(&subargs))
-        return FALSE;
+    status = build_sequence(&subargs);
+    if (status != RE_ERROR_SUCCESS)
+        return status;
 
     args->code = subargs.code;
     args->has_captures |= subargs.has_captures;
@@ -18034,8 +17855,9 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
         subargs.min_width = 0;
         subargs.has_captures = FALSE;
         subargs.is_fuzzy = FALSE;
-        if (!build_sequence(&subargs))
-            return FALSE;
+        status = build_sequence(&subargs);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
 
         args->code = subargs.code;
         args->has_captures |= subargs.has_captures;
@@ -18055,26 +17877,27 @@ Py_LOCAL_INLINE(BOOL) build_GROUP_EXISTS(RE_CompileArgs* args) {
     args->min_width += min_width;
 
     if (args->code[0] != RE_OP_END)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     ++args->code;
 
     args->end = end_node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a LOOKAROUND node. */
-Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_LOOKAROUND(RE_CompileArgs* args) {
     RE_CODE flags;
     BOOL forward;
     RE_Node* lookaround_node;
     RE_Node* success_node;
     RE_CompileArgs subargs;
+    int status;
 
     /* codes: opcode, flags, forward, sequence, end. */
     if (args->code + 3 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     flags = args->code[1];
     forward = (BOOL)args->code[2];
@@ -18083,7 +17906,7 @@ Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
     lookaround_node = create_node(args->pattern, RE_OP_LOOKAROUND, flags, 0,
       2);
     if (!lookaround_node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* The number of repeat indexes. */
     lookaround_node->values[1] = 0;
@@ -18097,13 +17920,14 @@ Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
     subargs.forward = forward;
     subargs.has_captures = FALSE;
     subargs.is_fuzzy = FALSE;
-    if (!build_sequence(&subargs))
-        return FALSE;
+    status = build_sequence(&subargs);
+    if (status != RE_ERROR_SUCCESS)
+        return status;
 
     lookaround_node->values[0] = subargs.has_captures;
 
     if (subargs.code[0] != RE_OP_END)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
     args->has_captures |= subargs.has_captures;
@@ -18113,7 +17937,7 @@ Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
     /* Create the 'SUCCESS' node and append it to the subpattern. */
     success_node = create_node(args->pattern, RE_OP_SUCCESS, 0, 0, 0);
     if (!success_node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* Append the SUCCESS node. */
     add_node(subargs.end, success_node);
@@ -18125,11 +17949,11 @@ Py_LOCAL_INLINE(BOOL) build_LOOKAROUND(RE_CompileArgs* args) {
     add_node(args->end, lookaround_node);
     args->end = lookaround_node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a RANGE node. */
-Py_LOCAL_INLINE(BOOL) build_RANGE(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_RANGE(RE_CompileArgs* args) {
     RE_UINT8 op;
     RE_CODE flags;
     Py_ssize_t step;
@@ -18137,7 +17961,7 @@ Py_LOCAL_INLINE(BOOL) build_RANGE(RE_CompileArgs* args) {
 
     /* codes: opcode, flags, lower, upper. */
     if (args->code + 3 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     op = (RE_UINT8)args->code[0];
     flags = args->code[1];
@@ -18150,7 +17974,7 @@ Py_LOCAL_INLINE(BOOL) build_RANGE(RE_CompileArgs* args) {
     /* Create the node. */
     node = create_node(args->pattern, op, flags, step, 2);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     node->values[0] = args->code[2];
     node->values[1] = args->code[3];
@@ -18164,24 +17988,24 @@ Py_LOCAL_INLINE(BOOL) build_RANGE(RE_CompileArgs* args) {
     if (step != 0)
         ++args->min_width;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a REF_GROUP node. */
-Py_LOCAL_INLINE(BOOL) build_REF_GROUP(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_REF_GROUP(RE_CompileArgs* args) {
     RE_CODE flags;
     Py_ssize_t group;
     RE_Node* node;
 
     /* codes: opcode, flags, group. */
     if (args->code + 2 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     flags = args->code[1];
     group = args->code[2];
     node = create_node(args->pattern, (RE_UINT8)args->code[0], flags, 0, 1);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     node->values[0] = group;
 
@@ -18189,24 +18013,25 @@ Py_LOCAL_INLINE(BOOL) build_REF_GROUP(RE_CompileArgs* args) {
 
     /* Record that we have a reference to a group. */
     if (!record_ref_group(args->pattern, group))
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     /* Append the reference. */
     add_node(args->end, node);
     args->end = node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a REPEAT node. */
-Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
     BOOL greedy;
     RE_CODE min_count;
     RE_CODE max_count;
+    int status;
 
     /* codes: opcode, min_count, max_count, sequence, end. */
     if (args->code + 3 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     /* This includes special cases such as optional items, which we'll check
      * for and treat specially. They don't need repeat counts, which helps us
@@ -18216,7 +18041,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
     min_count = args->code[1];
     max_count = args->code[2];
     if (min_count > max_count)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     args->code += 3;
 
@@ -18230,17 +18055,18 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         branch_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
         join_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
         if (!branch_node || !join_node)
-            return FALSE;
+            return RE_ERROR_MEMORY;
 
         /* Compile the sequence and check that we've reached the end of it. */
         subargs = *args;
         subargs.has_captures = FALSE;
         subargs.is_fuzzy = FALSE;
-        if (!build_sequence(&subargs))
-            return FALSE;
+        status = build_sequence(&subargs);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
 
         if (subargs.code[0] != RE_OP_END)
-            return FALSE;
+            return RE_ERROR_ILLEGAL;
 
         args->code = subargs.code;
         args->has_captures |= subargs.has_captures;
@@ -18269,11 +18095,12 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         subargs = *args;
         subargs.has_captures = FALSE;
         subargs.is_fuzzy = FALSE;
-        if (!build_sequence(&subargs))
-            return FALSE;
+        status = build_sequence(&subargs);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
 
         if (subargs.code[0] != RE_OP_END)
-            return FALSE;
+            return RE_ERROR_ILLEGAL;
 
         args->code = subargs.code;
         args->min_width = subargs.min_width;
@@ -18297,7 +18124,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
           RE_OP_LAZY_REPEAT, 0, args->forward ? 1 : -1, 4);
         if (!repeat_node || !record_repeat(args->pattern, index,
           args->repeat_depth))
-            return FALSE;
+            return RE_ERROR_MEMORY;
 
         repeat_node->values[0] = index;
         repeat_node->values[1] = min_count;
@@ -18314,11 +18141,12 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         subargs.has_captures = FALSE;
         subargs.is_fuzzy = FALSE;
         ++subargs.repeat_depth;
-        if (!build_sequence(&subargs))
-            return FALSE;
+        status = build_sequence(&subargs);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
 
         if (subargs.code[0] != RE_OP_END)
-            return FALSE;
+            return RE_ERROR_ILLEGAL;
 
         args->code = subargs.code;
         args->min_width += min_count * subargs.min_width;
@@ -18348,7 +18176,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
               RE_OP_END_GREEDY_REPEAT : RE_OP_END_LAZY_REPEAT, 0, args->forward
               ? 1 : -1, 4);
             if (!end_repeat_node)
-                return FALSE;
+                return RE_ERROR_MEMORY;
 
             end_repeat_node->values[0] = repeat_node->values[0];
             end_repeat_node->values[1] = repeat_node->values[1];
@@ -18357,7 +18185,7 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
 
             end_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
             if (!end_node)
-                return FALSE;
+                return RE_ERROR_MEMORY;
 
             /* Append the new sequence. */
             add_node(args->end, repeat_node);
@@ -18370,11 +18198,11 @@ Py_LOCAL_INLINE(BOOL) build_REPEAT(RE_CompileArgs* args) {
         }
     }
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a STRING node. */
-Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args, BOOL is_charset) {
+Py_LOCAL_INLINE(int) build_STRING(RE_CompileArgs* args, BOOL is_charset) {
     RE_CODE flags;
     Py_ssize_t length;
     RE_UINT8 op;
@@ -18386,7 +18214,7 @@ Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args, BOOL is_charset) {
     flags = args->code[1];
     length = args->code[2];
     if (args->code + 3 + length > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     op = (RE_UINT8)args->code[0];
 
@@ -18395,7 +18223,7 @@ Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args, BOOL is_charset) {
     /* Create the node. */
     node = create_node(args->pattern, op, flags, step * length, length);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
     if (!is_charset)
         node->status |= RE_STATUS_STRING;
 
@@ -18416,16 +18244,17 @@ Py_LOCAL_INLINE(BOOL) build_STRING(RE_CompileArgs* args, BOOL is_charset) {
     else
         args->min_width += length;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a SET node. */
-Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_SET(RE_CompileArgs* args) {
     RE_UINT8 op;
     RE_CODE flags;
     Py_ssize_t step;
     RE_Node* node;
     size_t saved_min_width;
+    int status;
 
     /* codes: opcode, flags, members. */
     op = (RE_UINT8)args->code[0];
@@ -18438,7 +18267,7 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
 
     node = create_node(args->pattern, op, flags, step, 0);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     args->code += 2;
 
@@ -18453,19 +18282,22 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
         switch (args->code[0]) {
         case RE_OP_CHARACTER:
         case RE_OP_PROPERTY:
-            if (!build_CHARACTER_or_PROPERTY(args))
-                return FALSE;
+            status = build_CHARACTER_or_PROPERTY(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_RANGE:
-            if (!build_RANGE(args))
-                return FALSE;
+            status = build_RANGE(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_SET_DIFF:
         case RE_OP_SET_INTER:
         case RE_OP_SET_SYM_DIFF:
         case RE_OP_SET_UNION:
-            if (!build_SET(args))
-                return FALSE;
+            status = build_SET(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_STRING:
             /* A set of characters. */
@@ -18474,7 +18306,7 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
             break;
         default:
             /* Illegal opcode for a character set. */
-            return FALSE;
+            return RE_ERROR_ILLEGAL;
         }
     } while (args->code < args->end_code && args->code[0] != RE_OP_END);
 
@@ -18482,7 +18314,7 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
      * 'END'.)
      */
     if (args->code >= args->end_code || args->code[0] != RE_OP_END)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     ++args->code;
 
@@ -18498,11 +18330,11 @@ Py_LOCAL_INLINE(BOOL) build_SET(RE_CompileArgs* args) {
     if (step != 0)
         ++args->min_width;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a STRING_SET node. */
-Py_LOCAL_INLINE(BOOL) build_STRING_SET(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_STRING_SET(RE_CompileArgs* args) {
     Py_ssize_t index;
     Py_ssize_t min_len;
     Py_ssize_t max_len;
@@ -18510,14 +18342,14 @@ Py_LOCAL_INLINE(BOOL) build_STRING_SET(RE_CompileArgs* args) {
 
     /* codes: opcode, index, min_len, max_len. */
     if (args->code + 3 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     index = args->code[1];
     min_len = args->code[2];
     max_len = args->code[3];
     node = create_node(args->pattern, (RE_UINT8)args->code[0], 0, 0, 3);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     node->values[0] = index;
     node->values[1] = min_len;
@@ -18529,18 +18361,18 @@ Py_LOCAL_INLINE(BOOL) build_STRING_SET(RE_CompileArgs* args) {
     add_node(args->end, node);
     args->end = node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a SUCCESS node . */
-Py_LOCAL_INLINE(BOOL) build_SUCCESS(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_SUCCESS(RE_CompileArgs* args) {
     RE_Node* node;
     /* code: opcode. */
 
     /* Create the node. */
     node = create_node(args->pattern, RE_OP_SUCCESS, 0, 0, 0);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     ++args->code;
 
@@ -18548,24 +18380,24 @@ Py_LOCAL_INLINE(BOOL) build_SUCCESS(RE_CompileArgs* args) {
     add_node(args->end, node);
     args->end = node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a zero-width node. */
-Py_LOCAL_INLINE(BOOL) build_zerowidth(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_zerowidth(RE_CompileArgs* args) {
     RE_CODE flags;
     RE_Node* node;
 
     /* codes: opcode, flags. */
     if (args->code + 1 > args->end_code)
-        return FALSE;
+        return RE_ERROR_ILLEGAL;
 
     flags = args->code[1];
 
     /* Create the node. */
     node = create_node(args->pattern, (RE_UINT8)args->code[0], flags, 0, 0);
     if (!node)
-        return FALSE;
+        return RE_ERROR_MEMORY;
 
     args->code += 2;
 
@@ -18573,11 +18405,13 @@ Py_LOCAL_INLINE(BOOL) build_zerowidth(RE_CompileArgs* args) {
     add_node(args->end, node);
     args->end = node;
 
-    return TRUE;
+    return RE_ERROR_SUCCESS;
 }
 
 /* Builds a sequence of nodes from regular expression code. */
-Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
+    int status;
+
     /* Guarantee that there's something to attach to. */
     args->start = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
     args->end = args->start;
@@ -18595,13 +18429,15 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
         case RE_OP_ANY_U:
         case RE_OP_ANY_U_REV:
             /* A simple opcode with no trailing codewords and width of 1. */
-            if (!build_ANY(args))
-                return FALSE;
+            status = build_ANY(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_ATOMIC:
             /* An atomic sequence. */
-            if (!build_ATOMIC(args))
-                return FALSE;
+            status = build_ATOMIC(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_BOUNDARY:
         case RE_OP_DEFAULT_BOUNDARY:
@@ -18611,18 +18447,21 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
         case RE_OP_GRAPHEME_BOUNDARY:
         case RE_OP_START_OF_WORD:
             /* A word or grapheme boundary. */
-            if (!build_BOUNDARY(args))
-                return FALSE;
+            status = build_BOUNDARY(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_BRANCH:
             /* A 2-way branch. */
-            if (!build_BRANCH(args))
-                return FALSE;
+            status = build_BRANCH(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_CALL_REF:
             /* A group call ref. */
-            if (!build_CALL_REF(args))
-                return FALSE;
+            status = build_CALL_REF(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_CHARACTER:
         case RE_OP_CHARACTER_IGN:
@@ -18633,8 +18472,9 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
         case RE_OP_PROPERTY_IGN_REV:
         case RE_OP_PROPERTY_REV:
             /* A character literal or a property. */
-            if (!build_CHARACTER_or_PROPERTY(args))
-                return FALSE;
+            status = build_CHARACTER_or_PROPERTY(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_END_OF_LINE:
         case RE_OP_END_OF_LINE_U:
@@ -18646,47 +18486,55 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
         case RE_OP_START_OF_LINE_U:
         case RE_OP_START_OF_STRING:
             /* A simple opcode with no trailing codewords and width of 0. */
-            if (!build_zerowidth(args))
-                return FALSE;
+            status = build_zerowidth(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_FUZZY:
             /* A fuzzy sequence. */
-            if (!build_FUZZY(args))
-                return FALSE;
+            status = build_FUZZY(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_GREEDY_REPEAT:
         case RE_OP_LAZY_REPEAT:
             /* A repeated sequence. */
-            if (!build_REPEAT(args))
-                return FALSE;
+            status = build_REPEAT(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_GROUP:
             /* A capture group. */
-            if (!build_GROUP(args))
-                return FALSE;
+            status = build_GROUP(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_GROUP_CALL:
             /* A group call. */
-            if (!build_GROUP_CALL(args))
-                return FALSE;
+            status = build_GROUP_CALL(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_GROUP_EXISTS:
             /* A conditional sequence. */
-            if (!build_GROUP_EXISTS(args))
-                return FALSE;
+            status = build_GROUP_EXISTS(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_LOOKAROUND:
             /* A lookaround. */
-            if (!build_LOOKAROUND(args))
-                return FALSE;
+            status = build_LOOKAROUND(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_RANGE:
         case RE_OP_RANGE_IGN:
         case RE_OP_RANGE_IGN_REV:
         case RE_OP_RANGE_REV:
             /* A range. */
-            if (!build_RANGE(args))
-                return FALSE;
+            status = build_RANGE(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_REF_GROUP:
         case RE_OP_REF_GROUP_FLD:
@@ -18695,8 +18543,9 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
         case RE_OP_REF_GROUP_IGN_REV:
         case RE_OP_REF_GROUP_REV:
             /* A reference to a group. */
-            if (!build_REF_GROUP(args))
-                return FALSE;
+            status = build_REF_GROUP(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_SET_DIFF:
         case RE_OP_SET_DIFF_IGN:
@@ -18715,8 +18564,9 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
         case RE_OP_SET_UNION_IGN_REV:
         case RE_OP_SET_UNION_REV:
             /* A set. */
-            if (!build_SET(args))
-                return FALSE;
+            status = build_SET(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_STRING:
         case RE_OP_STRING_FLD:
@@ -18735,19 +18585,21 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
         case RE_OP_STRING_SET_IGN_REV:
         case RE_OP_STRING_SET_REV:
             /* A reference to a list. */
-            if (!build_STRING_SET(args))
-                return FALSE;
+            status = build_STRING_SET(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         case RE_OP_SUCCESS:
             /* Success. */
-            if (!build_SUCCESS(args))
-                return FALSE;
+            status = build_SUCCESS(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
             break;
         default:
             /* We've found an opcode which we don't recognise. We'll leave it
              * for the caller.
              */
-            return TRUE;
+            return RE_ERROR_SUCCESS;
         }
     }
 
@@ -18765,6 +18617,7 @@ Py_LOCAL_INLINE(BOOL) build_sequence(RE_CompileArgs* args) {
 Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
   PatternObject* pattern) {
     RE_CompileArgs args;
+    int status;
 
     /* Compile a regex sequence and then check that we've reached the end
      * correctly. (The last opcode should be 'SUCCESS'.)
@@ -18782,7 +18635,11 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     args.repeat_depth = 0;
     args.is_fuzzy = FALSE;
     args.within_fuzzy = FALSE;
-    if (!build_sequence(&args))
+    status = build_sequence(&args);
+    if (status == RE_ERROR_ILLEGAL)
+        set_error(RE_ERROR_ILLEGAL, NULL);
+
+    if (status != RE_ERROR_SUCCESS)
         return FALSE;
 
     pattern->min_width = args.min_width;
@@ -18820,8 +18677,10 @@ Py_LOCAL_INLINE(void) get_required_chars(PyObject* required_chars, RE_CODE**
     *req_length = 0;
 
     len = PyTuple_GET_SIZE(required_chars);
-    if (len == 0 || PyErr_Occurred())
+    if (len < 1 || PyErr_Occurred()) {
+        PyErr_Clear();
         return;
+    }
 
     chars = (RE_CODE*)re_alloc(len * sizeof(RE_CODE));
     if (!chars)
@@ -18832,11 +18691,11 @@ Py_LOCAL_INLINE(void) get_required_chars(PyObject* required_chars, RE_CODE**
         size_t value;
 
         value = PyLong_AsUnsignedLong(o);
-        if (PyErr_Occurred())
+        if (value == -1 && PyErr_Occurred())
             goto error;
 
         chars[i] = (RE_CODE)value;
-        if (chars[i] != value || PyErr_Occurred())
+        if (chars[i] != value)
             goto error;
     }
 
@@ -18917,7 +18776,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
         size_t value;
 
         value = PyLong_AsUnsignedLong(o);
-        if (PyErr_Occurred())
+        if (value == -1 && PyErr_Occurred())
             goto error;
 
         code[i] = (RE_CODE)value;
@@ -18996,9 +18855,6 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     re_dealloc(code);
 
     if (!ok) {
-        if (!PyErr_Occurred())
-            set_error(RE_ERROR_ILLEGAL, NULL);
-
         Py_DECREF(self);
         re_dealloc(req_chars);
         return NULL;

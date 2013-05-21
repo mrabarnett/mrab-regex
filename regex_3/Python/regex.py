@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.23"
+__version__ = "2.4.24"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -410,9 +410,11 @@ _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
 # Caches for the patterns and replacements.
 _cache = {}
 _named_args = {}
+_replacement_cache = {}
 
 # Maximum size of the cache.
 _MAXCACHE = 500
+_MAXREPCACHE = 500
 
 def _compile(pattern, flags=0, kwargs=None):
     "Compiles a regular expression to a PatternObject."
@@ -590,6 +592,16 @@ def _compile(pattern, flags=0, kwargs=None):
 def _compile_replacement_helper(pattern, template):
     "Compiles a replacement template."
     # This function is called by the _regex module.
+
+    # Have we seen this before?
+    key = pattern.pattern, pattern.flags, template
+    compiled = _replacement_cache.get(key)
+    if compiled is not None:
+        return compiled
+
+    if len(_replacement_cache) >= _MAXREPCACHE:
+        _replacement_cache.clear()
+
     is_unicode = isinstance(template, str)
     source = _Source(template)
     if is_unicode:
@@ -624,6 +636,9 @@ def _compile_replacement_helper(pattern, template):
     # Flush the literal.
     if literal:
         compiled.append(make_string(literal))
+
+    _replacement_cache[key] = compiled
+
     return compiled
 
 # We define _pattern_type here after all the support objects have been defined.

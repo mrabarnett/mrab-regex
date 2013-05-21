@@ -3089,6 +3089,11 @@ xyzabc
         self.assertEquals(regex.match(r'(?<x>a(?<x>b))', "ab").spans("x"), [(1,
           2), (0, 2)])
 
+        # Hg issue 91.
+        # Check that the replacement cache works.
+        self.assertEquals(regex.sub(r'(-)', lambda m: m.expand(r'x'), 'a-b-c'),
+          'axbxc')
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format
