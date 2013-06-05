@@ -50,6 +50,9 @@
 #include "pyport.h"
 #include "pythread.h"
 
+#define RE_MIN(X, Y) ((X) <= (Y) ? (X) : (Y))
+#define RE_MAX(X, Y) ((X) >= (Y) ? (X) : (Y))
+
 #if PY_VERSION_HEX < 0x03030000
 typedef unsigned char Py_UCS1;
 typedef unsigned short Py_UCS2;
@@ -670,10 +673,6 @@ typedef PyObject* (*RE_GetByIndexFunc)(MatchObject* self, Py_ssize_t index);
 
 Py_LOCAL_INLINE(Py_ssize_t) abs_ssize_t(Py_ssize_t x) {
     return x >= 0 ? x : -x;
-}
-
-Py_LOCAL_INLINE(int) max_int(int a, int b) {
-    return a >= b ? a : b;
 }
 
 /* Gets a character at the given position assuming 1 byte per character. */
@@ -3947,143 +3946,103 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_SET_REV(RE_State* state, RE_Node* node,
 /* Counts a repeated character pattern. */
 Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
   text_pos, RE_CODE max_count) {
-    size_t available;
-
     if (max_count < 1)
         return 0;
 
     switch (node->op) {
     case RE_OP_ANY:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
-        return match_many_ANY(state, text_pos, text_pos + max_count,
-          TRUE) - text_pos;
+        return match_many_ANY(state, text_pos, text_pos + max_count, TRUE) -
+          text_pos;
     case RE_OP_ANY_ALL:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
         return max_count;
     case RE_OP_ANY_ALL_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
         return max_count;
     case RE_OP_ANY_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
         return text_pos - match_many_ANY_REV(state, text_pos, text_pos -
           max_count, TRUE);
     case RE_OP_ANY_U:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
         return match_many_ANY_U(state, text_pos, text_pos + max_count, TRUE) -
           text_pos;
     case RE_OP_ANY_U_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
         return text_pos - match_many_ANY_U_REV(state, text_pos, text_pos -
           max_count, TRUE);
     case RE_OP_CHARACTER:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
-        return match_many_CHARACTER(state, node, text_pos, text_pos +
-          max_count, TRUE) - text_pos;
+        return match_many_CHARACTER(state, node, text_pos, text_pos + max_count,
+          TRUE) - text_pos;
     case RE_OP_CHARACTER_IGN:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
         return match_many_CHARACTER_IGN(state, node, text_pos, text_pos +
           max_count, TRUE) - text_pos;
     case RE_OP_CHARACTER_IGN_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
         return text_pos - match_many_CHARACTER_IGN_REV(state, node, text_pos,
           text_pos - max_count, TRUE);
     case RE_OP_CHARACTER_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
         return text_pos - match_many_CHARACTER_REV(state, node, text_pos,
           text_pos - max_count, TRUE);
     case RE_OP_PROPERTY:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
         return match_many_PROPERTY(state, node, text_pos, text_pos + max_count,
           TRUE) - text_pos;
     case RE_OP_PROPERTY_IGN:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
         return match_many_PROPERTY_IGN(state, node, text_pos, text_pos +
           max_count, TRUE) - text_pos;
     case RE_OP_PROPERTY_IGN_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
         return text_pos - match_many_PROPERTY_IGN_REV(state, node, text_pos,
           text_pos - max_count, TRUE);
     case RE_OP_PROPERTY_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
         return text_pos - match_many_PROPERTY_REV(state, node, text_pos,
           text_pos - max_count, TRUE);
     case RE_OP_RANGE:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
         return match_many_RANGE(state, node, text_pos, text_pos + max_count,
           TRUE) - text_pos;
     case RE_OP_RANGE_IGN:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
-        return match_many_RANGE_IGN(state, node, text_pos, text_pos +
-          max_count, TRUE) - text_pos;
+        return match_many_RANGE_IGN(state, node, text_pos, text_pos + max_count,
+          TRUE) - text_pos;
     case RE_OP_RANGE_IGN_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
         return text_pos - match_many_RANGE_IGN_REV(state, node, text_pos,
           text_pos - max_count, TRUE);
     case RE_OP_RANGE_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
-        return text_pos - match_many_RANGE_REV(state, node, text_pos, text_pos
-          - max_count, TRUE);
+        return text_pos - match_many_RANGE_REV(state, node, text_pos, text_pos -
+          max_count, TRUE);
     case RE_OP_SET_DIFF:
     case RE_OP_SET_INTER:
     case RE_OP_SET_SYM_DIFF:
     case RE_OP_SET_UNION:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
         return match_many_SET(state, node, text_pos, text_pos + max_count,
           TRUE) - text_pos;
@@ -4091,9 +4050,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
     case RE_OP_SET_INTER_IGN:
     case RE_OP_SET_SYM_DIFF_IGN:
     case RE_OP_SET_UNION_IGN:
-        available = state->slice_end - text_pos;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(state->slice_end - text_pos));
 
         return match_many_SET_IGN(state, node, text_pos, text_pos + max_count,
           TRUE) - text_pos;
@@ -4101,19 +4058,15 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
     case RE_OP_SET_INTER_IGN_REV:
     case RE_OP_SET_SYM_DIFF_IGN_REV:
     case RE_OP_SET_UNION_IGN_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
-        return text_pos - match_many_SET_IGN_REV(state, node, text_pos,
-          text_pos - max_count, TRUE);
+        return text_pos - match_many_SET_IGN_REV(state, node, text_pos, text_pos
+          - max_count, TRUE);
     case RE_OP_SET_DIFF_REV:
     case RE_OP_SET_INTER_REV:
     case RE_OP_SET_SYM_DIFF_REV:
     case RE_OP_SET_UNION_REV:
-        available = text_pos - state->slice_start;
-        if (max_count > available)
-            max_count = available;
+        max_count = RE_MIN(max_count, (size_t)(text_pos - state->slice_start));
 
         return text_pos - match_many_SET_REV(state, node, text_pos, text_pos -
           max_count, TRUE);
@@ -4229,6 +4182,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search(RE_State* state, RE_Node*
     length = node->value_count;
     values = node->values;
     first_char = values[0];
+    limit -= length;
 
     switch (state->charsize) {
     case 1:
@@ -4322,6 +4276,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign(RE_State* state, RE_Node*
     values = node->values;
     encoding = state->encoding;
     first_char = values[0];
+    limit -= length;
 
     switch (state->charsize) {
     case 1:
@@ -4407,36 +4362,95 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign(RE_State* state, RE_Node*
 /* Performs a simple string search backwards, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
     RE_EncodingTable* encoding;
     Py_UCS4 first_char;
 
-    char_at = state->char_at;
     text = state->text;
     length = node->value_count;
     values = node->values;
     encoding = state->encoding;
-    text_pos -= length;
-    limit -= length;
     first_char = values[0];
+    text_pos -= length;
 
-    while (text_pos >= limit) {
-        if (same_char_ign(encoding, char_at(text, text_pos), first_char)) {
-            Py_ssize_t pos;
+    switch (state->charsize) {
+    case 1:
+    {
+        Py_UCS1* text_ptr;
+        Py_UCS1* limit_ptr;
 
-            pos = 1;
-            while (pos < length && same_char_ign(encoding, char_at(text,
-              text_pos + pos), values[pos]))
-                ++pos;
+        text_ptr = (Py_UCS1*)text + text_pos;
+        limit_ptr = (Py_UCS1*)text + limit;
 
-            if (pos >= length)
-                return text_pos + length;
+        while (text_ptr >= limit_ptr) {
+            if (same_char_ign(encoding, text_ptr[0], first_char)) {
+                Py_ssize_t pos;
+
+                pos = 1;
+                while (pos < length && same_char_ign(encoding, text_ptr[pos],
+                  values[pos]))
+                    ++pos;
+
+                if (pos >= length)
+                    return text_ptr - (Py_UCS1*)text + length;
+            }
+
+            --text_ptr;
         }
+        break;
+    }
+    case 2:
+    {
+        Py_UCS2* text_ptr;
+        Py_UCS2* limit_ptr;
 
-        --text_pos;
+        text_ptr = (Py_UCS2*)text + text_pos;
+        limit_ptr = (Py_UCS2*)text + limit;
+
+        while (text_ptr >= limit_ptr) {
+            if (same_char_ign(encoding, text_ptr[0], first_char)) {
+                Py_ssize_t pos;
+
+                pos = 1;
+                while (pos < length && same_char_ign(encoding, text_ptr[pos],
+                  values[pos]))
+                    ++pos;
+
+                if (pos >= length)
+                    return text_ptr - (Py_UCS2*)text + length;
+            }
+
+            --text_ptr;
+        }
+        break;
+    }
+    case 4:
+    {
+        Py_UCS4* text_ptr;
+        Py_UCS4* limit_ptr;
+
+        text_ptr = (Py_UCS4*)text + text_pos;
+        limit_ptr = (Py_UCS4*)text + limit;
+
+        while (text_ptr >= limit_ptr) {
+            if (same_char_ign(encoding, text_ptr[0], first_char)) {
+                Py_ssize_t pos;
+
+                pos = 1;
+                while (pos < length && same_char_ign(encoding, text_ptr[pos],
+                  values[pos]))
+                    ++pos;
+
+                if (pos >= length)
+                    return text_ptr - (Py_UCS4*)text + length;
+            }
+
+            --text_ptr;
+        }
+        break;
+    }
     }
 
     return -1;
@@ -4445,34 +4459,90 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
 /* Performs a simple string search backwards. */
 Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_rev(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit) {
-    Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void* text;
     Py_ssize_t length;
     RE_CODE* values;
     Py_UCS4 first_char;
 
-    char_at = state->char_at;
     text = state->text;
     length = node->value_count;
     values = node->values;
-    text_pos -= length;
-    limit -= length;
     first_char = values[0];
+    text_pos -= length;
 
-    while (text_pos >= limit) {
-        if (char_at(text, text_pos) == first_char) {
-            Py_ssize_t pos;
+    switch (state->charsize) {
+    case 1:
+    {
+        Py_UCS1* text_ptr;
+        Py_UCS1* limit_ptr;
 
-            pos = 1;
-            while (pos < length && char_at(text, text_pos + pos) ==
-              values[pos])
-                ++pos;
+        text_ptr = (Py_UCS1*)text + text_pos;
+        limit_ptr = (Py_UCS1*)text + limit;
 
-            if (pos >= length)
-                return text_pos + length;
+        while (text_ptr >= limit_ptr) {
+            if (text_ptr[0] == first_char) {
+                Py_ssize_t pos;
+
+                pos = 1;
+                while (pos < length && text_ptr[pos] == values[pos])
+                    ++pos;
+
+                if (pos >= length)
+                    return text_ptr - (Py_UCS1*)text + length;
+            }
+
+            --text_ptr;
         }
+        break;
+    }
+    case 2:
+    {
+        Py_UCS2* text_ptr;
+        Py_UCS2* limit_ptr;
 
-        --text_pos;
+        text_ptr = (Py_UCS2*)text + text_pos;
+        limit_ptr = (Py_UCS2*)text + limit;
+
+        while (text_ptr >= limit_ptr) {
+            if (text_ptr[0] == first_char) {
+                Py_ssize_t pos;
+
+                pos = 1;
+                while (pos < length && text_ptr[pos] == values[pos])
+                    ++pos;
+
+                if (pos >= length)
+                    return text_ptr - (Py_UCS2*)text + length;
+            }
+
+            --text_ptr;
+        }
+        break;
+    }
+    case 4:
+    {
+        Py_UCS4* text_ptr;
+        Py_UCS4* limit_ptr;
+
+        text_ptr = (Py_UCS4*)text + text_pos;
+        limit_ptr = (Py_UCS4*)text + limit;
+
+        while (text_ptr >= limit_ptr) {
+            if (text_ptr[0] == first_char) {
+                Py_ssize_t pos;
+
+                pos = 1;
+                while (pos < length && text_ptr[pos] == values[pos])
+                    ++pos;
+
+                if (pos >= length)
+                    return text_ptr - (Py_UCS4*)text + length;
+            }
+
+            --text_ptr;
+        }
+        break;
+    }
     }
 
     return -1;
@@ -4498,6 +4568,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search(RE_State* state, RE_Node* node,
     bad_character_offset = node->string.bad_character_offset;
     last_pos = length - 1;
     last_char = values[last_pos];
+    limit -= length;
 
     while (text_pos <= limit) {
         Py_UCS4 ch;
@@ -4543,6 +4614,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
     bad_character_offset = node->string.bad_character_offset;
     last_pos = length - 1;
     last_char = values[last_pos];
+    limit -= length;
 
     while (text_pos <= limit) {
         Py_UCS4 ch;
@@ -4588,7 +4660,6 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
     bad_character_offset = node->string.bad_character_offset;
     first_char = values[0];
     text_pos -= length;
-    limit -= length;
 
     while (text_pos >= limit) {
         Py_UCS4 ch;
@@ -4631,9 +4702,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
     good_suffix_offset = node->string.good_suffix_offset;
     bad_character_offset = node->string.bad_character_offset;
     first_char = values[0];
-
     text_pos -= length;
-    limit -= length;
 
     while (text_pos >= limit) {
         Py_UCS4 ch;
@@ -4923,7 +4992,8 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_SafeState* safe_state, RE_Node*
 
     state = safe_state->re_state;
 
-    if (text_pos > limit)
+    /* Can the string fit the available space? */
+    if (text_pos + node->value_count > limit)
         return -1;
 
     /* Has the node been initialised for fast searching, if necessary? */
@@ -4987,7 +5057,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld(RE_SafeState* safe_state,
     while (string_pos < length || folded_pos < folded_len) {
         if (folded_pos >= folded_len) {
 fetch:
-            if (text_pos > limit)
+            if (text_pos >= limit)
                 return -1;
 
             folded_len = full_case_fold(char_at(text, text_pos), folded);
@@ -5065,7 +5135,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld_rev(RE_SafeState* safe_state,
     while (string_pos > 0 || folded_pos > 0) {
         if (folded_pos <= 0) {
 fetch:
-            if (text_pos < limit)
+            if (text_pos <= limit)
                 return -1;
 
             folded_len = full_case_fold(char_at(text, text_pos - 1), folded);
@@ -5113,7 +5183,8 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_SafeState* safe_state,
 
     state = safe_state->re_state;
 
-    if (text_pos > limit)
+    /* Can the string fit the available space? */
+    if (text_pos + node->value_count > limit)
         return -1;
 
     /* Has the node been initialised for fast searching, if necessary? */
@@ -5147,7 +5218,8 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_SafeState* safe_state,
 
     state = safe_state->re_state;
 
-    if (text_pos < limit)
+    /* Can the string fit the available space? */
+    if (text_pos - node->value_count < limit)
         return -1;
 
     /* Has the node been initialised for fast searching, if necessary? */
@@ -5181,7 +5253,8 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_SafeState* safe_state,
 
     state = safe_state->re_state;
 
-    if (text_pos < limit)
+    /* Can the string fit the available space? */
+    if (text_pos - node->value_count < limit)
         return -1;
 
     /* Has the node been initialised for fast searching, if necessary? */
@@ -5725,16 +5798,15 @@ Py_LOCAL_INLINE(BOOL) search_start(RE_SafeState* safe_state, RE_NextNode* next,
         return TRUE;
     }
 
-    if (!state->pattern->is_fuzzy)
-        limit -= state->min_width * step;
-
 again:
-    if (state->reverse) {
-        if (start_pos < limit)
-            return FALSE;
-    } else {
-        if (start_pos > limit)
-            return FALSE;
+    if (!state->pattern->is_fuzzy) {
+        if (state->reverse) {
+            if (start_pos - (Py_ssize_t)state->min_width < limit)
+                return FALSE;
+        } else {
+            if (start_pos + (Py_ssize_t)state->min_width > limit)
+                return FALSE;
+        }
     }
 
     if (search_index < MAX_SEARCH_POSITIONS) {
@@ -5767,8 +5839,8 @@ again:
 
     switch (test->op) {
     case RE_OP_ANY: /* Any character, except a newline. */
-        start_pos = match_many_ANY(state, start_pos, limit + 1, FALSE);
-        if (start_pos > limit)
+        start_pos = match_many_ANY(state, start_pos, limit, FALSE);
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_ANY_ALL: /* Any character at all. */
@@ -5776,18 +5848,18 @@ again:
     case RE_OP_ANY_ALL_REV: /* Any character at all backwards. */
         break;
     case RE_OP_ANY_REV: /* Any character backwards, except a newline. */
-        start_pos = match_many_ANY_REV(state, start_pos, limit - 1, FALSE);
-        if (start_pos < limit)
+        start_pos = match_many_ANY_REV(state, start_pos, limit, FALSE);
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_ANY_U: /* Any character, except a line separator. */
-        start_pos = match_many_ANY_U(state, start_pos, limit + 1, FALSE);
-        if (start_pos > limit)
+        start_pos = match_many_ANY_U(state, start_pos, limit, FALSE);
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_ANY_U_REV: /* Any character backwards, except a line separator. */
-        start_pos = match_many_ANY_U_REV(state, start_pos, limit - 1, FALSE);
-        if (start_pos < limit)
+        start_pos = match_many_ANY_U_REV(state, start_pos, limit, FALSE);
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_BOUNDARY: /* At a word boundary. */
@@ -5810,27 +5882,27 @@ again:
         break;
     }
     case RE_OP_CHARACTER: /* A character literal. */
-        start_pos = match_many_CHARACTER(state, test, start_pos, limit + 1,
+        start_pos = match_many_CHARACTER(state, test, start_pos, limit,
           FALSE);
-        if (start_pos > limit)
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_CHARACTER_IGN: /* A character literal, ignoring case. */
-        start_pos = match_many_CHARACTER_IGN(state, test, start_pos, limit + 1,
+        start_pos = match_many_CHARACTER_IGN(state, test, start_pos, limit,
           FALSE);
-        if (start_pos > limit)
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_CHARACTER_IGN_REV: /* A character literal backwards, ignoring case. */
-        start_pos = match_many_CHARACTER_IGN_REV(state, test, start_pos, limit
-          - 1, FALSE);
-        if (start_pos < limit)
+        start_pos = match_many_CHARACTER_IGN_REV(state, test, start_pos, limit,
+          FALSE);
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_CHARACTER_REV: /* A character literal backwards. */
-        start_pos = match_many_CHARACTER_REV(state, test, start_pos, limit - 1,
+        start_pos = match_many_CHARACTER_REV(state, test, start_pos, limit,
           FALSE);
-        if (start_pos < limit)
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_DEFAULT_BOUNDARY: /* At a default word boundary. */
@@ -5986,50 +6058,47 @@ again:
         break;
     }
     case RE_OP_PROPERTY: /* A character property. */
-        start_pos = match_many_PROPERTY(state, test, start_pos, limit + 1,
-          FALSE);
-        if (start_pos > limit)
+        start_pos = match_many_PROPERTY(state, test, start_pos, limit, FALSE);
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_PROPERTY_IGN: /* A character property, ignoring case. */
-        start_pos = match_many_PROPERTY_IGN(state, test, start_pos, limit + 1,
+        start_pos = match_many_PROPERTY_IGN(state, test, start_pos, limit,
           FALSE);
-        if (start_pos > limit)
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_PROPERTY_IGN_REV: /* A character property backwards, ignoring case. */
-        start_pos = match_many_PROPERTY_IGN_REV(state, test, start_pos, limit -
-          1, FALSE);
-        if (start_pos < limit)
+        start_pos = match_many_PROPERTY_IGN_REV(state, test, start_pos, limit,
+          FALSE);
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_PROPERTY_REV: /* A character property backwards. */
-        start_pos = match_many_PROPERTY_REV(state, test, start_pos, limit - 1,
+        start_pos = match_many_PROPERTY_REV(state, test, start_pos, limit,
           FALSE);
-        if (start_pos < limit)
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_RANGE: /* A range. */
-        start_pos = match_many_RANGE(state, test, start_pos, limit + 1, FALSE);
-        if (start_pos > limit)
+        start_pos = match_many_RANGE(state, test, start_pos, limit, FALSE);
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_RANGE_IGN: /* A range, ignoring case. */
-        start_pos = match_many_RANGE_IGN(state, test, start_pos, limit + 1,
-          FALSE);
-        if (start_pos > limit)
+        start_pos = match_many_RANGE_IGN(state, test, start_pos, limit, FALSE);
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_RANGE_IGN_REV: /* A range backwards, ignoring case. */
-        start_pos = match_many_RANGE_IGN_REV(state, test, start_pos, limit - 1,
+        start_pos = match_many_RANGE_IGN_REV(state, test, start_pos, limit,
           FALSE);
-        if (start_pos < limit)
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_RANGE_REV: /* A range backwards. */
-        start_pos = match_many_RANGE_REV(state, test, start_pos, limit - 1,
-          FALSE);
-        if (start_pos < limit)
+        start_pos = match_many_RANGE_REV(state, test, start_pos, limit, FALSE);
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_SEARCH_ANCHOR: /* At the start of the search. */
@@ -6047,35 +6116,33 @@ again:
     case RE_OP_SET_INTER:
     case RE_OP_SET_SYM_DIFF:
     case RE_OP_SET_UNION:
-        start_pos = match_many_SET(state, test, start_pos, limit + 1, FALSE);
-        if (start_pos > limit)
+        start_pos = match_many_SET(state, test, start_pos, limit, FALSE);
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_SET_DIFF_IGN: /* A set, ignoring case. */
     case RE_OP_SET_INTER_IGN:
     case RE_OP_SET_SYM_DIFF_IGN:
     case RE_OP_SET_UNION_IGN:
-        start_pos = match_many_SET_IGN(state, test, start_pos, limit + 1,
-          FALSE);
-        if (start_pos > limit)
+        start_pos = match_many_SET_IGN(state, test, start_pos, limit, FALSE);
+        if (start_pos >= limit)
             return FALSE;
         break;
     case RE_OP_SET_DIFF_IGN_REV: /* A set backwards, ignoring case. */
     case RE_OP_SET_INTER_IGN_REV:
     case RE_OP_SET_SYM_DIFF_IGN_REV:
     case RE_OP_SET_UNION_IGN_REV:
-        start_pos = match_many_SET_IGN_REV(state, test, start_pos, limit - 1,
+        start_pos = match_many_SET_IGN_REV(state, test, start_pos, limit,
           FALSE);
-        if (start_pos < limit)
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_SET_DIFF_REV: /* A set backwards. */
     case RE_OP_SET_INTER_REV:
     case RE_OP_SET_SYM_DIFF_REV:
     case RE_OP_SET_UNION_REV:
-        start_pos = match_many_SET_REV(state, test, start_pos, limit - 1,
-          FALSE);
-        if (start_pos < limit)
+        start_pos = match_many_SET_REV(state, test, start_pos, limit, FALSE);
+        if (start_pos <= limit)
             return FALSE;
         break;
     case RE_OP_START_OF_LINE: /* At the start of a line. */
@@ -6288,8 +6355,7 @@ Py_LOCAL_INLINE(BOOL) save_capture(RE_SafeState* safe_state, size_t
         RE_GroupSpan* new_captures;
 
         new_capacity = public_group->capture_capacity * 2;
-        if (new_capacity < RE_INIT_CAPTURE_SIZE)
-            new_capacity = RE_INIT_CAPTURE_SIZE;
+        new_capacity = RE_MAX(new_capacity, RE_INIT_CAPTURE_SIZE);
         new_captures = (RE_GroupSpan*)safe_realloc(safe_state,
            public_group->captures,new_capacity * sizeof(RE_GroupSpan));
         if (!new_captures)
@@ -6854,8 +6920,7 @@ Py_LOCAL_INLINE(int) string_set_match(RE_SafeState* safe_state, RE_Node* node)
         /* Too few characters for any match. */
         return 0;
 
-    if (max_len > available)
-        max_len = available;
+    max_len = RE_MIN(max_len, available);
 
     point_to = state->point_to;
     text = state->text;
@@ -6944,7 +7009,7 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
 
 #if PY_VERSION_HEX >= 0x03030000
     /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
+    folded_charsize = RE_MAX(state->charsize, sizeof(Py_UCS2));
 #else
     /* The folded string will have the same width as the original string. */
     folded_charsize = state->charsize;
@@ -7014,9 +7079,8 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
                 state->text_pos = pos;
         }
 
-        if (folded_len < len)
-            /* We got fewer than expected. Next time we want still fewer. */
-            len = folded_len;
+        /* If we got fewer than expected, next time we want still fewer. */
+        len = RE_MIN(len, folded_len);
 
         /* Fetch one fewer next time. */
         end_fetch = pos - 1;
@@ -7083,7 +7147,7 @@ Py_LOCAL_INLINE(int) string_set_match_fld_rev(RE_SafeState* safe_state,
 
 #if PY_VERSION_HEX >= 0x03030000
     /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
+    folded_charsize = RE_MAX(state->charsize, sizeof(Py_UCS2));
 #else
     /* The folded string will have the same width as the original string. */
     folded_charsize = state->charsize;
@@ -7154,9 +7218,8 @@ Py_LOCAL_INLINE(int) string_set_match_fld_rev(RE_SafeState* safe_state,
                 state->text_pos = pos;
         }
 
-        if (folded_len < len)
-            /* We got fewer than expected. Next time we want still fewer. */
-            len = folded_len;
+        /* If we got fewer than expected, next time we want still fewer. */
+        len = RE_MIN(len, folded_len);
 
         /* Fetch one fewer next time. */
         end_fetch = pos + 1;
@@ -7211,8 +7274,7 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
         /* Too few characters for any match. */
         return 0;
 
-    if (max_len > available)
-        max_len = available;
+    max_len = RE_MIN(max_len, available);
 
     char_at = state->char_at;
     text = state->text;
@@ -7224,7 +7286,7 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
 
 #if PY_VERSION_HEX >= 0x03030000
     /* The folded string needs to be at least 2 bytes per character. */
-    folded_charsize = max_int(state->charsize, sizeof(Py_UCS2));
+    folded_charsize = RE_MAX(state->charsize, sizeof(Py_UCS2));
 #else
     /* The folded string will have the same width as the original string. */
     folded_charsize = state->charsize;
@@ -7340,8 +7402,7 @@ Py_LOCAL_INLINE(int) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
         /* Too few characters for any match. */
         return 0;
 
-    if (max_len > available)
-        max_len = available;
+    max_len = RE_MIN(max_len, available);
 
     point_to = state->point_to;
     text = state->text;
@@ -8358,7 +8419,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
     switch (pattern->req_string->op) {
     case RE_OP_STRING:
         found_pos = string_search(safe_state, pattern->req_string,
-          state->text_pos, state->slice_end - pattern->req_string->value_count);
+          state->text_pos, state->slice_end);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -8418,7 +8479,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
         break;
     case RE_OP_STRING_IGN:
         found_pos = string_search_ign(safe_state, pattern->req_string,
-          state->text_pos, state->slice_end - pattern->req_string->value_count);
+          state->text_pos, state->slice_end);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -8438,8 +8499,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
         break;
     case RE_OP_STRING_IGN_REV:
         found_pos = string_search_ign_rev(safe_state, pattern->req_string,
-          state->text_pos, state->slice_start +
-          pattern->req_string->value_count);
+          state->text_pos, state->slice_start);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -8459,8 +8519,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
         break;
     case RE_OP_STRING_REV:
         found_pos = string_search_rev(safe_state, pattern->req_string,
-          state->text_pos, state->slice_start +
-          pattern->req_string->value_count);
+          state->text_pos, state->slice_start);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10526,7 +10585,8 @@ advance:
 
                 /* Try comparing. */
                 while (string_pos < length) {
-                    if (char_at(text, text_pos) == values[string_pos]) {
+                    if (text_pos < slice_end && char_at(text, text_pos) ==
+                      values[string_pos]) {
                         ++string_pos;
                         ++text_pos;
                     } else if (node->status & RE_STATUS_FUZZY) {
@@ -10791,8 +10851,8 @@ advance:
 
                 /* Try comparing. */
                 while (string_pos < length) {
-                    if (same_char_ign(encoding, char_at(text, text_pos),
-                      values[string_pos])) {
+                    if (text_pos < slice_end && same_char_ign(encoding,
+                      char_at(text, text_pos), values[string_pos])) {
                         ++string_pos;
                         ++text_pos;
                     } else if (node->status & RE_STATUS_FUZZY) {
@@ -10842,8 +10902,8 @@ advance:
 
                 /* Try comparing. */
                 while (string_pos > 0) {
-                    if (same_char_ign(encoding, char_at(text, text_pos - 1),
-                      values[string_pos - 1])) {
+                    if (text_pos > slice_start && same_char_ign(encoding,
+                      char_at(text, text_pos - 1), values[string_pos - 1])) {
                         --string_pos;
                         --text_pos;
                     } else if (node->status & RE_STATUS_FUZZY) {
@@ -10893,7 +10953,8 @@ advance:
 
                 /* Try comparing. */
                 while (string_pos > 0) {
-                    if (char_at(text, text_pos - 1) == values[string_pos - 1]) {
+                    if (text_pos > slice_start && char_at(text, text_pos - 1) ==
+                      values[string_pos - 1]) {
                         --string_pos;
                         --text_pos;
                     } else if (node->status & RE_STATUS_FUZZY) {
@@ -11185,7 +11246,8 @@ backtrack:
         {
             size_t private_index;
             RE_GroupData* group;
-            TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.public_index))
+            TRACE(("%s %d\n", re_op_text[bt_data->op],
+              bt_data->group.public_index))
 
             private_index = bt_data->group.private_index;
             group = &state->groups[private_index - 1];
@@ -11354,7 +11416,15 @@ backtrack:
 
                     ch = test->values[0];
 
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MAX(limit, slice_start + 1);
+
                     for (;;) {
+                        if (pos <= limit)
+                            break;
+
                         --pos;
 
                         if ((char_at(text, pos) == ch) == m &&
@@ -11363,9 +11433,6 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
@@ -11375,7 +11442,15 @@ backtrack:
 
                     ch = test->values[0];
 
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MAX(limit, slice_start + 1);
+
                     for (;;) {
+                        if (pos <= limit)
+                            break;
+
                         --pos;
 
                         if (same_char_ign(encoding, char_at(text, pos), ch) == m
@@ -11384,9 +11459,6 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
@@ -11396,7 +11468,15 @@ backtrack:
 
                     ch = test->values[0];
 
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MAX(limit, slice_start + 1);
+
                     for (;;) {
+                        if (pos >= limit)
+                            break;
+
                         ++pos;
 
                         if (same_char_ign(encoding, char_at(text, pos - 1), ch)
@@ -11405,9 +11485,6 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
@@ -11417,7 +11494,15 @@ backtrack:
 
                     ch = test->values[0];
 
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MAX(limit, slice_start + 1);
+
                     for (;;) {
+                        if (pos >= limit)
+                            break;
+
                         ++pos;
 
                         if ((char_at(text, pos - 1) == ch) == m &&
@@ -11426,9 +11511,6 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
@@ -11438,10 +11520,16 @@ backtrack:
 
                     length = test->value_count;
 
+                    /* The tail is a string. We don't want to go off the end of
+                     * the slice.
+                     */
+                    pos = RE_MIN(pos, slice_end - length);
+
                     for (;;) {
                         Py_ssize_t found;
 
-                        --pos;
+                        if (pos < limit)
+                            break;
 
                         found = string_search_rev(safe_state, test, pos +
                           length, limit);
@@ -11449,8 +11537,6 @@ backtrack:
                             break;
 
                         pos = found - length;
-                        if (pos < limit)
-                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11458,8 +11544,7 @@ backtrack:
                             break;
                         }
 
-                        if (pos == limit)
-                            break;
+                        --pos;
                     }
                     break;
                 }
@@ -11477,20 +11562,24 @@ backtrack:
                         folded_length += full_case_fold(test->values[i],
                           folded);
 
+                    /* The tail is a string. We don't want to go off the end of
+                     * the slice.
+                     */
+                    pos = RE_MIN(pos, slice_end - folded_length);
+
                     for (;;) {
                         Py_ssize_t found;
                         Py_ssize_t new_pos;
 
-                        --pos;
+                        if (pos < limit)
+                            break;
 
                         found = string_search_fld_rev(safe_state, test, pos +
                           folded_length, limit, &new_pos);
                         if (found < 0)
                             break;
 
-                        pos = new_pos;
-                        if (pos < limit)
-                            break;
+                        pos = found - folded_length;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11498,8 +11587,7 @@ backtrack:
                             break;
                         }
 
-                        if (pos == limit)
-                            break;
+                        --pos;
                     }
                     break;
                 }
@@ -11517,20 +11605,24 @@ backtrack:
                         folded_length += full_case_fold(test->values[i],
                           folded);
 
+                    /* The tail is a string. We don't want to go off the end of
+                     * the slice.
+                     */
+                    pos = RE_MAX(pos, slice_start + folded_length);
+
                     for (;;) {
                         Py_ssize_t found;
                         Py_ssize_t new_pos;
 
-                        ++pos;
+                        if (pos > limit)
+                            break;
 
                         found = string_search_fld(safe_state, test, pos -
                           folded_length, limit, &new_pos);
                         if (found < 0)
                             break;
 
-                        pos = new_pos;
-                        if (pos > limit)
-                            break;
+                        pos = found + folded_length;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11538,8 +11630,7 @@ backtrack:
                             break;
                         }
 
-                        if (pos == limit)
-                            break;
+                        ++pos;
                     }
                     break;
                 }
@@ -11549,10 +11640,16 @@ backtrack:
 
                     length = test->value_count;
 
+                    /* The tail is a string. We don't want to go off the end of
+                     8 the slice.
+                     */
+                    pos = RE_MIN(pos, slice_end - length);
+
                     for (;;) {
                         Py_ssize_t found;
 
-                        --pos;
+                        if (pos < limit)
+                            break;
 
                         found = string_search_ign_rev(safe_state, test, pos +
                           length, limit);
@@ -11560,8 +11657,6 @@ backtrack:
                             break;
 
                         pos = found - length;
-                        if (pos < limit)
-                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11569,8 +11664,7 @@ backtrack:
                             break;
                         }
 
-                        if (pos == limit)
-                            break;
+                        --pos;
                     }
                     break;
                 }
@@ -11580,10 +11674,16 @@ backtrack:
 
                     length = test->value_count;
 
+                    /* The tail is a string. We don't want to go off the end of
+                     * the slice.
+                     */
+                    pos = RE_MAX(pos, slice_start + length);
+
                     for (;;) {
                         Py_ssize_t found;
 
-                        ++pos;
+                        if (pos > limit)
+                            break;
 
                         found = string_search_ign(safe_state, test, pos -
                           length, limit);
@@ -11591,8 +11691,6 @@ backtrack:
                             break;
 
                         pos = found + length;
-                        if (pos > limit)
-                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11600,8 +11698,7 @@ backtrack:
                             break;
                         }
 
-                        if (pos == limit)
-                            break;
+                        ++pos;
                     }
                     break;
                 }
@@ -11611,10 +11708,16 @@ backtrack:
 
                     length = test->value_count;
 
+                    /* The tail is a string. We don't want to go off the end of
+                     * the slice.
+                     */
+                    pos = RE_MAX(pos, slice_start + length);
+
                     for (;;) {
                         Py_ssize_t found;
 
-                        ++pos;
+                        if (pos > limit)
+                            break;
 
                         found = string_search(safe_state, test, pos - length,
                           limit);
@@ -11622,8 +11725,6 @@ backtrack:
                             break;
 
                         pos = found + length;
-                        if (pos > limit)
-                            break;
 
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
@@ -11631,8 +11732,7 @@ backtrack:
                             break;
                         }
 
-                        if (pos == limit)
-                            break;
+                        ++pos;
                     }
                     break;
                 }
@@ -11746,9 +11846,7 @@ backtrack:
             pos = text_pos + (Py_ssize_t)count * step;
             available = step > 0 ? slice_end - text_pos : text_pos -
               slice_start;
-            max_count = node->values[2];
-            if (max_count > available)
-                max_count = available;
+            max_count = RE_MIN(node->values[2], available);
             limit = text_pos + (Py_ssize_t)max_count * step;
 
             repeated = node->nonstring.next_2.node;
@@ -11788,15 +11886,18 @@ backtrack:
                 case RE_OP_CHARACTER:
                 {
                     Py_UCS4 ch;
-                    size_t extra;
 
                     ch = test->values[0];
 
-                    extra = available - max_count;
-                    if (extra < 1)
-                        limit -= 1 - (Py_ssize_t)extra;
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MIN(limit, slice_end - 1);
 
                     for (;;) {
+                        if (pos >= limit)
+                            break;
+
                         if (!match_one(state, repeated, pos))
                             break;
 
@@ -11808,24 +11909,24 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
                 case RE_OP_CHARACTER_IGN:
                 {
                     Py_UCS4 ch;
-                    size_t extra;
 
                     ch = test->values[0];
 
-                    extra = available - max_count;
-                    if (extra < 1)
-                        limit -= 1 - (Py_ssize_t)extra;
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MIN(limit, slice_end - 1);
 
                     for (;;) {
+                        if (pos >= limit)
+                            break;
+
                         if (!match_one(state, repeated, pos))
                             break;
 
@@ -11837,24 +11938,24 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
                 case RE_OP_CHARACTER_IGN_REV:
                 {
                     Py_UCS4 ch;
-                    size_t extra;
 
                     ch = test->values[0];
 
-                    extra = available - max_count;
-                    if (extra < 1)
-                        limit += 1 - (Py_ssize_t)extra;
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MAX(limit, slice_start + 1);
 
                     for (;;) {
+                        if (pos <= limit)
+                            break;
+
                         if (!match_one(state, repeated, pos))
                             break;
 
@@ -11866,24 +11967,24 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
                 case RE_OP_CHARACTER_REV:
                 {
                     Py_UCS4 ch;
-                    size_t extra;
 
                     ch = test->values[0];
 
-                    extra = available - max_count;
-                    if (extra < 1)
-                        limit += 1 - (Py_ssize_t)extra;
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MAX(limit, slice_start + 1);
 
                     for (;;) {
+                        if (pos <= limit)
+                            break;
+
                         if (!match_one(state, repeated, pos))
                             break;
 
@@ -11895,19 +11996,29 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
                 case RE_OP_STRING:
                 {
+                    Py_ssize_t length;
+
+                    length = test->value_count;
+
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MIN(limit, slice_end - length);
+
                     for (;;) {
                         Py_ssize_t found;
 
+                        if (pos >= limit)
+                            break;
+
                         /* Look for the tail string. */
-                        found = string_search(safe_state, test, pos + 1, limit);
+                        found = string_search(safe_state, test, pos + 1, limit +
+                          length);
                         if (found < 0)
                             break;
 
@@ -11930,9 +12041,6 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
@@ -11942,6 +12050,7 @@ backtrack:
                         Py_ssize_t found;
                         Py_ssize_t new_pos;
 
+                        /* Look for the tail string. */
                         found = string_search_fld(safe_state, test, pos + 1,
                           limit, &new_pos);
                         if (found < 0)
@@ -11978,6 +12087,7 @@ backtrack:
                         Py_ssize_t found;
                         Py_ssize_t new_pos;
 
+                        /* Look for the tail string. */
                         found = string_search_fld_rev(safe_state, test, pos - 1,
                           limit, &new_pos);
                         if (found < 0)
@@ -12010,11 +12120,24 @@ backtrack:
                 }
                 case RE_OP_STRING_IGN:
                 {
+                    Py_ssize_t length;
+
+                    length = test->value_count;
+
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MIN(limit, slice_end - length);
+
                     for (;;) {
                         Py_ssize_t found;
 
+                        if (pos >= limit)
+                            break;
+
+                        /* Look for the tail string. */
                         found = string_search_ign(safe_state, test, pos + 1,
-                          limit);
+                          limit + length);
                         if (found < 0)
                             break;
 
@@ -12037,19 +12160,29 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
                 case RE_OP_STRING_IGN_REV:
                 {
+                    Py_ssize_t length;
+
+                    length = test->value_count;
+
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MAX(limit, slice_start + length);
+
                     for (;;) {
                         Py_ssize_t found;
 
+                        if (pos <= limit)
+                            break;
+
+                        /* Look for the tail string. */
                         found = string_search_ign_rev(safe_state, test, pos - 1,
-                          limit);
+                          limit - length);
                         if (found < 0)
                             break;
 
@@ -12072,19 +12205,29 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
                 case RE_OP_STRING_REV:
                 {
+                    Py_ssize_t length;
+
+                    length = test->value_count;
+
+                    /* The tail is a character. We don't want to go off the end
+                     * of the slice.
+                     */
+                    limit = RE_MAX(limit, slice_start + length);
+
                     for (;;) {
                         Py_ssize_t found;
 
+                        if (pos <= limit)
+                            break;
+
+                        /* Look for the tail string. */
                         found = string_search_rev(safe_state, test, pos - 1,
-                          limit);
+                          limit - length);
                         if (found < 0)
                             break;
 
@@ -12107,9 +12250,6 @@ backtrack:
                             match = TRUE;
                             break;
                         }
-
-                        if (pos == limit)
-                            break;
                     }
                     break;
                 }
@@ -12257,7 +12397,8 @@ backtrack:
         {
             size_t private_index;
             RE_GroupData* group;
-            TRACE(("%s %d\n", re_op_text[bt_data->op], bt_data->group.public_index))
+            TRACE(("%s %d\n", re_op_text[bt_data->op],
+              bt_data->group.public_index))
 
             private_index = bt_data->group.private_index;
             group = &state->groups[private_index - 1];
@@ -16574,7 +16715,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             body_result = add_repeat_guards(pattern,
               node->nonstring.next_2.node);
             tail_result = add_repeat_guards(pattern, node->next_1.node);
-            status = (RE_STATUS_T)max_int(max_int(result, body_result),
+            status = (RE_STATUS_T)RE_MAX(RE_MAX(result, body_result),
               tail_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
@@ -16588,7 +16729,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             branch_1_result = add_repeat_guards(pattern, node->next_1.node);
             branch_2_result = add_repeat_guards(pattern,
               node->nonstring.next_2.node);
-            status = (RE_STATUS_T)max_int(max_int(result, branch_1_result),
+            status = (RE_STATUS_T)RE_MAX(RE_MAX(result, branch_1_result),
               branch_2_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
@@ -16620,10 +16761,10 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             if (tail_result != RE_STATUS_REF)
                 repeat_info->status |= RE_STATUS_TAIL;
             if (limited)
-                result = (RE_STATUS_T)max_int(result, RE_STATUS_LIMITED);
+                result = (RE_STATUS_T)RE_MAX(result, RE_STATUS_LIMITED);
             else
-                result = (RE_STATUS_T)max_int(result, RE_STATUS_REPEAT);
-            status = (RE_STATUS_T)max_int(max_int(result, body_result),
+                result = (RE_STATUS_T)RE_MAX(result, RE_STATUS_REPEAT);
+            status = (RE_STATUS_T)RE_MAX(RE_MAX(result, body_result),
               tail_result);
             node->status |= RE_STATUS_VISITED_AG | status;
             return status;
@@ -16644,10 +16785,10 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             if (tail_result != RE_STATUS_REF)
                 repeat_info->status |= RE_STATUS_TAIL;
             if (limited)
-                result = (RE_STATUS_T)max_int(result, RE_STATUS_LIMITED);
+                result = (RE_STATUS_T)RE_MAX(result, RE_STATUS_LIMITED);
             else
-                result = (RE_STATUS_T)max_int(result, RE_STATUS_REPEAT);
-            status = (RE_STATUS_T)max_int(max_int(result, RE_STATUS_REPEAT),
+                result = (RE_STATUS_T)RE_MAX(result, RE_STATUS_REPEAT);
+            status = (RE_STATUS_T)RE_MAX(RE_MAX(result, RE_STATUS_REPEAT),
               tail_result);
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
@@ -16661,7 +16802,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             branch_1_result = add_repeat_guards(pattern, node->next_1.node);
             branch_2_result = add_repeat_guards(pattern,
               node->nonstring.next_2.node);
-            status = (RE_STATUS_T)max_int(max_int(max_int(result,
+            status = (RE_STATUS_T)RE_MAX(RE_MAX(RE_MAX(result,
               branch_1_result),
               branch_2_result), RE_STATUS_REF);
             node->status = RE_STATUS_VISITED_AG | status;
@@ -16691,8 +16832,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
  *
  * 'offset' is the offset of the index count within the values.
  */
-Py_LOCAL_INLINE(BOOL) add_index(RE_Node* node, size_t offset, size_t
-  index) {
+Py_LOCAL_INLINE(BOOL) add_index(RE_Node* node, size_t offset, size_t index) {
     size_t index_count;
     size_t first_index;
     size_t i;
@@ -17576,8 +17716,7 @@ Py_LOCAL_INLINE(int) build_BRANCH(RE_CompileArgs* args) {
         if (status != RE_ERROR_SUCCESS)
             return status;
 
-        if (subargs.min_width < smallest_min_width)
-            smallest_min_width = subargs.min_width;
+        smallest_min_width = RE_MIN(smallest_min_width, subargs.min_width);
 
         args->has_captures |= subargs.has_captures;
         args->is_fuzzy |= subargs.is_fuzzy;
@@ -17863,8 +18002,7 @@ Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
         args->has_captures |= subargs.has_captures;
         args->is_fuzzy |= subargs.is_fuzzy;
 
-        if (subargs.min_width < min_width)
-            min_width = subargs.min_width;
+        min_width = RE_MIN(min_width, subargs.min_width);
 
         add_node(start_node, subargs.start);
         add_node(subargs.end, end_node);

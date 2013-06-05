@@ -2398,7 +2398,7 @@ xyzabc
                     else:
                         actual = ascii(m)
 
-                    self.assertEqual(actual, expected)
+                    self.assertEquals(actual, expected)
 
     def test_replacement(self):
         self.assertEquals(regex.sub("test\?", "result\?\.\a\q\m\n", "test?"),
@@ -3051,7 +3051,7 @@ xyzabc
         self.assertEquals(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
 
         # Hg issue 85.
-        self.assertEqual(ascii(regex.sub(r"(\w+)", r"[\1]",
+        self.assertEquals(ascii(regex.sub(r"(\w+)", r"[\1]",
           '\u0905\u0928\u094d\u200d\u0928 \u0d28\u0d4d\u200d \u0915\u093f\u0928',
           regex.WORD)),
           ascii('[\u0905\u0928\u094d\u200d\u0928] [\u0d28\u0d4d\u200d] [\u0915\u093f\u0928]'))

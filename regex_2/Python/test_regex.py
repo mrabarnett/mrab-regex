@@ -2424,7 +2424,7 @@ xyzabc
                     else:
                         actual = repr(m)
 
-                    self.assertEqual(actual, expected)
+                    self.assertEquals(actual, expected)
 
     def test_replacement(self):
         self.assertEquals(regex.sub("test\?", "result\?\.\a\q\m\n", "test?"),
@@ -3077,7 +3077,7 @@ xyzabc
         self.assertEquals(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
 
         # Hg issue 85.
-        self.assertEqual(repr(regex.sub(ur"(?u)(\w+)", ur"[\1]",
+        self.assertEquals(repr(regex.sub(ur"(?u)(\w+)", ur"[\1]",
           u'\u0905\u0928\u094d\u200d\u0928 \u0d28\u0d4d\u200d \u0915\u093f\u0928',
           regex.WORD)),
           repr(u'[\u0905\u0928\u094d\u200d\u0928] [\u0d28\u0d4d\u200d] [\u0915\u093f\u0928]'))
