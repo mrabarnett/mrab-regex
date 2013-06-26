@@ -1351,6 +1351,9 @@ class RegexTests(unittest.TestCase):
 
         self.assertRaisesRegex(regex.error, self.CANT_TURN_OFF, lambda:
           regex.search(r"(?V0-i)Ab", "ab", flags=regex.I))
+
+        self.assertEquals(regex.search(r"(?V0)Ab", "ab"), None)
+        self.assertEquals(regex.search(r"(?V1)Ab", "ab"), None)
         self.assertEquals(regex.search(r"(?V1-i)Ab", "ab", flags=regex.I),
           None)
         self.assertEquals(regex.search(r"(?-i:A)b", "ab", flags=regex.I), None)

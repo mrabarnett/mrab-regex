@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.25"
+__version__ = "2.4.26"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -416,51 +416,49 @@ _replacement_cache = {}
 _MAXCACHE = 500
 _MAXREPCACHE = 500
 
-def _compile(pattern, flags=0, kwargs=None):
+def _compile(pattern, flags=0, kwargs={}):
     "Compiles a regular expression to a PatternObject."
-    # We're checking in this order because _pattern_type isn't defined when
-    # _compile() is first called, with a string pattern, but only after the
-    # support objects are defined.
-    if isinstance(pattern, (str, bytes)):
+    try:
+        # Do we know what keyword arguments are needed?
+        args_key = pattern, type(pattern), flags
+        args_needed = _named_args[args_key]
+
+        # Are we being provided with its required keyword arguments?
+        if args_needed:
+            args_supplied = set()
+            for k, v in args_needed:
+                if k not in kwargs:
+                    raise error("missing named list")
+
+                args_supplied.add((k, frozenset(kwargs[k])))
+
+            args_supplied = frozenset(args_supplied)
+        else:
+            args_supplied = frozenset()
+
+        # Have we already seen this regular expression and named list?
+        pattern_key = (pattern, type(pattern), flags, args_supplied,
+          DEFAULT_VERSION)
+        return _cache[pattern_key]
+    except KeyError:
+        # It's a new pattern, or new named list for a known pattern.
         pass
+
+    # Guess the encoding from the class of the pattern string.
+    if isinstance(pattern, str):
+        guess_encoding = UNICODE
+    elif isinstance(pattern, bytes):
+        guess_encoding = ASCII
     elif isinstance(pattern, _pattern_type):
         if flags:
             raise ValueError("can't process flags argument with a compiled pattern")
+
         return pattern
     else:
         raise TypeError("first argument must be a string or compiled pattern")
 
-    if kwargs is None:
-        kwargs = {}
-
     # Set the default version in the core code in case it has been changed.
     _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
-
-    # Do we know what keyword arguments are needed?
-    args_key = pattern, type(pattern), flags
-    args_needed = _named_args.get(args_key)
-    if args_needed is not None:
-        # Are we being provided with those keyword arguments?
-        args_supplied = set()
-        for k, v in args_needed:
-            if k not in kwargs:
-                raise error("missing named list")
-            args_supplied.add((k, frozenset(kwargs[k])))
-
-        # Have we already seen this regular expression and named list?
-        pattern_key = (pattern, type(pattern), flags, frozenset(args_supplied),
-          DEFAULT_VERSION)
-        compiled_pattern = _cache.get(pattern_key)
-        if compiled_pattern:
-            return compiled_pattern
-
-    # It's a new pattern (or new named list for a known pattern).
-
-    # Guess the encoding from the class of the pattern string.
-    if isinstance(pattern, bytes):
-        guess_encoding = ASCII
-    else:
-        guess_encoding = UNICODE
 
     # Parse the pattern. In the old behaviour the inline flags are global and
     # the pattern will need to be reparsed if a flag becomes turned on.
@@ -502,6 +500,10 @@ def _compile(pattern, flags=0, kwargs=None):
     reverse = bool(info.flags & REVERSE)
     fuzzy = isinstance(parsed, _Fuzzy)
 
+    # Should we print the parsed pattern?
+    if flags & DEBUG:
+        parsed.dump(indent=0, reverse=reverse)
+
     # Fix the group references.
     parsed.fix_groups(reverse, False)
 
@@ -526,10 +528,6 @@ def _compile(pattern, flags=0, kwargs=None):
         named_lists[name] = values
         named_list_indexes[index] = items
         args_needed.add((name, values))
-
-    # Should we print the parsed pattern?
-    if flags & DEBUG:
-        parsed.dump(indent=0, reverse=reverse)
 
     # Check the features of the groups.
     _check_group_features(info, parsed)

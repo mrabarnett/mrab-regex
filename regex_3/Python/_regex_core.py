@@ -2245,6 +2245,14 @@ class Character(RegexBase):
     def max_width(self):
         return len(self.folded)
 
+    def get_required_string(self, reverse):
+        if not self.positive:
+            return 1, None
+
+        self.folded_characters = tuple(ord(c) for c in self.folded)
+
+        return 0, self
+
 class Conditional(RegexBase):
     def __new__(cls, info, group, yes_item, no_item):
         if yes_item.is_empty() and no_item.is_empty():
@@ -2586,19 +2594,17 @@ class GreedyRepeat(RegexBase):
         return self.subpattern.max_width() * self.max_count
 
     def get_required_string(self, reverse):
+        max_count = UNLIMITED if self.max_count is None else self.max_count
+        if self.min_count == 0:
+            w = self.subpattern.max_width() * max_count
+            return min(w, UNLIMITED), None
+
         ofs, req = self.subpattern.get_required_string(reverse)
-        if self.min_count > 0 and req:
+        if req:
             return ofs, req
 
-        max_count = self.max_count
-        if max_count is None:
-            max_count = UNLIMITED
-
-        ofs += self.subpattern.max_width() * max_count
-        if ofs > UNLIMITED:
-            ofs = UNLIMITED
-
-        return ofs, None
+        w = self.subpattern.max_width() * max_count
+        return min(w, UNLIMITED), None
 
 class Group(RegexBase):
     def __init__(self, info, group, subpattern):
