@@ -5,7 +5,7 @@ This new regex implementation is intended eventually to replace Python's current
 
 For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
 
-Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.3 on 32-bit Windows.
+Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.4 on 32-bit Windows.
 
 
 Old vs new behaviour
@@ -322,7 +322,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)
 
-    The source code of the regex module has been updated to support PEP 393 ("Flexible String Representation"), which will be new in Python 3.3.
+    The source code of the regex module has been updated to support PEP 393 ("Flexible String Representation"), which is new in Python 3.3.
 
 * Full Unicode case-folding is supported.
 
