@@ -6,6 +6,15 @@ import copy
 from test.support import run_unittest
 import sys
 
+# String subclasses for issue 18468.
+class StrSubclass(str):
+    def __getitem__(self, index):
+        return StrSubclass(super().__getitem__(index))
+
+class BytesSubclass(bytes):
+    def __getitem__(self, index):
+        return BytesSubclass(super().__getitem__(index))
+
 class RegexTests(unittest.TestCase):
     PATTERN_CLASS = "<class '_regex.Pattern'>"
     FLAGS_WITH_COMPILED_PAT = "can't process flags argument with a compiled pattern"
@@ -20,8 +29,8 @@ class RegexTests(unittest.TestCase):
     BAD_SET = "bad set"
     STR_PAT_ON_BYTES = "can't use a string pattern on a bytes-like object"
     BYTES_PAT_ON_STR = "can't use a bytes pattern on a string-like object"
-    STR_PAT_BYTES_TEMPL = "sequence item 0: expected str instance, bytes found"
-    BYTES_PAT_STR_TEMPL = "sequence item 0: expected bytes.*, str found"
+    STR_PAT_BYTES_TEMPL = "expected str instance, bytes found"
+    BYTES_PAT_STR_TEMPL = "expected bytes instance, str found"
     BYTES_PAT_UNI_FLAG = "can't use UNICODE flag with a bytes pattern"
     MIXED_FLAGS = "ASCII, LOCALE and UNICODE flags are mutually incompatible"
     MISSING_RPAREN = "missing \\)" # Need to escape parenthesis for unittest.
@@ -32,6 +41,18 @@ class RegexTests(unittest.TestCase):
     DUPLICATE_GROUP = "duplicate group"
     CANT_TURN_OFF = "bad inline flags: can't turn flags off"
     UNDEF_CHAR_NAME = "undefined character name"
+
+    def assertTypedEqual(self, actual, expect, msg=None):
+        self.assertEqual(actual, expect, msg)
+
+        def recurse(actual, expect):
+            if isinstance(expect, (tuple, list)):
+                for x, y in zip(actual, expect):
+                    recurse(x, y)
+            else:
+                self.assertIs(type(actual), type(expect), msg)
+
+        recurse(actual, expect)
 
     def test_weakref(self):
         s = 'QabbbcR'
@@ -2862,6 +2883,73 @@ xyzabc
           False)
         self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "xabcy", pos=1,
           endpos=4)), True)
+
+    def test_issue_18468(self):
+        # Applies only after Python 3.4 for compatibility with re.
+        if (sys.version_info.major, sys.version_info.minor) < (3, 4):
+            return
+
+        self.assertTypedEqual(regex.sub('y', 'a', 'xyz'), 'xaz')
+        self.assertTypedEqual(regex.sub('y', StrSubclass('a'),
+          StrSubclass('xyz')), 'xaz')
+        self.assertTypedEqual(regex.sub(b'y', b'a', b'xyz'), b'xaz')
+        self.assertTypedEqual(regex.sub(b'y', BytesSubclass(b'a'),
+          BytesSubclass(b'xyz')), b'xaz')
+        self.assertTypedEqual(regex.sub(b'y', bytearray(b'a'),
+          bytearray(b'xyz')), b'xaz')
+        self.assertTypedEqual(regex.sub(b'y', memoryview(b'a'),
+          memoryview(b'xyz')), b'xaz')
+
+        for string in ":a:b::c", StrSubclass(":a:b::c"):
+            self.assertTypedEqual(regex.split(":", string), ['', 'a', 'b', '',
+              'c'])
+            self.assertTypedEqual(regex.split(":*", string), ['', 'a', 'b',
+                                  'c'])
+            self.assertTypedEqual(regex.split("(:*)", string), ['', ':', 'a',
+                                  ':', 'b', '::', 'c'])
+
+        for string in (b":a:b::c", BytesSubclass(b":a:b::c"),
+          bytearray(b":a:b::c"), memoryview(b":a:b::c")):
+            self.assertTypedEqual(regex.split(b":", string), [b'', b'a', b'b',
+                                  b'', b'c'])
+            self.assertTypedEqual(regex.split(b":*", string), [b'', b'a', b'b',
+                                  b'c'])
+            self.assertTypedEqual(regex.split(b"(:*)", string), [b'', b':',
+                                  b'a', b':', b'b', b'::', b'c'])
+
+        for string in "a:b::c:::d", StrSubclass("a:b::c:::d"):
+            self.assertTypedEqual(regex.findall(":+", string), [":", "::",
+                                  ":::"])
+            self.assertTypedEqual(regex.findall("(:+)", string), [":", "::",
+                                  ":::"])
+            self.assertTypedEqual(regex.findall("(:)(:*)", string), [(":", ""),
+                                  (":", ":"), (":", "::")])
+
+        for string in (b"a:b::c:::d", BytesSubclass(b"a:b::c:::d"),
+          bytearray(b"a:b::c:::d"), memoryview(b"a:b::c:::d")):
+            self.assertTypedEqual(regex.findall(b":+", string), [b":", b"::",
+                                  b":::"])
+            self.assertTypedEqual(regex.findall(b"(:+)", string), [b":", b"::",
+                                  b":::"])
+            self.assertTypedEqual(regex.findall(b"(:)(:*)", string), [(b":",
+                                  b""), (b":", b":"), (b":", b"::")])
+
+        for string in 'a', StrSubclass('a'):
+            self.assertEqual(regex.match('a', string).groups(), ())
+            self.assertEqual(regex.match('(a)', string).groups(), ('a',))
+            self.assertEqual(regex.match('(a)', string).group(0), 'a')
+            self.assertEqual(regex.match('(a)', string).group(1), 'a')
+            self.assertEqual(regex.match('(a)', string).group(1, 1), ('a',
+              'a'))
+
+        for string in (b'a', BytesSubclass(b'a'), bytearray(b'a'),
+          memoryview(b'a')):
+            self.assertEqual(regex.match(b'a', string).groups(), ())
+            self.assertEqual(regex.match(b'(a)', string).groups(), (b'a',))
+            self.assertEqual(regex.match(b'(a)', string).group(0), b'a')
+            self.assertEqual(regex.match(b'(a)', string).group(1), b'a')
+            self.assertEqual(regex.match(b'(a)', string).group(1, 1), (b'a',
+              b'a'))
 
     def test_hg_bugs(self):
         # Hg issue 28.

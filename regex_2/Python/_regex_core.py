@@ -35,9 +35,7 @@ class error(Exception):
 # The exception for when a positional flag has been turned on in the old
 # behaviour.
 class _UnscopedFlagSet(Exception):
-    def __init__(self, global_flags):
-        Exception.__init__(self)
-        self.global_flags = global_flags
+    pass
 
 # The exception for when parsing fails and we want to try something else.
 class ParseError(Exception):
@@ -379,28 +377,23 @@ def parse_item(source, info):
 
     return Fuzzy(element, constraints)
 
+_QUANTIFIERS = {"?": (0, 1), "*": (0, None), "+": (1, None)}
+
 def parse_quantifier(source, info):
     "Parses a quantifier."
     while True:
         here = source.pos
         ch = source.get()
-        if ch == "?":
-            # Optional element, eg. 'a?'.
-            return 0, 1
-        if ch == "*":
-            # Repeated element, eg. 'a*'.
-            return 0, None
-        if ch == "+":
-            # Repeated element, eg. 'a+'.
-            return 1, None
+        q = _QUANTIFIERS.get(ch)
+        if q:
+            # It's a quantifier.
+            return q
         if ch == "{":
             # Looks like a limited repeated element, eg. 'a{2,3}'.
-            try:
-                return parse_limited_quantifier(source)
-            except ParseError:
-                # Not a limited quantifier.
-                pass
-        if ch == "(" and source.match("?#"):
+            counts = parse_limited_quantifier(source)
+            if counts:
+                return counts
+        elif ch == "(" and source.match("?#"):
             # A comment.
             parse_comment(source)
             continue
@@ -412,37 +405,36 @@ def parse_quantifier(source, info):
     source.pos = here
     return None
 
+def is_above_limit(count):
+    "Checks whether a count is above the maximum."
+    return count is not None and count >= UNLIMITED
+
 def parse_limited_quantifier(source):
     "Parses a limited quantifier."
+    here = source.pos
     min_count = parse_count(source)
-    ch = source.get()
-    if ch == ",":
+    if source.match(","):
         max_count = parse_count(source)
-        if not source.match("}"):
-            raise ParseError()
 
         # No minimum means 0 and no maximum means unlimited.
-        min_count = int(min_count) if min_count else 0
+        min_count = int(min_count or 0)
         max_count = int(max_count) if max_count else None
+
         if max_count is not None and min_count > max_count:
             raise error("min repeat greater than max repeat")
+    else:
+        if not min_count:
+            source.pos = here
+            return None
 
-        if (min_count >= UNLIMITED or max_count is not None and max_count >=
-          UNLIMITED):
-            raise error("repeat count too big")
+        min_count = max_count = int(min_count)
 
-        return min_count, max_count
-
-    if ch != "}":
-        raise ParseError()
-
-    if not min_count:
-        # Not a quantifier.
-        raise ParseError()
-
-    min_count = max_count = int(min_count)
-    if min_count >= UNLIMITED:
+    if is_above_limit(min_count) or is_above_limit(max_count):
         raise error("repeat count too big")
+
+    if not source.match ("}"):
+        source.pos = here
+        return None
 
     return min_count, max_count
 
@@ -594,7 +586,7 @@ def parse_cost_term(source, cost):
     if ch in cost:
         raise error("repeated fuzzy cost")
 
-    cost[ch] = int(coeff) if coeff else 1
+    cost[ch] = int(coeff or 1)
 
 def parse_count(source):
     "Parses a quantifier's count, which can be empty."
@@ -686,12 +678,9 @@ def parse_paren(source, info):
             # (?<...
             here3 = source.pos
             ch = source.get()
-            if ch == "=":
-                # (?<=...: positive lookbehind.
-                return parse_lookaround(source, info, True, True)
-            if ch == "!":
-                # (?<!...: negative lookbehind.
-                return parse_lookaround(source, info, True, False)
+            if ch in ("=", "!"):
+                # (?<=... or (?<!...: lookbehind.
+                return parse_lookaround(source, info, True, ch == "=")
 
             # (?<...: a named capture group.
             source.pos = here3
@@ -699,22 +688,18 @@ def parse_paren(source, info):
             group = info.open_group(name)
             source.expect(">")
             saved_flags = info.flags
-            saved_ignore = source.ignore_space
             try:
                 subpattern = _parse_pattern(source, info)
+                source.expect(")")
             finally:
-                source.ignore_space = saved_ignore
                 info.flags = saved_flags
+                source.ignore_space = bool(info.flags & VERBOSE)
 
-            source.expect(")")
             info.close_group()
             return Group(info, group, subpattern)
-        if ch == "=":
-            # (?=...: positive lookahead.
-            return parse_lookaround(source, info, False, True)
-        if ch == "!":
-            # (?!...: negative lookahead.
-            return parse_lookaround(source, info, False, False)
+        if ch in ("=", "!"):
+            # (?=... or (?!...: lookahead.
+            return parse_lookaround(source, info, False, ch == "=")
         if ch == "P":
             # (?P...: a Python extension.
             return parse_extension(source, info)
@@ -745,14 +730,13 @@ def parse_paren(source, info):
     source.pos = here
     group = info.open_group()
     saved_flags = info.flags
-    saved_ignore = source.ignore_space
     try:
         subpattern = _parse_pattern(source, info)
+        source.expect(")")
     finally:
-        source.ignore_space = saved_ignore
         info.flags = saved_flags
+        source.ignore_space = bool(info.flags & VERBOSE)
 
-    source.expect(")")
     info.close_group()
 
     return Group(info, group, subpattern)
@@ -767,14 +751,13 @@ def parse_extension(source, info):
         group = info.open_group(name)
         source.expect(">")
         saved_flags = info.flags
-        saved_ignore = source.ignore_space
         try:
             subpattern = _parse_pattern(source, info)
+            source.expect(")")
         finally:
-            source.ignore_space = saved_ignore
             info.flags = saved_flags
+            source.ignore_space = bool(info.flags & VERBOSE)
 
-        source.expect(")")
         info.close_group()
 
         return Group(info, group, subpattern)
@@ -803,21 +786,18 @@ def parse_comment(source):
 def parse_lookaround(source, info, behind, positive):
     "Parses a lookaround."
     saved_flags = info.flags
-    saved_ignore = source.ignore_space
     try:
         subpattern = _parse_pattern(source, info)
+        source.expect(")")
     finally:
-        source.ignore_space = saved_ignore
         info.flags = saved_flags
-
-    source.expect(")")
+        source.ignore_space = bool(info.flags & VERBOSE)
 
     return LookAround(behind, positive, subpattern)
 
 def parse_conditional(source, info):
     "Parses a conditional subpattern."
     saved_flags = info.flags
-    saved_ignore = source.ignore_space
     try:
         group = parse_name(source, True)
         source.expect(")")
@@ -826,25 +806,23 @@ def parse_conditional(source, info):
             no_branch = parse_sequence(source, info)
         else:
             no_branch = Sequence()
-    finally:
-        source.ignore_space = saved_ignore
-        info.flags = saved_flags
 
-    source.expect(")")
+        source.expect(")")
+    finally:
+        info.flags = saved_flags
+        source.ignore_space = bool(info.flags & VERBOSE)
 
     return Conditional(info, group, yes_branch, no_branch)
 
 def parse_atomic(source, info):
     "Parses an atomic subpattern."
     saved_flags = info.flags
-    saved_ignore = source.ignore_space
     try:
         subpattern = _parse_pattern(source, info)
+        source.expect(")")
     finally:
-        source.ignore_space = saved_ignore
         info.flags = saved_flags
-
-    source.expect(")")
+        source.ignore_space = bool(info.flags & VERBOSE)
 
     return Atomic(subpattern)
 
@@ -884,84 +862,99 @@ def parse_call_named_group(source, info):
 
     return CallGroup(info, group)
 
-def parse_flags_subpattern(source, info):
-    "Parses a flags subpattern."
-    # It could be inline flags or a subpattern possibly with local flags.
-    # Parse the flags.
-    flags_on, flags_off = 0, 0
+def parse_flag_set(source):
+    "Parses a set of inline flags."
+    flags = 0
+
     try:
         while True:
             here = source.pos
             ch = source.get()
             if ch == "V":
                 ch += source.get()
-            flags_on |= REGEX_FLAGS[ch]
+            flags |= REGEX_FLAGS[ch]
     except KeyError:
-        pass
+        source.pos = here
 
-    flags_on |= DEFAULT_FLAGS.get(flags_on & _ALL_VERSIONS, 0)
+    return flags
 
-    if ch == "-":
-        try:
-            while True:
-                here = source.pos
-                ch = source.get()
-                if ch == "V":
-                    ch += source.get()
-                flags_off |= REGEX_FLAGS[ch]
-        except KeyError:
-            pass
-
+def parse_flags(source, info):
+    "Parses flags being turned on/off."
+    flags_on = parse_flag_set(source)
+    if source.match("-"):
+        flags_off = parse_flag_set(source)
         if not flags_off:
             raise error("bad inline flags: no flags after '-'")
-
-        if (flags_off & GLOBAL_FLAGS):
-            raise error("bad inline flags: can't turn off global flag")
-
-    # Separate the global and scoped flags.
-    source.pos = here
-    saved_flags = info.flags
-    info.flags = (info.flags | flags_on) & ~(flags_off & SCOPED_FLAGS)
-    saved_ignore = source.ignore_space
-    source.ignore_space = bool(info.flags & VERBOSE)
-    if source.match(":"):
-        # A subpattern with local flags.
-        if flags_on & GLOBAL_FLAGS:
-            raise error("bad inline flags: can't scope global flag")
-
-        try:
-            subpattern = _parse_pattern(source, info)
-
-            # Consume trailing whitespace if VERBOSE.
-            if source.get():
-                source.pos -= 1
-        finally:
-            source.ignore_space = saved_ignore
-            info.flags = saved_flags
-
-        source.expect(")")
-
-        return subpattern
     else:
-        # Positional flags.
-        if not source.match(")"):
-            raise error("bad inline flags: " + repr(source.get()))
+        flags_off = 0
 
-        version = (info.flags & _ALL_VERSIONS) or DEFAULT_VERSION
-        if version == VERSION0:
-            # Positional flags are global and can only be turned on.
-            if flags_off:
-                raise error("bad inline flags: can't turn flags off")
+    return flags_on, flags_off
 
-            info.global_flags = info.flags
-        else:
-            info.global_flags = info.flags & GLOBAL_FLAGS
+def parse_subpattern(source, info, flags_on, flags_off):
+    "Parses a subpattern with scoped flags."
+    saved_flags = info.flags
+    info.flags = (info.flags | flags_on) & ~flags_off
+    source.ignore_space = bool(info.flags & VERBOSE)
+    try:
+        subpattern = _parse_pattern(source, info)
+        source.expect(")")
+    finally:
+        info.flags = saved_flags
+        source.ignore_space = bool(info.flags & VERBOSE)
 
-        if info.global_flags & ~saved_flags:
+    return subpattern
+
+def parse_positional_flags(source, info, flags_on, flags_off):
+    "Parses positional flags."
+    version = (info.flags & _ALL_VERSIONS) or DEFAULT_VERSION
+    if version == VERSION0:
+        # Positional flags are global and can only be turned on.
+        if flags_off:
+            raise error("bad inline flags: can't turn flags off")
+
+        new_global_flags = flags_on & ~info.global_flags
+        if new_global_flags:
+            info.global_flags |= new_global_flags
+
             # A global has been turned on, so reparse the pattern.
             raise _UnscopedFlagSet(info.global_flags)
+    else:
+        info.flags = (info.flags | flags_on) & ~flags_off
 
-        return None
+    source.ignore_space = bool(info.flags & VERBOSE)
+
+    return None
+
+def parse_flags_subpattern(source, info):
+    """Parses a flags subpattern. It could be inline flags or a subpattern
+       possibly with local flags.
+    """
+    flags_on, flags_off = parse_flags(source, info)
+
+    if flags_off & GLOBAL_FLAGS:
+        raise error("bad inline flags: can't turn off global flag")
+
+    if flags_on & flags_off:
+        raise error("bad inline flags: flag turned on and off")
+
+    # Handle flags which are global in all regex behaviours.
+    new_global_flags = (flags_on & ~info.global_flags) & GLOBAL_FLAGS
+    if new_global_flags:
+        info.global_flags |= new_global_flags
+
+        # A global has been turned on, so reparse the pattern.
+        raise _UnscopedFlagSet(info.global_flags)
+
+    # Ensure that from now on we have only scoped flags.
+    flags_on &= ~GLOBAL_FLAGS
+
+    if source.match(":"):
+        return parse_subpattern(source, info, flags_on, flags_off)
+
+    if source.match(")"):
+        return parse_positional_flags(source, info, flags_on, flags_off)
+
+    raise error('unknown extension')
 
 def parse_name(source, allow_numeric=False):
     "Parses a name."
@@ -3740,6 +3733,7 @@ class Info(object):
     "Info about the regular expression."
 
     def __init__(self, flags=0, char_type=None, kwargs={}):
+        flags |= DEFAULT_FLAGS[(flags & _ALL_VERSIONS) or DEFAULT_VERSION]
         self.flags = flags
         self.global_flags = flags
 

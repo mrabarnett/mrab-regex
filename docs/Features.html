@@ -397,7 +397,7 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 </div>
 <div class="section" id="building-for-64-bits">
 <h1>Building for 64-bits</h1>
-<p>If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The re module appears to limit string positions to 32 bits, even on a 64-bit build.)</p>
+<p>If the source files are built for a 64-bit target then the string positions will also be 64-bit.</p>
 </div>
 <div class="section" id="unicode">
 <h1>Unicode</h1>
@@ -408,6 +408,23 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">re.group() should never return a bytearray (issue #18468)</p>
+<blockquote>
+<p>For compatibility with the re module, the regex module returns all matching bytestrings as <tt class="docutils literal">bytes</tt>, starting from Python 3.4.</p>
+<p>Examples:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; # Python 3.4 and later
+&gt;&gt;&gt; import regex
+&gt;&gt;&gt; regex.match(b'.', bytearray(b'a')).group()
+b'a'
+
+&gt;&gt;&gt; # Python 3.1-3.3
+&gt;&gt;&gt; import regex
+&gt;&gt;&gt; regex.match(b'.', bytearray(b'a')).group()
+bytearray(b'a')
+</pre>
+</blockquote>
+</li>
 <li><p class="first">Added <tt class="docutils literal">capturesdict</tt> (Hg issue 86)</p>
 <blockquote>
 <p><tt class="docutils literal">capturesdict</tt> is a combination of <tt class="docutils literal">groupdict</tt> and <tt class="docutils literal">captures</tt>:</p>

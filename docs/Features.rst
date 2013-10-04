@@ -7,7 +7,6 @@ For testing and comparison with the current 're' module the new implementation i
 
 Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.4 on 32-bit Windows.
 
-
 Old vs new behaviour
 --------------------
 
@@ -122,7 +121,7 @@ The regex module releases the GIL during matching on instances of the built-in (
 Building for 64-bits
 --------------------
 
-If the source files are built for a 64-bit target then the string positions will also be 64-bit. (The re module appears to limit string positions to 32 bits, even on a 64-bit build.)
+If the source files are built for a 64-bit target then the string positions will also be 64-bit.
 
 
 Unicode
@@ -137,6 +136,22 @@ Additional features
 -------------------
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+
+* re.group() should never return a bytearray (issue #18468)
+
+    For compatibility with the re module, the regex module returns all matching bytestrings as ``bytes``, starting from Python 3.4.
+
+    Examples::
+
+        >>> # Python 3.4 and later
+        >>> import regex
+        >>> regex.match(b'.', bytearray(b'a')).group()
+        b'a'
+
+        >>> # Python 3.1-3.3
+        >>> import regex
+        >>> regex.match(b'.', bytearray(b'a')).group()
+        bytearray(b'a')
 
 * Added ``capturesdict`` (Hg issue 86)
 

@@ -109,6 +109,8 @@ typedef unsigned short RE_STATUS_T;
 #define RE_ERROR_NO_SUCH_GROUP -14 /* No such group. */
 #define RE_ERROR_INDEX -15 /* String index. */
 #define RE_ERROR_BACKTRACKING -16 /* Too much backtracking. */
+#define RE_ERROR_NOT_STRING -17 /* Not a string. */
+#define RE_ERROR_NOT_UNICODE -18 /* Not a Unicode string. */
 
 /* The number of backtrack entries per allocated block. */
 #define RE_BACKTRACK_BLOCK_SIZE 64
@@ -149,11 +151,20 @@ typedef unsigned short RE_STATUS_T;
 #define RE_STATUS_LIMITED 0x8
 #define RE_STATUS_REF 0x10
 #define RE_STATUS_VISITED_AG 0x20
-
 #define RE_STATUS_VISITED_REP 0x40
+
+/* Whether a string node has been initialised for fast searching. */
 #define RE_STATUS_FAST_INIT 0x80
+
+/* Whether a node us being used. (Additional nodes may be created while the
+ * pattern is being built.
+ */
 #define RE_STATUS_USED 0x100
+
+/* Whether a node is a string node. */
 #define RE_STATUS_STRING 0x200
+
+/* Whether a repeat node is within another repeat. */
 #define RE_STATUS_INNER 0x400
 
 /* Various flags stored in a node status member. */
@@ -353,7 +364,6 @@ typedef struct RE_NextNode {
 /* A pattern node. */
 typedef struct RE_Node {
     Py_ssize_t step;
-    Py_ssize_t value_capacity;
     Py_ssize_t value_count;
     RE_CODE* values;
     RE_NextNode next_1;
@@ -463,7 +473,7 @@ typedef struct RE_StringInfo {
     void* characters; /* Pointer to the characters of the string. */
     Py_ssize_t length; /* Length of the string. */
     Py_ssize_t charsize; /* Size of the characters in the string. */
-    BOOL unicode; /* Whether the string is Unicode. */
+    BOOL is_unicode; /* Whether the string is Unicode. */
     BOOL should_release; /* Whether the buffer should be released. */
 } RE_StringInfo;
 
@@ -532,7 +542,7 @@ typedef struct RE_State {
     size_t capture_change; /* Incremented every time a captive group changes. */
     Py_ssize_t req_pos; /* The position where the required string matched. */
     Py_ssize_t req_end; /* The end position where the required string matched. */
-    BOOL unicode; /* Whether the string to be matched is Unicode. */
+    BOOL is_unicode; /* Whether the string to be matched is Unicode. */
     BOOL should_release; /* Whether the buffer should be released. */
     BOOL overlapped; /* Whether the matches can be overlapped. */
     BOOL reverse; /* Whether it's a reverse pattern. */
@@ -666,6 +676,7 @@ typedef struct JoinInfo {
     PyObject* list; /* The list of slices if there are more than 2 of them. */
     PyObject* item; /* The slice if there is only 1 of them. */
     BOOL reversed; /* Whether the slices have been found in reverse order. */
+    BOOL is_unicode; /* Whether the string is Unicode. */
 } JoinInfo;
 
 typedef struct {
@@ -1806,6 +1817,14 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
     case RE_ERROR_MEMORY:
         PyErr_NoMemory();
         break;
+    case RE_ERROR_NOT_STRING:
+        PyErr_Format(PyExc_TypeError, "expected string instance, %.200s found",
+          object->ob_type->tp_name);
+        break;
+    case RE_ERROR_NOT_UNICODE:
+        PyErr_Format(PyExc_TypeError,
+          "expected unicode instance, %.200s found", object->ob_type->tp_name);
+        break;
     case RE_ERROR_NO_SUCH_GROUP:
         PyErr_SetString(PyExc_IndexError, "no such group");
         break;
@@ -1932,9 +1951,12 @@ static BOOL same_char_ign(RE_EncodingTable* encoding, Py_UCS4 ch1, Py_UCS4 ch2)
     int count;
     int i;
 
+    if (ch1 == ch2)
+        return TRUE;
+
     count = encoding->all_cases(ch1, cases);
 
-    for (i = 0; i < count; i++) {
+    for (i = 1; i < count; i++) {
         if (cases[i] == ch2)
             return TRUE;
     }
@@ -2072,14 +2094,10 @@ Py_LOCAL_INLINE(BOOL) matches_member(RE_EncodingTable* encoding, RE_Node*
 
 /* Checks whether a character matches a set member, ignoring case. */
 Py_LOCAL_INLINE(BOOL) matches_member_ign(RE_EncodingTable* encoding, RE_Node*
-  member, Py_UCS4 ch) {
-    Py_UCS4 cases[RE_MAX_CASES];
-    int count;
+  member, int case_count, Py_UCS4* cases) {
     int i;
 
-    count = encoding->all_cases(ch, cases);
-
-    for (i = 0; i < count; i++) {
+    for (i = 0; i < case_count; i++) {
         switch (member->op) {
         case RE_OP_CHARACTER:
             /* values are: char_code */
@@ -2165,18 +2183,20 @@ Py_LOCAL_INLINE(BOOL) in_set_diff(RE_EncodingTable* encoding, RE_Node* node,
 
 /* Checks whether a character is in a set difference, ignoring case. */
 Py_LOCAL_INLINE(BOOL) in_set_diff_ign(RE_EncodingTable* encoding, RE_Node*
-  node, Py_UCS4 ch) {
+  node, int case_count, Py_UCS4* cases) {
     RE_Node* member;
 
     member = node->nonstring.next_2.node;
 
-    if (matches_member_ign(encoding, member, ch) != member->match)
+    if (matches_member_ign(encoding, member, case_count, cases) !=
+      member->match)
         return FALSE;
 
     member = member->next_1.node;
 
     while (member) {
-        if (matches_member_ign(encoding, member, ch) == member->match)
+        if (matches_member_ign(encoding, member, case_count, cases) ==
+          member->match)
             return FALSE;
 
         member = member->next_1.node;
@@ -2204,13 +2224,14 @@ Py_LOCAL_INLINE(BOOL) in_set_inter(RE_EncodingTable* encoding, RE_Node* node,
 
 /* Checks whether a character is in a set intersection, ignoring case. */
 Py_LOCAL_INLINE(BOOL) in_set_inter_ign(RE_EncodingTable* encoding, RE_Node*
-  node, Py_UCS4 ch) {
+  node, int case_count, Py_UCS4* cases) {
     RE_Node* member;
 
     member = node->nonstring.next_2.node;
 
     while (member) {
-        if (matches_member_ign(encoding, member, ch) != member->match)
+        if (matches_member_ign(encoding, member, case_count, cases) !=
+          member->match)
             return FALSE;
 
         member = member->next_1.node;
@@ -2242,7 +2263,7 @@ Py_LOCAL_INLINE(BOOL) in_set_sym_diff(RE_EncodingTable* encoding, RE_Node*
 /* Checks whether a character is in a set symmetric difference, ignoring case.
  */
 Py_LOCAL_INLINE(BOOL) in_set_sym_diff_ign(RE_EncodingTable* encoding, RE_Node*
-  node, Py_UCS4 ch) {
+  node, int case_count, Py_UCS4* cases) {
     RE_Node* member;
     BOOL result;
 
@@ -2251,7 +2272,8 @@ Py_LOCAL_INLINE(BOOL) in_set_sym_diff_ign(RE_EncodingTable* encoding, RE_Node*
     result = FALSE;
 
     while (member) {
-        if (matches_member_ign(encoding, member, ch) == member->match)
+        if (matches_member_ign(encoding, member, case_count, cases) ==
+          member->match)
             result = !result;
 
         member = member->next_1.node;
@@ -2279,13 +2301,14 @@ Py_LOCAL_INLINE(BOOL) in_set_union(RE_EncodingTable* encoding, RE_Node* node,
 
 /* Checks whether a character is in a set union, ignoring case. */
 Py_LOCAL_INLINE(BOOL) in_set_union_ign(RE_EncodingTable* encoding, RE_Node*
-  node, Py_UCS4 ch) {
+  node, int case_count, Py_UCS4* cases) {
     RE_Node* member;
 
     member = node->nonstring.next_2.node;
 
     while (member) {
-        if (matches_member_ign(encoding, member, ch) == member->match)
+        if (matches_member_ign(encoding, member, case_count, cases) ==
+          member->match)
             return TRUE;
 
         member = member->next_1.node;
@@ -2318,19 +2341,24 @@ Py_LOCAL_INLINE(BOOL) in_set(RE_EncodingTable* encoding, RE_Node* node, Py_UCS4
 /* Checks whether a character is in a set, ignoring case. */
 Py_LOCAL_INLINE(BOOL) in_set_ign(RE_EncodingTable* encoding, RE_Node* node,
   Py_UCS4 ch) {
+    Py_UCS4 cases[RE_MAX_CASES];
+    int case_count;
+
+    case_count = encoding->all_cases(ch, cases);
+
     switch (node->op) {
     case RE_OP_SET_DIFF_IGN:
     case RE_OP_SET_DIFF_IGN_REV:
-        return in_set_diff_ign(encoding, node, ch);
+        return in_set_diff_ign(encoding, node, case_count, cases);
     case RE_OP_SET_INTER_IGN:
     case RE_OP_SET_INTER_IGN_REV:
-        return in_set_inter_ign(encoding, node, ch);
+        return in_set_inter_ign(encoding, node, case_count, cases);
     case RE_OP_SET_SYM_DIFF_IGN:
     case RE_OP_SET_SYM_DIFF_IGN_REV:
-        return in_set_sym_diff_ign(encoding, node, ch);
+        return in_set_sym_diff_ign(encoding, node, case_count, cases);
     case RE_OP_SET_UNION_IGN:
     case RE_OP_SET_UNION_IGN_REV:
-        return in_set_union_ign(encoding, node, ch);
+        return in_set_union_ign(encoding, node, case_count, cases);
     }
 
     return FALSE;
@@ -2422,6 +2450,7 @@ Py_LOCAL_INLINE(BOOL) add_backtrack(RE_SafeState* safe_state, RE_UINT8 op) {
         current->count = 0;
         state->current_backtrack_block = current;
     }
+
     state->backtrack = &current->items[current->count++];
     state->backtrack->op = op;
 
@@ -2706,6 +2735,18 @@ Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
             return node;
         }
     }
+}
+
+/* Checks whether a character matches any of a set of case characters. */
+Py_LOCAL_INLINE(BOOL) any_case(Py_UCS4 ch, int case_count, Py_UCS4* cases) {
+    int i;
+
+    for (i = 0; i < case_count; i++) {
+        if (ch == cases[i])
+            return TRUE;
+    }
+
+    return FALSE;
 }
 
 /* Matches many ANYs. */
@@ -2994,13 +3035,12 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER(RE_State* state, RE_Node*
 Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
     void* text;
-    RE_EncodingTable* encoding;
-    Py_UCS4 ch;
+    Py_UCS4 cases[RE_MAX_CASES];
+    int case_count;
 
     text = state->text;
     match = node->match == match;
-    encoding = state->encoding;
-    ch = node->values[0];
+    case_count = state->encoding->all_cases(node->values[0], cases);
 
     switch (state->charsize) {
     case 1:
@@ -3011,7 +3051,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN(RE_State* state, RE_Node*
         text_ptr = (Py_UCS1*)text + text_pos;
         limit_ptr = (Py_UCS1*)text + limit;
 
-        while (text_ptr < limit_ptr && same_char_ign(encoding, text_ptr[0], ch)
+        while (text_ptr < limit_ptr && any_case(text_ptr[0], case_count, cases)
           == match)
             ++text_ptr;
 
@@ -3026,7 +3066,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN(RE_State* state, RE_Node*
         text_ptr = (Py_UCS2*)text + text_pos;
         limit_ptr = (Py_UCS2*)text + limit;
 
-        while (text_ptr < limit_ptr && same_char_ign(encoding, text_ptr[0], ch)
+        while (text_ptr < limit_ptr && any_case(text_ptr[0], case_count, cases)
           == match)
             ++text_ptr;
 
@@ -3041,7 +3081,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN(RE_State* state, RE_Node*
         text_ptr = (Py_UCS4*)text + text_pos;
         limit_ptr = (Py_UCS4*)text + limit;
 
-        while (text_ptr < limit_ptr && same_char_ign(encoding, text_ptr[0], ch)
+        while (text_ptr < limit_ptr && any_case(text_ptr[0], case_count, cases)
           == match)
             ++text_ptr;
 
@@ -3057,13 +3097,12 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN(RE_State* state, RE_Node*
 Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN_REV(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL match) {
     void* text;
-    RE_EncodingTable* encoding;
-    Py_UCS4 ch;
+    Py_UCS4 cases[RE_MAX_CASES];
+    int case_count;
 
     text = state->text;
     match = node->match == match;
-    encoding = state->encoding;
-    ch = node->values[0];
+    case_count = state->encoding->all_cases(node->values[0], cases);
 
     switch (state->charsize) {
     case 1:
@@ -3074,8 +3113,8 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN_REV(RE_State* state,
         text_ptr = (Py_UCS1*)text + text_pos;
         limit_ptr = (Py_UCS1*)text + limit;
 
-        while (text_ptr > limit_ptr && same_char_ign(encoding, text_ptr[-1],
-          ch) == match)
+        while (text_ptr > limit_ptr && any_case(text_ptr[-1], case_count,
+          cases) == match)
             --text_ptr;
 
         text_pos = text_ptr - (Py_UCS1*)text;
@@ -3089,8 +3128,8 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN_REV(RE_State* state,
         text_ptr = (Py_UCS2*)text + text_pos;
         limit_ptr = (Py_UCS2*)text + limit;
 
-        while (text_ptr > limit_ptr && same_char_ign(encoding, text_ptr[-1],
-          ch) == match)
+        while (text_ptr > limit_ptr && any_case(text_ptr[-1], case_count,
+          cases) == match)
             --text_ptr;
 
         text_pos = text_ptr - (Py_UCS2*)text;
@@ -3104,8 +3143,8 @@ Py_LOCAL_INLINE(Py_ssize_t) match_many_CHARACTER_IGN_REV(RE_State* state,
         text_ptr = (Py_UCS4*)text + text_pos;
         limit_ptr = (Py_UCS4*)text + limit;
 
-        while (text_ptr > limit_ptr && same_char_ign(encoding, text_ptr[-1],
-          ch) == match)
+        while (text_ptr > limit_ptr && any_case(text_ptr[-1], case_count,
+          cases) == match)
             --text_ptr;
 
         text_pos = text_ptr - (Py_UCS4*)text;
@@ -4252,13 +4291,14 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign(RE_State* state, RE_Node*
     Py_ssize_t length;
     RE_CODE* values;
     RE_EncodingTable* encoding;
-    Py_UCS4 first_char;
+    Py_UCS4 cases[RE_MAX_CASES];
+    int case_count;
 
     text = state->text;
     length = node->value_count;
     values = node->values;
     encoding = state->encoding;
-    first_char = values[0];
+    case_count = encoding->all_cases(values[0], cases);
     limit -= length;
 
     switch (state->charsize) {
@@ -4271,7 +4311,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign(RE_State* state, RE_Node*
         limit_ptr = (Py_UCS1*)text + limit;
 
         while (text_ptr <= limit_ptr) {
-            if (same_char_ign(encoding, text_ptr[0], first_char)) {
+            if (any_case(text_ptr[0], case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = 1;
@@ -4296,7 +4336,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign(RE_State* state, RE_Node*
         limit_ptr = (Py_UCS2*)text + limit;
 
         while (text_ptr <= limit_ptr) {
-            if (same_char_ign(encoding, text_ptr[0], first_char)) {
+            if (any_case(text_ptr[0], case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = 1;
@@ -4321,7 +4361,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign(RE_State* state, RE_Node*
         limit_ptr = (Py_UCS4*)text + limit;
 
         while (text_ptr <= limit_ptr) {
-            if (same_char_ign(encoding, text_ptr[0], first_char)) {
+            if (any_case(text_ptr[0], case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = 1;
@@ -4349,13 +4389,14 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
     Py_ssize_t length;
     RE_CODE* values;
     RE_EncodingTable* encoding;
-    Py_UCS4 first_char;
+    Py_UCS4 cases[RE_MAX_CASES];
+    int case_count;
 
     text = state->text;
     length = node->value_count;
     values = node->values;
     encoding = state->encoding;
-    first_char = values[0];
+    case_count = encoding->all_cases(values[0], cases);
     text_pos -= length;
 
     switch (state->charsize) {
@@ -4368,7 +4409,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
         limit_ptr = (Py_UCS1*)text + limit;
 
         while (text_ptr >= limit_ptr) {
-            if (same_char_ign(encoding, text_ptr[0], first_char)) {
+            if (any_case(text_ptr[0], case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = 1;
@@ -4393,7 +4434,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
         limit_ptr = (Py_UCS2*)text + limit;
 
         while (text_ptr >= limit_ptr) {
-            if (same_char_ign(encoding, text_ptr[0], first_char)) {
+            if (any_case(text_ptr[0], case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = 1;
@@ -4418,7 +4459,7 @@ Py_LOCAL_INLINE(Py_ssize_t) simple_string_search_ign_rev(RE_State* state,
         limit_ptr = (Py_UCS4*)text + limit;
 
         while (text_ptr >= limit_ptr) {
-            if (same_char_ign(encoding, text_ptr[0], first_char)) {
+            if (any_case(text_ptr[0], case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = 1;
@@ -4651,7 +4692,8 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
     Py_ssize_t* bad_character_offset;
     Py_ssize_t* good_suffix_offset;
     Py_ssize_t last_pos;
-    Py_UCS4 check_char;
+    Py_UCS4 cases[RE_MAX_CASES];
+    int case_count;
 
     encoding = state->encoding;
     text = state->text;
@@ -4660,7 +4702,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
     good_suffix_offset = node->string.good_suffix_offset;
     bad_character_offset = node->string.bad_character_offset;
     last_pos = length - 1;
-    check_char = values[last_pos];
+    case_count = encoding->all_cases(values[last_pos], cases);
     limit -= length;
 
     switch (state->charsize) {
@@ -4676,7 +4718,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
             Py_UCS4 ch;
 
             ch = text_ptr[last_pos];
-            if (same_char_ign(encoding, ch, check_char)) {
+            if (any_case(ch, case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = last_pos - 1;
@@ -4705,7 +4747,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
             Py_UCS4 ch;
 
             ch = text_ptr[last_pos];
-            if (same_char_ign(encoding, ch, check_char)) {
+            if (any_case(ch, case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = last_pos - 1;
@@ -4734,7 +4776,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign(RE_State* state, RE_Node*
             Py_UCS4 ch;
 
             ch = text_ptr[last_pos];
-            if (same_char_ign(encoding, ch, check_char)) {
+            if (any_case(ch, case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = last_pos - 1;
@@ -4765,7 +4807,8 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
     RE_CODE* values;
     Py_ssize_t* bad_character_offset;
     Py_ssize_t* good_suffix_offset;
-    Py_UCS4 check_char;
+    Py_UCS4 cases[RE_MAX_CASES];
+    int case_count;
 
     encoding = state->encoding;
     text = state->text;
@@ -4773,7 +4816,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
     values = node->values;
     good_suffix_offset = node->string.good_suffix_offset;
     bad_character_offset = node->string.bad_character_offset;
-    check_char = values[0];
+    case_count = encoding->all_cases(values[0], cases);
     text_pos -= length;
 
     switch (state->charsize) {
@@ -4789,7 +4832,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
             Py_UCS4 ch;
 
             ch = text_ptr[0];
-            if (same_char_ign(encoding, ch, check_char)) {
+            if (any_case(ch, case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = 1;
@@ -4818,7 +4861,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
             Py_UCS4 ch;
 
             ch = text_ptr[0];
-            if (same_char_ign(encoding, ch, check_char)) {
+            if (any_case(ch, case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = 1;
@@ -4847,7 +4890,7 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
             Py_UCS4 ch;
 
             ch = text_ptr[0];
-            if (same_char_ign(encoding, ch, check_char)) {
+            if (any_case(ch, case_count, cases)) {
                 Py_ssize_t pos;
 
                 pos = 1;
@@ -7111,7 +7154,7 @@ Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
         PyObject* string;
         int status;
 
-        if (state->unicode)
+        if (state->is_unicode)
             string = build_unicode_value(buffer, len, buffer_charsize);
         else
             string = build_bytes_value(buffer, len);
@@ -7286,7 +7329,7 @@ Py_LOCAL_INLINE(int) string_set_match(RE_SafeState* safe_state, RE_Node* node)
     for (len = max_len; status == 0 && len >= min_len; len--) {
         PyObject* string;
 
-        if (state->unicode)
+        if (state->is_unicode)
             string = build_unicode_value(point_to(text, text_pos), len,
               state->charsize);
         else
@@ -7641,7 +7684,7 @@ Py_LOCAL_INLINE(int) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
     for (len = max_len; status == 0 && len >= min_len; len--) {
         PyObject* string;
 
-        if (state->unicode)
+        if (state->is_unicode)
             string = build_unicode_value(point_to(text, text_pos - len), len,
               state->charsize);
         else
@@ -9093,24 +9136,18 @@ advance:
             break;
         case RE_OP_BRANCH: /* 2-way branch. */
         {
-            BOOL try_first;
-            RE_Position next_first_position;
-            BOOL try_second;
-            RE_Position next_second_position;
+            RE_Position next_position;
             TRACE(("%s\n", re_op_text[node->op]))
 
-            try_first = try_match(state, &node->next_1, text_pos,
-              &next_first_position);
-            if (try_first) {
-                try_second = try_match(state, &node->nonstring.next_2,
-                  text_pos, &next_second_position);
-                if (try_second) {
-                    if (!add_backtrack(safe_state, RE_OP_BRANCH))
-                        return RE_ERROR_BACKTRACKING;
-                    state->backtrack->branch.position = next_second_position;
-                }
-                node = next_first_position.node;
-                text_pos = next_first_position.text_pos;
+            if (try_match(state, &node->next_1, text_pos, &next_position)) {
+                if (!add_backtrack(safe_state, RE_OP_BRANCH))
+                    return RE_ERROR_BACKTRACKING;
+                state->backtrack->branch.position.node =
+                  node->nonstring.next_2.node;
+                state->backtrack->branch.position.text_pos = text_pos;
+
+                node = next_position.node;
+                text_pos = next_position.text_pos;
             } else
                 node = node->nonstring.next_2.node;
             break;
@@ -13020,7 +13057,7 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
         str_info->characters = (void*)PyUnicode_AS_DATA(string);
         str_info->length = PyUnicode_GET_SIZE(string);
         str_info->charsize = sizeof(Py_UNICODE);
-        str_info->unicode = TRUE;
+        str_info->is_unicode = TRUE;
         str_info->should_release = FALSE;
         return TRUE;
     }
@@ -13095,7 +13132,7 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
     }
 
     str_info->length = size;
-    str_info->unicode = FALSE;
+    str_info->is_unicode = FALSE;
 
     return TRUE;
 }
@@ -13205,7 +13242,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
 
     /* Initialise the getters and setters for the character size. */
     state->charsize = str_info->charsize;
-    state->unicode = str_info->unicode;
+    state->is_unicode = str_info->is_unicode;
 
 #if PY_VERSION_HEX >= 0x02060000
     /* Are we using a buffer object? If so, we need to copy the info. */
@@ -13551,6 +13588,12 @@ static void match_dealloc(PyObject* self_) {
     PyObject_DEL(self);
 }
 
+/* Gets a slice from a string. */
+Py_LOCAL_INLINE(PyObject*) get_slice(PyObject* string, Py_ssize_t start,
+  Py_ssize_t end) {
+    return PySequence_GetSlice(string, start, end);
+}
+
 /* Gets a MatchObject's group by integer index. */
 Py_LOCAL_INLINE(PyObject*) match_get_group_by_index(MatchObject* self,
   Py_ssize_t index, PyObject* def) {
@@ -13563,7 +13606,7 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_by_index(MatchObject* self,
     }
 
     if (index == 0)
-        return PySequence_GetSlice(self->substring, self->match_start -
+        return get_slice(self->substring, self->match_start -
           self->substring_offset, self->match_end - self->substring_offset);
 
     /* Capture group indexes are 1-based (excluding group 0, which is the
@@ -13577,8 +13620,8 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_by_index(MatchObject* self,
         return def;
     }
 
-    return PySequence_GetSlice(self->substring, span->start -
-      self->substring_offset, span->end - self->substring_offset);
+    return get_slice(self->substring, span->start - self->substring_offset,
+      span->end - self->substring_offset);
 }
 
 /* Gets a MatchObject's start by integer index. */
@@ -13811,7 +13854,7 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         if (!result)
             return NULL;
 
-        slice = PySequence_GetSlice(self->substring, self->match_start -
+        slice = get_slice(self->substring, self->match_start -
           self->substring_offset, self->match_end - self->substring_offset);
         if (!slice)
             goto error;
@@ -13830,7 +13873,7 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         return NULL;
 
     for (i = 0; i < group->capture_count; i++) {
-        slice = PySequence_GetSlice(self->substring, group->captures[i].start -
+        slice = get_slice(self->substring, group->captures[i].start -
           self->substring_offset, group->captures[i].end -
           self->substring_offset);
         if (!slice)
@@ -14230,7 +14273,7 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
 
     if (index == 0) {
         /* The entire matched portion of the string. */
-        return PySequence_GetSlice(self->substring, self->match_start -
+        return get_slice(self->substring, self->match_start -
           self->substring_offset, self->match_end - self->substring_offset);
     } else if (index >= 1 && index <= group_count) {
         /* A group. If it didn't match then return None instead. */
@@ -14239,7 +14282,7 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
         group = &self->groups[index - 1];
 
         if (group->capture_count > 0)
-            return PySequence_GetSlice(self->substring, group->span.start -
+            return get_slice(self->substring, group->span.start -
               self->substring_offset, group->span.end -
               self->substring_offset);
         else {
@@ -14253,77 +14296,46 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
     }
 }
 
-/* Joins together a list of strings. */
-Py_LOCAL_INLINE(PyObject*) join_list(PyObject* list, PyObject* string, BOOL
-  reversed) {
-    /* Join list elements. */
-    PyObject* joiner;
-    PyObject* function;
-    PyObject* args;
-    PyObject* result;
-
-    joiner = PySequence_GetSlice(string, 0, 0);
-    if (!joiner) {
-        Py_DECREF(list);
-        return NULL;
-    }
-
-    if (reversed)
-        /* The list needs to be reversed before being joined. */
-        PyList_Reverse(list);
-
-    if (PyUnicode_Check(joiner)) {
-        /* Concatenate the Unicode strings. */
-        result = PyUnicode_Join(joiner, list);
-
-        Py_DECREF(list);
-    } else {
-        /* Concatenate the strings. */
-
-        /* Build the argument tuple for the method. */
-        args = PyTuple_New(1);
-        if (!args) {
-            Py_DECREF(joiner);
-            Py_DECREF(list);
-            return NULL;
-        }
-
-        PyTuple_SET_ITEM(args, 0, list); /* args will have the only reference to list. */
-
-        /* Get the separator's 'join' method. */
-        function = PyObject_GetAttrString(joiner, "join");
-        if (!function) {
-            Py_DECREF(args);
-            Py_DECREF(joiner);
-            return NULL;
-        }
-
-        /* Call the method. */
-        result = PyObject_CallObject(function, args);
-
-        Py_DECREF(function);
-        Py_DECREF(args);
-    }
-
-    Py_DECREF(joiner);
-
-    return result;
-}
-
 /* Adds an item to be joined. */
 Py_LOCAL_INLINE(int) add_item(JoinInfo* join_info, PyObject* item) {
+    PyObject* new_item;
     int status;
+
+    if (join_info->is_unicode) {
+        if (PyUnicode_Check(item)) {
+            new_item = item;
+            Py_INCREF(new_item);
+        } else {
+            new_item = PyUnicode_FromObject(item);
+            if (!new_item) {
+                set_error(RE_ERROR_NOT_UNICODE, item);
+                return RE_ERROR_NOT_UNICODE;
+            }
+        }
+    } else {
+        if (PyString_Check(item)) {
+            new_item = item;
+            Py_INCREF(new_item);
+        } else {
+            new_item = PyUnicode_FromObject(item);
+            if (!new_item) {
+                set_error(RE_ERROR_NOT_STRING, item);
+                return RE_ERROR_NOT_STRING;
+            }
+        }
+    }
 
     /* If the list already exists then just add the item to it. */
     if (join_info->list) {
-        status = PyList_Append(join_info->list, item);
+        status = PyList_Append(join_info->list, new_item);
         if (status < 0)
             goto error;
 
+        Py_DECREF(new_item);
         return status;
     }
 
-    /* If we already have an item then we now have 2(!) and need to put them
+    /* If we already have an item then we now have 2(!) and we need to put them
      * into a list.
      */
     if (join_info->item) {
@@ -14336,55 +14348,70 @@ Py_LOCAL_INLINE(int) add_item(JoinInfo* join_info, PyObject* item) {
         PyList_SET_ITEM(join_info->list, 0, join_info->item);
         join_info->item = NULL;
 
-        PyList_SET_ITEM(join_info->list, 1, item);
-        Py_INCREF(item);
-
+        PyList_SET_ITEM(join_info->list, 1, new_item);
         return 0;
     }
 
     /* This is the first item. */
-    join_info->item = item;
-    Py_INCREF(join_info->item);
+    join_info->item = new_item;
 
     return 0;
 
 error:
+    Py_DECREF(new_item);
     Py_XDECREF(join_info->list);
     Py_XDECREF(join_info->item);
+    set_error(status, NULL);
     return status;
 }
 
 /* Joins together a list of strings for pattern_subx. */
-Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info, PyObject*
-  string) {
+Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info) {
     /* If the list already exists then just do the join. */
-    if (join_info->list)
-        return join_list(join_info->list, string, join_info->reversed);
+    if (join_info->list) {
+        PyObject* joiner;
+        PyObject* result;
 
-    /* If we have only 1 item then we _might_ be able to just return it. */
-    if (join_info->item) {
-        /* We can return the single item only if it's the same type of string
-         * as the joiner.
-         */
-        if (PyObject_Type(join_info->item) == PyObject_Type(string))
-            return join_info->item;
+        if (join_info->reversed)
+            /* The list needs to be reversed before being joined. */
+            PyList_Reverse(join_info->list);
 
-        /* We'll default to the normal joining method, which requires the item
-         * to be in a list.
-         */
-        join_info->list = PyList_New(1);
-        if (!join_info->list) {
-            Py_DECREF(join_info->item);
-            return NULL;
+        if (join_info->is_unicode)
+        {
+            /* Concatenate the Unicode strings. */
+            joiner = PyUnicode_FromUnicode(NULL, 0);
+            if (!joiner) {
+                Py_DECREF(join_info->list);
+                return NULL;
+            }
+
+            result = PyUnicode_Join(joiner, join_info->list);
+        } else {
+            joiner = PyString_FromString("");
+            if (!joiner) {
+                Py_DECREF(join_info->list);
+                return NULL;
+            }
+
+            /* Concatenate the bytestrings. */
+            result = _PyString_Join(joiner, join_info->list);
         }
 
-        PyList_SET_ITEM(join_info->list, 0, join_info->item);
+        Py_DECREF(joiner);
+        Py_DECREF(join_info->list);
 
-        return join_list(join_info->list, string, join_info->reversed);
+        return result;
     }
 
+    /* If we have only 1 item, so we'll just return it. */
+    if (join_info->item)
+        return join_info->item;
+
     /* There are no items, so return an empty string. */
-    return PySequence_GetSlice(string, 0, 0);
+    if (join_info->is_unicode)
+        return PyUnicode_FromUnicode(NULL, 0);
+    else
+        return PyString_FromString("");
 }
 
 /* Checks whether a string replacement is a literal.
@@ -14462,6 +14489,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     join_info.list = NULL;
     join_info.item = NULL;
     join_info.reversed = FALSE;
+    join_info.is_unicode = PyUnicode_Check(self->string);
 
     /* Add each part of the template to the list. */
     size = PyList_GET_SIZE(replacement);
@@ -14482,17 +14510,15 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
 
             status = add_item(&join_info, str_item);
             Py_DECREF(str_item);
-            if (status < 0) {
-                set_error(status, NULL);
+            if (status < 0)
                 goto error;
-            }
         }
     }
 
     Py_DECREF(replacement);
 
     /* Convert the list to a single string (also cleans up join_info). */
-    return join_list_info(&join_info, self->substring);
+    return join_list_info(&join_info);
 
 error:
     Py_XDECREF(join_info.list);
@@ -14721,7 +14747,7 @@ static PyObject* match_detach_string(MatchObject* self, PyObject* unused) {
 
         determine_target_substring(self, &start, &end);
 
-        substring = PySequence_GetSlice(self->string, start, end);
+        substring = get_slice(self->string, start, end);
         if (substring) {
             Py_XDECREF(self->substring);
             self->substring = substring;
@@ -15133,7 +15159,7 @@ Py_LOCAL_INLINE(PyObject*) state_get_group(RE_State* state, Py_ssize_t index,
         }
     }
 
-    return PySequence_GetSlice(string, start, end);
+    return get_slice(string, start, end);
 }
 
 /* Acquires the lock (mutex) on the state if there's one.
@@ -15490,10 +15516,10 @@ retry:
 
                 /* Get segment before this match. */
                 if (state->reverse)
-                    result = PySequence_GetSlice(state->string,
-                      state->match_pos, self->last);
+                    result = get_slice(state->string, state->match_pos,
+                      self->last);
                 else
-                    result = PySequence_GetSlice(state->string, self->last,
+                    result = get_slice(state->string, self->last,
                       state->match_pos);
                 if (!result)
                     goto error;
@@ -15528,9 +15554,9 @@ retry:
 no_match:
             /* Get segment following last match (even if empty). */
             if (state->reverse)
-                result = PySequence_GetSlice(state->string, 0, self->last);
+                result = get_slice(state->string, 0, self->last);
             else
-                result = PySequence_GetSlice(state->string, self->last,
+                result = get_slice(state->string, self->last,
                   state->text_length);
             if (!result)
                 goto error;
@@ -15862,7 +15888,7 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
   string, RE_State* state, Py_ssize_t group_count) {
     Py_ssize_t index;
 
-    if (PyUnicode_Check(item) || PyString_Check(item)) {
+    if (PyUnicode_CheckExact(item) || PyString_CheckExact(item)) {
         /* It's a literal, which can be added directly to the list. */
         Py_INCREF(item);
         return item;
@@ -15885,11 +15911,9 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
         }
 
         if (state->reverse)
-            return PySequence_GetSlice(string, state->text_pos,
-              state->match_pos);
+            return get_slice(string, state->text_pos, state->match_pos);
         else
-            return PySequence_GetSlice(string, state->match_pos,
-              state->text_pos);
+            return get_slice(string, state->match_pos, state->text_pos);
     } else if (1 <= index && index <= group_count) {
         /* A group. */
         RE_GroupData* group;
@@ -15903,7 +15927,7 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
             return Py_None;
         }
 
-        return PySequence_GetSlice(string, group->span.start, group->span.end);
+        return get_slice(string, group->span.start, group->span.end);
     } else {
         /* No such group. */
         set_error(RE_ERROR_INVALID_GROUP_REF, NULL);
@@ -16054,6 +16078,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     join_info.item = NULL;
     join_info.list = NULL;
     join_info.reversed = state.reverse;
+    join_info.is_unicode = PyUnicode_Check(string);
 
     sub_count = 0;
     last = state.reverse ? state.text_length : 0;
@@ -16070,29 +16095,25 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         /* Append the segment before this match. */
         if (state.match_pos != last) {
             if (state.reverse)
-                item = PySequence_GetSlice(string, state.match_pos, last);
+                item = get_slice(string, state.match_pos, last);
             else
-                item = PySequence_GetSlice(string, last, state.match_pos);
+                item = get_slice(string, last, state.match_pos);
             if (!item)
                 goto error;
 
             /* Add to the list. */
             status = add_item(&join_info, item);
             Py_DECREF(item);
-            if (status < 0) {
-                set_error(status, NULL);
+            if (status < 0)
                 goto error;
-            }
         }
 
         /* Add this match. */
         if (is_literal) {
             /* The replacement is a literal string. */
             status = add_item(&join_info, replacement);
-            if (status < 0) {
-                set_error(status, NULL);
+            if (status < 0)
                 goto error;
-            }
 #if PY_VERSION_HEX >= 0x02060000
         } else if (is_format) {
             /* The replacement is a format string. */
@@ -16138,10 +16159,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             /* Add the result to the list. */
             status = add_item(&join_info, item);
             Py_DECREF(item);
-            if (status < 0) {
-                set_error(status, NULL);
+            if (status < 0)
                 goto error;
-            }
 #endif
         } else if (is_template) {
             /* The replacement is a list template. */
@@ -16167,10 +16186,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                 else {
                     status = add_item(&join_info, str_item);
                     Py_DECREF(str_item);
-                    if (status < 0) {
-                        set_error(status, NULL);
+                    if (status < 0)
                         goto error;
-                    }
                 }
             }
         } else if (is_callable) {
@@ -16202,10 +16219,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             /* Add the result to the list. */
             status = add_item(&join_info, item);
             Py_DECREF(item);
-            if (status < 0) {
-                set_error(status, NULL);
+            if (status < 0)
                 goto error;
-            }
         }
 
         ++sub_count;
@@ -16227,23 +16242,21 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
 
         /* The segment is part of the original string. */
         if (state.reverse)
-            item = PySequence_GetSlice(string, 0, last);
+            item = get_slice(string, 0, last);
         else
-            item = PySequence_GetSlice(string, last, str_info.length);
+            item = get_slice(string, last, str_info.length);
         if (!item)
             goto error;
         status = add_item(&join_info, item);
         Py_DECREF(item);
-        if (status < 0) {
-            set_error(status, NULL);
+        if (status < 0)
             goto error;
-        }
     }
 
     Py_XDECREF(replacement);
 
     /* Convert the list to a single string (also cleans up join_info). */
-    item = join_list_info(&join_info, string);
+    item = join_list_info(&join_info);
 
     state_fini(&state);
 
@@ -16456,9 +16469,9 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
 
         /* Get segment before this match. */
         if (state.reverse)
-            item = PySequence_GetSlice(string, state.match_pos, last);
+            item = get_slice(string, state.match_pos, last);
         else
-            item = PySequence_GetSlice(string, last, state.match_pos);
+            item = get_slice(string, last, state.match_pos);
         if (!item)
             goto error;
         status = PyList_Append(list, item);
@@ -16503,9 +16516,9 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
 
     /* Get segment following last match (even if empty). */
     if (state.reverse)
-        item = PySequence_GetSlice(string, 0, last);
+        item = get_slice(string, 0, last);
     else
-        item = PySequence_GetSlice(string, last, state.text_length);
+        item = get_slice(string, last, state.text_length);
     if (!item)
         goto error;
     status = PyList_Append(list, item);
@@ -16605,7 +16618,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
                 b = state.match_pos;
                 e = state.text_pos;
             }
-            item = PySequence_GetSlice(string, b, e);
+            item = get_slice(string, b, e);
             if (!item)
                 goto error;
             break;
@@ -17514,11 +17527,9 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_UINT8 op,
         return NULL;
     memset(node, 0, sizeof(RE_Node));
 
-    node->value_capacity = value_count;
     node->value_count = value_count;
-    if (node->value_capacity > 0) {
-        node->values = (RE_CODE*)re_alloc(node->value_capacity *
-          sizeof(RE_CODE));
+    if (node->value_count > 0) {
+        node->values = (RE_CODE*)re_alloc(node->value_count * sizeof(RE_CODE));
         if (!node->values)
             goto error;
     } else
@@ -19541,7 +19552,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     }
 
     /* Build the result string. */
-    if (str_info.unicode)
+    if (str_info.is_unicode)
         result = build_unicode_value(folded, folded_len, folded_charsize);
     else
         result = build_bytes_value(folded, folded_len);

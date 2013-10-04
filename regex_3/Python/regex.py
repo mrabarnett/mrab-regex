@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.27"
+__version__ = "2.4.28"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -424,17 +424,15 @@ def _compile(pattern, flags=0, kwargs={}):
         args_needed = _named_args[args_key]
 
         # Are we being provided with its required keyword arguments?
+        args_supplied = set()
         if args_needed:
-            args_supplied = set()
             for k, v in args_needed:
-                if k not in kwargs:
+                try:
+                    args_supplied.add((k, frozenset(kwargs[k])))
+                except KeyError:
                     raise error("missing named list")
 
-                args_supplied.add((k, frozenset(kwargs[k])))
-
-            args_supplied = frozenset(args_supplied)
-        else:
-            args_supplied = frozenset()
+        args_supplied = frozenset(args_supplied)
 
         # Have we already seen this regular expression and named list?
         pattern_key = (pattern, type(pattern), flags, args_supplied,
@@ -460,22 +458,17 @@ def _compile(pattern, flags=0, kwargs={}):
     # Set the default version in the core code in case it has been changed.
     _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
 
-    # Parse the pattern. In the old behaviour the inline flags are global and
-    # the pattern will need to be reparsed if a flag becomes turned on.
-    version = (flags & _ALL_VERSIONS) or DEFAULT_VERSION
-    global_flags = flags | _regex_core.DEFAULT_FLAGS.get(version, 0)
-
     while True:
         try:
             source = _Source(pattern)
-            info = _Info(global_flags, source.char_type, kwargs)
+            info = _Info(flags, source.char_type, kwargs)
             info.guess_encoding = guess_encoding
             source.ignore_space = bool(info.flags & VERBOSE)
             parsed = _parse_pattern(source, info)
             break
-        except _UnscopedFlagSet as e:
+        except _UnscopedFlagSet:
             # Remember the global flags for the next attempt.
-            global_flags = e.global_flags | flags
+            flags = info.global_flags
 
     if not source.at_end():
         raise error("trailing characters in pattern")
