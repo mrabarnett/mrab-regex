@@ -99,19 +99,22 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_PROP_XDIGIT 0x4E0001
 
 #define RE_BREAK_OTHER 0
-#define RE_BREAK_CR 1
-#define RE_BREAK_LF 2
-#define RE_BREAK_NEWLINE 3
-#define RE_BREAK_EXTEND 4
-#define RE_BREAK_REGIONALINDICATOR 5
-#define RE_BREAK_FORMAT 6
-#define RE_BREAK_KATAKANA 7
-#define RE_BREAK_ALETTER 8
-#define RE_BREAK_MIDLETTER 9
-#define RE_BREAK_MIDNUM 10
-#define RE_BREAK_MIDNUMLET 11
-#define RE_BREAK_NUMERIC 12
-#define RE_BREAK_EXTENDNUMLET 13
+#define RE_BREAK_DOUBLEQUOTE 1
+#define RE_BREAK_SINGLEQUOTE 2
+#define RE_BREAK_HEBREWLETTER 3
+#define RE_BREAK_CR 4
+#define RE_BREAK_LF 5
+#define RE_BREAK_NEWLINE 6
+#define RE_BREAK_EXTEND 7
+#define RE_BREAK_REGIONALINDICATOR 8
+#define RE_BREAK_FORMAT 9
+#define RE_BREAK_KATAKANA 10
+#define RE_BREAK_ALETTER 11
+#define RE_BREAK_MIDLETTER 12
+#define RE_BREAK_MIDNUM 13
+#define RE_BREAK_MIDNUMLET 14
+#define RE_BREAK_NUMERIC 15
+#define RE_BREAK_EXTENDNUMLET 16
 
 #define RE_GBREAK_OTHER 0
 #define RE_GBREAK_CR 1
@@ -127,9 +130,9 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_GBREAK_LVT 11
 #define RE_GBREAK_PREPEND 12
 
-extern char* re_strings[1144];
+extern char* re_strings[1155];
 extern RE_Property re_properties[145];
-extern RE_PropertyValue re_property_values[1230];
+extern RE_PropertyValue re_property_values[1244];
 extern RE_UINT16 re_expand_on_folding[104];
 extern RE_GetPropertyFunc re_get_property[79];
 

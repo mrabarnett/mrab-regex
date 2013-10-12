@@ -32,15 +32,19 @@ Bidi_Class [bc]
     European_Number [EN]
     European_Separator [ES]
     European_Terminator [ET]
+    First_Strong_Isolate [FSI]
     Left_To_Right [L]
     Left_To_Right_Embedding [LRE]
+    Left_To_Right_Isolate [LRI]
     Left_To_Right_Override [LRO]
     Nonspacing_Mark [NSM]
     Other_Neutral [ON]
     Paragraph_Separator [B]
     Pop_Directional_Format [PDF]
+    Pop_Directional_Isolate [PDI]
     Right_To_Left [R]
     Right_To_Left_Embedding [RLE]
+    Right_To_Left_Isolate [RLI]
     Right_To_Left_Override [RLO]
     Segment_Separator [S]
     White_Space [WS]
@@ -629,7 +633,7 @@ Joining_Group [jg]
 Joining_Type [jt]
     Dual_Joining [D]
     Join_Causing [C]
-    Left_Joining
+    Left_Joining [L]
     Non_Joining [U]
     Right_Joining [R]
     Transparent [T]
@@ -699,7 +703,6 @@ Numeric_Type [nt]
     Numeric [Nu]
 
 Numeric_Value [nv]
-    -1
     -1/2
     0
     1
@@ -1028,9 +1031,11 @@ Word
 Word_Break [WB]
     ALetter [LE]
     CR
+    Double_Quote [DQ]
     Extend
     ExtendNumLet [EX]
     Format [FO]
+    Hebrew_Letter [HL]
     Katakana [KA]
     LF
     MidLetter [ML]
@@ -1040,6 +1045,7 @@ Word_Break [WB]
     Numeric [NU]
     Other [XX]
     Regional_Indicator [RI]
+    Single_Quote [SQ]
 
 XDigit
     No [F, False, N]

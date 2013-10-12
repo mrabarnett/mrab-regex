@@ -1367,7 +1367,8 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     }
 
     /* Don't break between most letters. */
-    if (prop_m1 == RE_BREAK_ALETTER && prop_p0 == RE_BREAK_ALETTER)
+    if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_HEBREWLETTER) &&
+      (prop_p0 == RE_BREAK_ALETTER || prop_p0 == RE_BREAK_HEBREWLETTER))
         return FALSE;
 
     /* Break between apostrophe and vowels (French, Italian). */
@@ -1376,30 +1377,45 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
         return TRUE;
 
     /* Don't break letters across certain punctuation. */
-    if (prop_m1 == RE_BREAK_ALETTER && (prop_p0 == RE_BREAK_MIDLETTER ||
-      prop_p0 == RE_BREAK_MIDNUMLET) && prop_p1 == RE_BREAK_ALETTER)
+    if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_HEBREWLETTER) &&
+      (prop_p0 == RE_BREAK_MIDLETTER || prop_p0 == RE_BREAK_MIDNUMLET ||
+      prop_p0 == RE_BREAK_SINGLEQUOTE) && (prop_p1 == RE_BREAK_ALETTER ||
+      prop_p1 == RE_BREAK_HEBREWLETTER))
         return FALSE;
-    if (prop_m2 == RE_BREAK_ALETTER && (prop_m1 == RE_BREAK_MIDLETTER ||
-      prop_m1 == RE_BREAK_MIDNUMLET) && prop_p0 == RE_BREAK_ALETTER)
+    if ((prop_m2 == RE_BREAK_ALETTER || prop_m2 == RE_BREAK_HEBREWLETTER) &&
+      (prop_m1 == RE_BREAK_MIDLETTER || prop_m1 == RE_BREAK_MIDNUMLET ||
+      prop_m1 == RE_BREAK_SINGLEQUOTE) && (prop_p0 == RE_BREAK_ALETTER ||
+      prop_p0 == RE_BREAK_HEBREWLETTER))
+        return FALSE;
+    if (prop_m1 == RE_BREAK_HEBREWLETTER && prop_p0 == RE_BREAK_SINGLEQUOTE)
+        return FALSE;
+    if (prop_m1 == RE_BREAK_HEBREWLETTER && prop_p0 == RE_BREAK_DOUBLEQUOTE &&
+      prop_p1 == RE_BREAK_HEBREWLETTER)
+        return FALSE;
+    if (prop_m2 == RE_BREAK_HEBREWLETTER && prop_m1 == RE_BREAK_DOUBLEQUOTE &&
+      prop_p0 == RE_BREAK_HEBREWLETTER)
         return FALSE;
 
     /* Don't break within sequences of digits, or digits adjacent to letters
      * ("3a", or "A3").
      */
-    if ((prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_ALETTER) && prop_p0
-      == RE_BREAK_NUMERIC)
+    if (prop_m1 == RE_BREAK_NUMERIC && prop_p0 == RE_BREAK_NUMERIC)
         return FALSE;
-
-    if (prop_m1 == RE_BREAK_NUMERIC && prop_p0 == RE_BREAK_ALETTER)
+    if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_HEBREWLETTER) &&
+      prop_p0 == RE_BREAK_NUMERIC)
+        return FALSE;
+    if (prop_m1 == RE_BREAK_NUMERIC && (prop_p0 == RE_BREAK_ALETTER || prop_p0
+      == RE_BREAK_HEBREWLETTER))
         return FALSE;
 
     /* Don't break within sequences, such as "3.2" or "3,456.789". */
     if (prop_m2 == RE_BREAK_NUMERIC && (prop_m1 == RE_BREAK_MIDNUM || prop_m1
-      == RE_BREAK_MIDNUMLET) && prop_p0 == RE_BREAK_NUMERIC)
+      == RE_BREAK_MIDNUMLET || prop_m1 == RE_BREAK_SINGLEQUOTE) && prop_p0 ==
+      RE_BREAK_NUMERIC)
         return FALSE;
-
     if (prop_m1 == RE_BREAK_NUMERIC && (prop_p0 == RE_BREAK_MIDNUM || prop_p0
-      == RE_BREAK_MIDNUMLET) && prop_p1 == RE_BREAK_NUMERIC)
+      == RE_BREAK_MIDNUMLET || prop_p0 == RE_BREAK_SINGLEQUOTE) && prop_p1 ==
+      RE_BREAK_NUMERIC)
         return FALSE;
 
     /* Don't break between Katakana. */
@@ -1407,13 +1423,13 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
         return FALSE;
 
     /* Don't break from extenders. */
-    if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_NUMERIC || prop_m1
-      == RE_BREAK_KATAKANA || prop_m1 == RE_BREAK_EXTENDNUMLET) && prop_p0 ==
-      RE_BREAK_EXTENDNUMLET)
+    if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_HEBREWLETTER ||
+      prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_KATAKANA || prop_m1 ==
+      RE_BREAK_EXTENDNUMLET) && prop_p0 == RE_BREAK_EXTENDNUMLET)
         return FALSE;
-
     if (prop_m1 == RE_BREAK_EXTENDNUMLET && (prop_p0 == RE_BREAK_ALETTER ||
-      prop_p0 == RE_BREAK_NUMERIC || prop_p0 == RE_BREAK_KATAKANA))
+      prop_p0 == RE_BREAK_HEBREWLETTER || prop_p0 == RE_BREAK_NUMERIC ||
+      prop_p0 == RE_BREAK_KATAKANA))
         return FALSE;
 
     /* Don't break between regional indicator symbols. */
