@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.30"
+__version__ = "2.4.31"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -458,6 +458,8 @@ def _compile(pattern, flags=0, kwargs={}):
     # Set the default version in the core code in case it has been changed.
     _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
 
+    caught_exception = None
+
     while True:
         try:
             source = _Source(pattern)
@@ -469,9 +471,14 @@ def _compile(pattern, flags=0, kwargs={}):
         except _UnscopedFlagSet:
             # Remember the global flags for the next attempt.
             flags = info.global_flags
+        except error, e:
+            caught_exception = e
+
+        if caught_exception:
+            raise error(str(caught_exception))
 
     if not source.at_end():
-        raise error("trailing characters in pattern")
+        raise error("trailing characters in pattern at position %d" % source.pos)
 
     # Check the global flags for conflicts.
     version = (info.flags & _ALL_VERSIONS) or DEFAULT_VERSION

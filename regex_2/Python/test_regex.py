@@ -3114,6 +3114,10 @@ xyzabc
         self.assertEqual(rx.search("Some text"), None)
         self.assertEqual(rx.findall("Some text"), [])
 
+        # Hg issue 95.
+        self.assertRaisesRegex(regex.error,
+          '^nothing to repeat at position 3$', lambda: regex.compile(r'.???'))
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format

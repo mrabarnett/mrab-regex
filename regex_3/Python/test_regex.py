@@ -3164,6 +3164,10 @@ xyzabc
         self.assertEqual(rx.search("Some text"), None)
         self.assertEqual(rx.findall("Some text"), [])
 
+        # Hg issue 95.
+        self.assertRaisesRegex(regex.error,
+          '^nothing to repeat at position 3$', lambda: regex.compile(r'.???'))
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp
