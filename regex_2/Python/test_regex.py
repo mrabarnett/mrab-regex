@@ -110,72 +110,72 @@ class RegexTests(unittest.TestCase):
             self.fail()
 
     def test_search_star_plus(self):
-        self.assertEquals(regex.search('a*', 'xxx').span(0), (0, 0))
-        self.assertEquals(regex.search('x*', 'axx').span(), (0, 0))
-        self.assertEquals(regex.search('x+', 'axx').span(0), (1, 3))
-        self.assertEquals(regex.search('x+', 'axx').span(), (1, 3))
-        self.assertEquals(regex.search('x', 'aaa'), None)
-        self.assertEquals(regex.match('a*', 'xxx').span(0), (0, 0))
-        self.assertEquals(regex.match('a*', 'xxx').span(), (0, 0))
-        self.assertEquals(regex.match('x*', 'xxxa').span(0), (0, 3))
-        self.assertEquals(regex.match('x*', 'xxxa').span(), (0, 3))
-        self.assertEquals(regex.match('a+', 'xxx'), None)
+        self.assertEqual(regex.search('a*', 'xxx').span(0), (0, 0))
+        self.assertEqual(regex.search('x*', 'axx').span(), (0, 0))
+        self.assertEqual(regex.search('x+', 'axx').span(0), (1, 3))
+        self.assertEqual(regex.search('x+', 'axx').span(), (1, 3))
+        self.assertEqual(regex.search('x', 'aaa'), None)
+        self.assertEqual(regex.match('a*', 'xxx').span(0), (0, 0))
+        self.assertEqual(regex.match('a*', 'xxx').span(), (0, 0))
+        self.assertEqual(regex.match('x*', 'xxxa').span(0), (0, 3))
+        self.assertEqual(regex.match('x*', 'xxxa').span(), (0, 3))
+        self.assertEqual(regex.match('a+', 'xxx'), None)
 
     def bump_num(self, matchobj):
         int_value = int(matchobj[0])
         return str(int_value + 1)
 
     def test_basic_regex_sub(self):
-        self.assertEquals(regex.sub("(?i)b+", "x", "bbbb BBBB"), 'x x')
-        self.assertEquals(regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y'),
+        self.assertEqual(regex.sub("(?i)b+", "x", "bbbb BBBB"), 'x x')
+        self.assertEqual(regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y'),
           '9.3 -3 24x100y')
-        self.assertEquals(regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y',
+        self.assertEqual(regex.sub(r'\d+', self.bump_num, '08.2 -2 23x99y',
           3), '9.3 -3 23x99y')
 
-        self.assertEquals(regex.sub('.', lambda m: r"\n", 'x'), "\\n")
-        self.assertEquals(regex.sub('.', r"\n", 'x'), "\n")
+        self.assertEqual(regex.sub('.', lambda m: r"\n", 'x'), "\\n")
+        self.assertEqual(regex.sub('.', r"\n", 'x'), "\n")
 
-        self.assertEquals(regex.sub('(?P<a>x)', r'\g<a>\g<a>', 'xx'), 'xxxx')
-        self.assertEquals(regex.sub('(?P<a>x)', r'\g<a>\g<1>', 'xx'), 'xxxx')
-        self.assertEquals(regex.sub('(?P<unk>x)', r'\g<unk>\g<unk>', 'xx'),
+        self.assertEqual(regex.sub('(?P<a>x)', r'\g<a>\g<a>', 'xx'), 'xxxx')
+        self.assertEqual(regex.sub('(?P<a>x)', r'\g<a>\g<1>', 'xx'), 'xxxx')
+        self.assertEqual(regex.sub('(?P<unk>x)', r'\g<unk>\g<unk>', 'xx'),
           'xxxx')
-        self.assertEquals(regex.sub('(?P<unk>x)', r'\g<1>\g<1>', 'xx'), 'xxxx')
+        self.assertEqual(regex.sub('(?P<unk>x)', r'\g<1>\g<1>', 'xx'), 'xxxx')
 
-        self.assertEquals(regex.sub('a', r'\t\n\v\r\f\a\b\B\Z\a\A\w\W\s\S\d\D',
+        self.assertEqual(regex.sub('a', r'\t\n\v\r\f\a\b\B\Z\a\A\w\W\s\S\d\D',
           'a'), "\t\n\v\r\f\a\b\\B\\Z\a\\A\\w\\W\\s\\S\\d\\D")
-        self.assertEquals(regex.sub('a', '\t\n\v\r\f\a', 'a'), "\t\n\v\r\f\a")
-        self.assertEquals(regex.sub('a', '\t\n\v\r\f\a', 'a'), chr(9) + chr(10)
+        self.assertEqual(regex.sub('a', '\t\n\v\r\f\a', 'a'), "\t\n\v\r\f\a")
+        self.assertEqual(regex.sub('a', '\t\n\v\r\f\a', 'a'), chr(9) + chr(10)
           + chr(11) + chr(13) + chr(12) + chr(7))
 
-        self.assertEquals(regex.sub(r'^\s*', 'X', 'test'), 'Xtest')
+        self.assertEqual(regex.sub(r'^\s*', 'X', 'test'), 'Xtest')
 
-        self.assertEquals(regex.sub(ur"x", ur"\x0A", u"x"), u"\n")
-        self.assertEquals(regex.sub(ur"x", ur"\u000A", u"x"), u"\n")
-        self.assertEquals(regex.sub(ur"x", ur"\U0000000A", u"x"), u"\n")
-        self.assertEquals(regex.sub(ur"x", ur"\N{LATIN CAPITAL LETTER A}", u"x"),
+        self.assertEqual(regex.sub(ur"x", ur"\x0A", u"x"), u"\n")
+        self.assertEqual(regex.sub(ur"x", ur"\u000A", u"x"), u"\n")
+        self.assertEqual(regex.sub(ur"x", ur"\U0000000A", u"x"), u"\n")
+        self.assertEqual(regex.sub(ur"x", ur"\N{LATIN CAPITAL LETTER A}", u"x"),
           u"A")
 
-        self.assertEquals(regex.sub(r"x", r"\x0A", "x"), "\n")
-        self.assertEquals(regex.sub(r"x", r"\u000A", "x"), "\\u000A")
-        self.assertEquals(regex.sub(r"x", r"\U0000000A", "x"),
+        self.assertEqual(regex.sub(r"x", r"\x0A", "x"), "\n")
+        self.assertEqual(regex.sub(r"x", r"\u000A", "x"), "\\u000A")
+        self.assertEqual(regex.sub(r"x", r"\U0000000A", "x"),
           "\\U0000000A")
-        self.assertEquals(regex.sub(r"x", r"\N{LATIN CAPITAL LETTER A}",
+        self.assertEqual(regex.sub(r"x", r"\N{LATIN CAPITAL LETTER A}",
           "x"), "\\N{LATIN CAPITAL LETTER A}")
 
     def test_bug_449964(self):
         # Fails for group followed by other escape.
-        self.assertEquals(regex.sub(r'(?P<unk>x)', r'\g<1>\g<1>\b', 'xx'),
+        self.assertEqual(regex.sub(r'(?P<unk>x)', r'\g<1>\g<1>\b', 'xx'),
           "xx\bxx\b")
 
     def test_bug_449000(self):
         # Test for sub() on escaped characters.
-        self.assertEquals(regex.sub(r'\r\n', r'\n', 'abc\r\ndef\r\n'),
+        self.assertEqual(regex.sub(r'\r\n', r'\n', 'abc\r\ndef\r\n'),
           "abc\ndef\n")
-        self.assertEquals(regex.sub('\r\n', r'\n', 'abc\r\ndef\r\n'),
+        self.assertEqual(regex.sub('\r\n', r'\n', 'abc\r\ndef\r\n'),
           "abc\ndef\n")
-        self.assertEquals(regex.sub(r'\r\n', '\n', 'abc\r\ndef\r\n'),
+        self.assertEqual(regex.sub(r'\r\n', '\n', 'abc\r\ndef\r\n'),
           "abc\ndef\n")
-        self.assertEquals(regex.sub('\r\n', '\n', 'abc\r\ndef\r\n'),
+        self.assertEqual(regex.sub('\r\n', '\n', 'abc\r\ndef\r\n'),
           "abc\ndef\n")
 
     def test_bug_1140(self):
@@ -188,13 +188,13 @@ class RegexTests(unittest.TestCase):
         for x in 'x', u'x':
             for y in 'y', u'y':
                 z = regex.sub(x, y, u'')
-                self.assertEquals((type(z), z), (unicode, u''))
+                self.assertEqual((type(z), z), (unicode, u''))
                 z = regex.sub(x, y, '')
-                self.assertEquals((type(z), z), (str, ''))
+                self.assertEqual((type(z), z), (str, ''))
                 z = regex.sub(x, y, unicode(x))
-                self.assertEquals((type(z), z), (unicode, unicode(y)))
+                self.assertEqual((type(z), z), (unicode, unicode(y)))
                 z = regex.sub(x, y, str(x))
-                self.assertEquals((type(z), z), (type(y), y))
+                self.assertEqual((type(z), z), (type(y), y))
 
     def test_bug_1661(self):
         # Verify that flags do not get silently ignored with compiled patterns
@@ -210,32 +210,32 @@ class RegexTests(unittest.TestCase):
 
     def test_bug_3629(self):
         # A regex that triggered a bug in the sre-code validator
-        self.assertEquals(repr(type(regex.compile("(?P<quote>)(?(quote))"))),
+        self.assertEqual(repr(type(regex.compile("(?P<quote>)(?(quote))"))),
           self.PATTERN_CLASS)
 
     def test_sub_template_numeric_escape(self):
         # Bug 776311 and friends.
-        self.assertEquals(regex.sub('x', r'\0', 'x'), "\0")
-        self.assertEquals(regex.sub('x', r'\000', 'x'), "\000")
-        self.assertEquals(regex.sub('x', r'\001', 'x'), "\001")
-        self.assertEquals(regex.sub('x', r'\008', 'x'), "\0" + "8")
-        self.assertEquals(regex.sub('x', r'\009', 'x'), "\0" + "9")
-        self.assertEquals(regex.sub('x', r'\111', 'x'), "\111")
-        self.assertEquals(regex.sub('x', r'\117', 'x'), "\117")
+        self.assertEqual(regex.sub('x', r'\0', 'x'), "\0")
+        self.assertEqual(regex.sub('x', r'\000', 'x'), "\000")
+        self.assertEqual(regex.sub('x', r'\001', 'x'), "\001")
+        self.assertEqual(regex.sub('x', r'\008', 'x'), "\0" + "8")
+        self.assertEqual(regex.sub('x', r'\009', 'x'), "\0" + "9")
+        self.assertEqual(regex.sub('x', r'\111', 'x'), "\111")
+        self.assertEqual(regex.sub('x', r'\117', 'x'), "\117")
 
-        self.assertEquals(regex.sub('x', r'\1111', 'x'), "\1111")
-        self.assertEquals(regex.sub('x', r'\1111', 'x'), "\111" + "1")
+        self.assertEqual(regex.sub('x', r'\1111', 'x'), "\1111")
+        self.assertEqual(regex.sub('x', r'\1111', 'x'), "\111" + "1")
 
-        self.assertEquals(regex.sub('x', r'\00', 'x'), '\x00')
-        self.assertEquals(regex.sub('x', r'\07', 'x'), '\x07')
-        self.assertEquals(regex.sub('x', r'\08', 'x'), "\0" + "8")
-        self.assertEquals(regex.sub('x', r'\09', 'x'), "\0" + "9")
-        self.assertEquals(regex.sub('x', r'\0a', 'x'), "\0" + "a")
+        self.assertEqual(regex.sub('x', r'\00', 'x'), '\x00')
+        self.assertEqual(regex.sub('x', r'\07', 'x'), '\x07')
+        self.assertEqual(regex.sub('x', r'\08', 'x'), "\0" + "8")
+        self.assertEqual(regex.sub('x', r'\09', 'x'), "\0" + "9")
+        self.assertEqual(regex.sub('x', r'\0a', 'x'), "\0" + "a")
 
-        self.assertEquals(regex.sub(u'x', ur'\400', u'x'), u"\u0100")
-        self.assertEquals(regex.sub(u'x', ur'\777', u'x'), u"\u01FF")
-        self.assertEquals(regex.sub('x', r'\400', 'x'), "\x00")
-        self.assertEquals(regex.sub('x', r'\777', 'x'), "\xFF")
+        self.assertEqual(regex.sub(u'x', ur'\400', u'x'), u"\u0100")
+        self.assertEqual(regex.sub(u'x', ur'\777', u'x'), u"\u01FF")
+        self.assertEqual(regex.sub('x', r'\400', 'x'), "\x00")
+        self.assertEqual(regex.sub('x', r'\777', 'x'), "\xFF")
 
         self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
           regex.sub('x', r'\1', 'x'))
@@ -263,25 +263,25 @@ class RegexTests(unittest.TestCase):
           regex.sub('x', r'\800', 'x')) # r'\80' + '0'
 
         # In Python 2.3 (etc), these loop endlessly in sre_parser.py.
-        self.assertEquals(regex.sub('(((((((((((x)))))))))))', r'\11', 'x'),
+        self.assertEqual(regex.sub('(((((((((((x)))))))))))', r'\11', 'x'),
           'x')
-        self.assertEquals(regex.sub('((((((((((y))))))))))(.)', r'\118',
+        self.assertEqual(regex.sub('((((((((((y))))))))))(.)', r'\118',
           'xyz'), 'xz8')
-        self.assertEquals(regex.sub('((((((((((y))))))))))(.)', r'\11a',
+        self.assertEqual(regex.sub('((((((((((y))))))))))(.)', r'\11a',
           'xyz'), 'xza')
 
     def test_qualified_re_sub(self):
-        self.assertEquals(regex.sub('a', 'b', 'aaaaa'), 'bbbbb')
-        self.assertEquals(regex.sub('a', 'b', 'aaaaa', 1), 'baaaa')
+        self.assertEqual(regex.sub('a', 'b', 'aaaaa'), 'bbbbb')
+        self.assertEqual(regex.sub('a', 'b', 'aaaaa', 1), 'baaaa')
 
     def test_bug_114660(self):
-        self.assertEquals(regex.sub(r'(\S)\s+(\S)', r'\1 \2', 'hello  there'),
+        self.assertEqual(regex.sub(r'(\S)\s+(\S)', r'\1 \2', 'hello  there'),
           'hello there')
 
     def test_bug_462270(self):
         # Test for empty sub() behaviour, see SF bug #462270
-        self.assertEquals(regex.sub('x*', '-', 'abxd'), '-a-b--d-')
-        self.assertEquals(regex.sub('x+', '-', 'abxd'), 'ab-d')
+        self.assertEqual(regex.sub('x*', '-', 'abxd'), '-a-b--d-')
+        self.assertEqual(regex.sub('x+', '-', 'abxd'), 'ab-d')
 
     def test_bug_14462(self):
         # chr(255) is not a valid identifier in Python 2.
@@ -305,373 +305,373 @@ class RegexTests(unittest.TestCase):
 
         # The new behaviour of unmatched but valid groups is to treat them like
         # empty matches in the replacement template, like in Perl.
-        self.assertEquals(regex.sub('(?P<a>x)|(?P<b>y)', r'\g<b>', 'xx'), '')
-        self.assertEquals(regex.sub('(?P<a>x)|(?P<b>y)', r'\2', 'xx'), '')
+        self.assertEqual(regex.sub('(?P<a>x)|(?P<b>y)', r'\g<b>', 'xx'), '')
+        self.assertEqual(regex.sub('(?P<a>x)|(?P<b>y)', r'\2', 'xx'), '')
 
         # The old behaviour was to raise it as an IndexError.
         self.assertRaisesRegex(regex.error, self.BAD_GROUP_NAME, lambda:
           regex.sub('(?P<a>x)', r'\g<-1>', 'xx'))
 
     def test_re_subn(self):
-        self.assertEquals(regex.subn("(?i)b+", "x", "bbbb BBBB"), ('x x', 2))
-        self.assertEquals(regex.subn("b+", "x", "bbbb BBBB"), ('x BBBB', 1))
-        self.assertEquals(regex.subn("b+", "x", "xyz"), ('xyz', 0))
-        self.assertEquals(regex.subn("b*", "x", "xyz"), ('xxxyxzx', 4))
-        self.assertEquals(regex.subn("b*", "x", "xyz", 2), ('xxxyz', 2))
+        self.assertEqual(regex.subn("(?i)b+", "x", "bbbb BBBB"), ('x x', 2))
+        self.assertEqual(regex.subn("b+", "x", "bbbb BBBB"), ('x BBBB', 1))
+        self.assertEqual(regex.subn("b+", "x", "xyz"), ('xyz', 0))
+        self.assertEqual(regex.subn("b*", "x", "xyz"), ('xxxyxzx', 4))
+        self.assertEqual(regex.subn("b*", "x", "xyz", 2), ('xxxyz', 2))
 
     def test_re_split(self):
-        self.assertEquals(regex.split(":", ":a:b::c"), ['', 'a', 'b', '', 'c'])
-        self.assertEquals(regex.split(":*", ":a:b::c"), ['', 'a', 'b', 'c'])
-        self.assertEquals(regex.split("(:*)", ":a:b::c"), ['', ':', 'a', ':',
+        self.assertEqual(regex.split(":", ":a:b::c"), ['', 'a', 'b', '', 'c'])
+        self.assertEqual(regex.split(":*", ":a:b::c"), ['', 'a', 'b', 'c'])
+        self.assertEqual(regex.split("(:*)", ":a:b::c"), ['', ':', 'a', ':',
           'b', '::', 'c'])
-        self.assertEquals(regex.split("(?::*)", ":a:b::c"), ['', 'a', 'b',
+        self.assertEqual(regex.split("(?::*)", ":a:b::c"), ['', 'a', 'b',
           'c'])
-        self.assertEquals(regex.split("(:)*", ":a:b::c"), ['', ':', 'a', ':',
+        self.assertEqual(regex.split("(:)*", ":a:b::c"), ['', ':', 'a', ':',
           'b', ':', 'c'])
-        self.assertEquals(regex.split("([b:]+)", ":a:b::c"), ['', ':', 'a',
+        self.assertEqual(regex.split("([b:]+)", ":a:b::c"), ['', ':', 'a',
           ':b::', 'c'])
-        self.assertEquals(regex.split("(b)|(:+)", ":a:b::c"), ['', None, ':',
+        self.assertEqual(regex.split("(b)|(:+)", ":a:b::c"), ['', None, ':',
           'a', None, ':', '', 'b', None, '', None, '::', 'c'])
-        self.assertEquals(regex.split("(?:b)|(?::+)", ":a:b::c"), ['', 'a', '',
+        self.assertEqual(regex.split("(?:b)|(?::+)", ":a:b::c"), ['', 'a', '',
           '', 'c'])
 
-        self.assertEquals(regex.split("x", "xaxbxc"), ['', 'a', 'b', 'c'])
-        self.assertEquals([m for m in regex.splititer("x", "xaxbxc")], ['',
+        self.assertEqual(regex.split("x", "xaxbxc"), ['', 'a', 'b', 'c'])
+        self.assertEqual([m for m in regex.splititer("x", "xaxbxc")], ['',
           'a', 'b', 'c'])
 
-        self.assertEquals(regex.split("(?r)x", "xaxbxc"), ['c', 'b', 'a', ''])
-        self.assertEquals([m for m in regex.splititer("(?r)x", "xaxbxc")],
+        self.assertEqual(regex.split("(?r)x", "xaxbxc"), ['c', 'b', 'a', ''])
+        self.assertEqual([m for m in regex.splititer("(?r)x", "xaxbxc")],
           ['c', 'b', 'a', ''])
 
-        self.assertEquals(regex.split("(x)|(y)", "xaxbxc"), ['', 'x', None,
+        self.assertEqual(regex.split("(x)|(y)", "xaxbxc"), ['', 'x', None,
           'a', 'x', None, 'b', 'x', None, 'c'])
-        self.assertEquals([m for m in regex.splititer("(x)|(y)", "xaxbxc")],
+        self.assertEqual([m for m in regex.splititer("(x)|(y)", "xaxbxc")],
           ['', 'x', None, 'a', 'x', None, 'b', 'x', None, 'c'])
 
-        self.assertEquals(regex.split("(?r)(x)|(y)", "xaxbxc"), ['c', 'x',
+        self.assertEqual(regex.split("(?r)(x)|(y)", "xaxbxc"), ['c', 'x',
           None, 'b', 'x', None, 'a', 'x', None, ''])
-        self.assertEquals([m for m in regex.splititer("(?r)(x)|(y)",
+        self.assertEqual([m for m in regex.splititer("(?r)(x)|(y)",
           "xaxbxc")], ['c', 'x', None, 'b', 'x', None, 'a', 'x', None, ''])
 
-        self.assertEquals(regex.split(r"(?V1)\b", "a b c"), ['', 'a', ' ', 'b',
+        self.assertEqual(regex.split(r"(?V1)\b", "a b c"), ['', 'a', ' ', 'b',
           ' ', 'c', ''])
-        self.assertEquals(regex.split(r"(?V1)\m", "a b c"), ['', 'a ', 'b ',
+        self.assertEqual(regex.split(r"(?V1)\m", "a b c"), ['', 'a ', 'b ',
           'c'])
-        self.assertEquals(regex.split(r"(?V1)\M", "a b c"), ['a', ' b', ' c',
+        self.assertEqual(regex.split(r"(?V1)\M", "a b c"), ['a', ' b', ' c',
           ''])
 
     def test_qualified_re_split(self):
-        self.assertEquals(regex.split(":", ":a:b::c", 2), ['', 'a', 'b::c'])
-        self.assertEquals(regex.split(':', 'a:b:c:d', 2), ['a', 'b', 'c:d'])
-        self.assertEquals(regex.split("(:)", ":a:b::c", 2), ['', ':', 'a', ':',
+        self.assertEqual(regex.split(":", ":a:b::c", 2), ['', 'a', 'b::c'])
+        self.assertEqual(regex.split(':', 'a:b:c:d', 2), ['a', 'b', 'c:d'])
+        self.assertEqual(regex.split("(:)", ":a:b::c", 2), ['', ':', 'a', ':',
           'b::c'])
-        self.assertEquals(regex.split("(:*)", ":a:b::c", 2), ['', ':', 'a',
+        self.assertEqual(regex.split("(:*)", ":a:b::c", 2), ['', ':', 'a',
           ':', 'b::c'])
 
     def test_re_findall(self):
-        self.assertEquals(regex.findall(":+", "abc"), [])
-        self.assertEquals(regex.findall(":+", "a:b::c:::d"), [':', '::',
+        self.assertEqual(regex.findall(":+", "abc"), [])
+        self.assertEqual(regex.findall(":+", "a:b::c:::d"), [':', '::',
           ':::'])
-        self.assertEquals(regex.findall("(:+)", "a:b::c:::d"), [':', '::',
+        self.assertEqual(regex.findall("(:+)", "a:b::c:::d"), [':', '::',
           ':::'])
-        self.assertEquals(regex.findall("(:)(:*)", "a:b::c:::d"), [(':', ''),
+        self.assertEqual(regex.findall("(:)(:*)", "a:b::c:::d"), [(':', ''),
           (':', ':'), (':', '::')])
 
-        self.assertEquals(regex.findall(r"\((?P<test>.{0,5}?TEST)\)",
+        self.assertEqual(regex.findall(r"\((?P<test>.{0,5}?TEST)\)",
           "(MY TEST)"), ["MY TEST"])
-        self.assertEquals(regex.findall(r"\((?P<test>.{0,3}?TEST)\)",
+        self.assertEqual(regex.findall(r"\((?P<test>.{0,3}?TEST)\)",
           "(MY TEST)"), ["MY TEST"])
-        self.assertEquals(regex.findall(r"\((?P<test>.{0,3}?T)\)", "(MY T)"),
+        self.assertEqual(regex.findall(r"\((?P<test>.{0,3}?T)\)", "(MY T)"),
           ["MY T"])
 
-        self.assertEquals(regex.findall(r"[^a]{2}[A-Z]", "\n  S"), ['  S'])
-        self.assertEquals(regex.findall(r"[^a]{2,3}[A-Z]", "\n  S"), ['\n  S'])
-        self.assertEquals(regex.findall(r"[^a]{2,3}[A-Z]", "\n   S"), ['   S'])
+        self.assertEqual(regex.findall(r"[^a]{2}[A-Z]", "\n  S"), ['  S'])
+        self.assertEqual(regex.findall(r"[^a]{2,3}[A-Z]", "\n  S"), ['\n  S'])
+        self.assertEqual(regex.findall(r"[^a]{2,3}[A-Z]", "\n   S"), ['   S'])
 
-        self.assertEquals(regex.findall(r"X(Y[^Y]+?){1,2}( |Q)+DEF",
+        self.assertEqual(regex.findall(r"X(Y[^Y]+?){1,2}( |Q)+DEF",
           "XYABCYPPQ\nQ DEF"), [('YPPQ\n', ' ')])
 
-        self.assertEquals(regex.findall(r"(\nTest(\n+.+?){0,2}?)?\n+End",
+        self.assertEqual(regex.findall(r"(\nTest(\n+.+?){0,2}?)?\n+End",
           "\nTest\nxyz\nxyz\nEnd"), [('\nTest\nxyz\nxyz', '\nxyz')])
 
     def test_bug_117612(self):
-        self.assertEquals(regex.findall(r"(a|(b))", "aba"), [('a', ''), ('b',
+        self.assertEqual(regex.findall(r"(a|(b))", "aba"), [('a', ''), ('b',
           'b'), ('a', '')])
 
     def test_re_match(self):
-        self.assertEquals(regex.match('a', 'a')[:], ('a',))
-        self.assertEquals(regex.match('(a)', 'a')[:], ('a', 'a'))
-        self.assertEquals(regex.match(r'(a)', 'a')[0], 'a')
-        self.assertEquals(regex.match(r'(a)', 'a')[1], 'a')
-        self.assertEquals(regex.match(r'(a)', 'a').group(1, 1), ('a', 'a'))
+        self.assertEqual(regex.match('a', 'a')[:], ('a',))
+        self.assertEqual(regex.match('(a)', 'a')[:], ('a', 'a'))
+        self.assertEqual(regex.match(r'(a)', 'a')[0], 'a')
+        self.assertEqual(regex.match(r'(a)', 'a')[1], 'a')
+        self.assertEqual(regex.match(r'(a)', 'a').group(1, 1), ('a', 'a'))
 
         pat = regex.compile('((a)|(b))(c)?')
-        self.assertEquals(pat.match('a')[:], ('a', 'a', 'a', None, None))
-        self.assertEquals(pat.match('b')[:], ('b', 'b', None, 'b', None))
-        self.assertEquals(pat.match('ac')[:], ('ac', 'a', 'a', None, 'c'))
-        self.assertEquals(pat.match('bc')[:], ('bc', 'b', None, 'b', 'c'))
-        self.assertEquals(pat.match('bc')[:], ('bc', 'b', None, 'b', 'c'))
+        self.assertEqual(pat.match('a')[:], ('a', 'a', 'a', None, None))
+        self.assertEqual(pat.match('b')[:], ('b', 'b', None, 'b', None))
+        self.assertEqual(pat.match('ac')[:], ('ac', 'a', 'a', None, 'c'))
+        self.assertEqual(pat.match('bc')[:], ('bc', 'b', None, 'b', 'c'))
+        self.assertEqual(pat.match('bc')[:], ('bc', 'b', None, 'b', 'c'))
 
         # A single group.
         m = regex.match('(a)', 'a')
-        self.assertEquals(m.group(), 'a')
-        self.assertEquals(m.group(0), 'a')
-        self.assertEquals(m.group(1), 'a')
-        self.assertEquals(m.group(1, 1), ('a', 'a'))
+        self.assertEqual(m.group(), 'a')
+        self.assertEqual(m.group(0), 'a')
+        self.assertEqual(m.group(1), 'a')
+        self.assertEqual(m.group(1, 1), ('a', 'a'))
 
         pat = regex.compile('(?:(?P<a1>a)|(?P<b2>b))(?P<c3>c)?')
-        self.assertEquals(pat.match('a').group(1, 2, 3), ('a', None, None))
-        self.assertEquals(pat.match('b').group('a1', 'b2', 'c3'), (None, 'b',
+        self.assertEqual(pat.match('a').group(1, 2, 3), ('a', None, None))
+        self.assertEqual(pat.match('b').group('a1', 'b2', 'c3'), (None, 'b',
           None))
-        self.assertEquals(pat.match('ac').group(1, 'b2', 3), ('a', None, 'c'))
+        self.assertEqual(pat.match('ac').group(1, 'b2', 3), ('a', None, 'c'))
 
     def test_re_groupref_exists(self):
-        self.assertEquals(regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a)')[:],
+        self.assertEqual(regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a)')[:],
           ('(a)', '(', 'a'))
-        self.assertEquals(regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a')[:],
+        self.assertEqual(regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a')[:],
           ('a', None, 'a'))
-        self.assertEquals(regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a)'), None)
-        self.assertEquals(regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a'), None)
-        self.assertEquals(regex.match('^(?:(a)|c)((?(1)b|d))$', 'ab')[:],
+        self.assertEqual(regex.match(r'^(\()?([^()]+)(?(1)\))$', 'a)'), None)
+        self.assertEqual(regex.match(r'^(\()?([^()]+)(?(1)\))$', '(a'), None)
+        self.assertEqual(regex.match('^(?:(a)|c)((?(1)b|d))$', 'ab')[:],
           ('ab', 'a', 'b'))
-        self.assertEquals(regex.match('^(?:(a)|c)((?(1)b|d))$', 'cd')[:],
+        self.assertEqual(regex.match('^(?:(a)|c)((?(1)b|d))$', 'cd')[:],
           ('cd', None, 'd'))
-        self.assertEquals(regex.match('^(?:(a)|c)((?(1)|d))$', 'cd')[:], ('cd',
+        self.assertEqual(regex.match('^(?:(a)|c)((?(1)|d))$', 'cd')[:], ('cd',
           None, 'd'))
-        self.assertEquals(regex.match('^(?:(a)|c)((?(1)|d))$', 'a')[:], ('a',
+        self.assertEqual(regex.match('^(?:(a)|c)((?(1)|d))$', 'a')[:], ('a',
           'a', ''))
 
         # Tests for bug #1177831: exercise groups other than the first group.
         p = regex.compile('(?P<g1>a)(?P<g2>b)?((?(g2)c|d))')
-        self.assertEquals(p.match('abc')[:], ('abc', 'a', 'b', 'c'))
-        self.assertEquals(p.match('ad')[:], ('ad', 'a', None, 'd'))
-        self.assertEquals(p.match('abd'), None)
-        self.assertEquals(p.match('ac'), None)
+        self.assertEqual(p.match('abc')[:], ('abc', 'a', 'b', 'c'))
+        self.assertEqual(p.match('ad')[:], ('ad', 'a', None, 'd'))
+        self.assertEqual(p.match('abd'), None)
+        self.assertEqual(p.match('ac'), None)
 
     def test_re_groupref(self):
-        self.assertEquals(regex.match(r'^(\|)?([^()]+)\1$', '|a|')[:], ('|a|',
+        self.assertEqual(regex.match(r'^(\|)?([^()]+)\1$', '|a|')[:], ('|a|',
           '|', 'a'))
-        self.assertEquals(regex.match(r'^(\|)?([^()]+)\1?$', 'a')[:], ('a',
+        self.assertEqual(regex.match(r'^(\|)?([^()]+)\1?$', 'a')[:], ('a',
           None, 'a'))
-        self.assertEquals(regex.match(r'^(\|)?([^()]+)\1$', 'a|'), None)
-        self.assertEquals(regex.match(r'^(\|)?([^()]+)\1$', '|a'), None)
-        self.assertEquals(regex.match(r'^(?:(a)|c)(\1)$', 'aa')[:], ('aa', 'a',
+        self.assertEqual(regex.match(r'^(\|)?([^()]+)\1$', 'a|'), None)
+        self.assertEqual(regex.match(r'^(\|)?([^()]+)\1$', '|a'), None)
+        self.assertEqual(regex.match(r'^(?:(a)|c)(\1)$', 'aa')[:], ('aa', 'a',
           'a'))
-        self.assertEquals(regex.match(r'^(?:(a)|c)(\1)?$', 'c')[:], ('c', None,
+        self.assertEqual(regex.match(r'^(?:(a)|c)(\1)?$', 'c')[:], ('c', None,
           None))
 
-        self.assertEquals(regex.findall("(?i)(.{1,40}?),(.{1,40}?)(?:;)+(.{1,80}).{1,40}?\\3(\ |;)+(.{1,80}?)\\1",
+        self.assertEqual(regex.findall("(?i)(.{1,40}?),(.{1,40}?)(?:;)+(.{1,80}).{1,40}?\\3(\ |;)+(.{1,80}?)\\1",
           "TEST, BEST; LEST ; Lest 123 Test, Best"), [('TEST', ' BEST',
           ' LEST', ' ', '123 ')])
 
     def test_groupdict(self):
-        self.assertEquals(regex.match('(?P<first>first) (?P<second>second)',
+        self.assertEqual(regex.match('(?P<first>first) (?P<second>second)',
           'first second').groupdict(), {'first': 'first', 'second': 'second'})
 
     def test_expand(self):
-        self.assertEquals(regex.match("(?P<first>first) (?P<second>second)",
+        self.assertEqual(regex.match("(?P<first>first) (?P<second>second)",
           "first second").expand(r"\2 \1 \g<second> \g<first>"),
           'second first second first')
 
     def test_repeat_minmax(self):
-        self.assertEquals(regex.match(r"^(\w){1}$", "abc"), None)
-        self.assertEquals(regex.match(r"^(\w){1}?$", "abc"), None)
-        self.assertEquals(regex.match(r"^(\w){1,2}$", "abc"), None)
-        self.assertEquals(regex.match(r"^(\w){1,2}?$", "abc"), None)
+        self.assertEqual(regex.match(r"^(\w){1}$", "abc"), None)
+        self.assertEqual(regex.match(r"^(\w){1}?$", "abc"), None)
+        self.assertEqual(regex.match(r"^(\w){1,2}$", "abc"), None)
+        self.assertEqual(regex.match(r"^(\w){1,2}?$", "abc"), None)
 
-        self.assertEquals(regex.match(r"^(\w){3}$", "abc")[1], 'c')
-        self.assertEquals(regex.match(r"^(\w){1,3}$", "abc")[1], 'c')
-        self.assertEquals(regex.match(r"^(\w){1,4}$", "abc")[1], 'c')
-        self.assertEquals(regex.match(r"^(\w){3,4}?$", "abc")[1], 'c')
-        self.assertEquals(regex.match(r"^(\w){3}?$", "abc")[1], 'c')
-        self.assertEquals(regex.match(r"^(\w){1,3}?$", "abc")[1], 'c')
-        self.assertEquals(regex.match(r"^(\w){1,4}?$", "abc")[1], 'c')
-        self.assertEquals(regex.match(r"^(\w){3,4}?$", "abc")[1], 'c')
+        self.assertEqual(regex.match(r"^(\w){3}$", "abc")[1], 'c')
+        self.assertEqual(regex.match(r"^(\w){1,3}$", "abc")[1], 'c')
+        self.assertEqual(regex.match(r"^(\w){1,4}$", "abc")[1], 'c')
+        self.assertEqual(regex.match(r"^(\w){3,4}?$", "abc")[1], 'c')
+        self.assertEqual(regex.match(r"^(\w){3}?$", "abc")[1], 'c')
+        self.assertEqual(regex.match(r"^(\w){1,3}?$", "abc")[1], 'c')
+        self.assertEqual(regex.match(r"^(\w){1,4}?$", "abc")[1], 'c')
+        self.assertEqual(regex.match(r"^(\w){3,4}?$", "abc")[1], 'c')
 
-        self.assertEquals(regex.match("^x{1}$", "xxx"), None)
-        self.assertEquals(regex.match("^x{1}?$", "xxx"), None)
-        self.assertEquals(regex.match("^x{1,2}$", "xxx"), None)
-        self.assertEquals(regex.match("^x{1,2}?$", "xxx"), None)
+        self.assertEqual(regex.match("^x{1}$", "xxx"), None)
+        self.assertEqual(regex.match("^x{1}?$", "xxx"), None)
+        self.assertEqual(regex.match("^x{1,2}$", "xxx"), None)
+        self.assertEqual(regex.match("^x{1,2}?$", "xxx"), None)
 
-        self.assertEquals(regex.match("^x{1}", "xxx")[0], 'x')
-        self.assertEquals(regex.match("^x{1}?", "xxx")[0], 'x')
-        self.assertEquals(regex.match("^x{0,1}", "xxx")[0], 'x')
-        self.assertEquals(regex.match("^x{0,1}?", "xxx")[0], '')
+        self.assertEqual(regex.match("^x{1}", "xxx")[0], 'x')
+        self.assertEqual(regex.match("^x{1}?", "xxx")[0], 'x')
+        self.assertEqual(regex.match("^x{0,1}", "xxx")[0], 'x')
+        self.assertEqual(regex.match("^x{0,1}?", "xxx")[0], '')
 
-        self.assertEquals(bool(regex.match("^x{3}$", "xxx")), True)
-        self.assertEquals(bool(regex.match("^x{1,3}$", "xxx")), True)
-        self.assertEquals(bool(regex.match("^x{1,4}$", "xxx")), True)
-        self.assertEquals(bool(regex.match("^x{3,4}?$", "xxx")), True)
-        self.assertEquals(bool(regex.match("^x{3}?$", "xxx")), True)
-        self.assertEquals(bool(regex.match("^x{1,3}?$", "xxx")), True)
-        self.assertEquals(bool(regex.match("^x{1,4}?$", "xxx")), True)
-        self.assertEquals(bool(regex.match("^x{3,4}?$", "xxx")), True)
+        self.assertEqual(bool(regex.match("^x{3}$", "xxx")), True)
+        self.assertEqual(bool(regex.match("^x{1,3}$", "xxx")), True)
+        self.assertEqual(bool(regex.match("^x{1,4}$", "xxx")), True)
+        self.assertEqual(bool(regex.match("^x{3,4}?$", "xxx")), True)
+        self.assertEqual(bool(regex.match("^x{3}?$", "xxx")), True)
+        self.assertEqual(bool(regex.match("^x{1,3}?$", "xxx")), True)
+        self.assertEqual(bool(regex.match("^x{1,4}?$", "xxx")), True)
+        self.assertEqual(bool(regex.match("^x{3,4}?$", "xxx")), True)
 
-        self.assertEquals(regex.match("^x{}$", "xxx"), None)
-        self.assertEquals(bool(regex.match("^x{}$", "x{}")), True)
+        self.assertEqual(regex.match("^x{}$", "xxx"), None)
+        self.assertEqual(bool(regex.match("^x{}$", "x{}")), True)
 
     def test_getattr(self):
-        self.assertEquals(regex.compile("(?i)(a)(b)").pattern, '(?i)(a)(b)')
-        self.assertEquals(regex.compile("(?i)(a)(b)").flags, regex.A | regex.I
+        self.assertEqual(regex.compile("(?i)(a)(b)").pattern, '(?i)(a)(b)')
+        self.assertEqual(regex.compile("(?i)(a)(b)").flags, regex.A | regex.I
           | regex.DEFAULT_VERSION)
-        self.assertEquals(regex.compile(u"(?i)(a)(b)").flags, regex.I | regex.U
+        self.assertEqual(regex.compile(u"(?i)(a)(b)").flags, regex.I | regex.U
           | regex.DEFAULT_VERSION)
-        self.assertEquals(regex.compile("(?i)(a)(b)").groups, 2)
-        self.assertEquals(regex.compile("(?i)(a)(b)").groupindex, {})
+        self.assertEqual(regex.compile("(?i)(a)(b)").groups, 2)
+        self.assertEqual(regex.compile("(?i)(a)(b)").groupindex, {})
 
-        self.assertEquals(regex.compile("(?i)(?P<first>a)(?P<other>b)").groupindex,
+        self.assertEqual(regex.compile("(?i)(?P<first>a)(?P<other>b)").groupindex,
           {'first': 1, 'other': 2})
 
-        self.assertEquals(regex.match("(a)", "a").pos, 0)
-        self.assertEquals(regex.match("(a)", "a").endpos, 1)
+        self.assertEqual(regex.match("(a)", "a").pos, 0)
+        self.assertEqual(regex.match("(a)", "a").endpos, 1)
 
-        self.assertEquals(regex.search("b(c)", "abcdef").pos, 0)
-        self.assertEquals(regex.search("b(c)", "abcdef").endpos, 6)
-        self.assertEquals(regex.search("b(c)", "abcdef").span(), (1, 3))
-        self.assertEquals(regex.search("b(c)", "abcdef").span(1), (2, 3))
+        self.assertEqual(regex.search("b(c)", "abcdef").pos, 0)
+        self.assertEqual(regex.search("b(c)", "abcdef").endpos, 6)
+        self.assertEqual(regex.search("b(c)", "abcdef").span(), (1, 3))
+        self.assertEqual(regex.search("b(c)", "abcdef").span(1), (2, 3))
 
-        self.assertEquals(regex.match("(a)", "a").string, 'a')
-        self.assertEquals(regex.match("(a)", "a").regs, ((0, 1), (0, 1)))
-        self.assertEquals(repr(type(regex.match("(a)", "a").re)),
+        self.assertEqual(regex.match("(a)", "a").string, 'a')
+        self.assertEqual(regex.match("(a)", "a").regs, ((0, 1), (0, 1)))
+        self.assertEqual(repr(type(regex.match("(a)", "a").re)),
           self.PATTERN_CLASS)
 
         # Issue 14260.
         p = regex.compile(r'abc(?P<n>def)')
         p.groupindex["n"] = 0
-        self.assertEquals(p.groupindex["n"], 1)
+        self.assertEqual(p.groupindex["n"], 1)
 
     def test_special_escapes(self):
-        self.assertEquals(regex.search(r"\b(b.)\b", "abcd abc bcd bx")[1],
+        self.assertEqual(regex.search(r"\b(b.)\b", "abcd abc bcd bx")[1],
           'bx')
-        self.assertEquals(regex.search(r"\B(b.)\B", "abc bcd bc abxd")[1],
+        self.assertEqual(regex.search(r"\B(b.)\B", "abc bcd bc abxd")[1],
           'bx')
-        self.assertEquals(regex.search(r"\b(b.)\b", "abcd abc bcd bx",
+        self.assertEqual(regex.search(r"\b(b.)\b", "abcd abc bcd bx",
           regex.LOCALE)[1], 'bx')
-        self.assertEquals(regex.search(r"\B(b.)\B", "abc bcd bc abxd",
+        self.assertEqual(regex.search(r"\B(b.)\B", "abc bcd bc abxd",
           regex.LOCALE)[1], 'bx')
-        self.assertEquals(regex.search(ur"\b(b.)\b", u"abcd abc bcd bx",
+        self.assertEqual(regex.search(ur"\b(b.)\b", u"abcd abc bcd bx",
           regex.UNICODE)[1], u'bx')
-        self.assertEquals(regex.search(ur"\B(b.)\B", u"abc bcd bc abxd",
+        self.assertEqual(regex.search(ur"\B(b.)\B", u"abc bcd bc abxd",
           regex.UNICODE)[1], u'bx')
 
-        self.assertEquals(regex.search(r"^abc$", "\nabc\n", regex.M)[0], 'abc')
-        self.assertEquals(regex.search(r"^\Aabc\Z$", "abc", regex.M)[0], 'abc')
-        self.assertEquals(regex.search(r"^\Aabc\Z$", "\nabc\n", regex.M), None)
+        self.assertEqual(regex.search(r"^abc$", "\nabc\n", regex.M)[0], 'abc')
+        self.assertEqual(regex.search(r"^\Aabc\Z$", "abc", regex.M)[0], 'abc')
+        self.assertEqual(regex.search(r"^\Aabc\Z$", "\nabc\n", regex.M), None)
 
-        self.assertEquals(regex.search(ur"\b(b.)\b", u"abcd abc bcd bx")[1],
+        self.assertEqual(regex.search(ur"\b(b.)\b", u"abcd abc bcd bx")[1],
           u'bx')
-        self.assertEquals(regex.search(ur"\B(b.)\B", u"abc bcd bc abxd")[1],
+        self.assertEqual(regex.search(ur"\B(b.)\B", u"abc bcd bc abxd")[1],
           u'bx')
-        self.assertEquals(regex.search(ur"^abc$", u"\nabc\n", regex.M)[0],
+        self.assertEqual(regex.search(ur"^abc$", u"\nabc\n", regex.M)[0],
           u'abc')
-        self.assertEquals(regex.search(ur"^\Aabc\Z$", u"abc", regex.M)[0],
+        self.assertEqual(regex.search(ur"^\Aabc\Z$", u"abc", regex.M)[0],
           u'abc')
-        self.assertEquals(regex.search(ur"^\Aabc\Z$", u"\nabc\n", regex.M),
+        self.assertEqual(regex.search(ur"^\Aabc\Z$", u"\nabc\n", regex.M),
           None)
 
-        self.assertEquals(regex.search(r"\d\D\w\W\s\S", "1aa! a")[0], '1aa! a')
-        self.assertEquals(regex.search(r"\d\D\w\W\s\S", "1aa! a",
+        self.assertEqual(regex.search(r"\d\D\w\W\s\S", "1aa! a")[0], '1aa! a')
+        self.assertEqual(regex.search(r"\d\D\w\W\s\S", "1aa! a",
           regex.LOCALE)[0], '1aa! a')
-        self.assertEquals(regex.search(ur"\d\D\w\W\s\S", u"1aa! a",
+        self.assertEqual(regex.search(ur"\d\D\w\W\s\S", u"1aa! a",
           regex.UNICODE)[0], u'1aa! a')
 
     def test_bigcharset(self):
-        self.assertEquals(regex.match(ur"(?u)([\u2222\u2223])", u"\u2222")[1],
+        self.assertEqual(regex.match(ur"(?u)([\u2222\u2223])", u"\u2222")[1],
           u'\u2222')
-        self.assertEquals(regex.match(ur"(?u)([\u2222\u2223])", u"\u2222",
+        self.assertEqual(regex.match(ur"(?u)([\u2222\u2223])", u"\u2222",
           regex.UNICODE)[1], u'\u2222')
-        self.assertEquals(u"".join(regex.findall(u".",
+        self.assertEqual(u"".join(regex.findall(u".",
           u"e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
           u'e\xe8\xe9\xea\xeb\u0113\u011b\u0117')
-        self.assertEquals(u"".join(regex.findall(ur"[e\xe8\xe9\xea\xeb\u0113\u011b\u0117]",
+        self.assertEqual(u"".join(regex.findall(ur"[e\xe8\xe9\xea\xeb\u0113\u011b\u0117]",
           u"e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
           u'e\xe8\xe9\xea\xeb\u0113\u011b\u0117')
-        self.assertEquals(u"".join(regex.findall(ur"e|\xe8|\xe9|\xea|\xeb|\u0113|\u011b|\u0117",
+        self.assertEqual(u"".join(regex.findall(ur"e|\xe8|\xe9|\xea|\xeb|\u0113|\u011b|\u0117",
           u"e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
           u'e\xe8\xe9\xea\xeb\u0113\u011b\u0117')
 
     def test_anyall(self):
-        self.assertEquals(regex.match("a.b", "a\nb", regex.DOTALL)[0], "a\nb")
-        self.assertEquals(regex.match("a.*b", "a\n\nb", regex.DOTALL)[0],
+        self.assertEqual(regex.match("a.b", "a\nb", regex.DOTALL)[0], "a\nb")
+        self.assertEqual(regex.match("a.*b", "a\n\nb", regex.DOTALL)[0],
           "a\n\nb")
 
     def test_non_consuming(self):
-        self.assertEquals(regex.match(r"(a(?=\s[^a]))", "a b")[1], 'a')
-        self.assertEquals(regex.match(r"(a(?=\s[^a]*))", "a b")[1], 'a')
-        self.assertEquals(regex.match(r"(a(?=\s[abc]))", "a b")[1], 'a')
-        self.assertEquals(regex.match(r"(a(?=\s[abc]*))", "a bc")[1], 'a')
-        self.assertEquals(regex.match(r"(a)(?=\s\1)", "a a")[1], 'a')
-        self.assertEquals(regex.match(r"(a)(?=\s\1*)", "a aa")[1], 'a')
-        self.assertEquals(regex.match(r"(a)(?=\s(abc|a))", "a a")[1], 'a')
+        self.assertEqual(regex.match(r"(a(?=\s[^a]))", "a b")[1], 'a')
+        self.assertEqual(regex.match(r"(a(?=\s[^a]*))", "a b")[1], 'a')
+        self.assertEqual(regex.match(r"(a(?=\s[abc]))", "a b")[1], 'a')
+        self.assertEqual(regex.match(r"(a(?=\s[abc]*))", "a bc")[1], 'a')
+        self.assertEqual(regex.match(r"(a)(?=\s\1)", "a a")[1], 'a')
+        self.assertEqual(regex.match(r"(a)(?=\s\1*)", "a aa")[1], 'a')
+        self.assertEqual(regex.match(r"(a)(?=\s(abc|a))", "a a")[1], 'a')
 
-        self.assertEquals(regex.match(r"(a(?!\s[^a]))", "a a")[1], 'a')
-        self.assertEquals(regex.match(r"(a(?!\s[abc]))", "a d")[1], 'a')
-        self.assertEquals(regex.match(r"(a)(?!\s\1)", "a b")[1], 'a')
-        self.assertEquals(regex.match(r"(a)(?!\s(abc|a))", "a b")[1], 'a')
+        self.assertEqual(regex.match(r"(a(?!\s[^a]))", "a a")[1], 'a')
+        self.assertEqual(regex.match(r"(a(?!\s[abc]))", "a d")[1], 'a')
+        self.assertEqual(regex.match(r"(a)(?!\s\1)", "a b")[1], 'a')
+        self.assertEqual(regex.match(r"(a)(?!\s(abc|a))", "a b")[1], 'a')
 
     def test_ignore_case(self):
-        self.assertEquals(regex.match("abc", "ABC", regex.I)[0], 'ABC')
-        self.assertEquals(regex.match(u"abc", u"ABC", regex.I)[0], u'ABC')
+        self.assertEqual(regex.match("abc", "ABC", regex.I)[0], 'ABC')
+        self.assertEqual(regex.match(u"abc", u"ABC", regex.I)[0], u'ABC')
 
-        self.assertEquals(regex.match(r"(a\s[^a]*)", "a bb", regex.I)[1],
+        self.assertEqual(regex.match(r"(a\s[^a]*)", "a bb", regex.I)[1],
           'a bb')
-        self.assertEquals(regex.match(r"(a\s[abc])", "a b", regex.I)[1], 'a b')
-        self.assertEquals(regex.match(r"(a\s[abc]*)", "a bb", regex.I)[1],
+        self.assertEqual(regex.match(r"(a\s[abc])", "a b", regex.I)[1], 'a b')
+        self.assertEqual(regex.match(r"(a\s[abc]*)", "a bb", regex.I)[1],
           'a bb')
-        self.assertEquals(regex.match(r"((a)\s\2)", "a a", regex.I)[1], 'a a')
-        self.assertEquals(regex.match(r"((a)\s\2*)", "a aa", regex.I)[1],
+        self.assertEqual(regex.match(r"((a)\s\2)", "a a", regex.I)[1], 'a a')
+        self.assertEqual(regex.match(r"((a)\s\2*)", "a aa", regex.I)[1],
           'a aa')
-        self.assertEquals(regex.match(r"((a)\s(abc|a))", "a a", regex.I)[1],
+        self.assertEqual(regex.match(r"((a)\s(abc|a))", "a a", regex.I)[1],
           'a a')
-        self.assertEquals(regex.match(r"((a)\s(abc|a)*)", "a aa", regex.I)[1],
+        self.assertEqual(regex.match(r"((a)\s(abc|a)*)", "a aa", regex.I)[1],
           'a aa')
 
         # Issue 3511.
-        self.assertEquals(regex.match(r"[Z-a]", "_").span(), (0, 1))
-        self.assertEquals(regex.match(r"(?i)[Z-a]", "_").span(), (0, 1))
+        self.assertEqual(regex.match(r"[Z-a]", "_").span(), (0, 1))
+        self.assertEqual(regex.match(r"(?i)[Z-a]", "_").span(), (0, 1))
 
-        self.assertEquals(bool(regex.match(ur"(?iu)nao", u"nAo")), True)
-        self.assertEquals(bool(regex.match(ur"(?iu)n\xE3o", u"n\xC3o")), True)
-        self.assertEquals(bool(regex.match(ur"(?iu)n\xE3o", u"N\xC3O")), True)
-        self.assertEquals(bool(regex.match(ur"(?iu)s", u"\u017F")), True)
+        self.assertEqual(bool(regex.match(ur"(?iu)nao", u"nAo")), True)
+        self.assertEqual(bool(regex.match(ur"(?iu)n\xE3o", u"n\xC3o")), True)
+        self.assertEqual(bool(regex.match(ur"(?iu)n\xE3o", u"N\xC3O")), True)
+        self.assertEqual(bool(regex.match(ur"(?iu)s", u"\u017F")), True)
 
     def test_case_folding(self):
-        self.assertEquals(regex.search(ur"(?fiu)ss", u"SS").span(), (0, 2))
-        self.assertEquals(regex.search(ur"(?fiu)SS", u"ss").span(), (0, 2))
-        self.assertEquals(regex.search(ur"(?fiu)SS",
+        self.assertEqual(regex.search(ur"(?fiu)ss", u"SS").span(), (0, 2))
+        self.assertEqual(regex.search(ur"(?fiu)SS", u"ss").span(), (0, 2))
+        self.assertEqual(regex.search(ur"(?fiu)SS",
           u"\N{LATIN SMALL LETTER SHARP S}").span(), (0, 1))
-        self.assertEquals(regex.search(ur"(?fi)\N{LATIN SMALL LETTER SHARP S}", u"SS").span(),
+        self.assertEqual(regex.search(ur"(?fi)\N{LATIN SMALL LETTER SHARP S}", u"SS").span(),
           (0, 2))
 
-        self.assertEquals(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
+        self.assertEqual(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
           u"ST").span(), (0, 2))
-        self.assertEquals(regex.search(ur"(?fiu)ST",
+        self.assertEqual(regex.search(ur"(?fiu)ST",
           u"\N{LATIN SMALL LIGATURE ST}").span(), (0, 1))
-        self.assertEquals(regex.search(ur"(?fiu)ST",
+        self.assertEqual(regex.search(ur"(?fiu)ST",
           u"\N{LATIN SMALL LIGATURE LONG S T}").span(), (0, 1))
 
-        self.assertEquals(regex.search(ur"(?fiu)SST",
+        self.assertEqual(regex.search(ur"(?fiu)SST",
           u"\N{LATIN SMALL LETTER SHARP S}t").span(), (0, 2))
-        self.assertEquals(regex.search(ur"(?fiu)SST",
+        self.assertEqual(regex.search(ur"(?fiu)SST",
           u"s\N{LATIN SMALL LIGATURE LONG S T}").span(), (0, 2))
-        self.assertEquals(regex.search(ur"(?fiu)SST",
+        self.assertEqual(regex.search(ur"(?fiu)SST",
           u"s\N{LATIN SMALL LIGATURE ST}").span(), (0, 2))
-        self.assertEquals(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
+        self.assertEqual(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE ST}",
           u"SST").span(), (1, 3))
-        self.assertEquals(regex.search(ur"(?fiu)SST",
+        self.assertEqual(regex.search(ur"(?fiu)SST",
           u"s\N{LATIN SMALL LIGATURE ST}").span(), (0, 2))
 
-        self.assertEquals(regex.search(ur"(?fiu)FFI",
+        self.assertEqual(regex.search(ur"(?fiu)FFI",
           u"\N{LATIN SMALL LIGATURE FFI}").span(), (0, 1))
-        self.assertEquals(regex.search(ur"(?fiu)FFI",
+        self.assertEqual(regex.search(ur"(?fiu)FFI",
           u"\N{LATIN SMALL LIGATURE FF}i").span(), (0, 2))
-        self.assertEquals(regex.search(ur"(?fiu)FFI",
+        self.assertEqual(regex.search(ur"(?fiu)FFI",
           u"f\N{LATIN SMALL LIGATURE FI}").span(), (0, 2))
-        self.assertEquals(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FFI}",
+        self.assertEqual(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FFI}",
           u"FFI").span(), (0, 3))
-        self.assertEquals(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FF}i",
+        self.assertEqual(regex.search(ur"(?fiu)\N{LATIN SMALL LIGATURE FF}i",
           u"FFI").span(), (0, 3))
-        self.assertEquals(regex.search(ur"(?fiu)f\N{LATIN SMALL LIGATURE FI}",
+        self.assertEqual(regex.search(ur"(?fiu)f\N{LATIN SMALL LIGATURE FI}",
           u"FFI").span(), (0, 3))
 
         sigma = u"\u03A3\u03C3\u03C2"
@@ -680,70 +680,70 @@ class RegexTests(unittest.TestCase):
                 if not regex.match(ur"(?fiu)" + ch1, ch2):
                     self.fail()
 
-        self.assertEquals(bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)ff", u"\uFB01\uFB00")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)ff", u"\uFB01\uFB00")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)fi", u"\uFB01\uFB00")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)fi", u"\uFB01\uFB00")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)fffi", u"\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)fffi", u"\uFB00\uFB01")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)f\uFB03", u"\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)f\uFB03", u"\uFB00\uFB01")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)ff", u"\uFB00\uFB01")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)fi", u"\uFB00\uFB01")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)fffi", u"\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)fffi", u"\uFB00\uFB01")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)f\uFB03", u"\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)f\uFB03", u"\uFB00\uFB01")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
           True)
-        self.assertEquals(bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
+        self.assertEqual(bool(regex.search(ur"(?iuV1)f\uFB01", u"\uFB00i")),
           True)
 
-        self.assertEquals(regex.findall(ur"(?iuV0)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
+        self.assertEqual(regex.findall(ur"(?iuV0)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
           u"word word2 word word3 word word234 word23 word"), [u"word234",
           u"word23"])
-        self.assertEquals(regex.findall(ur"(?iuV1)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
+        self.assertEqual(regex.findall(ur"(?iuV1)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
           u"word word2 word word3 word word234 word23 word"), [u"word234",
           u"word23"])
 
-        self.assertEquals(regex.search(ur"(?fi)a\N{LATIN SMALL LIGATURE FFI}ne",
+        self.assertEqual(regex.search(ur"(?fi)a\N{LATIN SMALL LIGATURE FFI}ne",
           u"  affine  ").span(), (2, 8))
-        self.assertEquals(regex.search(ur"(?fi)a(?:\N{LATIN SMALL LIGATURE FFI}|x)ne",
+        self.assertEqual(regex.search(ur"(?fi)a(?:\N{LATIN SMALL LIGATURE FFI}|x)ne",
            u"  affine  ").span(), (2, 8))
-        self.assertEquals(regex.search(ur"(?fi)a(?:\N{LATIN SMALL LIGATURE FFI}|xy)ne",
+        self.assertEqual(regex.search(ur"(?fi)a(?:\N{LATIN SMALL LIGATURE FFI}|xy)ne",
            u"  affine  ").span(), (2, 8))
-        self.assertEquals(regex.search(ur"(?fi)a\L<options>ne", u"affine",
+        self.assertEqual(regex.search(ur"(?fi)a\L<options>ne", u"affine",
           options=[u"\N{LATIN SMALL LIGATURE FFI}"]).span(), (0, 6))
 
     def test_category(self):
-        self.assertEquals(regex.match(r"(\s)", " ")[1], ' ')
+        self.assertEqual(regex.match(r"(\s)", " ")[1], ' ')
 
     def test_not_literal(self):
-        self.assertEquals(regex.search(r"\s([^a])", " b")[1], 'b')
-        self.assertEquals(regex.search(r"\s([^a]*)", " bb")[1], 'bb')
+        self.assertEqual(regex.search(r"\s([^a])", " b")[1], 'b')
+        self.assertEqual(regex.search(r"\s([^a]*)", " bb")[1], 'bb')
 
     def test_search_coverage(self):
-        self.assertEquals(regex.search(r"\s(b)", " b")[1], 'b')
-        self.assertEquals(regex.search(r"a\s", "a ")[0], 'a ')
+        self.assertEqual(regex.search(r"\s(b)", " b")[1], 'b')
+        self.assertEqual(regex.search(r"a\s", "a ")[0], 'a ')
 
     def test_re_escape(self):
         p = ""
-        self.assertEquals(regex.escape(p), p)
+        self.assertEqual(regex.escape(p), p)
         for i in range(0, 256):
             p += chr(i)
-            self.assertEquals(bool(regex.match(regex.escape(chr(i)), chr(i))),
+            self.assertEqual(bool(regex.match(regex.escape(chr(i)), chr(i))),
               True)
-            self.assertEquals(regex.match(regex.escape(chr(i)), chr(i)).span(),
+            self.assertEqual(regex.match(regex.escape(chr(i)), chr(i)).span(),
               (0, 1))
 
         pat = regex.compile(regex.escape(p))
-        self.assertEquals(pat.match(p).span(), (0, 256))
+        self.assertEqual(pat.match(p).span(), (0, 256))
 
     def test_constants(self):
         if regex.I != regex.IGNORECASE:
@@ -759,20 +759,20 @@ class RegexTests(unittest.TestCase):
 
     def test_flags(self):
         for flag in [regex.I, regex.M, regex.X, regex.S, regex.L]:
-            self.assertEquals(repr(type(regex.compile('^pattern$', flag))),
+            self.assertEqual(repr(type(regex.compile('^pattern$', flag))),
               self.PATTERN_CLASS)
 
     def test_sre_character_literals(self):
         for i in [0, 8, 16, 32, 64, 127, 128, 255]:
-            self.assertEquals(bool(regex.match(r"\%03o" % i, chr(i))), True)
-            self.assertEquals(bool(regex.match(r"\%03o0" % i, chr(i) + "0")),
+            self.assertEqual(bool(regex.match(r"\%03o" % i, chr(i))), True)
+            self.assertEqual(bool(regex.match(r"\%03o0" % i, chr(i) + "0")),
               True)
-            self.assertEquals(bool(regex.match(r"\%03o8" % i, chr(i) + "8")),
+            self.assertEqual(bool(regex.match(r"\%03o8" % i, chr(i) + "8")),
               True)
-            self.assertEquals(bool(regex.match(r"\x%02x" % i, chr(i))), True)
-            self.assertEquals(bool(regex.match(r"\x%02x0" % i, chr(i) + "0")),
+            self.assertEqual(bool(regex.match(r"\x%02x" % i, chr(i))), True)
+            self.assertEqual(bool(regex.match(r"\x%02x0" % i, chr(i) + "0")),
               True)
-            self.assertEquals(bool(regex.match(r"\x%02xz" % i, chr(i) + "z")),
+            self.assertEqual(bool(regex.match(r"\x%02xz" % i, chr(i) + "z")),
               True)
 
         self.assertRaisesRegex(regex.error, self.UNKNOWN_GROUP, lambda:
@@ -780,31 +780,31 @@ class RegexTests(unittest.TestCase):
 
     def test_sre_character_class_literals(self):
         for i in [0, 8, 16, 32, 64, 127, 128, 255]:
-            self.assertEquals(bool(regex.match(r"[\%03o]" % i, chr(i))), True)
-            self.assertEquals(bool(regex.match(r"[\%03o0]" % i, chr(i))), True)
-            self.assertEquals(bool(regex.match(r"[\%03o8]" % i, chr(i))), True)
-            self.assertEquals(bool(regex.match(r"[\x%02x]" % i, chr(i))), True)
-            self.assertEquals(bool(regex.match(r"[\x%02x0]" % i, chr(i))),
+            self.assertEqual(bool(regex.match(r"[\%03o]" % i, chr(i))), True)
+            self.assertEqual(bool(regex.match(r"[\%03o0]" % i, chr(i))), True)
+            self.assertEqual(bool(regex.match(r"[\%03o8]" % i, chr(i))), True)
+            self.assertEqual(bool(regex.match(r"[\x%02x]" % i, chr(i))), True)
+            self.assertEqual(bool(regex.match(r"[\x%02x0]" % i, chr(i))),
               True)
-            self.assertEquals(bool(regex.match(r"[\x%02xz]" % i, chr(i))),
+            self.assertEqual(bool(regex.match(r"[\x%02xz]" % i, chr(i))),
               True)
 
         self.assertRaisesRegex(regex.error, self.BAD_OCTAL_ESCAPE, lambda:
               regex.match(r"[\911]", ""))
 
     def test_bug_113254(self):
-        self.assertEquals(regex.match(r'(a)|(b)', 'b').start(1), -1)
-        self.assertEquals(regex.match(r'(a)|(b)', 'b').end(1), -1)
-        self.assertEquals(regex.match(r'(a)|(b)', 'b').span(1), (-1, -1))
+        self.assertEqual(regex.match(r'(a)|(b)', 'b').start(1), -1)
+        self.assertEqual(regex.match(r'(a)|(b)', 'b').end(1), -1)
+        self.assertEqual(regex.match(r'(a)|(b)', 'b').span(1), (-1, -1))
 
     def test_bug_527371(self):
         # Bug described in patches 527371/672491.
-        self.assertEquals(regex.match(r'(a)?a','a').lastindex, None)
-        self.assertEquals(regex.match(r'(a)(b)?b','ab').lastindex, 1)
-        self.assertEquals(regex.match(r'(?P<a>a)(?P<b>b)?b','ab').lastgroup,
+        self.assertEqual(regex.match(r'(a)?a','a').lastindex, None)
+        self.assertEqual(regex.match(r'(a)(b)?b','ab').lastindex, 1)
+        self.assertEqual(regex.match(r'(?P<a>a)(?P<b>b)?b','ab').lastgroup,
           'a')
-        self.assertEquals(regex.match("(?P<a>a(b))", "ab").lastgroup, 'a')
-        self.assertEquals(regex.match("((a))", "a").lastindex, 1)
+        self.assertEqual(regex.match("(?P<a>a(b))", "ab").lastgroup, 'a')
+        self.assertEqual(regex.match("((a))", "a").lastindex, 1)
 
     def test_bug_545855(self):
         # Bug 545855 -- This pattern failed to cause a compile error as it
@@ -816,27 +816,27 @@ class RegexTests(unittest.TestCase):
         # Bugs 418626 at al. -- Testing Greg Chapman's addition of op code
         # SRE_OP_MIN_REPEAT_ONE for eliminating recursion on simple uses of
         # pattern '*?' on a long string.
-        self.assertEquals(regex.match('.*?c', 10000 * 'ab' + 'cd').end(0),
+        self.assertEqual(regex.match('.*?c', 10000 * 'ab' + 'cd').end(0),
           20001)
-        self.assertEquals(regex.match('.*?cd', 5000 * 'ab' + 'c' + 5000 * 'ab'
+        self.assertEqual(regex.match('.*?cd', 5000 * 'ab' + 'c' + 5000 * 'ab'
           + 'cde').end(0), 20003)
-        self.assertEquals(regex.match('.*?cd', 20000 * 'abc' + 'de').end(0),
+        self.assertEqual(regex.match('.*?cd', 20000 * 'abc' + 'de').end(0),
           60001)
         # Non-simple '*?' still used to hit the recursion limit, before the
         # non-recursive scheme was implemented.
-        self.assertEquals(regex.search('(a|b)*?c', 10000 * 'ab' + 'cd').end(0),
+        self.assertEqual(regex.search('(a|b)*?c', 10000 * 'ab' + 'cd').end(0),
           20001)
 
     def test_bug_612074(self):
         pat = u"[" + regex.escape(u"\u2039") + u"]"
-        self.assertEquals(regex.compile(pat) and 1, 1)
+        self.assertEqual(regex.compile(pat) and 1, 1)
 
     def test_stack_overflow(self):
         # Nasty cases that used to overflow the straightforward recursive
         # implementation of repeated groups.
-        self.assertEquals(regex.match('(x)*', 50000 * 'x')[1], 'x')
-        self.assertEquals(regex.match('(x)*y', 50000 * 'x' + 'y')[1], 'x')
-        self.assertEquals(regex.match('(x)*?y', 50000 * 'x' + 'y')[1], 'x')
+        self.assertEqual(regex.match('(x)*', 50000 * 'x')[1], 'x')
+        self.assertEqual(regex.match('(x)*y', 50000 * 'x' + 'y')[1], 'x')
+        self.assertEqual(regex.match('(x)*?y', 50000 * 'x' + 'y')[1], 'x')
 
     def test_scanner(self):
         def s_ident(scanner, token): return token
@@ -848,55 +848,55 @@ class RegexTests(unittest.TestCase):
           s_float), (r"\d+", s_int), (r"=|\+|-|\*|/", s_operator), (r"\s+",
             None), ])
 
-        self.assertEquals(repr(type(scanner.scanner.scanner("").pattern)),
+        self.assertEqual(repr(type(scanner.scanner.scanner("").pattern)),
           self.PATTERN_CLASS)
 
-        self.assertEquals(scanner.scan("sum = 3*foo + 312.50 + bar"), (['sum',
+        self.assertEqual(scanner.scan("sum = 3*foo + 312.50 + bar"), (['sum',
           'op=', 3, 'op*', 'foo', 'op+', 312.5, 'op+', 'bar'], ''))
 
     def test_bug_448951(self):
         # Bug 448951 (similar to 429357, but with single char match).
         # (Also test greedy matches.)
         for op in '', '?', '*':
-            self.assertEquals(regex.match(r'((.%s):)?z' % op, 'z')[:], ('z',
+            self.assertEqual(regex.match(r'((.%s):)?z' % op, 'z')[:], ('z',
               None, None))
-            self.assertEquals(regex.match(r'((.%s):)?z' % op, 'a:z')[:],
+            self.assertEqual(regex.match(r'((.%s):)?z' % op, 'a:z')[:],
               ('a:z', 'a:', 'a'))
 
     def test_bug_725106(self):
         # Capturing groups in alternatives in repeats.
-        self.assertEquals(regex.match('^((a)|b)*', 'abc')[:], ('ab', 'b', 'a'))
-        self.assertEquals(regex.match('^(([ab])|c)*', 'abc')[:], ('abc', 'c',
+        self.assertEqual(regex.match('^((a)|b)*', 'abc')[:], ('ab', 'b', 'a'))
+        self.assertEqual(regex.match('^(([ab])|c)*', 'abc')[:], ('abc', 'c',
           'b'))
-        self.assertEquals(regex.match('^((d)|[ab])*', 'abc')[:], ('ab', 'b',
+        self.assertEqual(regex.match('^((d)|[ab])*', 'abc')[:], ('ab', 'b',
           None))
-        self.assertEquals(regex.match('^((a)c|[ab])*', 'abc')[:], ('ab', 'b',
+        self.assertEqual(regex.match('^((a)c|[ab])*', 'abc')[:], ('ab', 'b',
           None))
-        self.assertEquals(regex.match('^((a)|b)*?c', 'abc')[:], ('abc', 'b',
+        self.assertEqual(regex.match('^((a)|b)*?c', 'abc')[:], ('abc', 'b',
           'a'))
-        self.assertEquals(regex.match('^(([ab])|c)*?d', 'abcd')[:], ('abcd',
+        self.assertEqual(regex.match('^(([ab])|c)*?d', 'abcd')[:], ('abcd',
           'c', 'b'))
-        self.assertEquals(regex.match('^((d)|[ab])*?c', 'abc')[:], ('abc', 'b',
+        self.assertEqual(regex.match('^((d)|[ab])*?c', 'abc')[:], ('abc', 'b',
           None))
-        self.assertEquals(regex.match('^((a)c|[ab])*?c', 'abc')[:], ('abc',
+        self.assertEqual(regex.match('^((a)c|[ab])*?c', 'abc')[:], ('abc',
           'b', None))
 
     def test_bug_725149(self):
         # Mark_stack_base restoring before restoring marks.
-        self.assertEquals(regex.match('(a)(?:(?=(b)*)c)*', 'abb')[:], ('a',
+        self.assertEqual(regex.match('(a)(?:(?=(b)*)c)*', 'abb')[:], ('a',
           'a', None))
-        self.assertEquals(regex.match('(a)((?!(b)*))*', 'abb')[:], ('a', 'a',
+        self.assertEqual(regex.match('(a)((?!(b)*))*', 'abb')[:], ('a', 'a',
           None, None))
 
     def test_bug_764548(self):
         # Bug 764548, regex.compile() barfs on str/unicode subclasses.
         class my_unicode(str): pass
         pat = regex.compile(my_unicode("abc"))
-        self.assertEquals(pat.match("xyz"), None)
+        self.assertEqual(pat.match("xyz"), None)
 
     def test_finditer(self):
         it = regex.finditer(r":+", "a:b::c:::d")
-        self.assertEquals([item[0] for item in it], [':', '::', ':::'])
+        self.assertEqual([item[0] for item in it], [':', '::', ':::'])
 
     def test_bug_926075(self):
         if regex.compile('bug_926075') is regex.compile(u'bug_926075'):
@@ -904,22 +904,22 @@ class RegexTests(unittest.TestCase):
 
     def test_bug_931848(self):
         pattern = u"[\u002E\u3002\uFF0E\uFF61]"
-        self.assertEquals(regex.compile(pattern).split("a.b.c"), ['a', 'b',
+        self.assertEqual(regex.compile(pattern).split("a.b.c"), ['a', 'b',
           'c'])
 
     def test_bug_581080(self):
         it = regex.finditer(r"\s", "a b")
-        self.assertEquals(it.next().span(), (1, 2))
+        self.assertEqual(it.next().span(), (1, 2))
         self.assertRaises(StopIteration, lambda: it.next())
 
         scanner = regex.compile(r"\s").scanner("a b")
-        self.assertEquals(scanner.search().span(), (1, 2))
-        self.assertEquals(scanner.search(), None)
+        self.assertEqual(scanner.search().span(), (1, 2))
+        self.assertEqual(scanner.search(), None)
 
     def test_bug_817234(self):
         it = regex.finditer(r".*", "asdf")
-        self.assertEquals(it.next().span(), (0, 4))
-        self.assertEquals(it.next().span(), (4, 4))
+        self.assertEqual(it.next().span(), (0, 4))
+        self.assertEqual(it.next().span(), (4, 4))
         self.assertRaises(StopIteration, lambda: it.next())
 
     def test_empty_array(self):
@@ -927,8 +927,8 @@ class RegexTests(unittest.TestCase):
         import array
         for typecode in 'cbBuhHiIlLfd':
             a = array.array(typecode)
-            self.assertEquals(regex.compile("bla").match(a), None)
-            self.assertEquals(regex.compile("").match(a)[1 : ], ())
+            self.assertEqual(regex.compile("bla").match(a), None)
+            self.assertEqual(regex.compile("").match(a)[1 : ], ())
 
     def test_inline_flags(self):
         # Bug #1700.
@@ -936,63 +936,63 @@ class RegexTests(unittest.TestCase):
         lower_char = unichr(0x1ea1) # Latin Small Letter A with Dot Below
 
         p = regex.compile(upper_char, regex.I | regex.U)
-        self.assertEquals(bool(p.match(lower_char)), True)
+        self.assertEqual(bool(p.match(lower_char)), True)
 
         p = regex.compile(lower_char, regex.I | regex.U)
-        self.assertEquals(bool(p.match(upper_char)), True)
+        self.assertEqual(bool(p.match(upper_char)), True)
 
         p = regex.compile('(?i)' + upper_char, regex.U)
-        self.assertEquals(bool(p.match(lower_char)), True)
+        self.assertEqual(bool(p.match(lower_char)), True)
 
         p = regex.compile('(?i)' + lower_char, regex.U)
-        self.assertEquals(bool(p.match(upper_char)), True)
+        self.assertEqual(bool(p.match(upper_char)), True)
 
         p = regex.compile('(?iu)' + upper_char)
-        self.assertEquals(bool(p.match(lower_char)), True)
+        self.assertEqual(bool(p.match(lower_char)), True)
 
         p = regex.compile('(?iu)' + lower_char)
-        self.assertEquals(bool(p.match(upper_char)), True)
+        self.assertEqual(bool(p.match(upper_char)), True)
 
-        self.assertEquals(bool(regex.match(r"(?i)a", "A")), True)
-        self.assertEquals(bool(regex.match(r"a(?i)", "A")), True)
-        self.assertEquals(bool(regex.match(r"(?iV1)a", "A")), True)
-        self.assertEquals(regex.match(r"a(?iV1)", "A"), None)
+        self.assertEqual(bool(regex.match(r"(?i)a", "A")), True)
+        self.assertEqual(bool(regex.match(r"a(?i)", "A")), True)
+        self.assertEqual(bool(regex.match(r"(?iV1)a", "A")), True)
+        self.assertEqual(regex.match(r"a(?iV1)", "A"), None)
 
     def test_dollar_matches_twice(self):
         # $ matches the end of string, and just before the terminating \n.
         pattern = regex.compile('$')
-        self.assertEquals(pattern.sub('#', 'a\nb\n'), 'a\nb#\n#')
-        self.assertEquals(pattern.sub('#', 'a\nb\nc'), 'a\nb\nc#')
-        self.assertEquals(pattern.sub('#', '\n'), '#\n#')
+        self.assertEqual(pattern.sub('#', 'a\nb\n'), 'a\nb#\n#')
+        self.assertEqual(pattern.sub('#', 'a\nb\nc'), 'a\nb\nc#')
+        self.assertEqual(pattern.sub('#', '\n'), '#\n#')
 
         pattern = regex.compile('$', regex.MULTILINE)
-        self.assertEquals(pattern.sub('#', 'a\nb\n' ), 'a#\nb#\n#')
-        self.assertEquals(pattern.sub('#', 'a\nb\nc'), 'a#\nb#\nc#')
-        self.assertEquals(pattern.sub('#', '\n'), '#\n#')
+        self.assertEqual(pattern.sub('#', 'a\nb\n' ), 'a#\nb#\n#')
+        self.assertEqual(pattern.sub('#', 'a\nb\nc'), 'a#\nb#\nc#')
+        self.assertEqual(pattern.sub('#', '\n'), '#\n#')
 
     def test_ascii_and_unicode_flag(self):
         # Unicode patterns.
         for flags in (0, regex.UNICODE):
             pat = regex.compile(u'\xc0', flags | regex.IGNORECASE)
-            self.assertEquals(bool(pat.match(u'\xe0')), True)
+            self.assertEqual(bool(pat.match(u'\xe0')), True)
             pat = regex.compile(u'\w', flags)
-            self.assertEquals(bool(pat.match(u'\xe0')), True)
+            self.assertEqual(bool(pat.match(u'\xe0')), True)
 
         pat = regex.compile(u'\xc0', regex.ASCII | regex.IGNORECASE)
-        self.assertEquals(pat.match(u'\xe0'), None)
+        self.assertEqual(pat.match(u'\xe0'), None)
         pat = regex.compile(u'(?a)\xc0', regex.IGNORECASE)
-        self.assertEquals(pat.match(u'\xe0'), None)
+        self.assertEqual(pat.match(u'\xe0'), None)
         pat = regex.compile(u'\w', regex.ASCII)
-        self.assertEquals(pat.match(u'\xe0'), None)
+        self.assertEqual(pat.match(u'\xe0'), None)
         pat = regex.compile(u'(?a)\w')
-        self.assertEquals(pat.match(u'\xe0'), None)
+        self.assertEqual(pat.match(u'\xe0'), None)
 
         # String patterns.
         for flags in (0, regex.ASCII):
             pat = regex.compile('\xc0', flags | regex.IGNORECASE)
-            self.assertEquals(pat.match('\xe0'), None)
+            self.assertEqual(pat.match('\xe0'), None)
             pat = regex.compile('\w')
-            self.assertEquals(pat.match('\xe0'), None)
+            self.assertEqual(pat.match('\xe0'), None)
         self.assertRaisesRegex(ValueError, self.MIXED_FLAGS, lambda:
           regex.compile('(?au)\w'))
 
@@ -1014,118 +1014,118 @@ class RegexTests(unittest.TestCase):
             self.fail("Failed")
 
     def test_properties(self):
-        self.assertEquals(regex.match('(?i)\xC0', '\xE0'), None)
-        self.assertEquals(regex.match(r'(?i)\xC0', '\xE0'), None)
-        self.assertEquals(regex.match(r'\w', '\xE0'), None)
-        self.assertEquals(bool(regex.match(ur'(?u)\w', u'\xE0')), True)
+        self.assertEqual(regex.match('(?i)\xC0', '\xE0'), None)
+        self.assertEqual(regex.match(r'(?i)\xC0', '\xE0'), None)
+        self.assertEqual(regex.match(r'\w', '\xE0'), None)
+        self.assertEqual(bool(regex.match(ur'(?u)\w', u'\xE0')), True)
 
         # Dropped the following test. It's not possible to determine what the
         # correct result should be in the general case.
-#        self.assertEquals(bool(regex.match(r'(?L)\w', '\xE0')),
+#        self.assertEqual(bool(regex.match(r'(?L)\w', '\xE0')),
 #          '\xE0'.isalnum())
 
-        self.assertEquals(bool(regex.match(r'(?L)\d', '0')), True)
-        self.assertEquals(bool(regex.match(r'(?L)\s', ' ')), True)
-        self.assertEquals(bool(regex.match(r'(?L)\w', 'a')), True)
-        self.assertEquals(regex.match(r'(?L)\d', '?'), None)
-        self.assertEquals(regex.match(r'(?L)\s', '?'), None)
-        self.assertEquals(regex.match(r'(?L)\w', '?'), None)
+        self.assertEqual(bool(regex.match(r'(?L)\d', '0')), True)
+        self.assertEqual(bool(regex.match(r'(?L)\s', ' ')), True)
+        self.assertEqual(bool(regex.match(r'(?L)\w', 'a')), True)
+        self.assertEqual(regex.match(r'(?L)\d', '?'), None)
+        self.assertEqual(regex.match(r'(?L)\s', '?'), None)
+        self.assertEqual(regex.match(r'(?L)\w', '?'), None)
 
-        self.assertEquals(regex.match(r'(?L)\D', '0'), None)
-        self.assertEquals(regex.match(r'(?L)\S', ' '), None)
-        self.assertEquals(regex.match(r'(?L)\W', 'a'), None)
-        self.assertEquals(bool(regex.match(r'(?L)\D', '?')), True)
-        self.assertEquals(bool(regex.match(r'(?L)\S', '?')), True)
-        self.assertEquals(bool(regex.match(r'(?L)\W', '?')), True)
+        self.assertEqual(regex.match(r'(?L)\D', '0'), None)
+        self.assertEqual(regex.match(r'(?L)\S', ' '), None)
+        self.assertEqual(regex.match(r'(?L)\W', 'a'), None)
+        self.assertEqual(bool(regex.match(r'(?L)\D', '?')), True)
+        self.assertEqual(bool(regex.match(r'(?L)\S', '?')), True)
+        self.assertEqual(bool(regex.match(r'(?L)\W', '?')), True)
 
-        self.assertEquals(bool(regex.match(ur'(?u)\p{Cyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Cyrillic}',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{IsCyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{IsCyrillic}',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{Script=Cyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Script=Cyrillic}',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{InCyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{InCyrillic}',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{Block=Cyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Block=Cyrillic}',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:Cyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:Cyrillic:]]',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:IsCyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:IsCyrillic:]]',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:Script=Cyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:Script=Cyrillic:]]',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:InCyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:InCyrillic:]]',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:Block=Cyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:Block=Cyrillic:]]',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
 
-        self.assertEquals(bool(regex.match(ur'(?u)\P{Cyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\P{Cyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\P{IsCyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\P{IsCyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\P{Script=Cyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\P{Script=Cyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\P{InCyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\P{InCyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\P{Block=Cyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\P{Block=Cyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{^Cyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{^Cyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{^IsCyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{^IsCyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{^Script=Cyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{^Script=Cyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{^InCyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{^InCyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{^Block=Cyrillic}',
+        self.assertEqual(bool(regex.match(ur'(?u)\p{^Block=Cyrillic}',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:^Cyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:^Cyrillic:]]',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:^IsCyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:^IsCyrillic:]]',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:^Script=Cyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:^Script=Cyrillic:]]',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:^InCyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:^InCyrillic:]]',
           u'\N{LATIN CAPITAL LETTER A}')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)[[:^Block=Cyrillic:]]',
+        self.assertEqual(bool(regex.match(ur'(?u)[[:^Block=Cyrillic:]]',
           u'\N{LATIN CAPITAL LETTER A}')), True)
 
-        self.assertEquals(bool(regex.match(ur'(?u)\d', u'0')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\s', u' ')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\w', u'A')), True)
-        self.assertEquals(regex.match(ur"(?u)\d", u"?"), None)
-        self.assertEquals(regex.match(ur"(?u)\s", u"?"), None)
-        self.assertEquals(regex.match(ur"(?u)\w", u"?"), None)
-        self.assertEquals(regex.match(ur"(?u)\D", u"0"), None)
-        self.assertEquals(regex.match(ur"(?u)\S", u" "), None)
-        self.assertEquals(regex.match(ur"(?u)\W", u"A"), None)
-        self.assertEquals(bool(regex.match(ur'(?u)\D', u'?')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\S', u'?')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\W', u'?')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\d', u'0')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\s', u' ')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\w', u'A')), True)
+        self.assertEqual(regex.match(ur"(?u)\d", u"?"), None)
+        self.assertEqual(regex.match(ur"(?u)\s", u"?"), None)
+        self.assertEqual(regex.match(ur"(?u)\w", u"?"), None)
+        self.assertEqual(regex.match(ur"(?u)\D", u"0"), None)
+        self.assertEqual(regex.match(ur"(?u)\S", u" "), None)
+        self.assertEqual(regex.match(ur"(?u)\W", u"A"), None)
+        self.assertEqual(bool(regex.match(ur'(?u)\D', u'?')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\S', u'?')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\W', u'?')), True)
 
-        self.assertEquals(bool(regex.match(ur'(?u)\p{L}', u'A')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{L}', u'a')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{Lu}', u'A')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\p{Ll}', u'a')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{L}', u'A')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{L}', u'a')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Lu}', u'A')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Ll}', u'a')), True)
 
-        self.assertEquals(bool(regex.match(ur'(?u)(?i)a', u'a')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)(?i)a', u'A')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)(?i)a', u'a')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)(?i)a', u'A')), True)
 
-        self.assertEquals(bool(regex.match(ur'(?u)\w', u'0')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\w', u'a')), True)
-        self.assertEquals(bool(regex.match(ur'(?u)\w', u'_')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\w', u'0')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\w', u'a')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\w', u'_')), True)
 
-        self.assertEquals(regex.match(ur"(?u)\X", u"\xE0").span(), (0, 1))
-        self.assertEquals(regex.match(ur"(?u)\X", u"a\u0300").span(), (0, 2))
-        self.assertEquals(regex.findall(ur"(?u)\X",
+        self.assertEqual(regex.match(ur"(?u)\X", u"\xE0").span(), (0, 1))
+        self.assertEqual(regex.match(ur"(?u)\X", u"a\u0300").span(), (0, 2))
+        self.assertEqual(regex.findall(ur"(?u)\X",
           u"a\xE0a\u0300e\xE9e\u0301"), [u'a', u'\xe0', u'a\u0300', u'e',
           u'\xe9', u'e\u0301'])
-        self.assertEquals(regex.findall(ur"(?u)\X{3}",
+        self.assertEqual(regex.findall(ur"(?u)\X{3}",
           u"a\xE0a\u0300e\xE9e\u0301"), [u'a\xe0a\u0300', u'e\xe9e\u0301'])
-        self.assertEquals(regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"),
+        self.assertEqual(regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"),
           [u'\r', u'\r\n', u'\u0301', u'A\u0301'])
 
-        self.assertEquals(bool(regex.match(ur'(?u)\p{Ll}', u'a')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Ll}', u'a')), True)
 
         chars_u = u"-09AZaz_\u0393\u03b3"
         chars_b = "-09AZaz_"
@@ -1188,516 +1188,516 @@ class RegexTests(unittest.TestCase):
             except Exception, e:
                 self.fail("Failed: %s raised %s" % (pattern, repr(e)))
 
-        self.assertEquals(bool(regex.match(ur"(?u)\p{NumericValue=0}", u"0")),
+        self.assertEqual(bool(regex.match(ur"(?u)\p{NumericValue=0}", u"0")),
           True)
-        self.assertEquals(bool(regex.match(ur"(?u)\p{NumericValue=1/2}",
+        self.assertEqual(bool(regex.match(ur"(?u)\p{NumericValue=1/2}",
           u"\N{VULGAR FRACTION ONE HALF}")), True)
-        self.assertEquals(bool(regex.match(ur"(?u)\p{NumericValue=0.5}",
+        self.assertEqual(bool(regex.match(ur"(?u)\p{NumericValue=0.5}",
           u"\N{VULGAR FRACTION ONE HALF}")), True)
 
     def test_word_class(self):
-        self.assertEquals(regex.findall(ur"(?u)\w+",
+        self.assertEqual(regex.findall(ur"(?u)\w+",
           u" \u0939\u093f\u0928\u094d\u0926\u0940,"),
           [u'\u0939\u093f\u0928\u094d\u0926\u0940'])
-        self.assertEquals(regex.findall(ur"(?u)\W+",
+        self.assertEqual(regex.findall(ur"(?u)\W+",
           u" \u0939\u093f\u0928\u094d\u0926\u0940,"), [u' ', u','])
-        self.assertEquals(regex.split(ur"(?uV1)\b",
+        self.assertEqual(regex.split(ur"(?uV1)\b",
           u" \u0939\u093f\u0928\u094d\u0926\u0940,"), [u' ',
           u'\u0939\u093f\u0928\u094d\u0926\u0940', u','])
-        self.assertEquals(regex.split(ur"(?uV1)\B",
+        self.assertEqual(regex.split(ur"(?uV1)\B",
           u" \u0939\u093f\u0928\u094d\u0926\u0940,"), [u'', u' \u0939', u'\u093f',
           u'\u0928', u'\u094d', u'\u0926', u'\u0940,', u''])
 
     def test_search_anchor(self):
-        self.assertEquals(regex.findall(r"\G\w{2}", "abcd ef"), ['ab', 'cd'])
+        self.assertEqual(regex.findall(r"\G\w{2}", "abcd ef"), ['ab', 'cd'])
 
     def test_search_reverse(self):
-        self.assertEquals(regex.findall(r"(?r).", "abc"), ['c', 'b', 'a'])
-        self.assertEquals(regex.findall(r"(?r).", "abc", overlapped=True),
+        self.assertEqual(regex.findall(r"(?r).", "abc"), ['c', 'b', 'a'])
+        self.assertEqual(regex.findall(r"(?r).", "abc", overlapped=True),
           ['c', 'b', 'a'])
-        self.assertEquals(regex.findall(r"(?r)..", "abcde"), ['de', 'bc'])
-        self.assertEquals(regex.findall(r"(?r)..", "abcde", overlapped=True),
+        self.assertEqual(regex.findall(r"(?r)..", "abcde"), ['de', 'bc'])
+        self.assertEqual(regex.findall(r"(?r)..", "abcde", overlapped=True),
           ['de', 'cd', 'bc', 'ab'])
-        self.assertEquals(regex.findall(r"(?r)(.)(-)(.)", "a-b-c",
+        self.assertEqual(regex.findall(r"(?r)(.)(-)(.)", "a-b-c",
           overlapped=True), [("b", "-", "c"), ("a", "-", "b")])
 
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r).", "abc")],
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r).", "abc")],
           ['c', 'b', 'a'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r)..", "abcde",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r)..", "abcde",
           overlapped=True)], ['de', 'cd', 'bc', 'ab'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r).", "abc")],
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r).", "abc")],
           ['c', 'b', 'a'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r)..", "abcde",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r)..", "abcde",
           overlapped=True)], ['de', 'cd', 'bc', 'ab'])
 
-        self.assertEquals(regex.findall(r"^|\w+", "foo bar"), ['', 'foo',
+        self.assertEqual(regex.findall(r"^|\w+", "foo bar"), ['', 'foo',
           'bar'])
-        self.assertEquals(regex.findall(r"(?V1)^|\w+", "foo bar"), ['', 'foo',
+        self.assertEqual(regex.findall(r"(?V1)^|\w+", "foo bar"), ['', 'foo',
           'bar'])
-        self.assertEquals(regex.findall(r"(?r)^|\w+", "foo bar"), ['bar',
+        self.assertEqual(regex.findall(r"(?r)^|\w+", "foo bar"), ['bar',
           'foo', ''])
-        self.assertEquals(regex.findall(r"(?rV1)^|\w+", "foo bar"), ['bar',
+        self.assertEqual(regex.findall(r"(?rV1)^|\w+", "foo bar"), ['bar',
           'foo', ''])
 
-        self.assertEquals([m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
+        self.assertEqual([m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
           ['', 'foo', 'bar'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?V1)^|\w+",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?V1)^|\w+",
           "foo bar")], ['', 'foo', 'bar'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r)^|\w+",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r)^|\w+",
           "foo bar")], ['bar', 'foo', ''])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?rV1)^|\w+",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?rV1)^|\w+",
           "foo bar")], ['bar', 'foo', ''])
 
-        self.assertEquals(regex.findall(r"\G\w{2}", "abcd ef"), ['ab', 'cd'])
-        self.assertEquals(regex.findall(r".{2}(?<=\G.*)", "abcd"), ['ab',
+        self.assertEqual(regex.findall(r"\G\w{2}", "abcd ef"), ['ab', 'cd'])
+        self.assertEqual(regex.findall(r".{2}(?<=\G.*)", "abcd"), ['ab',
           'cd'])
-        self.assertEquals(regex.findall(r"(?r)\G\w{2}", "abcd ef"), [])
-        self.assertEquals(regex.findall(r"(?r)\w{2}\G", "abcd ef"), ['ef'])
+        self.assertEqual(regex.findall(r"(?r)\G\w{2}", "abcd ef"), [])
+        self.assertEqual(regex.findall(r"(?r)\w{2}\G", "abcd ef"), ['ef'])
 
-        self.assertEquals(regex.findall(r"q*", "qqwe"), ['qq', '', '', ''])
-        self.assertEquals(regex.findall(r"(?V1)q*", "qqwe"), ['qq', '', '',
+        self.assertEqual(regex.findall(r"q*", "qqwe"), ['qq', '', '', ''])
+        self.assertEqual(regex.findall(r"(?V1)q*", "qqwe"), ['qq', '', '',
           ''])
-        self.assertEquals(regex.findall(r"(?r)q*", "qqwe"), ['', '', 'qq', ''])
-        self.assertEquals(regex.findall(r"(?rV1)q*", "qqwe"), ['', '', 'qq',
+        self.assertEqual(regex.findall(r"(?r)q*", "qqwe"), ['', '', 'qq', ''])
+        self.assertEqual(regex.findall(r"(?rV1)q*", "qqwe"), ['', '', 'qq',
           ''])
 
-        self.assertEquals(regex.findall(".", "abcd", pos=1, endpos=3), ['b',
+        self.assertEqual(regex.findall(".", "abcd", pos=1, endpos=3), ['b',
           'c'])
-        self.assertEquals(regex.findall(".", "abcd", pos=1, endpos=-1), ['b',
+        self.assertEqual(regex.findall(".", "abcd", pos=1, endpos=-1), ['b',
           'c'])
-        self.assertEquals([m[0] for m in regex.finditer(".", "abcd", pos=1,
+        self.assertEqual([m[0] for m in regex.finditer(".", "abcd", pos=1,
           endpos=3)], ['b', 'c'])
-        self.assertEquals([m[0] for m in regex.finditer(".", "abcd", pos=1,
+        self.assertEqual([m[0] for m in regex.finditer(".", "abcd", pos=1,
           endpos=-1)], ['b', 'c'])
 
-        self.assertEquals([m[0] for m in regex.finditer("(?r).", "abcd", pos=1,
+        self.assertEqual([m[0] for m in regex.finditer("(?r).", "abcd", pos=1,
           endpos=3)], ['c', 'b'])
-        self.assertEquals([m[0] for m in regex.finditer("(?r).", "abcd", pos=1,
+        self.assertEqual([m[0] for m in regex.finditer("(?r).", "abcd", pos=1,
           endpos=-1)], ['c', 'b'])
-        self.assertEquals(regex.findall("(?r).", "abcd", pos=1, endpos=3),
+        self.assertEqual(regex.findall("(?r).", "abcd", pos=1, endpos=3),
           ['c', 'b'])
-        self.assertEquals(regex.findall("(?r).", "abcd", pos=1, endpos=-1),
+        self.assertEqual(regex.findall("(?r).", "abcd", pos=1, endpos=-1),
           ['c', 'b'])
 
-        self.assertEquals(regex.findall(r"[ab]", "aB", regex.I), ['a', 'B'])
-        self.assertEquals(regex.findall(r"(?r)[ab]", "aB", regex.I), ['B',
+        self.assertEqual(regex.findall(r"[ab]", "aB", regex.I), ['a', 'B'])
+        self.assertEqual(regex.findall(r"(?r)[ab]", "aB", regex.I), ['B',
           'a'])
 
-        self.assertEquals(regex.findall(r"(?r).{2}", "abc"), ['bc'])
-        self.assertEquals(regex.findall(r"(?r).{2}", "abc", overlapped=True),
+        self.assertEqual(regex.findall(r"(?r).{2}", "abc"), ['bc'])
+        self.assertEqual(regex.findall(r"(?r).{2}", "abc", overlapped=True),
           ['bc', 'ab'])
-        self.assertEquals(regex.findall(r"(\w+) (\w+)",
+        self.assertEqual(regex.findall(r"(\w+) (\w+)",
           "first second third fourth fifth"), [('first', 'second'), ('third',
           'fourth')])
-        self.assertEquals(regex.findall(r"(?r)(\w+) (\w+)",
+        self.assertEqual(regex.findall(r"(?r)(\w+) (\w+)",
           "first second third fourth fifth"), [('fourth', 'fifth'), ('second',
           'third')])
 
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r).{2}", "abc")],
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r).{2}", "abc")],
           ['bc'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r).{2}", "abc",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r).{2}", "abc",
           overlapped=True)], ['bc', 'ab'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(\w+) (\w+)",
+        self.assertEqual([m[0] for m in regex.finditer(r"(\w+) (\w+)",
           "first second third fourth fifth")], ['first second',
           'third fourth'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r)(\w+) (\w+)",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r)(\w+) (\w+)",
           "first second third fourth fifth")], ['fourth fifth',
           'second third'])
 
-        self.assertEquals(regex.search("abcdef", "abcdef").span(), (0, 6))
-        self.assertEquals(regex.search("(?r)abcdef", "abcdef").span(), (0, 6))
-        self.assertEquals(regex.search("(?i)abcdef", "ABCDEF").span(), (0, 6))
-        self.assertEquals(regex.search("(?ir)abcdef", "ABCDEF").span(), (0, 6))
+        self.assertEqual(regex.search("abcdef", "abcdef").span(), (0, 6))
+        self.assertEqual(regex.search("(?r)abcdef", "abcdef").span(), (0, 6))
+        self.assertEqual(regex.search("(?i)abcdef", "ABCDEF").span(), (0, 6))
+        self.assertEqual(regex.search("(?ir)abcdef", "ABCDEF").span(), (0, 6))
 
-        self.assertEquals(regex.sub(r"(.)", r"\1", "abc"), 'abc')
-        self.assertEquals(regex.sub(r"(?r)(.)", r"\1", "abc"), 'abc')
+        self.assertEqual(regex.sub(r"(.)", r"\1", "abc"), 'abc')
+        self.assertEqual(regex.sub(r"(?r)(.)", r"\1", "abc"), 'abc')
 
     def test_atomic(self):
         # Issue 433030.
-        self.assertEquals(regex.search(r"(?>a*)a", "aa"), None)
+        self.assertEqual(regex.search(r"(?>a*)a", "aa"), None)
 
     def test_possessive(self):
         # Single-character non-possessive.
-        self.assertEquals(regex.search(r"a?a", "a").span(), (0, 1))
-        self.assertEquals(regex.search(r"a*a", "aaa").span(), (0, 3))
-        self.assertEquals(regex.search(r"a+a", "aaa").span(), (0, 3))
-        self.assertEquals(regex.search(r"a{1,3}a", "aaa").span(), (0, 3))
+        self.assertEqual(regex.search(r"a?a", "a").span(), (0, 1))
+        self.assertEqual(regex.search(r"a*a", "aaa").span(), (0, 3))
+        self.assertEqual(regex.search(r"a+a", "aaa").span(), (0, 3))
+        self.assertEqual(regex.search(r"a{1,3}a", "aaa").span(), (0, 3))
 
         # Multiple-character non-possessive.
-        self.assertEquals(regex.search(r"(?:ab)?ab", "ab").span(), (0, 2))
-        self.assertEquals(regex.search(r"(?:ab)*ab", "ababab").span(), (0, 6))
-        self.assertEquals(regex.search(r"(?:ab)+ab", "ababab").span(), (0, 6))
-        self.assertEquals(regex.search(r"(?:ab){1,3}ab", "ababab").span(), (0,
+        self.assertEqual(regex.search(r"(?:ab)?ab", "ab").span(), (0, 2))
+        self.assertEqual(regex.search(r"(?:ab)*ab", "ababab").span(), (0, 6))
+        self.assertEqual(regex.search(r"(?:ab)+ab", "ababab").span(), (0, 6))
+        self.assertEqual(regex.search(r"(?:ab){1,3}ab", "ababab").span(), (0,
           6))
 
         # Single-character possessive.
-        self.assertEquals(regex.search(r"a?+a", "a"), None)
-        self.assertEquals(regex.search(r"a*+a", "aaa"), None)
-        self.assertEquals(regex.search(r"a++a", "aaa"), None)
-        self.assertEquals(regex.search(r"a{1,3}+a", "aaa"), None)
+        self.assertEqual(regex.search(r"a?+a", "a"), None)
+        self.assertEqual(regex.search(r"a*+a", "aaa"), None)
+        self.assertEqual(regex.search(r"a++a", "aaa"), None)
+        self.assertEqual(regex.search(r"a{1,3}+a", "aaa"), None)
 
         # Multiple-character possessive.
-        self.assertEquals(regex.search(r"(?:ab)?+ab", "ab"), None)
-        self.assertEquals(regex.search(r"(?:ab)*+ab", "ababab"), None)
-        self.assertEquals(regex.search(r"(?:ab)++ab", "ababab"), None)
-        self.assertEquals(regex.search(r"(?:ab){1,3}+ab", "ababab"), None)
+        self.assertEqual(regex.search(r"(?:ab)?+ab", "ab"), None)
+        self.assertEqual(regex.search(r"(?:ab)*+ab", "ababab"), None)
+        self.assertEqual(regex.search(r"(?:ab)++ab", "ababab"), None)
+        self.assertEqual(regex.search(r"(?:ab){1,3}+ab", "ababab"), None)
 
     def test_zerowidth(self):
         # Issue 3262.
-        self.assertEquals(regex.split(r"\b", "a b"), ['a b'])
-        self.assertEquals(regex.split(r"(?V1)\b", "a b"), ['', 'a', ' ', 'b',
+        self.assertEqual(regex.split(r"\b", "a b"), ['a b'])
+        self.assertEqual(regex.split(r"(?V1)\b", "a b"), ['', 'a', ' ', 'b',
           ''])
 
         # Issue 1647489.
-        self.assertEquals(regex.findall(r"^|\w+", "foo bar"), ['', 'foo',
+        self.assertEqual(regex.findall(r"^|\w+", "foo bar"), ['', 'foo',
           'bar'])
-        self.assertEquals([m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
+        self.assertEqual([m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
           ['', 'foo', 'bar'])
-        self.assertEquals(regex.findall(r"(?r)^|\w+", "foo bar"), ['bar',
+        self.assertEqual(regex.findall(r"(?r)^|\w+", "foo bar"), ['bar',
           'foo', ''])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r)^|\w+",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r)^|\w+",
           "foo bar")], ['bar', 'foo', ''])
-        self.assertEquals(regex.findall(r"(?V1)^|\w+", "foo bar"), ['', 'foo',
+        self.assertEqual(regex.findall(r"(?V1)^|\w+", "foo bar"), ['', 'foo',
           'bar'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?V1)^|\w+",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?V1)^|\w+",
           "foo bar")], ['', 'foo', 'bar'])
-        self.assertEquals(regex.findall(r"(?rV1)^|\w+", "foo bar"), ['bar',
+        self.assertEqual(regex.findall(r"(?rV1)^|\w+", "foo bar"), ['bar',
           'foo', ''])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?rV1)^|\w+",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?rV1)^|\w+",
           "foo bar")], ['bar', 'foo', ''])
 
-        self.assertEquals(regex.split("", "xaxbxc"), ['xaxbxc'])
-        self.assertEquals([m for m in regex.splititer("", "xaxbxc")],
+        self.assertEqual(regex.split("", "xaxbxc"), ['xaxbxc'])
+        self.assertEqual([m for m in regex.splititer("", "xaxbxc")],
           ['xaxbxc'])
 
-        self.assertEquals(regex.split("(?r)", "xaxbxc"), ['xaxbxc'])
-        self.assertEquals([m for m in regex.splititer("(?r)", "xaxbxc")],
+        self.assertEqual(regex.split("(?r)", "xaxbxc"), ['xaxbxc'])
+        self.assertEqual([m for m in regex.splititer("(?r)", "xaxbxc")],
           ['xaxbxc'])
 
-        self.assertEquals(regex.split("(?V1)", "xaxbxc"), ['', 'x', 'a', 'x',
+        self.assertEqual(regex.split("(?V1)", "xaxbxc"), ['', 'x', 'a', 'x',
           'b', 'x', 'c', ''])
-        self.assertEquals([m for m in regex.splititer("(?V1)", "xaxbxc")], ['',
+        self.assertEqual([m for m in regex.splititer("(?V1)", "xaxbxc")], ['',
           'x', 'a', 'x', 'b', 'x', 'c', ''])
 
-        self.assertEquals(regex.split("(?rV1)", "xaxbxc"), ['', 'c', 'x', 'b',
+        self.assertEqual(regex.split("(?rV1)", "xaxbxc"), ['', 'c', 'x', 'b',
           'x', 'a', 'x', ''])
-        self.assertEquals([m for m in regex.splititer("(?rV1)", "xaxbxc")],
+        self.assertEqual([m for m in regex.splititer("(?rV1)", "xaxbxc")],
           ['', 'c', 'x', 'b', 'x', 'a', 'x', ''])
 
     def test_scoped_and_inline_flags(self):
         # Issues 433028, 433024, 433027.
-        self.assertEquals(regex.search(r"(?i)Ab", "ab").span(), (0, 2))
-        self.assertEquals(regex.search(r"(?i:A)b", "ab").span(), (0, 2))
-        self.assertEquals(regex.search(r"A(?i)b", "ab").span(), (0, 2))
-        self.assertEquals(regex.search(r"A(?iV1)b", "ab"), None)
+        self.assertEqual(regex.search(r"(?i)Ab", "ab").span(), (0, 2))
+        self.assertEqual(regex.search(r"(?i:A)b", "ab").span(), (0, 2))
+        self.assertEqual(regex.search(r"A(?i)b", "ab").span(), (0, 2))
+        self.assertEqual(regex.search(r"A(?iV1)b", "ab"), None)
 
         self.assertRaisesRegex(regex.error, self.CANT_TURN_OFF, lambda:
           regex.search(r"(?V0-i)Ab", "ab", flags=regex.I))
 
-        self.assertEquals(regex.search(r"(?V0)Ab", "ab"), None)
-        self.assertEquals(regex.search(r"(?V1)Ab", "ab"), None)
-        self.assertEquals(regex.search(r"(?V1-i)Ab", "ab", flags=regex.I),
+        self.assertEqual(regex.search(r"(?V0)Ab", "ab"), None)
+        self.assertEqual(regex.search(r"(?V1)Ab", "ab"), None)
+        self.assertEqual(regex.search(r"(?V1-i)Ab", "ab", flags=regex.I),
           None)
-        self.assertEquals(regex.search(r"(?-i:A)b", "ab", flags=regex.I), None)
-        self.assertEquals(regex.search(r"A(?V1-i)b", "ab",
+        self.assertEqual(regex.search(r"(?-i:A)b", "ab", flags=regex.I), None)
+        self.assertEqual(regex.search(r"A(?V1-i)b", "ab",
           flags=regex.I).span(), (0, 2))
 
     def test_repeated_repeats(self):
         # Issue 2537.
-        self.assertEquals(regex.search(r"(?:a+)+", "aaa").span(), (0, 3))
-        self.assertEquals(regex.search(r"(?:(?:ab)+c)+", "abcabc").span(), (0,
+        self.assertEqual(regex.search(r"(?:a+)+", "aaa").span(), (0, 3))
+        self.assertEqual(regex.search(r"(?:(?:ab)+c)+", "abcabc").span(), (0,
           6))
 
     def test_lookbehind(self):
-        self.assertEquals(regex.search(r"123(?<=a\d+)", "a123").span(), (1, 4))
-        self.assertEquals(regex.search(r"123(?<=a\d+)", "b123"), None)
-        self.assertEquals(regex.search(r"123(?<!a\d+)", "a123"), None)
-        self.assertEquals(regex.search(r"123(?<!a\d+)", "b123").span(), (1, 4))
+        self.assertEqual(regex.search(r"123(?<=a\d+)", "a123").span(), (1, 4))
+        self.assertEqual(regex.search(r"123(?<=a\d+)", "b123"), None)
+        self.assertEqual(regex.search(r"123(?<!a\d+)", "a123"), None)
+        self.assertEqual(regex.search(r"123(?<!a\d+)", "b123").span(), (1, 4))
 
-        self.assertEquals(bool(regex.match("(a)b(?<=b)(c)", "abc")), True)
-        self.assertEquals(regex.match("(a)b(?<=c)(c)", "abc"), None)
-        self.assertEquals(bool(regex.match("(a)b(?=c)(c)", "abc")), True)
-        self.assertEquals(regex.match("(a)b(?=b)(c)", "abc"), None)
+        self.assertEqual(bool(regex.match("(a)b(?<=b)(c)", "abc")), True)
+        self.assertEqual(regex.match("(a)b(?<=c)(c)", "abc"), None)
+        self.assertEqual(bool(regex.match("(a)b(?=c)(c)", "abc")), True)
+        self.assertEqual(regex.match("(a)b(?=b)(c)", "abc"), None)
 
-        self.assertEquals(regex.match("(?:(a)|(x))b(?<=(?(2)x|c))c", "abc"),
+        self.assertEqual(regex.match("(?:(a)|(x))b(?<=(?(2)x|c))c", "abc"),
           None)
-        self.assertEquals(regex.match("(?:(a)|(x))b(?<=(?(2)b|x))c", "abc"),
+        self.assertEqual(regex.match("(?:(a)|(x))b(?<=(?(2)b|x))c", "abc"),
           None)
-        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?<=(?(2)x|b))c",
+        self.assertEqual(bool(regex.match("(?:(a)|(x))b(?<=(?(2)x|b))c",
           "abc")), True)
-        self.assertEquals(regex.match("(?:(a)|(x))b(?<=(?(1)c|x))c", "abc"),
+        self.assertEqual(regex.match("(?:(a)|(x))b(?<=(?(1)c|x))c", "abc"),
           None)
-        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?<=(?(1)b|x))c",
-          "abc")), True)
-
-        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
-          "abc")), True)
-        self.assertEquals(regex.match("(?:(a)|(x))b(?=(?(2)c|x))c", "abc"),
-          None)
-        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
-          "abc")), True)
-        self.assertEquals(regex.match("(?:(a)|(x))b(?=(?(1)b|x))c", "abc"),
-          None)
-        self.assertEquals(bool(regex.match("(?:(a)|(x))b(?=(?(1)c|x))c",
+        self.assertEqual(bool(regex.match("(?:(a)|(x))b(?<=(?(1)b|x))c",
           "abc")), True)
 
-        self.assertEquals(regex.match("(a)b(?<=(?(2)x|c))(c)", "abc"), None)
-        self.assertEquals(regex.match("(a)b(?<=(?(2)b|x))(c)", "abc"), None)
-        self.assertEquals(regex.match("(a)b(?<=(?(1)c|x))(c)", "abc"), None)
-        self.assertEquals(bool(regex.match("(a)b(?<=(?(1)b|x))(c)", "abc")),
+        self.assertEqual(bool(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
+          "abc")), True)
+        self.assertEqual(regex.match("(?:(a)|(x))b(?=(?(2)c|x))c", "abc"),
+          None)
+        self.assertEqual(bool(regex.match("(?:(a)|(x))b(?=(?(2)x|c))c",
+          "abc")), True)
+        self.assertEqual(regex.match("(?:(a)|(x))b(?=(?(1)b|x))c", "abc"),
+          None)
+        self.assertEqual(bool(regex.match("(?:(a)|(x))b(?=(?(1)c|x))c",
+          "abc")), True)
+
+        self.assertEqual(regex.match("(a)b(?<=(?(2)x|c))(c)", "abc"), None)
+        self.assertEqual(regex.match("(a)b(?<=(?(2)b|x))(c)", "abc"), None)
+        self.assertEqual(regex.match("(a)b(?<=(?(1)c|x))(c)", "abc"), None)
+        self.assertEqual(bool(regex.match("(a)b(?<=(?(1)b|x))(c)", "abc")),
           True)
 
-        self.assertEquals(bool(regex.match("(a)b(?=(?(2)x|c))(c)", "abc")),
+        self.assertEqual(bool(regex.match("(a)b(?=(?(2)x|c))(c)", "abc")),
           True)
-        self.assertEquals(regex.match("(a)b(?=(?(2)b|x))(c)", "abc"), None)
-        self.assertEquals(bool(regex.match("(a)b(?=(?(1)c|x))(c)", "abc")),
+        self.assertEqual(regex.match("(a)b(?=(?(2)b|x))(c)", "abc"), None)
+        self.assertEqual(bool(regex.match("(a)b(?=(?(1)c|x))(c)", "abc")),
           True)
 
-        self.assertEquals(repr(type(regex.compile(r"(a)\2(b)"))),
+        self.assertEqual(repr(type(regex.compile(r"(a)\2(b)"))),
           self.PATTERN_CLASS)
 
     def test_unmatched_in_sub(self):
         # Issue 1519638.
-        self.assertEquals(regex.sub(r"(x)?(y)?", r"\2-\1", "xy"), 'y-x-')
-        self.assertEquals(regex.sub(r"(x)?(y)?", r"\2-\1", "x"), '-x-')
-        self.assertEquals(regex.sub(r"(x)?(y)?", r"\2-\1", "y"), 'y--')
+        self.assertEqual(regex.sub(r"(x)?(y)?", r"\2-\1", "xy"), 'y-x-')
+        self.assertEqual(regex.sub(r"(x)?(y)?", r"\2-\1", "x"), '-x-')
+        self.assertEqual(regex.sub(r"(x)?(y)?", r"\2-\1", "y"), 'y--')
 
     def test_bug_10328 (self):
         # Issue 10328.
         pat = regex.compile(r'(?m)(?P<trailing_ws>[ \t]+\r*$)|(?P<no_final_newline>(?<=[^\n])\Z)')
-        self.assertEquals(pat.subn(lambda m: '<' + m.lastgroup + '>',
+        self.assertEqual(pat.subn(lambda m: '<' + m.lastgroup + '>',
           'foobar '), ('foobar<trailing_ws><no_final_newline>', 2))
-        self.assertEquals([m.group() for m in pat.finditer('foobar ')], [' ',
+        self.assertEqual([m.group() for m in pat.finditer('foobar ')], [' ',
           ''])
 
     def test_overlapped(self):
-        self.assertEquals(regex.findall(r"..", "abcde"), ['ab', 'cd'])
-        self.assertEquals(regex.findall(r"..", "abcde", overlapped=True),
+        self.assertEqual(regex.findall(r"..", "abcde"), ['ab', 'cd'])
+        self.assertEqual(regex.findall(r"..", "abcde", overlapped=True),
           ['ab', 'bc', 'cd', 'de'])
-        self.assertEquals(regex.findall(r"(?r)..", "abcde"), ['de', 'bc'])
-        self.assertEquals(regex.findall(r"(?r)..", "abcde", overlapped=True),
+        self.assertEqual(regex.findall(r"(?r)..", "abcde"), ['de', 'bc'])
+        self.assertEqual(regex.findall(r"(?r)..", "abcde", overlapped=True),
           ['de', 'cd', 'bc', 'ab'])
-        self.assertEquals(regex.findall(r"(.)(-)(.)", "a-b-c",
+        self.assertEqual(regex.findall(r"(.)(-)(.)", "a-b-c",
           overlapped=True), [("a", "-", "b"), ("b", "-", "c")])
 
-        self.assertEquals([m[0] for m in regex.finditer(r"..", "abcde")],
+        self.assertEqual([m[0] for m in regex.finditer(r"..", "abcde")],
           ['ab', 'cd'])
-        self.assertEquals([m[0] for m in regex.finditer(r"..", "abcde",
+        self.assertEqual([m[0] for m in regex.finditer(r"..", "abcde",
           overlapped=True)], ['ab', 'bc', 'cd', 'de'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r)..", "abcde")],
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r)..", "abcde")],
           ['de', 'bc'])
-        self.assertEquals([m[0] for m in regex.finditer(r"(?r)..", "abcde",
+        self.assertEqual([m[0] for m in regex.finditer(r"(?r)..", "abcde",
           overlapped=True)], ['de', 'cd', 'bc', 'ab'])
 
-        self.assertEquals([m.groups() for m in regex.finditer(r"(.)(-)(.)",
+        self.assertEqual([m.groups() for m in regex.finditer(r"(.)(-)(.)",
           "a-b-c", overlapped=True)], [("a", "-", "b"), ("b", "-", "c")])
-        self.assertEquals([m.groups() for m in regex.finditer(r"(?r)(.)(-)(.)",
+        self.assertEqual([m.groups() for m in regex.finditer(r"(?r)(.)(-)(.)",
           "a-b-c", overlapped=True)], [("b", "-", "c"), ("a", "-", "b")])
 
     def test_splititer(self):
-        self.assertEquals(regex.split(r",", "a,b,,c,"), ['a', 'b', '', 'c',
+        self.assertEqual(regex.split(r",", "a,b,,c,"), ['a', 'b', '', 'c',
           ''])
-        self.assertEquals([m for m in regex.splititer(r",", "a,b,,c,")], ['a',
+        self.assertEqual([m for m in regex.splititer(r",", "a,b,,c,")], ['a',
           'b', '', 'c', ''])
 
     def test_grapheme(self):
-        self.assertEquals(regex.match(ur"(?u)\X", u"\xE0").span(), (0, 1))
-        self.assertEquals(regex.match(ur"(?u)\X", u"a\u0300").span(), (0, 2))
+        self.assertEqual(regex.match(ur"(?u)\X", u"\xE0").span(), (0, 1))
+        self.assertEqual(regex.match(ur"(?u)\X", u"a\u0300").span(), (0, 2))
 
-        self.assertEquals(regex.findall(ur"(?u)\X", u"a\xE0a\u0300e\xE9e\u0301"),
+        self.assertEqual(regex.findall(ur"(?u)\X", u"a\xE0a\u0300e\xE9e\u0301"),
           [u'a', u'\xe0', u'a\u0300', u'e', u'\xe9', u'e\u0301'])
-        self.assertEquals(regex.findall(ur"(?u)\X{3}", u"a\xE0a\u0300e\xE9e\u0301"),
+        self.assertEqual(regex.findall(ur"(?u)\X{3}", u"a\xE0a\u0300e\xE9e\u0301"),
           [u'a\xe0a\u0300', u'e\xe9e\u0301'])
-        self.assertEquals(regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"), [u'\r',
+        self.assertEqual(regex.findall(ur"(?u)\X", u"\r\r\n\u0301A\u0301"), [u'\r',
           u'\r\n', u'\u0301', u'A\u0301'])
 
     def test_word_boundary(self):
         text = u'The quick ("brown") fox can\'t jump 32.3 feet, right?'
-        self.assertEquals(regex.split(ur'(?V1)\b', text), [u'', u'The', u' ',
+        self.assertEqual(regex.split(ur'(?V1)\b', text), [u'', u'The', u' ',
           u'quick', u' ("', u'brown', u'") ', u'fox', u' ', u'can', u"'", u't', u' ',
           u'jump', u' ', u'32', u'.', u'3', u' ', u'feet', u', ', u'right', u'?'])
-        self.assertEquals(regex.split(ur'(?V1w)\b', text), [u'', u'The', u' ',
+        self.assertEqual(regex.split(ur'(?V1w)\b', text), [u'', u'The', u' ',
           u'quick', u' ', u'(', u'"', u'brown', u'"', u')', u' ', u'fox', u' ', u"can't", u' ',
           u'jump', u' ', u'32.3', u' ', u'feet', u',', u' ', u'right', u'?', u''])
 
         text = u"The  fox"
-        self.assertEquals(regex.split(ur'(?V1)\b', text), [u'', u'The', u'  ',
+        self.assertEqual(regex.split(ur'(?V1)\b', text), [u'', u'The', u'  ',
           u'fox', u''])
-        self.assertEquals(regex.split(ur'(?V1w)\b', text), [u'', u'The', u' ', u' ',
+        self.assertEqual(regex.split(ur'(?V1w)\b', text), [u'', u'The', u' ', u' ',
           u'fox', u''])
 
         text = u"can't aujourd'hui l'objectif"
-        self.assertEquals(regex.split(ur'(?V1)\b', text), [u'', u'can', u"'", u't',
+        self.assertEqual(regex.split(ur'(?V1)\b', text), [u'', u'can', u"'", u't',
           u' ', u'aujourd', u"'", u'hui', u' ', u'l', u"'", u'objectif', u''])
-        self.assertEquals(regex.split(ur'(?V1w)\b', text), [u'', u"can't", u' ',
+        self.assertEqual(regex.split(ur'(?V1w)\b', text), [u'', u"can't", u' ',
           u"aujourd'hui", u' ', u"l'", u'objectif', u''])
 
     def test_line_boundary(self):
-        self.assertEquals(regex.findall(r".+", "Line 1\nLine 2\n"), ["Line 1",
+        self.assertEqual(regex.findall(r".+", "Line 1\nLine 2\n"), ["Line 1",
           "Line 2"])
-        self.assertEquals(regex.findall(r".+", "Line 1\rLine 2\r"),
+        self.assertEqual(regex.findall(r".+", "Line 1\rLine 2\r"),
           ["Line 1\rLine 2\r"])
-        self.assertEquals(regex.findall(r".+", "Line 1\r\nLine 2\r\n"),
+        self.assertEqual(regex.findall(r".+", "Line 1\r\nLine 2\r\n"),
           ["Line 1\r", "Line 2\r"])
-        self.assertEquals(regex.findall(r"(?w).+", "Line 1\nLine 2\n"),
+        self.assertEqual(regex.findall(r"(?w).+", "Line 1\nLine 2\n"),
           ["Line 1", "Line 2"])
-        self.assertEquals(regex.findall(r"(?w).+", "Line 1\rLine 2\r"),
+        self.assertEqual(regex.findall(r"(?w).+", "Line 1\rLine 2\r"),
           ["Line 1", "Line 2"])
-        self.assertEquals(regex.findall(r"(?w).+", "Line 1\r\nLine 2\r\n"),
+        self.assertEqual(regex.findall(r"(?w).+", "Line 1\r\nLine 2\r\n"),
           ["Line 1", "Line 2"])
 
-        self.assertEquals(regex.search(r"^abc", "abc").start(), 0)
-        self.assertEquals(regex.search(r"^abc", "\nabc"), None)
-        self.assertEquals(regex.search(r"^abc", "\rabc"), None)
-        self.assertEquals(regex.search(r"(?w)^abc", "abc").start(), 0)
-        self.assertEquals(regex.search(r"(?w)^abc", "\nabc"), None)
-        self.assertEquals(regex.search(r"(?w)^abc", "\rabc"), None)
+        self.assertEqual(regex.search(r"^abc", "abc").start(), 0)
+        self.assertEqual(regex.search(r"^abc", "\nabc"), None)
+        self.assertEqual(regex.search(r"^abc", "\rabc"), None)
+        self.assertEqual(regex.search(r"(?w)^abc", "abc").start(), 0)
+        self.assertEqual(regex.search(r"(?w)^abc", "\nabc"), None)
+        self.assertEqual(regex.search(r"(?w)^abc", "\rabc"), None)
 
-        self.assertEquals(regex.search(r"abc$", "abc").start(), 0)
-        self.assertEquals(regex.search(r"abc$", "abc\n").start(), 0)
-        self.assertEquals(regex.search(r"abc$", "abc\r"), None)
-        self.assertEquals(regex.search(r"(?w)abc$", "abc").start(), 0)
-        self.assertEquals(regex.search(r"(?w)abc$", "abc\n").start(), 0)
-        self.assertEquals(regex.search(r"(?w)abc$", "abc\r").start(), 0)
+        self.assertEqual(regex.search(r"abc$", "abc").start(), 0)
+        self.assertEqual(regex.search(r"abc$", "abc\n").start(), 0)
+        self.assertEqual(regex.search(r"abc$", "abc\r"), None)
+        self.assertEqual(regex.search(r"(?w)abc$", "abc").start(), 0)
+        self.assertEqual(regex.search(r"(?w)abc$", "abc\n").start(), 0)
+        self.assertEqual(regex.search(r"(?w)abc$", "abc\r").start(), 0)
 
-        self.assertEquals(regex.search(r"(?m)^abc", "abc").start(), 0)
-        self.assertEquals(regex.search(r"(?m)^abc", "\nabc").start(), 1)
-        self.assertEquals(regex.search(r"(?m)^abc", "\rabc"), None)
-        self.assertEquals(regex.search(r"(?mw)^abc", "abc").start(), 0)
-        self.assertEquals(regex.search(r"(?mw)^abc", "\nabc").start(), 1)
-        self.assertEquals(regex.search(r"(?mw)^abc", "\rabc").start(), 1)
+        self.assertEqual(regex.search(r"(?m)^abc", "abc").start(), 0)
+        self.assertEqual(regex.search(r"(?m)^abc", "\nabc").start(), 1)
+        self.assertEqual(regex.search(r"(?m)^abc", "\rabc"), None)
+        self.assertEqual(regex.search(r"(?mw)^abc", "abc").start(), 0)
+        self.assertEqual(regex.search(r"(?mw)^abc", "\nabc").start(), 1)
+        self.assertEqual(regex.search(r"(?mw)^abc", "\rabc").start(), 1)
 
-        self.assertEquals(regex.search(r"(?m)abc$", "abc").start(), 0)
-        self.assertEquals(regex.search(r"(?m)abc$", "abc\n").start(), 0)
-        self.assertEquals(regex.search(r"(?m)abc$", "abc\r"), None)
-        self.assertEquals(regex.search(r"(?mw)abc$", "abc").start(), 0)
-        self.assertEquals(regex.search(r"(?mw)abc$", "abc\n").start(), 0)
-        self.assertEquals(regex.search(r"(?mw)abc$", "abc\r").start(), 0)
+        self.assertEqual(regex.search(r"(?m)abc$", "abc").start(), 0)
+        self.assertEqual(regex.search(r"(?m)abc$", "abc\n").start(), 0)
+        self.assertEqual(regex.search(r"(?m)abc$", "abc\r"), None)
+        self.assertEqual(regex.search(r"(?mw)abc$", "abc").start(), 0)
+        self.assertEqual(regex.search(r"(?mw)abc$", "abc\n").start(), 0)
+        self.assertEqual(regex.search(r"(?mw)abc$", "abc\r").start(), 0)
 
     def test_branch_reset(self):
-        self.assertEquals(regex.match(r"(?:(a)|(b))(c)", "ac").groups(), ('a',
+        self.assertEqual(regex.match(r"(?:(a)|(b))(c)", "ac").groups(), ('a',
           None, 'c'))
-        self.assertEquals(regex.match(r"(?:(a)|(b))(c)", "bc").groups(), (None,
+        self.assertEqual(regex.match(r"(?:(a)|(b))(c)", "bc").groups(), (None,
           'b', 'c'))
-        self.assertEquals(regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)",
+        self.assertEqual(regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)",
           "ac").groups(), ('a', None, 'c'))
-        self.assertEquals(regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)",
+        self.assertEqual(regex.match(r"(?:(?<a>a)|(?<b>b))(?<c>c)",
           "bc").groups(), (None, 'b', 'c'))
 
-        self.assertEquals(regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)",
+        self.assertEqual(regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)",
           "abd").groups(), ('a', 'b', None, 'd'))
-        self.assertEquals(regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)",
+        self.assertEqual(regex.match(r"(?<a>a)(?:(?<b>b)|(?<c>c))(?<d>d)",
           "acd").groups(), ('a', None, 'c', 'd'))
-        self.assertEquals(regex.match(r"(a)(?:(b)|(c))(d)", "abd").groups(),
+        self.assertEqual(regex.match(r"(a)(?:(b)|(c))(d)", "abd").groups(),
           ('a', 'b', None, 'd'))
 
-        self.assertEquals(regex.match(r"(a)(?:(b)|(c))(d)", "acd").groups(),
+        self.assertEqual(regex.match(r"(a)(?:(b)|(c))(d)", "acd").groups(),
           ('a', None, 'c', 'd'))
-        self.assertEquals(regex.match(r"(a)(?|(b)|(b))(d)", "abd").groups(),
+        self.assertEqual(regex.match(r"(a)(?|(b)|(b))(d)", "abd").groups(),
           ('a', 'b', 'd'))
-        self.assertEquals(regex.match(r"(?|(?<a>a)|(?<b>b))(c)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)|(?<b>b))(c)",
           "ac").groups(), ('a', None, 'c'))
-        self.assertEquals(regex.match(r"(?|(?<a>a)|(?<b>b))(c)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)|(?<b>b))(c)",
           "bc").groups(), (None, 'b', 'c'))
-        self.assertEquals(regex.match(r"(?|(?<a>a)|(?<a>b))(c)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)|(?<a>b))(c)",
           "ac").groups(), ('a', 'c'))
 
-        self.assertEquals(regex.match(r"(?|(?<a>a)|(?<a>b))(c)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)|(?<a>b))(c)",
           "bc").groups(), ('b', 'c'))
 
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)",
           "abe").groups(), ('a', 'b', 'e'))
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(?<a>d))(e)",
           "cde").groups(), ('d', 'c', 'e'))
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)",
           "abe").groups(), ('a', 'b', 'e'))
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(?<b>c)(d))(e)",
           "cde").groups(), ('d', 'c', 'e'))
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)",
           "abe").groups(), ('a', 'b', 'e'))
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)",
           "cde").groups(), ('c', 'd', 'e'))
 
         # Hg issue 87.
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
           "abe").groups(), ("a", "b", "e"))
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
           "abe").capturesdict(), {"a": ["a"], "b": ["b"]})
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
           "cde").groups(), ("d", None, "e"))
-        self.assertEquals(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
+        self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
           "cde").capturesdict(), {"a": ["c", "d"], "b": []})
 
     def test_set(self):
-        self.assertEquals(regex.match(r"[a]", "a").span(), (0, 1))
-        self.assertEquals(regex.match(r"(?i)[a]", "A").span(), (0, 1))
-        self.assertEquals(regex.match(r"[a-b]", r"a").span(), (0, 1))
-        self.assertEquals(regex.match(r"(?i)[a-b]", r"A").span(), (0, 1))
+        self.assertEqual(regex.match(r"[a]", "a").span(), (0, 1))
+        self.assertEqual(regex.match(r"(?i)[a]", "A").span(), (0, 1))
+        self.assertEqual(regex.match(r"[a-b]", r"a").span(), (0, 1))
+        self.assertEqual(regex.match(r"(?i)[a-b]", r"A").span(), (0, 1))
 
-        self.assertEquals(regex.sub(r"(?V0)([][])", r"-", "a[b]c"), "a-b-c")
+        self.assertEqual(regex.sub(r"(?V0)([][])", r"-", "a[b]c"), "a-b-c")
 
-        self.assertEquals(regex.findall(ur"[\p{Alpha}]", u"a0"), [u"a"])
-        self.assertEquals(regex.findall(ur"(?i)[\p{Alpha}]", u"A0"), [u"A"])
+        self.assertEqual(regex.findall(ur"[\p{Alpha}]", u"a0"), [u"a"])
+        self.assertEqual(regex.findall(ur"(?i)[\p{Alpha}]", u"A0"), [u"A"])
 
-        self.assertEquals(regex.findall(ur"[a\p{Alpha}]", u"ab0"), [u"a", u"b"])
-        self.assertEquals(regex.findall(ur"[a\P{Alpha}]", u"ab0"), [u"a", u"0"])
-        self.assertEquals(regex.findall(ur"(?i)[a\p{Alpha}]", u"ab0"), [u"a", u"b"])
-        self.assertEquals(regex.findall(ur"(?i)[a\P{Alpha}]", u"ab0"), [u"a", u"0"])
+        self.assertEqual(regex.findall(ur"[a\p{Alpha}]", u"ab0"), [u"a", u"b"])
+        self.assertEqual(regex.findall(ur"[a\P{Alpha}]", u"ab0"), [u"a", u"0"])
+        self.assertEqual(regex.findall(ur"(?i)[a\p{Alpha}]", u"ab0"), [u"a", u"b"])
+        self.assertEqual(regex.findall(ur"(?i)[a\P{Alpha}]", u"ab0"), [u"a", u"0"])
 
-        self.assertEquals(regex.findall(ur"[a-b\p{Alpha}]", u"abC0"), [u"a", u"b", u"C"])
-        self.assertEquals(regex.findall(ur"(?i)[a-b\p{Alpha}]", u"AbC0"), [u"A", u"b", u"C"])
+        self.assertEqual(regex.findall(ur"[a-b\p{Alpha}]", u"abC0"), [u"a", u"b", u"C"])
+        self.assertEqual(regex.findall(ur"(?i)[a-b\p{Alpha}]", u"AbC0"), [u"A", u"b", u"C"])
 
-        self.assertEquals(regex.findall(ur"[\p{Alpha}]", u"a0"), [u"a"])
-        self.assertEquals(regex.findall(ur"[\P{Alpha}]", u"a0"), [u"0"])
-        self.assertEquals(regex.findall(ur"[^\p{Alpha}]", u"a0"), [u"0"])
-        self.assertEquals(regex.findall(ur"[^\P{Alpha}]", u"a0"), [u"a"])
+        self.assertEqual(regex.findall(ur"[\p{Alpha}]", u"a0"), [u"a"])
+        self.assertEqual(regex.findall(ur"[\P{Alpha}]", u"a0"), [u"0"])
+        self.assertEqual(regex.findall(ur"[^\p{Alpha}]", u"a0"), [u"0"])
+        self.assertEqual(regex.findall(ur"[^\P{Alpha}]", u"a0"), [u"a"])
 
-        self.assertEquals("".join(regex.findall(r"[^\d-h]", "a^b12c-h")),
+        self.assertEqual("".join(regex.findall(r"[^\d-h]", "a^b12c-h")),
           'a^bc')
-        self.assertEquals("".join(regex.findall(r"[^\dh]", "a^b12c-h")),
+        self.assertEqual("".join(regex.findall(r"[^\dh]", "a^b12c-h")),
           'a^bc-')
-        self.assertEquals("".join(regex.findall(r"[^h\s\db]", "a^b 12c-h")),
+        self.assertEqual("".join(regex.findall(r"[^h\s\db]", "a^b 12c-h")),
           'a^c-')
-        self.assertEquals("".join(regex.findall(r"[^b\w]", "a b")), ' ')
-        self.assertEquals("".join(regex.findall(r"[^b\S]", "a b")), ' ')
-        self.assertEquals("".join(regex.findall(r"[^8\d]", "a 1b2")), 'a b')
+        self.assertEqual("".join(regex.findall(r"[^b\w]", "a b")), ' ')
+        self.assertEqual("".join(regex.findall(r"[^b\S]", "a b")), ' ')
+        self.assertEqual("".join(regex.findall(r"[^8\d]", "a 1b2")), 'a b')
 
         all_chars = u"".join(unichr(c) for c in range(0x100))
-        self.assertEquals(len(regex.findall(ur"(?u)\p{ASCII}", all_chars)), 128)
-        self.assertEquals(len(regex.findall(ur"(?u)\p{Letter}", all_chars)), 117)
-        self.assertEquals(len(regex.findall(ur"(?u)\p{Digit}", all_chars)), 10)
+        self.assertEqual(len(regex.findall(ur"(?u)\p{ASCII}", all_chars)), 128)
+        self.assertEqual(len(regex.findall(ur"(?u)\p{Letter}", all_chars)), 117)
+        self.assertEqual(len(regex.findall(ur"(?u)\p{Digit}", all_chars)), 10)
 
         # Set operators
-        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Letter}]",
+        self.assertEqual(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Letter}]",
           all_chars)), 52)
-        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Letter}]",
+        self.assertEqual(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Letter}]",
           all_chars)), 52)
-        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Digit}]",
+        self.assertEqual(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Alnum}&&\p{Digit}]",
           all_chars)), 10)
-        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Cc}]",
+        self.assertEqual(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Cc}]",
           all_chars)), 33)
-        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Graph}]",
+        self.assertEqual(len(regex.findall(ur"(?uV1)[\p{ASCII}&&\p{Graph}]",
           all_chars)), 94)
-        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{ASCII}--\p{Cc}]",
+        self.assertEqual(len(regex.findall(ur"(?uV1)[\p{ASCII}--\p{Cc}]",
           all_chars)), 95)
-        self.assertEquals(len(regex.findall(ur"(?u)[\p{Letter}\p{Digit}]",
+        self.assertEqual(len(regex.findall(ur"(?u)[\p{Letter}\p{Digit}]",
           all_chars)), 127)
-        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{Letter}||\p{Digit}]",
+        self.assertEqual(len(regex.findall(ur"(?uV1)[\p{Letter}||\p{Digit}]",
           all_chars)), 127)
-        self.assertEquals(len(regex.findall(ur"(?u)\p{HexDigit}", all_chars)), 22)
-        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{HexDigit}~~\p{Digit}]",
+        self.assertEqual(len(regex.findall(ur"(?u)\p{HexDigit}", all_chars)), 22)
+        self.assertEqual(len(regex.findall(ur"(?uV1)[\p{HexDigit}~~\p{Digit}]",
           all_chars)), 12)
-        self.assertEquals(len(regex.findall(ur"(?uV1)[\p{Digit}~~\p{HexDigit}]",
+        self.assertEqual(len(regex.findall(ur"(?uV1)[\p{Digit}~~\p{HexDigit}]",
           all_chars)), 12)
 
-        self.assertEquals(repr(type(regex.compile(r"(?V0)([][-])"))),
+        self.assertEqual(repr(type(regex.compile(r"(?V0)([][-])"))),
           self.PATTERN_CLASS)
-        self.assertEquals(regex.findall(r"(?V1)[[a-z]--[aei]]", "abc"), ["b",
+        self.assertEqual(regex.findall(r"(?V1)[[a-z]--[aei]]", "abc"), ["b",
           "c"])
-        self.assertEquals(regex.findall(r"(?iV1)[[a-z]--[aei]]", "abc"), ["b",
+        self.assertEqual(regex.findall(r"(?iV1)[[a-z]--[aei]]", "abc"), ["b",
           "c"])
-        self.assertEquals(regex.findall("(?V1)[\w--a]","abc"), ["b", "c"])
-        self.assertEquals(regex.findall("(?iV1)[\w--a]","abc"), ["b", "c"])
+        self.assertEqual(regex.findall("(?V1)[\w--a]","abc"), ["b", "c"])
+        self.assertEqual(regex.findall("(?iV1)[\w--a]","abc"), ["b", "c"])
 
     def test_various(self):
         tests = [
@@ -2439,67 +2439,67 @@ xyzabc
                     else:
                         actual = repr(m)
 
-                    self.assertEquals(actual, expected)
+                    self.assertEqual(actual, expected)
 
     def test_replacement(self):
-        self.assertEquals(regex.sub("test\?", "result\?\.\a\q\m\n", "test?"),
+        self.assertEqual(regex.sub("test\?", "result\?\.\a\q\m\n", "test?"),
           "result\?\.\a\q\m\n")
-        self.assertEquals(regex.sub(r"test\?", "result\?\.\a\q\m\n", "test?"),
+        self.assertEqual(regex.sub(r"test\?", "result\?\.\a\q\m\n", "test?"),
           "result\?\.\a\q\m\n")
 
-        self.assertEquals(regex.sub('(.)', r"\1\1", 'x'), 'xx')
-        self.assertEquals(regex.sub('(.)', regex.escape(r"\1\1"), 'x'),
+        self.assertEqual(regex.sub('(.)', r"\1\1", 'x'), 'xx')
+        self.assertEqual(regex.sub('(.)', regex.escape(r"\1\1"), 'x'),
           r"\1\1")
-        self.assertEquals(regex.sub('(.)', r"\\1\\1", 'x'), r"\1\1")
-        self.assertEquals(regex.sub('(.)', lambda m: r"\1\1", 'x'), r"\1\1")
+        self.assertEqual(regex.sub('(.)', r"\\1\\1", 'x'), r"\1\1")
+        self.assertEqual(regex.sub('(.)', lambda m: r"\1\1", 'x'), r"\1\1")
 
     def test_common_prefix(self):
         # Very long common prefix
         all = string.ascii_lowercase + string.digits + string.ascii_uppercase
         side = all * 4
         regexp = '(' + side + '|' + side + ')'
-        self.assertEquals(repr(type(regex.compile(regexp))),
+        self.assertEqual(repr(type(regex.compile(regexp))),
           self.PATTERN_CLASS)
 
     def test_captures(self):
-        self.assertEquals(regex.search(r"(\w)+", "abc").captures(1), ['a', 'b',
+        self.assertEqual(regex.search(r"(\w)+", "abc").captures(1), ['a', 'b',
           'c'])
-        self.assertEquals(regex.search(r"(\w{3})+", "abcdef").captures(0, 1),
+        self.assertEqual(regex.search(r"(\w{3})+", "abcdef").captures(0, 1),
           (['abcdef'], ['abc', 'def']))
-        self.assertEquals(regex.search(r"^(\d{1,3})(?:\.(\d{1,3})){3}$",
+        self.assertEqual(regex.search(r"^(\d{1,3})(?:\.(\d{1,3})){3}$",
           "192.168.0.1").captures(1, 2), (['192', ], ['168', '0', '1']))
-        self.assertEquals(regex.match(r"^([0-9A-F]{2}){4} ([a-z]\d){5}$",
+        self.assertEqual(regex.match(r"^([0-9A-F]{2}){4} ([a-z]\d){5}$",
           "3FB52A0C a2c4g3k9d3").captures(1, 2), (['3F', 'B5', '2A', '0C'],
           ['a2', 'c4', 'g3', 'k9', 'd3']))
-        self.assertEquals(regex.match("([a-z]W)([a-z]X)+([a-z]Y)",
+        self.assertEqual(regex.match("([a-z]W)([a-z]X)+([a-z]Y)",
           "aWbXcXdXeXfY").captures(1, 2, 3), (['aW'], ['bX', 'cX', 'dX', 'eX'],
           ['fY']))
 
-        self.assertEquals(regex.search(r".*?(?=(.)+)b", "ab").captures(1),
+        self.assertEqual(regex.search(r".*?(?=(.)+)b", "ab").captures(1),
           ['b'])
-        self.assertEquals(regex.search(r".*?(?>(.){0,2})d",
+        self.assertEqual(regex.search(r".*?(?>(.){0,2})d",
           "abcd").captures(1), ['b', 'c'])
-        self.assertEquals(regex.search(r"(.)+", "a").captures(1), ['a'])
+        self.assertEqual(regex.search(r"(.)+", "a").captures(1), ['a'])
 
     def test_guards(self):
         m = regex.search(r"(X.*?Y\s*){3}(X\s*)+AB:",
           "XY\nX Y\nX  Y\nXY\nXX AB:")
-        self.assertEquals(m.span(0, 1, 2), ((3, 21), (12, 15), (16, 18)))
+        self.assertEqual(m.span(0, 1, 2), ((3, 21), (12, 15), (16, 18)))
 
         m = regex.search(r"(X.*?Y\s*){3,}(X\s*)+AB:",
           "XY\nX Y\nX  Y\nXY\nXX AB:")
-        self.assertEquals(m.span(0, 1, 2), ((0, 21), (12, 15), (16, 18)))
+        self.assertEqual(m.span(0, 1, 2), ((0, 21), (12, 15), (16, 18)))
 
         m = regex.search(r'\d{4}(\s*\w)?\W*((?!\d)\w){2}', "9999XX")
-        self.assertEquals(m.span(0, 1, 2), ((0, 6), (-1, -1), (5, 6)))
+        self.assertEqual(m.span(0, 1, 2), ((0, 6), (-1, -1), (5, 6)))
 
         m = regex.search(r'A\s*?.*?(\n+.*?\s*?){0,2}\(X', 'A\n1\nS\n1 (X')
-        self.assertEquals(m.span(0, 1), ((0, 10), (5, 8)))
+        self.assertEqual(m.span(0, 1), ((0, 10), (5, 8)))
 
         m = regex.search('Derde\s*:', 'aaaaaa:\nDerde:')
-        self.assertEquals(m.span(), (8, 14))
+        self.assertEqual(m.span(), (8, 14))
         m = regex.search('Derde\s*:', 'aaaaa:\nDerde:')
-        self.assertEquals(m.span(), (7, 13))
+        self.assertEqual(m.span(), (7, 13))
 
     def test_turkic(self):
         # Turkish has dotted and dotless I/i.
@@ -2529,297 +2529,297 @@ xyzabc
 
     def test_named_lists(self):
         options = [u"one", u"two", u"three"]
-        self.assertEquals(regex.match(ur"333\L<bar>444", u"333one444",
+        self.assertEqual(regex.match(ur"333\L<bar>444", u"333one444",
           bar=options).group(), u"333one444")
-        self.assertEquals(regex.match(ur"(?i)333\L<bar>444", u"333TWO444",
+        self.assertEqual(regex.match(ur"(?i)333\L<bar>444", u"333TWO444",
           bar=options).group(), u"333TWO444")
-        self.assertEquals(regex.match(ur"333\L<bar>444", u"333four444",
+        self.assertEqual(regex.match(ur"333\L<bar>444", u"333four444",
           bar=options), None)
 
         options = ["one", "two", "three"]
-        self.assertEquals(regex.match(r"333\L<bar>444", "333one444",
+        self.assertEqual(regex.match(r"333\L<bar>444", "333one444",
           bar=options).group(), "333one444")
-        self.assertEquals(regex.match(r"(?i)333\L<bar>444", "333TWO444",
+        self.assertEqual(regex.match(r"(?i)333\L<bar>444", "333TWO444",
           bar=options).group(), "333TWO444")
-        self.assertEquals(regex.match(r"333\L<bar>444", "333four444",
+        self.assertEqual(regex.match(r"333\L<bar>444", "333four444",
           bar=options), None)
 
-        self.assertEquals(repr(type(regex.compile(r"3\L<bar>4\L<bar>+5",
+        self.assertEqual(repr(type(regex.compile(r"3\L<bar>4\L<bar>+5",
           bar=["one", "two", "three"]))), self.PATTERN_CLASS)
 
-        self.assertEquals(regex.findall(r"^\L<options>", "solid QWERT",
+        self.assertEqual(regex.findall(r"^\L<options>", "solid QWERT",
           options=set(['good', 'brilliant', '+s\\ol[i}d'])), [])
-        self.assertEquals(regex.findall(r"^\L<options>", "+solid QWERT",
+        self.assertEqual(regex.findall(r"^\L<options>", "+solid QWERT",
           options=set(['good', 'brilliant', '+solid'])), ['+solid'])
 
         options = [u"STRASSE"]
-        self.assertEquals(regex.match(ur"(?fiu)\L<words>",
+        self.assertEqual(regex.match(ur"(?fiu)\L<words>",
           u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(), (0, 6))
 
         options = [u"STRASSE", u"stress"]
-        self.assertEquals(regex.match(ur"(?fiu)\L<words>",
+        self.assertEqual(regex.match(ur"(?fiu)\L<words>",
           u"stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(), (0, 6))
 
         options = [u"stra\N{LATIN SMALL LETTER SHARP S}e"]
-        self.assertEquals(regex.match(ur"(?fiu)\L<words>", u"STRASSE",
+        self.assertEqual(regex.match(ur"(?fiu)\L<words>", u"STRASSE",
           words=options).span(), (0, 7))
 
         options = ["kit"]
-        self.assertEquals(regex.search(ur"(?iu)\L<words>", u"SKITS",
+        self.assertEqual(regex.search(ur"(?iu)\L<words>", u"SKITS",
           words=options).span(), (1, 4))
-        self.assertEquals(regex.search(ur"(?iu)\L<words>",
+        self.assertEqual(regex.search(ur"(?iu)\L<words>",
           u"SK\N{LATIN CAPITAL LETTER I WITH DOT ABOVE}TS",
           words=options).span(), (1, 4))
 
-        self.assertEquals(regex.search(ur"(?fiu)\b(\w+) +\1\b",
+        self.assertEqual(regex.search(ur"(?fiu)\b(\w+) +\1\b",
           u" stra\N{LATIN SMALL LETTER SHARP S}e STRASSE ").span(), (1, 15))
-        self.assertEquals(regex.search(ur"(?fiu)\b(\w+) +\1\b",
+        self.assertEqual(regex.search(ur"(?fiu)\b(\w+) +\1\b",
           u" STRASSE stra\N{LATIN SMALL LETTER SHARP S}e ").span(), (1, 15))
 
-        self.assertEquals(regex.search(r"^\L<options>$", "",
+        self.assertEqual(regex.search(r"^\L<options>$", "",
           options=[]).span(), (0, 0))
 
     def test_fuzzy(self):
         # Some tests borrowed from TRE library tests.
-        self.assertEquals(repr(type(regex.compile('(fou){s,e<=1}'))),
+        self.assertEqual(repr(type(regex.compile('(fou){s,e<=1}'))),
           self.PATTERN_CLASS)
-        self.assertEquals(repr(type(regex.compile('(fuu){s}'))),
+        self.assertEqual(repr(type(regex.compile('(fuu){s}'))),
           self.PATTERN_CLASS)
-        self.assertEquals(repr(type(regex.compile('(fuu){s,e}'))),
+        self.assertEqual(repr(type(regex.compile('(fuu){s,e}'))),
           self.PATTERN_CLASS)
-        self.assertEquals(repr(type(regex.compile('(anaconda){1i+1d<1,s<=1}'))),
+        self.assertEqual(repr(type(regex.compile('(anaconda){1i+1d<1,s<=1}'))),
           self.PATTERN_CLASS)
-        self.assertEquals(repr(type(regex.compile('(anaconda){1i+1d<1,s<=1,e<=10}'))),
+        self.assertEqual(repr(type(regex.compile('(anaconda){1i+1d<1,s<=1,e<=10}'))),
           self.PATTERN_CLASS)
-        self.assertEquals(repr(type(regex.compile('(anaconda){s<=1,e<=1,1i+1d<1}'))),
+        self.assertEqual(repr(type(regex.compile('(anaconda){s<=1,e<=1,1i+1d<1}'))),
           self.PATTERN_CLASS)
 
         text = 'molasses anaconda foo bar baz smith anderson '
-        self.assertEquals(regex.search('(znacnda){s<=1,e<=3,1i+1d<1}', text),
+        self.assertEqual(regex.search('(znacnda){s<=1,e<=3,1i+1d<1}', text),
           None)
-        self.assertEquals(regex.search('(znacnda){s<=1,e<=3,1i+1d<2}',
+        self.assertEqual(regex.search('(znacnda){s<=1,e<=3,1i+1d<2}',
           text).span(0, 1), ((9, 17), (9, 17)))
-        self.assertEquals(regex.search('(ananda){1i+1d<2}', text), None)
-        self.assertEquals(regex.search(r"(?:\bznacnda){e<=2}", text)[0],
+        self.assertEqual(regex.search('(ananda){1i+1d<2}', text), None)
+        self.assertEqual(regex.search(r"(?:\bznacnda){e<=2}", text)[0],
           "anaconda")
-        self.assertEquals(regex.search(r"(?:\bnacnda){e<=2}", text)[0],
+        self.assertEqual(regex.search(r"(?:\bnacnda){e<=2}", text)[0],
           "anaconda")
 
         text = 'anaconda foo bar baz smith anderson'
-        self.assertEquals(regex.search('(fuu){i<=3,d<=3,e<=5}', text).span(0,
+        self.assertEqual(regex.search('(fuu){i<=3,d<=3,e<=5}', text).span(0,
           1), ((0, 0), (0, 0)))
-        self.assertEquals(regex.search('(?b)(fuu){i<=3,d<=3,e<=5}',
+        self.assertEqual(regex.search('(?b)(fuu){i<=3,d<=3,e<=5}',
           text).span(0, 1), ((9, 10), (9, 10)))
-        self.assertEquals(regex.search('(fuu){i<=2,d<=2,e<=5}', text).span(0,
+        self.assertEqual(regex.search('(fuu){i<=2,d<=2,e<=5}', text).span(0,
           1), ((7, 10), (7, 10)))
-        self.assertEquals(regex.search('(?e)(fuu){i<=2,d<=2,e<=5}',
+        self.assertEqual(regex.search('(?e)(fuu){i<=2,d<=2,e<=5}',
           text).span(0, 1), ((9, 10), (9, 10)))
-        self.assertEquals(regex.search('(fuu){i<=3,d<=3,e}', text).span(0, 1),
+        self.assertEqual(regex.search('(fuu){i<=3,d<=3,e}', text).span(0, 1),
           ((0, 0), (0, 0)))
-        self.assertEquals(regex.search('(?b)(fuu){i<=3,d<=3,e}', text).span(0,
+        self.assertEqual(regex.search('(?b)(fuu){i<=3,d<=3,e}', text).span(0,
           1), ((9, 10), (9, 10)))
 
-        self.assertEquals(repr(type(regex.compile('(approximate){s<=3,1i+1d<3}'))),
+        self.assertEqual(repr(type(regex.compile('(approximate){s<=3,1i+1d<3}'))),
           self.PATTERN_CLASS)
 
         # No cost limit.
-        self.assertEquals(regex.search('(foobar){e}',
+        self.assertEqual(regex.search('(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), ((0, 6), (0, 6)))
-        self.assertEquals(regex.search('(?e)(foobar){e}',
+        self.assertEqual(regex.search('(?e)(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), ((0, 3), (0, 3)))
-        self.assertEquals(regex.search('(?b)(foobar){e}',
+        self.assertEqual(regex.search('(?b)(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), ((11, 16), (11, 16)))
 
         # At most two errors.
-        self.assertEquals(regex.search('(foobar){e<=2}',
+        self.assertEqual(regex.search('(foobar){e<=2}',
           'xirefoabrzlfd').span(0, 1), ((4, 9), (4, 9)))
-        self.assertEquals(regex.search('(foobar){e<=2}', 'xirefoabzlfd'), None)
+        self.assertEqual(regex.search('(foobar){e<=2}', 'xirefoabzlfd'), None)
 
         # At most two inserts or substitutions and max two errors total.
-        self.assertEquals(regex.search('(foobar){i<=2,s<=2,e<=2}',
+        self.assertEqual(regex.search('(foobar){i<=2,s<=2,e<=2}',
           'oobargoobaploowap').span(0, 1), ((5, 11), (5, 11)))
 
         # Find best whole word match for "foobar".
-        self.assertEquals(regex.search('\\b(foobar){e}\\b', 'zfoobarz').span(0,
+        self.assertEqual(regex.search('\\b(foobar){e}\\b', 'zfoobarz').span(0,
           1), ((0, 8), (0, 8)))
-        self.assertEquals(regex.search('\\b(foobar){e}\\b',
+        self.assertEqual(regex.search('\\b(foobar){e}\\b',
           'boing zfoobarz goobar woop').span(0, 1), ((0, 6), (0, 6)))
-        self.assertEquals(regex.search('(?b)\\b(foobar){e}\\b',
+        self.assertEqual(regex.search('(?b)\\b(foobar){e}\\b',
           'boing zfoobarz goobar woop').span(0, 1), ((15, 21), (15, 21)))
 
         # Match whole string, allow only 1 error.
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foobar').span(0,
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'foobar').span(0,
           1), ((0, 6), (0, 6)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xfoobar').span(0,
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'xfoobar').span(0,
           1), ((0, 7), (0, 7)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foobarx').span(0,
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'foobarx').span(0,
           1), ((0, 7), (0, 7)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'fooxbar').span(0,
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'fooxbar').span(0,
           1), ((0, 7), (0, 7)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foxbar').span(0,
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'foxbar').span(0,
           1), ((0, 6), (0, 6)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xoobar').span(0,
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'xoobar').span(0,
           1), ((0, 6), (0, 6)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foobax').span(0,
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'foobax').span(0,
           1), ((0, 6), (0, 6)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'oobar').span(0, 1),
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'oobar').span(0, 1),
           ((0, 5), (0, 5)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'fobar').span(0, 1),
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'fobar').span(0, 1),
           ((0, 5), (0, 5)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'fooba').span(0, 1),
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'fooba').span(0, 1),
           ((0, 5), (0, 5)))
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xfoobarx'), None)
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foobarxx'), None)
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xxfoobar'), None)
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'xfoxbar'), None)
-        self.assertEquals(regex.search('^(foobar){e<=1}$', 'foxbarx'), None)
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'xfoobarx'), None)
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'foobarxx'), None)
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'xxfoobar'), None)
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'xfoxbar'), None)
+        self.assertEqual(regex.search('^(foobar){e<=1}$', 'foxbarx'), None)
 
         # At most one insert, two deletes, and three substitutions.
         # Additionally, deletes cost two and substitutes one, and total
         # cost must be less than 4.
-        self.assertEquals(regex.search('(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
+        self.assertEqual(regex.search('(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
           '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((6, 13), (6,
           13)))
-        self.assertEquals(regex.search('(?b)(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
+        self.assertEqual(regex.search('(?b)(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
           '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((26, 33),
           (26, 33)))
 
         # Partially fuzzy matches.
-        self.assertEquals(regex.search('foo(bar){e<=1}zap',
+        self.assertEqual(regex.search('foo(bar){e<=1}zap',
           'foobarzap').span(0, 1), ((0, 9), (3, 6)))
-        self.assertEquals(regex.search('foo(bar){e<=1}zap', 'fobarzap'), None)
-        self.assertEquals(regex.search('foo(bar){e<=1}zap', 'foobrzap').span(0,
+        self.assertEqual(regex.search('foo(bar){e<=1}zap', 'fobarzap'), None)
+        self.assertEqual(regex.search('foo(bar){e<=1}zap', 'foobrzap').span(0,
           1), ((0, 8), (3, 5)))
 
         text = ('www.cnn.com 64.236.16.20\nwww.slashdot.org 66.35.250.150\n'
           'For useful information, use www.slashdot.org\nthis is demo data!\n')
-        self.assertEquals(regex.search(r'(?s)^.*(dot.org){e}.*$', text).span(0,
+        self.assertEqual(regex.search(r'(?s)^.*(dot.org){e}.*$', text).span(0,
           1), ((0, 120), (120, 120)))
-        self.assertEquals(regex.search(r'(?es)^.*(dot.org){e}.*$',
+        self.assertEqual(regex.search(r'(?es)^.*(dot.org){e}.*$',
           text).span(0, 1), ((0, 120), (93, 100)))
-        self.assertEquals(regex.search(r'^.*(dot.org){e}.*$', text).span(0, 1),
+        self.assertEqual(regex.search(r'^.*(dot.org){e}.*$', text).span(0, 1),
           ((0, 119), (24, 101)))
 
         # Behaviour is unexpected, but arguably not wrong. It first finds the
         # best match, then the best in what follows, etc.
-        self.assertEquals(regex.findall(r"\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(r"\b\L<words>{e<=1}\b",
           " book cot dog desk ", words="cat dog".split()), ["cot", "dog"])
-        self.assertEquals(regex.findall(r"\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(r"\b\L<words>{e<=1}\b",
           " book dog cot desk ", words="cat dog".split()), [" dog", "cot"])
-        self.assertEquals(regex.findall(r"(?e)\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(r"(?e)\b\L<words>{e<=1}\b",
           " book dog cot desk ", words="cat dog".split()), ["dog", "cot"])
-        self.assertEquals(regex.findall(r"(?r)\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(r"(?r)\b\L<words>{e<=1}\b",
           " book cot dog desk ", words="cat dog".split()), ["dog ", "cot"])
-        self.assertEquals(regex.findall(r"(?er)\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(r"(?er)\b\L<words>{e<=1}\b",
           " book cot dog desk ", words="cat dog".split()), ["dog", "cot"])
-        self.assertEquals(regex.findall(r"(?r)\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(r"(?r)\b\L<words>{e<=1}\b",
           " book dog cot desk ", words="cat dog".split()), ["cot", "dog"])
-        self.assertEquals(regex.findall(ur"\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(ur"\b\L<words>{e<=1}\b",
           u" book cot dog desk ", words=u"cat dog".split()), [u"cot", u"dog"])
-        self.assertEquals(regex.findall(ur"\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(ur"\b\L<words>{e<=1}\b",
           u" book dog cot desk ", words=u"cat dog".split()), [u" dog", u"cot"])
-        self.assertEquals(regex.findall(ur"(?e)\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(ur"(?e)\b\L<words>{e<=1}\b",
           u" book dog cot desk ", words=u"cat dog".split()), [u"dog", u"cot"])
-        self.assertEquals(regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
           u" book cot dog desk ", words=u"cat dog".split()), [u"dog ", u"cot"])
-        self.assertEquals(regex.findall(ur"(?er)\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(ur"(?er)\b\L<words>{e<=1}\b",
           u" book cot dog desk ", words=u"cat dog".split()), [u"dog", u"cot"])
-        self.assertEquals(regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
+        self.assertEqual(regex.findall(ur"(?r)\b\L<words>{e<=1}\b",
           u" book dog cot desk ", words=u"cat dog".split()), [u"cot", u"dog"])
 
-        self.assertEquals(regex.search(r"(\w+) (\1{e<=1})",
+        self.assertEqual(regex.search(r"(\w+) (\1{e<=1})",
           "foo fou").groups(), ("foo", "fou"))
-        self.assertEquals(regex.search(r"(?r)(\2{e<=1}) (\w+)",
+        self.assertEqual(regex.search(r"(?r)(\2{e<=1}) (\w+)",
           "foo fou").groups(), ("foo", "fou"))
-        self.assertEquals(regex.search(ur"(\w+) (\1{e<=1})",
+        self.assertEqual(regex.search(ur"(\w+) (\1{e<=1})",
           u"foo fou").groups(), (u"foo", u"fou"))
 
-        self.assertEquals(regex.findall(r"(?:(?:QR)+){e}","abcde"), ["abcde",
+        self.assertEqual(regex.findall(r"(?:(?:QR)+){e}","abcde"), ["abcde",
           ""])
-        self.assertEquals(regex.findall(r"(?:Q+){e}","abc"), ["abc", ""])
+        self.assertEqual(regex.findall(r"(?:Q+){e}","abc"), ["abc", ""])
 
         # Hg issue 41.
-        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+        self.assertEqual(regex.match(r"(?:service detection){0<e<5}",
           "servic detection").span(), (0, 16))
-        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+        self.assertEqual(regex.match(r"(?:service detection){0<e<5}",
           "service detect").span(), (0, 14))
-        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+        self.assertEqual(regex.match(r"(?:service detection){0<e<5}",
           "service detecti").span(), (0, 15))
-        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+        self.assertEqual(regex.match(r"(?:service detection){0<e<5}",
           "service detection"), None)
-        self.assertEquals(regex.match(r"(?:service detection){0<e<5}",
+        self.assertEqual(regex.match(r"(?:service detection){0<e<5}",
           "in service detection").span(), (0, 20))
 
     def test_recursive(self):
-        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "xx")[ : ],
+        self.assertEqual(regex.search(r"(\w)(?:(?R)|(\w?))\1", "xx")[ : ],
           ("xx", "x", ""))
-        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "aba")[ : ],
+        self.assertEqual(regex.search(r"(\w)(?:(?R)|(\w?))\1", "aba")[ : ],
           ("aba", "a", "b"))
-        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "abba")[ : ],
+        self.assertEqual(regex.search(r"(\w)(?:(?R)|(\w?))\1", "abba")[ : ],
           ("abba", "a", None))
-        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "kayak")[ : ],
+        self.assertEqual(regex.search(r"(\w)(?:(?R)|(\w?))\1", "kayak")[ : ],
           ("kayak", "k", None))
-        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "paper")[ : ],
+        self.assertEqual(regex.search(r"(\w)(?:(?R)|(\w?))\1", "paper")[ : ],
           ("pap", "p", "a"))
-        self.assertEquals(regex.search(r"(\w)(?:(?R)|(\w?))\1", "dontmatchme"),
+        self.assertEqual(regex.search(r"(\w)(?:(?R)|(\w?))\1", "dontmatchme"),
           None)
 
-        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "xx")[ : ],
+        self.assertEqual(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "xx")[ : ],
           ("xx", "", "x"))
-        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "aba")[ :
+        self.assertEqual(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "aba")[ :
           ], ("aba", "b", "a"))
-        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "abba")[ :
+        self.assertEqual(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "abba")[ :
           ], ("abba", None, "a"))
-        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "kayak")[ :
+        self.assertEqual(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "kayak")[ :
           ], ("kayak", None, "k"))
-        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "paper")[ :
+        self.assertEqual(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)", "paper")[ :
           ], ("pap", "a", "p"))
-        self.assertEquals(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
+        self.assertEqual(regex.search(r"(?r)\2(?:(\w?)|(?R))(\w)",
           "dontmatchme"), None)
 
-        self.assertEquals(regex.search(r"\(((?>[^()]+)|(?R))*\)",
+        self.assertEqual(regex.search(r"\(((?>[^()]+)|(?R))*\)",
           "(ab(cd)ef)")[ : ], ("(ab(cd)ef)", "ef"))
-        self.assertEquals(regex.search(r"\(((?>[^()]+)|(?R))*\)",
+        self.assertEqual(regex.search(r"\(((?>[^()]+)|(?R))*\)",
           "(ab(cd)ef)").captures(1), ["ab", "cd", "(cd)", "ef"])
 
-        self.assertEquals(regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
+        self.assertEqual(regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
           "(ab(cd)ef)")[ : ], ("(ab(cd)ef)", "ab"))
-        self.assertEquals(regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
+        self.assertEqual(regex.search(r"(?r)\(((?R)|(?>[^()]+))*\)",
           "(ab(cd)ef)").captures(1), ["ef", "cd", "(cd)", "ab"])
 
-        self.assertEquals(regex.search(r"\(([^()]+|(?R))*\)",
+        self.assertEqual(regex.search(r"\(([^()]+|(?R))*\)",
           "some text (a(b(c)d)e) more text")[ : ], ("(a(b(c)d)e)",  "e"))
 
-        self.assertEquals(regex.search(r"(?r)\(((?R)|[^()]+)*\)",
+        self.assertEqual(regex.search(r"(?r)\(((?R)|[^()]+)*\)",
           "some text (a(b(c)d)e) more text")[ : ], ("(a(b(c)d)e)",  "a"))
 
-        self.assertEquals(regex.search(r"(foo(\(((?:(?>[^()]+)|(?2))*)\)))",
+        self.assertEqual(regex.search(r"(foo(\(((?:(?>[^()]+)|(?2))*)\)))",
           "foo(bar(baz)+baz(bop))")[ : ], ("foo(bar(baz)+baz(bop))",
           "foo(bar(baz)+baz(bop))", "(bar(baz)+baz(bop))",
           "bar(baz)+baz(bop)"))
 
-        self.assertEquals(regex.search(r"(?r)(foo(\(((?:(?2)|(?>[^()]+))*)\)))",
+        self.assertEqual(regex.search(r"(?r)(foo(\(((?:(?2)|(?>[^()]+))*)\)))",
           "foo(bar(baz)+baz(bop))")[ : ], ("foo(bar(baz)+baz(bop))",
           "foo(bar(baz)+baz(bop))", "(bar(baz)+baz(bop))",
           "bar(baz)+baz(bop)"))
 
         rgx = regex.compile(r"""^\s*(<\s*([a-zA-Z:]+)(?:\s*[a-zA-Z:]*\s*=\s*(?:'[^']*'|"[^"]*"))*\s*(/\s*)?>(?:[^<>]*|(?1))*(?(3)|<\s*/\s*\2\s*>))\s*$""")
-        self.assertEquals(bool(rgx.search('<foo><bar></bar></foo>')), True)
-        self.assertEquals(bool(rgx.search('<foo><bar></foo></bar>')), False)
-        self.assertEquals(bool(rgx.search('<foo><bar/></foo>')), True)
-        self.assertEquals(bool(rgx.search('<foo><bar></foo>')), False)
-        self.assertEquals(bool(rgx.search('<foo bar=baz/>')), False)
+        self.assertEqual(bool(rgx.search('<foo><bar></bar></foo>')), True)
+        self.assertEqual(bool(rgx.search('<foo><bar></foo></bar>')), False)
+        self.assertEqual(bool(rgx.search('<foo><bar/></foo>')), True)
+        self.assertEqual(bool(rgx.search('<foo><bar></foo>')), False)
+        self.assertEqual(bool(rgx.search('<foo bar=baz/>')), False)
 
-        self.assertEquals(bool(rgx.search('<foo bar="baz">')), False)
-        self.assertEquals(bool(rgx.search('<foo bar="baz"/>')), True)
-        self.assertEquals(bool(rgx.search('<    fooo   /  >')), True)
+        self.assertEqual(bool(rgx.search('<foo bar="baz">')), False)
+        self.assertEqual(bool(rgx.search('<foo bar="baz"/>')), True)
+        self.assertEqual(bool(rgx.search('<    fooo   /  >')), True)
         # The next regex should and does match. Perl 5.14 agrees.
-        #self.assertEquals(bool(rgx.search('<foo/>foo')), False)
-        self.assertEquals(bool(rgx.search('foo<foo/>')), False)
+        #self.assertEqual(bool(rgx.search('<foo/>foo')), False)
+        self.assertEqual(bool(rgx.search('foo<foo/>')), False)
 
-        self.assertEquals(bool(rgx.search('<foo>foo</foo>')), True)
-        self.assertEquals(bool(rgx.search('<foo><bar/>foo</foo>')), True)
-        self.assertEquals(bool(rgx.search('<a><b><c></c></b></a>')), True)
+        self.assertEqual(bool(rgx.search('<foo>foo</foo>')), True)
+        self.assertEqual(bool(rgx.search('<foo><bar/>foo</foo>')), True)
+        self.assertEqual(bool(rgx.search('<a><b><c></c></b></a>')), True)
 
     def test_copy(self):
         # PatternObjects are immutable, therefore there's no need to clone them.
@@ -2843,238 +2843,238 @@ xyzabc
         # The following behaviour matches that of the re module.
         it = regex.finditer(".", "ab")
         it2 = copy.copy(it)
-        self.assertEquals(it.next().group(), "a")
-        self.assertEquals(it2.next().group(), "b")
+        self.assertEqual(it.next().group(), "a")
+        self.assertEqual(it2.next().group(), "b")
 
         # The following behaviour matches that of the re module.
         it = regex.finditer(".", "ab")
         it2 = copy.deepcopy(it)
-        self.assertEquals(it.next().group(), "a")
-        self.assertEquals(it2.next().group(), "b")
+        self.assertEqual(it.next().group(), "a")
+        self.assertEqual(it2.next().group(), "b")
 
         # The following behaviour is designed to match that of copying 'finditer'.
         it = regex.splititer(" ", "a b")
         it2 = copy.copy(it)
-        self.assertEquals(it.next(), "a")
-        self.assertEquals(it2.next(), "b")
+        self.assertEqual(it.next(), "a")
+        self.assertEqual(it2.next(), "b")
 
         # The following behaviour is designed to match that of copying 'finditer'.
         it = regex.splititer(" ", "a b")
         it2 = copy.deepcopy(it)
-        self.assertEquals(it.next(), "a")
-        self.assertEquals(it2.next(), "b")
+        self.assertEqual(it.next(), "a")
+        self.assertEqual(it2.next(), "b")
 
     def test_format(self):
-        self.assertEquals(regex.subf(r"(\w+) (\w+)", "{0} => {2} {1}",
+        self.assertEqual(regex.subf(r"(\w+) (\w+)", "{0} => {2} {1}",
           "foo bar"), "foo bar => bar foo")
-        self.assertEquals(regex.subf(r"(?<word1>\w+) (?<word2>\w+)",
+        self.assertEqual(regex.subf(r"(?<word1>\w+) (?<word2>\w+)",
           "{word2} {word1}", "foo bar"), "bar foo")
 
-        self.assertEquals(regex.subfn(r"(\w+) (\w+)", "{0} => {2} {1}",
+        self.assertEqual(regex.subfn(r"(\w+) (\w+)", "{0} => {2} {1}",
           "foo bar"), ("foo bar => bar foo", 1))
-        self.assertEquals(regex.subfn(r"(?<word1>\w+) (?<word2>\w+)",
+        self.assertEqual(regex.subfn(r"(?<word1>\w+) (?<word2>\w+)",
           "{word2} {word1}", "foo bar"), ("bar foo", 1))
 
-        self.assertEquals(regex.match(r"(\w+) (\w+)",
+        self.assertEqual(regex.match(r"(\w+) (\w+)",
           "foo bar").expandf("{0} => {2} {1}"), "foo bar => bar foo")
 
     def test_fullmatch(self):
-        self.assertEquals(bool(regex.fullmatch(r"abc", "abc")), True)
-        self.assertEquals(bool(regex.fullmatch(r"abc", "abcx")), False)
-        self.assertEquals(bool(regex.fullmatch(r"abc", "abcx", endpos=3)),
+        self.assertEqual(bool(regex.fullmatch(r"abc", "abc")), True)
+        self.assertEqual(bool(regex.fullmatch(r"abc", "abcx")), False)
+        self.assertEqual(bool(regex.fullmatch(r"abc", "abcx", endpos=3)),
           True)
 
-        self.assertEquals(bool(regex.fullmatch(r"abc", "xabc", pos=1)), True)
-        self.assertEquals(bool(regex.fullmatch(r"abc", "xabcy", pos=1)), False)
-        self.assertEquals(bool(regex.fullmatch(r"abc", "xabcy", pos=1,
+        self.assertEqual(bool(regex.fullmatch(r"abc", "xabc", pos=1)), True)
+        self.assertEqual(bool(regex.fullmatch(r"abc", "xabcy", pos=1)), False)
+        self.assertEqual(bool(regex.fullmatch(r"abc", "xabcy", pos=1,
           endpos=4)), True)
 
-        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "abc")), True)
-        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "abcx")), False)
-        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "abcx", endpos=3)),
+        self.assertEqual(bool(regex.fullmatch(r"(?r)abc", "abc")), True)
+        self.assertEqual(bool(regex.fullmatch(r"(?r)abc", "abcx")), False)
+        self.assertEqual(bool(regex.fullmatch(r"(?r)abc", "abcx", endpos=3)),
           True)
 
-        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "xabc", pos=1)),
+        self.assertEqual(bool(regex.fullmatch(r"(?r)abc", "xabc", pos=1)),
           True)
-        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "xabcy", pos=1)),
+        self.assertEqual(bool(regex.fullmatch(r"(?r)abc", "xabcy", pos=1)),
           False)
-        self.assertEquals(bool(regex.fullmatch(r"(?r)abc", "xabcy", pos=1,
+        self.assertEqual(bool(regex.fullmatch(r"(?r)abc", "xabcy", pos=1,
           endpos=4)), True)
 
     def test_hg_bugs(self):
         # Hg issue 28.
-        self.assertEquals(bool(regex.compile("(?>b)", flags=regex.V1)), True)
+        self.assertEqual(bool(regex.compile("(?>b)", flags=regex.V1)), True)
 
         # Hg issue 29.
-        self.assertEquals(bool(regex.compile("^((?>\w+)|(?>\s+))*$",
+        self.assertEqual(bool(regex.compile("^((?>\w+)|(?>\s+))*$",
           flags=regex.V1)), True)
 
         # Hg issue 31.
-        self.assertEquals(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
+        self.assertEqual(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
           "a(bcd(e)f)g(h)"), ['(bcd(e)f)', '(h)'])
-        self.assertEquals(regex.findall(r"\((?:(?:[^()]+)|(?R))*\)",
+        self.assertEqual(regex.findall(r"\((?:(?:[^()]+)|(?R))*\)",
           "a(bcd(e)f)g(h)"), ['(bcd(e)f)', '(h)'])
-        self.assertEquals(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
+        self.assertEqual(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
           "a(b(cd)e)f)g)h"), ['(b(cd)e)'])
-        self.assertEquals(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
+        self.assertEqual(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
           "a(bc(d(e)f)gh"), ['(d(e)f)'])
-        self.assertEquals(regex.findall(r"(?r)\((?:(?>[^()]+)|(?R))*\)",
+        self.assertEqual(regex.findall(r"(?r)\((?:(?>[^()]+)|(?R))*\)",
           "a(bc(d(e)f)gh"), ['(d(e)f)'])
-        self.assertEquals([m.group() for m in
+        self.assertEqual([m.group() for m in
           regex.finditer(r"\((?:[^()]*+|(?0))*\)", "a(b(c(de)fg)h")],
           ['(c(de)fg)'])
 
         # Hg issue 32.
-        self.assertEquals(regex.search("a(bc)d", "abcd", regex.I |
+        self.assertEqual(regex.search("a(bc)d", "abcd", regex.I |
           regex.V1).group(0), "abcd")
 
         # Hg issue 33.
-        self.assertEquals(regex.search("([\da-f:]+)$", "E", regex.I |
+        self.assertEqual(regex.search("([\da-f:]+)$", "E", regex.I |
           regex.V1).group(0), "E")
-        self.assertEquals(regex.search("([\da-f:]+)$", "e", regex.I |
+        self.assertEqual(regex.search("([\da-f:]+)$", "e", regex.I |
           regex.V1).group(0), "e")
 
         # Hg issue 34.
-        self.assertEquals(regex.search("^(?=ab(de))(abd)(e)", "abde").groups(),
+        self.assertEqual(regex.search("^(?=ab(de))(abd)(e)", "abde").groups(),
           ('de', 'abd', 'e'))
 
         # Hg issue 35.
-        self.assertEquals(bool(regex.match(r"\ ", " ", flags=regex.X)), True)
+        self.assertEqual(bool(regex.match(r"\ ", " ", flags=regex.X)), True)
 
         # Hg issue 36.
-        self.assertEquals(regex.search(r"^(a|)\1{2}b", "b").group(0, 1), ('b',
+        self.assertEqual(regex.search(r"^(a|)\1{2}b", "b").group(0, 1), ('b',
           ''))
 
         # Hg issue 37.
-        self.assertEquals(regex.search("^(a){0,0}", "abc").group(0, 1), ('',
+        self.assertEqual(regex.search("^(a){0,0}", "abc").group(0, 1), ('',
           None))
 
         # Hg issue 38.
-        self.assertEquals(regex.search("(?>.*/)b", "a/b").group(0), "a/b")
+        self.assertEqual(regex.search("(?>.*/)b", "a/b").group(0), "a/b")
 
         # Hg issue 39.
-        self.assertEquals(regex.search(r"(?V0)((?i)blah)\s+\1",
+        self.assertEqual(regex.search(r"(?V0)((?i)blah)\s+\1",
           "blah BLAH").group(0, 1), ("blah BLAH", "blah"))
-        self.assertEquals(regex.search(r"(?V1)((?i)blah)\s+\1", "blah BLAH"),
+        self.assertEqual(regex.search(r"(?V1)((?i)blah)\s+\1", "blah BLAH"),
           None)
 
         # Hg issue 40.
-        self.assertEquals(regex.search(r"(\()?[^()]+(?(1)\)|)",
+        self.assertEqual(regex.search(r"(\()?[^()]+(?(1)\)|)",
           "(abcd").group(0), "abcd")
 
         # Hg issue 42.
-        self.assertEquals(regex.search("(a*)*", "a").span(1), (1, 1))
-        self.assertEquals(regex.search("(a*)*", "aa").span(1), (2, 2))
-        self.assertEquals(regex.search("(a*)*", "aaa").span(1), (3, 3))
+        self.assertEqual(regex.search("(a*)*", "a").span(1), (1, 1))
+        self.assertEqual(regex.search("(a*)*", "aa").span(1), (2, 2))
+        self.assertEqual(regex.search("(a*)*", "aaa").span(1), (3, 3))
 
         # Hg issue 43.
-        self.assertEquals(regex.search("a(?#xxx)*", "aaa").group(), "aaa")
+        self.assertEqual(regex.search("a(?#xxx)*", "aaa").group(), "aaa")
 
         # Hg issue 44.
-        self.assertEquals(regex.search("(?=abc){3}abc", "abcabcabc").span(),
+        self.assertEqual(regex.search("(?=abc){3}abc", "abcabcabc").span(),
           (0, 3))
 
         # Hg issue 45.
-        self.assertEquals(regex.search("^(?:a(?:(?:))+)+", "a").span(), (0, 1))
-        self.assertEquals(regex.search("^(?:a(?:(?:))+)+", "aa").span(), (0,
+        self.assertEqual(regex.search("^(?:a(?:(?:))+)+", "a").span(), (0, 1))
+        self.assertEqual(regex.search("^(?:a(?:(?:))+)+", "aa").span(), (0,
           2))
 
         # Hg issue 46.
-        self.assertEquals(regex.search("a(?x: b c )d", "abcd").group(0),
+        self.assertEqual(regex.search("a(?x: b c )d", "abcd").group(0),
           "abcd")
 
         # Hg issue 47.
-        self.assertEquals(regex.search("a#comment\n*", "aaa",
+        self.assertEqual(regex.search("a#comment\n*", "aaa",
           flags=regex.X).group(0), "aaa")
 
         # Hg issue 48.
-        self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){1}",
+        self.assertEqual(regex.search(r"(?V1)(a(?(1)\1)){1}",
           "aaaaaaaaaa").span(0, 1), ((0, 1), (0, 1)))
-        self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){2}",
+        self.assertEqual(regex.search(r"(?V1)(a(?(1)\1)){2}",
           "aaaaaaaaaa").span(0, 1), ((0, 3), (1, 3)))
-        self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){3}",
+        self.assertEqual(regex.search(r"(?V1)(a(?(1)\1)){3}",
           "aaaaaaaaaa").span(0, 1), ((0, 6), (3, 6)))
-        self.assertEquals(regex.search(r"(?V1)(a(?(1)\1)){4}",
+        self.assertEqual(regex.search(r"(?V1)(a(?(1)\1)){4}",
           "aaaaaaaaaa").span(0, 1), ((0, 10), (6, 10)))
 
         # Hg issue 49.
-        self.assertEquals(regex.search("(?V1)(a)(?<=b(?1))", "baz").group(0),
+        self.assertEqual(regex.search("(?V1)(a)(?<=b(?1))", "baz").group(0),
           "a")
 
         # Hg issue 50.
-        self.assertEquals(regex.findall(ur'(?fi)\L<keywords>',
+        self.assertEqual(regex.findall(ur'(?fi)\L<keywords>',
           u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05',
           keywords=['post','pos']), [u'POST', u'Post', u'post', u'po\u017Ft',
           u'po\uFB06', u'po\uFB05'])
-        self.assertEquals(regex.findall(ur'(?fi)pos|post',
+        self.assertEqual(regex.findall(ur'(?fi)pos|post',
           u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'), [u'POS',
           u'Pos', u'pos', u'po\u017F', u'po\uFB06', u'po\uFB05'])
-        self.assertEquals(regex.findall(ur'(?fi)post|pos',
+        self.assertEqual(regex.findall(ur'(?fi)post|pos',
           u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'), [u'POST',
           u'Post', u'post', u'po\u017Ft', u'po\uFB06', u'po\uFB05'])
-        self.assertEquals(regex.findall(ur'(?fi)post|another',
+        self.assertEqual(regex.findall(ur'(?fi)post|another',
           u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'), [u'POST',
           u'Post', u'post', u'po\u017Ft', u'po\uFB06', u'po\uFB05'])
 
         # Hg issue 51.
-        self.assertEquals(regex.search("(?V1)((a)(?1)|(?2))", "a").group(0, 1,
+        self.assertEqual(regex.search("(?V1)((a)(?1)|(?2))", "a").group(0, 1,
           2), ('a', 'a', None))
 
         # Hg issue 52.
-        self.assertEquals(regex.search(r"(?V1)(\1xx|){6}", "xx").span(0, 1),
+        self.assertEqual(regex.search(r"(?V1)(\1xx|){6}", "xx").span(0, 1),
           ((0, 2), (2, 2)))
 
         # Hg issue 53.
-        self.assertEquals(regex.search("(a|)+", "a").group(0, 1), ("a", ""))
+        self.assertEqual(regex.search("(a|)+", "a").group(0, 1), ("a", ""))
 
         # Hg issue 54.
-        self.assertEquals(regex.search(r"(a|)*\d", "a" * 80), None)
+        self.assertEqual(regex.search(r"(a|)*\d", "a" * 80), None)
 
         # Hg issue 55.
-        self.assertEquals(regex.search("^(?:a?b?)*$", "ac"), None)
+        self.assertEqual(regex.search("^(?:a?b?)*$", "ac"), None)
 
         # Hg issue 58.
         self.assertRaisesRegex(regex.error, self.UNDEF_CHAR_NAME, lambda:
           regex.compile("\\N{1}"))
 
         # Hg issue 59.
-        self.assertEquals(regex.search("\\Z", "a\na\n").span(0), (4, 4))
+        self.assertEqual(regex.search("\\Z", "a\na\n").span(0), (4, 4))
 
         # Hg issue 60.
-        self.assertEquals(regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}",
+        self.assertEqual(regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}",
           "xayxay").group(0), "xayxay")
 
         # Hg issue 61.
-        self.assertEquals(regex.search("(?i)[^a]", "A"), None)
+        self.assertEqual(regex.search("(?i)[^a]", "A"), None)
 
         # Hg issue 63.
-        self.assertEquals(regex.search(u"(?iu)[[:ascii:]]", u"\N{KELVIN SIGN}"),
+        self.assertEqual(regex.search(u"(?iu)[[:ascii:]]", u"\N{KELVIN SIGN}"),
           None)
 
         # Hg issue 66.
-        self.assertEquals(regex.search("((a|b(?1)c){3,5})", "baaaaca").group(0,
+        self.assertEqual(regex.search("((a|b(?1)c){3,5})", "baaaaca").group(0,
           1, 2), ('aaaa', 'aaaa', 'a'))
 
         # Hg issue 71.
-        self.assertEquals(regex.findall(r"(?<=:\S+ )\w+", ":9 abc :10 def"),
+        self.assertEqual(regex.findall(r"(?<=:\S+ )\w+", ":9 abc :10 def"),
           ['abc', 'def'])
-        self.assertEquals(regex.findall(r"(?<=:\S* )\w+", ":9 abc :10 def"),
+        self.assertEqual(regex.findall(r"(?<=:\S* )\w+", ":9 abc :10 def"),
           ['abc', 'def'])
-        self.assertEquals(regex.findall(r"(?<=:\S+? )\w+", ":9 abc :10 def"),
+        self.assertEqual(regex.findall(r"(?<=:\S+? )\w+", ":9 abc :10 def"),
           ['abc', 'def'])
-        self.assertEquals(regex.findall(r"(?<=:\S*? )\w+", ":9 abc :10 def"),
+        self.assertEqual(regex.findall(r"(?<=:\S*? )\w+", ":9 abc :10 def"),
           ['abc', 'def'])
 
         # Hg issue 73.
-        self.assertEquals(regex.search(r"(?:fe)?male", "female").group(),
+        self.assertEqual(regex.search(r"(?:fe)?male", "female").group(),
           "female")
-        self.assertEquals([m.group() for m in
+        self.assertEqual([m.group() for m in
           regex.finditer(r"(fe)?male: h(?(1)(er)|(is)) (\w+)",
           "female: her dog; male: his cat. asdsasda")], ['female: her dog',
           'male: his cat'])
 
         # Hg issue 78.
-        self.assertEquals(regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))',
+        self.assertEqual(regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))',
           'aaa(((1+0)+1)+1)bbb').captures('rec'), ['(1+0)', '((1+0)+1)',
           '(((1+0)+1)+1)'])
 
@@ -3085,29 +3085,34 @@ xyzabc
         # Hg issue 82.
         fz = "(CAGCCTCCCATTTCAGAATATACATCC){1<e<=2}"
         seq = "tcagacgagtgcgttgtaaaacgacggccagtCAGCCTCCCATTCAGAATATACATCCcgacggccagttaaaaacaatgccaaggaggtcatagctgtttcctgccagttaaaaacaatgccaaggaggtcatagctgtttcctgacgcactcgtctgagcgggctggcaagg"
-        self.assertEquals(regex.search(fz, seq, regex.BESTMATCH)[0],
+        self.assertEqual(regex.search(fz, seq, regex.BESTMATCH)[0],
           "tCAGCCTCCCATTCAGAATATACATCC")
 
         # Hg issue 83.
-        self.assertEquals(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
+        self.assertEqual(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
 
         # Hg issue 85.
-        self.assertEquals(repr(regex.sub(ur"(?u)(\w+)", ur"[\1]",
+        self.assertEqual(repr(regex.sub(ur"(?u)(\w+)", ur"[\1]",
           u'\u0905\u0928\u094d\u200d\u0928 \u0d28\u0d4d\u200d \u0915\u093f\u0928',
           regex.WORD)),
           repr(u'[\u0905\u0928\u094d\u200d\u0928] [\u0d28\u0d4d\u200d] [\u0915\u093f\u0928]'))
 
         # Hg issue 88.
-        self.assertEquals(regex.match(r".*a.*ba.*aa", "ababba"), None)
+        self.assertEqual(regex.match(r".*a.*ba.*aa", "ababba"), None)
 
         # Hg issue 87.
-        self.assertEquals(regex.match(r'(?<x>a(?<x>b))', "ab").spans("x"), [(1,
+        self.assertEqual(regex.match(r'(?<x>a(?<x>b))', "ab").spans("x"), [(1,
           2), (0, 2)])
 
         # Hg issue 91.
         # Check that the replacement cache works.
-        self.assertEquals(regex.sub(r'(-)', lambda m: m.expand(r'x'), 'a-b-c'),
+        self.assertEqual(regex.sub(r'(-)', lambda m: m.expand(r'x'), 'a-b-c'),
           'axbxc')
+
+        # Hg issue 94.
+        rx = regex.compile(r'\bt(est){i<2}', flags=regex.V1)
+        self.assertEqual(rx.search("Some text"), None)
+        self.assertEqual(rx.findall("Some text"), [])
 
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
