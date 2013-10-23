@@ -7132,10 +7132,39 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t len,
     return PyUnicode_FromUnicode(buffer, len);
 }
 
-/* Builds a bytestring. */
-Py_LOCAL_INLINE(PyObject*) build_bytes_value(void* buffer, Py_ssize_t len)
+/* Builds a bytestring. Returns NULL if any member is too wide. */
+Py_LOCAL_INLINE(PyObject*) build_bytes_value(void* buffer, Py_ssize_t len,
+  Py_ssize_t buffer_charsize)
 {
-    return Py_BuildValue("s#", buffer, len);
+    Py_UCS1* byte_buffer;
+    Py_ssize_t i;
+    PyObject* result;
+
+    if (buffer_charsize == 1)
+        return Py_BuildValue("s#", buffer, len);
+
+    byte_buffer = re_alloc(len);
+    if (!byte_buffer)
+        return NULL;
+
+    for (i = 0; i < len; i++) {
+        Py_UCS2 c = ((Py_UCS2*)buffer)[i];
+        if (c > 0xFF)
+            goto too_wide;
+
+        byte_buffer[i] = (Py_UCS1)c;
+    }
+
+    result = Py_BuildValue("s#", byte_buffer, len);
+
+    re_dealloc(byte_buffer);
+
+    return result;
+
+too_wide:
+    re_dealloc(byte_buffer);
+
+    return NULL;
 }
 
 /* Looks for a string in a string set, ignoring case. */
@@ -7203,7 +7232,7 @@ Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
         if (state->is_unicode)
             string = build_unicode_value(buffer, len, buffer_charsize);
         else
-            string = build_bytes_value(buffer, len);
+            string = build_bytes_value(buffer, len, buffer_charsize);
         if (!string)
             return RE_ERROR_MEMORY;
 
@@ -7263,6 +7292,9 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
     folded_charsize = state->charsize;
 
     switch (folded_charsize) {
+    case 1:
+        set_char_at = bytes1_set_char_at;
+        break;
     case 2:
         set_char_at = bytes2_set_char_at;
         break;
@@ -7379,7 +7411,8 @@ Py_LOCAL_INLINE(int) string_set_match(RE_SafeState* safe_state, RE_Node* node)
             string = build_unicode_value(point_to(text, text_pos), len,
               state->charsize);
         else
-            string = build_bytes_value(point_to(text, text_pos), len);
+            string = build_bytes_value(point_to(text, text_pos), len,
+              state->charsize);
         if (!string)
             goto error;
 
@@ -7734,7 +7767,8 @@ Py_LOCAL_INLINE(int) string_set_match_rev(RE_SafeState* safe_state, RE_Node*
             string = build_unicode_value(point_to(text, text_pos - len), len,
               state->charsize);
         else
-            string = build_bytes_value(point_to(text, text_pos - len), len);
+            string = build_bytes_value(point_to(text, text_pos - len), len,
+              state->charsize);
         if (!string)
             goto error;
 
@@ -19602,7 +19636,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     if (str_info.is_unicode)
         result = build_unicode_value(folded, folded_len, folded_charsize);
     else
-        result = build_bytes_value(folded, folded_len);
+        result = build_bytes_value(folded, folded_len, folded_charsize);
 
     re_dealloc(folded);
 

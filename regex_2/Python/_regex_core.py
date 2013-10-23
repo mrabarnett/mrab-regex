@@ -3439,18 +3439,11 @@ class StringSet(RegexBase):
         if not items:
             return []
 
-        if fuzzy or (case_flags & IGNORECASE):
-            encoding = self.info.flags & _ALL_ENCODINGS
-            fold_flags = encoding | case_flags
+        encoding = self.info.flags & _ALL_ENCODINGS
+        fold_flags = encoding | case_flags
 
-            choices = []
-            for i in items:
-                if isinstance(i, unicode):
-                    string = [ord(c) for c in _regex.fold_case(fold_flags, i)]
-                else:
-                    string = [ord(c) for c in i]
-
-                choices.append(string)
+        if fuzzy:
+            choices = [self._folded(fold_flags, i) for i in items]
 
             # Sort from longest to shortest.
             choices.sort(key=lambda s: (-len(s), s))
@@ -3469,14 +3462,19 @@ class StringSet(RegexBase):
             return branch.compile(reverse, fuzzy)
         else:
             min_len = min(len(i) for i in items)
-            max_len = max(len(i) for i in items)
-
+            max_len = max(len(self._folded(fold_flags, i)) for i in items)
             return [(self._opcode[case_flags, reverse], index, min_len,
               max_len)]
 
     def dump(self, indent=0, reverse=False):
         print "%sSTRING_SET %s%s" % (INDENT * indent, self.name,
           CASE_TEXT[self.case_flags])
+
+    def _folded(self, fold_flags, item):
+        if isinstance(item, unicode):
+            return [ord(c) for c in _regex.fold_case(fold_flags, item)]
+        else:
+            return [ord(c) for c in item]
 
     def _flatten(self, s):
         # Flattens the branches.
