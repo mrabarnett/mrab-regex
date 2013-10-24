@@ -7480,6 +7480,9 @@ Py_LOCAL_INLINE(int) string_set_match_fld(RE_SafeState* safe_state, RE_Node*
     folded_charsize = state->charsize;
 
     switch (folded_charsize) {
+    case 1:
+        set_char_at = bytes1_set_char_at;
+        break;
     case 2:
         set_char_at = bytes2_set_char_at;
         break;
@@ -7612,6 +7615,10 @@ Py_LOCAL_INLINE(int) string_set_match_fld_rev(RE_SafeState* safe_state,
     folded_charsize = state->charsize;
 
     switch (folded_charsize) {
+    case 1:
+        set_char_at = bytes1_set_char_at;
+        point_to = bytes1_point_to;
+        break;
     case 2:
         set_char_at = bytes2_set_char_at;
         point_to = bytes2_point_to;

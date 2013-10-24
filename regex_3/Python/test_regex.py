@@ -654,6 +654,8 @@ class RegexTests(unittest.TestCase):
            "  affine  ").span(), (2, 8))
         self.assertEqual(regex.search(r"(?fi)a\L<options>ne", "affine",
           options=["\N{LATIN SMALL LIGATURE FFI}"]).span(), (0, 6))
+        self.assertEqual(regex.search(r"(?fi)a\L<options>ne",
+          "a\N{LATIN SMALL LIGATURE FFI}ne", options=["ffi"]).span(), (0, 4))
 
     def test_category(self):
         self.assertEqual(regex.match(r"(\s)", " ")[1], ' ')
