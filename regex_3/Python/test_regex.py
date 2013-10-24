@@ -3170,6 +3170,14 @@ xyzabc
         self.assertRaisesRegex(regex.error,
           '^nothing to repeat at position 3$', lambda: regex.compile(r'.???'))
 
+        # Hg issue 97.
+        self.assertEquals(regex.escape('foo!?'), 'foo\\!\\?')
+        self.assertEquals(regex.escape('foo!?', special_only=True), 'foo!\\?')
+
+        self.assertEquals(regex.escape(b'foo!?'), b'foo\\!\\?')
+        self.assertEquals(regex.escape(b'foo!?', special_only=True),
+          b'foo!\\?')
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp

@@ -3120,6 +3120,14 @@ xyzabc
         self.assertRaisesRegex(regex.error,
           '^nothing to repeat at position 3$', lambda: regex.compile(r'.???'))
 
+        # Hg issue 97.
+        self.assertEquals(regex.escape(u'foo!?'), u'foo\\!\\?')
+        self.assertEquals(regex.escape(u'foo!?', special_only=True),
+          u'foo!\\?')
+
+        self.assertEquals(regex.escape('foo!?'), 'foo\\!\\?')
+        self.assertEquals(regex.escape('foo!?', special_only=True), 'foo!\\?')
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format
