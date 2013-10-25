@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.34"
+__version__ = "2.4.35"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -390,6 +390,7 @@ def escape(pattern, special_only=False):
 
 import _regex_core
 import _regex
+from threading import RLock as _RLock
 from _regex_core import *
 from _regex_core import (_ALL_VERSIONS, _ALL_ENCODINGS, _FirstSetError,
   _UnscopedFlagSet, _check_group_features, _compile_firstset,
@@ -409,6 +410,7 @@ _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
 
 # Caches for the patterns and replacements.
 _cache = {}
+_cache_lock = _RLock()
 _named_args = {}
 _replacement_cache = {}
 
@@ -574,7 +576,8 @@ def _compile(pattern, flags=0, kwargs={}):
 
     # Do we need to reduce the size of the cache?
     if len(_cache) >= _MAXCACHE:
-        _shrink_cache(_cache, _named_args, _MAXCACHE)
+        with _cache_lock:
+            _shrink_cache(_cache, _named_args, _MAXCACHE)
 
     args_needed = frozenset(args_needed)
 
