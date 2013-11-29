@@ -3128,6 +3128,14 @@ xyzabc
         self.assertEquals(regex.escape('foo!?'), 'foo\\!\\?')
         self.assertEquals(regex.escape('foo!?', special_only=True), 'foo!\\?')
 
+        # Hg issue 100.
+        self.assertEquals(regex.search('^([^z]*(?:WWWi|W))?$',
+          'WWWi').groups(), ('WWWi', ))
+        self.assertEquals(regex.search('^([^z]*(?:WWWi|w))?$',
+          'WWWi').groups(), ('WWWi', ))
+        self.assertEquals(regex.search('^([^z]*?(?:WWWi|W))?$',
+          'WWWi').groups(), ('WWWi', ))
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format

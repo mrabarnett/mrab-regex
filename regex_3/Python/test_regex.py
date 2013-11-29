@@ -3178,6 +3178,14 @@ xyzabc
         self.assertEquals(regex.escape(b'foo!?', special_only=True),
           b'foo!\\?')
 
+        # Hg issue 100.
+        self.assertEquals(regex.search('^([^z]*(?:WWWi|W))?$',
+          'WWWi').groups(), ('WWWi', ))
+        self.assertEquals(regex.search('^([^z]*(?:WWWi|w))?$',
+          'WWWi').groups(), ('WWWi', ))
+        self.assertEquals(regex.search('^([^z]*?(?:WWWi|W))?$',
+          'WWWi').groups(), ('WWWi', ))
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp
