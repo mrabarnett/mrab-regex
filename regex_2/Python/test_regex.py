@@ -3136,6 +3136,24 @@ xyzabc
         self.assertEquals(regex.search('^([^z]*?(?:WWWi|W))?$',
           'WWWi').groups(), ('WWWi', ))
 
+        # Hg issue 101.
+        pat = regex.compile(r'xxx', flags=regex.FULLCASE | regex.UNICODE)
+        self.assertEquals([x.group() for x in pat.finditer('yxxx')], ['xxx'])
+        self.assertEquals(pat.findall('yxxx'), ['xxx'])
+
+        raw = 'yxxx'
+        self.assertEquals([x.group() for x in pat.finditer(raw)], ['xxx'])
+        self.assertEquals(pat.findall(raw), ['xxx'])
+
+        pat = regex.compile(r'xxx', flags=regex.FULLCASE | regex.IGNORECASE |
+          regex.UNICODE)
+        self.assertEquals([x.group() for x in pat.finditer('yxxx')], ['xxx'])
+        self.assertEquals(pat.findall('yxxx'), ['xxx'])
+
+        raw = 'yxxx'
+        self.assertEquals([x.group() for x in pat.finditer(raw)], ['xxx'])
+        self.assertEquals(pat.findall(raw), ['xxx'])
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format

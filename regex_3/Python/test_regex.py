@@ -3186,6 +3186,24 @@ xyzabc
         self.assertEquals(regex.search('^([^z]*?(?:WWWi|W))?$',
           'WWWi').groups(), ('WWWi', ))
 
+        # Hg issue 101.
+        pat = regex.compile(r'xxx', flags=regex.FULLCASE | regex.UNICODE)
+        self.assertEquals([x.group() for x in pat.finditer('yxxx')], ['xxx'])
+        self.assertEquals(pat.findall('yxxx'), ['xxx'])
+
+        raw = 'yxxx'
+        self.assertEquals([x.group() for x in pat.finditer(raw)], ['xxx'])
+        self.assertEquals(pat.findall(raw), ['xxx'])
+
+        pat = regex.compile(r'xxx', flags=regex.FULLCASE | regex.IGNORECASE |
+          regex.UNICODE)
+        self.assertEquals([x.group() for x in pat.finditer('yxxx')], ['xxx'])
+        self.assertEquals(pat.findall('yxxx'), ['xxx'])
+
+        raw = 'yxxx'
+        self.assertEquals([x.group() for x in pat.finditer(raw)], ['xxx'])
+        self.assertEquals(pat.findall(raw), ['xxx'])
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp
