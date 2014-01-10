@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: regex
-Version: 2013-12-31
+Version: 2014.01.10
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://code.google.com/p/mrab-regex-hg/
 Author: Matthew Barnett
@@ -342,6 +342,13 @@ Description: Introduction
                 regex.Regex('foo', flags=regex.I | regex.V0)
         
             The regex module has Regex as an alias for the 'compile' function.
+        
+        * Improve the repr for regular expression match objects (issue #17087)
+        
+            The repr of a match object is now a more useful form. For example::
+        
+                >>> regex.search(r"\d+", "abc012def")
+                <regex.Match object; span=(3, 6), match='012'>
         
         * Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)
         

@@ -16951,6 +16951,94 @@ Py_LOCAL_INLINE(BOOL) append_string(PyObject* list, char* string) {
     return TRUE;
 }
 
+/* Appends a (decimal) integer to a list. */
+Py_LOCAL_INLINE(BOOL) append_integer(PyObject* list, Py_ssize_t value) {
+    PyObject* int_obj;
+    PyObject* repr_obj;
+    int status;
+
+    int_obj = Py_BuildValue("n", value);
+    if (!int_obj)
+        return FALSE;
+
+    repr_obj = PyObject_Repr(int_obj);
+    Py_DECREF(int_obj);
+    if (!repr_obj)
+        return FALSE;
+
+    status = PyList_Append(list, repr_obj);
+    Py_DECREF(repr_obj);
+    if (status < 0)
+        return FALSE;
+
+    return TRUE;
+}
+
+/* MatchObject's '__repr__' method. */
+static PyObject* match_repr(PyObject* self_) {
+    MatchObject* self;
+    PyObject* list;
+    PyObject* matched_substring;
+    PyObject* matched_repr;
+    int status;
+    PyObject* separator;
+    PyObject* result;
+
+    self = (MatchObject*)self_;
+
+    list = PyList_New(0);
+    if (!list)
+        return NULL;
+
+    if (!append_string(list, "<regex.Match object; span=("))
+        goto error;
+
+    if (!append_integer(list, self->match_start))
+        goto error;
+
+    if (! append_string(list, ", "))
+        goto error;
+
+    if (!append_integer(list, self->match_end))
+        goto error;
+
+    if (!append_string(list, "), match="))
+        goto error;
+
+    matched_substring = get_slice(self->substring, self->match_start -
+      self->substring_offset, self->match_end - self->substring_offset);
+    if (!matched_substring)
+        goto error;
+
+    matched_repr = PyObject_Repr(matched_substring);
+    Py_DECREF(matched_substring);
+    if (!matched_repr)
+        goto error;
+
+    status = PyList_Append(list, matched_repr);
+    Py_DECREF(matched_repr);
+    if (status < 0)
+        goto error;
+
+    if (! append_string(list, ">"))
+        goto error;
+
+    separator = Py_BuildValue("s", "");
+    if (!separator)
+        goto error;
+
+    result = PyUnicode_Join(separator, list);
+    Py_DECREF(separator);
+
+    Py_DECREF(list);
+
+    return result;
+
+error:
+    Py_DECREF(list);
+    return NULL;
+}
+
 /* PatternObject's '__repr__' method. */
 static PyObject* pattern_repr(PyObject* self_) {
     PatternObject* self;
@@ -19873,6 +19961,7 @@ PyMODINIT_FUNC init_regex(void) {
 
     /* Initialise Match_Type. */
     Match_Type.tp_dealloc = match_dealloc;
+    Match_Type.tp_repr = match_repr;
     Match_Type.tp_as_mapping = &match_as_mapping;
     Match_Type.tp_flags = Py_TPFLAGS_DEFAULT;
     Match_Type.tp_doc = match_doc;

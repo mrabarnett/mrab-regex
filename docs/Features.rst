@@ -335,6 +335,13 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     The regex module has Regex as an alias for the 'compile' function.
 
+* Improve the repr for regular expression match objects (issue #17087)
+
+    The repr of a match object is now a more useful form. For example::
+
+        >>> regex.search(r"\d+", "abc012def")
+        <regex.Match object; span=(3, 6), match='012'>
+
 * Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)
 
     The source code of the regex module has been updated to support PEP 393 ("Flexible String Representation"), which is new in Python 3.3.

@@ -607,6 +607,15 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 <p>The regex module has Regex as an alias for the 'compile' function.</p>
 </blockquote>
 </li>
+<li><p class="first">Improve the repr for regular expression match objects (issue #17087)</p>
+<blockquote>
+<p>The repr of a match object is now a more useful form. For example:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; regex.search(r&quot;\d+&quot;, &quot;abc012def&quot;)
+&lt;regex.Match object; span=(3, 6), match='012'&gt;
+</pre>
+</blockquote>
+</li>
 <li><p class="first">Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)</p>
 <blockquote>
 <p>The source code of the regex module has been updated to support PEP 393 (&quot;Flexible String Representation&quot;), which is new in Python 3.3.</p>
