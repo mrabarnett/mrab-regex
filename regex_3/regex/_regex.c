@@ -213,9 +213,6 @@ typedef struct RE_State* RE_StatePtr;
 /* Handlers for ASCII, locale and Unicode. */
 typedef struct RE_EncodingTable {
     BOOL (*has_property)(RE_CODE property, Py_UCS4 ch);
-    Py_UCS4 (*lower)(Py_UCS4 ch);
-    Py_UCS4 (*upper)(Py_UCS4 ch);
-    Py_UCS4 (*title)(Py_UCS4 ch);
     BOOL (*at_boundary)(RE_StatePtr state, Py_ssize_t text_pos);
     BOOL (*at_word_start)(RE_StatePtr state, Py_ssize_t text_pos);
     BOOL (*at_word_end)(RE_StatePtr state, Py_ssize_t text_pos);
@@ -761,22 +758,6 @@ static BOOL ascii_has_property(RE_CODE property, Py_UCS4 ch) {
     return unicode_has_property(property, ch);
 }
 
-/* Converts a character to lowercase. */
-static Py_UCS4 ascii_lower(Py_UCS4 ch) {
-    if (ch > RE_ASCII_MAX || !re_get_uppercase(ch))
-        return ch;
-
-    return ch ^ 0x20;
-}
-
-/* Converts a character to uppercase. */
-static Py_UCS4 ascii_upper(Py_UCS4 ch) {
-    if (ch > RE_ASCII_MAX || !re_get_lowercase(ch))
-        return ch;
-
-    return ch ^ 0x20;
-}
-
 /* Checks whether the current text position is on a word boundary. */
 static BOOL ascii_at_boundary(RE_State* state, Py_ssize_t text_pos) {
     BOOL before;
@@ -919,9 +900,6 @@ static int ascii_all_turkic_i(Py_UCS4 ch, Py_UCS4* cases) {
 /* The handlers for ASCII characters. */
 static RE_EncodingTable ascii_encoding = {
     ascii_has_property,
-    ascii_lower,
-    ascii_upper,
-    ascii_upper, /* For ASCII, titlecase is the same as uppercase. */
     ascii_at_boundary,
     ascii_at_word_start,
     ascii_at_word_end,
@@ -1020,22 +998,6 @@ static BOOL locale_has_property(RE_CODE property, Py_UCS4 ch) {
     }
 
     return v == value;
-}
-
-/* Converts a character to lowercase. */
-static Py_UCS4 locale_lower(Py_UCS4 ch) {
-    if (ch > RE_LOCALE_MAX)
-        return ch;
-
-    return tolower(ch);
-}
-
-/* Converts a character to uppercase. */
-static Py_UCS4 locale_upper(Py_UCS4 ch) {
-    if (ch > RE_LOCALE_MAX)
-        return ch;
-
-    return toupper(ch);
 }
 
 /* Checks whether the current text position is on a word boundary. */
@@ -1153,9 +1115,6 @@ static int locale_all_turkic_i(Py_UCS4 ch, Py_UCS4* cases) {
 /* The handlers for locale characters. */
 static RE_EncodingTable locale_encoding = {
     locale_has_property,
-    locale_lower,
-    locale_upper,
-    locale_upper, /* For locale, titlecase is the same as uppercase. */
     locale_at_boundary,
     locale_at_word_start,
     locale_at_word_end,
@@ -1213,21 +1172,6 @@ static BOOL unicode_has_property(RE_CODE property, Py_UCS4 ch) {
     return FALSE;
 }
 
-/* Converts a Unicode character to lowercase. */
-static Py_UCS4 unicode_lower(Py_UCS4 ch) {
-    return Py_UNICODE_TOLOWER((Py_UCS4)ch);
-}
-
-/* Converts a Unicode character to uppercase. */
-static Py_UCS4 unicode_upper(Py_UCS4 ch) {
-    return Py_UNICODE_TOUPPER((Py_UCS4)ch);
-}
-
-/* Converts a Unicode character to titlecase. */
-static Py_UCS4 unicode_title(Py_UCS4 ch) {
-    return Py_UNICODE_TOTITLE((Py_UCS4)ch);
-}
-
 /* Checks whether the current text position is on a word boundary. */
 static BOOL unicode_at_boundary(RE_State* state, Py_ssize_t text_pos) {
     BOOL before;
@@ -1272,7 +1216,7 @@ static BOOL unicode_at_word_end(RE_State* state, Py_ssize_t text_pos) {
  * Only a limited number are treated as vowels.
  */
 Py_LOCAL_INLINE(BOOL) is_unicode_vowel(Py_UCS4 ch) {
-    switch (unicode_lower(ch)) {
+    switch (Py_UNICODE_TOLOWER(ch)) {
     case 'a': case 0xE0: case 0xE1: case 0xE2:
     case 'e': case 0xE8: case 0xE9: case 0xEA:
     case 'i': case 0xEC: case 0xED: case 0xEE:
@@ -1760,9 +1704,6 @@ static int unicode_all_turkic_i(Py_UCS4 ch, Py_UCS4* cases) {
 /* The handlers for Unicode characters. */
 static RE_EncodingTable unicode_encoding = {
     unicode_has_property,
-    unicode_lower,
-    unicode_upper,
-    unicode_title,
     unicode_at_boundary,
     unicode_at_word_start,
     unicode_at_word_end,
@@ -8548,6 +8489,7 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_match_string_fld(RE_SafeState* safe_state,
     new_node = bt_data->fuzzy_string.position.node;
     data.new_string_pos = bt_data->fuzzy_string.string_pos;
     data.new_folded_pos = bt_data->fuzzy_string.folded_pos;
+    data.folded_len = bt_data->fuzzy_string.folded_len;
     data.fuzzy_type = bt_data->fuzzy_string.fuzzy_type;
     data.step = bt_data->fuzzy_string.step;
 
@@ -8728,6 +8670,7 @@ Py_LOCAL_INLINE(BOOL) retry_fuzzy_match_string_fld2(RE_SafeState* safe_state,
     new_node = bt_data->fuzzy_string.position.node;
     new_group_pos = bt_data->fuzzy_string.string_pos;
     data.new_folded_pos = bt_data->fuzzy_string.folded_pos;
+    data.folded_len = bt_data->fuzzy_string.folded_len;
     data.new_gfolded_pos = bt_data->fuzzy_string.gfolded_pos;
     data.fuzzy_type = bt_data->fuzzy_string.fuzzy_type;
     data.step = bt_data->fuzzy_string.step;
@@ -10980,9 +10923,9 @@ advance:
                         goto backtrack;
                     }
                 }
-
-                string_pos = -1;
             }
+
+            string_pos = -1;
 
             /* Successful match. */
             node = node->next_1.node;
@@ -11084,12 +11027,10 @@ advance:
                     }
                 }
 
-                if (folded_pos < folded_len) {
-                    string_pos = -1;
-                    goto backtrack;
-                }
-
                 string_pos = -1;
+
+                if (folded_pos < folded_len)
+                    goto backtrack;
             }
 
             /* Successful match. */
@@ -11192,12 +11133,10 @@ advance:
                     }
                 }
 
-                if (folded_pos > 0) {
-                    string_pos = -1;
-                    goto backtrack;
-                }
-
                 string_pos = -1;
+
+                if (folded_pos > 0)
+                    goto backtrack;
             }
 
             /* Successful match. */
@@ -11247,9 +11186,9 @@ advance:
                         goto backtrack;
                     }
                 }
-
-                string_pos = -1;
             }
+
+            string_pos = -1;
 
             /* Successful match. */
             node = node->next_1.node;
@@ -11298,9 +11237,9 @@ advance:
                         goto backtrack;
                     }
                 }
-
-                string_pos = -1;
             }
+
+            string_pos = -1;
 
             /* Successful match. */
             node = node->next_1.node;
@@ -11349,9 +11288,9 @@ advance:
                         goto backtrack;
                     }
                 }
-
-                string_pos = -1;
             }
+
+            string_pos = -1;
 
             /* Successful match. */
             node = node->next_1.node;
@@ -14545,7 +14484,7 @@ Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info) {
  * Returns its length if it is a literal, otherwise -1.
  */
 Py_LOCAL_INLINE(Py_ssize_t) check_replacement_string(PyObject* str_replacement,
-  char special_char) {
+  unsigned char special_char) {
     RE_StringInfo str_info;
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     Py_ssize_t pos;
