@@ -531,7 +531,7 @@ typedef struct RE_State {
     BOOL overlapped; /* Whether the matches can be overlapped. */
     BOOL reverse; /* Whether it's a reverse pattern. */
     BOOL visible_captures; /* Whether the 'captures' method will be visible. */
-    BOOL zero_width; /* Whether to enable the correct handling of zero-width matches. */
+    BOOL version_0; /* Whether to perform version_0 behaviour (same as re module). */
     BOOL must_advance; /* Whether the end of the match must advance past its start. */
     BOOL is_multithreaded; /* Whether to release the GIL while matching. */
     BOOL too_few_errors; /* Whether there were too few fuzzy errors. */
@@ -13340,7 +13340,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     /* If the 'new' behaviour is enabled then split correctly on zero-width
      * matches.
      */
-    state->zero_width = (pattern->flags & RE_FLAG_VERSION1) != 0;
+    state->version_0 = (pattern->flags & RE_FLAG_VERSION1) == 0;
     state->must_advance = FALSE;
 
     state->pattern = pattern;
@@ -15530,13 +15530,12 @@ retry:
                 goto error;
 
             if (self->status == RE_ERROR_SUCCESS) {
-                if (!state->zero_width) {
-                    /* The current behaviour is to advance one character if the
+                if (state->version_0) {
+                    /* Version 0 behaviour is to advance one character if the
                      * split was zero-width. Unfortunately, this can give an
                      * incorrect result. GvR wants this behaviour to be
                      * retained so as not to break any existing software which
-                     * might rely on it. The correct behaviour is enabled by
-                     * setting the 'new' flag.
+                     * might rely on it.
                      */
                      if (state->text_pos == state->match_pos) {
                          if (self->last_pos == end_pos)
@@ -15563,26 +15562,22 @@ retry:
 
                 self->last_pos = state->text_pos;
 
-                /* The correct behaviour is to reject a zero-width match just
-                 * after a split point. The current behaviour is to advance one
-                 * character if the match was zero-width. Unfortunately, this
-                 * can give an incorrect result. GvR wants this behaviour to be
-                 * retained so as not to break any existing software which
-                 * might rely on it. The correct behaviour is enabled by
-                 * setting the 'new' flag.
+                /* Version 0 behaviour is to advance one character if the match
+                 * was zero-width. Unfortunately, this can give an incorrect
+                 * result. GvR wants this behaviour to be retained so as not to
+                 * break any existing software which might rely on it.
                  */
-                if (state->zero_width)
-                    /* Continue from where we left off, but don't allow a
-                     * contiguous zero-width match.
-                     */
-                    state->must_advance = TRUE;
-                else {
+                if (state->version_0) {
                     if (state->text_pos == state->match_pos)
                         /* Advance one character. */
                         state->text_pos += step;
 
                     state->must_advance = FALSE;
-                }
+                } else
+                    /* Continue from where we left off, but don't allow a
+                     * contiguous zero-width match.
+                     */
+                    state->must_advance = TRUE;
             }
         } else
             goto no_match;
@@ -15980,6 +15975,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     Py_ssize_t last_pos;
     PyObject* item;
     Py_ssize_t end_pos;
+    Py_ssize_t step;
 
     /* Get the string. */
     if (!get_string(string, &str_info))
@@ -16101,6 +16097,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
 
     sub_count = 0;
     last_pos = state.reverse ? state.text_length : 0;
+    step = state.reverse ? -1 : 1;
     while (sub_count < maxsub) {
         int status;
 
@@ -16242,11 +16239,20 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
 
         ++sub_count;
 
-        /* Continue from where we left off, but don't allow 2 contiguous
-         * zero-width matches.
-         */
-        state.must_advance = state.match_pos == state.text_pos;
         last_pos = state.text_pos;
+
+        if (state.version_0) {
+            /* Always advance after a zero-width match. */
+            if (state.match_pos == state.text_pos) {
+                state.text_pos += step;
+                state.must_advance = FALSE;
+            } else
+                state.must_advance = TRUE;
+        } else
+            /* Continue from where we left off, but don't allow a contiguous
+             * zero-width match.
+             */
+            state.must_advance = state.match_pos == state.text_pos;
     }
 
     /* Get the segment following the last match. We use 'length' instead of
@@ -16463,12 +16469,11 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
             /* No more matches. */
             break;
 
-        if (!state.zero_width) {
-            /* The current behaviour is to advance one character if the split
-             * was zero-width. Unfortunately, this can give an incorrect
-             * result. GvR wants this behaviour to be retained so as not to
-             * break any existing software which might rely on it. The correct
-             * behaviour is enabled by setting the 'new' flag.
+        if (state.version_0) {
+            /* Version 0 behaviour is to advance one character if the split was
+             * zero-width. Unfortunately, this can give an incorrect result.
+             * GvR wants this behaviour to be retained so as not to break any
+             * existing software which might rely on it.
              */
             if (state.text_pos == state.match_pos) {
                 if (last_pos == end_pos)
@@ -16507,25 +16512,22 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
         ++split_count;
         last_pos = state.text_pos;
 
-        /* The correct behaviour is to reject a zero-width match just after a
-         * split point. The current behaviour is to advance one character if
-         * the match was zero-width. Unfortunately, this can give an incorrect
-         * result. GvR wants this behaviour to be retained so as not to break
-         * any existing software which might rely on it. The correct behaviour
-         * is enabled by setting the 'new' flag.
+        /* Version 0 behaviour is to advance one character if the match was
+         * zero-width. Unfortunately, this can give an incorrect result. GvR
+         * wants this behaviour to be retained so as not to break any existing
+         * software which might rely on it.
          */
-        if (state.zero_width)
-            /* Continue from where we left off, but don't allow a contiguous
-             * zero-width match.
-             */
-            state.must_advance = TRUE;
-        else {
+        if (state.version_0) {
             if (state.text_pos == state.match_pos)
                 /* Advance one character. */
                 state.text_pos += step;
 
             state.must_advance = FALSE;
-        }
+        } else
+            /* Continue from where we left off, but don't allow a contiguous
+             * zero-width match.
+             */
+            state.must_advance = TRUE;
     }
 
     /* Get segment following last match (even if empty). */

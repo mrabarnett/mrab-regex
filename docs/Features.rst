@@ -7,6 +7,11 @@ For testing and comparison with the current 're' module the new implementation i
 
 Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.4 on 32-bit Windows.
 
+Change in behaviour
+-------------------
+
+This module now behaves more like the re module with respect to zero-width matches when using version 0 behaviour. See Hg issue 106 below.
+
 Old vs new behaviour
 --------------------
 
@@ -17,6 +22,8 @@ This module has 2 behaviours:
     Indicated by the ``VERSION0`` or ``V0`` flag, or ``(?V0)`` in the pattern.
 
     ``.split`` won't split a string at a zero-width match.
+
+    Zero-width matches are handled like in the re module.
 
     Inline flags apply to the entire pattern, and they can't be turned off.
 
@@ -29,6 +36,8 @@ This module has 2 behaviours:
     Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
 
     ``.split`` will split a string at a zero-width match.
+
+    Zero-width matches are handled like in Perl and PCRE.
 
     Inline flags apply to the end of the group or pattern, and they can be turned off.
 
@@ -136,6 +145,26 @@ Additional features
 -------------------
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+
+* ``*`` operator not working correctly with sub() (Hg issue 106)
+
+    Sometimes it's not clear how zero-width matches should be handled. For example, should ``.*`` match 0 characters directly after matching >0 characters?
+
+    Most regex implementations follow the lead of Perl (PCRE), but the re module sometimes doesn't. The Perl behaviour appears to be the most common (and the re module is sometimes definitely wrong), so in version 1 the regex module follows the Perl behaviour, whereas in version 0 it follows the legacy re behaviour.
+
+    Examples::
+
+        # Version 0 behaviour (like re)
+        >>> regex.sub('(?V0).*', 'x', 'test')
+        'x'
+        >>> regex.sub('(?V0).*?', '|', 'test')
+        '|t|e|s|t|'
+
+        # Version 1 behaviour (like Perl)
+        >>> regex.sub('(?V1).*', 'x', 'test')
+        'xx'
+        >>> regex.sub('(?V1).*?', '|', 'test')
+        '|||||||||'
 
 * re.group() should never return a bytearray (issue #18468)
 

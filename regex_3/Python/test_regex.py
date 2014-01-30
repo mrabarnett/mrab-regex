@@ -214,7 +214,8 @@ class RegexTests(unittest.TestCase):
 
     def test_bug_462270(self):
         # Test for empty sub() behaviour, see SF bug #462270
-        self.assertEqual(regex.sub('x*', '-', 'abxd'), '-a-b--d-')
+        self.assertEqual(regex.sub('(?V0)x*', '-', 'abxd'), '-a-b-d-')
+        self.assertEqual(regex.sub('(?V1)x*', '-', 'abxd'), '-a-b--d-')
         self.assertEqual(regex.sub('x+', '-', 'abxd'), 'ab-d')
 
     def test_bug_14462(self):
@@ -1439,13 +1440,21 @@ class RegexTests(unittest.TestCase):
 
     def test_unmatched_in_sub(self):
         # Issue 1519638.
-        self.assertEqual(regex.sub(r"(x)?(y)?", r"\2-\1", "xy"), 'y-x-')
-        self.assertEqual(regex.sub(r"(x)?(y)?", r"\2-\1", "x"), '-x-')
-        self.assertEqual(regex.sub(r"(x)?(y)?", r"\2-\1", "y"), 'y--')
+        self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "xy"), 'y-x')
+        self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "xy"), 'y-x-')
+        self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "x"), '-x')
+        self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "x"), '-x-')
+        self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "y"), 'y-')
+        self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "y"), 'y--')
 
     def test_bug_10328 (self):
         # Issue 10328.
-        pat = regex.compile(r'(?m)(?P<trailing_ws>[ \t]+\r*$)|(?P<no_final_newline>(?<=[^\n])\Z)')
+        pat = regex.compile(r'(?mV0)(?P<trailing_ws>[ \t]+\r*$)|(?P<no_final_newline>(?<=[^\n])\Z)')
+        self.assertEqual(pat.subn(lambda m: '<' + m.lastgroup + '>',
+          'foobar '), ('foobar<trailing_ws>', 1))
+        self.assertEqual([m.group() for m in pat.finditer('foobar ')], [' ',
+          ''])
+        pat = regex.compile(r'(?mV1)(?P<trailing_ws>[ \t]+\r*$)|(?P<no_final_newline>(?<=[^\n])\Z)')
         self.assertEqual(pat.subn(lambda m: '<' + m.lastgroup + '>',
           'foobar '), ('foobar<trailing_ws><no_final_newline>', 2))
         self.assertEqual([m.group() for m in pat.finditer('foobar ')], [' ',
@@ -3203,6 +3212,13 @@ xyzabc
         raw = 'yxxx'
         self.assertEquals([x.group() for x in pat.finditer(raw)], ['xxx'])
         self.assertEquals(pat.findall(raw), ['xxx'])
+
+        # Hg issue  106.
+        self.assertEquals(regex.sub('(?V0).*', 'x', 'test'), 'x')
+        self.assertEquals(regex.sub('(?V1).*', 'x', 'test'), 'xx')
+
+        self.assertEquals(regex.sub('(?V0).*?', '|', 'test'), '|t|e|s|t|')
+        self.assertEquals(regex.sub('(?V1).*?', '|', 'test'), '|||||||||')
 
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
