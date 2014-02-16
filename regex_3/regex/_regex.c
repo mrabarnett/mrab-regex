@@ -555,39 +555,39 @@ typedef struct RE_SafeState {
 typedef struct PatternObject {
     PyObject_HEAD
     PyObject* pattern; /* Pattern source (or None). */
-    RE_CODE flags; /* Flags used when compiling pattern source. */
+    Py_ssize_t flags; /* Flags used when compiling pattern source. */
     PyObject* weakreflist; /* List of weak references */
     /* Nodes into which the regular expression is compiled. */
     RE_Node* start_node;
     RE_Node* start_test;
-    size_t true_group_count; /* The true number of capture groups. */
-    size_t public_group_count; /* The number of public capture groups. */
-    size_t repeat_count; /* The number of repeats. */
+    Py_ssize_t true_group_count; /* The true number of capture groups. */
+    Py_ssize_t public_group_count; /* The number of public capture groups. */
+    Py_ssize_t repeat_count; /* The number of repeats. */
     Py_ssize_t group_end_index; /* The number of group closures. */
     PyObject* groupindex;
     PyObject* indexgroup;
     PyObject* named_lists;
     PyObject* named_list_indexes;
     /* Storage for the pattern nodes. */
-    size_t node_capacity;
-    size_t node_count;
+    Py_ssize_t node_capacity;
+    Py_ssize_t node_count;
     RE_Node** node_list;
     /* Info about the capture groups. */
-    size_t group_info_capacity;
+    Py_ssize_t group_info_capacity;
     RE_GroupInfo* group_info;
     /* Info about the call_refs. */
-    size_t call_ref_info_capacity;
-    size_t call_ref_info_count;
+    Py_ssize_t call_ref_info_capacity;
+    Py_ssize_t call_ref_info_count;
     RE_CallRefInfo* call_ref_info;
     Py_ssize_t pattern_call_ref;
     /* Info about the repeats. */
-    size_t repeat_info_capacity;
+    Py_ssize_t repeat_info_capacity;
     RE_RepeatInfo* repeat_info;
     size_t min_width; /* The minimum width of the string to match (assuming it isn't a fuzzy pattern). */
     RE_EncodingTable* encoding; /* Encoding handlers. */
     RE_GroupData* groups_storage;
     RE_RepeatData* repeats_storage;
-    size_t fuzzy_count; /* The number of fuzzy sections. */
+    Py_ssize_t fuzzy_count; /* The number of fuzzy sections. */
     Py_ssize_t req_offset; /* The offset to the required string. */
     RE_Node* req_string; /* The required string. */
     BOOL is_fuzzy; /* Whether it's a fuzzy pattern. */
@@ -608,7 +608,7 @@ typedef struct MatchObject {
     Py_ssize_t match_end; /* End of matched slice. */
     Py_ssize_t lastindex; /* Last group seen by the engine (-1 if none). */
     Py_ssize_t lastgroup; /* Last named group seen by the engine (-1 if none). */
-    size_t group_count; /* The number of groups. */
+    Py_ssize_t group_count; /* The number of groups. */
     RE_GroupData* groups; /* The capture groups. */
     PyObject* regs;
 } MatchObject;
@@ -2322,7 +2322,7 @@ Py_LOCAL_INLINE(void) reset_guard_list(RE_GuardList* guard_list) {
 
 /* Initialises the state for a match. */
 Py_LOCAL_INLINE(void) init_match(RE_State* state) {
-    size_t i;
+    Py_ssize_t i;
 
     /* Reset the backtrack. */
     state->current_backtrack_block = &state->backtrack_block;
@@ -2533,8 +2533,8 @@ Py_LOCAL_INLINE(BOOL) push_group_return(RE_SafeState* safe_state, RE_Node*
 
     /* Push the groups and guards. */
     if (return_node) {
-        size_t g;
-        size_t r;
+        Py_ssize_t g;
+        Py_ssize_t r;
 
         for (g = 0; g < pattern->true_group_count; g++) {
             frame->groups[g].span = state->groups[g].span;
@@ -2563,8 +2563,8 @@ Py_LOCAL_INLINE(RE_Node*) pop_group_return(RE_State* state) {
     /* Pop the groups and repeats. */
     if (frame->node) {
         PatternObject* pattern;
-        size_t g;
-        size_t r;
+        Py_ssize_t g;
+        Py_ssize_t r;
 
         pattern = state->pattern;
 
@@ -6659,9 +6659,9 @@ Py_LOCAL_INLINE(void) unsave_capture(RE_State* state, size_t private_index,
 /* Pushes the groups for backtracking. */
 Py_LOCAL_INLINE(BOOL) push_groups(RE_SafeState* safe_state) {
     RE_State* state;
-    size_t group_count;
+    Py_ssize_t group_count;
     RE_SavedGroups* current;
-    size_t g;
+    Py_ssize_t g;
 
     state = safe_state->re_state;
 
@@ -6717,9 +6717,9 @@ Py_LOCAL_INLINE(BOOL) push_groups(RE_SafeState* safe_state) {
 
 /* Pops the groups for backtracking. */
 Py_LOCAL_INLINE(void) pop_groups(RE_State* state) {
-    size_t group_count;
+    Py_ssize_t group_count;
     RE_SavedGroups* current;
-    size_t g;
+    Py_ssize_t g;
 
     group_count = state->pattern->true_group_count;
     if (group_count == 0)
@@ -7017,7 +7017,7 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_SafeState* safe_state, size_t index,
 /* Resets the guards inside atomic subpatterns and lookarounds. */
 Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
     PatternObject* pattern;
-    size_t repeat_count;
+    Py_ssize_t repeat_count;
 
     pattern = state->pattern;
     repeat_count = (size_t)pattern->repeat_count;
@@ -7026,9 +7026,9 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
         size_t i;
 
         for (i = 1; i <= values[0]; i++) {
-            size_t index;
+            Py_ssize_t index;
 
-            index = values[i];
+            index = (Py_ssize_t)values[i];
 
             if (index < repeat_count) {
                 reset_guard_list(&state->repeats[index].body_guard_list);
@@ -7041,8 +7041,8 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
             }
         }
     } else {
-        size_t index;
-        size_t fuzzy_count;
+        Py_ssize_t index;
+        Py_ssize_t fuzzy_count;
 
         for (index = 0; index < repeat_count; index++) {
             reset_guard_list(&state->repeats[index].body_guard_list);
@@ -9845,8 +9845,8 @@ advance:
         case RE_OP_GROUP_CALL: /* Group call. */
         {
             RE_CODE index;
-            size_t g;
-            size_t r;
+            Py_ssize_t g;
+            Py_ssize_t r;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             index = node->values[0];
@@ -12760,7 +12760,7 @@ Py_LOCAL_INLINE(RE_GroupData*) save_groups(RE_SafeState* safe_state,
   RE_GroupData* saved_groups) {
     RE_State* state;
     PatternObject* pattern;
-    size_t g;
+    Py_ssize_t g;
 
     /* Re-acquire the GIL. */
     acquire_GIL(safe_state);
@@ -12828,7 +12828,7 @@ Py_LOCAL_INLINE(void) restore_groups(RE_SafeState* safe_state, RE_GroupData*
   saved_groups) {
     RE_State* state;
     PatternObject* pattern;
-    size_t g;
+    Py_ssize_t g;
 
     /* Re-acquire the GIL. */
     acquire_GIL(safe_state);
@@ -12853,7 +12853,7 @@ Py_LOCAL_INLINE(void) discard_groups(RE_SafeState* safe_state, RE_GroupData*
   saved_groups) {
     RE_State* state;
     PatternObject* pattern;
-    size_t g;
+    Py_ssize_t g;
 
     /* Re-acquire the GIL. */
     acquire_GIL(safe_state);
@@ -12969,7 +12969,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
 
         if (best_groups) {
             BOOL same;
-            size_t g;
+            Py_ssize_t g;
 
             /* Did we get the same match as the best so far? */
             same = state->match_pos == best_match_pos && state->text_pos ==
@@ -13032,7 +13032,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         Py_ssize_t max_end_index;
         PatternObject* pattern;
         RE_GroupInfo* group_info;
-        size_t g;
+        Py_ssize_t g;
 
         /* Store the results. */
         state->lastindex = -1;
@@ -13212,7 +13212,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
 
     /* The capture groups. */
     if (pattern->true_group_count) {
-        size_t g;
+        Py_ssize_t g;
 
         if (pattern->groups_storage) {
             state->groups = pattern->groups_storage;
@@ -13230,7 +13230,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
 
                 captures = (RE_GroupSpan*)re_alloc(sizeof(RE_GroupSpan));
                 if (!captures) {
-                    size_t i;
+                    Py_ssize_t i;
 
                     for (i = 0; i < g; i++)
                         re_dealloc(state->groups[i].captures);
@@ -13506,7 +13506,7 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
     RE_SavedGroups* saved_groups;
     RE_SavedRepeats* saved_repeats;
     RE_GroupCallFrame* frame;
-    size_t i;
+    Py_ssize_t i;
 
     /* Discard the lock (mutex) if there's one. */
     if (state->lock)
@@ -14137,7 +14137,7 @@ static PyObject* match_captures(MatchObject* self, PyObject* args) {
 static PyObject* match_groups(MatchObject* self, PyObject* args, PyObject*
   kwargs) {
     PyObject* result;
-    size_t g;
+    Py_ssize_t g;
 
     PyObject* def = Py_None;
     static char* kwlist[] = { "default", NULL };
@@ -14629,7 +14629,7 @@ failed:
 static PyObject* match_expandf(MatchObject* self, PyObject* str_template) {
     PyObject* format_func;
     PyObject* args = NULL;
-    size_t g;
+    Py_ssize_t g;
     PyObject* kwargs = NULL;
     PyObject* result;
 
@@ -14677,7 +14677,7 @@ static PyObject* match_deepcopy(MatchObject* self, PyObject* memo) {
 static PyObject* match_regs(MatchObject* self) {
     PyObject* regs;
     PyObject* item;
-    size_t g;
+    Py_ssize_t g;
 
     regs = PyTuple_New(self->group_count + 1);
     if (!regs)
@@ -14767,7 +14767,7 @@ Py_LOCAL_INLINE(void) determine_target_substring(MatchObject* match,
   Py_ssize_t* slice_start, Py_ssize_t* slice_end) {
     Py_ssize_t start;
     Py_ssize_t end;
-    size_t g;
+    Py_ssize_t g;
 
     start = match->pos;
     end = match->endpos;
@@ -16134,7 +16134,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             /* The replacement is a format string. */
             MatchObject* match;
             PyObject* args;
-            size_t g;
+            Py_ssize_t g;
             PyObject* kwargs;
 
             /* We need to create the arguments for the 'format' method. We'll
@@ -16411,7 +16411,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
     PyObject* item;
     int status;
     Py_ssize_t split_count;
-    size_t g;
+    Py_ssize_t g;
     Py_ssize_t start_pos;
     Py_ssize_t end_pos;
     Py_ssize_t step;
@@ -16569,7 +16569,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     PyObject* list;
     Py_ssize_t step;
     int status;
-    size_t g;
+    Py_ssize_t g;
     Py_ssize_t b;
     Py_ssize_t e;
 
@@ -16804,7 +16804,7 @@ PyDoc_STRVAR(pattern_doc, "Compiled regex object");
 /* Deallocates a PatternObject. */
 static void pattern_dealloc(PyObject* self_) {
     PatternObject* self;
-    size_t i;
+    Py_ssize_t i;
 
     self = (PatternObject*)self_;
 
@@ -17109,7 +17109,7 @@ Py_LOCAL_INLINE(void) skip_one_way_branches(PatternObject* pattern) {
      * latter's destination. Repeat until they're all done.
      */
     do {
-        size_t i;
+        Py_ssize_t i;
 
         modified = FALSE;
 
@@ -17411,7 +17411,7 @@ Py_LOCAL_INLINE(void) use_nodes(RE_Node* node) {
  */
 Py_LOCAL_INLINE(void) discard_unused_nodes(PatternObject* pattern) {
     size_t new_count;
-    size_t i;
+    Py_ssize_t i;
 
     /* Mark the nodes which are being used. */
     use_nodes(pattern->start_node);
@@ -17441,7 +17441,7 @@ Py_LOCAL_INLINE(void) discard_unused_nodes(PatternObject* pattern) {
 
 /* Marks all the group which are named. */
 Py_LOCAL_INLINE(BOOL) mark_named_groups(PatternObject* pattern) {
-    size_t i;
+    Py_ssize_t i;
 
     for (i = 0; i < pattern->public_group_count; i++) {
         RE_GroupInfo* group_info;
@@ -17556,7 +17556,7 @@ Py_LOCAL_INLINE(void) set_test_node(RE_NextNode* next) {
 /* Sets the test nodes. */
 Py_LOCAL_INLINE(void) set_test_nodes(PatternObject* pattern) {
     RE_Node** node_list;
-    size_t i;
+    Py_ssize_t i;
 
     node_list = pattern->node_list;
     for (i = 0; i < pattern->node_count; i++) {
@@ -17571,7 +17571,7 @@ Py_LOCAL_INLINE(void) set_test_nodes(PatternObject* pattern) {
 
 /* Optimises the pattern. */
 Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
-    size_t i;
+    Py_ssize_t i;
 
     /* Building the nodes is made simpler by allowing branches to have a single
      * exit. These need to be removed.
@@ -17669,9 +17669,9 @@ Py_LOCAL_INLINE(void) add_node(RE_Node* node_1, RE_Node* node_2) {
 }
 
 /* Ensures that the entry for a group's details actually exists. */
-Py_LOCAL_INLINE(BOOL) ensure_group(PatternObject* pattern, RE_CODE group) {
-    size_t old_capacity;
-    size_t new_capacity;
+Py_LOCAL_INLINE(BOOL) ensure_group(PatternObject* pattern, Py_ssize_t group) {
+    Py_ssize_t old_capacity;
+    Py_ssize_t new_capacity;
     RE_GroupInfo* new_group_info;
 
     if (group <= pattern->true_group_count)
@@ -17737,10 +17737,10 @@ Py_LOCAL_INLINE(void) record_group_end(PatternObject* pattern, RE_CODE group) {
 }
 
 /* Ensures that the entry for a call_ref's details actually exists. */
-Py_LOCAL_INLINE(BOOL) ensure_call_ref(PatternObject* pattern, RE_CODE call_ref)
-  {
-    size_t old_capacity;
-    size_t new_capacity;
+Py_LOCAL_INLINE(BOOL) ensure_call_ref(PatternObject* pattern, Py_ssize_t
+  call_ref) {
+    Py_ssize_t old_capacity;
+    Py_ssize_t new_capacity;
     RE_CallRefInfo* new_call_ref_info;
 
     if (call_ref < pattern->call_ref_info_count)
@@ -17844,10 +17844,10 @@ Py_LOCAL_INLINE(BOOL) sequence_matches_one(RE_Node* node) {
 }
 
 /* Records a repeat. */
-Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, size_t index,
+Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, Py_ssize_t index,
   size_t repeat_depth) {
-    size_t old_capacity;
-    size_t new_capacity;
+    Py_ssize_t old_capacity;
+    Py_ssize_t new_capacity;
 
     /* Increase the storage capacity to include the new entry if it's
      * insufficient.
@@ -19388,7 +19388,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
 
     /* Initialise the PatternObject. */
     self->pattern = pattern;
-    self->flags = (RE_CODE)flags;
+    self->flags = flags;
     self->weakreflist = NULL;
     self->start_node = NULL;
     self->repeat_count = 0;
