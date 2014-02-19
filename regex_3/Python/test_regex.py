@@ -1024,6 +1024,8 @@ class RegexTests(unittest.TestCase):
 
         self.assertEqual(bool(regex.match(r'\p{Cyrillic}',
           '\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEqual(bool(regex.match(r'(?i)\p{Cyrillic}',
+          '\N{CYRILLIC CAPITAL LETTER A}')), True)
         self.assertEqual(bool(regex.match(r'\p{IsCyrillic}',
           '\N{CYRILLIC CAPITAL LETTER A}')), True)
         self.assertEqual(bool(regex.match(r'\p{Script=Cyrillic}',

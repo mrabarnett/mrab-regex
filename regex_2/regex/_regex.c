@@ -5682,15 +5682,14 @@ Py_LOCAL_INLINE(BOOL) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         break;
     case RE_OP_PROPERTY_IGN: /* A character property, ignoring case. */
         /* values are: property */
-        if (text_pos >= state->slice_end || !has_property_ign(state->encoding,
+        if (text_pos >= state->slice_end || has_property_ign(state->encoding,
           test->values[0], char_at(text, text_pos)) != test->match)
             return FALSE;
         break;
     case RE_OP_PROPERTY_IGN_REV: /* A character property, ignoring case. */
         /* values are: property */
-        if (text_pos <= state->slice_start ||
-          !has_property_ign(state->encoding, test->values[0], char_at(text,
-          text_pos - 1)) != test->match)
+        if (text_pos <= state->slice_start || has_property_ign(state->encoding,
+          test->values[0], char_at(text, text_pos - 1)) != test->match)
             return FALSE;
         break;
     case RE_OP_PROPERTY_REV: /* A character property. */
