@@ -1,6 +1,6 @@
-Metadata-Version: 1.0
+Metadata-Version: 1.1
 Name: regex
-Version: 2014.02.19
+Version: 2014.04.10
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://code.google.com/p/mrab-regex-hg/
 Author: Matthew Barnett
@@ -153,6 +153,56 @@ Description: Introduction
         -------------------
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+        
+        * Added partial matches (Hg issue 102)
+        
+            A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.
+        
+            Partial matches are supported by ``match``, ``search``, ``fullmatch`` and ``finditer`` with the ``partial`` keyword argument.
+        
+            Match objects have a ``partial`` attribute, which is ``True`` if it's a partial match.
+        
+            For example, if you wanted a user to enter a 4-digit number and check it character by character as it was being entered:
+        
+                >>> pattern = regex.compile(r'\d{4}')
+        
+                >>> # Initially, nothing has been entered:
+                >>> print(pattern.fullmatch('', partial=True))
+                <regex.Match object; span=(0, 0), match='', partial=True>
+        
+                >>> # An empty string is OK, but it's only a partial match.
+                >>> # The user enters a letter:
+                >>> print(pattern.fullmatch('a', partial=True))
+                None
+                >>> # It'll never match.
+        
+                >>> # The user deletes that and enters a digit:
+                >>> print(pattern.fullmatch('1', partial=True))
+                <regex.Match object; span=(0, 1), match='1', partial=True>
+                >>> # It matches this far, but it's only a partial match.
+        
+                >>> # The user enters 2 more digits:
+                >>> print(pattern.fullmatch('123', partial=True))
+                <regex.Match object; span=(0, 3), match='123', partial=True>
+                >>> # It matches this far, but it's only a partial match.
+        
+                >>> # The user enters another digit:
+                >>> print(pattern.fullmatch('1234', partial=True))
+                <regex.Match object; span=(0, 4), match='1234'>
+                >>> # It's a complete match.
+        
+                >>> # If the user enters another digit:
+                >>> print(pattern.fullmatch('12345', partial=True))
+                None
+                >>> # It's no longer a match.
+        
+                >>> # This is a partial match:
+                >>> pattern.match('123', partial=True).partial
+                True
+        
+                >>> # This is a complete match:
+                >>> pattern.match('1233', partial=True).partial
+                False
         
         * ``*`` operator not working correctly with sub() (Hg issue 106)
         
@@ -396,7 +446,7 @@ Description: Introduction
         
             In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.
         
-        * Approximate "fuzzy" matching (Hg issue 12, Hg issue 41)
+        * Approximate "fuzzy" matching (Hg issue 12, Hg issue 41, Hg issue 109)
         
             Regex usually attempts an exact match, but sometimes an approximate, or "fuzzy", match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.
         
@@ -475,6 +525,18 @@ Description: Introduction
             ``regex.search("(?e)(dog){e<=1}", "cat and dog")[1]`` returns ``"dog"`` (without a leading space) because the fuzzy search matches ``" dog"`` with 1 error, which is within the limit (1 error is permitted), and the ``(?e)`` then makes it attempt a better fit.
         
             In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.
+        
+            The match object has an attribute ``fuzzy_counts`` which gives the total number of substitutions, insertions and deletions.
+        
+                >>> # A 'raw' fuzzy match:
+                >>> regex.fullmatch(r"(?:cats|cat){e<=1}", "cat").fuzzy_counts
+                (0, 0, 1)
+                >>> # 0 substitutions, 0 insertions, 1 deletion.
+        
+                >>> # A better match might be possible if the ENHANCEMATCH flag used:
+                >>> regex.fullmatch(r"(?e)(?:cats|cat){e<=1}", "cat").fuzzy_counts
+                (0, 0, 0)
+                >>> # 0 substitutions, 0 insertions, 0 deletions.
         
         * Named lists (Hg issue 11)
         
@@ -816,13 +878,19 @@ Description: Introduction
             The regex module can release the GIL during matching (see the above section on multithreading).
         
             Iterators can be safely shared across threads.
-
+        
 Platform: UNKNOWN
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: Python Software Foundation License
 Classifier: Operating System :: OS Independent
-Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.5
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.1
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
 Classifier: Topic :: Scientific/Engineering :: Information Analysis
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Classifier: Topic :: Text Processing

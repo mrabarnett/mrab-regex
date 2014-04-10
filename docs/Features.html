@@ -414,6 +414,65 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Added partial matches (Hg issue 102)</p>
+<blockquote>
+<p>A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.</p>
+<p>Partial matches are supported by <tt class="docutils literal">match</tt>, <tt class="docutils literal">search</tt>, <tt class="docutils literal">fullmatch</tt> and <tt class="docutils literal">finditer</tt> with the <tt class="docutils literal">partial</tt> keyword argument.</p>
+<p>Match objects have a <tt class="docutils literal">partial</tt> attribute, which is <tt class="docutils literal">True</tt> if it's a partial match.</p>
+<p>For example, if you wanted a user to enter a 4-digit number and check it character by character as it was being entered:</p>
+<blockquote>
+<pre class="doctest-block">
+&gt;&gt;&gt; pattern = regex.compile(r'\d{4}')
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # Initially, nothing has been entered:
+&gt;&gt;&gt; print(pattern.fullmatch('', partial=True))
+&lt;regex.Match object; span=(0, 0), match='', partial=True&gt;
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # An empty string is OK, but it's only a partial match.
+&gt;&gt;&gt; # The user enters a letter:
+&gt;&gt;&gt; print(pattern.fullmatch('a', partial=True))
+None
+&gt;&gt;&gt; # It'll never match.
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # The user deletes that and enters a digit:
+&gt;&gt;&gt; print(pattern.fullmatch('1', partial=True))
+&lt;regex.Match object; span=(0, 1), match='1', partial=True&gt;
+&gt;&gt;&gt; # It matches this far, but it's only a partial match.
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # The user enters 2 more digits:
+&gt;&gt;&gt; print(pattern.fullmatch('123', partial=True))
+&lt;regex.Match object; span=(0, 3), match='123', partial=True&gt;
+&gt;&gt;&gt; # It matches this far, but it's only a partial match.
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # The user enters another digit:
+&gt;&gt;&gt; print(pattern.fullmatch('1234', partial=True))
+&lt;regex.Match object; span=(0, 4), match='1234'&gt;
+&gt;&gt;&gt; # It's a complete match.
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # If the user enters another digit:
+&gt;&gt;&gt; print(pattern.fullmatch('12345', partial=True))
+None
+&gt;&gt;&gt; # It's no longer a match.
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # This is a partial match:
+&gt;&gt;&gt; pattern.match('123', partial=True).partial
+True
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # This is a complete match:
+&gt;&gt;&gt; pattern.match('1233', partial=True).partial
+False
+</pre>
+</blockquote>
+</blockquote>
+</li>
 <li><p class="first"><tt class="docutils literal">*</tt> operator not working correctly with sub() (Hg issue 106)</p>
 <blockquote>
 <p>Sometimes it's not clear how zero-width matches should be handled. For example, should <tt class="docutils literal">.*</tt> match 0 characters directly after matching &gt;0 characters?</p>
@@ -662,7 +721,7 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 <p>In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.</p>
 </blockquote>
 </li>
-<li><p class="first">Approximate &quot;fuzzy&quot; matching (Hg issue 12, Hg issue 41)</p>
+<li><p class="first">Approximate &quot;fuzzy&quot; matching (Hg issue 12, Hg issue 41, Hg issue 109)</p>
 <blockquote>
 <p>Regex usually attempts an exact match, but sometimes an approximate, or &quot;fuzzy&quot;, match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.</p>
 <p>A fuzzy regex specifies which types of errors are permitted, and, optionally, either the minimum and maximum or only the maximum permitted number of each type. (You cannot specify only a minimum.)</p>
@@ -705,6 +764,21 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 <p><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot; dog&quot;</tt> (with a leading space) because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted).</p>
 <p><tt class="docutils literal"><span class="pre">regex.search(&quot;(?e)(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;dog&quot;</tt> (without a leading space) because the fuzzy search matches <tt class="docutils literal">&quot; dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted), and the <tt class="docutils literal"><span class="pre">(?e)</span></tt> then makes it attempt a better fit.</p>
 <p>In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.</p>
+<p>The match object has an attribute <tt class="docutils literal">fuzzy_counts</tt> which gives the total number of substitutions, insertions and deletions.</p>
+<blockquote>
+<pre class="doctest-block">
+&gt;&gt;&gt; # A 'raw' fuzzy match:
+&gt;&gt;&gt; regex.fullmatch(r&quot;(?:cats|cat){e&lt;=1}&quot;, &quot;cat&quot;).fuzzy_counts
+(0, 0, 1)
+&gt;&gt;&gt; # 0 substitutions, 0 insertions, 1 deletion.
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # A better match might be possible if the ENHANCEMATCH flag used:
+&gt;&gt;&gt; regex.fullmatch(r&quot;(?e)(?:cats|cat){e&lt;=1}&quot;, &quot;cat&quot;).fuzzy_counts
+(0, 0, 0)
+&gt;&gt;&gt; # 0 substitutions, 0 insertions, 0 deletions.
+</pre>
+</blockquote>
 </blockquote>
 </li>
 <li><p class="first">Named lists (Hg issue 11)</p>

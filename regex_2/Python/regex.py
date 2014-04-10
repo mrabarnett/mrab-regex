@@ -225,31 +225,31 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.42"
+__version__ = "2.4.43"
 
 # --------------------------------------------------------------------
 # Public interface.
 
-def match(pattern, string, flags=0, pos=None, endpos=None, concurrent=None,
-  **kwargs):
+def match(pattern, string, flags=0, pos=None, endpos=None, partial=False,
+  concurrent=None, **kwargs):
     """Try to apply the pattern at the start of the string, returning a match
     object, or None if no match was found."""
     return _compile(pattern, flags, kwargs).match(string, pos, endpos,
-      concurrent)
+      concurrent, partial)
 
-def fullmatch(pattern, string, flags=0, pos=None, endpos=None, concurrent=None,
-  **kwargs):
+def fullmatch(pattern, string, flags=0, pos=None, endpos=None, partial=False,
+  concurrent=None, **kwargs):
     """Try to apply the pattern against all of the string, returning a match
     object, or None if no match was found."""
     return _compile(pattern, flags, kwargs).fullmatch(string, pos, endpos,
-      concurrent)
+      concurrent, partial)
 
-def search(pattern, string, flags=0, pos=None, endpos=None, concurrent=None,
-  **kwargs):
+def search(pattern, string, flags=0, pos=None, endpos=None, partial=False,
+  concurrent=None, **kwargs):
     """Search through string looking for a match to the pattern, returning a
     match object, or None if no match was found."""
     return _compile(pattern, flags, kwargs).search(string, pos, endpos,
-      concurrent)
+      concurrent, partial)
 
 def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
   concurrent=None, **kwargs):
@@ -319,12 +319,12 @@ def findall(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
       overlapped, concurrent)
 
 def finditer(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
-  concurrent=None, **kwargs):
+  partial=False, concurrent=None, **kwargs):
     """Return an iterator over all matches in the string. The matches may be
     overlapped if overlapped is True. For each match, the iterator returns a
     match object. Empty matches are included in the result."""
     return _compile(pattern, flags, kwargs).finditer(string, pos, endpos,
-      overlapped, concurrent)
+      overlapped, concurrent, partial)
 
 def compile(pattern, flags=0, **kwargs):
     "Compile a regular expression pattern, returning a pattern object."
@@ -461,18 +461,19 @@ def _compile(pattern, flags=0, kwargs={}):
     _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
 
     caught_exception = None
+    global_flags = flags
 
     while True:
         try:
             source = _Source(pattern)
-            info = _Info(flags, source.char_type, kwargs)
+            info = _Info(global_flags, source.char_type, kwargs)
             info.guess_encoding = guess_encoding
             source.ignore_space = bool(info.flags & VERBOSE)
             parsed = _parse_pattern(source, info)
             break
         except _UnscopedFlagSet:
             # Remember the global flags for the next attempt.
-            flags = info.global_flags
+            global_flags = info.global_flags
         except error, e:
             caught_exception = e
 
