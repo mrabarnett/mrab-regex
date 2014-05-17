@@ -1,12 +1,4 @@
-The following is a list of the 79 properties which are supported by this module:
-
-ASCII
-    No [F, False, N]
-    Yes [T, True, Y]
-
-ASCII_Hex_Digit [AHex]
-    No [F, False, N]
-    Yes [T, True, Y]
+The following is a list of the 77 properties which are supported by this module:
 
 Alphabetic [Alpha]
     No [F, False, N]
@@ -20,7 +12,7 @@ Any
     No [F, False, N]
     Yes [T, True, Y]
 
-Assigned
+ASCII_Hex_Digit [AHex]
     No [F, False, N]
     Yes [T, True, Y]
 
@@ -92,6 +84,10 @@ Block [blk]
     Buginese
     Buhid
     Byzantine_Musical_Symbols [Byzantine_Music]
+    Carian
+    Chakma
+    Cham
+    Cherokee
     CJK_Compatibility [CJK_Compat]
     CJK_Compatibility_Forms [CJK_Compat_Forms]
     CJK_Compatibility_Ideographs [CJK_Compat_Ideographs]
@@ -104,10 +100,6 @@ Block [blk]
     CJK_Unified_Ideographs_Extension_B [CJK_Ext_B]
     CJK_Unified_Ideographs_Extension_C [CJK_Ext_C]
     CJK_Unified_Ideographs_Extension_D [CJK_Ext_D]
-    Carian
-    Chakma
-    Cham
-    Cherokee
     Combining_Diacritical_Marks [Diacriticals]
     Combining_Diacritical_Marks_For_Symbols [Combining_Marks_For_Symbols, Diacriticals_For_Symbols]
     Combining_Diacritical_Marks_Supplement [Diacriticals_Sup]
@@ -131,8 +123,8 @@ Block [blk]
     Domino_Tiles [Domino]
     Egyptian_Hieroglyphs
     Emoticons
-    Enclosed_Alphanumeric_Supplement [Enclosed_Alphanum_Sup]
     Enclosed_Alphanumerics [Enclosed_Alphanum]
+    Enclosed_Alphanumeric_Supplement [Enclosed_Alphanum_Sup]
     Enclosed_CJK_Letters_And_Months [Enclosed_CJK]
     Enclosed_Ideographic_Supplement [Enclosed_Ideographic_Sup]
     Ethiopic
@@ -160,11 +152,11 @@ Block [blk]
     High_Private_Use_Surrogates [High_PU_Surrogates]
     High_Surrogates
     Hiragana
-    IPA_Extensions [IPA_Ext]
     Ideographic_Description_Characters [IDC]
     Imperial_Aramaic
     Inscriptional_Pahlavi
     Inscriptional_Parthian
+    IPA_Extensions [IPA_Ext]
     Javanese
     Kaithi
     Kana_Supplement [Kana_Sup]
@@ -214,16 +206,16 @@ Block [blk]
     Musical_Symbols [Music]
     Myanmar
     Myanmar_Extended_A [Myanmar_Ext_A]
-    NKo
     New_Tai_Lue
+    NKo
     No_Block [NB]
     Number_Forms
     Ogham
-    Ol_Chiki
     Old_Italic
     Old_Persian
     Old_South_Arabian
     Old_Turkic
+    Ol_Chiki
     Optical_Character_Recognition [OCR]
     Oriya
     Osmanya
@@ -233,7 +225,7 @@ Block [blk]
     Phonetic_Extensions [Phonetic_Ext]
     Phonetic_Extensions_Supplement [Phonetic_Ext_Sup]
     Playing_Cards
-    Private_Use_Area [PUA, Private_Use]
+    Private_Use_Area [Private_Use, PUA]
     Rejang
     Rumi_Numeral_Symbols [Rumi]
     Runic
@@ -280,9 +272,9 @@ Block [blk]
     Variation_Selectors_Supplement [VS_Sup]
     Vedic_Extensions [Vedic_Ext]
     Vertical_Forms
+    Yijing_Hexagram_Symbols [Yijing]
     Yi_Radicals
     Yi_Syllables
-    Yijing_Hexagram_Symbols [Yijing]
 
 Canonical_Combining_Class [ccc]
     Above [230, A]
@@ -291,7 +283,7 @@ Canonical_Combining_Class [ccc]
     Attached_Above [214, ATA]
     Attached_Above_Right [216, ATAR]
     Attached_Below [202, ATB]
-    Attached_Below_Left
+    Attached_Below_Left [200, ATBL]
     Below [220, B]
     Below_Left [218, BL]
     Below_Right [222, BR]
@@ -306,7 +298,7 @@ Canonical_Combining_Class [ccc]
     CCC13 [13]
     CCC130 [130]
     CCC132 [132]
-    CCC133
+    CCC133 [133]
     CCC14 [14]
     CCC15 [15]
     CCC16 [16]
@@ -343,11 +335,11 @@ Canonical_Combining_Class [ccc]
     Right [226, R]
     Virama [9, VR]
 
-Case_Ignorable [CI]
+Cased
     No [F, False, N]
     Yes [T, True, Y]
 
-Cased
+Case_Ignorable [CI]
     No [F, False, N]
     Yes [T, True, Y]
 
@@ -420,13 +412,14 @@ Extender [Ext]
     Yes [T, True, Y]
 
 General_Category [gc]
-    Cased_Letter
+    Assigned
+    Cased_Letter [LC]
     Close_Punctuation [Pe]
     Connector_Punctuation [Pc]
     Control [Cc, cntrl]
     Currency_Symbol [Sc]
     Dash_Punctuation [Pd]
-    Decimal_Number [Nd, digit]
+    Decimal_Number [digit, Nd]
     Enclosing_Mark [Me]
     Final_Punctuation [Pf]
     Format [Cf]
@@ -468,15 +461,15 @@ Grapheme_Base [Gr_Base]
     Yes [T, True, Y]
 
 Grapheme_Cluster_Break [GCB]
-    CR
     Control [CN]
+    CR
     Extend [EX]
     L
     LF
     LV
     LVT
     Other [XX]
-    Prepend
+    Prepend [PP]
     Regional_Indicator [RI]
     SpacingMark [SM]
     T
@@ -491,9 +484,9 @@ Grapheme_Link [Gr_Link]
     Yes [T, True, Y]
 
 Hangul_Syllable_Type [hst]
+    Leading_Jamo [L]
     LVT_Syllable [LVT]
     LV_Syllable [LV]
-    Leading_Jamo [L]
     Not_Applicable [NA]
     Trailing_Jamo [T]
     Vowel_Jamo [V]
@@ -503,6 +496,10 @@ Hex_Digit [Hex]
     Yes [T, True, Y]
 
 Hyphen
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Ideographic [Ideo]
     No [F, False, N]
     Yes [T, True, Y]
 
@@ -519,10 +516,6 @@ ID_Continue [IDC]
     Yes [T, True, Y]
 
 ID_Start [IDS]
-    No [F, False, N]
-    Yes [T, True, Y]
-
-Ideographic [Ideo]
     No [F, False, N]
     Yes [T, True, Y]
 
@@ -566,10 +559,6 @@ Indic_Syllabic_Category [InSC]
     Vowel_Dependent
     Vowel_Independent
 
-Join_Control [Join_C]
-    No [F, False, N]
-    Yes [T, True, Y]
-
 Joining_Group [jg]
     Ain
     Alaph
@@ -600,8 +589,8 @@ Joining_Group [jg]
     Lamadh
     Meem
     Mim
-    No_Joining_Group
     Noon
+    No_Joining_Group
     Nun
     Nya
     Pe
@@ -637,6 +626,10 @@ Joining_Type [jt]
     Non_Joining [U]
     Right_Joining [R]
     Transparent [T]
+
+Join_Control [Join_C]
+    No [F, False, N]
+    Yes [T, True, Y]
 
 Line_Break [lb]
     Alphabetic [AL]
@@ -873,10 +866,6 @@ Radical
     No [F, False, N]
     Yes [T, True, Y]
 
-STerm
-    No [F, False, N]
-    Yes [T, True, Y]
-
 Script [sc]
     Arabic [Arab]
     Armenian [Armn]
@@ -923,7 +912,7 @@ Script [sc]
     Kaithi [Kthi]
     Kannada [Knda]
     Katakana [Kana]
-    Katakana_Or_Hiragana
+    Katakana_Or_Hiragana [Hrkt]
     Kayah_Li [Kali]
     Kharoshthi [Khar]
     Khmer [Khmr]
@@ -946,11 +935,11 @@ Script [sc]
     New_Tai_Lue [Talu]
     Nko [Nkoo]
     Ogham [Ogam]
-    Ol_Chiki [Olck]
     Old_Italic [Ital]
     Old_Persian [Xpeo]
     Old_South_Arabian [Sarb]
     Old_Turkic [Orkh]
+    Ol_Chiki [Olck]
     Oriya [Orya]
     Osmanya [Osma]
     Phags_Pa [Phag]
@@ -985,8 +974,8 @@ Script [sc]
 
 Sentence_Break [SB]
     ATerm [AT]
-    CR
     Close [CL]
+    CR
     Extend [EX]
     Format [FO]
     LF
@@ -995,12 +984,16 @@ Sentence_Break [SB]
     OLetter [LE]
     Other [XX]
     SContinue [SC]
-    STerm [ST]
     Sep [SE]
     Sp
+    STerm [ST]
     Upper [UP]
 
 Soft_Dotted [SD]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+STerm
     No [F, False, N]
     Yes [T, True, Y]
 
@@ -1020,7 +1013,7 @@ Variation_Selector [VS]
     No [F, False, N]
     Yes [T, True, Y]
 
-White_Space [WSpace, space]
+White_Space [space, WSpace]
     No [F, False, N]
     Yes [T, True, Y]
 

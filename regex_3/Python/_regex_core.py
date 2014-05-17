@@ -1209,12 +1209,12 @@ def parse_property(source, info, positive, in_set):
         prop_name, name = parse_property_name(source)
         if source.match("}"):
             # It's correctly delimited.
-            prop = lookup_property(prop_name, name, positive != negate)
+            prop = lookup_property(prop_name, name, positive != negate, source_pos=source.pos)
             return make_property(info, prop, in_set)
     elif ch and ch in "CLMNPSZ":
         # An abbreviated property, eg \pL.
         prop = lookup_property(None, ch, positive)
-        return make_property(info, prop, in_set)
+        return make_property(info, prop, in_set, source_pos=source.pos)
 
     # Not a property, so treat as a literal "p" or "P".
     source.pos = saved_pos
@@ -1409,7 +1409,7 @@ def parse_posix_class(source, info):
     if not source.match(":]"):
         raise ParseError()
 
-    return lookup_property(prop_name, name, positive=not negate)
+    return lookup_property(prop_name, name, positive=not negate, source_pos=source.pos)
 
 def float_to_rational(flt):
     "Converts a float to a rational pair."
@@ -1450,21 +1450,25 @@ def standardise_name(name):
     except (ValueError, ZeroDivisionError):
         return "".join(ch for ch in name if ch not in "_- ").upper()
 
-def lookup_property(property, value, positive):
+def lookup_property(property, value, positive, source_pos=None):
     "Looks up a property."
     # Normalise the names (which may still be lists).
     property = standardise_name(property) if property else None
     value = standardise_name(value)
+
+    if (property, value) == ("GENERALCATEGORY", "ASSIGNED"):
+        property, value, positive = "GENERALCATEGORY", "UNASSIGNED", not positive
+
     if property:
         # Both the property and the value are provided.
         prop = PROPERTIES.get(property)
         if not prop:
-            raise error("unknown property at position {}".format(source.pos))
+            raise error("unknown property at position {}".format(source_pos))
 
         prop_id, value_dict = prop
         val_id = value_dict.get(value)
         if val_id is None:
-            raise error("unknown property value at position {}".format(source.pos))
+            raise error("unknown property value at position {}".format(source_pos))
 
         if "YES" in value_dict and val_id == 0:
             positive, val_id = not positive, 1
@@ -1504,7 +1508,7 @@ def lookup_property(property, value, positive):
                 return Property((prop_id << 16) | val_id, positive)
 
     # Unknown property.
-    raise error("unknown property at position {}".format(source.pos))
+    raise error("unknown property at position {}".format(source_pos))
 
 def _compile_replacement(source, pattern, is_unicode):
     "Compiles a replacement template escape sequence."
@@ -4038,12 +4042,12 @@ CHARACTER_ESCAPES = {
 
 # Predefined character set escape sequences.
 CHARSET_ESCAPES = {
-    "d": lookup_property(None, "DIGIT", True),
-    "D": lookup_property(None, "DIGIT", False),
-    "s": lookup_property(None, "SPACE", True),
-    "S": lookup_property(None, "SPACE", False),
-    "w": lookup_property(None, "WORD", True),
-    "W": lookup_property(None, "WORD", False),
+    "d": lookup_property(None, "Digit", True),
+    "D": lookup_property(None, "Digit", False),
+    "s": lookup_property(None, "Space", True),
+    "S": lookup_property(None, "Space", False),
+    "w": lookup_property(None, "Word", True),
+    "W": lookup_property(None, "Word", False),
 }
 
 # Positional escape sequences.

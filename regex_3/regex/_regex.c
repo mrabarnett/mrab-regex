@@ -57,10 +57,12 @@ typedef unsigned short Py_UCS2;
 #endif
 typedef RE_UINT32 RE_CODE;
 
-/* Case-sensitive letters in the General Category. */
+/* Properties in the General Category. */
+#define RE_PROP_GC_CN ((RE_PROP_GC << 16) | RE_PROP_CN)
 #define RE_PROP_GC_LU ((RE_PROP_GC << 16) | RE_PROP_LU)
 #define RE_PROP_GC_LL ((RE_PROP_GC << 16) | RE_PROP_LL)
 #define RE_PROP_GC_LT ((RE_PROP_GC << 16) | RE_PROP_LT)
+#define RE_PROP_GC_P ((RE_PROP_GC << 16) | RE_PROP_P)
 
 /* Unlimited repeat count. */
 #define RE_UNLIMITED (~(RE_CODE)0)
@@ -999,19 +1001,25 @@ Py_LOCAL_INLINE(BOOL) locale_has_property(RE_CODE property, Py_UCS4 ch) {
     case RE_PROP_ASCII >> 16:
         v = ch <= RE_ASCII_MAX;
         break;
-    case RE_PROP_ASSIGNED >> 16:
-        v = ch <= RE_LOCALE_MAX;
-        break;
     case RE_PROP_BLANK >> 16:
         v = ch == '\t' || ch == ' ';
         break;
     case RE_PROP_GC:
         switch (property) {
+        case RE_PROP_ASSIGNED:
+            v = ch <= RE_LOCALE_MAX;
+            break;
+        case RE_PROP_CASEDLETTER:
+            v = isalpha((int)ch) ? value : 0xFFFF;
+            break;
         case RE_PROP_CNTRL:
             v = iscntrl((int)ch) ? value : 0xFFFF;
             break;
         case RE_PROP_DIGIT:
             v = isdigit((int)ch) ? value : 0xFFFF;
+            break;
+        case RE_PROP_GC_CN:
+            v = ch > RE_LOCALE_MAX;
             break;
         case RE_PROP_GC_LL:
             v = islower((int)ch) ? value : 0xFFFF;
@@ -1019,7 +1027,7 @@ Py_LOCAL_INLINE(BOOL) locale_has_property(RE_CODE property, Py_UCS4 ch) {
         case RE_PROP_GC_LU:
             v = isupper((int)ch) ? value : 0xFFFF;
             break;
-        case RE_PROP_PUNCT:
+        case RE_PROP_GC_P:
             v = ispunct((int)ch) ? value : 0xFFFF;
             break;
         default:
@@ -1219,8 +1227,12 @@ Py_LOCAL_INLINE(BOOL) unicode_has_property(RE_CODE property, Py_UCS4 ch) {
 
     if (prop == RE_PROP_GC) {
         switch (value) {
+        case RE_PROP_ASSIGNED:
+            return v != RE_PROP_CN;
         case RE_PROP_C:
             return (RE_PROP_C_MASK & (1 << v)) != 0;
+        case RE_PROP_CASEDLETTER:
+            return v == RE_PROP_LU || v == RE_PROP_LL || v == RE_PROP_LT;
         case RE_PROP_L:
             return (RE_PROP_L_MASK & (1 << v)) != 0;
         case RE_PROP_M:
@@ -8490,8 +8502,8 @@ Py_LOCAL_INLINE(void) pop_repeats(RE_State* state) {
 
 /* Saves state info before a recusive call by 'basic_match'. */
 Py_LOCAL_INLINE(void) save_info(RE_State* state, RE_Info* info) {
+    info->backtrack_count = state->current_backtrack_block->count;
     info->current_backtrack_block = state->current_backtrack_block;
-    info->backtrack_count = info->current_backtrack_block->count;
     info->current_saved_groups = state->current_saved_groups;
     info->must_advance = state->must_advance;
     info->current_group_call_frame = state->current_group_call_frame;
@@ -8502,8 +8514,8 @@ Py_LOCAL_INLINE(void) restore_info(RE_State* state, RE_Info* info) {
     state->current_group_call_frame = info->current_group_call_frame;
     state->must_advance = info->must_advance;
     state->current_saved_groups = info->current_saved_groups;
-    info->current_backtrack_block->count = info->backtrack_count;
     state->current_backtrack_block = info->current_backtrack_block;
+    state->current_backtrack_block->count = info->backtrack_count;
 }
 
 /* Inserts a new span in a guard list. */
@@ -8896,7 +8908,7 @@ Py_LOCAL_INLINE(int) make_partial_string_set(RE_State* state, RE_Node* node) {
     if (partial_side != RE_PARTIAL_LEFT && partial_side != RE_PARTIAL_RIGHT)
         return RE_ERROR_INTERNAL;
 
-    /* Fetch the full string set. */
+    /* Fetch the full string set. PyList_GET_ITEM borrows a reference. */
     string_set = PyList_GET_ITEM(pattern->named_list_indexes, node->values[0]);
     if (!string_set)
         return RE_ERROR_INTERNAL;
@@ -8955,17 +8967,14 @@ Py_LOCAL_INLINE(int) make_partial_string_set(RE_State* state, RE_Node* node) {
                 goto error;
 
             status = PySet_Add(partial_set, slice);
+            Py_DECREF(slice);
             if (status < 0)
                 goto error;
-
-            Py_DECREF(slice);
         }
 
         Py_DECREF(item);
         item = PyIter_Next(iter);
     }
-
-    slice = NULL;
 
     if (PyErr_Occurred())
         goto error;
@@ -8977,10 +8986,9 @@ Py_LOCAL_INLINE(int) make_partial_string_set(RE_State* state, RE_Node* node) {
     return 1;
 
 error:
-    Py_XDECREF(slice);
     Py_XDECREF(item);
     Py_XDECREF(iter);
-    Py_XDECREF(partial_set);
+    Py_DECREF(partial_set);
 
     return RE_ERROR_INTERNAL;
 }
@@ -9067,7 +9075,7 @@ Py_LOCAL_INLINE(int) string_set_match_fwdrev(RE_SafeState* safe_state, RE_Node*
         }
     }
 
-    /* Fetch the string set. */
+    /* Fetch the string set. PyList_GET_ITEM borrows a reference. */
     string_set = PyList_GET_ITEM(state->pattern->named_list_indexes,
       node->values[0]);
     if (!string_set) {
@@ -9276,7 +9284,7 @@ Py_LOCAL_INLINE(int) string_set_match_fld_fwdrev(RE_SafeState* safe_state,
         }
     }
 
-    /* Fetch the string set. */
+    /* Fetch the string set. PyList_GET_ITEM borrows a reference. */
     string_set = PyList_GET_ITEM(state->pattern->named_list_indexes,
       node->values[0]);
     if (!string_set) {
@@ -9464,7 +9472,7 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
         }
     }
 
-    /* Fetch the string set. */
+    /* Fetch the string set. PyList_GET_ITEM borrows a reference. */
     string_set = PyList_GET_ITEM(state->pattern->named_list_indexes,
       node->values[0]);
     if (!string_set) {
@@ -14406,7 +14414,8 @@ backtrack:
                     limit = min_ssize_t(limit, state->slice_end - 1);
 
                     for (;;) {
-                        if (pos >= state->text_length)
+                        if (pos >= state->text_length && state->partial_side ==
+                          RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos >= limit)
@@ -14442,7 +14451,8 @@ backtrack:
                     limit = min_ssize_t(limit, state->slice_end - 1);
 
                     for (;;) {
-                        if (pos >= state->text_length)
+                        if (pos >= state->text_length && state->partial_side ==
+                          RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos >= limit)
@@ -14478,7 +14488,7 @@ backtrack:
                     limit = max_ssize_t(limit, state->slice_start + 1);
 
                     for (;;) {
-                        if (pos <= 0)
+                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)
@@ -14514,7 +14524,7 @@ backtrack:
                     limit = max_ssize_t(limit, state->slice_start + 1);
 
                     for (;;) {
-                        if (pos <= 0)
+                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)
@@ -14553,7 +14563,8 @@ backtrack:
                         Py_ssize_t found;
                         BOOL is_partial;
 
-                        if (pos >= state->text_length)
+                        if (pos >= state->text_length && state->partial_side ==
+                          RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos >= limit)
@@ -14610,7 +14621,8 @@ backtrack:
                         Py_ssize_t new_pos;
                         BOOL is_partial;
 
-                        if (pos >= state->text_length)
+                        if (pos >= state->text_length && state->partial_side ==
+                          RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos >= limit)
@@ -14667,7 +14679,7 @@ backtrack:
                         Py_ssize_t new_pos;
                         BOOL is_partial;
 
-                        if (pos <= 0)
+                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)
@@ -14727,7 +14739,8 @@ backtrack:
                         Py_ssize_t found;
                         BOOL is_partial;
 
-                        if (pos >= state->text_length)
+                        if (pos >= state->text_length && state->partial_side ==
+                          RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos >= limit)
@@ -14787,7 +14800,7 @@ backtrack:
                         Py_ssize_t found;
                         BOOL is_partial;
 
-                        if (pos <= 0)
+                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)
@@ -14847,7 +14860,7 @@ backtrack:
                         Py_ssize_t found;
                         BOOL is_partial;
 
-                        if (pos <= 0)
+                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)
@@ -15970,7 +15983,9 @@ static void match_dealloc(PyObject* self_) {
 }
 
 #if PY_VERSION_HEX >= 0x03040000
-/* Ensures that the string is the immutable Unicode string or bytestring. */
+/* Ensures that the string is the immutable Unicode string or bytestring.
+ * DECREFs the original string if a copy is returned.
+ */
 Py_LOCAL_INLINE(PyObject*) ensure_immutable(PyObject* string) {
     PyObject* new_string;
 
@@ -16127,6 +16142,8 @@ static PyObject* match_get_starts_by_index(MatchObject* self, Py_ssize_t index)
         item = Py_BuildValue("n", self->match_start);
         if (!item)
             goto error;
+
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(result, 0, item);
 
         return result;
@@ -16145,6 +16162,8 @@ static PyObject* match_get_starts_by_index(MatchObject* self, Py_ssize_t index)
         item = Py_BuildValue("n", group->captures[i].start);
         if (!item)
             goto error;
+
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(result, i, item);
     }
 
@@ -16196,6 +16215,8 @@ static PyObject* match_get_ends_by_index(MatchObject* self, Py_ssize_t index) {
         item = Py_BuildValue("n", self->match_end);
         if (!item)
             goto error;
+
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(result, 0, item);
 
         return result;
@@ -16214,6 +16235,8 @@ static PyObject* match_get_ends_by_index(MatchObject* self, Py_ssize_t index) {
         item = Py_BuildValue("n", group->captures[i].end);
         if (!item)
             goto error;
+
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(result, i, item);
     }
 
@@ -16266,6 +16289,8 @@ static PyObject* match_get_spans_by_index(MatchObject* self, Py_ssize_t index)
         item = Py_BuildValue("nn", self->match_start, self->match_end);
         if (!item)
             goto error;
+
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(result, 0, item);
 
         return result;
@@ -16285,6 +16310,8 @@ static PyObject* match_get_spans_by_index(MatchObject* self, Py_ssize_t index)
           group->captures[i].end);
         if (!item)
             goto error;
+
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(result, i, item);
     }
 
@@ -16318,6 +16345,8 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
           self->substring_offset, self->match_end - self->substring_offset);
         if (!slice)
             goto error;
+
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(result, 0, slice);
 
         return result;
@@ -16338,6 +16367,8 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
           self->substring_offset);
         if (!slice)
             goto error;
+
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(result, i, slice);
     }
 
@@ -16441,7 +16472,7 @@ static PyObject* match_group(MatchObject* self, PyObject* args) {
         result = match_get_group_by_index(self, 0, Py_None);
         break;
     case 1:
-        /* group(x) */
+        /* group(x). PyTuple_GET_ITEM borrows the reference. */
         result = match_get_group(self, PyTuple_GET_ITEM(args, 0), Py_None,
           FALSE);
         break;
@@ -16451,17 +16482,24 @@ static PyObject* match_group(MatchObject* self, PyObject* args) {
         result = PyTuple_New(size);
         if (!result)
             return NULL;
+
         for (i = 0; i < size; i++) {
-            PyObject* item = match_get_group(self, PyTuple_GET_ITEM(args, i),
-              Py_None, FALSE);
+            PyObject* item;
+
+            /* PyTuple_GET_ITEM borrows the reference. */
+            item = match_get_group(self, PyTuple_GET_ITEM(args, i), Py_None,
+              FALSE);
             if (!item) {
                 Py_DECREF(result);
                 return NULL;
             }
+
+            /* PyTuple_SET_ITEM borrows the reference. */
             PyTuple_SET_ITEM(result, i, item);
         }
         break;
     }
+
     return result;
 }
 
@@ -16480,7 +16518,7 @@ Py_LOCAL_INLINE(PyObject*) get_from_match(MatchObject* self, PyObject* args,
         result = get_by_index(self, 0);
         break;
     case 1:
-        /* get(x) */
+        /* get(x). PyTuple_GET_ITEM borrows the reference. */
         result = get_by_arg(self, PyTuple_GET_ITEM(args, 0), get_by_index);
         break;
     default:
@@ -16489,17 +16527,23 @@ Py_LOCAL_INLINE(PyObject*) get_from_match(MatchObject* self, PyObject* args,
         result = PyTuple_New(size);
         if (!result)
             return NULL;
+
         for (i = 0; i < size; i++) {
-            PyObject* item = get_by_arg(self, PyTuple_GET_ITEM(args, i),
-              get_by_index);
+            PyObject* item;
+
+            /* PyTuple_GET_ITEM borrows the reference. */
+            item = get_by_arg(self, PyTuple_GET_ITEM(args, i), get_by_index);
             if (!item) {
                 Py_DECREF(result);
                 return NULL;
             }
+
+            /* PyTuple_SET_ITEM borrows the reference. */
             PyTuple_SET_ITEM(result, i, item);
         }
         break;
     }
+
     return result;
 }
 
@@ -16556,15 +16600,20 @@ static PyObject* match_groups(MatchObject* self, PyObject* args, PyObject*
     /* Group 0 is the entire matched portion of the string. */
     for (g = 0; g < self->group_count; g++) {
         PyObject* item;
+
         item = match_get_group_by_index(self, (Py_ssize_t)g + 1, def);
-        if (!item) {
-            Py_DECREF(result);
-            return NULL;
-        }
+        if (!item)
+            goto error;
+
+        /* PyTuple_SET_ITEM borrows the reference. */
         PyTuple_SET_ITEM(result, g, item);
     }
 
     return result;
+
+error:
+    Py_DECREF(result);
+    return NULL;
 }
 
 /* MatchObject's 'groupdict' method. */
@@ -16593,14 +16642,15 @@ static PyObject* match_groupdict(MatchObject* self, PyObject* args, PyObject*
         PyObject* value;
         int status;
 
+        /* PyList_GET_ITEM borrows a reference. */
         key = PyList_GET_ITEM(keys, g);
         if (!key)
             goto failed;
+
         value = match_get_group(self, key, def, FALSE);
-        if (!value) {
-            Py_DECREF(key);
+        if (!value)
             goto failed;
-        }
+
         status = PyDict_SetItem(result, key, value);
         Py_DECREF(value);
         if (status < 0)
@@ -16637,19 +16687,19 @@ static PyObject* match_capturesdict(MatchObject* self) {
         PyObject* captures;
         int status;
 
+        /* PyList_GET_ITEM borrows a reference. */
         key = PyList_GET_ITEM(keys, g);
         if (!key)
             goto failed;
+
         group = match_get_group_index(self, key, FALSE);
-        if (group < 0) {
-            Py_DECREF(key);
+        if (group < 0)
             goto failed;
-        }
+
         captures = match_get_captures_by_index(self, group);
-        if (!captures) {
-            Py_DECREF(key);
+        if (!captures)
             goto failed;
-        }
+
         status = PyDict_SetItem(result, key, captures);
         Py_DECREF(captures);
         if (status < 0)
@@ -16712,9 +16762,17 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
     if (PyUnicode_Check(item) || PyBytes_Check(item)) {
         /* It's a literal, which can be added directly to the list. */
 #if PY_VERSION_HEX >= 0x03040000
-        item = ensure_immutable(item);
-#endif
+
+        /* ensure_immutable will DECREF the original item if it has to make an
+         * immutable copy, but that original item might have a borrowed
+         * reference, so we must INCREF it first in order to ensure it won't be
+         * destroyed.
+         */
         Py_INCREF(item);
+        item = ensure_immutable(item);
+#else
+        Py_INCREF(item);
+#endif
         return item;
     }
 
@@ -16751,8 +16809,17 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
     }
 }
 
-/* Adds an item to be joined. */
-Py_LOCAL_INLINE(int) add_item(JoinInfo* join_info, PyObject* item) {
+/* Initialises the join list. */
+Py_LOCAL_INLINE(void) init_join_list(JoinInfo* join_info, BOOL reversed, BOOL
+  is_unicode) {
+    join_info->list = NULL;
+    join_info->item = NULL;
+    join_info->reversed = reversed;
+    join_info->is_unicode = is_unicode;
+}
+
+/* Adds an item to the join list. */
+Py_LOCAL_INLINE(int) add_to_join_list(JoinInfo* join_info, PyObject* item) {
     PyObject* new_item;
     int status;
 
@@ -16808,9 +16875,11 @@ Py_LOCAL_INLINE(int) add_item(JoinInfo* join_info, PyObject* item) {
             goto error;
         }
 
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(join_info->list, 0, join_info->item);
         join_info->item = NULL;
 
+        /* PyList_SET_ITEM borrows the reference. */
         PyList_SET_ITEM(join_info->list, 1, new_item);
         return 0;
     }
@@ -16822,10 +16891,14 @@ Py_LOCAL_INLINE(int) add_item(JoinInfo* join_info, PyObject* item) {
 
 error:
     Py_DECREF(new_item);
-    Py_XDECREF(join_info->list);
-    Py_XDECREF(join_info->item);
     set_error(status, NULL);
     return status;
+}
+
+/* Clears the join list. */
+Py_LOCAL_INLINE(void) clear_join_list(JoinInfo* join_info) {
+    Py_XDECREF(join_info->list);
+    Py_XDECREF(join_info->item);
 }
 
 /* Joins together a list of strings for pattern_subx. */
@@ -16843,7 +16916,7 @@ Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info) {
             /* Concatenate the Unicode strings. */
             joiner = PyUnicode_FromUnicode(NULL, 0);
             if (!joiner) {
-                Py_DECREF(join_info->list);
+                clear_join_list(join_info);
                 return NULL;
             }
 
@@ -16851,7 +16924,7 @@ Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info) {
         } else {
             joiner = PyBytes_FromString("");
             if (!joiner) {
-                Py_DECREF(join_info->list);
+                clear_join_list(join_info);
                 return NULL;
             }
 
@@ -16860,7 +16933,7 @@ Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info) {
         }
 
         Py_DECREF(joiner);
-        Py_DECREF(join_info->list);
+        clear_join_list(join_info);
 
         return result;
     }
@@ -16942,10 +17015,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     if (!replacement)
         return NULL;
 
-    join_info.list = NULL;
-    join_info.item = NULL;
-    join_info.reversed = FALSE;
-    join_info.is_unicode = PyUnicode_Check(self->string);
+    init_join_list(&join_info, FALSE, PyUnicode_Check(self->string));
 
     /* Add each part of the template to the list. */
     size = PyList_GET_SIZE(replacement);
@@ -16953,6 +17023,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
         PyObject* item;
         PyObject* str_item;
 
+        /* PyList_GET_ITEM borrows a reference. */
         item = PyList_GET_ITEM(replacement, i);
         str_item = get_match_replacement(self, item, self->group_count);
         if (!str_item)
@@ -16964,7 +17035,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
         else {
             int status;
 
-            status = add_item(&join_info, str_item);
+            status = add_to_join_list(&join_info, str_item);
             Py_DECREF(str_item);
             if (status < 0)
                 goto error;
@@ -16977,8 +17048,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     return join_list_info(&join_info);
 
 error:
-    Py_XDECREF(join_info.list);
-    Py_XDECREF(join_info.item);
+    clear_join_list(&join_info);
     Py_DECREF(replacement);
     return NULL;
 }
@@ -17001,14 +17071,16 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_dict(MatchObject* self) {
         int status;
         PyObject* key;
         PyObject* value;
+
+        /* PyList_GET_ITEM borrows a reference. */
         key = PyList_GET_ITEM(keys, g);
         if (!key)
             goto failed;
+
         value = match_get_group(self, key, Py_None, FALSE);
-        if (!value) {
-            Py_DECREF(key);
+        if (!value)
             goto failed;
-        }
+
         status = PyDict_SetItem(result, key, value);
         Py_DECREF(value);
         if (status < 0)
@@ -17042,6 +17114,7 @@ static PyObject* match_expandf(MatchObject* self, PyObject* str_template) {
         goto error;
 
     for (g = 0; g < self->group_count + 1; g++)
+        /* PyTuple_SetItem borrows the reference. */
         PyTuple_SetItem(args, (Py_ssize_t)g, match_get_group_by_index(self,
           (Py_ssize_t)g, Py_None));
 
@@ -17085,10 +17158,10 @@ static PyObject* match_regs(MatchObject* self) {
         return NULL;
 
     item = Py_BuildValue("nn", self->match_start, self->match_end);
-    if (!item) {
-        Py_DECREF(regs);
-        return NULL;
-    }
+    if (!item)
+        goto error;
+
+    /* PyTuple_SET_ITEM borrows the reference. */
     PyTuple_SET_ITEM(regs, 0, item);
 
     for (g = 0; g < self->group_count; g++) {
@@ -17096,10 +17169,10 @@ static PyObject* match_regs(MatchObject* self) {
 
         span = &self->groups[g].span;
         item = Py_BuildValue("nn", span->start, span->end);
-        if (!item) {
-            Py_DECREF(regs);
-            return NULL;
-        }
+        if (!item)
+            goto error;
+
+        /* PyTuple_SET_ITEM borrows the reference. */
         PyTuple_SET_ITEM(regs, g + 1, item);
     }
 
@@ -17107,6 +17180,10 @@ static PyObject* match_regs(MatchObject* self) {
     self->regs = regs;
 
     return regs;
+
+error:
+    Py_DECREF(regs);
+    return NULL;
 }
 
 /* MatchObject's slice method. */
@@ -17140,6 +17217,7 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_slice(MatchObject* self, PyObject*
 
         cur = start;
         for (i = 0; i < slice_length; i++) {
+            /* PyTuple_SetItem borrows the reference. */
             PyTuple_SetItem(result, i, match_get_group_by_index(self, cur,
               Py_None));
             cur += step;
@@ -17214,7 +17292,7 @@ static PyObject* match_detach_string(MatchObject* self, PyObject* unused) {
             self->substring = substring;
             self->substring_offset = start;
 
-            Py_XDECREF(self->string);
+            Py_DECREF(self->string);
             self->string = NULL;
         }
     }
@@ -17370,8 +17448,13 @@ static PyObject* match_lastgroup(PyObject* self_) {
     self = (MatchObject*)self_;
 
     if (self->pattern->indexgroup && self->lastgroup >= 0) {
-        PyObject* index = Py_BuildValue("n", self->lastgroup);
-        PyObject* result = PyDict_GetItem(self->pattern->indexgroup, index);
+        PyObject* index;
+        PyObject* result;
+
+        index = Py_BuildValue("n", self->lastgroup);
+
+        /* PyDict_GetItem returns borrows a reference. */
+        result = PyDict_GetItem(self->pattern->indexgroup, index);
         Py_DECREF(index);
         if (result) {
             Py_INCREF(result);
@@ -17513,12 +17596,8 @@ Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self) {
     if (!match)
         return NULL;
 
-    match->string = self->string;
-    match->substring = self->substring;
-    match->substring_offset = self->substring_offset;
-    match->pattern = self->pattern;
-    match->regs = self->regs;
-    match->partial = self->partial;
+    Py_MEMCPY(match, self, sizeof(MatchObject));
+
     Py_INCREF(match->string);
     Py_INCREF(match->substring);
     Py_INCREF(match->pattern);
@@ -17530,19 +17609,7 @@ Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self) {
             Py_DECREF(match);
             return NULL;
         }
-    } else
-        match->groups = NULL;
-
-    match->group_count = self->group_count;
-
-    match->pos = self->pos;
-    match->endpos = self->endpos;
-
-    match->match_start = self->match_start;
-    match->match_end = self->match_end;
-
-    match->lastindex = match->lastindex;
-    match->lastgroup = match->lastgroup;
+    }
 
     return (PyObject*)match;
 }
@@ -18240,6 +18307,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_search_or_match(PatternObject* self,
         arg_count = -1;
 
     if (1 <= arg_count && arg_count <= 5) {
+        /* PyTuple_GET_ITEM borrows the reference. */
         string = PyTuple_GET_ITEM(args, 0);
         if (arg_count >= 2)
             pos = PyTuple_GET_ITEM(args, 1);
@@ -18358,9 +18426,17 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
     if (PyUnicode_CheckExact(item) || PyBytes_CheckExact(item)) {
         /* It's a literal, which can be added directly to the list. */
 #if PY_VERSION_HEX >= 0x03040000
-        item = ensure_immutable(item);
-#endif
+
+        /* ensure_immutable will DECREF the original item if it has to make an
+         * immutable copy, but that original item might have a borrowed
+         * reference, so we must INCREF it first in order to ensure it won't be
+         * destroyed.
+         */
         Py_INCREF(item);
+        item = ensure_immutable(item);
+#else
+        Py_INCREF(item);
+#endif
         return item;
     }
 
@@ -18539,10 +18615,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     safe_state.re_state = &state;
     safe_state.thread_state = NULL;
 
-    join_info.item = NULL;
-    join_info.list = NULL;
-    join_info.reversed = state.reverse;
-    join_info.is_unicode = PyUnicode_Check(string);
+    init_join_list(&join_info, state.reverse, PyUnicode_Check(string));
 
     sub_count = 0;
     last_pos = state.reverse ? state.text_length : 0;
@@ -18567,7 +18640,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                 goto error;
 
             /* Add to the list. */
-            status = add_item(&join_info, item);
+            status = add_to_join_list(&join_info, item);
             Py_DECREF(item);
             if (status < 0)
                 goto error;
@@ -18576,7 +18649,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         /* Add this match. */
         if (is_literal) {
             /* The replacement is a literal string. */
-            status = add_item(&join_info, replacement);
+            status = add_to_join_list(&join_info, replacement);
             if (status < 0)
                 goto error;
         } else if (is_format) {
@@ -18602,6 +18675,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             }
 
             for (g = 0; g < state.pattern->public_group_count + 1; g++)
+                /* PyTuple_SetItem borrows the reference. */
                 PyTuple_SetItem(args, (Py_ssize_t)g,
                   match_get_group_by_index(match, (Py_ssize_t)g, Py_None));
 
@@ -18622,7 +18696,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                 goto error;
 
             /* Add the result to the list. */
-            status = add_item(&join_info, item);
+            status = add_to_join_list(&join_info, item);
             Py_DECREF(item);
             if (status < 0)
                 goto error;
@@ -18637,6 +18711,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                 PyObject* item;
                 PyObject* str_item;
 
+                /* PyList_GET_ITEM borrows a reference. */
                 item = PyList_GET_ITEM(replacement, i);
                 str_item = get_sub_replacement(item, string, &state,
                   self->public_group_count);
@@ -18648,7 +18723,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                     /* None for "". */
                     Py_DECREF(str_item);
                 else {
-                    status = add_item(&join_info, str_item);
+                    status = add_to_join_list(&join_info, str_item);
                     Py_DECREF(str_item);
                     if (status < 0)
                         goto error;
@@ -18681,7 +18756,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                 goto error;
 
             /* Add the result to the list. */
-            status = add_item(&join_info, item);
+            status = add_to_join_list(&join_info, item);
             Py_DECREF(item);
             if (status < 0)
                 goto error;
@@ -18720,7 +18795,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             item = get_slice(string, last_pos, str_info.length);
         if (!item)
             goto error;
-        status = add_item(&join_info, item);
+
+        status = add_to_join_list(&join_info, item);
         Py_DECREF(item);
         if (status < 0)
             goto error;
@@ -18742,8 +18818,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     return item;
 
 error:
-    Py_XDECREF(join_info.list);
-    Py_XDECREF(join_info.item);
+    clear_join_list(&join_info);
     state_fini(&state);
     Py_XDECREF(replacement);
     return NULL;
@@ -18942,6 +19017,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
             item = get_slice(string, last_pos, state.match_pos);
         if (!item)
             goto error;
+
         status = PyList_Append(list, item);
         Py_DECREF(item);
         if (status < 0)
@@ -18952,6 +19028,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
             item = state_get_group(&state, (Py_ssize_t)g, string, FALSE);
             if (!item)
                 goto error;
+
             status = PyList_Append(list, item);
             Py_DECREF(item);
             if (status < 0)
@@ -18986,6 +19063,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
         item = get_slice(string, last_pos, state.text_length);
     if (!item)
         goto error;
+
     status = PyList_Append(list, item);
     Py_DECREF(item);
     if (status < 0)
@@ -19098,12 +19176,15 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
                 goto error;
 
             for (g = 0; g < self->public_group_count; g++) {
-                PyObject* o = state_get_group(&state, (Py_ssize_t)g + 1,
-                  string, TRUE);
+                PyObject* o;
+
+                o = state_get_group(&state, (Py_ssize_t)g + 1, string, TRUE);
                 if (!o) {
                     Py_DECREF(item);
                     goto error;
                 }
+
+                /* PyTuple_SET_ITEM borrows the reference. */
                 PyTuple_SET_ITEM(item, g, o);
             }
             break;
@@ -19458,7 +19539,6 @@ static PyObject* match_repr(PyObject* self_) {
 
     result = PyUnicode_Join(separator, list);
     Py_DECREF(separator);
-
     Py_DECREF(list);
 
     return result;
@@ -19522,6 +19602,7 @@ static PyObject* pattern_repr(PyObject* self_) {
     }
 
     pos = 0;
+    /* PyDict_Next borrows references. */
     while (PyDict_Next(self->named_lists, &pos, &key, &value)) {
         if (!append_string(list, ", "))
             goto error;
@@ -19530,11 +19611,11 @@ static PyObject* pattern_repr(PyObject* self_) {
         if (status < 0)
             goto error;
 
-        item = PyObject_Repr(value);
-        if (!item)
+        if (!append_string(list, "="))
             goto error;
 
-        if (!append_string(list, "="))
+        item = PyObject_Repr(value);
+        if (!item)
             goto error;
 
         status = PyList_Append(list, item);
@@ -19552,7 +19633,6 @@ static PyObject* pattern_repr(PyObject* self_) {
 
     result = PyUnicode_Join(separator, list);
     Py_DECREF(separator);
-
     Py_DECREF(list);
 
     return result;
@@ -19931,21 +20011,26 @@ Py_LOCAL_INLINE(void) discard_unused_nodes(PatternObject* pattern) {
     pattern->node_count = new_count;
 }
 
-/* Marks all the group which are named. */
+/* Marks all the group which are named. Returns FALSE if there's an error. */
 Py_LOCAL_INLINE(BOOL) mark_named_groups(PatternObject* pattern) {
     size_t i;
 
     for (i = 0; i < pattern->public_group_count; i++) {
         RE_GroupInfo* group_info;
         PyObject* index;
+        int status;
 
         group_info = &pattern->group_info[i];
         index = Py_BuildValue("n", i + 1);
         if (!index)
             return FALSE;
-        group_info->has_name = (BOOL)PyDict_Contains(pattern->indexgroup,
-          index);
+
+        status = PyDict_Contains(pattern->indexgroup, index);
         Py_DECREF(index);
+        if (status < 0)
+            return FALSE;
+
+        group_info->has_name = status == 1;
     }
 
     return TRUE;
@@ -21734,8 +21819,11 @@ Py_LOCAL_INLINE(void) get_required_chars(PyObject* required_chars, RE_CODE**
         goto error;
 
     for (i = 0; i < len; i++) {
-        PyObject* o = PyTuple_GET_ITEM(required_chars, i);
+        PyObject* o;
         size_t value;
+
+        /* PyTuple_SET_ITEM borrows the reference. */
+        o = PyTuple_GET_ITEM(required_chars, i);
 
         value = PyLong_AsUnsignedLong(o);
         if ((Py_ssize_t)value == -1 && PyErr_Occurred())
@@ -21819,8 +21907,11 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
         return NULL;
 
     for (i = 0; i < code_len; i++) {
-        PyObject* o = PyList_GET_ITEM(code_list, i);
+        PyObject* o;
         size_t value;
+
+        /* PyList_GET_ITEM borrows a reference. */
+        o = PyList_GET_ITEM(code_list, i);
 
         value = PyLong_AsUnsignedLong(o);
         if ((Py_ssize_t)value == -1 && PyErr_Occurred())
@@ -22139,7 +22230,7 @@ static PyObject* get_expand_on_folding(PyObject* self, PyObject* unused) {
     /* Put all the characters in a tuple. */
     result = PyTuple_New(count);
     if (!result)
-        goto error;
+        return NULL;
 
     for (i = 0; i < count; i++) {
 #if PY_VERSION_HEX >= 0x03030000
@@ -22155,14 +22246,14 @@ static PyObject* get_expand_on_folding(PyObject* self, PyObject* unused) {
         if (!item)
             goto error;
 
+        /* PyTuple_SetItem borrows the reference. */
         PyTuple_SetItem(result, i, item);
     }
 
     return result;
 
 error:
-    Py_XDECREF(result);
-
+    Py_DECREF(result);
     return NULL;
 }
 
@@ -22215,7 +22306,7 @@ static PyObject* get_all_cases(PyObject* self_, PyObject* args) {
 
     result = PyList_New(count);
     if (!result)
-        goto error;
+        return NULL;
 
     for (i = 0; i < count; i++) {
         PyObject* item;
@@ -22224,6 +22315,7 @@ static PyObject* get_all_cases(PyObject* self_, PyObject* args) {
         if (!item)
             goto error;
 
+        /* PyList_SetItem borrows the reference. */
         PyList_SetItem(result, i, item);
     }
 
@@ -22237,8 +22329,7 @@ static PyObject* get_all_cases(PyObject* self_, PyObject* args) {
     return result;
 
 error:
-    Py_XDECREF(result);
-
+    Py_DECREF(result);
     return NULL;
 }
 
@@ -22287,6 +22378,7 @@ Py_LOCAL_INLINE(BOOL) init_property_dict(void) {
       i++) {
         RE_PropertyValue* value;
         PyObject* v;
+        int status;
 
         value = &re_property_values[i];
         if (!value_dicts[value->value_set]) {
@@ -22299,8 +22391,11 @@ Py_LOCAL_INLINE(BOOL) init_property_dict(void) {
         if (!v)
             goto error;
 
-        PyDict_SetItemString(value_dicts[value->value_set],
+        status = PyDict_SetItemString(value_dicts[value->value_set],
           re_strings[value->name], v);
+        Py_DECREF(v);
+        if (status < 0)
+            goto error;
     }
 
     /* Build the property dictionary. */
@@ -22311,6 +22406,7 @@ Py_LOCAL_INLINE(BOOL) init_property_dict(void) {
     for (i = 0; i < sizeof(re_properties) / sizeof(re_properties[0]); i++) {
         RE_Property* property;
         PyObject* v;
+        int status;
 
         property = &re_properties[i];
         v = Py_BuildValue("iO", property->id,
@@ -22318,7 +22414,11 @@ Py_LOCAL_INLINE(BOOL) init_property_dict(void) {
         if (!v)
             goto error;
 
-        PyDict_SetItemString(property_dict, re_strings[property->name], v);
+        status = PyDict_SetItemString(property_dict,
+          re_strings[property->name], v);
+        Py_DECREF(v);
+        if (status < 0)
+            goto error;
     }
 
     /* DECREF the value sets. Any unused ones will be deallocated. */
@@ -22359,11 +22459,12 @@ PyMODINIT_FUNC PyInit__regex(void) {
     PyObject* m;
     PyObject* d;
     PyObject* x;
+
 #if defined(VERBOSE)
     /* Unbuffered in case it crashes! */
     setvbuf(stdout, NULL, _IONBF, 0);
-#endif
 
+#endif
     /* Initialise Pattern_Type. */
     Pattern_Type.tp_dealloc = pattern_dealloc;
     Pattern_Type.tp_repr = pattern_repr;

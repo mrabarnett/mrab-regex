@@ -3243,12 +3243,16 @@ xyzabc
         self.assertEquals([x.group() for x in pat.finditer(raw)], ['xxx'])
         self.assertEquals(pat.findall(raw), ['xxx'])
 
-        # Hg issue  106.
+        # Hg issue 106.
         self.assertEquals(regex.sub('(?V0).*', 'x', 'test'), 'x')
         self.assertEquals(regex.sub('(?V1).*', 'x', 'test'), 'xx')
 
         self.assertEquals(regex.sub('(?V0).*?', '|', 'test'), '|t|e|s|t|')
         self.assertEquals(regex.sub('(?V1).*?', '|', 'test'), '|||||||||')
+
+        # Hg issue 112.
+        self.assertEquals(regex.sub(r'^(@)\n(?!.*?@)(.*)',
+          r'\1\n==========\n\2', '@\n', flags=regex.DOTALL), '@\n==========\n')
 
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
