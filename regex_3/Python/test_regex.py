@@ -3254,6 +3254,42 @@ xyzabc
         self.assertEquals(regex.sub(r'^(@)\n(?!.*?@)(.*)',
           r'\1\n==========\n\2', '@\n', flags=regex.DOTALL), '@\n==========\n')
 
+        # Hg issue 109.
+        self.assertEquals(regex.match(r'(?:cats|cat){e<=1}',
+         'caz').fuzzy_counts, (1, 0, 0))
+        self.assertEquals(regex.match(r'(?e)(?:cats|cat){e<=1}',
+          'caz').fuzzy_counts, (1, 0, 0))
+        self.assertEquals(regex.match(r'(?b)(?:cats|cat){e<=1}',
+          'caz').fuzzy_counts, (1, 0, 0))
+
+        self.assertEquals(regex.match(r'(?:cat){e<=1}', 'caz').fuzzy_counts,
+          (1, 0, 0))
+        self.assertEquals(regex.match(r'(?e)(?:cat){e<=1}',
+          'caz').fuzzy_counts, (1, 0, 0))
+        self.assertEquals(regex.match(r'(?b)(?:cat){e<=1}',
+          'caz').fuzzy_counts, (1, 0, 0))
+
+        self.assertEquals(regex.match(r'(?:cats){e<=2}', 'c ats').fuzzy_counts,
+          (1, 1, 0))
+        self.assertEquals(regex.match(r'(?e)(?:cats){e<=2}',
+          'c ats').fuzzy_counts, (0, 1, 0))
+        self.assertEquals(regex.match(r'(?b)(?:cats){e<=2}',
+          'c ats').fuzzy_counts, (0, 1, 0))
+
+        self.assertEquals(regex.match(r'(?:cats){e<=2}',
+          'c a ts').fuzzy_counts, (0, 2, 0))
+        self.assertEquals(regex.match(r'(?e)(?:cats){e<=2}',
+          'c a ts').fuzzy_counts, (0, 2, 0))
+        self.assertEquals(regex.match(r'(?b)(?:cats){e<=2}',
+          'c a ts').fuzzy_counts, (0, 2, 0))
+
+        self.assertEquals(regex.match(r'(?:cats){e<=1}',
+          'c ats').fuzzy_counts, (0, 1, 0))
+        self.assertEquals(regex.match(r'(?e)(?:cats){e<=1}',
+          'c ats').fuzzy_counts, (0, 1, 0))
+        self.assertEquals(regex.match(r'(?b)(?:cats){e<=1}',
+          'c ats').fuzzy_counts, (0, 1, 0))
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp

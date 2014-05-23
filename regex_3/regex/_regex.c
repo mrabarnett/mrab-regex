@@ -15226,6 +15226,20 @@ Py_LOCAL_INLINE(void) discard_groups(RE_SafeState* safe_state, RE_GroupData*
     release_GIL(safe_state);
 }
 
+/* Saves the fuzzy info. */
+Py_LOCAL_INLINE(void) save_fuzzy_counts(RE_State* state, size_t* fuzzy_counts)
+  {
+    Py_MEMCPY(fuzzy_counts, state->total_fuzzy_counts,
+      sizeof(state->total_fuzzy_counts));
+}
+
+/* Restores the fuzzy info. */
+Py_LOCAL_INLINE(void) restore_fuzzy_counts(RE_State* state, size_t*
+  fuzzy_counts) {
+    Py_MEMCPY(state->total_fuzzy_counts, fuzzy_counts,
+      sizeof(state->total_fuzzy_counts));
+}
+
 /* Performs a match or search from the current text position.
  *
  * The state can sometimes be shared across threads. In such instances there's
@@ -15244,6 +15258,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     int status;
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
+    size_t best_fuzzy_counts[RE_FUZZY_COUNT];
     TRACE(("<<do_match>>\n"))
 
     state = safe_state->re_state;
@@ -15317,6 +15332,8 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         if (!get_best && !enhance_match)
             break;
 
+        save_fuzzy_counts(state, best_fuzzy_counts);
+
         if (!get_best && state->text_pos == state->match_pos)
             /* We want the first match. The match is already zero-width, so the
              * cost can't get any lower (because the fit can't get any better).
@@ -15381,6 +15398,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
             state->text_pos = best_text_pos;
 
             restore_groups(safe_state, best_groups);
+            restore_fuzzy_counts(state, best_fuzzy_counts);
         }
     }
 
