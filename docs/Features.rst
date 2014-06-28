@@ -7,11 +7,6 @@ For testing and comparison with the current 're' module the new implementation i
 
 Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.4 on 32-bit Windows.
 
-Change in behaviour
--------------------
-
-This module now behaves more like the re module with respect to zero-width matches when using version 0 behaviour. See Hg issue 106 below.
-
 Old vs new behaviour
 --------------------
 
@@ -136,7 +131,7 @@ If the source files are built for a 64-bit target then the string positions will
 Unicode
 -------
 
-This module supports Unicode 6.3.
+This module supports Unicode 7.0.
 
 Full Unicode case-folding is supported.
 

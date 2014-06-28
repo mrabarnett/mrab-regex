@@ -1350,9 +1350,11 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     int prop_p1;
 
     /* Break at the start and end of the text. */
+    /* WB1 */
     if (text_pos <= 0)
         return TRUE;
 
+    /* WB2 */
     if (text_pos >= state->text_length)
         return TRUE;
 
@@ -1362,16 +1364,21 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     prop_m1 = (int)re_get_word_break(char_at(state->text, text_pos - 1));
 
     /* Don't break within CRLF. */
+    /* WB3 */
     if (prop_m1 == RE_BREAK_CR && prop == RE_BREAK_LF)
         return FALSE;
 
     /* Otherwise break before and after Newlines (including CR and LF). */
+    /* WB3a and WB3b */
     if (prop_m1 == RE_BREAK_NEWLINE || prop_m1 == RE_BREAK_CR || prop_m1 ==
       RE_BREAK_LF || prop == RE_BREAK_NEWLINE || prop == RE_BREAK_CR || prop ==
       RE_BREAK_LF)
         return TRUE;
 
-    /* Get the property of the previous character. */
+    /* WB4 */
+    /* Get the property of the previous character, ignoring Format and Extend
+     * characters.
+     */
     pos_m1 = text_pos - 1;
     prop_m1 = RE_BREAK_OTHER;
     while (pos_m1 >= 0) {
@@ -1382,7 +1389,9 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
         --pos_m1;
     }
 
-    /* Get the property of the preceding character. */
+    /* Get the property of the preceding character, ignoring Format and Extend
+     * characters.
+     */
     pos_m2 = pos_m1 - 1;
     prop_m2 = RE_BREAK_OTHER;
     while (pos_m2 >= 0) {
@@ -1393,7 +1402,9 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
         --pos_m2;
     }
 
-    /* Get the property of the next character. */
+    /* Get the property of the next character, ignoring Format and Extend
+     * characters.
+     */
     pos_p0 = text_pos;
     prop_p0 = prop;
     while (pos_p0 < state->text_length) {
@@ -1404,7 +1415,9 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
         ++pos_p0;
     }
 
-    /* Get the property of the following character. */
+    /* Get the property of the following character, ignoring Format and Extend
+     * characters.
+     */
     pos_p1 = pos_p0 + 1;
     prop_p1 = RE_BREAK_OTHER;
     while (pos_p1 < state->text_length) {
@@ -1416,31 +1429,38 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     }
 
     /* Don't break between most letters. */
+    /* WB5 */
     if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_HEBREWLETTER) &&
       (prop_p0 == RE_BREAK_ALETTER || prop_p0 == RE_BREAK_HEBREWLETTER))
         return FALSE;
 
     /* Break between apostrophe and vowels (French, Italian). */
+    /* WB5a */
     if (pos_m1 >= 0 && char_at(state->text, pos_m1) == '\'' &&
       is_unicode_vowel(char_at(state->text, text_pos)))
         return TRUE;
 
     /* Don't break letters across certain punctuation. */
+    /* WB6 */
     if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_HEBREWLETTER) &&
       (prop_p0 == RE_BREAK_MIDLETTER || prop_p0 == RE_BREAK_MIDNUMLET ||
       prop_p0 == RE_BREAK_SINGLEQUOTE) && (prop_p1 == RE_BREAK_ALETTER ||
       prop_p1 == RE_BREAK_HEBREWLETTER))
         return FALSE;
+    /* WB7 */
     if ((prop_m2 == RE_BREAK_ALETTER || prop_m2 == RE_BREAK_HEBREWLETTER) &&
       (prop_m1 == RE_BREAK_MIDLETTER || prop_m1 == RE_BREAK_MIDNUMLET ||
       prop_m1 == RE_BREAK_SINGLEQUOTE) && (prop_p0 == RE_BREAK_ALETTER ||
       prop_p0 == RE_BREAK_HEBREWLETTER))
         return FALSE;
+    /* WB7a */
     if (prop_m1 == RE_BREAK_HEBREWLETTER && prop_p0 == RE_BREAK_SINGLEQUOTE)
         return FALSE;
+    /* WB7b */
     if (prop_m1 == RE_BREAK_HEBREWLETTER && prop_p0 == RE_BREAK_DOUBLEQUOTE &&
       prop_p1 == RE_BREAK_HEBREWLETTER)
         return FALSE;
+    /* WB7c */
     if (prop_m2 == RE_BREAK_HEBREWLETTER && prop_m1 == RE_BREAK_DOUBLEQUOTE &&
       prop_p0 == RE_BREAK_HEBREWLETTER)
         return FALSE;
@@ -1448,45 +1468,55 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     /* Don't break within sequences of digits, or digits adjacent to letters
      * ("3a", or "A3").
      */
+    /* WB8 */
     if (prop_m1 == RE_BREAK_NUMERIC && prop_p0 == RE_BREAK_NUMERIC)
         return FALSE;
+    /* WB9 */
     if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_HEBREWLETTER) &&
       prop_p0 == RE_BREAK_NUMERIC)
         return FALSE;
+    /* WB10 */
     if (prop_m1 == RE_BREAK_NUMERIC && (prop_p0 == RE_BREAK_ALETTER || prop_p0
       == RE_BREAK_HEBREWLETTER))
         return FALSE;
 
     /* Don't break within sequences, such as "3.2" or "3,456.789". */
+    /* WB11 */
     if (prop_m2 == RE_BREAK_NUMERIC && (prop_m1 == RE_BREAK_MIDNUM || prop_m1
       == RE_BREAK_MIDNUMLET || prop_m1 == RE_BREAK_SINGLEQUOTE) && prop_p0 ==
       RE_BREAK_NUMERIC)
         return FALSE;
+    /* WB12 */
     if (prop_m1 == RE_BREAK_NUMERIC && (prop_p0 == RE_BREAK_MIDNUM || prop_p0
       == RE_BREAK_MIDNUMLET || prop_p0 == RE_BREAK_SINGLEQUOTE) && prop_p1 ==
       RE_BREAK_NUMERIC)
         return FALSE;
 
     /* Don't break between Katakana. */
+    /* WB13 */
     if (prop_m1 == RE_BREAK_KATAKANA && prop_p0 == RE_BREAK_KATAKANA)
         return FALSE;
 
     /* Don't break from extenders. */
+    /* WB13a */
     if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_HEBREWLETTER ||
       prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_KATAKANA || prop_m1 ==
       RE_BREAK_EXTENDNUMLET) && prop_p0 == RE_BREAK_EXTENDNUMLET)
         return FALSE;
+    /* WB13b */
     if (prop_m1 == RE_BREAK_EXTENDNUMLET && (prop_p0 == RE_BREAK_ALETTER ||
       prop_p0 == RE_BREAK_HEBREWLETTER || prop_p0 == RE_BREAK_NUMERIC ||
       prop_p0 == RE_BREAK_KATAKANA))
         return FALSE;
 
     /* Don't break between regional indicator symbols. */
+    /* WB13c */
     if (prop_m1 == RE_BREAK_REGIONALINDICATOR && prop_p0 ==
       RE_BREAK_REGIONALINDICATOR)
         return FALSE;
 
     /* Otherwise, break everywhere (including around ideographs). */
+    /* WB14 */
     return TRUE;
 }
 
@@ -1654,9 +1684,11 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
     int prop_m1;
 
     /* Break at the start and end of the text. */
+    /* GB1 */
     if (text_pos <= 0)
         return TRUE;
 
+    /* GB2 */
     if (text_pos >= state->text_length)
         return TRUE;
 
@@ -1667,43 +1699,53 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
       - 1));
 
     /* Don't break within CRLF. */
+    /* GB3 */
     if (prop_m1 == RE_GBREAK_CR && prop == RE_GBREAK_LF)
         return FALSE;
 
     /* Otherwise break before and after controls (including CR and LF). */
+    /* GB4 and GB5 */
     if (prop_m1 == RE_GBREAK_CONTROL || prop_m1 == RE_GBREAK_CR || prop_m1 ==
       RE_GBREAK_LF || prop == RE_GBREAK_CONTROL || prop == RE_GBREAK_CR || prop
       == RE_GBREAK_LF)
         return TRUE;
 
     /* Don't break Hangul syllable sequences. */
+    /* GB6 */
     if (prop_m1 == RE_GBREAK_L && (prop == RE_GBREAK_L || prop == RE_GBREAK_V
       || prop == RE_GBREAK_LV || prop == RE_GBREAK_LVT))
         return FALSE;
+    /* GB7 */
     if ((prop_m1 == RE_GBREAK_LV || prop_m1 == RE_GBREAK_V) && (prop ==
       RE_GBREAK_V || prop == RE_GBREAK_T))
         return FALSE;
+    /* GB8 */
     if ((prop_m1 == RE_GBREAK_LVT || prop_m1 == RE_GBREAK_T) && (prop ==
       RE_GBREAK_T))
         return FALSE;
 
     /* Don't break between regional indicator symbols. */
+    /* GB8a */
     if (prop_m1 == RE_GBREAK_REGIONALINDICATOR && prop ==
       RE_GBREAK_REGIONALINDICATOR)
         return FALSE;
 
     /* Don't break just before Extend characters. */
+    /* GB9 */
     if (prop == RE_GBREAK_EXTEND)
         return FALSE;
 
     /* Don't break before SpacingMarks, or after Prepend characters. */
+    /* GB9a */
     if (prop == RE_GBREAK_SPACINGMARK)
         return FALSE;
 
+    /* GB9b */
     if (prop_m1 == RE_GBREAK_PREPEND)
         return FALSE;
 
     /* Otherwise, break everywhere. */
+    /* GB10 */
     return TRUE;
 }
 

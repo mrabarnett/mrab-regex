@@ -73,6 +73,7 @@ Block [blk]
     Bamum
     Bamum_Supplement [Bamum_Sup]
     Basic_Latin [ASCII]
+    Bassa_Vah
     Batak
     Bengali
     Block_Elements
@@ -85,6 +86,7 @@ Block [blk]
     Buhid
     Byzantine_Musical_Symbols [Byzantine_Music]
     Carian
+    Caucasian_Albanian
     Chakma
     Cham
     Cherokee
@@ -101,12 +103,14 @@ Block [blk]
     CJK_Unified_Ideographs_Extension_C [CJK_Ext_C]
     CJK_Unified_Ideographs_Extension_D [CJK_Ext_D]
     Combining_Diacritical_Marks [Diacriticals]
+    Combining_Diacritical_Marks_Extended [Diacriticals_Ext]
     Combining_Diacritical_Marks_For_Symbols [Combining_Marks_For_Symbols, Diacriticals_For_Symbols]
     Combining_Diacritical_Marks_Supplement [Diacriticals_Sup]
     Combining_Half_Marks [Half_Marks]
     Common_Indic_Number_Forms [Indic_Number_Forms]
     Control_Pictures
     Coptic
+    Coptic_Epact_Numbers
     Counting_Rod_Numerals [Counting_Rod]
     Cuneiform
     Cuneiform_Numbers_And_Punctuation [Cuneiform_Numbers]
@@ -121,7 +125,9 @@ Block [blk]
     Devanagari_Extended [Devanagari_Ext]
     Dingbats
     Domino_Tiles [Domino]
+    Duployan
     Egyptian_Hieroglyphs
+    Elbasan
     Emoticons
     Enclosed_Alphanumerics [Enclosed_Alphanum]
     Enclosed_Alphanumeric_Supplement [Enclosed_Alphanum_Sup]
@@ -133,10 +139,12 @@ Block [blk]
     Ethiopic_Supplement [Ethiopic_Sup]
     General_Punctuation [Punctuation]
     Geometric_Shapes
+    Geometric_Shapes_Extended [Geometric_Shapes_Ext]
     Georgian
     Georgian_Supplement [Georgian_Sup]
     Glagolitic
     Gothic
+    Grantha
     Greek_And_Coptic [Greek]
     Greek_Extended [Greek_Ext]
     Gujarati
@@ -169,6 +177,8 @@ Block [blk]
     Kharoshthi
     Khmer
     Khmer_Symbols
+    Khojki
+    Khudawadi
     Lao
     Latin_1_Supplement [Latin_1, Latin_1_Sup]
     Latin_Extended_A [Latin_Ext_A]
@@ -176,22 +186,27 @@ Block [blk]
     Latin_Extended_B [Latin_Ext_B]
     Latin_Extended_C [Latin_Ext_C]
     Latin_Extended_D [Latin_Ext_D]
+    Latin_Extended_E [Latin_Ext_E]
     Lepcha
     Letterlike_Symbols
     Limbu
+    Linear_A
     Linear_B_Ideograms
     Linear_B_Syllabary
     Lisu
     Low_Surrogates
     Lycian
     Lydian
+    Mahajani
     Mahjong_Tiles [Mahjong]
     Malayalam
     Mandaic
+    Manichaean
     Mathematical_Alphanumeric_Symbols [Math_Alphanum]
     Mathematical_Operators [Math_Operators]
     Meetei_Mayek
     Meetei_Mayek_Extensions [Meetei_Mayek_Ext]
+    Mende_Kikakui
     Meroitic_Cursive
     Meroitic_Hieroglyphs
     Miao
@@ -201,24 +216,34 @@ Block [blk]
     Miscellaneous_Symbols_And_Arrows [Misc_Arrows]
     Miscellaneous_Symbols_And_Pictographs [Misc_Pictographs]
     Miscellaneous_Technical [Misc_Technical]
+    Modi
     Modifier_Tone_Letters
     Mongolian
+    Mro
     Musical_Symbols [Music]
     Myanmar
     Myanmar_Extended_A [Myanmar_Ext_A]
+    Myanmar_Extended_B [Myanmar_Ext_B]
+    Nabataean
     New_Tai_Lue
     NKo
     No_Block [NB]
     Number_Forms
     Ogham
     Old_Italic
+    Old_North_Arabian
+    Old_Permic
     Old_Persian
     Old_South_Arabian
     Old_Turkic
     Ol_Chiki
     Optical_Character_Recognition [OCR]
     Oriya
+    Ornamental_Dingbats
     Osmanya
+    Pahawh_Hmong
+    Palmyrene
+    Pau_Cin_Hau
     Phags_Pa
     Phaistos_Disc [Phaistos]
     Phoenician
@@ -226,6 +251,7 @@ Block [blk]
     Phonetic_Extensions_Supplement [Phonetic_Ext_Sup]
     Playing_Cards
     Private_Use_Area [Private_Use, PUA]
+    Psalter_Pahlavi
     Rejang
     Rumi_Numeral_Symbols [Rumi]
     Runic
@@ -233,7 +259,10 @@ Block [blk]
     Saurashtra
     Sharada
     Shavian
+    Shorthand_Format_Controls
+    Siddham
     Sinhala
+    Sinhala_Archaic_Numbers
     Small_Form_Variants [Small_Forms]
     Sora_Sompeng
     Spacing_Modifier_Letters [Modifier_Letters]
@@ -243,6 +272,7 @@ Block [blk]
     Superscripts_And_Subscripts [Super_And_Sub]
     Supplemental_Arrows_A [Sup_Arrows_A]
     Supplemental_Arrows_B [Sup_Arrows_B]
+    Supplemental_Arrows_C [Sup_Arrows_C]
     Supplemental_Mathematical_Operators [Sup_Math_Operators]
     Supplemental_Punctuation [Sup_Punctuation]
     Supplementary_Private_Use_Area_A [Sup_PUA_A]
@@ -263,6 +293,7 @@ Block [blk]
     Thai
     Tibetan
     Tifinagh
+    Tirhuta
     Transport_And_Map_Symbols [Transport_And_Map]
     Ugaritic
     Unified_Canadian_Aboriginal_Syllabics [Canadian_Syllabics, UCAS]
@@ -272,6 +303,7 @@ Block [blk]
     Variation_Selectors_Supplement [VS_Sup]
     Vedic_Extensions [Vedic_Ext]
     Vertical_Forms
+    Warang_Citi
     Yijing_Hexagram_Symbols [Yijing]
     Yi_Radicals
     Yi_Syllables
@@ -522,7 +554,6 @@ ID_Start [IDS]
 Indic_Matra_Category [InMC]
     Bottom
     Bottom_And_Right
-    Invisible
     Left
     Left_And_Right
     NA
@@ -539,17 +570,27 @@ Indic_Matra_Category [InMC]
 Indic_Syllabic_Category [InSC]
     Avagraha
     Bindu
+    Brahmi_Joining_Number
+    Cantillation_Mark
     Consonant
     Consonant_Dead
     Consonant_Final
     Consonant_Head_Letter
     Consonant_Medial
     Consonant_Placeholder
-    Consonant_Repha
+    Consonant_Preceding_Repha
     Consonant_Subjoined
+    Consonant_Succeeding_Repha
+    Gemination_Mark
+    Invisible_Stacker
+    Joiner
     Modifying_Letter
+    Non_Joiner
     Nukta
+    Number
+    Number_Joiner
     Other
+    Pure_Killer
     Register_Shifter
     Tone_Letter
     Tone_Mark
@@ -587,6 +628,33 @@ Joining_Group [jg]
     Knotted_Heh
     Lam
     Lamadh
+    Manichaean_Aleph
+    Manichaean_Ayin
+    Manichaean_Beth
+    Manichaean_Daleth
+    Manichaean_Dhamedh
+    Manichaean_Five
+    Manichaean_Gimel
+    Manichaean_Heth
+    Manichaean_Hundred
+    Manichaean_Kaph
+    Manichaean_Lamedh
+    Manichaean_Mem
+    Manichaean_Nun
+    Manichaean_One
+    Manichaean_Pe
+    Manichaean_Qoph
+    Manichaean_Resh
+    Manichaean_Sadhe
+    Manichaean_Samekh
+    Manichaean_Taw
+    Manichaean_Ten
+    Manichaean_Teth
+    Manichaean_Thamedh
+    Manichaean_Twenty
+    Manichaean_Waw
+    Manichaean_Yodh
+    Manichaean_Zayin
     Meem
     Mim
     Noon
@@ -604,6 +672,7 @@ Joining_Group [jg]
     Seen
     Semkath
     Shin
+    Straight_Waw
     Swash_Kaf
     Syriac_Waw
     Tah
@@ -714,7 +783,9 @@ Numeric_Value [nv]
     1000
     10000
     100000
+    1000000
     100000000
+    10000000000
     1000000000000
     11
     11/2
@@ -872,6 +943,7 @@ Script [sc]
     Avestan [Avst]
     Balinese [Bali]
     Bamum [Bamu]
+    Bassa_Vah [Bass]
     Batak [Batk]
     Bengali [Beng]
     Bopomofo [Bopo]
@@ -881,6 +953,7 @@ Script [sc]
     Buhid [Buhd]
     Canadian_Aboriginal [Cans]
     Carian [Cari]
+    Caucasian_Albanian [Aghb]
     Chakma [Cakm]
     Cham
     Cherokee [Cher]
@@ -891,11 +964,14 @@ Script [sc]
     Cyrillic [Cyrl]
     Deseret [Dsrt]
     Devanagari [Deva]
+    Duployan [Dupl]
     Egyptian_Hieroglyphs [Egyp]
+    Elbasan [Elba]
     Ethiopic [Ethi]
     Georgian [Geor]
     Glagolitic [Glag]
     Gothic [Goth]
+    Grantha [Gran]
     Greek [Grek]
     Gujarati [Gujr]
     Gurmukhi [Guru]
@@ -916,40 +992,56 @@ Script [sc]
     Kayah_Li [Kali]
     Kharoshthi [Khar]
     Khmer [Khmr]
+    Khojki [Khoj]
+    Khudawadi [Sind]
     Lao [Laoo]
     Latin [Latn]
     Lepcha [Lepc]
     Limbu [Limb]
+    Linear_A [Lina]
     Linear_B [Linb]
     Lisu
     Lycian [Lyci]
     Lydian [Lydi]
+    Mahajani [Mahj]
     Malayalam [Mlym]
     Mandaic [Mand]
+    Manichaean [Mani]
     Meetei_Mayek [Mtei]
+    Mende_Kikakui [Mend]
     Meroitic_Cursive [Merc]
     Meroitic_Hieroglyphs [Mero]
     Miao [Plrd]
+    Modi
     Mongolian [Mong]
+    Mro [Mroo]
     Myanmar [Mymr]
+    Nabataean [Nbat]
     New_Tai_Lue [Talu]
     Nko [Nkoo]
     Ogham [Ogam]
     Old_Italic [Ital]
+    Old_North_Arabian [Narb]
+    Old_Permic [Perm]
     Old_Persian [Xpeo]
     Old_South_Arabian [Sarb]
     Old_Turkic [Orkh]
     Ol_Chiki [Olck]
     Oriya [Orya]
     Osmanya [Osma]
+    Pahawh_Hmong [Hmng]
+    Palmyrene [Palm]
+    Pau_Cin_Hau [Pauc]
     Phags_Pa [Phag]
     Phoenician [Phnx]
+    Psalter_Pahlavi [Phlp]
     Rejang [Rjng]
     Runic [Runr]
     Samaritan [Samr]
     Saurashtra [Saur]
     Sharada [Shrd]
     Shavian [Shaw]
+    Siddham [Sidd]
     Sinhala [Sinh]
     Sora_Sompeng [Sora]
     Sundanese [Sund]
@@ -967,9 +1059,11 @@ Script [sc]
     Thai
     Tibetan [Tibt]
     Tifinagh [Tfng]
+    Tirhuta [Tirh]
     Ugaritic [Ugar]
     Unknown [Zzzz]
     Vai [Vaii]
+    Warang_Citi [Wara]
     Yi [Yiii]
 
 Sentence_Break [SB]

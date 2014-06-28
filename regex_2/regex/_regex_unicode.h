@@ -130,9 +130,9 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_GBREAK_LVT 11
 #define RE_GBREAK_PREPEND 12
 
-extern char* re_strings[1160];
+extern char* re_strings[1257];
 extern RE_Property re_properties[143];
-extern RE_PropertyValue re_property_values[1251];
+extern RE_PropertyValue re_property_values[1372];
 extern RE_UINT16 re_expand_on_folding[104];
 extern RE_GetPropertyFunc re_get_property[77];
 

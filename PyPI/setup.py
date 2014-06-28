@@ -13,7 +13,7 @@ DOCS_DIR = os.path.join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2014.05.23',
+    version='2014.06.28',
     description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
 
@@ -47,5 +47,6 @@ setup(
     py_modules = ['regex', '_regex_core', 'test_regex'],
     package_dir={'': PKG_BASE},
 
-    ext_modules=[Extension('_regex', [os.path.join(PKG_BASE, '_regex.c'), os.path.join(PKG_BASE, '_regex_unicode.c')])],
+    ext_modules=[Extension('_regex', [os.path.join(PKG_BASE, '_regex.c'),
+      os.path.join(PKG_BASE, '_regex_unicode.c')])],
     )
