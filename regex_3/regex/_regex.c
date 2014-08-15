@@ -14046,7 +14046,7 @@ backtrack:
                     /* The tail is a string. We don't want to go off the end of
                      * the slice.
                      */
-                    pos = min_ssize_t(pos, state->slice_end - length);
+                    pos = min_ssize_t(pos - 1, state->slice_end - length);
 
                     for (;;) {
                         Py_ssize_t found;
@@ -14092,7 +14092,8 @@ backtrack:
                     /* The tail is a string. We don't want to go off the end of
                      * the slice.
                      */
-                    pos = min_ssize_t(pos, state->slice_end - folded_length);
+                    pos = min_ssize_t(pos - 1, state->slice_end -
+                      folded_length);
 
                     for (;;) {
                         Py_ssize_t found;
@@ -14139,7 +14140,8 @@ backtrack:
                     /* The tail is a string. We don't want to go off the end of
                      * the slice.
                      */
-                    pos = max_ssize_t(pos, state->slice_start + folded_length);
+                    pos = max_ssize_t(pos + 1, state->slice_start +
+                      folded_length);
 
                     for (;;) {
                         Py_ssize_t found;
@@ -14178,7 +14180,7 @@ backtrack:
                     /* The tail is a string. We don't want to go off the end of
                      * the slice.
                      */
-                    pos = min_ssize_t(pos, state->slice_end - length);
+                    pos = min_ssize_t(pos - 1, state->slice_end - length);
 
                     for (;;) {
                         Py_ssize_t found;
@@ -14216,7 +14218,7 @@ backtrack:
                     /* The tail is a string. We don't want to go off the end of
                      * the slice.
                      */
-                    pos = max_ssize_t(pos, state->slice_start + length);
+                    pos = max_ssize_t(pos + 1, state->slice_start + length);
 
                     for (;;) {
                         Py_ssize_t found;
@@ -14254,7 +14256,7 @@ backtrack:
                     /* The tail is a string. We don't want to go off the end of
                      * the slice.
                      */
-                    pos = max_ssize_t(pos, state->slice_start + length);
+                    pos = max_ssize_t(pos + 1, state->slice_start + length);
 
                     for (;;) {
                         Py_ssize_t found;

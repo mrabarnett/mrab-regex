@@ -3219,6 +3219,10 @@ xyzabc
         self.assertEquals(regex.match(r'(?b)(?:cats){e<=1}',
           'c ats').fuzzy_counts, (0, 1, 0))
 
+        # Hg issue 115.
+        self.assertEquals(regex.findall(r'\bof ([a-z]+) of \1\b',
+          'To make use of one of these modules'), [])
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format

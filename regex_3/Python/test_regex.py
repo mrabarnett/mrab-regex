@@ -3290,6 +3290,10 @@ xyzabc
         self.assertEquals(regex.match(r'(?b)(?:cats){e<=1}',
           'c ats').fuzzy_counts, (0, 1, 0))
 
+        # Hg issue 115.
+        self.assertEquals(regex.findall(r'\bof ([a-z]+) of \1\b',
+          'To make use of one of these modules'), [])
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp
