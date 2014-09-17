@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.47"
+__version__ = "2.4.48"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -391,6 +391,7 @@ def escape(pattern, special_only=False):
 import _regex_core
 import _regex
 from threading import RLock as _RLock
+from locale import getlocale as _getlocale
 from _regex_core import *
 from _regex_core import (_ALL_VERSIONS, _ALL_ENCODINGS, _FirstSetError,
   _UnscopedFlagSet, _check_group_features, _compile_firstset,
@@ -413,6 +414,7 @@ _cache = {}
 _cache_lock = _RLock()
 _named_args = {}
 _replacement_cache = {}
+_locale_sensitive = {}
 
 # Maximum size of the cache.
 _MAXCACHE = 500
@@ -420,6 +422,15 @@ _MAXREPCACHE = 500
 
 def _compile(pattern, flags=0, kwargs={}):
     "Compiles a regular expression to a PatternObject."
+    # What locale is this pattern using?
+    locale_key = (type(pattern), pattern)
+    if _locale_sensitive.get(locale_key, True) or (flags & LOCALE) != 0:
+        # This pattern is, or might be, locale-sensitive.
+        pattern_locale = _getlocale()
+    else:
+        # This pattern is definitely not locale-sensitive.
+        pattern_locale = None
+
     try:
         # Do we know what keyword arguments are needed?
         args_key = pattern, type(pattern), flags
@@ -432,13 +443,13 @@ def _compile(pattern, flags=0, kwargs={}):
                 try:
                     args_supplied.add((k, frozenset(kwargs[k])))
                 except KeyError:
-                    raise error("missing named list")
+                    raise error("missing named list: {!r}".format(k))
 
         args_supplied = frozenset(args_supplied)
 
         # Have we already seen this regular expression and named list?
         pattern_key = (pattern, type(pattern), flags, args_supplied,
-          DEFAULT_VERSION)
+          DEFAULT_VERSION, pattern_locale)
         return _cache[pattern_key]
     except KeyError:
         # It's a new pattern, or new named list for a known pattern.
@@ -499,6 +510,9 @@ def _compile(pattern, flags=0, kwargs={}):
 
     reverse = bool(info.flags & REVERSE)
     fuzzy = isinstance(parsed, _Fuzzy)
+
+    # Remember whether this pattern as an inline locale flag.
+    _locale_sensitive[locale_key] = info.inline_locale
 
     # Should we print the parsed pattern?
     if flags & DEBUG:
@@ -583,7 +597,8 @@ def _compile(pattern, flags=0, kwargs={}):
     args_needed = frozenset(args_needed)
 
     # Store this regular expression and named list.
-    pattern_key = (pattern, type(pattern), flags, args_needed, DEFAULT_VERSION)
+    pattern_key = (pattern, type(pattern), flags, args_needed, DEFAULT_VERSION,
+      pattern_locale)
     _cache[pattern_key] = compiled_pattern
 
     # Store what keyword arguments are needed.

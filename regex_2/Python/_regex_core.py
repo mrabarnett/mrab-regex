@@ -246,8 +246,8 @@ def _shrink_cache(cache_dict, args_dict, max_length, divisor=5):
 
     # Rebuild the arguments dictionary.
     args_dict.clear()
-    for pattern, pattern_type, flags, args, default_version in cache_dict:
-        args_dict[pattern, pattern_type, flags, default_version] = args
+    for pattern, pattern_type, flags, args, default_version, locale in cache_dict:
+        args_dict[pattern, pattern_type, flags, default_version, locale] = args
 
 def _fold_case(info, string):
     "Folds the case of a string."
@@ -941,6 +941,10 @@ def parse_flags(source, info):
             raise error("bad inline flags: no flags after '-' at position %d" % source.pos)
     else:
         flags_off = 0
+
+    if flags_on & LOCALE:
+        # Remember that this pattern as an inline locale flag.
+        info.inline_locale = True
 
     return flags_on, flags_off
 
@@ -3816,6 +3820,7 @@ class Info(object):
         flags |= DEFAULT_FLAGS[(flags & _ALL_VERSIONS) or DEFAULT_VERSION]
         self.flags = flags
         self.global_flags = flags
+        self.inline_locale = False
 
         self.kwargs = kwargs
 

@@ -5,8 +5,6 @@ This new regex implementation is intended eventually to replace Python's current
 
 For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
 
-Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.4 on 32-bit Windows.
-
 Old vs new behaviour
 --------------------
 
