@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2014.08.15
+Version: 2014.09.18
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://code.google.com/p/mrab-regex-hg/
 Author: Matthew Barnett
@@ -12,8 +12,6 @@ Description: Introduction
         This new regex implementation is intended eventually to replace Python's current re module implementation.
         
         For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
-        
-        Also included are the compiled binary .pyd files for Python 2.5-2.7 and Python 3.1-3.4 on 32-bit Windows.
         
         Old vs new behaviour
         --------------------
@@ -873,7 +871,7 @@ Description: Introduction
             The regex module can release the GIL during matching (see the above section on multithreading).
         
             Iterators can be safely shared across threads.
-        
+
 Platform: UNKNOWN
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Developers
