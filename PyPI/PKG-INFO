@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2014.09.18
+Version: 2014.09.22
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://code.google.com/p/mrab-regex-hg/
 Author: Matthew Barnett
@@ -146,6 +146,14 @@ Description: Introduction
         -------------------
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+        
+        * Added support for referring to a group by number using (?P=...).
+        
+            This is in addition to the existing ``\g<...>``.
+        
+        * Fixed the handling of locale-sensitive regexes.
+        
+            The ``LOCALE`` flag is intended for legacy code and has limited support. You're still recommended to use Unicode instead.
         
         * Added partial matches (Hg issue 102)
         

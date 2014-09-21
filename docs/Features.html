@@ -409,6 +409,16 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Added support for referring to a group by number using (?P=...).</p>
+<blockquote>
+<p>This is in addition to the existing <tt class="docutils literal"><span class="pre">\g&lt;...&gt;</span></tt>.</p>
+</blockquote>
+</li>
+<li><p class="first">Fixed the handling of locale-sensitive regexes.</p>
+<blockquote>
+<p>The <tt class="docutils literal">LOCALE</tt> flag is intended for legacy code and has limited support. You're still recommended to use Unicode instead.</p>
+</blockquote>
+</li>
 <li><p class="first">Added partial matches (Hg issue 102)</p>
 <blockquote>
 <p>A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.</p>

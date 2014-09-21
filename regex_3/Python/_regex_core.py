@@ -207,7 +207,7 @@ OP = Namespace()
 for i, op in enumerate(OPCODES.split()):
     setattr(OP, op, i)
 
-def _shrink_cache(cache_dict, args_dict, max_length, divisor=5):
+def _shrink_cache(cache_dict, args_dict, locale_sensitive, max_length, divisor=5):
     """Make room in the given cache.
 
     Args:
@@ -244,10 +244,18 @@ def _shrink_cache(cache_dict, args_dict, max_length, divisor=5):
             # Ignore problems if the cache changed from another thread.
             pass
 
-    # Rebuild the arguments dictionary.
+    # Rebuild the arguments and locale-sensitivity dictionaries.
     args_dict.clear()
+    sensitivity_dict = {}
     for pattern, pattern_type, flags, args, default_version, locale in cache_dict:
         args_dict[pattern, pattern_type, flags, default_version, locale] = args
+        try:
+            sensitivity_dict[pattern_type, pattern] = locale_sensitive[pattern_type, pattern]
+        except KeyError:
+            pass
+
+    locale_sensitive.clear()
+    locale_sensitive.update(sensitivity_dict)
 
 def _fold_case(info, string):
     "Folds the case of a string."
@@ -813,7 +821,7 @@ def parse_extension(source, info):
         return Group(info, group, subpattern)
     if ch == "=":
         # (?P=...: a named group reference.
-        name = parse_name(source)
+        name = parse_name(source, allow_numeric=True)
         source.expect(")")
         if info.is_open_group(name):
             raise error("can't refer to an open group at position {}".format(saved_pos))
@@ -1022,7 +1030,7 @@ def parse_name(source, allow_numeric=False):
         raise error("bad group name at position {}".format(source.pos))
 
     if name.isdigit():
-        if not allow_numeric:
+        if not allow_numeric or int(name) <= 0:
             raise error("bad group name at position {}".format(source.pos))
     else:
         if not name.isidentifier():

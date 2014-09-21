@@ -1720,7 +1720,10 @@ class RegexTests(unittest.TestCase):
             # Same tests, for the ?P= form.
             ('(?P<foo_123>a)(?P=foo_123', 'aa', '', regex.error,
               self.MISSING_RPAREN),
-            ('(?P<foo_123>a)(?P=1)', 'aa', '', regex.error,
+            ('(?P<foo_123>a)(?P=1)', 'aa', '1', repr('a')),
+            ('(?P<foo_123>a)(?P=0)', 'aa', '', regex.error,
+              self.BAD_GROUP_NAME),
+            ('(?P<foo_123>a)(?P=-1)', 'aa', '', regex.error,
               self.BAD_GROUP_NAME),
             ('(?P<foo_123>a)(?P=!)', 'aa', '', regex.error,
               self.BAD_GROUP_NAME),

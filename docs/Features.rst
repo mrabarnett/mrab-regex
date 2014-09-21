@@ -139,6 +139,14 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
+* Added support for referring to a group by number using (?P=...).
+
+    This is in addition to the existing ``\g<...>``.
+
+* Fixed the handling of locale-sensitive regexes.
+
+    The ``LOCALE`` flag is intended for legacy code and has limited support. You're still recommended to use Unicode instead.
+
 * Added partial matches (Hg issue 102)
 
     A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.

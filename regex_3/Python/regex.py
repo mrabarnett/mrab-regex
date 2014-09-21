@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.48"
+__version__ = "2.4.49"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -333,6 +333,7 @@ def compile(pattern, flags=0, **kwargs):
 def purge():
     "Clear the regular expression cache"
     _cache.clear()
+    _locale_sensitive.clear()
 
 def template(pattern, flags=0):
     "Compile a template pattern, returning a pattern object."
@@ -426,7 +427,7 @@ def _compile(pattern, flags=0, kwargs={}):
     locale_key = (type(pattern), pattern)
     if _locale_sensitive.get(locale_key, True) or (flags & LOCALE) != 0:
         # This pattern is, or might be, locale-sensitive.
-        pattern_locale = _getlocale()
+        pattern_locale = _getlocale()[1]
     else:
         # This pattern is definitely not locale-sensitive.
         pattern_locale = None
@@ -592,7 +593,10 @@ def _compile(pattern, flags=0, kwargs={}):
     # Do we need to reduce the size of the cache?
     if len(_cache) >= _MAXCACHE:
         with _cache_lock:
-            _shrink_cache(_cache, _named_args, _MAXCACHE)
+            _shrink_cache(_cache, _named_args, _locale_sensitive, _MAXCACHE)
+
+    if (info.flags & LOCALE) == 0:
+        pattern_locale = None
 
     args_needed = frozenset(args_needed)
 
