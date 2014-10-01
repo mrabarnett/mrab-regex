@@ -2593,7 +2593,7 @@ Py_LOCAL_INLINE(BOOL) in_set_union_ign(RE_EncodingTable* encoding,
 
 /* Checks whether a character is in a set. */
 Py_LOCAL_INLINE(BOOL) matches_SET(RE_EncodingTable* encoding,
- RE_LocaleInfo* locale_info, RE_Node* node, Py_UCS4 ch) {
+RE_LocaleInfo* locale_info, RE_Node* node, Py_UCS4 ch) {
     switch (node->op) {
     case RE_OP_SET_DIFF:
     case RE_OP_SET_DIFF_REV:
@@ -2614,7 +2614,7 @@ Py_LOCAL_INLINE(BOOL) matches_SET(RE_EncodingTable* encoding,
 
 /* Checks whether a character is in a set, ignoring case. */
 Py_LOCAL_INLINE(BOOL) matches_SET_IGN(RE_EncodingTable* encoding,
- RE_LocaleInfo* locale_info, RE_Node* node, Py_UCS4 ch) {
+RE_LocaleInfo* locale_info, RE_Node* node, Py_UCS4 ch) {
     Py_UCS4 cases[RE_MAX_CASES];
     int case_count;
 
@@ -10596,7 +10596,8 @@ found:
 }
 
 /* Locates the required string, if there's one. */
-Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
+Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
+  BOOL search) {
     RE_State* state;
     PatternObject* pattern;
     Py_ssize_t found_pos;
@@ -10619,9 +10620,19 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
     case RE_OP_STRING:
     {
         BOOL is_partial;
+        Py_ssize_t limit;
+
+        if (search || pattern->req_offset < 0)
+            limit = state->slice_end;
+        else {
+            limit = state->slice_start + pattern->req_offset +
+              (Py_ssize_t)pattern->req_string->value_count;
+            if (limit > state->slice_end || limit < 0)
+                limit = state->slice_end;
+        }
 
         found_pos = string_search(safe_state, pattern->req_string,
-          state->text_pos, state->slice_end, &is_partial);
+          state->text_pos, limit, &is_partial);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10648,9 +10659,19 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
     case RE_OP_STRING_FLD:
     {
         BOOL is_partial;
+        Py_ssize_t limit;
+
+        if (search || pattern->req_offset < 0)
+            limit = state->slice_end;
+        else {
+            limit = state->slice_start + pattern->req_offset +
+              (Py_ssize_t)pattern->req_string->value_count;
+            if (limit > state->slice_end || limit < 0)
+                limit = state->slice_end;
+        }
 
         found_pos = string_search_fld(safe_state, pattern->req_string,
-          state->text_pos, state->slice_end, &end_pos, &is_partial);
+          state->text_pos, limit, &end_pos, &is_partial);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10676,9 +10697,19 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
     case RE_OP_STRING_FLD_REV:
     {
         BOOL is_partial;
+        Py_ssize_t limit;
+
+        if (search || pattern->req_offset < 0)
+            limit = state->slice_start;
+        else {
+            limit = state->slice_end - pattern->req_offset -
+              (Py_ssize_t)pattern->req_string->value_count;
+            if (limit < state->slice_start)
+                limit = state->slice_start;
+        }
 
         found_pos = string_search_fld_rev(safe_state, pattern->req_string,
-          state->text_pos, state->slice_start, &end_pos, &is_partial);
+          state->text_pos, limit, &end_pos, &is_partial);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10704,9 +10735,19 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
     case RE_OP_STRING_IGN:
     {
         BOOL is_partial;
+        Py_ssize_t limit;
+
+        if (search || pattern->req_offset < 0)
+            limit = state->slice_end;
+        else {
+            limit = state->slice_start + pattern->req_offset +
+              (Py_ssize_t)pattern->req_string->value_count;
+            if (limit > state->slice_end || limit < 0)
+                limit = state->slice_end;
+        }
 
         found_pos = string_search_ign(safe_state, pattern->req_string,
-          state->text_pos, state->slice_end, &is_partial);
+          state->text_pos, limit, &is_partial);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10733,9 +10774,19 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
     case RE_OP_STRING_IGN_REV:
     {
         BOOL is_partial;
+        Py_ssize_t limit;
+
+        if (search || pattern->req_offset < 0)
+            limit = state->slice_start;
+        else {
+            limit = state->slice_end - pattern->req_offset -
+              (Py_ssize_t)pattern->req_string->value_count;
+            if (limit < state->slice_start)
+                limit = state->slice_start;
+        }
 
         found_pos = string_search_ign_rev(safe_state, pattern->req_string,
-          state->text_pos, state->slice_start, &is_partial);
+          state->text_pos, limit, &is_partial);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10762,9 +10813,19 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state) {
     case RE_OP_STRING_REV:
     {
         BOOL is_partial;
+        Py_ssize_t limit;
+
+        if (search || pattern->req_offset < 0)
+            limit = state->slice_start;
+        else {
+            limit = state->slice_end - pattern->req_offset -
+              (Py_ssize_t)pattern->req_string->value_count;
+            if (limit < state->slice_start)
+                limit = state->slice_start;
+        }
 
         found_pos = string_search_rev(safe_state, pattern->req_string,
-          state->text_pos, state->slice_start, &is_partial);
+          state->text_pos, limit, &is_partial);
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10941,7 +11002,7 @@ start_match:
     if (!pattern->req_string || recursive_call)
         found_pos = state->text_pos;
     else {
-        found_pos = locate_required_string(safe_state);
+        found_pos = locate_required_string(safe_state, search);
         if (found_pos < 0)
             return RE_ERROR_FAILURE;
     }
