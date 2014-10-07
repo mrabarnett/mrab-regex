@@ -2020,16 +2020,15 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
         PyErr_NoMemory();
         break;
     case RE_ERROR_NOT_BYTES:
-        PyErr_Format(PyExc_TypeError,
-          "expected bytes, bytearray, or an object with the buffer interface, %.200s found",
+        PyErr_Format(PyExc_TypeError, "expected bytes-like object, not %.200s",
           object->ob_type->tp_name);
         break;
     case RE_ERROR_NOT_STRING:
-        PyErr_Format(PyExc_TypeError, "expected string instance, %.200s found",
+        PyErr_Format(PyExc_TypeError, "expected string instance, not %.200s",
           object->ob_type->tp_name);
         break;
     case RE_ERROR_NOT_UNICODE:
-        PyErr_Format(PyExc_TypeError, "expected str instance, %.200s found",
+        PyErr_Format(PyExc_TypeError, "expected str instance, not %.200s",
           object->ob_type->tp_name);
         break;
     case RE_ERROR_NO_SUCH_GROUP:
@@ -10637,14 +10636,12 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
             /* The required string wasn't found. */
             return -1;
 
-        if (is_partial)
-            /* We found a partial match, so start matching from there. */
-            return found_pos;
-
-        /* Record where the required string matched. */
-        state->req_pos = found_pos;
-        state->req_end = found_pos +
-          (Py_ssize_t)pattern->req_string->value_count;
+        if (!is_partial) {
+            /* Record where the required string matched. */
+            state->req_pos = found_pos;
+            state->req_end = found_pos +
+              (Py_ssize_t)pattern->req_string->value_count;
+        }
 
         if (pattern->req_offset >= 0) {
             /* Step back from the required string to where we should start
@@ -10676,13 +10673,11 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
             /* The required string wasn't found. */
             return -1;
 
-        if (is_partial)
-            /* We found a partial match, so start matching from there. */
-            return found_pos;
-
-        /* Record where the required string matched. */
-        state->req_pos = found_pos;
-        state->req_end = end_pos;
+        if (!is_partial) {
+            /* Record where the required string matched. */
+            state->req_pos = found_pos;
+            state->req_end = end_pos;
+        }
 
         if (pattern->req_offset >= 0) {
             /* Step back from the required string to where we should start
@@ -10714,13 +10709,11 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
             /* The required string wasn't found. */
             return -1;
 
-        if (is_partial)
-            /* We found a partial match, so start matching from there. */
-            return found_pos;
-
-        /* Record where the required string matched. */
-        state->req_pos = found_pos;
-        state->req_end = end_pos;
+        if (!is_partial) {
+            /* Record where the required string matched. */
+            state->req_pos = found_pos;
+            state->req_end = end_pos;
+        }
 
         if (pattern->req_offset >= 0) {
             /* Step back from the required string to where we should start
@@ -10752,14 +10745,12 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
             /* The required string wasn't found. */
             return -1;
 
-        if (is_partial)
-            /* We found a partial match, so start matching from there. */
-            return found_pos;
-
-        /* Record where the required string matched. */
-        state->req_pos = found_pos;
-        state->req_end = found_pos +
-          (Py_ssize_t)pattern->req_string->value_count;
+        if (!is_partial) {
+            /* Record where the required string matched. */
+            state->req_pos = found_pos;
+            state->req_end = found_pos +
+              (Py_ssize_t)pattern->req_string->value_count;
+        }
 
         if (pattern->req_offset >= 0) {
             /* Step back from the required string to where we should start
@@ -10791,14 +10782,12 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
             /* The required string wasn't found. */
             return -1;
 
-        if (is_partial)
-            /* We found a partial match, so start matching from there. */
-            return found_pos;
-
-        /* Record where the required string matched. */
-        state->req_pos = found_pos;
-        state->req_end = found_pos -
-          (Py_ssize_t)pattern->req_string->value_count;
+        if (!is_partial) {
+            /* Record where the required string matched. */
+            state->req_pos = found_pos;
+            state->req_end = found_pos -
+              (Py_ssize_t)pattern->req_string->value_count;
+        }
 
         if (pattern->req_offset >= 0) {
             /* Step back from the required string to where we should start
@@ -10830,14 +10819,12 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
             /* The required string wasn't found. */
             return -1;
 
-        if (is_partial)
-            /* We found a partial match, so start matching from there. */
-            return found_pos;
-
-        /* Record where the required string matched. */
-        state->req_pos = found_pos;
-        state->req_end = found_pos -
-          (Py_ssize_t)pattern->req_string->value_count;
+        if (!is_partial) {
+            /* Record where the required string matched. */
+            state->req_pos = found_pos;
+            state->req_end = found_pos -
+              (Py_ssize_t)pattern->req_string->value_count;
+        }
 
         if (pattern->req_offset >= 0) {
             /* Step back from the required string to where we should start

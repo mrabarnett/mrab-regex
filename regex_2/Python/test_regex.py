@@ -57,8 +57,8 @@ class RegexTests(unittest.TestCase):
     BAD_SET = "bad set"
     STR_PAT_ON_BYTES = "can't use a string pattern on a bytes-like object"
     BYTES_PAT_ON_STR = "can't use a bytes pattern on a string-like object"
-    STR_PAT_BYTES_TEMPL = "expected str instance, bytes found"
-    BYTES_PAT_STR_TEMPL = "expected bytes, bytearray, or an object with the buffer interface, str found"
+    STR_PAT_BYTES_TEMPL = "expected str instance, not bytes"
+    BYTES_PAT_STR_TEMPL = "expected bytes-like object, not str"
     BYTES_PAT_UNI_FLAG = "can't use UNICODE flag with a bytes pattern"
     MIXED_FLAGS = "ASCII, LOCALE and UNICODE flags are mutually incompatible"
     MISSING_RPAREN = "missing \\)" # Need to escape parenthesis for unittest.
