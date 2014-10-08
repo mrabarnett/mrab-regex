@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.51"
+__version__ = "2.4.52"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -490,10 +490,11 @@ def _compile(pattern, flags=0, kwargs={}):
             caught_exception = e
 
         if caught_exception:
-            raise error(str(caught_exception))
+            raise error(caught_exception.msg, caught_exception.pattern,
+              caught_exception.pos)
 
     if not source.at_end():
-        raise error("trailing characters in pattern at position %d" % source.pos)
+        raise error("trailing characters in pattern", pattern, source.pos)
 
     # Check the global flags for conflicts.
     version = (info.flags & _ALL_VERSIONS) or DEFAULT_VERSION
@@ -520,7 +521,7 @@ def _compile(pattern, flags=0, kwargs={}):
         parsed.dump(indent=0, reverse=reverse)
 
     # Fix the group references.
-    parsed.fix_groups(reverse, False)
+    parsed.fix_groups(pattern, reverse, False)
 
     # Optimise the parsed pattern.
     parsed = parsed.optimise(info)
