@@ -423,6 +423,10 @@ _MAXREPCACHE = 500
 
 def _compile(pattern, flags=0, kwargs={}):
     "Compiles a regular expression to a PatternObject."
+
+    # We won't bother to cache the pattern if we're debugging.
+    debugging = (flags & DEBUG) != 0
+
     # What locale is this pattern using?
     locale_key = (type(pattern), pattern)
     if _locale_sensitive.get(locale_key, True) or (flags & LOCALE) != 0:
@@ -432,29 +436,30 @@ def _compile(pattern, flags=0, kwargs={}):
         # This pattern is definitely not locale-sensitive.
         pattern_locale = None
 
-    try:
-        # Do we know what keyword arguments are needed?
-        args_key = pattern, type(pattern), flags
-        args_needed = _named_args[args_key]
+    if not debugging:
+        try:
+            # Do we know what keyword arguments are needed?
+            args_key = pattern, type(pattern), flags
+            args_needed = _named_args[args_key]
 
-        # Are we being provided with its required keyword arguments?
-        args_supplied = set()
-        if args_needed:
-            for k, v in args_needed:
-                try:
-                    args_supplied.add((k, frozenset(kwargs[k])))
-                except KeyError:
-                    raise error("missing named list: {!r}".format(k))
+            # Are we being provided with its required keyword arguments?
+            args_supplied = set()
+            if args_needed:
+                for k, v in args_needed:
+                    try:
+                        args_supplied.add((k, frozenset(kwargs[k])))
+                    except KeyError:
+                        raise error("missing named list: {!r}".format(k))
 
-        args_supplied = frozenset(args_supplied)
+            args_supplied = frozenset(args_supplied)
 
-        # Have we already seen this regular expression and named list?
-        pattern_key = (pattern, type(pattern), flags, args_supplied,
-          DEFAULT_VERSION, pattern_locale)
-        return _cache[pattern_key]
-    except KeyError:
-        # It's a new pattern, or new named list for a known pattern.
-        pass
+            # Have we already seen this regular expression and named list?
+            pattern_key = (pattern, type(pattern), flags, args_supplied,
+              DEFAULT_VERSION, pattern_locale)
+            return _cache[pattern_key]
+        except KeyError:
+            # It's a new pattern, or new named list for a known pattern.
+            pass
 
     # Guess the encoding from the class of the pattern string.
     if isinstance(pattern, unicode):
@@ -596,18 +601,19 @@ def _compile(pattern, flags=0, kwargs={}):
         finally:
             _cache_lock.release()
 
-    if (info.flags & LOCALE) == 0:
-        pattern_locale = None
+    if not debugging:
+        if (info.flags & LOCALE) == 0:
+            pattern_locale = None
 
-    args_needed = frozenset(args_needed)
+        args_needed = frozenset(args_needed)
 
-    # Store this regular expression and named list.
-    pattern_key = (pattern, type(pattern), flags, args_needed, DEFAULT_VERSION,
-      pattern_locale)
-    _cache[pattern_key] = compiled_pattern
+        # Store this regular expression and named list.
+        pattern_key = (pattern, type(pattern), flags, args_needed,
+          DEFAULT_VERSION, pattern_locale)
+        _cache[pattern_key] = compiled_pattern
 
-    # Store what keyword arguments are needed.
-    _named_args[args_key] = args_needed
+        # Store what keyword arguments are needed.
+        _named_args[args_key] = args_needed
 
     return compiled_pattern
 

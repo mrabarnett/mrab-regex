@@ -3225,7 +3225,7 @@ class SetBase(RegexBase):
         print("{}{} {}{}".format(INDENT * indent, self._op_name,
           POS_TEXT[self.positive], CASE_TEXT[self.case_flags]))
         for i in self.items:
-            i.dump(indent + 1)
+            i.dump(indent + 1, reverse)
 
     def _handle_case_folding(self, info, in_set):
         # Is the set case-sensitive?
