@@ -39,7 +39,7 @@ class error(Exception):
 
             message = "{} at position {}".format(message, pos)
 
-            if '\n' in pattern:
+            if newline in pattern:
                 message += " (line {}, column {})".format(self.lineno,
                   self.colno)
 

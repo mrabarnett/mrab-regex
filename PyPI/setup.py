@@ -13,7 +13,7 @@ DOCS_DIR = os.path.join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2014.10.07',
+    version='2014.10.23',
     description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
 
@@ -26,9 +26,9 @@ setup(
 
     url='https://code.google.com/p/mrab-regex-hg/',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: Python Software Foundation License',
+        'License :: OSI Approved :: Apache License 2.0',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.5',
         'Programming Language :: Python :: 2.6',
@@ -42,7 +42,7 @@ setup(
         'Topic :: Text Processing',
         'Topic :: Text Processing :: General',
         ],
-    license='Python Software Foundation License',
+    license='Apache License 2.0',
 
     py_modules = ['regex', '_regex_core', 'test_regex'],
     package_dir={'': PKG_BASE},

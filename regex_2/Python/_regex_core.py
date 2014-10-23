@@ -39,7 +39,7 @@ class error(Exception):
 
             message = "%s at position %d" % (message, pos)
 
-            if '\n' in pattern:
+            if newline in pattern:
                 message += " (line %d, column %d)" % (self.lineno, self.colno)
 
         Exception.__init__(self, message)
