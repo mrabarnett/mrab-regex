@@ -1,11 +1,11 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2014.10.23
+Version: 2014.10.24
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://code.google.com/p/mrab-regex-hg/
 Author: Matthew Barnett
 Author-email: regex@mrabarnett.plus.com
-License: Apache License 2.0
+License: Python Software Foundation License
 Description: Introduction
         ------------
         
@@ -883,7 +883,7 @@ Description: Introduction
 Platform: UNKNOWN
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers
-Classifier: License :: OSI Approved :: Apache License 2.0
+Classifier: License :: OSI Approved :: Python Software Foundation License
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python :: 2.5
 Classifier: Programming Language :: Python :: 2.6

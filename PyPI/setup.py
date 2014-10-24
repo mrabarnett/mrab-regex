@@ -13,7 +13,7 @@ DOCS_DIR = os.path.join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2014.10.23',
+    version='2014.10.24',
     description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
 
@@ -28,7 +28,7 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache License 2.0',
+        'License :: OSI Approved :: Python Software Foundation License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.5',
         'Programming Language :: Python :: 2.6',
@@ -42,7 +42,7 @@ setup(
         'Topic :: Text Processing',
         'Topic :: Text Processing :: General',
         ],
-    license='Apache License 2.0',
+    license='Python Software Foundation License',
 
     py_modules = ['regex', '_regex_core', 'test_regex'],
     package_dir={'': PKG_BASE},
