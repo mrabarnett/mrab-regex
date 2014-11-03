@@ -1041,7 +1041,7 @@ def parse_positional_flags(source, info, flags_on, flags_off):
 
     source.ignore_space = bool(info.flags & VERBOSE)
 
-def parse_name(source, allow_numeric=False):
+def parse_name(source, allow_numeric=False, allow_group_0=False):
     "Parses a name."
     name = source.get_while(set(")>"), include=False)
 
@@ -1049,7 +1049,8 @@ def parse_name(source, allow_numeric=False):
         raise error("bad group name", source.string, source.pos)
 
     if name.isdigit():
-        if not allow_numeric or int(name) <= 0:
+        min_group = 0 if allow_group_0 else 1
+        if not allow_numeric or int(name) < min_group:
             raise error("bad group name", source.string, source.pos)
     else:
         if not is_identifier(name):
@@ -1656,7 +1657,7 @@ def parse_repl_named_char(source):
 def compile_repl_group(source, pattern):
     "Compiles a replacement template group reference."
     source.expect("<")
-    name = parse_name(source, True)
+    name = parse_name(source, True, True)
 
     source.expect(">")
     if name.isdigit():

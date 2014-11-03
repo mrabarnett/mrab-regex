@@ -3310,6 +3310,9 @@ xyzabc
         self.assertEquals(regex.findall(r'\bof ([a-z]+) of \1\b',
           'To make use of one of these modules'), [])
 
+        # Hg issue 125.
+        self.assertEquals(regex.sub(r'x', r'\g<0>', 'x'), 'x')
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp

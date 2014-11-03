@@ -3226,6 +3226,9 @@ xyzabc
         self.assertEquals(regex.findall(r'\bof ([a-z]+) of \1\b',
           'To make use of one of these modules'), [])
 
+        # Hg issue 125.
+        self.assertEquals(regex.sub(r'x', r'\g<0>', 'x'), 'x')
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format
