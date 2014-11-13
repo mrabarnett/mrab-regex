@@ -14564,6 +14564,25 @@ backtrack:
                 state->text_pos = pos;
                 goto advance;
             } else {
+                /* Don't try this repeated match again. */
+                if (step > 0) {
+                    Py_ssize_t p;
+
+                    for (p = limit; p <= pos; p++) {
+                        if (!guard_repeat(safe_state, bt_data->repeat.index, p,
+                          RE_STATUS_BODY, TRUE))
+                            return RE_ERROR_MEMORY;
+                    }
+                } else if (step < 0) {
+                    Py_ssize_t p;
+
+                    for (p = pos; p <= limit; p++) {
+                        if (!guard_repeat(safe_state, bt_data->repeat.index, p,
+                          RE_STATUS_BODY, TRUE))
+                            return RE_ERROR_MEMORY;
+                    }
+                }
+
                 /* We've backtracked the repeat as far as we can. */
                 rp_data->start = bt_data->repeat.text_pos;
                 rp_data->count = bt_data->repeat.count;
@@ -15311,7 +15330,6 @@ backtrack:
             if (status < 0)
                 return RE_ERROR_PARTIAL;
 
-
             if (matched)
                 goto advance;
 
@@ -15329,7 +15347,6 @@ backtrack:
               &matched);
             if (status < 0)
                 return RE_ERROR_PARTIAL;
-
 
             if (matched)
                 goto advance;
