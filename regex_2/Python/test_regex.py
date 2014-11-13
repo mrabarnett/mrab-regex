@@ -45,7 +45,7 @@ class _AssertRaisesContext(object):
 
 class RegexTests(unittest.TestCase):
     PATTERN_CLASS = "<type '_regex.Pattern'>"
-    FLAGS_WITH_COMPILED_PAT = "can't process flags argument with a compiled pattern"
+    FLAGS_WITH_COMPILED_PAT = "cannot process flags argument with a compiled pattern"
     INVALID_GROUP_REF = "invalid group reference"
     MISSING_GT = "missing >"
     BAD_GROUP_NAME = "bad group name"
@@ -59,15 +59,15 @@ class RegexTests(unittest.TestCase):
     BYTES_PAT_ON_STR = "can't use a bytes pattern on a string-like object"
     STR_PAT_BYTES_TEMPL = "expected str instance, not bytes"
     BYTES_PAT_STR_TEMPL = "expected bytes-like object, not str"
-    BYTES_PAT_UNI_FLAG = "can't use UNICODE flag with a bytes pattern"
+    BYTES_PAT_UNI_FLAG = "cannot use UNICODE flag with a bytes pattern"
     MIXED_FLAGS = "ASCII, LOCALE and UNICODE flags are mutually incompatible"
     MISSING_RPAREN = "missing \\)" # Need to escape parenthesis for unittest.
     TRAILING_CHARS = "trailing characters in pattern"
     BAD_CHAR_RANGE = "bad character range"
     NOTHING_TO_REPEAT = "nothing to repeat"
-    OPEN_GROUP = "can't refer to an open group"
+    OPEN_GROUP = "cannot refer to an open group"
     DUPLICATE_GROUP = "duplicate group"
-    CANT_TURN_OFF = "bad inline flags: can't turn flags off"
+    CANT_TURN_OFF = "bad inline flags: cannot turn flags off"
     UNDEF_CHAR_NAME = "undefined character name"
 
     # assertRaisesRegex is defined here because the method isn't in the

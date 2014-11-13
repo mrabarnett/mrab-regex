@@ -8869,6 +8869,34 @@ Py_LOCAL_INLINE(BOOL) guard_repeat(RE_SafeState* safe_state, size_t index,
     return guard(safe_state, guard_list, text_pos, protect);
 }
 
+/* Guards a range of positions against further matching for a repeat. */
+Py_LOCAL_INLINE(BOOL) guard_repeat_range(RE_SafeState* safe_state, size_t
+  index, Py_ssize_t lo_pos, Py_ssize_t hi_pos, RE_STATUS_T guard_type, BOOL
+  protect) {
+    RE_State* state;
+    RE_GuardList* guard_list;
+    Py_ssize_t pos;
+
+    state = safe_state->re_state;
+
+    /* Is a guard active here? */
+    if (!(state->pattern->repeat_info[index].status & guard_type))
+        return TRUE;
+
+    /* Which guard list? */
+    if (guard_type & RE_STATUS_BODY)
+        guard_list = &state->repeats[index].body_guard_list;
+    else
+        guard_list = &state->repeats[index].tail_guard_list;
+
+    for (pos = lo_pos; pos <= hi_pos; pos++) {
+        if (!guard(safe_state, guard_list, pos, protect))
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
 /* Checks whether a position is guarded against further matching for a repeat.
  */
 Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_SafeState* safe_state, size_t index,
@@ -14566,21 +14594,13 @@ backtrack:
             } else {
                 /* Don't try this repeated match again. */
                 if (step > 0) {
-                    Py_ssize_t p;
-
-                    for (p = limit; p <= pos; p++) {
-                        if (!guard_repeat(safe_state, bt_data->repeat.index, p,
-                          RE_STATUS_BODY, TRUE))
-                            return RE_ERROR_MEMORY;
-                    }
+                    if (!guard_repeat_range(safe_state, bt_data->repeat.index,
+                      limit, pos, RE_STATUS_BODY, TRUE))
+                        return RE_ERROR_MEMORY;
                 } else if (step < 0) {
-                    Py_ssize_t p;
-
-                    for (p = pos; p <= limit; p++) {
-                        if (!guard_repeat(safe_state, bt_data->repeat.index, p,
-                          RE_STATUS_BODY, TRUE))
-                            return RE_ERROR_MEMORY;
-                    }
+                    if (!guard_repeat_range(safe_state, bt_data->repeat.index,
+                      pos, limit, RE_STATUS_BODY, TRUE))
+                        return RE_ERROR_MEMORY;
                 }
 
                 /* We've backtracked the repeat as far as we can. */

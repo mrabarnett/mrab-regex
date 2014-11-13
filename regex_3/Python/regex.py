@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.55"
+__version__ = "2.4.56"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -468,7 +468,7 @@ def _compile(pattern, flags=0, kwargs={}):
         guess_encoding = ASCII
     elif isinstance(pattern, _pattern_type):
         if flags:
-            raise ValueError("can't process flags argument with a compiled pattern")
+            raise ValueError("cannot process flags argument with a compiled pattern")
 
         return pattern
     else:
@@ -510,7 +510,7 @@ def _compile(pattern, flags=0, kwargs={}):
         raise ValueError("ASCII, LOCALE and UNICODE flags are mutually incompatible")
 
     if isinstance(pattern, bytes) and (info.flags & UNICODE):
-        raise ValueError("can't use UNICODE flag with a bytes pattern")
+        raise ValueError("cannot use UNICODE flag with a bytes pattern")
 
     if not (info.flags & _ALL_ENCODINGS):
         if isinstance(pattern, str):

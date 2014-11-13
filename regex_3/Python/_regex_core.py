@@ -839,7 +839,7 @@ def parse_extension(source, info):
         name = parse_name(source, allow_numeric=True)
         source.expect(")")
         if info.is_open_group(name):
-            raise error("can't refer to an open group", source.string,
+            raise error("cannot refer to an open group", source.string,
               saved_pos)
 
         return make_ref_group(info, name, saved_pos)
@@ -995,7 +995,7 @@ def parse_flags_subpattern(source, info):
     flags_on, flags_off = parse_flags(source, info)
 
     if flags_off & GLOBAL_FLAGS:
-        raise error("bad inline flags: can't turn off global flag",
+        raise error("bad inline flags: cannot turn off global flag",
           source.string, source.pos)
 
     if flags_on & flags_off:
@@ -1028,7 +1028,7 @@ def parse_positional_flags(source, info, flags_on, flags_off):
     if version == VERSION0:
         # Positional flags are global and can only be turned on.
         if flags_off:
-            raise error("bad inline flags: can't turn flags off",
+            raise error("bad inline flags: cannot turn flags off",
               source.string, source.pos)
 
         new_global_flags = flags_on & ~info.global_flags
@@ -1165,7 +1165,7 @@ def parse_numeric_escape(source, info, ch, in_set):
     # Group reference.
     source.pos = saved_pos
     if info.is_open_group(digits):
-        raise error("can't refer to an open group", source.string, source.pos)
+        raise error("cannot refer to an open group", source.string, source.pos)
 
     return make_ref_group(info, digits, source.pos)
 
@@ -1204,7 +1204,7 @@ def parse_group_ref(source, info):
     name = parse_name(source, True)
     source.expect(">")
     if info.is_open_group(name):
-        raise error("can't refer to an open group", source.string, source.pos)
+        raise error("cannot refer to an open group", source.string, source.pos)
 
     return make_ref_group(info, name, saved_pos)
 
@@ -1243,12 +1243,12 @@ def parse_property(source, info, positive, in_set):
         prop_name, name = parse_property_name(source)
         if source.match("}"):
             # It's correctly delimited.
-            prop = lookup_property(prop_name, name, positive != negate, source_pos=source.pos)
+            prop = lookup_property(prop_name, name, positive != negate, source)
             return make_property(info, prop, in_set)
     elif ch and ch in "CLMNPSZ":
         # An abbreviated property, eg \pL.
-        prop = lookup_property(None, ch, positive)
-        return make_property(info, prop, in_set, source_pos=source.pos)
+        prop = lookup_property(None, ch, positive, source)
+        return make_property(info, prop, in_set)
 
     # Not a property, so treat as a literal "p" or "P".
     source.pos = saved_pos
@@ -1443,7 +1443,7 @@ def parse_posix_class(source, info):
     if not source.match(":]"):
         raise ParseError()
 
-    return lookup_property(prop_name, name, positive=not negate, source_pos=source.pos)
+    return lookup_property(prop_name, name, not negate, source)
 
 def float_to_rational(flt):
     "Converts a float to a rational pair."
@@ -1484,7 +1484,7 @@ def standardise_name(name):
     except (ValueError, ZeroDivisionError):
         return "".join(ch for ch in name if ch not in "_- ").upper()
 
-def lookup_property(property, value, positive, source_pos=None):
+def lookup_property(property, value, positive, source=None):
     "Looks up a property."
     # Normalise the names (which may still be lists).
     property = standardise_name(property) if property else None
@@ -1497,12 +1497,18 @@ def lookup_property(property, value, positive, source_pos=None):
         # Both the property and the value are provided.
         prop = PROPERTIES.get(property)
         if not prop:
-            raise error("unknown property", source.string, source_pos)
+            if not source:
+                raise error("unknown property")
+
+            raise error("unknown property", source.string, source.pos)
 
         prop_id, value_dict = prop
         val_id = value_dict.get(value)
         if val_id is None:
-            raise error("unknown property value", source.string, source_pos)
+            if not source:
+                raise error("unknown property value")
+
+            raise error("unknown property value", source.string, source.pos)
 
         if "YES" in value_dict and val_id == 0:
             positive, val_id = not positive, 1
@@ -1542,7 +1548,10 @@ def lookup_property(property, value, positive, source_pos=None):
                 return Property((prop_id << 16) | val_id, positive)
 
     # Unknown property.
-    raise error("unknown property", source.string, source_pos)
+    if not source:
+        raise error("unknown property")
+
+    raise error("unknown property", source.string, source.pos)
 
 def _compile_replacement(source, pattern, is_unicode):
     "Compiles a replacement template escape sequence."
