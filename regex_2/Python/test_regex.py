@@ -3229,6 +3229,9 @@ xyzabc
         # Hg issue 125.
         self.assertEquals(regex.sub(r'x', r'\g<0>', 'x'), 'x')
 
+        # Unreported issue: no such builtin as 'ascii' in Python 2.
+        self.assertEquals(bool(regex.match(r'a', 'a', regex.DEBUG)), True)
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format

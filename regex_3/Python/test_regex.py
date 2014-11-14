@@ -3313,6 +3313,9 @@ xyzabc
         # Hg issue 125.
         self.assertEquals(regex.sub(r'x', r'\g<0>', 'x'), 'x')
 
+        # Unreported issue: no such builtin as 'ascii' in Python 2.
+        self.assertEquals(bool(regex.match(r'a', 'a', regex.DEBUG)), True)
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp

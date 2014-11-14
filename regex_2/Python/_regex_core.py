@@ -3530,9 +3530,9 @@ class String(RegexBase):
 class Literal(String):
     def _dump(self, indent, reverse):
         for c in self.characters:
-            display = ascii("".join(chr(c))).lstrip("bu")
-            print("{}CHARACTER MATCH {}{}".format(INDENT * indent,
-              display, CASE_TEXT[self.case_flags]))
+            display = repr(unichr(c)).lstrip("bu")
+            print "%sCHARACTER MATCH %s%s" % (INDENT * indent, display,
+              CASE_TEXT[self.case_flags])
 
 class StringSet(RegexBase):
     _opcode = {(NOCASE, False): OP.STRING_SET, (IGNORECASE, False):
