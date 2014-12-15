@@ -3232,6 +3232,16 @@ xyzabc
         # Unreported issue: no such builtin as 'ascii' in Python 2.
         self.assertEquals(bool(regex.match(r'a', 'a', regex.DEBUG)), True)
 
+        # Hg issue 131.
+        self.assertEquals(regex.findall(r'(?V1)[[b-e]--cd]', 'abcdef'), ['b',
+          'e'])
+        self.assertEquals(regex.findall(r'(?V1)[b-e--cd]', 'abcdef'), ['b',
+          'e'])
+        self.assertEquals(regex.findall(r'(?V1)[[bcde]--cd]', 'abcdef'), ['b',
+          'e'])
+        self.assertEquals(regex.findall(r'(?V1)[bcde--cd]', 'abcdef'), ['b',
+          'e'])
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format

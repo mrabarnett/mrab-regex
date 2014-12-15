@@ -3316,6 +3316,16 @@ xyzabc
         # Unreported issue: no such builtin as 'ascii' in Python 2.
         self.assertEquals(bool(regex.match(r'a', 'a', regex.DEBUG)), True)
 
+        # Hg issue 131.
+        self.assertEquals(regex.findall(r'(?V1)[[b-e]--cd]', 'abcdef'), ['b',
+          'e'])
+        self.assertEquals(regex.findall(r'(?V1)[b-e--cd]', 'abcdef'), ['b',
+          'e'])
+        self.assertEquals(regex.findall(r'(?V1)[[bcde]--cd]', 'abcdef'), ['b',
+          'e'])
+        self.assertEquals(regex.findall(r'(?V1)[bcde--cd]', 'abcdef'), ['b',
+          'e'])
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp
