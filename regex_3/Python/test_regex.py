@@ -3326,6 +3326,10 @@ xyzabc
         self.assertEquals(regex.findall(r'(?V1)[bcde--cd]', 'abcdef'), ['b',
           'e'])
 
+        # Hg issue 132.
+        self.assertRaisesRegex(regex.error, '^unknown property at position 4$',
+          lambda: regex.compile(r'\p{}'))
+
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp

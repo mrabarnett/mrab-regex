@@ -1467,7 +1467,7 @@ def float_to_rational(flt):
 
 def numeric_to_rational(numeric):
     "Converts a numeric string to a rational string, if possible."
-    if numeric[0] == "-":
+    if numeric[ : 1] == "-":
         sign, numeric = numeric[0], numeric[1 : ]
     else:
         sign = ""

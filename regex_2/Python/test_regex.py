@@ -3242,6 +3242,10 @@ xyzabc
         self.assertEquals(regex.findall(r'(?V1)[bcde--cd]', 'abcdef'), ['b',
           'e'])
 
+        # Hg issue 132.
+        self.assertRaisesRegex(regex.error, '^unknown property at position 4$',
+          lambda: regex.compile(ur'\p{}'))
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format
