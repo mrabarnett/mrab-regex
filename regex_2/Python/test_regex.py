@@ -27,7 +27,7 @@ class _AssertRaisesContext(object):
             except AttributeError:
                 exc_name = str(self.expected)
             raise self.failureException(
-                "{0} not raised".format(exc_name))
+                "%s not raised" % exc_name)
         if not issubclass(exc_type, self.expected):
             # let unexpected exceptions pass through
             return False
@@ -48,23 +48,25 @@ class RegexTests(unittest.TestCase):
     FLAGS_WITH_COMPILED_PAT = "cannot process flags argument with a compiled pattern"
     INVALID_GROUP_REF = "invalid group reference"
     MISSING_GT = "missing >"
-    BAD_GROUP_NAME = "bad group name"
+    BAD_GROUP_NAME = "bad character in group name"
+    MISSING_GROUP_NAME = "missing group name"
     MISSING_LT = "missing <"
     UNKNOWN_GROUP_I = "unknown group"
     UNKNOWN_GROUP = "unknown group"
-    BAD_ESCAPE = "bad escape"
-    BAD_OCTAL_ESCAPE = "bad octal escape"
-    BAD_SET = "bad set"
-    STR_PAT_ON_BYTES = "can't use a string pattern on a bytes-like object"
-    BYTES_PAT_ON_STR = "can't use a bytes pattern on a string-like object"
-    STR_PAT_BYTES_TEMPL = "expected str instance, not bytes"
-    BYTES_PAT_STR_TEMPL = "expected bytes-like object, not str"
+    BAD_ESCAPE = r"bad escape \(end of pattern\)"
+    BAD_OCTAL_ESCAPE = r"bad escape \\"
+    BAD_SET = "unterminated character set"
+    STR_PAT_ON_BYTES = "cannot use a string pattern on a bytes-like object"
+    BYTES_PAT_ON_STR = "cannot use a bytes pattern on a string-like object"
+    STR_PAT_BYTES_TEMPL = "expected str instance, bytes found"
+    BYTES_PAT_STR_TEMPL = "expected a bytes-like object, str found"
     BYTES_PAT_UNI_FLAG = "cannot use UNICODE flag with a bytes pattern"
     MIXED_FLAGS = "ASCII, LOCALE and UNICODE flags are mutually incompatible"
-    MISSING_RPAREN = "missing \\)" # Need to escape parenthesis for unittest.
-    TRAILING_CHARS = "trailing characters in pattern"
+    MISSING_RPAREN = "missing \\)"
+    TRAILING_CHARS = "unbalanced parenthesis"
     BAD_CHAR_RANGE = "bad character range"
     NOTHING_TO_REPEAT = "nothing to repeat"
+    MULTIPLE_REPEAT = "multiple repeat"
     OPEN_GROUP = "cannot refer to an open group"
     DUPLICATE_GROUP = "duplicate group"
     CANT_TURN_OFF = "bad inline flags: cannot turn flags off"
@@ -157,9 +159,10 @@ class RegexTests(unittest.TestCase):
 
         self.assertEqual(regex.sub(r"x", r"\x0A", "x"), "\n")
         self.assertEqual(regex.sub(r"x", r"\u000A", "x"), "\\u000A")
-        self.assertEqual(regex.sub(r"x", r"\U0000000A", "x"), "\\U0000000A")
-        self.assertEqual(regex.sub(r"x", r"\N{LATIN CAPITAL LETTER A}", "x"),
-          "\\N{LATIN CAPITAL LETTER A}")
+        self.assertEqual(regex.sub(r"x", r"\U0000000A", "x"),
+          "\\U0000000A")
+        self.assertEqual(regex.sub(r"x", r"\N{LATIN CAPITAL LETTER A}",
+          "x"), "\\N{LATIN CAPITAL LETTER A}")
 
     def test_bug_449964(self):
         # Fails for group followed by other escape.
@@ -292,7 +295,7 @@ class RegexTests(unittest.TestCase):
     def test_symbolic_refs(self):
         self.assertRaisesRegex(regex.error, self.MISSING_GT, lambda:
           regex.sub('(?P<a>x)', r'\g<a', 'xx'))
-        self.assertRaisesRegex(regex.error, self.BAD_GROUP_NAME, lambda:
+        self.assertRaisesRegex(regex.error, self.MISSING_GROUP_NAME, lambda:
           regex.sub('(?P<a>x)', r'\g<', 'xx'))
         self.assertRaisesRegex(regex.error, self.MISSING_LT, lambda:
           regex.sub('(?P<a>x)', r'\g', 'xx'))
@@ -773,7 +776,7 @@ class RegexTests(unittest.TestCase):
             self.assertEqual(bool(regex.match(r"\x%02xz" % i, chr(i) + "z")),
               True)
 
-        self.assertRaisesRegex(regex.error, self.UNKNOWN_GROUP, lambda:
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
           regex.match(r"\911", ""))
 
     def test_sre_character_class_literals(self):
@@ -989,6 +992,7 @@ class RegexTests(unittest.TestCase):
             self.assertEqual(pat.match('\xe0'), None)
             pat = regex.compile('\w')
             self.assertEqual(pat.match('\xe0'), None)
+
         self.assertRaisesRegex(ValueError, self.MIXED_FLAGS, lambda:
           regex.compile('(?au)\w'))
 
@@ -1036,6 +1040,8 @@ class RegexTests(unittest.TestCase):
         self.assertEqual(bool(regex.match(r'(?L)\W', '?')), True)
 
         self.assertEqual(bool(regex.match(ur'(?u)\p{Cyrillic}',
+          u'\N{CYRILLIC CAPITAL LETTER A}')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)(?iu)\p{Cyrillic}',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
         self.assertEqual(bool(regex.match(ur'(?u)\p{IsCyrillic}',
           u'\N{CYRILLIC CAPITAL LETTER A}')), True)
@@ -1744,7 +1750,7 @@ class RegexTests(unittest.TestCase):
             (r'(?<foo_123>a)\g<foo_123>', 'aa', '1', repr('a')),
 
             # Test octal escapes.
-            ('\\1', 'a', '', regex.error, self.UNKNOWN_GROUP),    # Backreference.
+            ('\\1', 'a', '', regex.error, self.INVALID_GROUP_REF),    # Backreference.
             ('[\\1]', '\1', '0', "'\\x01'"),  # Character.
             ('\\09', chr(0) + '9', '0', repr(chr(0) + '9')),
             ('\\141', 'a', '0', repr('a')),
@@ -1978,7 +1984,7 @@ class RegexTests(unittest.TestCase):
 
             # Character properties.
             (ur"\g", u"g", '0', repr(u'g')),
-            (ur"\g<1>", u"g", '', regex.error, self.UNKNOWN_GROUP),
+            (ur"\g<1>", u"g", '', regex.error, self.INVALID_GROUP_REF),
             (ur"(.)\g<1>", u"gg", '0', repr(u'gg')),
             (ur"(.)\g<1>", u"gg", '', repr((u'gg', u'g'))),
             (ur"\N", u"N", '0', repr(u'N')),
@@ -2068,7 +2074,7 @@ class RegexTests(unittest.TestCase):
             ('(a)b(c)', 'abc', '0,1,2', repr(('abc', 'a', 'c'))),
             ('a+b+c', 'aabbabc', '0', repr('abc')),
             ('a{1,}b{1,}c', 'aabbabc', '0', repr('abc')),
-            ('a**', '-', '', regex.error, self.NOTHING_TO_REPEAT),
+            ('a**', '-', '', regex.error, self.MULTIPLE_REPEAT),
             ('a.+?c', 'abcabc', '0', repr('abc')),
             ('(a+|b)*', 'ab', '0,1', repr(('ab', 'b'))),
             ('(a+|b){0,}', 'ab', '0,1', repr(('ab', 'b'))),
@@ -2122,9 +2128,9 @@ class RegexTests(unittest.TestCase):
             #    ('((((((((((a))))))))))\\41', 'aa', '', repr(None)),
             #    ('((((((((((a))))))))))\\41', 'a!', '0', repr('a!')),
             ('((((((((((a))))))))))\\41', '', '', regex.error,
-              self.UNKNOWN_GROUP),
+              self.INVALID_GROUP_REF),
             ('(?i)((((((((((a))))))))))\\41', '', '', regex.error,
-              self.UNKNOWN_GROUP),
+              self.INVALID_GROUP_REF),
 
             ('(((((((((a)))))))))', 'a', '0', repr('a')),
             ('multiple words of text', 'uh-uh', '', repr(None)),
@@ -2216,7 +2222,7 @@ class RegexTests(unittest.TestCase):
             ('(?i)a+b+c', 'AABBABC', '0', repr('ABC')),
 
             ('(?i)a{1,}b{1,}c', 'AABBABC', '0', repr('ABC')),
-            ('(?i)a**', '-', '', regex.error, self.NOTHING_TO_REPEAT),
+            ('(?i)a**', '-', '', regex.error, self.MULTIPLE_REPEAT),
             ('(?i)a.+?c', 'ABCABC', '0', repr('ABC')),
             ('(?i)a.*?c', 'ABCABC', '0', repr('ABC')),
             ('(?i)a.{0,5}?c', 'ABCABC', '0', repr('ABC')),
@@ -2350,7 +2356,7 @@ xyzabc
             ('[\\D]+', '1234abc5678', '0', repr('abc')),
             ('[\\da-fA-F]+', '123abc', '0', repr('123abc')),
             # Not an error under PCRE/PRE:
-            # ('[\\d-x]', '-', '', regex.error, self.SYNTAX_ERROR),
+            # ('[\\d-x]', '-', '', regex.error, self.BAD_CHAR_RANGE),
             (r'([\s]*)([\S]*)([\s]*)', ' testing!1972', '3,2,1', repr(('',
               'testing!1972', ' '))),
             (r'(\s*)(\S*)(\s*)', ' testing!1972', '3,2,1', repr(('',
@@ -2440,8 +2446,8 @@ xyzabc
                             group_list.append(group)
 
                 if excval is not None:
-                    self.assertRaisesRegex(expected, excval,
-                                           regex.search, pattern, string)
+                    self.assertRaisesRegex(expected, excval, regex.search,
+                      pattern, string)
                 else:
                     m = regex.search(pattern, string)
                     if m:
@@ -3138,8 +3144,8 @@ xyzabc
         self.assertEqual(rx.findall("Some text"), [])
 
         # Hg issue 95.
-        self.assertRaisesRegex(regex.error,
-          '^nothing to repeat at position 3$', lambda: regex.compile(r'.???'))
+        self.assertRaisesRegex(regex.error, self.MULTIPLE_REPEAT, lambda:
+          regex.compile(r'.???'))
 
         # Hg issue 97.
         self.assertEquals(regex.escape(u'foo!?'), u'foo\\!\\?')
@@ -3147,7 +3153,8 @@ xyzabc
           u'foo!\\?')
 
         self.assertEquals(regex.escape('foo!?'), 'foo\\!\\?')
-        self.assertEquals(regex.escape('foo!?', special_only=True), 'foo!\\?')
+        self.assertEquals(regex.escape('foo!?', special_only=True),
+          'foo!\\?')
 
         # Hg issue 100.
         self.assertEquals(regex.search('^([^z]*(?:WWWi|W))?$',
@@ -3215,8 +3222,8 @@ xyzabc
         self.assertEquals(regex.match(r'(?b)(?:cats){e<=2}',
           'c a ts').fuzzy_counts, (0, 2, 0))
 
-        self.assertEquals(regex.match(r'(?:cats){e<=1}',
-          'c ats').fuzzy_counts, (0, 1, 0))
+        self.assertEquals(regex.match(r'(?:cats){e<=1}', 'c ats').fuzzy_counts,
+          (0, 1, 0))
         self.assertEquals(regex.match(r'(?e)(?:cats){e<=1}',
           'c ats').fuzzy_counts, (0, 1, 0))
         self.assertEquals(regex.match(r'(?b)(?:cats){e<=1}',
@@ -3246,9 +3253,35 @@ xyzabc
         self.assertRaisesRegex(regex.error, '^unknown property at position 4$',
           lambda: regex.compile(ur'\p{}'))
 
+        # Issue 23692.
+        self.assertEquals(regex.match('(?:()|(?(1)()|z)){2}(?(2)a|z)',
+          'a').group(0, 1, 2), ('a', '', ''))
+        self.assertEquals(regex.match('(?:()|(?(1)()|z)){0,2}(?(2)a|z)',
+          'a').group(0, 1, 2), ('a', '', ''))
+
+    def test_subscripted_captures(self):
+        self.assertEquals(regex.match(r'(?P<x>.)+',
+          'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
+        self.assertEquals(regex.match(r'(?P<x>.)+',
+          'abc').expandf('{1} {1[0]} {1[1]} {1[2]} {1[-1]} {1[-2]} {1[-3]}'),
+          'c a b c c b a')
+        self.assertEquals(regex.match(r'(?P<x>.)+',
+          'abc').expandf('{x} {x[0]} {x[1]} {x[2]} {x[-1]} {x[-2]} {x[-3]}'),
+          'c a b c c b a')
+
+        self.assertEquals(regex.subf(r'(?P<x>.)+', r'{0} {0[0]} {0[-1]}',
+          'abc'), 'abc abc abc')
+        self.assertEquals(regex.subf(r'(?P<x>.)+',
+          '{1} {1[0]} {1[1]} {1[2]} {1[-1]} {1[-2]} {1[-3]}', 'abc'),
+          'c a b c c b a')
+        self.assertEquals(regex.subf(r'(?P<x>.)+',
+          '{x} {x[0]} {x[1]} {x[2]} {x[-1]} {x[-2]} {x[-3]}', 'abc'),
+          'c a b c c b a')
+
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).
     del RegexTests.test_format
+    del RegexTests.test_subscripted_captures
 
 def test_main():
     run_unittest(RegexTests)

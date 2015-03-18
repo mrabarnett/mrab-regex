@@ -20,23 +20,25 @@ class RegexTests(unittest.TestCase):
     FLAGS_WITH_COMPILED_PAT = "cannot process flags argument with a compiled pattern"
     INVALID_GROUP_REF = "invalid group reference"
     MISSING_GT = "missing >"
-    BAD_GROUP_NAME = "bad group name"
+    BAD_GROUP_NAME = "bad character in group name"
+    MISSING_GROUP_NAME = "missing group name"
     MISSING_LT = "missing <"
     UNKNOWN_GROUP_I = "unknown group"
     UNKNOWN_GROUP = "unknown group"
-    BAD_ESCAPE = "bad escape"
-    BAD_OCTAL_ESCAPE = "bad octal escape"
-    BAD_SET = "bad set"
-    STR_PAT_ON_BYTES = "can't use a string pattern on a bytes-like object"
-    BYTES_PAT_ON_STR = "can't use a bytes pattern on a string-like object"
-    STR_PAT_BYTES_TEMPL = "expected str instance, not bytes"
-    BYTES_PAT_STR_TEMPL = "expected bytes-like object, not str"
+    BAD_ESCAPE = r"bad escape \(end of pattern\)"
+    BAD_OCTAL_ESCAPE = r"bad escape \\"
+    BAD_SET = "unterminated character set"
+    STR_PAT_ON_BYTES = "cannot use a string pattern on a bytes-like object"
+    BYTES_PAT_ON_STR = "cannot use a bytes pattern on a string-like object"
+    STR_PAT_BYTES_TEMPL = "expected str instance, bytes found"
+    BYTES_PAT_STR_TEMPL = "expected a bytes-like object, str found"
     BYTES_PAT_UNI_FLAG = "cannot use UNICODE flag with a bytes pattern"
     MIXED_FLAGS = "ASCII, LOCALE and UNICODE flags are mutually incompatible"
-    MISSING_RPAREN = "missing \\)" # Need to escape parenthesis for unittest.
-    TRAILING_CHARS = "trailing characters in pattern"
+    MISSING_RPAREN = "missing \\)"
+    TRAILING_CHARS = "unbalanced parenthesis"
     BAD_CHAR_RANGE = "bad character range"
     NOTHING_TO_REPEAT = "nothing to repeat"
+    MULTIPLE_REPEAT = "multiple repeat"
     OPEN_GROUP = "cannot refer to an open group"
     DUPLICATE_GROUP = "duplicate group"
     CANT_TURN_OFF = "bad inline flags: cannot turn flags off"
@@ -104,8 +106,8 @@ class RegexTests(unittest.TestCase):
         self.assertEqual(regex.sub(r"x", r"\x0A", "x"), "\n")
         self.assertEqual(regex.sub(r"x", r"\u000A", "x"), "\n")
         self.assertEqual(regex.sub(r"x", r"\U0000000A", "x"), "\n")
-        self.assertEqual(regex.sub(r"x", r"\N{LATIN CAPITAL LETTER A}", "x"),
-          "A")
+        self.assertEqual(regex.sub(r"x", r"\N{LATIN CAPITAL LETTER A}",
+          "x"), "A")
 
         self.assertEqual(regex.sub(br"x", br"\x0A", b"x"), b"\n")
         self.assertEqual(regex.sub(br"x", br"\u000A", b"x"), b"\\u000A")
@@ -227,7 +229,7 @@ class RegexTests(unittest.TestCase):
     def test_symbolic_refs(self):
         self.assertRaisesRegex(regex.error, self.MISSING_GT, lambda:
           regex.sub('(?P<a>x)', r'\g<a', 'xx'))
-        self.assertRaisesRegex(regex.error, self.BAD_GROUP_NAME, lambda:
+        self.assertRaisesRegex(regex.error, self.MISSING_GROUP_NAME, lambda:
           regex.sub('(?P<a>x)', r'\g<', 'xx'))
         self.assertRaisesRegex(regex.error, self.MISSING_LT, lambda:
           regex.sub('(?P<a>x)', r'\g', 'xx'))
@@ -513,7 +515,7 @@ class RegexTests(unittest.TestCase):
           regex.UNICODE)[1], '\u2222')
         self.assertEqual("".join(regex.findall(".",
           "e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
-            'e\xe8\xe9\xea\xeb\u0113\u011b\u0117')
+          'e\xe8\xe9\xea\xeb\u0113\u011b\u0117')
         self.assertEqual("".join(regex.findall(r"[e\xe8\xe9\xea\xeb\u0113\u011b\u0117]",
           "e\xe8\xe9\xea\xeb\u0113\u011b\u0117", flags=regex.UNICODE)),
           'e\xe8\xe9\xea\xeb\u0113\u011b\u0117')
@@ -611,22 +613,30 @@ class RegexTests(unittest.TestCase):
                 if not regex.match(r"(?fi)" + ch1, ch2):
                     self.fail()
 
-        self.assertEqual(bool(regex.search(r"(?iV1)ff", "\uFB00\uFB01")), True)
-        self.assertEqual(bool(regex.search(r"(?iV1)ff", "\uFB01\uFB00")), True)
-        self.assertEqual(bool(regex.search(r"(?iV1)fi", "\uFB00\uFB01")), True)
-        self.assertEqual(bool(regex.search(r"(?iV1)fi", "\uFB01\uFB00")), True)
+        self.assertEqual(bool(regex.search(r"(?iV1)ff", "\uFB00\uFB01")),
+          True)
+        self.assertEqual(bool(regex.search(r"(?iV1)ff", "\uFB01\uFB00")),
+          True)
+        self.assertEqual(bool(regex.search(r"(?iV1)fi", "\uFB00\uFB01")),
+          True)
+        self.assertEqual(bool(regex.search(r"(?iV1)fi", "\uFB01\uFB00")),
+          True)
         self.assertEqual(bool(regex.search(r"(?iV1)fffi", "\uFB00\uFB01")),
           True)
-        self.assertEqual(bool(regex.search(r"(?iV1)f\uFB03", "\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(r"(?iV1)f\uFB03",
+          "\uFB00\uFB01")), True)
+        self.assertEqual(bool(regex.search(r"(?iV1)ff", "\uFB00\uFB01")),
           True)
-        self.assertEqual(bool(regex.search(r"(?iV1)ff", "\uFB00\uFB01")), True)
-        self.assertEqual(bool(regex.search(r"(?iV1)fi", "\uFB00\uFB01")), True)
+        self.assertEqual(bool(regex.search(r"(?iV1)fi", "\uFB00\uFB01")),
+          True)
         self.assertEqual(bool(regex.search(r"(?iV1)fffi", "\uFB00\uFB01")),
           True)
-        self.assertEqual(bool(regex.search(r"(?iV1)f\uFB03", "\uFB00\uFB01")),
+        self.assertEqual(bool(regex.search(r"(?iV1)f\uFB03",
+          "\uFB00\uFB01")), True)
+        self.assertEqual(bool(regex.search(r"(?iV1)f\uFB01", "\uFB00i")),
           True)
-        self.assertEqual(bool(regex.search(r"(?iV1)f\uFB01", "\uFB00i")), True)
-        self.assertEqual(bool(regex.search(r"(?iV1)f\uFB01", "\uFB00i")), True)
+        self.assertEqual(bool(regex.search(r"(?iV1)f\uFB01", "\uFB00i")),
+          True)
 
         self.assertEqual(regex.findall(r"(?iV0)\m(?:word){e<=3}\M(?<!\m(?:word){e<=1}\M)",
           "word word2 word word3 word word234 word23 word"), ["word234",
@@ -712,7 +722,7 @@ class RegexTests(unittest.TestCase):
             self.assertEqual(bool(regex.match(r"\x%02xz" % i, chr(i) + "z")),
               True)
 
-        self.assertRaisesRegex(regex.error, self.UNKNOWN_GROUP, lambda:
+        self.assertRaisesRegex(regex.error, self.INVALID_GROUP_REF, lambda:
           regex.match(r"\911", ""))
 
     def test_sre_character_class_literals(self):
@@ -1089,12 +1099,13 @@ class RegexTests(unittest.TestCase):
 
         self.assertEqual(regex.match(r"\X", "\xE0").span(), (0, 1))
         self.assertEqual(regex.match(r"\X", "a\u0300").span(), (0, 2))
-        self.assertEqual(regex.findall(r"\X", "a\xE0a\u0300e\xE9e\u0301"),
-          ['a', '\xe0', 'a\u0300', 'e', '\xe9', 'e\u0301'])
-        self.assertEqual(regex.findall(r"\X{3}", "a\xE0a\u0300e\xE9e\u0301"),
-          ['a\xe0a\u0300', 'e\xe9e\u0301'])
-        self.assertEqual(regex.findall(r"\X", "\r\r\n\u0301A\u0301"), ['\r',
-          '\r\n', '\u0301', 'A\u0301'])
+        self.assertEqual(regex.findall(r"\X",
+          "a\xE0a\u0300e\xE9e\u0301"), ['a', '\xe0', 'a\u0300', 'e',
+          '\xe9', 'e\u0301'])
+        self.assertEqual(regex.findall(r"\X{3}",
+          "a\xE0a\u0300e\xE9e\u0301"), ['a\xe0a\u0300', 'e\xe9e\u0301'])
+        self.assertEqual(regex.findall(r"\X", "\r\r\n\u0301A\u0301"),
+          ['\r', '\r\n', '\u0301', 'A\u0301'])
 
         self.assertEqual(bool(regex.match(r'\p{Ll}', 'a')), True)
 
@@ -1159,7 +1170,8 @@ class RegexTests(unittest.TestCase):
             except Exception as e:
                 self.fail("Failed: {} raised {}".format(pattern, ascii(e)))
 
-        self.assertEqual(bool(regex.match(r"\p{NumericValue=0}", "0")), True)
+        self.assertEqual(bool(regex.match(r"\p{NumericValue=0}", "0")),
+          True)
         self.assertEqual(bool(regex.match(r"\p{NumericValue=1/2}",
           "\N{VULGAR FRACTION ONE HALF}")), True)
         self.assertEqual(bool(regex.match(r"\p{NumericValue=0.5}",
@@ -1173,10 +1185,10 @@ class RegexTests(unittest.TestCase):
           " \u0939\u093f\u0928\u094d\u0926\u0940,"), [' ', ','])
         self.assertEqual(regex.split(r"(?V1)\b",
           " \u0939\u093f\u0928\u094d\u0926\u0940,"), [' ',
-            '\u0939\u093f\u0928\u094d\u0926\u0940', ','])
+          '\u0939\u093f\u0928\u094d\u0926\u0940', ','])
         self.assertEqual(regex.split(r"(?V1)\B",
-          " \u0939\u093f\u0928\u094d\u0926\u0940,"), ['', ' \u0939', '\u093f',
-          '\u0928', '\u094d', '\u0926', '\u0940,', ''])
+          " \u0939\u093f\u0928\u094d\u0926\u0940,"), ['', ' \u0939',
+          '\u093f', '\u0928', '\u094d', '\u0926', '\u0940,', ''])
 
     def test_search_anchor(self):
         self.assertEqual(regex.findall(r"\G\w{2}", "abcd ef"), ['ab', 'cd'])
@@ -1477,31 +1489,35 @@ class RegexTests(unittest.TestCase):
         self.assertEqual(regex.match(r"\X", "\xE0").span(), (0, 1))
         self.assertEqual(regex.match(r"\X", "a\u0300").span(), (0, 2))
 
-        self.assertEqual(regex.findall(r"\X", "a\xE0a\u0300e\xE9e\u0301"),
-          ['a', '\xe0', 'a\u0300', 'e', '\xe9', 'e\u0301'])
-        self.assertEqual(regex.findall(r"\X{3}", "a\xE0a\u0300e\xE9e\u0301"),
-          ['a\xe0a\u0300', 'e\xe9e\u0301'])
-        self.assertEqual(regex.findall(r"\X", "\r\r\n\u0301A\u0301"), ['\r',
-          '\r\n', '\u0301', 'A\u0301'])
+        self.assertEqual(regex.findall(r"\X",
+          "a\xE0a\u0300e\xE9e\u0301"), ['a', '\xe0', 'a\u0300', 'e',
+          '\xe9', 'e\u0301'])
+        self.assertEqual(regex.findall(r"\X{3}",
+          "a\xE0a\u0300e\xE9e\u0301"), ['a\xe0a\u0300', 'e\xe9e\u0301'])
+        self.assertEqual(regex.findall(r"\X", "\r\r\n\u0301A\u0301"),
+          ['\r', '\r\n', '\u0301', 'A\u0301'])
 
     def test_word_boundary(self):
         text = 'The quick ("brown") fox can\'t jump 32.3 feet, right?'
         self.assertEqual(regex.split(r'(?V1)\b', text), ['', 'The', ' ',
-          'quick', ' ("', 'brown', '") ', 'fox', ' ', 'can', "'", 't', ' ',
-          'jump', ' ', '32', '.', '3', ' ', 'feet', ', ', 'right', '?'])
+          'quick', ' ("', 'brown', '") ', 'fox', ' ', 'can', "'", 't',
+          ' ', 'jump', ' ', '32', '.', '3', ' ', 'feet', ', ',
+          'right', '?'])
         self.assertEqual(regex.split(r'(?V1w)\b', text), ['', 'The', ' ',
-          'quick', ' ', '(', '"', 'brown', '"', ')', ' ', 'fox', ' ', "can't",
-          ' ', 'jump', ' ', '32.3', ' ', 'feet', ',', ' ', 'right', '?', ''])
+          'quick', ' ', '(', '"', 'brown', '"', ')', ' ', 'fox', ' ',
+          "can't", ' ', 'jump', ' ', '32.3', ' ', 'feet', ',', ' ',
+          'right', '?', ''])
 
         text = "The  fox"
         self.assertEqual(regex.split(r'(?V1)\b', text), ['', 'The', '  ',
           'fox', ''])
-        self.assertEqual(regex.split(r'(?V1w)\b', text), ['', 'The', ' ', ' ',
-          'fox', ''])
+        self.assertEqual(regex.split(r'(?V1w)\b', text), ['', 'The', ' ',
+          ' ', 'fox', ''])
 
         text = "can't aujourd'hui l'objectif"
-        self.assertEqual(regex.split(r'(?V1)\b', text), ['', 'can', "'", 't',
-          ' ', 'aujourd', "'", 'hui', ' ', 'l', "'", 'objectif', ''])
+        self.assertEqual(regex.split(r'(?V1)\b', text), ['', 'can', "'",
+          't', ' ', 'aujourd', "'", 'hui', ' ', 'l', "'", 'objectif',
+          ''])
         self.assertEqual(regex.split(r'(?V1w)\b', text), ['', "can't", ' ',
           "aujourd'hui", ' ', "l'", 'objectif', ''])
 
@@ -1614,11 +1630,13 @@ class RegexTests(unittest.TestCase):
 
         self.assertEqual(regex.findall(r"[a\p{Alpha}]", "ab0"), ["a", "b"])
         self.assertEqual(regex.findall(r"[a\P{Alpha}]", "ab0"), ["a", "0"])
-        self.assertEqual(regex.findall(r"(?i)[a\p{Alpha}]", "ab0"), ["a", "b"])
-        self.assertEqual(regex.findall(r"(?i)[a\P{Alpha}]", "ab0"), ["a", "0"])
+        self.assertEqual(regex.findall(r"(?i)[a\p{Alpha}]", "ab0"), ["a",
+          "b"])
+        self.assertEqual(regex.findall(r"(?i)[a\P{Alpha}]", "ab0"), ["a",
+          "0"])
 
-        self.assertEqual(regex.findall(r"[a-b\p{Alpha}]", "abC0"), ["a", "b",
-          "C"])
+        self.assertEqual(regex.findall(r"[a-b\p{Alpha}]", "abC0"), ["a",
+          "b", "C"])
         self.assertEqual(regex.findall(r"(?i)[a-b\p{Alpha}]", "AbC0"), ["A",
           "b", "C"])
 
@@ -1639,7 +1657,8 @@ class RegexTests(unittest.TestCase):
 
         all_chars = "".join(chr(c) for c in range(0x100))
         self.assertEqual(len(regex.findall(r"\p{ASCII}", all_chars)), 128)
-        self.assertEqual(len(regex.findall(r"\p{Letter}", all_chars)), 117)
+        self.assertEqual(len(regex.findall(r"\p{Letter}", all_chars)),
+          117)
         self.assertEqual(len(regex.findall(r"\p{Digit}", all_chars)), 10)
 
         # Set operators
@@ -1659,7 +1678,8 @@ class RegexTests(unittest.TestCase):
           all_chars)), 127)
         self.assertEqual(len(regex.findall(r"(?V1)[\p{Letter}||\p{Digit}]",
           all_chars)), 127)
-        self.assertEqual(len(regex.findall(r"\p{HexDigit}", all_chars)), 22)
+        self.assertEqual(len(regex.findall(r"\p{HexDigit}", all_chars)),
+          22)
         self.assertEqual(len(regex.findall(r"(?V1)[\p{HexDigit}~~\p{Digit}]",
           all_chars)), 12)
         self.assertEqual(len(regex.findall(r"(?V1)[\p{Digit}~~\p{HexDigit}]",
@@ -1709,7 +1729,7 @@ class RegexTests(unittest.TestCase):
             (r'(?<foo_123>a)\g<foo_123>', 'aa', '1', ascii('a')),
 
             # Test octal escapes.
-            ('\\1', 'a', '', regex.error, self.UNKNOWN_GROUP),    # Backreference.
+            ('\\1', 'a', '', regex.error, self.INVALID_GROUP_REF),    # Backreference.
             ('[\\1]', '\1', '0', "'\\x01'"),  # Character.
             ('\\09', chr(0) + '9', '0', ascii(chr(0) + '9')),
             ('\\141', 'a', '0', ascii('a')),
@@ -1943,7 +1963,7 @@ class RegexTests(unittest.TestCase):
 
             # Character properties.
             (r"\g", "g", '0', ascii('g')),
-            (r"\g<1>", "g", '', regex.error, self.UNKNOWN_GROUP),
+            (r"\g<1>", "g", '', regex.error, self.INVALID_GROUP_REF),
             (r"(.)\g<1>", "gg", '0', ascii('gg')),
             (r"(.)\g<1>", "gg", '', ascii(('gg', 'g'))),
             (r"\N", "N", '0', ascii('N')),
@@ -2033,7 +2053,7 @@ class RegexTests(unittest.TestCase):
             ('(a)b(c)', 'abc', '0,1,2', ascii(('abc', 'a', 'c'))),
             ('a+b+c', 'aabbabc', '0', ascii('abc')),
             ('a{1,}b{1,}c', 'aabbabc', '0', ascii('abc')),
-            ('a**', '-', '', regex.error, self.NOTHING_TO_REPEAT),
+            ('a**', '-', '', regex.error, self.MULTIPLE_REPEAT),
             ('a.+?c', 'abcabc', '0', ascii('abc')),
             ('(a+|b)*', 'ab', '0,1', ascii(('ab', 'b'))),
             ('(a+|b){0,}', 'ab', '0,1', ascii(('ab', 'b'))),
@@ -2087,9 +2107,9 @@ class RegexTests(unittest.TestCase):
             #    ('((((((((((a))))))))))\\41', 'aa', '', ascii(None)),
             #    ('((((((((((a))))))))))\\41', 'a!', '0', ascii('a!')),
             ('((((((((((a))))))))))\\41', '', '', regex.error,
-              self.UNKNOWN_GROUP),
+              self.INVALID_GROUP_REF),
             ('(?i)((((((((((a))))))))))\\41', '', '', regex.error,
-              self.UNKNOWN_GROUP),
+              self.INVALID_GROUP_REF),
 
             ('(((((((((a)))))))))', 'a', '0', ascii('a')),
             ('multiple words of text', 'uh-uh', '', ascii(None)),
@@ -2181,7 +2201,7 @@ class RegexTests(unittest.TestCase):
             ('(?i)a+b+c', 'AABBABC', '0', ascii('ABC')),
 
             ('(?i)a{1,}b{1,}c', 'AABBABC', '0', ascii('ABC')),
-            ('(?i)a**', '-', '', regex.error, self.NOTHING_TO_REPEAT),
+            ('(?i)a**', '-', '', regex.error, self.MULTIPLE_REPEAT),
             ('(?i)a.+?c', 'ABCABC', '0', ascii('ABC')),
             ('(?i)a.*?c', 'ABCABC', '0', ascii('ABC')),
             ('(?i)a.{0,5}?c', 'ABCABC', '0', ascii('ABC')),
@@ -2315,7 +2335,7 @@ xyzabc
             ('[\\D]+', '1234abc5678', '0', ascii('abc')),
             ('[\\da-fA-F]+', '123abc', '0', ascii('123abc')),
             # Not an error under PCRE/PRE:
-            # ('[\\d-x]', '-', '', regex.error, self.SYNTAX_ERROR),
+            # ('[\\d-x]', '-', '', regex.error, self.BAD_CHAR_RANGE),
             (r'([\s]*)([\S]*)([\s]*)', ' testing!1972', '3,2,1', ascii(('',
               'testing!1972', ' '))),
             (r'(\s*)(\S*)(\s*)', ' testing!1972', '3,2,1', ascii(('',
@@ -2405,8 +2425,10 @@ xyzabc
                             group_list.append(group)
 
                 if excval is not None:
-                    self.assertRaisesRegex(expected, excval,
-                                           regex.search, pattern, string)
+                    if (sys.version_info.major, sys.version_info.minor) >= (3, 4):
+                        with self.subTest(pattern=pattern, string=string):
+                            self.assertRaisesRegex(expected, excval, regex.search,
+                              pattern, string)
                 else:
                     m = regex.search(pattern, string)
                     if m:
@@ -2530,11 +2552,13 @@ xyzabc
 
         options = ["STRASSE"]
         self.assertEqual(regex.match(r"(?fi)\L<words>",
-          "stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(), (0, 6))
+          "stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(), (0,
+          6))
 
         options = ["STRASSE", "stress"]
         self.assertEqual(regex.match(r"(?fi)\L<words>",
-          "stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(), (0, 6))
+          "stra\N{LATIN SMALL LETTER SHARP S}e", words=options).span(), (0,
+          6))
 
         options = ["stra\N{LATIN SMALL LETTER SHARP S}e"]
         self.assertEqual(regex.match(r"(?fi)\L<words>", "STRASSE",
@@ -3222,12 +3246,13 @@ xyzabc
         self.assertEqual(rx.findall("Some text"), [])
 
         # Hg issue 95.
-        self.assertRaisesRegex(regex.error,
-          '^nothing to repeat at position 3$', lambda: regex.compile(r'.???'))
+        self.assertRaisesRegex(regex.error, self.MULTIPLE_REPEAT, lambda:
+          regex.compile(r'.???'))
 
         # Hg issue 97.
         self.assertEquals(regex.escape('foo!?'), 'foo\\!\\?')
-        self.assertEquals(regex.escape('foo!?', special_only=True), 'foo!\\?')
+        self.assertEquals(regex.escape('foo!?', special_only=True),
+          'foo!\\?')
 
         self.assertEquals(regex.escape(b'foo!?'), b'foo\\!\\?')
         self.assertEquals(regex.escape(b'foo!?', special_only=True),
@@ -3299,8 +3324,8 @@ xyzabc
         self.assertEquals(regex.match(r'(?b)(?:cats){e<=2}',
           'c a ts').fuzzy_counts, (0, 2, 0))
 
-        self.assertEquals(regex.match(r'(?:cats){e<=1}',
-          'c ats').fuzzy_counts, (0, 1, 0))
+        self.assertEquals(regex.match(r'(?:cats){e<=1}', 'c ats').fuzzy_counts,
+          (0, 1, 0))
         self.assertEquals(regex.match(r'(?e)(?:cats){e<=1}',
           'c ats').fuzzy_counts, (0, 1, 0))
         self.assertEquals(regex.match(r'(?b)(?:cats){e<=1}',
@@ -3329,6 +3354,31 @@ xyzabc
         # Hg issue 132.
         self.assertRaisesRegex(regex.error, '^unknown property at position 4$',
           lambda: regex.compile(r'\p{}'))
+
+        # Issue 23692.
+        self.assertEquals(regex.match('(?:()|(?(1)()|z)){2}(?(2)a|z)',
+          'a').group(0, 1, 2), ('a', '', ''))
+        self.assertEquals(regex.match('(?:()|(?(1)()|z)){0,2}(?(2)a|z)',
+          'a').group(0, 1, 2), ('a', '', ''))
+
+    def test_subscripted_captures(self):
+        self.assertEquals(regex.match(r'(?P<x>.)+',
+          'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
+        self.assertEquals(regex.match(r'(?P<x>.)+',
+          'abc').expandf('{1} {1[0]} {1[1]} {1[2]} {1[-1]} {1[-2]} {1[-3]}'),
+          'c a b c c b a')
+        self.assertEquals(regex.match(r'(?P<x>.)+',
+          'abc').expandf('{x} {x[0]} {x[1]} {x[2]} {x[-1]} {x[-2]} {x[-3]}'),
+          'c a b c c b a')
+
+        self.assertEquals(regex.subf(r'(?P<x>.)+', r'{0} {0[0]} {0[-1]}',
+          'abc'), 'abc abc abc')
+        self.assertEquals(regex.subf(r'(?P<x>.)+',
+          '{1} {1[0]} {1[1]} {1[2]} {1[-1]} {1[-2]} {1[-3]}', 'abc'),
+          'c a b c c b a')
+        self.assertEquals(regex.subf(r'(?P<x>.)+',
+          '{x} {x[0]} {x[1]} {x[2]} {x[-1]} {x[-2]} {x[-3]}', 'abc'),
+          'c a b c c b a')
 
 if sys.version_info < (3, 2, 0):
     # In Python 3.1 it's called assertRaisesRegexp.

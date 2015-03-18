@@ -225,7 +225,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
   "Regex"]
 
-__version__ = "2.4.58"
+__version__ = "2.4.59"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -499,7 +499,7 @@ def _compile(pattern, flags=0, kwargs={}):
               caught_exception.pos)
 
     if not source.at_end():
-        raise error("trailing characters in pattern", pattern, source.pos)
+        raise error("unbalanced parenthesis", pattern, source.pos)
 
     # Check the global flags for conflicts.
     version = (info.flags & _ALL_VERSIONS) or DEFAULT_VERSION

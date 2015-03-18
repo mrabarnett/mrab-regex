@@ -119,12 +119,10 @@ Multithreading
 
 The regex module releases the GIL during matching on instances of the built-in (immutable) string classes, enabling other Python threads to run concurrently. It is also possible to force the regex module to release the GIL during matching by calling the matching methods with the keyword argument ``concurrent=True``. The behaviour is undefined if the string changes during matching, so use it *only* when it is guaranteed that that won't happen.
 
-
 Building for 64-bits
 --------------------
 
 If the source files are built for a 64-bit target then the string positions will also be 64-bit.
-
 
 Unicode
 -------
@@ -133,11 +131,33 @@ This module supports Unicode 7.0.
 
 Full Unicode case-folding is supported.
 
-
 Additional features
 -------------------
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+
+* Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (Hg issue 133) **(Python 2.6 and above)**
+
+    You can now use subscripting to get the captures of a repeated capture group.
+
+    Examples::
+
+        >>> import regex
+        >>> m = regex.match(r"(\w)+", "abc")
+        >>> m.expandf("{1}")
+        'c'
+        >>> m.expandf("{1[0]} {1[1]} {1[2]}")
+        'a b c'
+        >>> m.expandf("{1[-1]} {1[-2]} {1[-3]}")
+        'c b a'
+        >>>
+        >>> m = regex.match(r"(?P<letter>\w)+", "abc")
+        >>> m.expandf("{letter}")
+        'c'
+        >>> m.expandf("{letter[0]} {letter[1]} {letter[2]}")
+        'a b c'
+        >>> m.expandf("{letter[-1]} {letter[-2]} {letter[-3]}")
+        'c b a'
 
 * Added support for referring to a group by number using (?P=...).
 

@@ -402,7 +402,10 @@ def apply_quantifier(source, info, counts, characters, case_flags, ch,
         element = Character(characters[-1], case_flags=case_flags)
     else:
         # The quantifier applies to the last item in the sequence.
-        if applied or not sequence:
+        if applied:
+            raise error("multiple repeat", source.string, saved_pos)
+
+        if not sequence:
             raise error("nothing to repeat", source.string, saved_pos)
 
         element = sequence.pop()
@@ -1047,15 +1050,17 @@ def parse_name(source, allow_numeric=False, allow_group_0=False):
     name = source.get_while(set(")>"), include=False)
 
     if not name:
-        raise error("bad group name", source.string, source.pos)
+        raise error("missing group name", source.string, source.pos)
 
     if name.isdigit():
         min_group = 0 if allow_group_0 else 1
         if not allow_numeric or int(name) < min_group:
-            raise error("bad group name", source.string, source.pos)
+            raise error("bad character in group name", source.string,
+              source.pos)
     else:
         if not name.isidentifier():
-            raise error("bad group name", source.string, source.pos)
+            raise error("bad character in group name", source.string,
+              source.pos)
 
     return name
 
@@ -1079,10 +1084,10 @@ def parse_escape(source, info, in_set):
     source.ignore_space = saved_ignore
     if not ch:
         # A backslash at the end of the pattern.
-        raise error("bad escape", source.string, source.pos)
+        raise error("bad escape (end of pattern)", source.string, source.pos)
     if ch in HEX_ESCAPES:
         # A hexadecimal escape sequence.
-        return parse_hex_escape(source, info, HEX_ESCAPES[ch], in_set)
+        return parse_hex_escape(source, info, HEX_ESCAPES[ch], in_set, ch)
     elif ch == "g" and not in_set:
         # A group reference.
         saved_pos = source.pos
@@ -1183,15 +1188,21 @@ def parse_octal_escape(source, info, digits, in_set):
         value = int("".join(digits), 8)
         return make_character(info, value, in_set)
     except ValueError:
-        raise error("bad octal escape", source.string, source.pos)
+        if digits[0] in OCT_DIGITS:
+            raise error("incomplete escape \\%s" % ''.join(digits),
+              source.string, source.pos)
+        else:
+            raise error("bad escape \\%s" % digits[0], source.string,
+              source.pos)
 
-def parse_hex_escape(source, info, expected_len, in_set):
+def parse_hex_escape(source, info, expected_len, in_set, type):
     "Parses a hex escape sequence."
     digits = []
     for i in range(expected_len):
         ch = source.get()
         if ch not in HEX_DIGITS:
-            raise error("bad hex escape", source.string, source.pos)
+            raise error("incomplete escape \\%s%s" % (type, ''.join(digits)),
+              source.string, source.pos)
         digits.append(ch)
 
     value = int("".join(digits), 16)
@@ -1441,7 +1452,7 @@ def parse_set_item(source, info):
 
     ch = source.get()
     if not ch:
-        raise error("bad set", source.string, source.pos)
+        raise error("unterminated character set", source.string, source.pos)
 
     return Character(ord(ch))
 
@@ -1573,7 +1584,7 @@ def _compile_replacement(source, pattern, is_unicode):
 
         if ch in HEX_ESCAPES and (ch == "x" or is_unicode):
             # A hexadecimal escape sequence.
-            return False, [parse_repl_hex_escape(source, HEX_ESCAPES[ch])]
+            return False, [parse_repl_hex_escape(source, HEX_ESCAPES[ch], ch)]
 
         if ch == "g":
             # A group preference.
@@ -1629,18 +1640,19 @@ def _compile_replacement(source, pattern, is_unicode):
 
     if not ch:
         # A trailing backslash.
-        raise error("bad escape", source.string, source.pos)
+        raise error("bad escape (end of pattern)", source.string, source.pos)
 
     # An escaped non-backslash is a backslash followed by the literal.
     return False, [ord("\\"), ord(ch)]
 
-def parse_repl_hex_escape(source, expected_len):
+def parse_repl_hex_escape(source, expected_len, type):
     "Parses a hex escape sequence in a replacement string."
     digits = []
     for i in range(expected_len):
         ch = source.get()
         if ch not in HEX_DIGITS:
-            raise error("bad hex escape", source.string, source.pos)
+            raise error("incomplete escape \\%s%s" % (type, ''.join(digits)),
+              source.string, source.pos)
         digits.append(ch)
 
     return int("".join(digits), 16)
@@ -1671,7 +1683,7 @@ def compile_repl_group(source, pattern):
     if name.isdigit():
         index = int(name)
         if not 0 <= index <= pattern.groups:
-            raise error("invalid group", source.string, source.pos)
+            raise error("invalid group reference", source.string, source.pos)
 
         return index
 
@@ -2277,7 +2289,7 @@ class CallGroup(RegexBase):
             try:
                 self.group = self.info.group_index[self.group]
             except KeyError:
-                raise error("unknown group", pattern, self.position)
+                raise error("invalid group reference", pattern, self.position)
 
         if not 0 <= self.group <= self.info.group_count:
             raise error("unknown group", pattern, self.position)
@@ -2397,7 +2409,7 @@ class Conditional(RegexBase):
                 raise error("unknown group", pattern, self.position)
 
         if not 1 <= self.group <= self.info.group_count:
-            raise error("unknown group", pattern, self.position)
+            raise error("invalid group reference", pattern, self.position)
 
         self.yes_item.fix_groups(pattern, reverse, fuzzy)
         self.no_item.fix_groups(pattern, reverse, fuzzy)
@@ -3028,7 +3040,7 @@ class RefGroup(RegexBase):
                 raise error("unknown group", pattern, self.position)
 
         if not 1 <= self.group <= self.info.group_count:
-            raise error("unknown group", pattern, self.position)
+            raise error("invalid group reference", pattern, self.position)
 
         self._key = self.__class__, self.group, self.case_flags
 
@@ -3989,7 +4001,7 @@ class Scanner:
             source.ignore_space = bool(info.flags & VERBOSE)
             parsed = _parse_pattern(source, info)
             if not source.at_end():
-                raise error("trailing characters", source.string, source.pos)
+                raise error("unbalanced parenthesis", source.string, source.pos)
 
             # We want to forbid capture groups within each phrase.
             patterns.append(parsed.remove_captures())
