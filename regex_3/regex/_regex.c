@@ -721,6 +721,30 @@ typedef struct {
 /* Function types for getting info from a MatchObject. */
 typedef PyObject* (*RE_GetByIndexFunc)(MatchObject* self, Py_ssize_t index);
 
+#if defined(PYPY_VERSION)
+/* PyPy does not define PyLong_FromUnicode, so include our own implementation.
+ */
+Py_LOCAL_INLINE(PyObject*) PyLong_FromUnicode(Py_UNICODE *u, Py_ssize_t length,
+  int base) {
+    PyObject* result;
+    char* buffer = (char*)PyMem_MALLOC(length + 1);
+
+    if (buffer == NULL)
+        return NULL;
+
+    if (PyUnicode_EncodeDecimal(u, length, buffer, NULL)) {
+        PyMem_FREE(buffer);
+
+        return NULL;
+    }
+
+    result = PyLong_FromString(buffer, NULL, base);
+    PyMem_FREE(buffer);
+
+    return result;
+}
+
+#endif
 /* Returns the magnitude of a 'Py_ssize_t' value. */
 Py_LOCAL_INLINE(Py_ssize_t) abs_ssize_t(Py_ssize_t x) {
     return x >= 0 ? x : -x;
