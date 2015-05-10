@@ -1,8 +1,8 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2015.05.07
+Version: 2015.05.10
 Summary: Alternative regular expression module, to replace re.
-Home-page: https://code.google.com/p/mrab-regex-hg/
+Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
 Author-email: regex@mrabarnett.plus.com
 License: Python Software Foundation License

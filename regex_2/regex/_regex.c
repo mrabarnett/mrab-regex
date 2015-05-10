@@ -21814,10 +21814,6 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
     if (args->code + 3 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
-    /* This includes special cases such as optional items, which we'll check
-     * for and treat specially. They don't need repeat counts, which helps us
-     * avoid unnecessary work when matching.
-     */
     greedy = args->code[0] == RE_OP_GREEDY_REPEAT;
     min_count = args->code[1];
     max_count = args->code[2];
@@ -21826,50 +21822,7 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
 
     args->code += 3;
 
-    if (min_count == 0 && max_count == 1) {
-        /* Optional sequence. */
-        RE_Node* branch_node;
-        RE_Node* join_node;
-        RE_CompileArgs subargs;
-
-        /* Create the start and end nodes. */
-        branch_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
-        join_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
-        if (!branch_node || !join_node)
-            return RE_ERROR_MEMORY;
-
-        /* Compile the sequence and check that we've reached the end of it. */
-        subargs = *args;
-        subargs.has_captures = FALSE;
-        subargs.is_fuzzy = FALSE;
-        status = build_sequence(&subargs);
-        if (status != RE_ERROR_SUCCESS)
-            return status;
-
-        if (subargs.code[0] != RE_OP_END)
-            return RE_ERROR_ILLEGAL;
-
-        args->code = subargs.code;
-        args->has_captures |= subargs.has_captures;
-        args->is_fuzzy |= subargs.is_fuzzy;
-
-        ++args->code;
-
-        if (greedy) {
-            /* It's a greedy option. */
-            add_node(branch_node, subargs.start);
-            add_node(branch_node, join_node);
-        } else {
-            /* It's a lazy option. */
-            add_node(branch_node, join_node);
-            add_node(branch_node, subargs.start);
-        }
-        add_node(subargs.end, join_node);
-
-        /* Append the optional sequence. */
-        add_node(args->end, branch_node);
-        args->end = join_node;
-    } else if (min_count == 1 && max_count == 1) {
+    if (min_count == 1 && max_count == 1) {
         /* Singly-repeated sequence. */
         RE_CompileArgs subargs;
 

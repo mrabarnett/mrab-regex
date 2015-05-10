@@ -13,7 +13,7 @@ DOCS_DIR = os.path.join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2015.05.07',
+    version='2015.05.10',
     description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
 
@@ -24,7 +24,7 @@ setup(
     maintainer='Matthew Barnett',
     maintainer_email='regex@mrabarnett.plus.com',
 
-    url='https://code.google.com/p/mrab-regex-hg/',
+    url='https://bitbucket.org/mrabarnett/mrab-regex',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
