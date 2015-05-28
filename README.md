@@ -826,9 +826,19 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * POSIX character classes
 
-    `[[:alpha:]]`; `[[:^alpha:]]`
+    ``[[:alpha:]]``; ``[[:^alpha:]]``
 
-    POSIX character classes are supported. This is actually treated as an alternative form of `\p{...}`.
+    POSIX character classes are supported. These are normally treated as an alternative form of ``\p{...}``.
+
+    The exceptions are ``alnum``, ``digit``, ``punct`` and ``xdigit``, whose definitions are different from those of Unicode.
+
+    ``[[:alnum:]]`` is equivalent to ``\p{posix_alnum}``.
+
+    ``[[:digit:]]`` is equivalent to ``\p{posix_digit}``.
+
+    ``[[:punct:]]`` is equivalent to ``\p{posix_punct}``.
+
+    ``[[:xdigit:]]`` is equivalent to ``\p{posix_xdigit}``.
 
 * Search anchor
 
