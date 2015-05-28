@@ -1087,7 +1087,12 @@ stu
 <li><p class="first">POSIX character classes</p>
 <blockquote>
 <p><tt class="docutils literal"><span class="pre">[[:alpha:]]</span></tt>; <tt class="docutils literal"><span class="pre">[[:^alpha:]]</span></tt></p>
-<p>POSIX character classes are supported. This is actually treated as an alternative form of <tt class="docutils literal"><span class="pre">\p{...}</span></tt>.</p>
+<p>POSIX character classes are supported. These are normally treated as an alternative form of <tt class="docutils literal"><span class="pre">\p{...}</span></tt>.</p>
+<p>The exceptions are <tt class="docutils literal">alnum</tt>, <tt class="docutils literal">digit</tt>, <tt class="docutils literal">punct</tt> and <tt class="docutils literal">xdigit</tt>, whose definitions are different from those of Unicode.</p>
+<p><tt class="docutils literal"><span class="pre">[[:alnum:]]</span></tt> is equivalent to <tt class="docutils literal">\p{posix_alnum}</tt>.</p>
+<p><tt class="docutils literal"><span class="pre">[[:digit:]]</span></tt> is equivalent to <tt class="docutils literal">\p{posix_digit}</tt>.</p>
+<p><tt class="docutils literal"><span class="pre">[[:punct:]]</span></tt> is equivalent to <tt class="docutils literal">\p{posix_punct}</tt>.</p>
+<p><tt class="docutils literal"><span class="pre">[[:xdigit:]]</span></tt> is equivalent to <tt class="docutils literal">\p{posix_xdigit}</tt>.</p>
 </blockquote>
 </li>
 <li><p class="first">Search anchor</p>

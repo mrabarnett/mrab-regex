@@ -1473,7 +1473,7 @@ def parse_posix_class(source, info):
     if not source.match(":]"):
         raise ParseError()
 
-    return lookup_property(prop_name, name, not negate, source)
+    return lookup_property(prop_name, name, not negate, source, posix=True)
 
 def float_to_rational(flt):
     "Converts a float to a rational pair."
@@ -1514,7 +1514,9 @@ def standardise_name(name):
     except (ValueError, ZeroDivisionError):
         return "".join(ch for ch in name if ch not in "_- ").upper()
 
-def lookup_property(property, value, positive, source=None):
+_posix_classes = set('ALNUM DIGIT PUNCT XDIGIT'.split())
+
+def lookup_property(property, value, positive, source=None, posix=False):
     "Looks up a property."
     # Normalise the names (which may still be lists).
     property = standardise_name(property) if property else None
@@ -1522,6 +1524,9 @@ def lookup_property(property, value, positive, source=None):
 
     if (property, value) == ("GENERALCATEGORY", "ASSIGNED"):
         property, value, positive = "GENERALCATEGORY", "UNASSIGNED", not positive
+
+    if posix and not property and value.upper() in _posix_classes:
+        value = 'POSIX' + value
 
     if property:
         # Both the property and the value are provided.
@@ -2647,17 +2652,20 @@ class Grapheme(RegexBase):
     def _compile(self, reverse, fuzzy):
         # Match at least 1 character until a grapheme boundary is reached. Note
         # that this is the same whether matching forwards or backwards.
-        character_matcher = LazyRepeat(AnyAll(), 1, None).compile(reverse,
-          fuzzy)
-        boundary_matcher = [(OP.GRAPHEME_BOUNDARY, 1)]
+        grapheme_matcher = Atomic(Sequence([LazyRepeat(AnyAll(), 1, None),
+          GraphemeBoundary()]))
 
-        return character_matcher + boundary_matcher
+        return grapheme_matcher.compile(reverse, fuzzy)
 
     def _dump(self, indent, reverse):
         print "%sGRAPHEME" % (INDENT * indent)
 
     def max_width(self):
         return UNLIMITED
+
+class GraphemeBoundary:
+    def compile(self, reverse, fuzzy):
+        return [(OP.GRAPHEME_BOUNDARY, 1)]
 
 class GreedyRepeat(RegexBase):
     _opcode = OP.GREEDY_REPEAT

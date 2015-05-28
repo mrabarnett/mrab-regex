@@ -3259,6 +3259,96 @@ xyzabc
         self.assertEquals(regex.match('(?:()|(?(1)()|z)){0,2}(?(2)a|z)',
           'a').group(0, 1, 2), ('a', '', ''))
 
+        # Hg issue #137: Posix character class :punct: does not seem to be
+        # supported.
+
+        # Posix compatibility as recommended here:
+        # http://www.unicode.org/reports/tr18/#Compatibility_Properties
+
+        # Posix in Unicode.
+        chars = u''.join(unichr(c) for c in range(0x10000))
+
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:alnum:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)[\p{Alpha}\p{PosixDigit}]+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:alpha:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)\p{Alpha}+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:ascii:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)[\p{InBasicLatin}]+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:blank:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)[\p{gc=Space_Separator}\t]+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:cntrl:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)\p{gc=Control}+''', chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:digit:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)[0-9]+''', chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:graph:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)[^\p{Space}\p{gc=Control}\p{gc=Surrogate}\p{gc=Unassigned}]+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:lower:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)\p{Lower}+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:print:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?uV1)[\p{Graph}\p{Blank}--\p{Cntrl}]+''', chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:punct:]]+''',
+          chars))),
+          repr(u''.join(regex.findall(ur'''(?uV1)[\p{gc=Punctuation}\p{gc=Symbol}--\p{Alpha}]+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:space:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)\p{Whitespace}+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:upper:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)\p{Upper}+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:word:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)[\p{Alpha}\p{gc=Mark}\p{Digit}\p{gc=Connector_Punctuation}\p{Join_Control}]+''',
+          chars))))
+        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:xdigit:]]+''',
+          chars))), repr(u''.join(regex.findall(ur'''(?u)[0-9A-Fa-f]+''',
+          chars))))
+
+        # Posix in ASCII.
+        chars = ''.join(chr(c) for c in range(0x100))
+
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:alnum:]]+''',
+          chars))), repr(''.join(regex.findall(r'''[\p{Alpha}\p{PosixDigit}]+''',
+          chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:alpha:]]+''',
+          chars))), repr(''.join(regex.findall(r'''\p{Alpha}+''', chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:ascii:]]+''',
+          chars))), repr(''.join(regex.findall(r'''[\x00-\x7F]+''', chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:blank:]]+''',
+          chars))), repr(''.join(regex.findall(r'''[\p{gc=Space_Separator}\t]+''',
+          chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:cntrl:]]+''',
+          chars))), repr(''.join(regex.findall(r'''\p{gc=Control}+''',
+          chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:digit:]]+''',
+          chars))), repr(''.join(regex.findall(r'''[0-9]+''', chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:graph:]]+''',
+          chars))), repr(''.join(regex.findall(r'''[^\p{Space}\p{gc=Control}\p{gc=Surrogate}\p{gc=Unassigned}]+''', chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:lower:]]+''',
+          chars))), repr(''.join(regex.findall(r'''\p{Lower}+''', chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:print:]]+''',
+          chars))), repr(''.join(regex.findall(r'''(?V1)[\p{Graph}\p{Blank}--\p{Cntrl}]+''', chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:punct:]]+''',
+          chars))), repr(''.join(regex.findall(r'''(?V1)[\p{gc=Punctuation}\p{gc=Symbol}--\p{Alpha}]+''',
+          chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:space:]]+''',
+          chars))), repr(''.join(regex.findall(r'''\p{Whitespace}+''', chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:upper:]]+''',
+          chars))), repr(''.join(regex.findall(r'''\p{Upper}+''', chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:word:]]+''',
+          chars))), repr(''.join(regex.findall(r'''[\p{Alpha}\p{gc=Mark}\p{Digit}\p{gc=Connector_Punctuation}\p{Join_Control}]+''', chars))))
+        self.assertEquals(repr(''.join(regex.findall(r'''[[:xdigit:]]+''',
+          chars))), repr(''.join(regex.findall(r'''[0-9A-Fa-f]+''', chars))))
+
+        # Hg issue #138: grapheme anchored search not working properly.
+        self.assertEquals(repr(regex.search(ur'(?u)\X$', u'ab\u2103').group()),
+          repr(u'\u2103'))
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

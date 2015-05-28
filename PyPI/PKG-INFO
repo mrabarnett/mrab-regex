@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2015.05.10
+Version: 2015.05.28
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -832,7 +832,17 @@ Description: Introduction
         
             ``[[:alpha:]]``; ``[[:^alpha:]]``
         
-            POSIX character classes are supported. This is actually treated as an alternative form of ``\p{...}``.
+            POSIX character classes are supported. These are normally treated as an alternative form of ``\p{...}``.
+        
+            The exceptions are ``alnum``, ``digit``, ``punct`` and ``xdigit``, whose definitions are different from those of Unicode.
+        
+            ``[[:alnum:]]`` is equivalent to ``\p{posix_alnum}``.
+        
+            ``[[:digit:]]`` is equivalent to ``\p{posix_digit}``.
+        
+            ``[[:punct:]]`` is equivalent to ``\p{posix_punct}``.
+        
+            ``[[:xdigit:]]`` is equivalent to ``\p{posix_xdigit}``.
         
         * Search anchor
         
@@ -912,6 +922,7 @@ Classifier: Programming Language :: Python :: 3.1
 Classifier: Programming Language :: Python :: 3.2
 Classifier: Programming Language :: Python :: 3.3
 Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
 Classifier: Topic :: Scientific/Engineering :: Information Analysis
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Classifier: Topic :: Text Processing

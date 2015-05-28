@@ -1,4 +1,4 @@
-The following is a list of the 77 properties which are supported by this module:
+The following is a list of the 81 properties which are supported by this module:
 
 Alphabetic [Alpha]
     No [F, False, N]
@@ -922,6 +922,22 @@ Pattern_Syntax [Pat_Syn]
     Yes [T, True, Y]
 
 Pattern_White_Space [Pat_WS]
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Posix_AlNum
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Posix_Digit
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Posix_Punct
+    No [F, False, N]
+    Yes [T, True, Y]
+
+Posix_XDigit
     No [F, False, N]
     Yes [T, True, Y]
 
