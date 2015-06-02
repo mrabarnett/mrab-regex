@@ -289,6 +289,9 @@ def _compile_firstset(info, fs):
     # If we ignore the case, for simplicity we won't build a firstset.
     members = set()
     for i in fs:
+        if isinstance(i, Character) and not i.positive:
+            return []
+
         if i.case_flags:
             if isinstance(i, Character):
                 if is_cased(info, i.value):

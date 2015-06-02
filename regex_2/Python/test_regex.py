@@ -3349,6 +3349,11 @@ xyzabc
         self.assertEquals(repr(regex.search(ur'(?u)\X$', u'ab\u2103').group()),
           repr(u'\u2103'))
 
+        # Hg issue #139: Regular expression with multiple wildcards where first
+        # should match empty string does not always work.
+        self.assertEquals(regex.search("([^L]*)([^R]*R)", "LtR").groups(), ('',
+          'LtR'))
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
