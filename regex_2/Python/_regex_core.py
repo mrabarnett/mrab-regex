@@ -259,7 +259,7 @@ def _shrink_cache(cache_dict, args_dict, locale_sensitive, max_length, divisor=5
     # Rebuild the arguments and locale-sensitivity dictionaries.
     args_dict.clear()
     sensitivity_dict = {}
-    for pattern, pattern_type, flags, args, default_version, locale in cache_dict:
+    for pattern, pattern_type, flags, args, default_version, locale in tuple(cache_dict):
         args_dict[pattern, pattern_type, flags, default_version, locale] = args
         try:
             sensitivity_dict[pattern_type, pattern] = locale_sensitive[pattern_type, pattern]
