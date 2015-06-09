@@ -3456,6 +3456,13 @@ xyzabc
         self.assertEquals(regex.search("([^L]*)([^R]*R)", "LtR").groups(), ('',
           'LtR'))
 
+        # Hg issue 140: Replace with REVERSE and groups has unexpected
+        # behavior.
+        self.assertEquals(regex.sub(r'(.)', r'x\1y', 'ab'), 'xayxby')
+        self.assertEquals(regex.sub(r'(?r)(.)', r'x\1y', 'ab'), 'xayxby')
+        self.assertEquals(regex.subf(r'(.)', 'x{1}y', 'ab'), 'xayxby')
+        self.assertEquals(regex.subf(r'(?r)(.)', 'x{1}y', 'ab'), 'xayxby')
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
