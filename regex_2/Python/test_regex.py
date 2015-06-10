@@ -3359,6 +3359,12 @@ xyzabc
         self.assertEquals(regex.sub(r'(.)', r'x\1y', 'ab'), 'xayxby')
         self.assertEquals(regex.sub(r'(?r)(.)', r'x\1y', 'ab'), 'xayxby')
 
+        # Hg issue #141: Crash on a certain partial match.
+        self.assertEquals(regex.fullmatch('(a)*abc', 'ab',
+          partial=True).span(), (0, 2))
+        self.assertEquals(regex.fullmatch('(a)*abc', 'ab',
+          partial=True).partial, True)
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

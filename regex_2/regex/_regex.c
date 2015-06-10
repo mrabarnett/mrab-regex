@@ -11577,6 +11577,8 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
+                if (body_status < 0)
+                    return body_status;
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -11589,6 +11591,8 @@ advance:
             if(try_tail) {
                 tail_status = try_match(state, &node->nonstring.next_2,
                   state->text_pos, &next_tail_position);
+                if (tail_status < 0)
+                    return tail_status;
 
                 if (tail_status == RE_ERROR_FAILURE)
                     try_tail = FALSE;
@@ -11738,6 +11742,8 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
+                if (body_status < 0)
+                    return body_status;
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -11748,6 +11754,8 @@ advance:
             if (try_tail) {
                 tail_status = try_match(state, &node->nonstring.next_2,
                   state->text_pos, &next_tail_position);
+                if (tail_status < 0)
+                    return tail_status;
 
                 if (tail_status == RE_ERROR_FAILURE)
                     try_tail = FALSE;
@@ -12029,6 +12037,8 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
+                if (body_status < 0)
+                    return body_status;
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -12039,6 +12049,8 @@ advance:
             if (try_tail) {
                 tail_status = try_match(state, &node->nonstring.next_2,
                   state->text_pos, &next_tail_position);
+                if (tail_status < 0)
+                    return tail_status;
 
                 if (tail_status == RE_ERROR_FAILURE)
                     try_tail = FALSE;
@@ -12289,6 +12301,8 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
+                if (body_status < 0)
+                    return body_status;
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -12299,6 +12313,8 @@ advance:
             if(try_tail) {
                 tail_status = try_match(state, &node->nonstring.next_2,
                   state->text_pos, &next_tail_position);
+                if (tail_status < 0)
+                    return tail_status;
 
                 if (tail_status == RE_ERROR_FAILURE)
                     try_tail = FALSE;
@@ -14200,11 +14216,17 @@ backtrack:
 
             if (test->status & RE_STATUS_FUZZY) {
                 for (;;) {
+                    int status;
                     RE_Position next_position;
 
                     pos -= step;
 
-                    if (try_match(state, &node->next_1, pos, &next_position) &&
+                    status = try_match(state, &node->next_1, pos,
+                      &next_position);
+                    if (status < 0)
+                        return status;
+
+                    if (status != RE_ERROR_FAILURE &&
                       !is_repeat_guarded(safe_state, index, pos,
                       RE_STATUS_TAIL)) {
                         match = TRUE;
@@ -15741,6 +15763,14 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         state->lastindex = -1;
         state->lastgroup = -1;
         max_end_index = -1;
+
+        if (status == RE_ERROR_PARTIAL) {
+            /* We've matched up to the limit of the slice. */
+            if (state->reverse)
+                state->text_pos = state->slice_start;
+            else
+                state->text_pos = state->slice_end;
+        }
 
         /* Store the capture groups. */
         group_info = pattern->group_info;
