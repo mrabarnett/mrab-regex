@@ -2729,9 +2729,13 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
         reset_guard_list(&state->group_call_guard_list[i]);
 
     /* Clear the counts and cost for matching. */
-    memset(state->fuzzy_info.counts, 0, sizeof(state->fuzzy_info.counts));
+    if (state->pattern->is_fuzzy) {
+        memset(state->fuzzy_info.counts, 0, sizeof(state->fuzzy_info.counts));
+        memset(state->total_fuzzy_counts, 0,
+          sizeof(state->total_fuzzy_counts));
+    }
+
     state->fuzzy_info.total_cost = 0;
-    memset(state->total_fuzzy_counts, 0, sizeof(state->total_fuzzy_counts));
     state->total_errors = 0;
     state->total_cost = 0;
     state->too_few_errors = FALSE;
@@ -10702,8 +10706,15 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
                 limit = state->slice_end;
         }
 
-        found_pos = string_search(safe_state, pattern->req_string,
-          state->text_pos, limit, &is_partial);
+        if (state->req_pos < 0 || state->text_pos > state->req_pos)
+            /* First time or already passed it. */
+            found_pos = string_search(safe_state, pattern->req_string,
+              state->text_pos, limit, &is_partial);
+        else {
+            found_pos = state->req_pos;
+            is_partial = FALSE;
+        }
+
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10739,8 +10750,15 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
                 limit = state->slice_end;
         }
 
-        found_pos = string_search_fld(safe_state, pattern->req_string,
-          state->text_pos, limit, &end_pos, &is_partial);
+        if (state->req_pos < 0 || state->text_pos > state->req_pos)
+            /* First time or already passed it. */
+            found_pos = string_search_fld(safe_state, pattern->req_string,
+              state->text_pos, limit, &end_pos, &is_partial);
+        else {
+            found_pos = state->req_pos;
+            is_partial = FALSE;
+        }
+
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10775,8 +10793,15 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
                 limit = state->slice_start;
         }
 
-        found_pos = string_search_fld_rev(safe_state, pattern->req_string,
-          state->text_pos, limit, &end_pos, &is_partial);
+        if (state->req_pos < 0 || state->text_pos < state->req_pos)
+            /* First time or already passed it. */
+            found_pos = string_search_fld_rev(safe_state, pattern->req_string,
+              state->text_pos, limit, &end_pos, &is_partial);
+        else {
+            found_pos = state->req_pos;
+            is_partial = FALSE;
+        }
+
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10811,8 +10836,15 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
                 limit = state->slice_end;
         }
 
-        found_pos = string_search_ign(safe_state, pattern->req_string,
-          state->text_pos, limit, &is_partial);
+        if (state->req_pos < 0 || state->text_pos > state->req_pos)
+            /* First time or already passed it. */
+            found_pos = string_search_ign(safe_state, pattern->req_string,
+              state->text_pos, limit, &is_partial);
+        else {
+            found_pos = state->req_pos;
+            is_partial = FALSE;
+        }
+
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10848,8 +10880,15 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
                 limit = state->slice_start;
         }
 
-        found_pos = string_search_ign_rev(safe_state, pattern->req_string,
-          state->text_pos, limit, &is_partial);
+        if (state->req_pos < 0 || state->text_pos < state->req_pos)
+            /* First time or already passed it. */
+            found_pos = string_search_ign_rev(safe_state, pattern->req_string,
+              state->text_pos, limit, &is_partial);
+        else {
+            found_pos = state->req_pos;
+            is_partial = FALSE;
+        }
+
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -10885,8 +10924,15 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
                 limit = state->slice_start;
         }
 
-        found_pos = string_search_rev(safe_state, pattern->req_string,
-          state->text_pos, limit, &is_partial);
+        if (state->req_pos < 0 || state->text_pos < state->req_pos)
+            /* First time or already passed it. */
+            found_pos = string_search_rev(safe_state, pattern->req_string,
+              state->text_pos, limit, &is_partial);
+        else {
+            found_pos = state->req_pos;
+            is_partial = FALSE;
+        }
+
         if (found_pos < 0)
             /* The required string wasn't found. */
             return -1;
@@ -18119,12 +18165,17 @@ Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
         match->substring_offset = 0;
         match->pattern = pattern;
         match->regs = NULL;
-        match->fuzzy_counts[RE_FUZZY_SUB] =
-          state->total_fuzzy_counts[RE_FUZZY_SUB];
-        match->fuzzy_counts[RE_FUZZY_INS] =
-          state->total_fuzzy_counts[RE_FUZZY_INS];
-        match->fuzzy_counts[RE_FUZZY_DEL] =
-          state->total_fuzzy_counts[RE_FUZZY_DEL];
+
+        if (pattern->is_fuzzy) {
+            match->fuzzy_counts[RE_FUZZY_SUB] =
+              state->total_fuzzy_counts[RE_FUZZY_SUB];
+            match->fuzzy_counts[RE_FUZZY_INS] =
+              state->total_fuzzy_counts[RE_FUZZY_INS];
+            match->fuzzy_counts[RE_FUZZY_DEL] =
+              state->total_fuzzy_counts[RE_FUZZY_DEL];
+        } else
+            memset(match->fuzzy_counts, 0, sizeof(match->fuzzy_counts));
+
         match->partial = status == RE_ERROR_PARTIAL;
         Py_INCREF(match->string);
         Py_INCREF(match->substring);
