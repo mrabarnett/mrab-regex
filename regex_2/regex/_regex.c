@@ -10656,9 +10656,6 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
     state = safe_state->re_state;
     pattern = state->pattern;
 
-    /* We haven't matched the required string yet. */
-    state->req_pos = -1;
-
     if (!pattern->req_string)
         /* There isn't a required string, so start matching from the current
          * position.
