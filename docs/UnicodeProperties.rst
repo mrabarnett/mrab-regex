@@ -55,8 +55,10 @@ Blank
 
 Block [blk]
     Aegean_Numbers
+    Ahom
     Alchemical_Symbols [Alchemical]
     Alphabetic_Presentation_Forms [Alphabetic_PF]
+    Anatolian_Hieroglyphs
     Ancient_Greek_Musical_Notation [Ancient_Greek_Music]
     Ancient_Greek_Numbers
     Ancient_Symbols
@@ -90,6 +92,7 @@ Block [blk]
     Chakma
     Cham
     Cherokee
+    Cherokee_Supplement [Cherokee_Sup]
     CJK_Compatibility [CJK_Compat]
     CJK_Compatibility_Forms [CJK_Compat_Forms]
     CJK_Compatibility_Ideographs [CJK_Compat_Ideographs]
@@ -102,6 +105,7 @@ Block [blk]
     CJK_Unified_Ideographs_Extension_B [CJK_Ext_B]
     CJK_Unified_Ideographs_Extension_C [CJK_Ext_C]
     CJK_Unified_Ideographs_Extension_D [CJK_Ext_D]
+    CJK_Unified_Ideographs_Extension_E [CJK_Ext_E]
     Combining_Diacritical_Marks [Diacriticals]
     Combining_Diacritical_Marks_Extended [Diacriticals_Ext]
     Combining_Diacritical_Marks_For_Symbols [Combining_Marks_For_Symbols, Diacriticals_For_Symbols]
@@ -126,6 +130,7 @@ Block [blk]
     Dingbats
     Domino_Tiles [Domino]
     Duployan
+    Early_Dynastic_Cuneiform
     Egyptian_Hieroglyphs
     Elbasan
     Emoticons
@@ -156,6 +161,7 @@ Block [blk]
     Hangul_Jamo_Extended_B [Jamo_Ext_B]
     Hangul_Syllables [Hangul]
     Hanunoo
+    Hatran
     Hebrew
     High_Private_Use_Surrogates [High_PU_Surrogates]
     High_Surrogates
@@ -220,6 +226,7 @@ Block [blk]
     Modifier_Tone_Letters
     Mongolian
     Mro
+    Multani
     Musical_Symbols [Music]
     Myanmar
     Myanmar_Extended_A [Myanmar_Ext_A]
@@ -230,6 +237,7 @@ Block [blk]
     No_Block [NB]
     Number_Forms
     Ogham
+    Old_Hungarian
     Old_Italic
     Old_North_Arabian
     Old_Permic
@@ -275,8 +283,10 @@ Block [blk]
     Supplemental_Arrows_C [Sup_Arrows_C]
     Supplemental_Mathematical_Operators [Sup_Math_Operators]
     Supplemental_Punctuation [Sup_Punctuation]
+    Supplemental_Symbols_And_Pictographs [Sup_Symbols_And_Pictographs]
     Supplementary_Private_Use_Area_A [Sup_PUA_A]
     Supplementary_Private_Use_Area_B [Sup_PUA_B]
+    Sutton_SignWriting
     Syloti_Nagri
     Syriac
     Tagalog
@@ -551,7 +561,7 @@ ID_Start [IDS]
     No [F, False, N]
     Yes [T, True, Y]
 
-Indic_Matra_Category [InMC]
+Indic_Positional_Category [InPC]
     Bottom
     Bottom_And_Right
     Left
@@ -576,11 +586,14 @@ Indic_Syllabic_Category [InSC]
     Consonant_Dead
     Consonant_Final
     Consonant_Head_Letter
+    Consonant_Killer
     Consonant_Medial
     Consonant_Placeholder
     Consonant_Preceding_Repha
+    Consonant_Prefixed
     Consonant_Subjoined
     Consonant_Succeeding_Repha
+    Consonant_With_Stacker
     Gemination_Mark
     Invisible_Stacker
     Joiner
@@ -592,6 +605,7 @@ Indic_Syllabic_Category [InSC]
     Other
     Pure_Killer
     Register_Shifter
+    Syllable_Modifier
     Tone_Letter
     Tone_Mark
     Virama
@@ -769,6 +783,7 @@ Numeric_Value [nv]
     0
     1
     1/10
+    1/12
     1/16
     1/2
     1/3
@@ -788,6 +803,7 @@ Numeric_Value [nv]
     10000000000
     1000000000000
     11
+    11/12
     11/2
     12
     13
@@ -807,6 +823,7 @@ Numeric_Value [nv]
     200
     2000
     20000
+    200000
     21
     216000
     22
@@ -827,6 +844,7 @@ Numeric_Value [nv]
     300
     3000
     30000
+    300000
     31
     32
     33
@@ -842,6 +860,7 @@ Numeric_Value [nv]
     400
     4000
     40000
+    400000
     41
     42
     43
@@ -853,6 +872,7 @@ Numeric_Value [nv]
     48
     49
     5
+    5/12
     5/2
     5/6
     5/8
@@ -860,29 +880,35 @@ Numeric_Value [nv]
     500
     5000
     50000
+    500000
     6
     60
     600
     6000
     60000
+    600000
     7
+    7/12
     7/2
     7/8
     70
     700
     7000
     70000
+    700000
     8
     80
     800
     8000
     80000
+    800000
     9
     9/2
     90
     900
     9000
     90000
+    900000
     NaN
 
 Other_Alphabetic [OAlpha]
@@ -954,6 +980,8 @@ Radical
     Yes [T, True, Y]
 
 Script [sc]
+    Ahom
+    Anatolian_Hieroglyphs [Hluw]
     Arabic [Arab]
     Armenian [Armn]
     Avestan [Avst]
@@ -994,6 +1022,7 @@ Script [sc]
     Han [Hani]
     Hangul [Hang]
     Hanunoo [Hano]
+    Hatran [Hatr]
     Hebrew [Hebr]
     Hiragana [Hira]
     Imperial_Aramaic [Armi]
@@ -1031,11 +1060,13 @@ Script [sc]
     Modi
     Mongolian [Mong]
     Mro [Mroo]
+    Multani [Mult]
     Myanmar [Mymr]
     Nabataean [Nbat]
     New_Tai_Lue [Talu]
     Nko [Nkoo]
     Ogham [Ogam]
+    Old_Hungarian [Hung]
     Old_Italic [Ital]
     Old_North_Arabian [Narb]
     Old_Permic [Perm]
@@ -1058,6 +1089,7 @@ Script [sc]
     Sharada [Shrd]
     Shavian [Shaw]
     Siddham [Sidd]
+    SignWriting [Sgnw]
     Sinhala [Sinh]
     Sora_Sompeng [Sora]
     Sundanese [Sund]

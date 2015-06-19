@@ -24,7 +24,7 @@ typedef struct RE_Property {
 typedef struct RE_PropertyValue {
     RE_UINT16 name;
     RE_UINT8 value_set;
-    RE_UINT8 id;
+    RE_UINT16 id;
 } RE_PropertyValue;
 
 typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
@@ -134,9 +134,9 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_GBREAK_LVT 11
 #define RE_GBREAK_PREPEND 12
 
-extern char* re_strings[1261];
+extern char* re_strings[1296];
 extern RE_Property re_properties[147];
-extern RE_PropertyValue re_property_values[1372];
+extern RE_PropertyValue re_property_values[1412];
 extern RE_UINT16 re_expand_on_folding[104];
 extern RE_GetPropertyFunc re_get_property[81];
 
@@ -208,7 +208,7 @@ RE_UINT32 re_get_line_break(RE_UINT32 ch);
 RE_UINT32 re_get_numeric_type(RE_UINT32 ch);
 RE_UINT32 re_get_numeric_value(RE_UINT32 ch);
 RE_UINT32 re_get_bidi_mirrored(RE_UINT32 ch);
-RE_UINT32 re_get_indic_matra_category(RE_UINT32 ch);
+RE_UINT32 re_get_indic_positional_category(RE_UINT32 ch);
 RE_UINT32 re_get_indic_syllabic_category(RE_UINT32 ch);
 RE_UINT32 re_get_alphanumeric(RE_UINT32 ch);
 RE_UINT32 re_get_any(RE_UINT32 ch);

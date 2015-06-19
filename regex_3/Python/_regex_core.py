@@ -1943,6 +1943,9 @@ class Branch(RegexBase):
         # Flatten branches within branches.
         branches = Branch._flatten_branches(info, self.branches)
 
+        # Move any common prefix or suffix out of the branches.
+        prefix, branches = Branch._split_common_prefix(info, branches)
+
         # Try to reduce adjacent single-character branches to sets.
         branches = Branch._reduce_to_set(info, branches)
 

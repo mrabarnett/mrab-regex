@@ -8175,7 +8175,7 @@ again:
         start_pos = match_many_SET(state, test, start_pos, state->slice_end,
           FALSE);
 
-       if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_length) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8192,7 +8192,7 @@ again:
         start_pos = match_many_SET_IGN(state, test, start_pos,
           state->slice_end, FALSE);
 
-       if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_length) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8209,7 +8209,7 @@ again:
         start_pos = match_many_SET_IGN_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-       if (start_pos <= 0) {
+        if (start_pos <= 0) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8226,7 +8226,7 @@ again:
         start_pos = match_many_SET_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-       if (start_pos <= 0) {
+        if (start_pos <= 0) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8816,24 +8816,31 @@ Py_LOCAL_INLINE(BOOL) is_guarded(RE_GuardList* guard_list, Py_ssize_t text_pos)
     size_t high;
 
     /* Is this position in the guard list? */
-    low = 0;
-    high = guard_list->count;
-    while (low < high) {
-        size_t mid;
-        RE_GuardSpan* span;
+    if (guard_list->count == 0 || text_pos < guard_list->spans[0].low)
+        guard_list->last_low = 0;
+    else if (text_pos > guard_list->spans[guard_list->count - 1].high)
+        guard_list->last_low = guard_list->count;
+    else {
+        low = 0;
+        high = guard_list->count;
+        while (low < high) {
+            size_t mid;
+            RE_GuardSpan* span;
 
-        mid = (low + high) / 2;
-        span = &guard_list->spans[mid];
-        if (text_pos < span->low)
-            high = mid;
-        else if (text_pos > span->high)
-            low = mid + 1;
-        else
-            return span->protect;
+            mid = (low + high) / 2;
+            span = &guard_list->spans[mid];
+            if (text_pos < span->low)
+                high = mid;
+            else if (text_pos > span->high)
+                low = mid + 1;
+            else
+                return span->protect;
+        }
+
+        guard_list->last_low = low;
     }
 
     guard_list->last_text_pos = text_pos;
-    guard_list->last_low = low;
 
     return FALSE;
 }
@@ -11022,6 +11029,61 @@ Py_LOCAL_INLINE(int) match_one(RE_State* state, RE_Node* node, Py_ssize_t
     return FALSE;
 }
 
+/* Tests whether 2 nodes contains the same values. */
+Py_LOCAL_INLINE(BOOL) same_values(RE_Node* node_1, RE_Node* node_2) {
+    size_t i;
+
+    if (node_1->value_count != node_2->value_count)
+        return FALSE;
+
+    for (i = 0; i < node_1->value_count; i++) {
+        if (node_1->values[i] != node_2->values[i])
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
+/* Tests whether 2 nodes are equivalent (both string-like in the same way). */
+Py_LOCAL_INLINE(BOOL) equivalent_nodes(RE_Node* node_1, RE_Node* node_2) {
+    switch (node_1->op) {
+    case RE_OP_CHARACTER:
+    case RE_OP_STRING:
+        switch (node_2->op) {
+        case RE_OP_CHARACTER:
+        case RE_OP_STRING:
+            return same_values(node_1, node_2);
+        }
+        break;
+    case RE_OP_CHARACTER_IGN:
+    case RE_OP_STRING_IGN:
+        switch (node_2->op) {
+        case RE_OP_CHARACTER_IGN:
+        case RE_OP_STRING_IGN:
+            return same_values(node_1, node_2);
+        }
+        break;
+    case RE_OP_CHARACTER_IGN_REV:
+    case RE_OP_STRING_IGN_REV:
+        switch (node_2->op) {
+        case RE_OP_CHARACTER_IGN_REV:
+        case RE_OP_STRING_IGN_REV:
+            return same_values(node_1, node_2);
+        }
+        break;
+    case RE_OP_CHARACTER_REV:
+    case RE_OP_STRING_REV:
+        switch (node_2->op) {
+        case RE_OP_CHARACTER_REV:
+        case RE_OP_STRING_REV:
+            return same_values(node_1, node_2);
+        }
+        break;
+    }
+
+    return FALSE;
+}
+
 /* Performs a depth-first match or search from the context. */
 Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
   BOOL search, BOOL recursive_call) {
@@ -11081,6 +11143,10 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     pattern_step = state->reverse ? -1 : 1;
     string_pos = -1;
     do_search_start = pattern->do_search_start;
+
+    if (do_search_start && pattern->req_string &&
+      equivalent_nodes(start_pair.test, pattern->req_string))
+        do_search_start = FALSE;
 
     /* Add a backtrack entry for failure. */
     if (!add_backtrack(safe_state, RE_OP_FAILURE))
@@ -12217,17 +12283,19 @@ advance:
                 goto backtrack;
             }
 
-            /* Record the backtracking info. */
-            if (!add_backtrack(safe_state, RE_OP_GREEDY_REPEAT_ONE))
-                return RE_ERROR_BACKTRACKING;
-            bt_data = state->backtrack;
-            bt_data->repeat.position.node = node;
-            bt_data->repeat.index = index;
-            bt_data->repeat.text_pos = rp_data->start;
-            bt_data->repeat.count = rp_data->count;
+            if (count > node->values[1]) {
+                /* Record the backtracking info. */
+                if (!add_backtrack(safe_state, RE_OP_GREEDY_REPEAT_ONE))
+                    return RE_ERROR_BACKTRACKING;
+                bt_data = state->backtrack;
+                bt_data->repeat.position.node = node;
+                bt_data->repeat.index = index;
+                bt_data->repeat.text_pos = rp_data->start;
+                bt_data->repeat.count = rp_data->count;
 
-            rp_data->start = state->text_pos;
-            rp_data->count = count;
+                rp_data->start = state->text_pos;
+                rp_data->count = count;
+            }
 
             /* Advance into the tail. */
             state->text_pos += (Py_ssize_t)count * node->step;
