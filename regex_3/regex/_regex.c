@@ -11187,7 +11187,10 @@ next_match_1:
              * avoid the overhead of the call subsequently.
              */
             status = search_start(safe_state, &start_pair, &new_position, 0);
-            if (status != RE_ERROR_SUCCESS)
+            if (status == RE_ERROR_PARTIAL) {
+                state->match_pos = state->text_pos;
+                return status;
+            } else if (status != RE_ERROR_SUCCESS)
                 return status;
 
             node = new_position.node;

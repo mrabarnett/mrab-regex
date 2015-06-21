@@ -3365,6 +3365,15 @@ xyzabc
         self.assertEquals(regex.fullmatch('(a)*abc', 'ab',
           partial=True).partial, True)
 
+        # Hg Issue #143: Partial matches have incorrect span if prefix is '.'
+        # wildcard.
+        self.assertEquals(regex.search('OXRG', 'OOGOX', partial=True).span(),
+          (3, 5))
+        self.assertEquals(regex.search('.XRG', 'OOGOX', partial=True).span(),
+          (3, 5))
+        self.assertEquals(regex.search('.{1,3}XRG', 'OOGOX',
+          partial=True).span(), (1, 5))
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
