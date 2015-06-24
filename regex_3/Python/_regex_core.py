@@ -1922,29 +1922,6 @@ class Branch(RegexBase):
 
         # Move any common prefix or suffix out of the branches.
         prefix, branches = Branch._split_common_prefix(info, branches)
-        suffix, branches = Branch._split_common_suffix(info, branches)
-
-        # Merge branches starting with the same character. (If a character
-        # prefix doesn't match in one branch, it won't match in any of the
-        # others starting with that same character.)
-        branches = Branch._merge_common_prefixes(info, branches)
-
-        # Try to reduce adjacent single-character branches to sets.
-        branches = Branch._reduce_to_set(info, branches)
-
-        if len(branches) > 1:
-            sequence = prefix + [Branch(branches)] + suffix
-        else:
-            sequence = prefix + branches + suffix
-
-        return make_sequence(sequence)
-
-    def optimise(self, info):
-        # Flatten branches within branches.
-        branches = Branch._flatten_branches(info, self.branches)
-
-        # Move any common prefix or suffix out of the branches.
-        prefix, branches = Branch._split_common_prefix(info, branches)
 
         # Try to reduce adjacent single-character branches to sets.
         branches = Branch._reduce_to_set(info, branches)
@@ -1954,7 +1931,7 @@ class Branch(RegexBase):
         else:
             sequence = branches
 
-        return make_sequence(sequence)
+        return make_sequence(prefix + sequence)
 
     def pack_characters(self, info):
         self.branches = [b.pack_characters(info) for b in self.branches]

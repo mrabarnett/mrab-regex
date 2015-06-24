@@ -3374,6 +3374,9 @@ xyzabc
         self.assertEquals(regex.search('.{1,3}XRG', 'OOGOX',
           partial=True).span(), (1, 5))
 
+        # Hg issue #144: Latest version problem with matching 'R|R'.
+        self.assertEquals(regex.match('R|R', 'R').span(), (0, 1))
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
