@@ -2455,7 +2455,7 @@ class Conditional(RegexBase):
     def _dump(self, indent, reverse):
         print "%sGROUP_EXISTS %s" % (INDENT * indent, self.group)
         self.yes_item.dump(indent + 1, reverse)
-        if self.no_item:
+        if not self.no_item.is_empty():
             print "%sOR" % (INDENT * indent)
             self.no_item.dump(indent + 1, reverse)
 
@@ -2824,12 +2824,6 @@ class LazyRepeat(GreedyRepeat):
 class LookAround(RegexBase):
     _dir_text = {False: "AHEAD", True: "BEHIND"}
 
-    def __new__(cls, behind, positive, subpattern):
-        if positive and subpattern.is_empty():
-            return subpattern
-
-        return RegexBase.__new__(cls)
-
     def __init__(self, behind, positive, subpattern):
         RegexBase.__init__(self)
         self.behind = bool(behind)
@@ -2841,6 +2835,8 @@ class LookAround(RegexBase):
 
     def optimise(self, info):
         subpattern = self.subpattern.optimise(info)
+        if self.positive and subpattern.is_empty():
+            return subpattern
 
         return LookAround(self.behind, self.positive, subpattern)
 
@@ -2870,7 +2866,7 @@ class LookAround(RegexBase):
         self.subpattern.dump(indent + 1, self.behind)
 
     def is_empty(self):
-        return self.subpattern.is_empty()
+        return self.positive and self.subpattern.is_empty()
 
     def __eq__(self, other):
         return type(self) is type(other) and (self.behind, self.positive,

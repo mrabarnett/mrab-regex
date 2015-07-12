@@ -2690,6 +2690,21 @@ Py_LOCAL_INLINE(void) reset_guard_list(RE_GuardList* guard_list) {
     guard_list->last_text_pos = -1;
 }
 
+/* Clears the groups. */
+Py_LOCAL_INLINE(void) clear_groups(RE_State* state) {
+    size_t i;
+
+    for (i = 0; i < state->pattern->true_group_count; i++) {
+        RE_GroupData* group;
+
+        group = &state->groups[i];
+        group->span.start = -1;
+        group->span.end = -1;
+        group->capture_count = 0;
+        group->current_capture = -1;
+    }
+}
+
 /* Initialises the state for a match. */
 Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     size_t i;
@@ -2714,15 +2729,8 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
         reset_guard_list(&state->fuzzy_guards[i].tail_guard_list);
     }
 
-    for (i = 0; i < state->pattern->true_group_count; i++) {
-        RE_GroupData* group;
-
-        group = &state->groups[i];
-        group->span.start = -1;
-        group->span.end = -1;
-        group->capture_count = 0;
-        group->current_capture = -1;
-    }
+    /* Clear the groups. */
+    clear_groups(state);
 
     /* Reset the guards for the group calls. */
     for (i = 0; i < state->pattern->call_ref_info_count; i++)
@@ -14268,6 +14276,9 @@ backtrack:
 
             /* Advance and try to match again. */
             state->text_pos += pattern_step;
+
+            /* Clear the groups. */
+            clear_groups(state);
 
             goto start_match;
         }

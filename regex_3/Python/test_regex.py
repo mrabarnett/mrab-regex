@@ -3481,6 +3481,15 @@ xyzabc
         # Hg issue #144: Latest version problem with matching 'R|R'.
         self.assertEquals(regex.match('R|R', 'R').span(), (0, 1))
 
+        # Hg issue 146: Forced-fail (?!) works improperly in conditional
+        self.assertEquals(regex.match(r'(.)(?(1)(?!))', 'xy'), None)
+
+        # Groups cleared after failure.
+        self.assertEquals(regex.findall(r'(y)?(\d)(?(1)\b\B)', 'ax1y2z3b'),
+          [('', '1'), ('', '2'), ('', '3')])
+        self.assertEquals(regex.findall(r'(y)?+(\d)(?(1)\b\B)', 'ax1y2z3b'),
+          [('', '1'), ('', '2'), ('', '3')])
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
