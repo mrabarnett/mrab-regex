@@ -13614,13 +13614,17 @@ advance:
                           state->partial_side == RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
-                        folded_len = full_case_fold(locale_info,
-                          char_at(state->text, state->text_pos), folded);
+                        if (state->text_pos < state->slice_end)
+                            folded_len = full_case_fold(locale_info,
+                              char_at(state->text, state->text_pos), folded);
+                        else
+                            folded_len = 0;
+
                         folded_pos = 0;
                     }
 
-                    if (same_char_ign(encoding, locale_info,
-                      folded[folded_pos], values[string_pos])) {
+                    if (folded_pos < folded_len && same_char_ign(encoding,
+                      locale_info, folded[folded_pos], values[string_pos])) {
                         ++string_pos;
                         ++folded_pos;
 
@@ -13640,7 +13644,7 @@ advance:
                             goto backtrack;
                         }
 
-                        if (folded_pos >= folded_len)
+                        if (folded_pos >= folded_len && folded_len > 0)
                             ++state->text_pos;
                     } else {
                         string_pos = -1;
@@ -13662,7 +13666,7 @@ advance:
                             goto backtrack;
                         }
 
-                        if (folded_pos >= folded_len)
+                        if (folded_pos >= folded_len && folded_len > 0)
                             ++state->text_pos;
                     }
                 }
@@ -13721,13 +13725,18 @@ advance:
                           RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
-                        folded_len = full_case_fold(locale_info,
-                          char_at(state->text, state->text_pos - 1), folded);
+                        if (state->text_pos > state->slice_start)
+                            folded_len = full_case_fold(locale_info,
+                              char_at(state->text, state->text_pos - 1),
+                              folded);
+                        else
+                            folded_len = 0;
+
                         folded_pos = folded_len;
                     }
 
-                    if (same_char_ign(encoding, locale_info, folded[folded_pos
-                      - 1], values[string_pos - 1])) {
+                    if (folded_pos > 0 && same_char_ign(encoding, locale_info,
+                      folded[folded_pos - 1], values[string_pos - 1])) {
                         --string_pos;
                         --folded_pos;
 
@@ -13747,7 +13756,7 @@ advance:
                             goto backtrack;
                         }
 
-                        if (folded_pos <= 0)
+                        if (folded_pos <= 0 && folded_len > 0)
                             --state->text_pos;
                     } else {
                         string_pos = -1;
@@ -13769,7 +13778,7 @@ advance:
                             goto backtrack;
                         }
 
-                        if (folded_pos <= 0)
+                        if (folded_pos <= 0 && folded_len > 0)
                             --state->text_pos;
                     }
                 }

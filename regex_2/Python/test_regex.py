@@ -3386,6 +3386,14 @@ xyzabc
         self.assertEquals(regex.findall(r'(y)?+(\d)(?(1)\b\B)', 'ax1y2z3b'),
           [('', '1'), ('', '2'), ('', '3')])
 
+        # Hg issue 147: Fuzzy match can return match points beyond buffer end
+        self.assertEquals([m.span() for m in
+          regex.finditer(r'(?i)(?:error){e}', 'regex failure')], [(0, 5), (5,
+          10), (10, 13), (13, 13)])
+        self.assertEquals([m.span() for m in
+          regex.finditer(r'(?fi)(?:error){e}', 'regex failure')], [(0, 5), (5,
+          10), (10, 13), (13, 13)])
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
