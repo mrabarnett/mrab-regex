@@ -160,6 +160,7 @@ GREEDY_REPEAT
 GROUP
 GROUP_CALL
 GROUP_EXISTS
+KEEP
 LAZY_REPEAT
 LOOKAROUND
 NEXT
@@ -2807,6 +2808,10 @@ class Group(RegexBase):
     def get_required_string(self, reverse):
         return self.subpattern.get_required_string(reverse)
 
+class Keep(ZeroWidthBase):
+    _opcode = OP.KEEP
+    _op_name = "KEEP"
+
 class LazyRepeat(GreedyRepeat):
     _opcode = OP.LAZY_REPEAT
     _op_name = "LAZY_REPEAT"
@@ -4109,6 +4114,7 @@ POSITION_ESCAPES = {
     "A": StartOfString(),
     "b": Boundary(),
     "B": Boundary(False),
+    "K": Keep(),
     "m": StartOfWord(),
     "M": EndOfWord(),
     "Z": EndOfString(),

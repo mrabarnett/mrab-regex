@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2015.07.19
+Version: 2015.09.10
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -143,6 +143,26 @@ Description: Introduction
         -------------------
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
+        
+        * Added \K (Hg issue 151)
+        
+            Keeps the part of the entire match after the position where \K occurred; the part before it is discarded.
+        
+            It does not affect what capture groups return.
+        
+            Examples::
+        
+                >>> m = regex.search(r'(\w\w\K\w\w\w)', 'abcdef')
+                >>> m[0]
+                'cde'
+                >>> m[1]
+                'abcde'
+                >>>
+                >>> m = regex.search(r'(?r)(\w\w\K\w\w\w)', 'abcdef')
+                >>> m[0]
+                'bc'
+                >>> m[1]
+                'bcdef'
         
         * Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (Hg issue 133) **(Python 2.6 and above)**
         

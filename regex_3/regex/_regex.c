@@ -325,6 +325,9 @@ typedef struct RE_BacktrackData {
             size_t capture_change;
         } group_call;
         struct {
+            Py_ssize_t match_pos;
+        } keep;
+        struct {
             size_t capture_change;
             BOOL too_few_errors;
         } lookaround;
@@ -12408,6 +12411,19 @@ advance:
             pop_group_return(state);
             break;
         }
+        case RE_OP_KEEP: /* Keep. */
+        {
+            RE_BacktrackData* bt_data;
+            TRACE(("%s\n", re_op_text[node->op]))
+
+            if (!add_backtrack(safe_state, RE_OP_KEEP))
+                return RE_ERROR_BACKTRACKING;
+            bt_data = state->backtrack;
+            bt_data->keep.match_pos = state->match_pos;
+            state->match_pos = state->text_pos;
+            node = node->next_1.node;
+            break;
+        }
         case RE_OP_LAZY_REPEAT: /* Lazy repeat. */
         {
             RE_CODE index;
@@ -14834,6 +14850,12 @@ backtrack:
                 pop_repeats(state);
             }
 
+            discard_backtrack(state);
+            break;
+        }
+        case RE_OP_KEEP: /* Keep. */
+        {
+            state->match_pos = bt_data->keep.match_pos;
             discard_backtrack(state);
             break;
         }
@@ -22350,6 +22372,7 @@ Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
         case RE_OP_DEFAULT_START_OF_WORD:
         case RE_OP_END_OF_WORD:
         case RE_OP_GRAPHEME_BOUNDARY:
+        case RE_OP_KEEP:
         case RE_OP_START_OF_WORD:
             /* A word or grapheme boundary. */
             status = build_BOUNDARY(args);

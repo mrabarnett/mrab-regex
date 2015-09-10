@@ -3259,7 +3259,7 @@ xyzabc
         self.assertEquals(regex.match('(?:()|(?(1)()|z)){0,2}(?(2)a|z)',
           'a').group(0, 1, 2), ('a', '', ''))
 
-        # Hg issue #137: Posix character class :punct: does not seem to be
+        # Hg issue 137: Posix character class :punct: does not seem to be
         # supported.
 
         # Posix compatibility as recommended here:
@@ -3345,11 +3345,11 @@ xyzabc
         self.assertEquals(repr(''.join(regex.findall(r'''[[:xdigit:]]+''',
           chars))), repr(''.join(regex.findall(r'''[0-9A-Fa-f]+''', chars))))
 
-        # Hg issue #138: grapheme anchored search not working properly.
+        # Hg issue 138: grapheme anchored search not working properly.
         self.assertEquals(repr(regex.search(ur'(?u)\X$', u'ab\u2103').group()),
           repr(u'\u2103'))
 
-        # Hg issue #139: Regular expression with multiple wildcards where first
+        # Hg issue 139: Regular expression with multiple wildcards where first
         # should match empty string does not always work.
         self.assertEquals(regex.search("([^L]*)([^R]*R)", "LtR").groups(), ('',
           'LtR'))
@@ -3359,7 +3359,7 @@ xyzabc
         self.assertEquals(regex.sub(r'(.)', r'x\1y', 'ab'), 'xayxby')
         self.assertEquals(regex.sub(r'(?r)(.)', r'x\1y', 'ab'), 'xayxby')
 
-        # Hg issue #141: Crash on a certain partial match.
+        # Hg issue 141: Crash on a certain partial match.
         self.assertEquals(regex.fullmatch('(a)*abc', 'ab',
           partial=True).span(), (0, 2))
         self.assertEquals(regex.fullmatch('(a)*abc', 'ab',
@@ -3374,10 +3374,10 @@ xyzabc
         self.assertEquals(regex.search('.{1,3}XRG', 'OOGOX',
           partial=True).span(), (1, 5))
 
-        # Hg issue #144: Latest version problem with matching 'R|R'.
+        # Hg issue 144: Latest version problem with matching 'R|R'.
         self.assertEquals(regex.match('R|R', 'R').span(), (0, 1))
 
-        # Hg issue 146: Forced-fail (?!) works improperly in conditional
+        # Hg issue 146: Forced-fail (?!) works improperly in conditional.
         self.assertEquals(regex.match(r'(.)(?(1)(?!))', 'xy'), None)
 
         # Groups cleared after failure.
@@ -3386,13 +3386,28 @@ xyzabc
         self.assertEquals(regex.findall(r'(y)?+(\d)(?(1)\b\B)', 'ax1y2z3b'),
           [('', '1'), ('', '2'), ('', '3')])
 
-        # Hg issue 147: Fuzzy match can return match points beyond buffer end
+        # Hg issue 147: Fuzzy match can return match points beyond buffer end.
         self.assertEquals([m.span() for m in
           regex.finditer(r'(?i)(?:error){e}', 'regex failure')], [(0, 5), (5,
           10), (10, 13), (13, 13)])
         self.assertEquals([m.span() for m in
           regex.finditer(r'(?fi)(?:error){e}', 'regex failure')], [(0, 5), (5,
           10), (10, 13), (13, 13)])
+
+        # Hg issue 151: Request: \K.
+        self.assertEquals(regex.search(r'(ab\Kcd)', 'abcd').group(0, 1), ('cd',
+          'abcd'))
+        self.assertEquals(regex.findall(r'\w\w\K\w\w', 'abcdefgh'), ['cd',
+          'gh'])
+        self.assertEquals(regex.findall(r'(\w\w\K\w\w)', 'abcdefgh'), ['abcd',
+          'efgh'])
+
+        self.assertEquals(regex.search(r'(?r)(ab\Kcd)', 'abcd').group(0, 1),
+          ('ab', 'abcd'))
+        self.assertEquals(regex.findall(r'(?r)\w\w\K\w\w', 'abcdefgh'), ['ef',
+          'ab'])
+        self.assertEquals(regex.findall(r'(?r)(\w\w\K\w\w)', 'abcdefgh'),
+          ['efgh', 'abcd'])
 
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
