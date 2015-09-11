@@ -126,6 +126,9 @@ typedef unsigned short RE_STATUS_T;
 /* The maximum number of backtrack entries to allocate. */
 #define RE_MAX_BACKTRACK_ALLOC (1024 * 1024)
 
+/* The number of atomic entries per allocated block. */
+#define RE_ATOMIC_BLOCK_SIZE 64
+
 /* The initial maximum capacity of the guard block. */
 #define RE_INIT_GUARDS_BLOCK_SIZE 16
 
@@ -361,6 +364,21 @@ typedef struct RE_BacktrackBlock {
     size_t count;
 } RE_BacktrackBlock;
 
+/* Storage for atomic data. */
+typedef struct RE_AtomicData {
+    RE_BacktrackBlock* current_backtrack_block;
+    size_t backtrack_count;
+} RE_AtomicData;
+
+/* Storage for atomic data is allocated in blocks for speed. */
+typedef struct RE_AtomicBlock {
+    RE_AtomicData items[RE_ATOMIC_BLOCK_SIZE];
+    struct RE_AtomicBlock* previous;
+    struct RE_AtomicBlock* next;
+    size_t capacity;
+    size_t count;
+} RE_AtomicBlock;
+
 /* Storage for saved groups. */
 typedef struct RE_SavedGroups {
     struct RE_SavedGroups* previous;
@@ -542,6 +560,7 @@ typedef struct RE_State {
     RE_BacktrackBlock* current_backtrack_block;
     Py_ssize_t backtrack_allocated;
     RE_BacktrackData* backtrack;
+    RE_AtomicBlock* current_atomic_block;
     /* Storage for saved capture groups. */
     RE_SavedGroups* first_saved_groups;
     RE_SavedGroups* current_saved_groups;
@@ -2726,6 +2745,9 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     state->search_anchor = state->text_pos;
     state->match_pos = state->text_pos;
 
+    /* Reset the atomic stack. */
+    state->current_atomic_block = NULL;
+
     /* Reset the guards for the repeats. */
     for (i = 0; i < state->pattern->repeat_count; i++) {
         reset_guard_list(&state->repeats[i].body_guard_list);
@@ -2824,6 +2846,62 @@ Py_LOCAL_INLINE(void) discard_backtrack(RE_State* state) {
     --current->count;
     if (current->count == 0 && current->previous)
         state->current_backtrack_block = current->previous;
+}
+
+/* Pushes a new empty entry onto the atomic stack. */
+Py_LOCAL_INLINE(RE_AtomicData*) push_atomic(RE_SafeState* safe_state) {
+    RE_State* state;
+    RE_AtomicBlock* current;
+
+    state = safe_state->re_state;
+
+    current = state->current_atomic_block;
+    if (!current || current->count >= current->capacity) {
+        /* The current block is full. */
+        if (current && current->next)
+            /* Advance to the next block. */
+            current = current->next;
+        else {
+            /* Add a new block. */
+            RE_AtomicBlock* next;
+
+            next = (RE_AtomicBlock*)safe_alloc(safe_state,
+              sizeof(RE_AtomicBlock));
+            if (!next)
+                return NULL;
+
+            next->previous = current;
+            next->next = NULL;
+            next->capacity = RE_ATOMIC_BLOCK_SIZE;
+            if (current)
+                /* The current block is the last one. */
+                current->next = next;
+            else
+                /* The new block is the first one. */
+                state->current_atomic_block = next;
+            current = next;
+        }
+
+        current->count = 0;
+    }
+
+    return &current->items[current->count++];
+}
+
+/* Pops the top entry from the atomic stack. */
+Py_LOCAL_INLINE(RE_AtomicData*) pop_atomic(RE_SafeState* safe_state) {
+    RE_State* state;
+    RE_AtomicBlock* current;
+    RE_AtomicData* atomic;
+
+    state = safe_state->re_state;
+
+    current = state->current_atomic_block;
+    atomic = &current->items[--current->count];
+    if (current->count == 0 && current->previous)
+        state->current_atomic_block = current->previous;
+
+    return atomic;
 }
 
 /* Copies a repeat guard list. */
@@ -11388,10 +11466,9 @@ advance:
             } else
                 goto backtrack;
             break;
-        case RE_OP_ATOMIC: /* Atomic subpattern. */
+        case RE_OP_ATOMIC: /* Start of an atomic subpattern. */
         {
-            RE_Info info;
-            int status;
+            RE_AtomicData* atomic;
             TRACE(("%s\n", re_op_text[node->op]))
 
             if (!add_backtrack(safe_state, RE_OP_ATOMIC))
@@ -11399,25 +11476,15 @@ advance:
             state->backtrack->atomic.too_few_errors = state->too_few_errors;
             state->backtrack->atomic.capture_change = state->capture_change;
 
+            atomic = push_atomic(safe_state);
+            if (!atomic)
+                return RE_ERROR_MEMORY;
+            atomic->backtrack_count = state->current_backtrack_block->count;
+            atomic->current_backtrack_block = state->current_backtrack_block;
+
             /* Save the groups. */
             if (!push_groups(safe_state))
                 return RE_ERROR_MEMORY;
-
-            save_info(state, &info);
-
-            state->must_advance = FALSE;
-
-            status = basic_match(safe_state, node->nonstring.next_2.node,
-              FALSE, TRUE);
-            if (status < 0)
-                return status;
-
-            reset_guards(state, node->values);
-
-            restore_info(state, &info);
-
-            if (status != RE_ERROR_SUCCESS)
-                goto backtrack;
 
             node = node->next_1.node;
             break;
@@ -11634,6 +11701,17 @@ advance:
             } else
                 goto backtrack;
             break;
+        case RE_OP_END_ATOMIC: /* End of an atomic subpattern. */
+        {
+            RE_AtomicData* atomic;
+
+            atomic = pop_atomic(safe_state);
+            state->current_backtrack_block = atomic->current_backtrack_block;
+            state->current_backtrack_block->count = atomic->backtrack_count;
+
+            node = node->next_1.node;
+            break;
+        }
         case RE_OP_END_FUZZY: /* End of fuzzy matching. */
             TRACE(("%s\n", re_op_text[node->op]))
 
@@ -14104,13 +14182,12 @@ backtrack:
             if (node)
                 goto advance;
             break;
-        case RE_OP_ATOMIC: /* Atomic subpattern. */
-            TRACE(("%s\n", re_op_text[bt_data->op]))
-
+        case RE_OP_ATOMIC: /* Start of an atomic subpattern. */
             /* Restore the groups and certain flags and then backtrack. */
             pop_groups(state);
             state->too_few_errors = bt_data->atomic.too_few_errors;
             state->capture_change = bt_data->atomic.capture_change;
+
             discard_backtrack(state);
             break;
         case RE_OP_BODY_END:
@@ -16396,7 +16473,8 @@ Py_LOCAL_INLINE(void) dealloc_fuzzy_guards(RE_FuzzyGuards* guards, size_t
 
 /* Finalises a state object, discarding its contents. */
 Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
-    RE_BacktrackBlock* current;
+    RE_BacktrackBlock* current_backtrack;
+    RE_AtomicBlock* current_atomic;
     PatternObject* pattern;
     RE_SavedGroups* saved_groups;
     RE_SavedRepeats* saved_repeats;
@@ -16408,15 +16486,27 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
         PyThread_free_lock(state->lock);
 
     /* Deallocate the backtrack blocks. */
-    current = state->backtrack_block.next;
-    while (current) {
+    current_backtrack = state->backtrack_block.next;
+    while (current_backtrack) {
         RE_BacktrackBlock* next;
 
-        next = current->next;
-        re_dealloc(current);
+        next = current_backtrack->next;
+        re_dealloc(current_backtrack);
         state->backtrack_allocated -= RE_BACKTRACK_BLOCK_SIZE;
-        current = next;
+        current_backtrack = next;
     }
+
+    /* Deallocate the atomic blocks. */
+    current_atomic = state->current_atomic_block;
+    while (current_atomic) {
+        RE_AtomicBlock* next;
+
+        next = current_atomic->next;
+        re_dealloc(current_atomic);
+        current_atomic = next;
+    }
+
+    state->current_atomic_block = NULL;
 
     pattern = state->pattern;
 
@@ -20603,7 +20693,6 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             return node->status & (RE_STATUS_REPEAT | RE_STATUS_REF);
 
         switch (node->op) {
-        case RE_OP_ATOMIC:
         case RE_OP_LOOKAROUND:
         {
             RE_STATUS_T body_result;
@@ -20769,12 +20858,6 @@ Py_LOCAL_INLINE(BOOL) record_subpattern_repeats_and_fuzzy_sections(RE_Node*
         node->status |= RE_STATUS_VISITED_REP;
 
         switch (node->op) {
-        case RE_OP_ATOMIC:
-            if (!record_subpattern_repeats_and_fuzzy_sections(node, 0,
-              repeat_count, node->nonstring.next_2.node))
-                return FALSE;
-            node = node->next_1.node;
-            break;
         case RE_OP_BRANCH:
             if (!record_subpattern_repeats_and_fuzzy_sections(parent_node,
               offset, repeat_count, node->next_1.node))
@@ -21450,28 +21533,21 @@ Py_LOCAL_INLINE(int) build_ATOMIC(RE_CompileArgs* args) {
     RE_Node* atomic_node;
     RE_CompileArgs subargs;
     int status;
-    RE_Node* success_node;
+    RE_Node* end_atomic_node;
 
     /* codes: opcode, sequence, end. */
     if (args->code + 1 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
-    atomic_node = create_node(args->pattern, RE_OP_ATOMIC, 0, 0, 1);
+    atomic_node = create_node(args->pattern, RE_OP_ATOMIC, 0, 0, 0);
     if (!atomic_node)
         return RE_ERROR_MEMORY;
 
-    /* The number of repeat indexes. */
-    atomic_node->values[0] = 0;
-
     ++args->code;
 
+    /* Compile the sequence and check that we've reached the end of it. */
     subargs = *args;
-    subargs.has_captures = FALSE;
-    subargs.is_fuzzy = FALSE;
-
-    /* Compile the sequence and check that we've reached the end of the
-     * subpattern.
-     */
+    subargs.min_width = 0;
     status = build_sequence(&subargs);
     if (status != RE_ERROR_SUCCESS)
         return status;
@@ -21479,27 +21555,24 @@ Py_LOCAL_INLINE(int) build_ATOMIC(RE_CompileArgs* args) {
     if (subargs.code[0] != RE_OP_END)
         return RE_ERROR_ILLEGAL;
 
-    /* Create the success node to terminate the subpattern. */
-    success_node = create_node(subargs.pattern, RE_OP_SUCCESS, 0, 0, 0);
-    if (!success_node)
-        return RE_ERROR_MEMORY;
-
-    /* Append the SUCCESS node. */
-    add_node(subargs.end, success_node);
-
-    /* Insert the subpattern. */
-    atomic_node->nonstring.next_2.node = subargs.start;
-
     args->code = subargs.code;
-    args->min_width = subargs.min_width;
+    ++args->code;
+
+    /* Check the subpattern. */
+    args->min_width += subargs.min_width;
     args->has_captures |= subargs.has_captures;
     args->is_fuzzy |= subargs.is_fuzzy;
 
-    ++args->code;
+    /* Create the node to terminate the subpattern. */
+    end_atomic_node = create_node(subargs.pattern, RE_OP_END_ATOMIC, 0, 0, 0);
+    if (!end_atomic_node)
+        return RE_ERROR_MEMORY;
 
-    /* Append the node. */
+    /* Append the new sequence. */
     add_node(args->end, atomic_node);
-    args->end = atomic_node;
+    add_node(atomic_node, subargs.start);
+    add_node(subargs.end, end_atomic_node);
+    args->end = end_atomic_node;
 
     return RE_ERROR_SUCCESS;
 }
