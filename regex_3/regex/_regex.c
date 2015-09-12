@@ -331,8 +331,10 @@ typedef struct RE_BacktrackData {
             Py_ssize_t match_pos;
         } keep;
         struct {
+            struct RE_Node* node;
             size_t capture_change;
             BOOL too_few_errors;
+            BOOL inside;
         } lookaround;
         struct {
             RE_Position position;
@@ -359,6 +361,11 @@ typedef struct RE_BacktrackBlock {
 typedef struct RE_AtomicData {
     RE_BacktrackBlock* current_backtrack_block;
     size_t backtrack_count;
+    struct RE_Node* node;
+    RE_BacktrackData* backtrack;
+    Py_ssize_t slice_start;
+    Py_ssize_t slice_end;
+    Py_ssize_t text_pos;
 } RE_AtomicData;
 
 /* Storage for atomic data is allocated in blocks for speed. */
@@ -3141,7 +3148,7 @@ Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
                 return node;
             return node->nonstring.next_2.node;
         case RE_OP_LOOKAROUND:
-            node = node->next_1.node;
+            node = node->nonstring.next_2.node;
             break;
         default:
             if (is_firstset(node)) {
@@ -8838,24 +8845,6 @@ Py_LOCAL_INLINE(void) pop_repeats(RE_State* state) {
     state->current_saved_repeats = current->previous;
 }
 
-/* Saves state info before a recusive call by 'basic_match'. */
-Py_LOCAL_INLINE(void) save_info(RE_State* state, RE_Info* info) {
-    info->backtrack_count = state->current_backtrack_block->count;
-    info->current_backtrack_block = state->current_backtrack_block;
-    info->current_saved_groups = state->current_saved_groups;
-    info->must_advance = state->must_advance;
-    info->current_group_call_frame = state->current_group_call_frame;
-}
-
-/* Restores state info after a recusive call by 'basic_match'. */
-Py_LOCAL_INLINE(void) restore_info(RE_State* state, RE_Info* info) {
-    state->current_group_call_frame = info->current_group_call_frame;
-    state->must_advance = info->must_advance;
-    state->current_saved_groups = info->current_saved_groups;
-    state->current_backtrack_block = info->current_backtrack_block;
-    state->current_backtrack_block->count = info->backtrack_count;
-}
-
 /* Inserts a new span in a guard list. */
 Py_LOCAL_INLINE(BOOL) insert_guard_span(RE_SafeState* safe_state, RE_GuardList*
   guard_list, size_t index) {
@@ -12056,6 +12045,44 @@ advance:
             }
             break;
         }
+        case RE_OP_END_LOOKAROUND: /* End of a lookaround subpattern. */
+        {
+            RE_AtomicData* lookaround;
+
+            lookaround = pop_atomic(safe_state);
+            state->text_pos = lookaround->text_pos;
+            state->slice_end = lookaround->slice_end;
+            state->slice_start = lookaround->slice_start;
+
+            /* Discard any backtracking info from inside the lookaround. */
+            state->current_backtrack_block =
+              lookaround->current_backtrack_block;
+            state->current_backtrack_block->count =
+              lookaround->backtrack_count;
+
+            if (lookaround->node->match) {
+                /* It's a positive lookaround that's succeeded. We're now going
+                 * to leave the lookaround.
+                 */
+                lookaround->backtrack->lookaround.inside = FALSE;
+
+                node = node->next_1.node;
+            } else {
+                /* It's a negative lookaround that's succeeded. The groups and
+                 * certain flags may have changed. We need to restore them and
+                 * then backtrack.
+                 */
+                pop_groups(state);
+                state->too_few_errors =
+                  lookaround->backtrack->lookaround.too_few_errors;
+                state->capture_change =
+                  lookaround->backtrack->lookaround.capture_change;
+
+                discard_backtrack(state);
+                goto backtrack;
+            }
+            break;
+        }
         case RE_OP_END_OF_LINE: /* At the end of a line. */
             TRACE(("%s\n", re_op_text[node->op]))
 
@@ -12663,86 +12690,39 @@ advance:
             node = node->next_1.node;
             break;
         }
-        case RE_OP_LOOKAROUND: /* Lookaround. */
+        case RE_OP_LOOKAROUND: /* Start of a lookaround subpattern. */
         {
-            RE_Info info;
-            size_t capture_change;
-            Py_ssize_t saved_slice_start;
-            Py_ssize_t saved_slice_end;
-            Py_ssize_t saved_text_pos;
-            BOOL too_few_errors;
-            int status;
+            RE_AtomicData* lookaround;
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
+
+            if (!add_backtrack(safe_state, RE_OP_LOOKAROUND))
+                return RE_ERROR_BACKTRACKING;
+            state->backtrack->lookaround.too_few_errors =
+              state->too_few_errors;
+            state->backtrack->lookaround.capture_change =
+              state->capture_change;
+            state->backtrack->lookaround.inside = TRUE;
+            state->backtrack->lookaround.node = node;
+
+            lookaround = push_atomic(safe_state);
+            if (!lookaround)
+                return RE_ERROR_MEMORY;
+            lookaround->backtrack_count =
+              state->current_backtrack_block->count;
+            lookaround->current_backtrack_block =
+              state->current_backtrack_block;
+            lookaround->slice_start = state->slice_start;
+            lookaround->slice_end = state->slice_end;
+            lookaround->text_pos = state->text_pos;
+            lookaround->node = node;
+            lookaround->backtrack = state->backtrack;
 
             /* Save the groups. */
             if (!push_groups(safe_state))
                 return RE_ERROR_MEMORY;
 
-            capture_change = state->capture_change;
-
-            /* Save the other info. */
-            save_info(state, &info);
-
-            saved_slice_start = state->slice_start;
-            saved_slice_end = state->slice_end;
-            saved_text_pos = state->text_pos;
             state->slice_start = 0;
             state->slice_end = state->text_length;
-            state->must_advance = FALSE;
-
-            too_few_errors = state->too_few_errors;
-
-            status = basic_match(safe_state, node->nonstring.next_2.node,
-              FALSE, TRUE);
-            if (status < 0)
-                return status;
-
-            reset_guards(state, node->values + 1);
-
-            state->text_pos = saved_text_pos;
-            state->slice_end = saved_slice_end;
-            state->slice_start = saved_slice_start;
-
-            /* Restore the other info. */
-            restore_info(state, &info);
-
-            if (node->match) {
-                /* It's a positive lookaround. */
-                if (status == RE_ERROR_SUCCESS) {
-                    /* It succeeded, so the groups and certain flags may have
-                     * changed.
-                     */
-                    if (!add_backtrack(safe_state, RE_OP_LOOKAROUND))
-                        return RE_ERROR_BACKTRACKING;
-
-                    /* We'll restore the groups and flags on backtracking. */
-                    state->backtrack->lookaround.too_few_errors =
-                      too_few_errors;
-                    state->backtrack->lookaround.capture_change =
-                      capture_change;
-                } else {
-                    /* It failed, so the groups and certain flags haven't
-                     * changed.
-                     */
-                    drop_groups(state);
-                    goto backtrack;
-                }
-            } else {
-                /* It's a negative lookaround. */
-                if (status == RE_ERROR_SUCCESS) {
-                    /* It succeeded, so the groups and certain flags may have
-                     * changed. We need to restore them.
-                     */
-                    pop_groups(state);
-                    state->too_few_errors = too_few_errors;
-                    state->capture_change = capture_change;
-                    goto backtrack;
-                } else
-                    /* It failed, so the groups and certain flags haven't
-                     * changed.
-                     */
-                    drop_groups(state);
-            }
 
             node = node->next_1.node;
             break;
@@ -15582,15 +15562,56 @@ backtrack:
             }
             break;
         }
-        case RE_OP_LOOKAROUND: /* Lookaround. */
+        case RE_OP_LOOKAROUND: /* Lookaround subpattern. */
+        {
             TRACE(("%s\n", re_op_text[bt_data->op]))
+            if (bt_data->lookaround.inside) {
+                /* Backtracked to the start of a lookaround. */
+                RE_AtomicData* lookaround;
 
-            /* Restore the groups and certain flags and then backtrack. */
-            pop_groups(state);
-            state->too_few_errors = bt_data->lookaround.too_few_errors;
-            state->capture_change = bt_data->lookaround.capture_change;
-            discard_backtrack(state);
+                lookaround = pop_atomic(safe_state);
+                state->text_pos = lookaround->text_pos;
+                state->slice_end = lookaround->slice_end;
+                state->slice_start = lookaround->slice_start;
+                state->current_backtrack_block =
+                  lookaround->current_backtrack_block;
+                state->current_backtrack_block->count =
+                  lookaround->backtrack_count;
+
+                /* Restore the groups and certain flags. */
+                pop_groups(state);
+                state->too_few_errors = bt_data->lookaround.too_few_errors;
+                state->capture_change = bt_data->lookaround.capture_change;
+
+                if (bt_data->lookaround.node->match) {
+                    /* It's a positive lookaround that's failed. */
+                    discard_backtrack(state);
+                } else {
+                    /* It's a negative lookaround that's failed. Record that
+                     * we've now left the lookaround and continue to the
+                     * following node.
+                     */
+                    bt_data->lookaround.inside = FALSE;
+                    node = bt_data->lookaround.node->nonstring.next_2.node;
+                    goto advance;
+                }
+            } else {
+                /* Backtracked to a lookaround. If it's a positive lookaround
+                 * that succeeded, we need to restore the groups; if it's a
+                 * negative lookaround that failed, it would have completely
+                 * backtracked inside and already restored the groups. We also
+                 * need to restore certain flags.
+                 */
+                if (bt_data->lookaround.node->match)
+                    pop_groups(state);
+
+                state->too_few_errors = bt_data->lookaround.too_few_errors;
+                state->capture_change = bt_data->lookaround.capture_change;
+
+                discard_backtrack(state);
+            }
             break;
+        }
         case RE_OP_MATCH_BODY:
         {
             RE_RepeatData* rp_data;
@@ -20664,19 +20685,6 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             return node->status & (RE_STATUS_REPEAT | RE_STATUS_REF);
 
         switch (node->op) {
-        case RE_OP_LOOKAROUND:
-        {
-            RE_STATUS_T body_result;
-            RE_STATUS_T tail_result;
-            RE_STATUS_T status;
-
-            body_result = add_repeat_guards(pattern,
-              node->nonstring.next_2.node);
-            tail_result = add_repeat_guards(pattern, node->next_1.node);
-            status = max_status_3(result, body_result, tail_result);
-            node->status = RE_STATUS_VISITED_AG | status;
-            return status;
-        }
         case RE_OP_BRANCH:
         {
             RE_STATUS_T branch_1_result;
@@ -20870,12 +20878,6 @@ Py_LOCAL_INLINE(BOOL) record_subpattern_repeats_and_fuzzy_sections(RE_Node*
               offset, repeat_count, node->next_1.node))
                 return FALSE;
             node = node->nonstring.next_2.node;
-            break;
-        case RE_OP_LOOKAROUND:
-            if (!record_subpattern_repeats_and_fuzzy_sections(node, 1,
-              repeat_count, node->nonstring.next_2.node))
-                return FALSE;
-            node = node->next_1.node;
             break;
         default:
             node = node->next_1.node;
@@ -21504,7 +21506,7 @@ Py_LOCAL_INLINE(int) build_ATOMIC(RE_CompileArgs* args) {
     RE_Node* atomic_node;
     RE_CompileArgs subargs;
     int status;
-    RE_Node* end_atomic_node;
+    RE_Node* end_node;
 
     /* codes: opcode, sequence, end. */
     if (args->code + 1 > args->end_code)
@@ -21518,7 +21520,6 @@ Py_LOCAL_INLINE(int) build_ATOMIC(RE_CompileArgs* args) {
 
     /* Compile the sequence and check that we've reached the end of it. */
     subargs = *args;
-    subargs.min_width = 0;
     status = build_sequence(&subargs);
     if (status != RE_ERROR_SUCCESS)
         return status;
@@ -21535,15 +21536,15 @@ Py_LOCAL_INLINE(int) build_ATOMIC(RE_CompileArgs* args) {
     args->is_fuzzy |= subargs.is_fuzzy;
 
     /* Create the node to terminate the subpattern. */
-    end_atomic_node = create_node(subargs.pattern, RE_OP_END_ATOMIC, 0, 0, 0);
-    if (!end_atomic_node)
+    end_node = create_node(subargs.pattern, RE_OP_END_ATOMIC, 0, 0, 0);
+    if (!end_node)
         return RE_ERROR_MEMORY;
 
     /* Append the new sequence. */
     add_node(args->end, atomic_node);
     add_node(atomic_node, subargs.start);
-    add_node(subargs.end, end_atomic_node);
-    args->end = end_atomic_node;
+    add_node(subargs.end, end_node);
+    args->end = end_node;
 
     return RE_ERROR_SUCCESS;
 }
@@ -21939,7 +21940,8 @@ Py_LOCAL_INLINE(int) build_LOOKAROUND(RE_CompileArgs* args) {
     RE_Node* lookaround_node;
     RE_CompileArgs subargs;
     int status;
-    RE_Node* success_node;
+    RE_Node* end_node;
+    RE_Node* next_node;
 
     /* codes: opcode, flags, forward, sequence, end. */
     if (args->code + 3 > args->end_code)
@@ -21950,12 +21952,9 @@ Py_LOCAL_INLINE(int) build_LOOKAROUND(RE_CompileArgs* args) {
 
     /* Create a node for the lookaround. */
     lookaround_node = create_node(args->pattern, RE_OP_LOOKAROUND, flags, 0,
-      2);
+      0);
     if (!lookaround_node)
         return RE_ERROR_MEMORY;
-
-    /* The number of repeat indexes. */
-    lookaround_node->values[1] = 0;
 
     args->code += 3;
 
@@ -21964,36 +21963,38 @@ Py_LOCAL_INLINE(int) build_LOOKAROUND(RE_CompileArgs* args) {
      */
     subargs = *args;
     subargs.forward = forward;
-    subargs.has_captures = FALSE;
-    subargs.is_fuzzy = FALSE;
     status = build_sequence(&subargs);
     if (status != RE_ERROR_SUCCESS)
         return status;
-
-    lookaround_node->values[0] = subargs.has_captures;
 
     if (subargs.code[0] != RE_OP_END)
         return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
-    args->has_captures |= subargs.has_captures;
-    args->is_fuzzy |= subargs.is_fuzzy;
     ++args->code;
 
-    /* Create the 'SUCCESS' node and append it to the subpattern. */
-    success_node = create_node(args->pattern, RE_OP_SUCCESS, 0, 0, 0);
-    if (!success_node)
+    /* Check the subpattern. */
+    args->has_captures |= subargs.has_captures;
+    args->is_fuzzy |= subargs.is_fuzzy;
+
+    /* Create the node to terminate the subpattern. */
+    end_node = create_node(args->pattern, RE_OP_END_LOOKAROUND, 0, 0, 0);
+    if (!end_node)
         return RE_ERROR_MEMORY;
 
-    /* Append the SUCCESS node. */
-    add_node(subargs.end, success_node);
+    /* Make a continuation node. */
+    next_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
+    if (!next_node)
+        return RE_ERROR_MEMORY;
 
-    /* Insert the subpattern into the node. */
-    lookaround_node->nonstring.next_2.node = subargs.start;
-
-    /* Append the lookaround. */
+    /* Append the new sequence. */
     add_node(args->end, lookaround_node);
-    args->end = lookaround_node;
+    add_node(lookaround_node, subargs.start);
+    add_node(lookaround_node, next_node);
+    add_node(subargs.end, end_node);
+    add_node(end_node, next_node);
+
+    args->end = next_node;
 
     return RE_ERROR_SUCCESS;
 }
