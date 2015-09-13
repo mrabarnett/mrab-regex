@@ -2742,6 +2742,7 @@ Py_LOCAL_INLINE(void) clear_groups(RE_State* state) {
 
 /* Initialises the state for a match. */
 Py_LOCAL_INLINE(void) init_match(RE_State* state) {
+    RE_AtomicBlock* current;
     size_t i;
 
     /* Reset the backtrack. */
@@ -2753,7 +2754,14 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     state->match_pos = state->text_pos;
 
     /* Reset the atomic stack. */
-    state->current_atomic_block = NULL;
+    current = state->current_atomic_block;
+    if (current) {
+        while (current->previous)
+            current = current->previous;
+
+        state->current_atomic_block = current;
+        state->current_atomic_block->count = 0;
+    }
 
     /* Reset the guards for the repeats. */
     for (i = 0; i < state->pattern->repeat_count; i++) {
@@ -11137,13 +11145,39 @@ Py_LOCAL_INLINE(BOOL) equivalent_nodes(RE_Node* node_1, RE_Node* node_2) {
     return FALSE;
 }
 
+/* Prunes the backtracking. */
+Py_LOCAL_INLINE(void) prune_backtracking(RE_State* state) {
+    RE_AtomicBlock* current;
+
+    current = state->current_atomic_block;
+    if (current && current->count > 0) {
+        /* In an atomic group or a lookaround. */
+        RE_AtomicData* atomic;
+
+        /* Discard any backtracking info from inside the atomic group or
+         * lookaround.
+         */
+        atomic = &current->items[current->count - 1];
+        state->current_backtrack_block = atomic->current_backtrack_block;
+        state->current_backtrack_block->count = atomic->backtrack_count;
+    } else {
+        /* In the outermost pattern. */
+        while (state->current_backtrack_block->previous)
+            state->current_backtrack_block =
+              state->current_backtrack_block->previous;
+
+        /* Keep the bottom FAILURE on the backtracking stack. */
+        state->current_backtrack_block->count = 1;
+    }
+}
+
 /* Performs a depth-first match or search from the context. */
-Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
-  BOOL search, BOOL recursive_call) {
+Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, BOOL search) {
     RE_State* state;
     RE_EncodingTable* encoding;
     RE_LocaleInfo* locale_info;
     PatternObject* pattern;
+    RE_Node* start_node;
     RE_NextNode start_pair;
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     Py_ssize_t pattern_step; /* The overall step of the pattern (forwards or backwards). */
@@ -11160,13 +11194,11 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, RE_Node* start_node,
     encoding = state->encoding;
     locale_info = state->locale_info;
     pattern = state->pattern;
+    start_node = pattern->start_node;
 
     /* Look beyond any initial group node. */
     start_pair.node = start_node;
-    if (recursive_call)
-        start_pair.test = locate_test_start(start_node);
-    else
-        start_pair.test = pattern->start_test;
+    start_pair.test = pattern->start_test;
 
     /* Is the pattern anchored to the start or end of the string? */
     switch (start_pair.test->op) {
@@ -11220,7 +11252,7 @@ start_match:
     /* Locate the required string, if there's one, unless this is a recursive
      * call of 'basic_match'.
      */
-    if (!pattern->req_string || recursive_call)
+    if (!pattern->req_string)
         found_pos = state->text_pos;
     else {
         found_pos = locate_required_string(safe_state, search);
@@ -11292,7 +11324,7 @@ next_match_2:
                   !state->must_advance) {
                     BOOL success;
 
-                    if (state->match_all && !recursive_call) {
+                    if (state->match_all) {
                         /* We want to match all of the slice. */
                         if (state->reverse)
                             success = state->text_pos == state->slice_start;
@@ -11471,8 +11503,11 @@ advance:
             atomic->backtrack_count = state->current_backtrack_block->count;
             atomic->current_backtrack_block = state->current_backtrack_block;
 
-            /* Save the groups. */
+            /* Save the groups and repeats. */
             if (!push_groups(safe_state))
+                return RE_ERROR_MEMORY;
+
+            if (!push_repeats(safe_state))
                 return RE_ERROR_MEMORY;
 
             node = node->next_1.node;
@@ -12029,7 +12064,9 @@ advance:
             state->slice_end = lookaround->slice_end;
             state->slice_start = lookaround->slice_start;
 
-            /* Discard any backtracking info from inside the lookaround. */
+            /* Discard any backtracking info from inside the atomic group or
+             * lookaround.
+             */
             state->current_backtrack_block =
               lookaround->current_backtrack_block;
             state->current_backtrack_block->count =
@@ -12180,6 +12217,8 @@ advance:
             } else
                 goto backtrack;
             break;
+        case RE_OP_FAILURE: /* Failure. */
+            goto backtrack;
         case RE_OP_FUZZY: /* Fuzzy matching. */
         {
             RE_FuzzyInfo* fuzzy_info;
@@ -12692,8 +12731,11 @@ advance:
             lookaround->node = node;
             lookaround->backtrack = state->backtrack;
 
-            /* Save the groups. */
+            /* Save the groups and repeats. */
             if (!push_groups(safe_state))
+                return RE_ERROR_MEMORY;
+
+            if (!push_repeats(safe_state))
                 return RE_ERROR_MEMORY;
 
             state->slice_start = 0;
@@ -12795,6 +12837,13 @@ advance:
                     goto backtrack;
             } else
                 goto backtrack;
+            break;
+        case RE_OP_PRUNE: /* Prune the backtracking. */
+            TRACE(("%s\n", re_op_text[node->op]))
+
+            prune_backtracking(state);
+
+            node = node->next_1.node;
             break;
         case RE_OP_RANGE: /* A range. */
             TRACE(("%s %d %d %d\n", re_op_text[node->op], node->match,
@@ -13447,6 +13496,17 @@ advance:
             } else
                 goto backtrack;
             break;
+        case RE_OP_SKIP: /* Skip the part of the text already matched. */
+            TRACE(("%s\n", re_op_text[node->op]))
+
+            if (node->status & RE_STATUS_REVERSE)
+                state->slice_end = state->text_pos;
+            else
+                state->slice_start = state->text_pos;
+
+            prune_backtracking(state);
+            node = node->next_1.node;
+            break;
         case RE_OP_START_GROUP: /* Start of a capture group. */
         {
             RE_CODE private_index;
@@ -14086,7 +14146,7 @@ advance:
             if (state->text_pos == state->search_anchor && state->must_advance)
                 goto backtrack;
 
-            if (state->match_all && !recursive_call) {
+            if (state->match_all) {
                 /* We want to match all of the slice. */
                 if (state->reverse) {
                     if (state->text_pos != state->slice_start)
@@ -14163,7 +14223,10 @@ backtrack:
                 goto advance;
             break;
         case RE_OP_ATOMIC: /* Start of an atomic subpattern. */
-            /* Restore the groups and certain flags and then backtrack. */
+            /* Restore the groups and repeats and certain flags and then
+             * backtrack.
+             */
+            pop_repeats(state);
             pop_groups(state);
             state->too_few_errors = bt_data->atomic.too_few_errors;
             state->capture_change = bt_data->atomic.capture_change;
@@ -14297,7 +14360,6 @@ backtrack:
         }
         case RE_OP_FAILURE:
         {
-            Py_ssize_t end_pos;
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             /* Do we have to advance? */
@@ -14306,9 +14368,14 @@ backtrack:
 
             /* Can we advance? */
             state->text_pos = state->match_pos;
-            end_pos = state->reverse ? state->slice_start : state->slice_end;
-            if (state->text_pos == end_pos)
-                return RE_ERROR_FAILURE;
+
+            if (state->reverse) {
+                if (state->text_pos <= state->slice_start)
+                    return RE_ERROR_FAILURE;
+            } else {
+                if (state->text_pos >= state->slice_end)
+                    return RE_ERROR_FAILURE;
+            }
 
             /* Skip over any repeated leading characters. */
             switch (start_node->op) {
@@ -14331,8 +14398,20 @@ backtrack:
             }
             }
 
-            /* Advance and try to match again. */
-            state->text_pos += pattern_step;
+            /* Advance and try to match again. e also need to check whether we
+             * need to skip.
+             */
+            if (state->reverse) {
+                if (state->text_pos > state->slice_end)
+                    state->text_pos = state->slice_end;
+                else
+                    --state->text_pos;
+            } else {
+                if (state->text_pos < state->slice_start)
+                    state->text_pos = state->slice_start;
+                else
+                    ++state->text_pos;
+            }
 
             /* Clear the groups. */
             clear_groups(state);
@@ -14406,7 +14485,16 @@ backtrack:
               RE_STATUS_TAIL, TRUE))
                 return RE_ERROR_MEMORY;
 
-            if (count == node->values[1]) {
+            /* A (*SKIP) might have change the size of the slice. */
+            if (step > 0) {
+                if (limit < state->slice_start)
+                    limit = state->slice_start;
+            } else {
+                if (limit > state->slice_end)
+                    limit = state->slice_end;
+            }
+
+            if (pos == limit) {
                 /* We've backtracked the repeat as far as we can. */
                 rp_data->start = bt_data->repeat.text_pos;
                 rp_data->count = bt_data->repeat.count;
@@ -15553,7 +15641,8 @@ backtrack:
                 state->current_backtrack_block->count =
                   lookaround->backtrack_count;
 
-                /* Restore the groups and certain flags. */
+                /* Restore the groups and repeats and certain flags. */
+                pop_repeats(state);
                 pop_groups(state);
                 state->too_few_errors = bt_data->lookaround.too_few_errors;
                 state->capture_change = bt_data->lookaround.capture_change;
@@ -15924,8 +16013,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         }
 
         if (status == RE_ERROR_SUCCESS)
-            status = basic_match(safe_state, pattern->start_node, search,
-              FALSE);
+            status = basic_match(safe_state, search);
 
         /* Has an error occurred, or is it a partial match? */
         if (status < 0)
@@ -16191,6 +16279,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->backtrack_block.next = NULL;
     state->backtrack_block.capacity = RE_BACKTRACK_BLOCK_SIZE;
     state->backtrack_allocated = RE_BACKTRACK_BLOCK_SIZE;
+    state->current_atomic_block = NULL;
     state->first_saved_groups = NULL;
     state->current_saved_groups = NULL;
     state->first_saved_repeats = NULL;
@@ -22400,7 +22489,7 @@ Py_LOCAL_INLINE(int) build_SUCCESS(RE_CompileArgs* args) {
     /* code: opcode. */
 
     /* Create the node. */
-    node = create_node(args->pattern, RE_OP_SUCCESS, 0, 0, 0);
+    node = create_node(args->pattern, args->code[0], 0, 0, 0);
     if (!node)
         return RE_ERROR_MEMORY;
 
@@ -22476,6 +22565,7 @@ Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
         case RE_OP_END_OF_WORD:
         case RE_OP_GRAPHEME_BOUNDARY:
         case RE_OP_KEEP:
+        case RE_OP_SKIP:
         case RE_OP_START_OF_WORD:
             /* A word or grapheme boundary. */
             status = build_BOUNDARY(args);
@@ -22518,6 +22608,13 @@ Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
         case RE_OP_START_OF_STRING:
             /* A simple opcode with no trailing codewords and width of 0. */
             status = build_zerowidth(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
+            break;
+        case RE_OP_FAILURE:
+        case RE_OP_PRUNE:
+        case RE_OP_SUCCESS:
+            status = build_SUCCESS(args);
             if (status != RE_ERROR_SUCCESS)
                 return status;
             break;
@@ -22617,12 +22714,6 @@ Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
         case RE_OP_STRING_SET_REV:
             /* A reference to a list. */
             status = build_STRING_SET(args);
-            if (status != RE_ERROR_SUCCESS)
-                return status;
-            break;
-        case RE_OP_SUCCESS:
-            /* Success. */
-            status = build_SUCCESS(args);
             if (status != RE_ERROR_SUCCESS)
                 return status;
             break;

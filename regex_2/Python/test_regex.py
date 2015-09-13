@@ -3409,6 +3409,75 @@ xyzabc
         self.assertEquals(regex.findall(r'(?r)(\w\w\K\w\w)', 'abcdefgh'),
           ['efgh', 'abcd'])
 
+        # Hg issue 153: Request: (*SKIP).
+        self.assertEquals(regex.search(r'12(*FAIL)|3', '123')[0], '3')
+        self.assertEquals(regex.search(r'(?r)12(*FAIL)|3', '123')[0], '3')
+
+        self.assertEquals(regex.search(r'\d+(*PRUNE)\d', '123'), None)
+        self.assertEquals(regex.search(r'\d+(?=(*PRUNE))\d', '123')[0], '123')
+        self.assertEquals(regex.search(r'\d+(*PRUNE)bcd|[3d]', '123bcd')[0],
+          '123bcd')
+        self.assertEquals(regex.search(r'\d+(*PRUNE)bcd|[3d]', '123zzd')[0],
+          'd')
+        self.assertEquals(regex.search(r'\d+?(*PRUNE)bcd|[3d]', '123bcd')[0],
+          '3bcd')
+        self.assertEquals(regex.search(r'\d+?(*PRUNE)bcd|[3d]', '123zzd')[0],
+          'd')
+        self.assertEquals(regex.search(r'\d++(?<=3(*PRUNE))zzd|[4d]$',
+          '123zzd')[0], '123zzd')
+        self.assertEquals(regex.search(r'\d++(?<=3(*PRUNE))zzd|[4d]$',
+          '124zzd')[0], 'd')
+        self.assertEquals(regex.search(r'\d++(?<=(*PRUNE)3)zzd|[4d]$',
+          '124zzd')[0], 'd')
+        self.assertEquals(regex.search(r'\d++(?<=2(*PRUNE)3)zzd|[3d]$',
+          '124zzd')[0], 'd')
+
+        self.assertEquals(regex.search(r'(?r)\d(*PRUNE)\d+', '123'), None)
+        self.assertEquals(regex.search(r'(?r)\d(?<=(*PRUNE))\d+', '123')[0],
+          '123')
+        self.assertEquals(regex.search(r'(?r)\d+(*PRUNE)bcd|[3d]',
+          '123bcd')[0], '123bcd')
+        self.assertEquals(regex.search(r'(?r)\d+(*PRUNE)bcd|[3d]',
+          '123zzd')[0], 'd')
+        self.assertEquals(regex.search(r'(?r)\d++(?<=3(*PRUNE))zzd|[4d]$',
+          '123zzd')[0], '123zzd')
+        self.assertEquals(regex.search(r'(?r)\d++(?<=3(*PRUNE))zzd|[4d]$',
+          '124zzd')[0], 'd')
+        self.assertEquals(regex.search(r'(?r)\d++(?<=(*PRUNE)3)zzd|[4d]$',
+          '124zzd')[0], 'd')
+        self.assertEquals(regex.search(r'(?r)\d++(?<=2(*PRUNE)3)zzd|[3d]$',
+          '124zzd')[0], 'd')
+
+        self.assertEquals(regex.search(r'\d+(*SKIP)bcd|[3d]', '123bcd')[0],
+          '123bcd')
+        self.assertEquals(regex.search(r'\d+(*SKIP)bcd|[3d]', '123zzd')[0],
+          'd')
+        self.assertEquals(regex.search(r'\d+?(*SKIP)bcd|[3d]', '123bcd')[0],
+          '3bcd')
+        self.assertEquals(regex.search(r'\d+?(*SKIP)bcd|[3d]', '123zzd')[0],
+          'd')
+        self.assertEquals(regex.search(r'\d++(?<=3(*SKIP))zzd|[4d]$',
+          '123zzd')[0], '123zzd')
+        self.assertEquals(regex.search(r'\d++(?<=3(*SKIP))zzd|[4d]$',
+          '124zzd')[0], 'd')
+        self.assertEquals(regex.search(r'\d++(?<=(*SKIP)3)zzd|[4d]$',
+          '124zzd')[0], 'd')
+        self.assertEquals(regex.search(r'\d++(?<=2(*SKIP)3)zzd|[3d]$',
+          '124zzd')[0], 'd')
+
+        self.assertEquals(regex.search(r'(?r)\d+(*SKIP)bcd|[3d]', '123bcd')[0],
+          '123bcd')
+        self.assertEquals(regex.search(r'(?r)\d+(*SKIP)bcd|[3d]', '123zzd')[0],
+          'd')
+        self.assertEquals(regex.search(r'(?r)\d++(?<=3(*SKIP))zzd|[4d]$',
+          '123zzd')[0], '123zzd')
+        self.assertEquals(regex.search(r'(?r)\d++(?<=3(*SKIP))zzd|[4d]$',
+          '124zzd')[0], 'd')
+        self.assertEquals(regex.search(r'(?r)\d++(?<=(*SKIP)3)zzd|[4d]$',
+          '124zzd')[0], 'd')
+        self.assertEquals(regex.search(r'(?r)\d++(?<=2(*SKIP)3)zzd|[3d]$',
+          '124zzd')[0], 'd')
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

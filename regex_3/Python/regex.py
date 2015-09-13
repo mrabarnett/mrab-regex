@@ -79,6 +79,15 @@ The special characters are:
     (?|...|...)         (?|A|B), creates an RE that will match either A or B,
                         but reuses capture group numbers across the
                         alternatives.
+    (*FAIL)             Forces matching to fail, which means immediate
+                        backtracking.
+    (*F)                Abbreviation for (*FAIL).
+    (*PRUNE)            Discards the current backtracking information. Its
+                        effect doesn't extend outside an atomic group or a
+                        lookaround.
+    (*SKIP)             Stops matching before the current search position. Its
+                        effect doesn't extend outside an atomic group or a
+                        lookaround.
 
 The fuzzy matching constraints are: "i" to permit insertions, "d" to permit
 deletions, "s" to permit substitutions, "e" to permit any of these. Limits are

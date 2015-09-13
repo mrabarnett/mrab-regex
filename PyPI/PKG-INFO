@@ -144,6 +144,14 @@ Description: Introduction
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
         
+        * Added (*PRUNE), (*SKIP) and (*FAIL) (Hg issue 153)
+        
+            (*PRUNE) discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
+        
+            (*SKIP) is similar to (*PRUNE), except that it also sets where in the text the next attempt to match will start. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
+        
+            (*FAIL) causes immediate backtracking. (*F) is a permitted abbreviation.
+        
         * Added \K (Hg issue 151)
         
             Keeps the part of the entire match after the position where \K occurred; the part before it is discarded.

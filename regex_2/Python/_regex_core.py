@@ -167,6 +167,7 @@ PROPERTY
 PROPERTY_IGN
 PROPERTY_IGN_REV
 PROPERTY_REV
+PRUNE
 RANGE
 RANGE_IGN
 RANGE_IGN_REV
@@ -194,6 +195,7 @@ SET_UNION
 SET_UNION_IGN
 SET_UNION_IGN_REV
 SET_UNION_REV
+SKIP
 START_OF_LINE
 START_OF_LINE_U
 START_OF_STRING
@@ -804,6 +806,19 @@ def parse_paren(source, info):
         # (?...: probably a flags subpattern.
         source.pos = saved_pos_2
         return parse_flags_subpattern(source, info)
+
+    if ch == "*":
+        # (*...
+        saved_pos_2 = source.pos
+        word = source.get_while(set(")>"), include=False)
+        if word[ : 1].isalpha():
+            verb = VERBS.get(word)
+            if not verb:
+                raise error("unknown verb", source.string, saved_pos_2)
+
+            source.expect(")")
+
+            return verb
 
     # (...: an unnamed capture group.
     source.pos = saved_pos
@@ -2506,6 +2521,12 @@ class EndOfWord(ZeroWidthBase):
     _opcode = OP.END_OF_WORD
     _op_name = "END_OF_WORD"
 
+class Failure(ZeroWidthBase):
+    _op_name = "FAILURE"
+
+    def _compile(self, reverse, fuzzy):
+        return [(OP.FAILURE, )]
+
 class Fuzzy(RegexBase):
     def __init__(self, subpattern, constraints=None):
         RegexBase.__init__(self)
@@ -2938,6 +2959,12 @@ class Property(RegexBase):
 
     def max_width(self):
         return 1
+
+class Prune(ZeroWidthBase):
+    _op_name = "PRUNE"
+
+    def _compile(self, reverse, fuzzy):
+        return [(OP.PRUNE, )]
 
 class Range(RegexBase):
     _opcode = {(NOCASE, False): OP.RANGE, (IGNORECASE, False): OP.RANGE_IGN,
@@ -3468,6 +3495,10 @@ class SetUnion(SetBase):
     def matches(self, ch):
         m = any(i.matches(ch) for i in self.items)
         return m == self.positive
+
+class Skip(ZeroWidthBase):
+    _op_name = "SKIP"
+    _opcode = OP.SKIP
 
 class StartOfLine(ZeroWidthBase):
     _opcode = OP.START_OF_LINE
@@ -4137,3 +4168,11 @@ WORD_POSITION_ESCAPES.update({
     "m": DefaultStartOfWord(),
     "M": DefaultEndOfWord(),
 })
+
+# Regex control verbs.
+VERBS = {
+    "FAIL": Failure(),
+    "F": Failure(),
+    "PRUNE": Prune(),
+    "SKIP": Skip(),
+}
