@@ -76,6 +76,8 @@ The special characters are:
     (?<!...)            Matches if not preceded by ....
     (?(id)yes|no)       Matches yes pattern if group id matched, the (optional)
                         no pattern otherwise.
+    (?(DEFINE)...)      If there's no group called "DEFINE", then ... will be
+                        ignored, but any group definitions will be available.
     (?|...|...)         (?|A|B), creates an RE that will match either A or B,
                         but reuses capture group numbers across the
                         alternatives.
@@ -85,9 +87,10 @@ The special characters are:
     (*PRUNE)            Discards the current backtracking information. Its
                         effect doesn't extend outside an atomic group or a
                         lookaround.
-    (*SKIP)             Stops matching before the current search position. Its
-                        effect doesn't extend outside an atomic group or a
-                        lookaround.
+    (*SKIP)             Similar to (*PRUNE), except that it also sets where in
+                        the text the next attempt at matching the entire
+                        pattern will start. Its effect doesn't extend outside
+                        an atomic group or a lookaround.
 
 The fuzzy matching constraints are: "i" to permit insertions, "d" to permit
 deletions, "s" to permit substitutions, "e" to permit any of these. Limits are
@@ -539,7 +542,14 @@ def _compile(pattern, flags=0, kwargs={}):
         parsed.dump(indent=0, reverse=reverse)
 
     # Fix the group references.
-    parsed.fix_groups(pattern, reverse, False)
+    try:
+        parsed.fix_groups(pattern, reverse, False)
+    except error as e:
+        caught_exception = e
+
+    if caught_exception:
+        raise error(caught_exception.msg, caught_exception.pattern,
+          caught_exception.pos)
 
     # Optimise the parsed pattern.
     parsed = parsed.optimise(info)

@@ -2410,9 +2410,14 @@ class Conditional(RegexBase):
             try:
                 self.group = self.info.group_index[self.group]
             except KeyError:
-                raise error("unknown group", pattern, self.position)
+                if self.group == 'DEFINE':
+                    # 'DEFINE' is a special name unless there's a group with
+                    # that name.
+                    self.group = 0
+                else:
+                    raise error("unknown group", pattern, self.position)
 
-        if not 1 <= self.group <= self.info.group_count:
+        if not 0 <= self.group <= self.info.group_count:
             raise error("invalid group reference", pattern, self.position)
 
         self.yes_item.fix_groups(pattern, reverse, fuzzy)

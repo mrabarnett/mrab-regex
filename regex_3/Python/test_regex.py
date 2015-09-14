@@ -3582,6 +3582,10 @@ xyzabc
         self.assertEquals(regex.search(r'(?r)\d++(?<=2(*SKIP)3)zzd|[3d]$',
           '124zzd')[0], 'd')
 
+        # Hg issue 152: Request: Request: (?(DEFINE)...).
+        self.assertEquals(regex.search(r'(?(DEFINE)(?<quant>\d+)(?<item>\w+))(?&quant) (?&item)',
+          '5 elephants')[0], '5 elephants')
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

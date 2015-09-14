@@ -144,6 +144,15 @@ Description: Introduction
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
         
+        * Added (?(DEFINE)...) (Hg issue 152)
+        
+            If there's no group called "DEFINE", then ... will be ignored, but any group definitions within it will be available.
+        
+            Examples::
+        
+                >>> regex.search(r'(?(DEFINE)(?P<quant>\d+)(?P<item>\w+))(?&quant) (?&item)', '5 elephants')
+                <regex.Match object; span=(0, 11), match='5 elephants'>
+        
         * Added (*PRUNE), (*SKIP) and (*FAIL) (Hg issue 153)
         
             (*PRUNE) discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.

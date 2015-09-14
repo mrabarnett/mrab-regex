@@ -12482,7 +12482,6 @@ advance:
         }
         case RE_OP_GROUP_EXISTS: /* Capture group exists. */
         {
-            RE_GroupData* group;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Capture group indexes are 1-based (excluding group 0, which is
@@ -12490,12 +12489,24 @@ advance:
              *
              * Check whether the captured text, if any, exists at this position
              * in the string.
+             *
+             * A group index of 0, however, means that it's a DEFINE, which we
+             * should skip.
              */
-            group = &state->groups[node->values[0] - 1];
-            if (group->current_capture >= 0)
-                node = node->next_1.node;
-            else
+            if (node->values[0] == 0)
+                /* Skip past the body. */
                 node = node->nonstring.next_2.node;
+            else {
+                RE_GroupData* group;
+
+                group = &state->groups[node->values[0] - 1];
+                if (group->current_capture >= 0)
+                    /* The 'true' branch. */
+                    node = node->next_1.node;
+                else
+                    /* The 'false' branch. */
+                    node = node->nonstring.next_2.node;
+            }
             break;
         }
         case RE_OP_GROUP_RETURN: /* Group return. */
@@ -21983,8 +21994,10 @@ Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
 
     args->code += 2;
 
-    /* Record that we have a reference to a group. */
-    if (!record_ref_group(args->pattern, group))
+    /* Record that we have a reference to a group. If group is 0, then we have
+     * a DEFINE and not a true group.
+     */
+    if (group > 0 && !record_ref_group(args->pattern, group))
         return RE_ERROR_MEMORY;
 
     /* Create nodes for the start and end of the structure. */
@@ -22012,10 +22025,13 @@ Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
     /* Append the start node. */
     add_node(args->end, start_node);
     add_node(start_node, subargs.start);
-    add_node(subargs.end, end_node);
 
     if (args->code[0] == RE_OP_NEXT) {
+        RE_Node* true_branch_end;
+
         ++args->code;
+
+        true_branch_end = subargs.end;
 
         subargs.code = args->code;
         subargs.min_width = 0;
@@ -22029,12 +22045,25 @@ Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
         args->has_captures |= subargs.has_captures;
         args->is_fuzzy |= subargs.is_fuzzy;
 
-        min_width = min_ssize_t(min_width, subargs.min_width);
+        if (group == 0) {
+            /* Join the 2 branches end-to-end and bypass it. The sequence
+             * itself will never be matched as a whole, so it doesn't matter.
+             */
+            min_width = 0;
 
-        add_node(start_node, subargs.start);
+            add_node(start_node, end_node);
+            add_node(true_branch_end, subargs.start);
+        } else {
+            min_width = min_ssize_t(min_width, subargs.min_width);
+
+            add_node(start_node, subargs.start);
+            add_node(true_branch_end, end_node);
+        }
+
         add_node(subargs.end, end_node);
     } else {
         add_node(start_node, end_node);
+        add_node(subargs.end, end_node);
 
         min_width = 0;
     }
