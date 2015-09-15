@@ -126,6 +126,25 @@ Full Unicode case-folding is supported.
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
+* Added POSIX matching (leftmost longest) (Hg issue 150)
+
+    The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the `POSIX` flag (`(?p)`).
+
+    Examples::
+
+        >>> # Normal matching.
+        >>> regex.search(r'Mr|Mrs', 'Mrs')
+        <regex.Match object; span=(0, 2), match='Mr'>
+        >>> regex.search(r'one(self)?(selfsufficient)?', 'oneselfsufficient')
+        <regex.Match object; span=(0, 7), match='oneself'>
+        >>> # POSIX matching.
+        >>> regex.search(r'(?p)Mr|Mrs', 'Mrs')
+        <regex.Match object; span=(0, 3), match='Mrs'>
+        >>> regex.search(r'(?p)one(self)?(selfsufficient)?', 'oneselfsufficient')
+        <regex.Match object; span=(0, 17), match='oneselfsufficient'>
+
+    Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.
+
 * Added `(?(DEFINE)...)` (Hg issue 152)
 
     If there's no group called "DEFINE", then ... will be ignored, but any group definitions within it will be available.
@@ -145,7 +164,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * Added `\K` (Hg issue 151)
 
-    Keeps the part of the entire match after the position where \K occurred; the part before it is discarded.
+    Keeps the part of the entire match after the position where `\K` occurred; the part before it is discarded.
 
     It does not affect what capture groups return.
 
@@ -863,19 +882,19 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * POSIX character classes
 
-    ``[[:alpha:]]``; ``[[:^alpha:]]``
+    `[[:alpha:]]`; `[[:^alpha:]]`
 
-    POSIX character classes are supported. These are normally treated as an alternative form of ``\p{...}``.
+    POSIX character classes are supported. These are normally treated as an alternative form of `\p{...}`.
 
-    The exceptions are ``alnum``, ``digit``, ``punct`` and ``xdigit``, whose definitions are different from those of Unicode.
+    The exceptions are `alnum`, `digit`, `punct` and `xdigit`, whose definitions are different from those of Unicode.
 
-    ``[[:alnum:]]`` is equivalent to ``\p{posix_alnum}``.
+    `[[:alnum:]]` is equivalent to `\p{posix_alnum}`.
 
-    ``[[:digit:]]`` is equivalent to ``\p{posix_digit}``.
+    `[[:digit:]]` is equivalent to `\p{posix_digit}`.
 
-    ``[[:punct:]]`` is equivalent to ``\p{posix_punct}``.
+    `[[:punct:]]` is equivalent to `\p{posix_punct}`.
 
-    ``[[:xdigit:]]`` is equivalent to ``\p{posix_xdigit}``.
+    `[[:xdigit:]]` is equivalent to `\p{posix_xdigit}`.
 
 * Search anchor
 

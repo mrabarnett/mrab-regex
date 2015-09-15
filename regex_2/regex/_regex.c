@@ -454,7 +454,7 @@ typedef struct RE_GuardList {
     size_t last_low;
 } RE_GuardList;
 
-/* Info about a group in a context. */
+/* Info about a group. */
 typedef struct RE_GroupData {
     RE_GroupSpan span;
     size_t capture_count;
@@ -573,6 +573,10 @@ typedef struct RE_State {
     RE_SavedGroups* current_saved_groups;
     RE_SavedRepeats* first_saved_repeats;
     RE_SavedRepeats* current_saved_repeats;
+    /* Info about the best POSIX match (leftmost longest). */
+    Py_ssize_t best_text_pos;
+    RE_GroupData* best_match_groups;
+    /* Miscellaneous. */
     Py_ssize_t min_width; /* The minimum width of the string to match (assuming it's not a fuzzy pattern). */
     RE_EncodingTable* encoding; /* The 'encoding' of the string being searched. */
     RE_LocaleInfo* locale_info; /* Info about the locale, if needed. */
@@ -606,6 +610,7 @@ typedef struct RE_State {
     BOOL is_multithreaded; /* Whether to release the GIL while matching. */
     BOOL too_few_errors; /* Whether there were too few fuzzy errors. */
     BOOL match_all; /* Whether to match all of the string ('fullmatch'). */
+    BOOL found_match; /* Whether a POSIX match has been found. */
 } RE_State;
 
 /* Storage for the regex state and thread state.
@@ -2793,6 +2798,7 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     state->total_errors = 0;
     state->total_cost = 0;
     state->too_few_errors = FALSE;
+    state->found_match = FALSE;
     state->capture_change = 0;
     state->iterations = 0;
 }
@@ -11171,6 +11177,197 @@ Py_LOCAL_INLINE(void) prune_backtracking(RE_State* state) {
     }
 }
 
+/* Saves the match as the best POSIX match (leftmost longest) found so far. */
+Py_LOCAL_INLINE(BOOL) save_best_match(RE_SafeState* safe_state) {
+    RE_State* state;
+    size_t group_count;
+    size_t g;
+
+    state = safe_state->re_state;
+
+    state->best_text_pos = state->text_pos;
+    state->found_match = TRUE;
+
+    group_count = state->pattern->true_group_count;
+    if (group_count == 0)
+        return TRUE;
+
+    acquire_GIL(safe_state);
+
+    if (!state->best_match_groups) {
+        /* Allocate storage for the groups of the best match. */
+        state->best_match_groups = (RE_GroupData*)re_alloc(group_count *
+          sizeof(RE_GroupData));
+        if (!state->best_match_groups)
+            goto error;
+
+        memset(state->best_match_groups, 0, group_count *
+          sizeof(RE_GroupData));
+
+        for (g = 0; g < group_count; g++) {
+            RE_GroupData* best;
+            RE_GroupData* group;
+
+            best = &state->best_match_groups[g];
+            group = &state->groups[g];
+
+            best->capture_capacity = group->capture_capacity;
+            best->captures = (RE_GroupSpan*)re_alloc(best->capture_capacity *
+              sizeof(RE_GroupSpan));
+            if (!best->captures)
+               goto error;
+        }
+    }
+
+    /* Copy the group spans and captures. */
+    for (g = 0; g < group_count; g++) {
+        RE_GroupData* best;
+        RE_GroupData* group;
+
+        best = &state->best_match_groups[g];
+        group = &state->groups[g];
+
+        best->span = group->span;
+        best->capture_count = group->capture_count;
+
+        if (best->capture_count < best->capture_capacity) {
+            /* We need more space for the captures. */
+            re_dealloc(best->captures);
+            best->captures = (RE_GroupSpan*)re_alloc(best->capture_capacity *
+              sizeof(RE_GroupSpan));
+            if (!best->captures)
+                goto error;
+        }
+
+        /* Copy the captures for this group. */
+        memmove(best->captures, group->captures, group->capture_count *
+          sizeof(RE_GroupSpan));
+    }
+
+    release_GIL(safe_state);
+
+    return TRUE;
+
+error:
+    release_GIL(safe_state);
+
+    return FALSE;
+}
+
+/* Restores the best match for a POSIX match (leftmost longest). */
+Py_LOCAL_INLINE(void) restore_best_match(RE_SafeState* safe_state) {
+    RE_State* state;
+    size_t group_count;
+    size_t g;
+
+    state = safe_state->re_state;
+
+    if (!state->found_match)
+        return;
+
+    state->text_pos = state->best_text_pos;
+
+    group_count = state->pattern->true_group_count;
+    if (group_count == 0)
+        return;
+
+    /* Copy the group spans and captures. */
+    for (g = 0; g < group_count; g++) {
+        RE_GroupData* group;
+        RE_GroupData* best;
+
+        group = &state->groups[g];
+        best = &state->best_match_groups[g];
+
+        group->span = best->span;
+        group->capture_count = best->capture_count;
+
+        /* Copy the captures for this group. */
+        memmove(group->captures, best->captures, best->capture_count *
+          sizeof(RE_GroupSpan));
+    }
+}
+
+/* Checks whether the new match is better than the current match for a POSIX
+ * match (leftmost longest) and saves it if it is.
+ */
+Py_LOCAL_INLINE(BOOL) check_posix_match(RE_SafeState* safe_state) {
+    RE_State* state;
+    Py_ssize_t best_length;
+    Py_ssize_t new_length;
+    size_t group_count;
+    size_t g;
+
+    state = safe_state->re_state;
+
+    if (!state->found_match)
+        return save_best_match(safe_state);
+
+    /* Check the overall match. */
+    if (state->reverse) {
+        /* We're searching backwards. */
+        best_length = state->match_pos - state->best_text_pos;
+        new_length = state->match_pos - state->text_pos;
+    } else {
+        /* We're searching forwards. */
+        best_length = state->best_text_pos - state->match_pos;
+        new_length = state->text_pos - state->match_pos;
+    }
+
+    if (new_length > best_length)
+        /* It's a longer match. */
+        return save_best_match(safe_state);
+
+    if (new_length < best_length)
+        /* It's a shorter match. */
+        return TRUE;
+
+    group_count = state->pattern->true_group_count;
+
+    /* Check the capture groups. */
+    for (g = 0; g < group_count; g++) {
+        RE_GroupData* current;
+        RE_GroupData* best;
+
+        current = &state->groups[g];
+        best = &state->best_match_groups[g];
+
+        if (state->reverse) {
+            /* We're searching backwards. */
+            if (current->span.start > best->span.start)
+                /* It's a earlier match. */
+                return save_best_match(safe_state);
+
+            if (current->span.start < best->span.start)
+                /* It's a later match. */
+                return TRUE;
+        } else {
+            /* We're searching forwards. */
+            if (current->span.start < best->span.start)
+                /* It's a earlier match. */
+                return save_best_match(safe_state);
+
+            if (current->span.start > best->span.start)
+                /* It's a later match. */
+                return TRUE;
+        }
+
+        best_length = best->span.end - best->span.start;
+        new_length = current->span.end - current->span.start;
+
+        if (new_length > best_length)
+            /* It's a longer match. */
+            return save_best_match(safe_state);
+
+        if (new_length < best_length)
+            /* It's a shorter match. */
+            return TRUE;
+    }
+
+    /* The matches are identical. */
+    return TRUE;
+}
+
 /* Performs a depth-first match or search from the context. */
 Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, BOOL search) {
     RE_State* state;
@@ -14168,6 +14365,16 @@ advance:
                 }
             }
 
+            if (state->pattern->flags & RE_FLAG_POSIX) {
+                /* If we're looking for a POSIX match, check whether this one
+                 * is better and then keep looking.
+                 */
+                if (!check_posix_match(safe_state))
+                    return RE_ERROR_MEMORY;
+
+                goto backtrack;
+            }
+
             return RE_ERROR_SUCCESS;
         default: /* Illegal opcode! */
             TRACE(("UNKNOWN OP %d\n", node->op))
@@ -14372,6 +14579,12 @@ backtrack:
         case RE_OP_FAILURE:
         {
             TRACE(("%s\n", re_op_text[bt_data->op]))
+
+            /* Have we been looking for a POSIX match? */
+            if (state->found_match) {
+                restore_best_match(safe_state);
+                return RE_OP_SUCCESS;
+            }
 
             /* Do we have to advance? */
             if (!search)
@@ -16283,6 +16496,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     Py_ssize_t final_pos;
 
     state->groups = NULL;
+    state->best_match_groups = NULL;
     state->repeats = NULL;
     state->visible_captures = visible_captures;
     state->match_all = match_all;
@@ -16653,6 +16867,9 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
         re_dealloc(saved_repeats);
         saved_repeats = next;
     }
+
+    if (state->best_match_groups)
+        dealloc_groups(state->best_match_groups, pattern->true_group_count);
 
     if (pattern->groups_storage)
         dealloc_groups(state->groups, pattern->true_group_count);

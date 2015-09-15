@@ -83,7 +83,7 @@ There are 2 kinds of flag: scoped and global. Scoped flags can apply to only par
 
 The scoped flags are: ``FULLCASE``, ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
 
-The global flags are: ``ASCII``, ``BESTMATCH``, ``ENHANCEMATCH``, ``LOCALE``, ``REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
+The global flags are: ``ASCII``, ``BESTMATCH``, ``ENHANCEMATCH``, ``LOCALE``, ``POSIX``, ``REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
 
 If neither the ``ASCII``, ``LOCALE`` nor ``UNICODE`` flag is specified, it will default to ``UNICODE`` if the regex pattern is a Unicode string and ``ASCII`` if it's a bytestring.
 
@@ -136,13 +136,68 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
+* Added POSIX matching (leftmost longest) (Hg issue 150)
+
+    The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the ``POSIX`` flag (``(?p)``).
+
+    Examples::
+
+        >>> # Normal matching.
+        >>> regex.search(r'Mr|Mrs', 'Mrs')
+        <regex.Match object; span=(0, 2), match='Mr'>
+        >>> regex.search(r'one(self)?(selfsufficient)?', 'oneselfsufficient')
+        <regex.Match object; span=(0, 7), match='oneself'>
+        >>> # POSIX matching.
+        >>> regex.search(r'(?p)Mr|Mrs', 'Mrs')
+        <regex.Match object; span=(0, 3), match='Mrs'>
+        >>> regex.search(r'(?p)one(self)?(selfsufficient)?', 'oneselfsufficient')
+        <regex.Match object; span=(0, 17), match='oneselfsufficient'>
+
+    Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.
+
+* Added ``(?(DEFINE)...)`` (Hg issue 152)
+
+    If there's no group called "DEFINE", then ... will be ignored, but any group definitions within it will be available.
+
+    Examples::
+
+        >>> regex.search(r'(?(DEFINE)(?P<quant>\d+)(?P<item>\w+))(?&quant) (?&item)', '5 elephants')
+        <regex.Match object; span=(0, 11), match='5 elephants'>
+
+* Added ``(*PRUNE)``, ``(*SKIP)`` and ``(*FAIL)`` (Hg issue 153)
+
+    ``(*PRUNE)`` discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
+
+    ``(*SKIP)`` is similar to ``(*PRUNE)``, except that it also sets where in the text the next attempt to match will start. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
+
+    ``(*FAIL)`` causes immediate backtracking. ``(*F)`` is a permitted abbreviation.
+
+* Added ``\K`` (Hg issue 151)
+
+    Keeps the part of the entire match after the position where ``\K`` occurred; the part before it is discarded.
+
+    It does not affect what capture groups return.
+
+    Examples::
+
+        >>> m = regex.search(r'(\w\w\K\w\w\w)', 'abcdef')
+        >>> m[0]
+        'cde'
+        >>> m[1]
+        'abcde'
+        >>>
+        >>> m = regex.search(r'(?r)(\w\w\K\w\w\w)', 'abcdef')
+        >>> m[0]
+        'bc'
+        >>> m[1]
+        'bcdef'
+
 * Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (Hg issue 133) **(Python 2.6 and above)**
 
     You can now use subscripting to get the captures of a repeated capture group.
 
     Examples::
 
-        >>> import regex
         >>> m = regex.match(r"(\w)+", "abc")
         >>> m.expandf("{1}")
         'c'
@@ -159,7 +214,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
         >>> m.expandf("{letter[-1]} {letter[-2]} {letter[-3]}")
         'c b a'
 
-* Added support for referring to a group by number using (?P=...).
+* Added support for referring to a group by number using ``(?P=...)``.
 
     This is in addition to the existing ``\g<...>``.
 

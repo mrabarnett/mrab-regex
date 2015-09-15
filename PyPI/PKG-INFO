@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2015.09.10
+Version: 2015.09.15
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -91,7 +91,7 @@ Description: Introduction
         
         The scoped flags are: ``FULLCASE``, ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
         
-        The global flags are: ``ASCII``, ``BESTMATCH``, ``ENHANCEMATCH``, ``LOCALE``, ``REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
+        The global flags are: ``ASCII``, ``BESTMATCH``, ``ENHANCEMATCH``, ``LOCALE``, ``POSIX``, ``REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
         
         If neither the ``ASCII``, ``LOCALE`` nor ``UNICODE`` flag is specified, it will default to ``UNICODE`` if the regex pattern is a Unicode string and ``ASCII`` if it's a bytestring.
         
@@ -144,7 +144,26 @@ Description: Introduction
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
         
-        * Added (?(DEFINE)...) (Hg issue 152)
+        * Added POSIX matching (leftmost longest) (Hg issue 150)
+        
+            The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the ``POSIX`` flag (``(?p)``).
+        
+            Examples::
+        
+                >>> # Normal matching.
+                >>> regex.search(r'Mr|Mrs', 'Mrs')
+                <regex.Match object; span=(0, 2), match='Mr'>
+                >>> regex.search(r'one(self)?(selfsufficient)?', 'oneselfsufficient')
+                <regex.Match object; span=(0, 7), match='oneself'>
+                >>> # POSIX matching.
+                >>> regex.search(r'(?p)Mr|Mrs', 'Mrs')
+                <regex.Match object; span=(0, 3), match='Mrs'>
+                >>> regex.search(r'(?p)one(self)?(selfsufficient)?', 'oneselfsufficient')
+                <regex.Match object; span=(0, 17), match='oneselfsufficient'>
+        
+            Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.
+        
+        * Added ``(?(DEFINE)...)`` (Hg issue 152)
         
             If there's no group called "DEFINE", then ... will be ignored, but any group definitions within it will be available.
         
@@ -153,17 +172,17 @@ Description: Introduction
                 >>> regex.search(r'(?(DEFINE)(?P<quant>\d+)(?P<item>\w+))(?&quant) (?&item)', '5 elephants')
                 <regex.Match object; span=(0, 11), match='5 elephants'>
         
-        * Added (*PRUNE), (*SKIP) and (*FAIL) (Hg issue 153)
+        * Added ``(*PRUNE)``, ``(*SKIP)`` and ``(*FAIL)`` (Hg issue 153)
         
-            (*PRUNE) discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
+            ``(*PRUNE)`` discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
         
-            (*SKIP) is similar to (*PRUNE), except that it also sets where in the text the next attempt to match will start. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
+            ``(*SKIP)`` is similar to ``(*PRUNE)``, except that it also sets where in the text the next attempt to match will start. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
         
-            (*FAIL) causes immediate backtracking. (*F) is a permitted abbreviation.
+            ``(*FAIL)`` causes immediate backtracking. ``(*F)`` is a permitted abbreviation.
         
-        * Added \K (Hg issue 151)
+        * Added ``\K`` (Hg issue 151)
         
-            Keeps the part of the entire match after the position where \K occurred; the part before it is discarded.
+            Keeps the part of the entire match after the position where ``\K`` occurred; the part before it is discarded.
         
             It does not affect what capture groups return.
         
@@ -187,7 +206,6 @@ Description: Introduction
         
             Examples::
         
-                >>> import regex
                 >>> m = regex.match(r"(\w)+", "abc")
                 >>> m.expandf("{1}")
                 'c'
@@ -204,7 +222,7 @@ Description: Introduction
                 >>> m.expandf("{letter[-1]} {letter[-2]} {letter[-3]}")
                 'c b a'
         
-        * Added support for referring to a group by number using (?P=...).
+        * Added support for referring to a group by number using ``(?P=...)``.
         
             This is in addition to the existing ``\g<...>``.
         

@@ -372,7 +372,7 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Flags</h1>
 <p>There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.</p>
 <p>The scoped flags are: <tt class="docutils literal">FULLCASE</tt>, <tt class="docutils literal">IGNORECASE</tt>, <tt class="docutils literal">MULTILINE</tt>, <tt class="docutils literal">DOTALL</tt>, <tt class="docutils literal">VERBOSE</tt>, <tt class="docutils literal">WORD</tt>.</p>
-<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">BESTMATCH</tt>, <tt class="docutils literal">ENHANCEMATCH</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">VERSION0</tt>, <tt class="docutils literal">VERSION1</tt>.</p>
+<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">BESTMATCH</tt>, <tt class="docutils literal">ENHANCEMATCH</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">POSIX</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">VERSION0</tt>, <tt class="docutils literal">VERSION1</tt>.</p>
 <p>If neither the <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt> nor <tt class="docutils literal">UNICODE</tt> flag is specified, it will default to <tt class="docutils literal">UNICODE</tt> if the regex pattern is a Unicode string and <tt class="docutils literal">ASCII</tt> if it's a bytestring.</p>
 <p>The <tt class="docutils literal">ENHANCEMATCH</tt> flag makes fuzzy matching attempt to improve the fit of the next match that it finds.</p>
 <p>The <tt class="docutils literal">BESTMATCH</tt> flag makes fuzzy matching search for the best match instead of the next match.</p>
@@ -409,12 +409,67 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Added POSIX matching (leftmost longest) (Hg issue 150)</p>
+<blockquote>
+<p>The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the <tt class="docutils literal">POSIX</tt> flag (<tt class="docutils literal"><span class="pre">(?p)</span></tt>).</p>
+<p>Examples:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; # Normal matching.
+&gt;&gt;&gt; regex.search(r'Mr|Mrs', 'Mrs')
+&lt;regex.Match object; span=(0, 2), match='Mr'&gt;
+&gt;&gt;&gt; regex.search(r'one(self)?(selfsufficient)?', 'oneselfsufficient')
+&lt;regex.Match object; span=(0, 7), match='oneself'&gt;
+&gt;&gt;&gt; # POSIX matching.
+&gt;&gt;&gt; regex.search(r'(?p)Mr|Mrs', 'Mrs')
+&lt;regex.Match object; span=(0, 3), match='Mrs'&gt;
+&gt;&gt;&gt; regex.search(r'(?p)one(self)?(selfsufficient)?', 'oneselfsufficient')
+&lt;regex.Match object; span=(0, 17), match='oneselfsufficient'&gt;
+</pre>
+<p>Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.</p>
+</blockquote>
+</li>
+<li><p class="first">Added <tt class="docutils literal"><span class="pre">(?(DEFINE)...)</span></tt> (Hg issue 152)</p>
+<blockquote>
+<p>If there's no group called &quot;DEFINE&quot;, then ... will be ignored, but any group definitions within it will be available.</p>
+<p>Examples:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; regex.search(r'(?(DEFINE)(?P&lt;quant&gt;\d+)(?P&lt;item&gt;\w+))(?&amp;quant) (?&amp;item)', '5 elephants')
+&lt;regex.Match object; span=(0, 11), match='5 elephants'&gt;
+</pre>
+</blockquote>
+</li>
+<li><p class="first">Added <tt class="docutils literal">(*PRUNE)</tt>, <tt class="docutils literal">(*SKIP)</tt> and <tt class="docutils literal">(*FAIL)</tt> (Hg issue 153)</p>
+<blockquote>
+<p><tt class="docutils literal">(*PRUNE)</tt> discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.</p>
+<p><tt class="docutils literal">(*SKIP)</tt> is similar to <tt class="docutils literal">(*PRUNE)</tt>, except that it also sets where in the text the next attempt to match will start. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.</p>
+<p><tt class="docutils literal">(*FAIL)</tt> causes immediate backtracking. <tt class="docutils literal">(*F)</tt> is a permitted abbreviation.</p>
+</blockquote>
+</li>
+<li><p class="first">Added <tt class="docutils literal">\K</tt> (Hg issue 151)</p>
+<blockquote>
+<p>Keeps the part of the entire match after the position where <tt class="docutils literal">\K</tt> occurred; the part before it is discarded.</p>
+<p>It does not affect what capture groups return.</p>
+<p>Examples:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; m = regex.search(r'(\w\w\K\w\w\w)', 'abcdef')
+&gt;&gt;&gt; m[0]
+'cde'
+&gt;&gt;&gt; m[1]
+'abcde'
+&gt;&gt;&gt;
+&gt;&gt;&gt; m = regex.search(r'(?r)(\w\w\K\w\w\w)', 'abcdef')
+&gt;&gt;&gt; m[0]
+'bc'
+&gt;&gt;&gt; m[1]
+'bcdef'
+</pre>
+</blockquote>
+</li>
 <li><p class="first">Added capture subscripting for <tt class="docutils literal">expandf</tt> and <tt class="docutils literal">subf</tt>/<tt class="docutils literal">subfn</tt> (Hg issue 133) <strong>(Python 2.6 and above)</strong></p>
 <blockquote>
 <p>You can now use subscripting to get the captures of a repeated capture group.</p>
 <p>Examples:</p>
 <pre class="literal-block">
-&gt;&gt;&gt; import regex
 &gt;&gt;&gt; m = regex.match(r&quot;(\w)+&quot;, &quot;abc&quot;)
 &gt;&gt;&gt; m.expandf(&quot;{1}&quot;)
 'c'
@@ -433,7 +488,7 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 </pre>
 </blockquote>
 </li>
-<li><p class="first">Added support for referring to a group by number using (?P=...).</p>
+<li><p class="first">Added support for referring to a group by number using <tt class="docutils literal"><span class="pre">(?P=...)</span></tt>.</p>
 <blockquote>
 <p>This is in addition to the existing <tt class="docutils literal"><span class="pre">\g&lt;...&gt;</span></tt>.</p>
 </blockquote>

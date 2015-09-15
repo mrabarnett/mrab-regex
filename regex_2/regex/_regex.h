@@ -229,6 +229,7 @@ char* re_op_text[] = {
 #define RE_FLAG_IGNORECASE 0x2
 #define RE_FLAG_LOCALE 0x4
 #define RE_FLAG_MULTILINE 0x8
+#define RE_FLAG_POSIX 0x10000
 #define RE_FLAG_REVERSE 0x400
 #define RE_FLAG_TEMPLATE 0x1
 #define RE_FLAG_UNICODE 0x20

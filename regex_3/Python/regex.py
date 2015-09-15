@@ -201,6 +201,8 @@ these flags can also be set within an RE:
                           when matching a bytestring.
     B   b   BESTMATCH     Find the best fuzzy match (default is first).
     D       DEBUG         Print the parsed pattern.
+    E   e   ENHANCEMATCH  Attempt to improve the fit after finding the first
+                          fuzzy match.
     F   f   FULLCASE      Use full case-folding when performing
                           case-insensitive matching in Unicode.
     I   i   IGNORECASE    Perform case-insensitive matching.
@@ -209,8 +211,7 @@ these flags can also be set within an RE:
     M   m   MULTILINE     "^" matches the beginning of lines (after a newline)
                           as well as the string. "$" matches the end of lines
                           (before a newline) as well as the end of the string.
-    E   e   ENHANCEMATCH  Attempt to improve the fit after finding the first
-                          fuzzy match.
+    P   p   POSIX         Perform POSIX-standard matching (leftmost longest).
     R   r   REVERSE       Searches backwards.
     S   s   DOTALL        "." matches any character at all, including the
                           newline.
@@ -234,11 +235,11 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "purge", "search", "split", "splititer", "sub", "subf", "subfn", "subn",
   "template", "Scanner", "A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E",
   "ENHANCEMATCH", "S", "DOTALL", "F", "FULLCASE", "I", "IGNORECASE", "L",
-  "LOCALE", "M", "MULTILINE", "R", "REVERSE", "T", "TEMPLATE", "U", "UNICODE",
-  "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W", "WORD", "error",
-  "Regex"]
+  "LOCALE", "M", "MULTILINE", "P", "POSIX", "R", "REVERSE", "T", "TEMPLATE",
+  "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
+  "WORD", "error", "Regex"]
 
-__version__ = "2.4.76"
+__version__ = "2.4.79"
 
 # --------------------------------------------------------------------
 # Public interface.

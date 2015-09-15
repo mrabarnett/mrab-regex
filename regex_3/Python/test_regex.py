@@ -3586,6 +3586,17 @@ xyzabc
         self.assertEquals(regex.search(r'(?(DEFINE)(?<quant>\d+)(?<item>\w+))(?&quant) (?&item)',
           '5 elephants')[0], '5 elephants')
 
+        # Hg issue 150: Have an option for POSIX-compatible longest match of
+        # alternates.
+        self.assertEquals(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
+          '10b12')[0], '10b12')
+        self.assertEquals(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
+          '10E+12')[0], '10E+12')
+
+        self.assertEquals(regex.search(r'(?p)(\w|ae|oe|ue|ss)', 'ae')[0], 'ae')
+        self.assertEquals(regex.search(r'(?p)one(self)?(selfsufficient)?',
+          'oneselfsufficient')[0], 'oneselfsufficient')
+
     def test_subscripted_captures(self):
         self.assertEquals(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
