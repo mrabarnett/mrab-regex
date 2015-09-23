@@ -2937,7 +2937,7 @@ xyzabc
         self.assertEqual(bool(regex.compile("(?>b)", flags=regex.V1)), True)
 
         # Hg issue 29.
-        self.assertEqual(bool(regex.compile("^((?>\w+)|(?>\s+))*$",
+        self.assertEqual(bool(regex.compile(r"^((?>\w+)|(?>\s+))*$",
           flags=regex.V1)), True)
 
         # Hg issue 31.
@@ -3148,105 +3148,104 @@ xyzabc
           regex.compile(r'.???'))
 
         # Hg issue 97.
-        self.assertEquals(regex.escape(u'foo!?'), u'foo\\!\\?')
-        self.assertEquals(regex.escape(u'foo!?', special_only=True),
-          u'foo!\\?')
+        self.assertEqual(regex.escape(u'foo!?'), u'foo\\!\\?')
+        self.assertEqual(regex.escape(u'foo!?', special_only=True), u'foo!\\?')
 
-        self.assertEquals(regex.escape('foo!?'), 'foo\\!\\?')
-        self.assertEquals(regex.escape('foo!?', special_only=True),
+        self.assertEqual(regex.escape('foo!?'), 'foo\\!\\?')
+        self.assertEqual(regex.escape('foo!?', special_only=True),
           'foo!\\?')
 
         # Hg issue 100.
-        self.assertEquals(regex.search('^([^z]*(?:WWWi|W))?$',
+        self.assertEqual(regex.search('^([^z]*(?:WWWi|W))?$',
           'WWWi').groups(), ('WWWi', ))
-        self.assertEquals(regex.search('^([^z]*(?:WWWi|w))?$',
+        self.assertEqual(regex.search('^([^z]*(?:WWWi|w))?$',
           'WWWi').groups(), ('WWWi', ))
-        self.assertEquals(regex.search('^([^z]*?(?:WWWi|W))?$',
+        self.assertEqual(regex.search('^([^z]*?(?:WWWi|W))?$',
           'WWWi').groups(), ('WWWi', ))
 
         # Hg issue 101.
         pat = regex.compile(r'xxx', flags=regex.FULLCASE | regex.UNICODE)
-        self.assertEquals([x.group() for x in pat.finditer('yxxx')], ['xxx'])
-        self.assertEquals(pat.findall('yxxx'), ['xxx'])
+        self.assertEqual([x.group() for x in pat.finditer('yxxx')], ['xxx'])
+        self.assertEqual(pat.findall('yxxx'), ['xxx'])
 
         raw = 'yxxx'
-        self.assertEquals([x.group() for x in pat.finditer(raw)], ['xxx'])
-        self.assertEquals(pat.findall(raw), ['xxx'])
+        self.assertEqual([x.group() for x in pat.finditer(raw)], ['xxx'])
+        self.assertEqual(pat.findall(raw), ['xxx'])
 
         pat = regex.compile(r'xxx', flags=regex.FULLCASE | regex.IGNORECASE |
           regex.UNICODE)
-        self.assertEquals([x.group() for x in pat.finditer('yxxx')], ['xxx'])
-        self.assertEquals(pat.findall('yxxx'), ['xxx'])
+        self.assertEqual([x.group() for x in pat.finditer('yxxx')], ['xxx'])
+        self.assertEqual(pat.findall('yxxx'), ['xxx'])
 
         raw = 'yxxx'
-        self.assertEquals([x.group() for x in pat.finditer(raw)], ['xxx'])
-        self.assertEquals(pat.findall(raw), ['xxx'])
+        self.assertEqual([x.group() for x in pat.finditer(raw)], ['xxx'])
+        self.assertEqual(pat.findall(raw), ['xxx'])
 
         # Hg issue 106.
-        self.assertEquals(regex.sub('(?V0).*', 'x', 'test'), 'x')
-        self.assertEquals(regex.sub('(?V1).*', 'x', 'test'), 'xx')
+        self.assertEqual(regex.sub('(?V0).*', 'x', 'test'), 'x')
+        self.assertEqual(regex.sub('(?V1).*', 'x', 'test'), 'xx')
 
-        self.assertEquals(regex.sub('(?V0).*?', '|', 'test'), '|t|e|s|t|')
-        self.assertEquals(regex.sub('(?V1).*?', '|', 'test'), '|||||||||')
+        self.assertEqual(regex.sub('(?V0).*?', '|', 'test'), '|t|e|s|t|')
+        self.assertEqual(regex.sub('(?V1).*?', '|', 'test'), '|||||||||')
 
         # Hg issue 112.
-        self.assertEquals(regex.sub(r'^(@)\n(?!.*?@)(.*)',
+        self.assertEqual(regex.sub(r'^(@)\n(?!.*?@)(.*)',
           r'\1\n==========\n\2', '@\n', flags=regex.DOTALL), '@\n==========\n')
 
         # Hg issue 109.
-        self.assertEquals(regex.match(r'(?:cats|cat){e<=1}',
+        self.assertEqual(regex.match(r'(?:cats|cat){e<=1}',
          'caz').fuzzy_counts, (1, 0, 0))
-        self.assertEquals(regex.match(r'(?e)(?:cats|cat){e<=1}',
+        self.assertEqual(regex.match(r'(?e)(?:cats|cat){e<=1}',
           'caz').fuzzy_counts, (1, 0, 0))
-        self.assertEquals(regex.match(r'(?b)(?:cats|cat){e<=1}',
+        self.assertEqual(regex.match(r'(?b)(?:cats|cat){e<=1}',
           'caz').fuzzy_counts, (1, 0, 0))
 
-        self.assertEquals(regex.match(r'(?:cat){e<=1}', 'caz').fuzzy_counts,
+        self.assertEqual(regex.match(r'(?:cat){e<=1}', 'caz').fuzzy_counts,
           (1, 0, 0))
-        self.assertEquals(regex.match(r'(?e)(?:cat){e<=1}',
+        self.assertEqual(regex.match(r'(?e)(?:cat){e<=1}',
           'caz').fuzzy_counts, (1, 0, 0))
-        self.assertEquals(regex.match(r'(?b)(?:cat){e<=1}',
+        self.assertEqual(regex.match(r'(?b)(?:cat){e<=1}',
           'caz').fuzzy_counts, (1, 0, 0))
 
-        self.assertEquals(regex.match(r'(?:cats){e<=2}', 'c ats').fuzzy_counts,
+        self.assertEqual(regex.match(r'(?:cats){e<=2}', 'c ats').fuzzy_counts,
           (1, 1, 0))
-        self.assertEquals(regex.match(r'(?e)(?:cats){e<=2}',
+        self.assertEqual(regex.match(r'(?e)(?:cats){e<=2}',
           'c ats').fuzzy_counts, (0, 1, 0))
-        self.assertEquals(regex.match(r'(?b)(?:cats){e<=2}',
+        self.assertEqual(regex.match(r'(?b)(?:cats){e<=2}',
           'c ats').fuzzy_counts, (0, 1, 0))
 
-        self.assertEquals(regex.match(r'(?:cats){e<=2}',
+        self.assertEqual(regex.match(r'(?:cats){e<=2}',
           'c a ts').fuzzy_counts, (0, 2, 0))
-        self.assertEquals(regex.match(r'(?e)(?:cats){e<=2}',
+        self.assertEqual(regex.match(r'(?e)(?:cats){e<=2}',
           'c a ts').fuzzy_counts, (0, 2, 0))
-        self.assertEquals(regex.match(r'(?b)(?:cats){e<=2}',
+        self.assertEqual(regex.match(r'(?b)(?:cats){e<=2}',
           'c a ts').fuzzy_counts, (0, 2, 0))
 
-        self.assertEquals(regex.match(r'(?:cats){e<=1}', 'c ats').fuzzy_counts,
+        self.assertEqual(regex.match(r'(?:cats){e<=1}', 'c ats').fuzzy_counts,
           (0, 1, 0))
-        self.assertEquals(regex.match(r'(?e)(?:cats){e<=1}',
+        self.assertEqual(regex.match(r'(?e)(?:cats){e<=1}',
           'c ats').fuzzy_counts, (0, 1, 0))
-        self.assertEquals(regex.match(r'(?b)(?:cats){e<=1}',
+        self.assertEqual(regex.match(r'(?b)(?:cats){e<=1}',
           'c ats').fuzzy_counts, (0, 1, 0))
 
         # Hg issue 115.
-        self.assertEquals(regex.findall(r'\bof ([a-z]+) of \1\b',
+        self.assertEqual(regex.findall(r'\bof ([a-z]+) of \1\b',
           'To make use of one of these modules'), [])
 
         # Hg issue 125.
-        self.assertEquals(regex.sub(r'x', r'\g<0>', 'x'), 'x')
+        self.assertEqual(regex.sub(r'x', r'\g<0>', 'x'), 'x')
 
         # Unreported issue: no such builtin as 'ascii' in Python 2.
-        self.assertEquals(bool(regex.match(r'a', 'a', regex.DEBUG)), True)
+        self.assertEqual(bool(regex.match(r'a', 'a', regex.DEBUG)), True)
 
         # Hg issue 131.
-        self.assertEquals(regex.findall(r'(?V1)[[b-e]--cd]', 'abcdef'), ['b',
+        self.assertEqual(regex.findall(r'(?V1)[[b-e]--cd]', 'abcdef'), ['b',
           'e'])
-        self.assertEquals(regex.findall(r'(?V1)[b-e--cd]', 'abcdef'), ['b',
+        self.assertEqual(regex.findall(r'(?V1)[b-e--cd]', 'abcdef'), ['b',
           'e'])
-        self.assertEquals(regex.findall(r'(?V1)[[bcde]--cd]', 'abcdef'), ['b',
+        self.assertEqual(regex.findall(r'(?V1)[[bcde]--cd]', 'abcdef'), ['b',
           'e'])
-        self.assertEquals(regex.findall(r'(?V1)[bcde--cd]', 'abcdef'), ['b',
+        self.assertEqual(regex.findall(r'(?V1)[bcde--cd]', 'abcdef'), ['b',
           'e'])
 
         # Hg issue 132.
@@ -3254,9 +3253,9 @@ xyzabc
           lambda: regex.compile(ur'\p{}'))
 
         # Issue 23692.
-        self.assertEquals(regex.match('(?:()|(?(1)()|z)){2}(?(2)a|z)',
+        self.assertEqual(regex.match('(?:()|(?(1)()|z)){2}(?(2)a|z)',
           'a').group(0, 1, 2), ('a', '', ''))
-        self.assertEquals(regex.match('(?:()|(?(1)()|z)){0,2}(?(2)a|z)',
+        self.assertEqual(regex.match('(?:()|(?(1)()|z)){0,2}(?(2)a|z)',
           'a').group(0, 1, 2), ('a', '', ''))
 
         # Hg issue 137: Posix character class :punct: does not seem to be
@@ -3268,247 +3267,247 @@ xyzabc
         # Posix in Unicode.
         chars = u''.join(unichr(c) for c in range(0x10000))
 
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:alnum:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:alnum:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)[\p{Alpha}\p{PosixDigit}]+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:alpha:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:alpha:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)\p{Alpha}+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:ascii:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:ascii:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)[\p{InBasicLatin}]+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:blank:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:blank:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)[\p{gc=Space_Separator}\t]+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:cntrl:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:cntrl:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)\p{gc=Control}+''', chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:digit:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:digit:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)[0-9]+''', chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:graph:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:graph:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)[^\p{Space}\p{gc=Control}\p{gc=Surrogate}\p{gc=Unassigned}]+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:lower:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:lower:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)\p{Lower}+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:print:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:print:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?uV1)[\p{Graph}\p{Blank}--\p{Cntrl}]+''', chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:punct:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:punct:]]+''',
           chars))),
           repr(u''.join(regex.findall(ur'''(?uV1)[\p{gc=Punctuation}\p{gc=Symbol}--\p{Alpha}]+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:space:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:space:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)\p{Whitespace}+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:upper:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:upper:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)\p{Upper}+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:word:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:word:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)[\p{Alpha}\p{gc=Mark}\p{Digit}\p{gc=Connector_Punctuation}\p{Join_Control}]+''',
           chars))))
-        self.assertEquals(repr(u''.join(regex.findall(ur'''(?u)[[:xdigit:]]+''',
+        self.assertEqual(repr(u''.join(regex.findall(ur'''(?u)[[:xdigit:]]+''',
           chars))), repr(u''.join(regex.findall(ur'''(?u)[0-9A-Fa-f]+''',
           chars))))
 
         # Posix in ASCII.
         chars = ''.join(chr(c) for c in range(0x100))
 
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:alnum:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:alnum:]]+''',
           chars))), repr(''.join(regex.findall(r'''[\p{Alpha}\p{PosixDigit}]+''',
           chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:alpha:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:alpha:]]+''',
           chars))), repr(''.join(regex.findall(r'''\p{Alpha}+''', chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:ascii:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:ascii:]]+''',
           chars))), repr(''.join(regex.findall(r'''[\x00-\x7F]+''', chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:blank:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:blank:]]+''',
           chars))), repr(''.join(regex.findall(r'''[\p{gc=Space_Separator}\t]+''',
           chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:cntrl:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:cntrl:]]+''',
           chars))), repr(''.join(regex.findall(r'''\p{gc=Control}+''',
           chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:digit:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:digit:]]+''',
           chars))), repr(''.join(regex.findall(r'''[0-9]+''', chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:graph:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:graph:]]+''',
           chars))), repr(''.join(regex.findall(r'''[^\p{Space}\p{gc=Control}\p{gc=Surrogate}\p{gc=Unassigned}]+''', chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:lower:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:lower:]]+''',
           chars))), repr(''.join(regex.findall(r'''\p{Lower}+''', chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:print:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:print:]]+''',
           chars))), repr(''.join(regex.findall(r'''(?V1)[\p{Graph}\p{Blank}--\p{Cntrl}]+''', chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:punct:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:punct:]]+''',
           chars))), repr(''.join(regex.findall(r'''(?V1)[\p{gc=Punctuation}\p{gc=Symbol}--\p{Alpha}]+''',
           chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:space:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:space:]]+''',
           chars))), repr(''.join(regex.findall(r'''\p{Whitespace}+''', chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:upper:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:upper:]]+''',
           chars))), repr(''.join(regex.findall(r'''\p{Upper}+''', chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:word:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:word:]]+''',
           chars))), repr(''.join(regex.findall(r'''[\p{Alpha}\p{gc=Mark}\p{Digit}\p{gc=Connector_Punctuation}\p{Join_Control}]+''', chars))))
-        self.assertEquals(repr(''.join(regex.findall(r'''[[:xdigit:]]+''',
+        self.assertEqual(repr(''.join(regex.findall(r'''[[:xdigit:]]+''',
           chars))), repr(''.join(regex.findall(r'''[0-9A-Fa-f]+''', chars))))
 
         # Hg issue 138: grapheme anchored search not working properly.
-        self.assertEquals(repr(regex.search(ur'(?u)\X$', u'ab\u2103').group()),
+        self.assertEqual(repr(regex.search(ur'(?u)\X$', u'ab\u2103').group()),
           repr(u'\u2103'))
 
         # Hg issue 139: Regular expression with multiple wildcards where first
         # should match empty string does not always work.
-        self.assertEquals(regex.search("([^L]*)([^R]*R)", "LtR").groups(), ('',
+        self.assertEqual(regex.search("([^L]*)([^R]*R)", "LtR").groups(), ('',
           'LtR'))
 
         # Hg issue 140: Replace with REVERSE and groups has unexpected
         # behavior.
-        self.assertEquals(regex.sub(r'(.)', r'x\1y', 'ab'), 'xayxby')
-        self.assertEquals(regex.sub(r'(?r)(.)', r'x\1y', 'ab'), 'xayxby')
+        self.assertEqual(regex.sub(r'(.)', r'x\1y', 'ab'), 'xayxby')
+        self.assertEqual(regex.sub(r'(?r)(.)', r'x\1y', 'ab'), 'xayxby')
 
         # Hg issue 141: Crash on a certain partial match.
-        self.assertEquals(regex.fullmatch('(a)*abc', 'ab',
+        self.assertEqual(regex.fullmatch('(a)*abc', 'ab',
           partial=True).span(), (0, 2))
-        self.assertEquals(regex.fullmatch('(a)*abc', 'ab',
+        self.assertEqual(regex.fullmatch('(a)*abc', 'ab',
           partial=True).partial, True)
 
         # Hg Issue #143: Partial matches have incorrect span if prefix is '.'
         # wildcard.
-        self.assertEquals(regex.search('OXRG', 'OOGOX', partial=True).span(),
+        self.assertEqual(regex.search('OXRG', 'OOGOX', partial=True).span(),
           (3, 5))
-        self.assertEquals(regex.search('.XRG', 'OOGOX', partial=True).span(),
+        self.assertEqual(regex.search('.XRG', 'OOGOX', partial=True).span(),
           (3, 5))
-        self.assertEquals(regex.search('.{1,3}XRG', 'OOGOX',
+        self.assertEqual(regex.search('.{1,3}XRG', 'OOGOX',
           partial=True).span(), (1, 5))
 
         # Hg issue 144: Latest version problem with matching 'R|R'.
-        self.assertEquals(regex.match('R|R', 'R').span(), (0, 1))
+        self.assertEqual(regex.match('R|R', 'R').span(), (0, 1))
 
         # Hg issue 146: Forced-fail (?!) works improperly in conditional.
-        self.assertEquals(regex.match(r'(.)(?(1)(?!))', 'xy'), None)
+        self.assertEqual(regex.match(r'(.)(?(1)(?!))', 'xy'), None)
 
         # Groups cleared after failure.
-        self.assertEquals(regex.findall(r'(y)?(\d)(?(1)\b\B)', 'ax1y2z3b'),
+        self.assertEqual(regex.findall(r'(y)?(\d)(?(1)\b\B)', 'ax1y2z3b'),
           [('', '1'), ('', '2'), ('', '3')])
-        self.assertEquals(regex.findall(r'(y)?+(\d)(?(1)\b\B)', 'ax1y2z3b'),
+        self.assertEqual(regex.findall(r'(y)?+(\d)(?(1)\b\B)', 'ax1y2z3b'),
           [('', '1'), ('', '2'), ('', '3')])
 
         # Hg issue 147: Fuzzy match can return match points beyond buffer end.
-        self.assertEquals([m.span() for m in
+        self.assertEqual([m.span() for m in
           regex.finditer(r'(?i)(?:error){e}', 'regex failure')], [(0, 5), (5,
           10), (10, 13), (13, 13)])
-        self.assertEquals([m.span() for m in
+        self.assertEqual([m.span() for m in
           regex.finditer(r'(?fi)(?:error){e}', 'regex failure')], [(0, 5), (5,
           10), (10, 13), (13, 13)])
 
         # Hg issue 151: Request: \K.
-        self.assertEquals(regex.search(r'(ab\Kcd)', 'abcd').group(0, 1), ('cd',
+        self.assertEqual(regex.search(r'(ab\Kcd)', 'abcd').group(0, 1), ('cd',
           'abcd'))
-        self.assertEquals(regex.findall(r'\w\w\K\w\w', 'abcdefgh'), ['cd',
+        self.assertEqual(regex.findall(r'\w\w\K\w\w', 'abcdefgh'), ['cd',
           'gh'])
-        self.assertEquals(regex.findall(r'(\w\w\K\w\w)', 'abcdefgh'), ['abcd',
+        self.assertEqual(regex.findall(r'(\w\w\K\w\w)', 'abcdefgh'), ['abcd',
           'efgh'])
 
-        self.assertEquals(regex.search(r'(?r)(ab\Kcd)', 'abcd').group(0, 1),
+        self.assertEqual(regex.search(r'(?r)(ab\Kcd)', 'abcd').group(0, 1),
           ('ab', 'abcd'))
-        self.assertEquals(regex.findall(r'(?r)\w\w\K\w\w', 'abcdefgh'), ['ef',
+        self.assertEqual(regex.findall(r'(?r)\w\w\K\w\w', 'abcdefgh'), ['ef',
           'ab'])
-        self.assertEquals(regex.findall(r'(?r)(\w\w\K\w\w)', 'abcdefgh'),
+        self.assertEqual(regex.findall(r'(?r)(\w\w\K\w\w)', 'abcdefgh'),
           ['efgh', 'abcd'])
 
         # Hg issue 153: Request: (*SKIP).
-        self.assertEquals(regex.search(r'12(*FAIL)|3', '123')[0], '3')
-        self.assertEquals(regex.search(r'(?r)12(*FAIL)|3', '123')[0], '3')
+        self.assertEqual(regex.search(r'12(*FAIL)|3', '123')[0], '3')
+        self.assertEqual(regex.search(r'(?r)12(*FAIL)|3', '123')[0], '3')
 
-        self.assertEquals(regex.search(r'\d+(*PRUNE)\d', '123'), None)
-        self.assertEquals(regex.search(r'\d+(?=(*PRUNE))\d', '123')[0], '123')
-        self.assertEquals(regex.search(r'\d+(*PRUNE)bcd|[3d]', '123bcd')[0],
+        self.assertEqual(regex.search(r'\d+(*PRUNE)\d', '123'), None)
+        self.assertEqual(regex.search(r'\d+(?=(*PRUNE))\d', '123')[0], '123')
+        self.assertEqual(regex.search(r'\d+(*PRUNE)bcd|[3d]', '123bcd')[0],
           '123bcd')
-        self.assertEquals(regex.search(r'\d+(*PRUNE)bcd|[3d]', '123zzd')[0],
+        self.assertEqual(regex.search(r'\d+(*PRUNE)bcd|[3d]', '123zzd')[0],
           'd')
-        self.assertEquals(regex.search(r'\d+?(*PRUNE)bcd|[3d]', '123bcd')[0],
+        self.assertEqual(regex.search(r'\d+?(*PRUNE)bcd|[3d]', '123bcd')[0],
           '3bcd')
-        self.assertEquals(regex.search(r'\d+?(*PRUNE)bcd|[3d]', '123zzd')[0],
+        self.assertEqual(regex.search(r'\d+?(*PRUNE)bcd|[3d]', '123zzd')[0],
           'd')
-        self.assertEquals(regex.search(r'\d++(?<=3(*PRUNE))zzd|[4d]$',
+        self.assertEqual(regex.search(r'\d++(?<=3(*PRUNE))zzd|[4d]$',
           '123zzd')[0], '123zzd')
-        self.assertEquals(regex.search(r'\d++(?<=3(*PRUNE))zzd|[4d]$',
+        self.assertEqual(regex.search(r'\d++(?<=3(*PRUNE))zzd|[4d]$',
           '124zzd')[0], 'd')
-        self.assertEquals(regex.search(r'\d++(?<=(*PRUNE)3)zzd|[4d]$',
+        self.assertEqual(regex.search(r'\d++(?<=(*PRUNE)3)zzd|[4d]$',
           '124zzd')[0], 'd')
-        self.assertEquals(regex.search(r'\d++(?<=2(*PRUNE)3)zzd|[3d]$',
+        self.assertEqual(regex.search(r'\d++(?<=2(*PRUNE)3)zzd|[3d]$',
           '124zzd')[0], 'd')
 
-        self.assertEquals(regex.search(r'(?r)\d(*PRUNE)\d+', '123'), None)
-        self.assertEquals(regex.search(r'(?r)\d(?<=(*PRUNE))\d+', '123')[0],
+        self.assertEqual(regex.search(r'(?r)\d(*PRUNE)\d+', '123'), None)
+        self.assertEqual(regex.search(r'(?r)\d(?<=(*PRUNE))\d+', '123')[0],
           '123')
-        self.assertEquals(regex.search(r'(?r)\d+(*PRUNE)bcd|[3d]',
+        self.assertEqual(regex.search(r'(?r)\d+(*PRUNE)bcd|[3d]',
           '123bcd')[0], '123bcd')
-        self.assertEquals(regex.search(r'(?r)\d+(*PRUNE)bcd|[3d]',
+        self.assertEqual(regex.search(r'(?r)\d+(*PRUNE)bcd|[3d]',
           '123zzd')[0], 'd')
-        self.assertEquals(regex.search(r'(?r)\d++(?<=3(*PRUNE))zzd|[4d]$',
+        self.assertEqual(regex.search(r'(?r)\d++(?<=3(*PRUNE))zzd|[4d]$',
           '123zzd')[0], '123zzd')
-        self.assertEquals(regex.search(r'(?r)\d++(?<=3(*PRUNE))zzd|[4d]$',
+        self.assertEqual(regex.search(r'(?r)\d++(?<=3(*PRUNE))zzd|[4d]$',
           '124zzd')[0], 'd')
-        self.assertEquals(regex.search(r'(?r)\d++(?<=(*PRUNE)3)zzd|[4d]$',
+        self.assertEqual(regex.search(r'(?r)\d++(?<=(*PRUNE)3)zzd|[4d]$',
           '124zzd')[0], 'd')
-        self.assertEquals(regex.search(r'(?r)\d++(?<=2(*PRUNE)3)zzd|[3d]$',
+        self.assertEqual(regex.search(r'(?r)\d++(?<=2(*PRUNE)3)zzd|[3d]$',
           '124zzd')[0], 'd')
 
-        self.assertEquals(regex.search(r'\d+(*SKIP)bcd|[3d]', '123bcd')[0],
+        self.assertEqual(regex.search(r'\d+(*SKIP)bcd|[3d]', '123bcd')[0],
           '123bcd')
-        self.assertEquals(regex.search(r'\d+(*SKIP)bcd|[3d]', '123zzd')[0],
+        self.assertEqual(regex.search(r'\d+(*SKIP)bcd|[3d]', '123zzd')[0],
           'd')
-        self.assertEquals(regex.search(r'\d+?(*SKIP)bcd|[3d]', '123bcd')[0],
+        self.assertEqual(regex.search(r'\d+?(*SKIP)bcd|[3d]', '123bcd')[0],
           '3bcd')
-        self.assertEquals(regex.search(r'\d+?(*SKIP)bcd|[3d]', '123zzd')[0],
+        self.assertEqual(regex.search(r'\d+?(*SKIP)bcd|[3d]', '123zzd')[0],
           'd')
-        self.assertEquals(regex.search(r'\d++(?<=3(*SKIP))zzd|[4d]$',
+        self.assertEqual(regex.search(r'\d++(?<=3(*SKIP))zzd|[4d]$',
           '123zzd')[0], '123zzd')
-        self.assertEquals(regex.search(r'\d++(?<=3(*SKIP))zzd|[4d]$',
+        self.assertEqual(regex.search(r'\d++(?<=3(*SKIP))zzd|[4d]$',
           '124zzd')[0], 'd')
-        self.assertEquals(regex.search(r'\d++(?<=(*SKIP)3)zzd|[4d]$',
+        self.assertEqual(regex.search(r'\d++(?<=(*SKIP)3)zzd|[4d]$',
           '124zzd')[0], 'd')
-        self.assertEquals(regex.search(r'\d++(?<=2(*SKIP)3)zzd|[3d]$',
+        self.assertEqual(regex.search(r'\d++(?<=2(*SKIP)3)zzd|[3d]$',
           '124zzd')[0], 'd')
 
-        self.assertEquals(regex.search(r'(?r)\d+(*SKIP)bcd|[3d]', '123bcd')[0],
+        self.assertEqual(regex.search(r'(?r)\d+(*SKIP)bcd|[3d]', '123bcd')[0],
           '123bcd')
-        self.assertEquals(regex.search(r'(?r)\d+(*SKIP)bcd|[3d]', '123zzd')[0],
+        self.assertEqual(regex.search(r'(?r)\d+(*SKIP)bcd|[3d]', '123zzd')[0],
           'd')
-        self.assertEquals(regex.search(r'(?r)\d++(?<=3(*SKIP))zzd|[4d]$',
+        self.assertEqual(regex.search(r'(?r)\d++(?<=3(*SKIP))zzd|[4d]$',
           '123zzd')[0], '123zzd')
-        self.assertEquals(regex.search(r'(?r)\d++(?<=3(*SKIP))zzd|[4d]$',
+        self.assertEqual(regex.search(r'(?r)\d++(?<=3(*SKIP))zzd|[4d]$',
           '124zzd')[0], 'd')
-        self.assertEquals(regex.search(r'(?r)\d++(?<=(*SKIP)3)zzd|[4d]$',
+        self.assertEqual(regex.search(r'(?r)\d++(?<=(*SKIP)3)zzd|[4d]$',
           '124zzd')[0], 'd')
-        self.assertEquals(regex.search(r'(?r)\d++(?<=2(*SKIP)3)zzd|[3d]$',
+        self.assertEqual(regex.search(r'(?r)\d++(?<=2(*SKIP)3)zzd|[3d]$',
           '124zzd')[0], 'd')
 
         # Hg issue 152: Request: Request: (?(DEFINE)...).
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<quant>\d+)(?<item>\w+))(?&quant) (?&item)',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<quant>\d+)(?<item>\w+))(?&quant) (?&item)',
           '5 elephants')[0], '5 elephants')
 
         # Hg issue 150: Have an option for POSIX-compatible longest match of
         # alternates.
-        self.assertEquals(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
+        self.assertEqual(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
           '10b12')[0], '10b12')
-        self.assertEquals(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
+        self.assertEqual(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
           '10E+12')[0], '10E+12')
 
-        self.assertEquals(regex.search(r'(?p)(\w|ae|oe|ue|ss)', 'ae')[0], 'ae')
-        self.assertEquals(regex.search(r'(?p)one(self)?(selfsufficient)?',
+        self.assertEqual(regex.search(r'(?p)(\w|ae|oe|ue|ss)', 'ae')[0], 'ae')
+        self.assertEqual(regex.search(r'(?p)one(self)?(selfsufficient)?',
           'oneselfsufficient')[0], 'oneselfsufficient')
 
     def test_subscripted_captures(self):
-        self.assertEquals(regex.match(r'(?P<x>.)+',
+        self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
-        self.assertEquals(regex.match(r'(?P<x>.)+',
+        self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{1} {1[0]} {1[1]} {1[2]} {1[-1]} {1[-2]} {1[-3]}'),
           'c a b c c b a')
-        self.assertEquals(regex.match(r'(?P<x>.)+',
+        self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{x} {x[0]} {x[1]} {x[2]} {x[-1]} {x[-2]} {x[-3]}'),
           'c a b c c b a')
 
-        self.assertEquals(regex.subf(r'(?P<x>.)+', r'{0} {0[0]} {0[-1]}',
+        self.assertEqual(regex.subf(r'(?P<x>.)+', r'{0} {0[0]} {0[-1]}',
           'abc'), 'abc abc abc')
-        self.assertEquals(regex.subf(r'(?P<x>.)+',
+        self.assertEqual(regex.subf(r'(?P<x>.)+',
           '{1} {1[0]} {1[1]} {1[2]} {1[-1]} {1[-2]} {1[-3]}', 'abc'),
           'c a b c c b a')
-        self.assertEquals(regex.subf(r'(?P<x>.)+',
+        self.assertEqual(regex.subf(r'(?P<x>.)+',
           '{x} {x[0]} {x[1]} {x[2]} {x[-1]} {x[-2]} {x[-3]}', 'abc'),
           'c a b c c b a')
 

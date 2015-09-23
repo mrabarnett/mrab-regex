@@ -2925,6 +2925,17 @@ Py_LOCAL_INLINE(RE_AtomicData*) pop_atomic(RE_SafeState* safe_state) {
     return atomic;
 }
 
+/* Gets the top entry from the atomic stack. */
+Py_LOCAL_INLINE(RE_AtomicData*) top_atomic(RE_SafeState* safe_state) {
+    RE_State* state;
+    RE_AtomicBlock* current;
+
+    state = safe_state->re_state;
+
+    current = state->current_atomic_block;
+    return &current->items[current->count - 1];
+}
+
 /* Copies a repeat guard list. */
 Py_LOCAL_INLINE(BOOL) copy_guard_data(RE_SafeState* safe_state, RE_GuardList*
   dst, RE_GuardList* src) {
@@ -9072,7 +9083,7 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_SafeState* safe_state, size_t index,
     return is_guarded(guard_list, text_pos);
 }
 
-/* Resets the guards inside atomic subpatterns and lookarounds. */
+/* Resets the guards inside atomic groups and lookarounds. */
 Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
     PatternObject* pattern;
     size_t repeat_count;
@@ -11684,7 +11695,7 @@ advance:
             } else
                 goto backtrack;
             break;
-        case RE_OP_ATOMIC: /* Start of an atomic subpattern. */
+        case RE_OP_ATOMIC: /* Start of an atomic group. */
         {
             RE_AtomicData* atomic;
             TRACE(("%s\n", re_op_text[node->op]))
@@ -11922,11 +11933,12 @@ advance:
             } else
                 goto backtrack;
             break;
-        case RE_OP_END_ATOMIC: /* End of an atomic subpattern. */
+        case RE_OP_END_ATOMIC: /* End of an atomic group. */
         {
             RE_AtomicData* atomic;
 
-            atomic = pop_atomic(safe_state);
+            /* Discard any backtracking info from inside the atomic group. */
+            atomic = top_atomic(safe_state);
             state->current_backtrack_block = atomic->current_backtrack_block;
             state->current_backtrack_block->count = atomic->backtrack_count;
 
@@ -12261,9 +12273,7 @@ advance:
             state->slice_end = lookaround->slice_end;
             state->slice_start = lookaround->slice_start;
 
-            /* Discard any backtracking info from inside the atomic group or
-             * lookaround.
-             */
+            /* Discard any backtracking info from inside the lookaround. */
             state->current_backtrack_block =
               lookaround->current_backtrack_block;
             state->current_backtrack_block->count =
@@ -14440,10 +14450,9 @@ backtrack:
             if (node)
                 goto advance;
             break;
-        case RE_OP_ATOMIC: /* Start of an atomic subpattern. */
-            /* Restore the groups and repeats and certain flags and then
-             * backtrack.
-             */
+        case RE_OP_ATOMIC: /* Start of an atomic group. */
+            /* backtrack to the start of an atomic group. */
+            pop_atomic(safe_state);
             pop_repeats(state);
             pop_groups(state);
             state->too_few_errors = bt_data->atomic.too_few_errors;

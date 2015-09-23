@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2015.09.15
+Version: 2015.09.23
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
