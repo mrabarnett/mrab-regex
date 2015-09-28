@@ -16179,6 +16179,8 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     Py_ssize_t available;
     BOOL get_best;
     BOOL enhance_match;
+    size_t lower_cost;
+    size_t upper_cost;
     RE_GroupData* best_groups;
     Py_ssize_t best_match_pos;
     BOOL must_advance;
@@ -16217,6 +16219,8 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
 
     /* The maximum permitted cost. */
     state->max_cost = pattern->is_fuzzy ? PY_SSIZE_T_MAX : 0;
+    lower_cost = 0;
+    upper_cost = state->max_cost;
 
     best_groups = NULL;
 
@@ -16252,62 +16256,75 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         if (status < 0)
             break;
 
-        if (status == RE_ERROR_FAILURE || (status == RE_ERROR_SUCCESS &&
-          state->total_cost == 0))
+        if (status == RE_ERROR_SUCCESS)
+            upper_cost = state->total_cost;
+        else if (enhance_match)
+            lower_cost = state->max_cost + 1;
+        else
+            break;
+
+        if (lower_cost >= upper_cost)
             break;
 
         if (!get_best && !enhance_match)
             break;
 
-        save_fuzzy_counts(state, best_fuzzy_counts);
+        if (status == RE_ERROR_SUCCESS) {
+            save_fuzzy_counts(state, best_fuzzy_counts);
 
-        if (!get_best && state->text_pos == state->match_pos)
-            /* We want the first match. The match is already zero-width, so the
-             * cost can't get any lower (because the fit can't get any better).
-             */
-            break;
+            if (!get_best && state->text_pos == state->match_pos)
+                /* We want the first match. The match is already zero-width, so
+                 * the cost can't get any lower (because the fit can't get any
+                 * better).
+                 */
+                break;
 
-        if (best_groups) {
-            BOOL same;
-            size_t g;
+            if (best_groups) {
+                BOOL same;
+                size_t g;
 
-            /* Did we get the same match as the best so far? */
-            same = state->match_pos == best_match_pos && state->text_pos ==
-              best_text_pos;
-            for (g = 0; same && g < pattern->public_group_count; g++) {
-                same = state->groups[g].span.start == best_groups[g].span.start
-                  && state->groups[g].span.end == best_groups[g].span.end;
+                /* Did we get the same match as the best so far? */
+                same = state->match_pos == best_match_pos && state->text_pos ==
+                  best_text_pos;
+                for (g = 0; same && g < pattern->public_group_count; g++) {
+                    same = state->groups[g].span.start ==
+                      best_groups[g].span.start && state->groups[g].span.end ==
+                      best_groups[g].span.end;
+                }
+
+                if (same && !enhance_match)
+                    break;
             }
 
-            if (same)
+            /* Save the best result so far. */
+            best_groups = save_groups(safe_state, best_groups);
+            if (!best_groups) {
+                status = RE_ERROR_MEMORY;
                 break;
+            }
+
+            best_match_pos = state->match_pos;
+            best_text_pos = state->text_pos;
+
+            if (state->max_cost == 0)
+                break;
+
+            if (enhance_match) {
+                if (state->reverse) {
+                    state->slice_start = state->text_pos;
+                    state->slice_end = state->match_pos;
+                } else {
+                    state->slice_start = state->match_pos;
+                    state->slice_end = state->text_pos;
+                }
+            }
         }
-
-        /* Save the best result so far. */
-        best_groups = save_groups(safe_state, best_groups);
-        if (!best_groups) {
-            status = RE_ERROR_MEMORY;
-            break;
-        }
-
-        best_match_pos = state->match_pos;
-        best_text_pos = state->text_pos;
-
-        if (state->max_cost == 0)
-            break;
 
         /* Reduce the maximum permitted cost and try again. */
-        state->max_cost = state->total_cost - 1;
-
-        if (enhance_match) {
-            if (state->reverse) {
-                state->slice_start = state->text_pos;
-                state->slice_end = state->match_pos;
-            } else {
-                state->slice_start = state->match_pos;
-                state->slice_end = state->text_pos;
-            }
-        }
+        if (enhance_match)
+            state->max_cost = (lower_cost + upper_cost) / 2;
+        else
+            state->max_cost = state->total_cost - 1;
     }
 
     state->slice_start = slice_start;
@@ -21875,6 +21892,7 @@ Py_LOCAL_INLINE(int) build_ATOMIC(RE_CompileArgs* args) {
 
     /* Compile the sequence and check that we've reached the end of it. */
     subargs = *args;
+    subargs.min_width = 0;
     status = build_sequence(&subargs);
     if (status != RE_ERROR_SUCCESS)
         return status;

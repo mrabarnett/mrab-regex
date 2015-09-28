@@ -3492,6 +3492,9 @@ xyzabc
         self.assertEqual(regex.search(r'(?p)one(self)?(selfsufficient)?',
           'oneselfsufficient')[0], 'oneselfsufficient')
 
+        # Hg issue 156: regression on atomic grouping
+        self.assertEqual(regex.match('1(?>2)', '12').span(), (0, 2))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
