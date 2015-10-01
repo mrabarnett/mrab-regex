@@ -366,6 +366,7 @@ typedef struct RE_AtomicData {
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
     Py_ssize_t text_pos;
+    BOOL is_lookaround;
 } RE_AtomicData;
 
 /* Storage for atomic data is allocated in blocks for speed. */
@@ -8870,6 +8871,22 @@ Py_LOCAL_INLINE(void) pop_repeats(RE_State* state) {
     state->current_saved_repeats = current->previous;
 }
 
+/* Drops the repeats for backtracking. */
+Py_LOCAL_INLINE(void) drop_repeats(RE_State* state) {
+    PatternObject* pattern;
+    size_t repeat_count;
+    RE_SavedRepeats* current;
+
+    pattern = state->pattern;
+
+    repeat_count = pattern->repeat_count;
+    if (repeat_count == 0)
+        return;
+
+    current = state->current_saved_repeats;
+    state->current_saved_repeats = current->previous;
+}
+
 /* Inserts a new span in a guard list. */
 Py_LOCAL_INLINE(BOOL) insert_guard_span(RE_SafeState* safe_state, RE_GuardList*
   guard_list, size_t index) {
@@ -11735,6 +11752,7 @@ advance:
                 return RE_ERROR_MEMORY;
             atomic->backtrack_count = state->current_backtrack_block->count;
             atomic->current_backtrack_block = state->current_backtrack_block;
+            atomic->is_lookaround = FALSE;
 
             /* Save the groups and repeats. */
             if (!push_groups(safe_state))
@@ -12294,6 +12312,11 @@ advance:
             RE_AtomicData* lookaround;
 
             lookaround = pop_atomic(safe_state);
+            while (!lookaround->is_lookaround) {
+                drop_repeats(state);
+                drop_groups(state);
+                lookaround = pop_atomic(safe_state);
+            }
             state->text_pos = lookaround->text_pos;
             state->slice_end = lookaround->slice_end;
             state->slice_start = lookaround->slice_start;
@@ -12316,6 +12339,7 @@ advance:
                  * certain flags may have changed. We need to restore them and
                  * then backtrack.
                  */
+                pop_repeats(state);
                 pop_groups(state);
                 state->too_few_errors =
                   lookaround->backtrack->lookaround.too_few_errors;
@@ -12973,6 +12997,7 @@ advance:
             lookaround->text_pos = state->text_pos;
             lookaround->node = node;
             lookaround->backtrack = state->backtrack;
+            lookaround->is_lookaround = TRUE;
 
             /* Save the groups and repeats. */
             if (!push_groups(safe_state))

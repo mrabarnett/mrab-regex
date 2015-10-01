@@ -3495,6 +3495,10 @@ xyzabc
         # Hg issue 156: regression on atomic grouping
         self.assertEqual(regex.match('1(?>2)', '12').span(), (0, 2))
 
+        # Hg issue 157: regression: segfault on complex lookaround
+        self.assertEqual(regex.match(r'(?V1w)(?=(?=[^A-Z]*+[A-Z])(?=[^a-z]*+[a-z]))(?=\D*+\d)(?=\p{Alphanumeric}*+\P{Alphanumeric})\A(?s:.){8,255}+\Z',
+          'AAaa11!!')[0], 'AAaa11!!')
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
