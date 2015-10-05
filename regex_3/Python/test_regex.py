@@ -3603,6 +3603,38 @@ xyzabc
         self.assertEqual(regex.match(r'(?V1w)(?=(?=[^A-Z]*+[A-Z])(?=[^a-z]*+[a-z]))(?=\D*+\d)(?=\p{Alphanumeric}*+\P{Alphanumeric})\A(?s:.){8,255}+\Z',
           'AAaa11!!')[0], 'AAaa11!!')
 
+        #Hg issue 158: Group issue with (?(DEFINE)...)
+        TEST_REGEX = regex.compile(r'''(?smx)
+(?(DEFINE)
+  (?<subcat>
+   ^,[^,]+,
+   )
+)
+
+# Group 2 is defined on this line
+^,([^,]+),
+
+(?:(?!(?&subcat)[\r\n]+(?&subcat)).)+
+''')
+
+        TEST_DATA = '''
+,Cat 1,
+,Brand 1,
+some
+thing
+,Brand 2,
+other
+things
+,Cat 2,
+,Brand,
+Some
+thing
+'''
+
+        self.assertEqual([m.span(1, 2) for m in
+          TEST_REGEX.finditer(TEST_DATA)], [((-1, -1), (2, 7)), ((-1, -1), (54,
+          59))])
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

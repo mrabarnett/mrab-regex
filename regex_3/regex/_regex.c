@@ -363,6 +363,8 @@ typedef struct RE_AtomicData {
     size_t backtrack_count;
     struct RE_Node* node;
     RE_BacktrackData* backtrack;
+    struct RE_SavedGroups* saved_groups;
+    struct RE_SavedRepeats* saved_repeats;
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
     Py_ssize_t text_pos;
@@ -12326,6 +12328,8 @@ advance:
               lookaround->current_backtrack_block;
             state->current_backtrack_block->count =
               lookaround->backtrack_count;
+            state->current_saved_groups = lookaround->saved_groups;
+            state->current_saved_repeats = lookaround->saved_repeats;
 
             if (lookaround->node->match) {
                 /* It's a positive lookaround that's succeeded. We're now going
@@ -13005,6 +13009,9 @@ advance:
 
             if (!push_repeats(safe_state))
                 return RE_ERROR_MEMORY;
+
+            lookaround->saved_groups = state->current_saved_groups;
+            lookaround->saved_repeats = state->current_saved_repeats;
 
             state->slice_start = 0;
             state->slice_end = state->text_length;
@@ -15911,6 +15918,7 @@ backtrack:
         case RE_OP_LOOKAROUND: /* Lookaround subpattern. */
         {
             TRACE(("%s\n", re_op_text[bt_data->op]))
+
             if (bt_data->lookaround.inside) {
                 /* Backtracked to the start of a lookaround. */
                 RE_AtomicData* lookaround;

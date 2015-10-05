@@ -239,7 +239,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
   "WORD", "error", "Regex"]
 
-__version__ = "2.4.82"
+__version__ = "2.4.83"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -535,10 +535,6 @@ def _compile(pattern, flags=0, kwargs={}):
     # Remember whether this pattern as an inline locale flag.
     _locale_sensitive[locale_key] = info.inline_locale
 
-    # Should we print the parsed pattern?
-    if flags & DEBUG:
-        parsed.dump(indent=0, reverse=reverse)
-
     # Fix the group references.
     try:
         parsed.fix_groups(pattern, reverse, False)
@@ -548,6 +544,10 @@ def _compile(pattern, flags=0, kwargs={}):
     if caught_exception:
         raise error(caught_exception.msg, caught_exception.pattern,
           caught_exception.pos)
+
+    # Should we print the parsed pattern?
+    if flags & DEBUG:
+        parsed.dump(indent=0, reverse=reverse)
 
     # Optimise the parsed pattern.
     parsed = parsed.optimise(info)
