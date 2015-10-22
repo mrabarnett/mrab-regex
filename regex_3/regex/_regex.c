@@ -16272,8 +16272,9 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         available = state->slice_end - state->text_pos;
     }
 
-    get_best = (pattern->flags & RE_FLAG_BESTMATCH) != 0;
-    enhance_match = (pattern->flags & RE_FLAG_ENHANCEMATCH) != 0 && !get_best;
+    get_best = pattern->is_fuzzy && (pattern->flags & RE_FLAG_BESTMATCH) != 0;
+    enhance_match = pattern->is_fuzzy && !get_best && (pattern->flags &
+      RE_FLAG_ENHANCEMATCH) != 0;
 
     /* The maximum permitted cost. */
     state->max_cost = pattern->is_fuzzy ? PY_SSIZE_T_MAX : 0;
@@ -16314,45 +16315,14 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         if (status < 0)
             break;
 
-        if (status == RE_ERROR_SUCCESS)
-            upper_cost = state->total_cost;
-        else if (enhance_match)
-            lower_cost = state->max_cost + 1;
-        else
-            break;
-
-        if (lower_cost >= upper_cost)
-            break;
-
         if (!get_best && !enhance_match)
+            /* Straight-forward fuzzy matching with no further tweaks. */
             break;
 
         if (status == RE_ERROR_SUCCESS) {
+            upper_cost = state->total_cost;
+
             save_fuzzy_counts(state, best_fuzzy_counts);
-
-            if (!get_best && state->text_pos == state->match_pos)
-                /* We want the first match. The match is already zero-width, so
-                 * the cost can't get any lower (because the fit can't get any
-                 * better).
-                 */
-                break;
-
-            if (best_groups) {
-                BOOL same;
-                size_t g;
-
-                /* Did we get the same match as the best so far? */
-                same = state->match_pos == best_match_pos && state->text_pos ==
-                  best_text_pos;
-                for (g = 0; same && g < pattern->public_group_count; g++) {
-                    same = state->groups[g].span.start ==
-                      best_groups[g].span.start && state->groups[g].span.end ==
-                      best_groups[g].span.end;
-                }
-
-                if (same && !enhance_match)
-                    break;
-            }
 
             /* Save the best result so far. */
             best_groups = save_groups(safe_state, best_groups);
@@ -16376,13 +16346,14 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
                     state->slice_end = state->text_pos;
                 }
             }
-        }
+        } else
+            lower_cost = state->max_cost + 1;
+
+        if (lower_cost >= upper_cost)
+            break;
 
         /* Reduce the maximum permitted cost and try again. */
-        if (enhance_match)
-            state->max_cost = (lower_cost + upper_cost) / 2;
-        else
-            state->max_cost = state->total_cost - 1;
+        state->max_cost = (lower_cost + upper_cost) / 2;
     }
 
     state->slice_start = slice_start;

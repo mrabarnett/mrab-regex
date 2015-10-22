@@ -3499,7 +3499,7 @@ xyzabc
         self.assertEqual(regex.match(r'(?V1w)(?=(?=[^A-Z]*+[A-Z])(?=[^a-z]*+[a-z]))(?=\D*+\d)(?=\p{Alphanumeric}*+\P{Alphanumeric})\A(?s:.){8,255}+\Z',
           'AAaa11!!')[0], 'AAaa11!!')
 
-        #Hg issue 158: Group issue with (?(DEFINE)...)
+        # Hg issue 158: Group issue with (?(DEFINE)...)
         TEST_REGEX = regex.compile(r'''(?smx)
 (?(DEFINE)
   (?<subcat>
@@ -3530,6 +3530,12 @@ thing
         self.assertEqual([m.span(1, 2) for m in
           TEST_REGEX.finditer(TEST_DATA)], [((-1, -1), (2, 7)), ((-1, -1), (54,
           59))])
+
+        # Hg issue 161: Unexpected fuzzy match results
+        self.assertEqual(regex.search('(abcdefgh){e}',
+          '******abcdefghijklmnopqrtuvwxyz', regex.BESTMATCH).span(), (6, 14))
+        self.assertEqual(regex.search('(abcdefghi){e}',
+          '******abcdefghijklmnopqrtuvwxyz', regex.BESTMATCH).span(), (6, 15))
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
