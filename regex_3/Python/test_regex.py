@@ -2613,7 +2613,7 @@ xyzabc
         self.assertEqual(regex.search('(fuu){i<=2,d<=2,e<=5}', text).span(0,
           1), ((7, 10), (7, 10)))
         self.assertEqual(regex.search('(?e)(fuu){i<=2,d<=2,e<=5}',
-          text).span(0, 1), ((9, 10), (9, 10)))
+          text).span(0, 1), ((7, 10), (7, 10)))
         self.assertEqual(regex.search('(fuu){i<=3,d<=3,e}', text).span(0, 1),
           ((0, 0), (0, 0)))
         self.assertEqual(regex.search('(?b)(fuu){i<=3,d<=3,e}', text).span(0,
@@ -2626,7 +2626,7 @@ xyzabc
         self.assertEqual(regex.search('(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), ((0, 6), (0, 6)))
         self.assertEqual(regex.search('(?e)(foobar){e}',
-          'xirefoabralfobarxie').span(0, 1), ((0, 3), (0, 3)))
+          'xirefoabralfobarxie').span(0, 1), ((0, 6), (0, 6)))
         self.assertEqual(regex.search('(?b)(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), ((11, 16), (11, 16)))
 
@@ -3312,7 +3312,7 @@ xyzabc
         self.assertEqual(regex.match(r'(?:cats){e<=2}', 'c ats').fuzzy_counts,
           (1, 1, 0))
         self.assertEqual(regex.match(r'(?e)(?:cats){e<=2}',
-          'c ats').fuzzy_counts, (0, 1, 0))
+          'c ats').fuzzy_counts, (1, 1, 0))
         self.assertEqual(regex.match(r'(?b)(?:cats){e<=2}',
           'c ats').fuzzy_counts, (0, 1, 0))
 
@@ -3640,6 +3640,11 @@ thing
           '******abcdefghijklmnopqrtuvwxyz', regex.BESTMATCH).span(), (6, 14))
         self.assertEqual(regex.search('(abcdefghi){e}',
           '******abcdefghijklmnopqrtuvwxyz', regex.BESTMATCH).span(), (6, 15))
+
+        # Hg issue 163: allow lookarounds in conditionals.
+        self.assertEqual(regex.match(r'(?:(?=\d)\d+\b|\w+)', '123abc').span(),
+          (0, 6))
+        self.assertEqual(regex.match(r'(?(?=\d)\d+\b|\w+)', '123abc'), None)
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',

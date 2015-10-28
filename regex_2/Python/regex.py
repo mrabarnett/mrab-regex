@@ -239,7 +239,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
   "WORD", "error", "Regex"]
 
-__version__ = "2.4.84"
+__version__ = "2.4.85"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -355,50 +355,27 @@ def template(pattern, flags=0):
 
 def escape(pattern, special_only=False):
     "Escape all non-alphanumeric characters or special characters in pattern."
-    if isinstance(pattern, unicode):
-        s = []
-        if special_only:
-            for c in pattern:
-                if c in _METACHARS:
-                    s.append(u"\\")
-                    s.append(c)
-                elif c == u"\x00":
-                    s.append(u"\\000")
-                else:
-                    s.append(c)
-        else:
-            for c in pattern:
-                if c in _ALNUM:
-                    s.append(c)
-                elif c == u"\x00":
-                    s.append(u"\\000")
-                else:
-                    s.append(u"\\")
-                    s.append(c)
-
-        return u"".join(s)
+    s = []
+    if special_only:
+        for c in pattern:
+            if c in _METACHARS:
+                s.append("\\")
+                s.append(c)
+            elif c == "\x00":
+                s.append("\\000")
+            else:
+                s.append(c)
     else:
-        s = []
-        if special_only:
-            for c in pattern:
-                if c in _METACHARS:
-                    s.append("\\")
-                    s.append(c)
-                elif c == "\x00":
-                    s.append("\\000")
-                else:
-                    s.append(c)
-        else:
-            for c in pattern:
-                if c in _ALNUM:
-                    s.append(c)
-                elif c == "\x00":
-                    s.append("\\000")
-                else:
-                    s.append("\\")
-                    s.append(c)
+        for c in pattern:
+            if c in _ALNUM:
+                s.append(c)
+            elif c == "\x00":
+                s.append("\\000")
+            else:
+                s.append("\\")
+                s.append(c)
 
-        return "".join(s)
+    return pattern[ : 0].join(s)
 
 # --------------------------------------------------------------------
 # Internals.
@@ -491,10 +468,10 @@ def _compile(pattern, flags=0, kwargs={}):
     # Set the default version in the core code in case it has been changed.
     _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
 
-    caught_exception = None
     global_flags = flags
 
     while True:
+        caught_exception = None
         try:
             source = _Source(pattern)
             info = _Info(global_flags, source.char_type, kwargs)
@@ -536,6 +513,7 @@ def _compile(pattern, flags=0, kwargs={}):
     _locale_sensitive[locale_key] = info.inline_locale
 
     # Fix the group references.
+    caught_exception = None
     try:
         parsed.fix_groups(pattern, reverse, False)
     except error, e:

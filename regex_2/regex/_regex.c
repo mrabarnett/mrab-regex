@@ -83,7 +83,7 @@ typedef unsigned short RE_STATUS_T;
 #define RE_CONC_YES 1
 #define RE_CONC_DEFAULT 2
 
-/* the side that could truncate in a partial match.
+/* The side that could truncate in a partial match.
  *
  * The values RE_PARTIAL_LEFT and RE_PARTIAL_RIGHT are also used as array
  * indexes, so they need to be 0 and 1.
@@ -577,6 +577,7 @@ typedef struct RE_State {
     RE_SavedRepeats* first_saved_repeats;
     RE_SavedRepeats* current_saved_repeats;
     /* Info about the best POSIX match (leftmost longest). */
+    Py_ssize_t best_match_pos;
     Py_ssize_t best_text_pos;
     RE_GroupData* best_match_groups;
     /* Miscellaneous. */
@@ -589,10 +590,12 @@ typedef struct RE_State {
     PyThread_type_lock lock; /* A lock for accessing the state across threads. */
     RE_FuzzyInfo fuzzy_info; /* Info about fuzzy matching. */
     size_t total_fuzzy_counts[RE_FUZZY_COUNT]; /* Totals for fuzzy matching. */
+    size_t best_fuzzy_counts[RE_FUZZY_COUNT]; /* Best totals for fuzzy matching. */
     RE_FuzzyGuards* fuzzy_guards; /* The guards for a fuzzy match. */
     size_t total_errors; /* The total number of errors of a fuzzy match. */
     size_t total_cost; /* The total cost of a fuzzy match. */
     size_t max_cost; /* The maximum permitted fuzzy cost. */
+    size_t lowest_cost; /* The lowest cost so far of an enhanced fuzzy match. */
     /* The group call stack. */
     RE_GroupCallFrame* first_group_call_frame;
     RE_GroupCallFrame* current_group_call_frame;
@@ -3170,6 +3173,10 @@ Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
         case RE_OP_START_GROUP:
             node = node->next_1.node;
             break;
+        case RE_OP_CONDITIONAL:
+        case RE_OP_LOOKAROUND:
+            node = node->nonstring.next_2.node;
+            break;
         case RE_OP_GREEDY_REPEAT:
         case RE_OP_LAZY_REPEAT:
             if (node->values[1] == 0)
@@ -3181,9 +3188,6 @@ Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
             if (node->values[1] == 0)
                 return node;
             return node->nonstring.next_2.node;
-        case RE_OP_LOOKAROUND:
-            node = node->nonstring.next_2.node;
-            break;
         default:
             if (is_firstset(node)) {
                 switch (node->next_1.node->op) {
@@ -7894,7 +7898,6 @@ again:
             return RE_ERROR_FAILURE;
         break;
     case RE_OP_ANY_ALL:
-        break;
     case RE_OP_ANY_ALL_REV:
         break;
     case RE_OP_ANY_REV:
@@ -11215,8 +11218,12 @@ Py_LOCAL_INLINE(BOOL) save_best_match(RE_SafeState* safe_state) {
 
     state = safe_state->re_state;
 
+    state->best_match_pos = state->match_pos;
     state->best_text_pos = state->text_pos;
     state->found_match = TRUE;
+
+    memmove(state->best_fuzzy_counts, state->total_fuzzy_counts,
+      sizeof(state->total_fuzzy_counts));
 
     group_count = state->pattern->true_group_count;
     if (group_count == 0)
@@ -11295,7 +11302,11 @@ Py_LOCAL_INLINE(void) restore_best_match(RE_SafeState* safe_state) {
     if (!state->found_match)
         return;
 
+    state->match_pos = state->best_match_pos;
     state->text_pos = state->best_text_pos;
+
+    memmove(state->total_fuzzy_counts, state->best_fuzzy_counts,
+      sizeof(state->total_fuzzy_counts));
 
     group_count = state->pattern->true_group_count;
     if (group_count == 0)
@@ -11455,6 +11466,7 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, BOOL search) {
     pattern_step = state->reverse ? -1 : 1;
     string_pos = -1;
     do_search_start = pattern->do_search_start;
+    state->lowest_cost = state->max_cost;
 
     if (do_search_start && pattern->req_string &&
       equivalent_nodes(start_pair.test, pattern->req_string))
@@ -11891,6 +11903,50 @@ advance:
             } else
                 goto backtrack;
             break;
+        case RE_OP_CONDITIONAL: /* Start of a conditional subpattern. */
+        {
+            RE_AtomicData* lookaround;
+            TRACE(("%s %d\n", re_op_text[node->op], node->match))
+
+            if (!add_backtrack(safe_state, RE_OP_CONDITIONAL))
+                return RE_ERROR_BACKTRACKING;
+            state->backtrack->lookaround.too_few_errors =
+              state->too_few_errors;
+            state->backtrack->lookaround.capture_change =
+              state->capture_change;
+            state->backtrack->lookaround.inside = TRUE;
+            state->backtrack->lookaround.node = node;
+
+            lookaround = push_atomic(safe_state);
+            if (!lookaround)
+                return RE_ERROR_MEMORY;
+            lookaround->backtrack_count =
+              state->current_backtrack_block->count;
+            lookaround->current_backtrack_block =
+              state->current_backtrack_block;
+            lookaround->slice_start = state->slice_start;
+            lookaround->slice_end = state->slice_end;
+            lookaround->text_pos = state->text_pos;
+            lookaround->node = node;
+            lookaround->backtrack = state->backtrack;
+            lookaround->is_lookaround = TRUE;
+
+            /* Save the groups and repeats. */
+            if (!push_groups(safe_state))
+                return RE_ERROR_MEMORY;
+
+            if (!push_repeats(safe_state))
+                return RE_ERROR_MEMORY;
+
+            lookaround->saved_groups = state->current_saved_groups;
+            lookaround->saved_repeats = state->current_saved_repeats;
+
+            state->slice_start = 0;
+            state->slice_end = state->text_length;
+
+            node = node->next_1.node;
+            break;
+        }
         case RE_OP_DEFAULT_BOUNDARY: /* On a default word boundary. */
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
@@ -11963,6 +12019,48 @@ advance:
             state->current_backtrack_block->count = atomic->backtrack_count;
 
             node = node->next_1.node;
+            break;
+        }
+        case RE_OP_END_CONDITIONAL: /* End of a conditional subpattern. */
+        {
+            RE_AtomicData* lookaround;
+
+            lookaround = pop_atomic(safe_state);
+            while (!lookaround->is_lookaround) {
+                drop_repeats(state);
+                drop_groups(state);
+                lookaround = pop_atomic(safe_state);
+            }
+            state->text_pos = lookaround->text_pos;
+            state->slice_end = lookaround->slice_end;
+            state->slice_start = lookaround->slice_start;
+
+            /* Discard any backtracking info from inside the lookaround. */
+            state->current_backtrack_block =
+              lookaround->current_backtrack_block;
+            state->current_backtrack_block->count =
+              lookaround->backtrack_count;
+            state->current_saved_groups = lookaround->saved_groups;
+            state->current_saved_repeats = lookaround->saved_repeats;
+
+            /* It's a positive lookaround that's succeeded. We're now going to
+             * leave the lookaround.
+             */
+            lookaround->backtrack->lookaround.inside = FALSE;
+
+            if (lookaround->node->match) {
+                /* It's a positive lookaround that's succeeded.
+                 *
+                 * Go to the 'true' branch.
+                 */
+                node = node->next_1.node;
+            } else {
+                /* It's a negative lookaround that's succeeded.
+                 *
+                 * Go to the 'false' branch.
+                 */
+                node = node->nonstring.next_2.node;
+            }
             break;
         }
         case RE_OP_END_FUZZY: /* End of fuzzy matching. */
@@ -14554,11 +14652,67 @@ backtrack:
             discard_backtrack(state);
             goto advance;
         case RE_OP_CALL_REF: /* A group call ref. */
+        case RE_OP_GROUP_CALL: /* Group call. */
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             pop_group_return(state);
             discard_backtrack(state);
             break;
+        case RE_OP_CONDITIONAL: /* Conditional subpattern. */
+        {
+            TRACE(("%s\n", re_op_text[bt_data->op]))
+
+            if (bt_data->lookaround.inside) {
+                /* Backtracked to the start of a lookaround. */
+                RE_AtomicData* lookaround;
+
+                lookaround = pop_atomic(safe_state);
+                state->text_pos = lookaround->text_pos;
+                state->slice_end = lookaround->slice_end;
+                state->slice_start = lookaround->slice_start;
+                state->current_backtrack_block =
+                  lookaround->current_backtrack_block;
+                state->current_backtrack_block->count =
+                  lookaround->backtrack_count;
+
+                /* Restore the groups and repeats and certain flags. */
+                pop_repeats(state);
+                pop_groups(state);
+                state->too_few_errors = bt_data->lookaround.too_few_errors;
+                state->capture_change = bt_data->lookaround.capture_change;
+
+                if (bt_data->lookaround.node->match) {
+                    /* It's a positive lookaround that's failed.
+                     *
+                     * Go to the 'false' branch.
+                     */
+                    node = bt_data->lookaround.node->nonstring.next_2.node;
+                } else {
+                    /* It's a negative lookaround that's failed.
+                     *
+                     * Go to the 'true' branch.
+                     */
+                    node = bt_data->lookaround.node->nonstring.next_2.node;
+                }
+
+                goto advance;
+            } else {
+                /* Backtracked to a lookaround. If it's a positive lookaround
+                 * that succeeded, we need to restore the groups; if it's a
+                 * negative lookaround that failed, it would have completely
+                 * backtracked inside and already restored the groups. We also
+                 * need to restore certain flags.
+                 */
+                if (bt_data->lookaround.node->match)
+                    pop_groups(state);
+
+                state->too_few_errors = bt_data->lookaround.too_few_errors;
+                state->capture_change = bt_data->lookaround.capture_change;
+
+                discard_backtrack(state);
+            }
+            break;
+        }
         case RE_OP_END_FUZZY: /* End of fuzzy matching. */
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
@@ -15211,12 +15365,6 @@ backtrack:
             }
             break;
         }
-        case RE_OP_GROUP_CALL: /* Group call. */
-            TRACE(("%s\n", re_op_text[bt_data->op]))
-
-            pop_group_return(state);
-            discard_backtrack(state);
-            break;
         case RE_OP_GROUP_RETURN: /* Group return. */
         {
             RE_Node* return_node;
@@ -16212,8 +16360,7 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     Py_ssize_t available;
     BOOL get_best;
     BOOL enhance_match;
-    size_t lower_cost;
-    size_t upper_cost;
+    size_t lowest_cost;
     RE_GroupData* best_groups;
     Py_ssize_t best_match_pos;
     BOOL must_advance;
@@ -16247,16 +16394,24 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         available = state->slice_end - state->text_pos;
     }
 
-    get_best = pattern->is_fuzzy && (pattern->flags & RE_FLAG_BESTMATCH) != 0;
-    enhance_match = pattern->is_fuzzy && !get_best && (pattern->flags &
-      RE_FLAG_ENHANCEMATCH) != 0;
+    if (pattern->is_fuzzy) {
+        get_best = (pattern->flags & RE_FLAG_BESTMATCH) != 0;
+        enhance_match = !get_best && (pattern->flags & RE_FLAG_ENHANCEMATCH) !=
+          0;
+    } else {
+        get_best = FALSE;
+        enhance_match = FALSE;
+    }
 
     /* The maximum permitted cost. */
-    state->max_cost = pattern->is_fuzzy ? PY_SSIZE_T_MAX : 0;
-    lower_cost = 0;
-    upper_cost = state->max_cost;
+    state->max_cost = pattern->is_fuzzy && !get_best ? PY_SSIZE_T_MAX : 0;
+    lowest_cost = PY_SSIZE_T_MAX;
 
     best_groups = NULL;
+
+    state->best_match_pos = state->text_pos;
+    state->best_text_pos = state->reverse ? state->slice_start :
+      state->slice_end;
 
     best_match_pos = state->text_pos;
     must_advance = state->must_advance;
@@ -16291,44 +16446,66 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
             break;
 
         if (!get_best && !enhance_match)
-            /* Straight-forward fuzzy matching with no further tweaks. */
             break;
 
         if (status == RE_ERROR_SUCCESS) {
-            upper_cost = state->total_cost;
+            if (state->total_cost < lowest_cost) {
+                save_fuzzy_counts(state, best_fuzzy_counts);
 
-            save_fuzzy_counts(state, best_fuzzy_counts);
+                if (best_groups) {
+                    BOOL same;
+                    size_t g;
 
-            /* Save the best result so far. */
-            best_groups = save_groups(safe_state, best_groups);
-            if (!best_groups) {
-                status = RE_ERROR_MEMORY;
-                break;
-            }
+                    /* Did we get the same match as the best so far? */
+                    same = state->match_pos == best_match_pos &&
+                      state->text_pos == best_text_pos;
+                    for (g = 0; same && g < pattern->public_group_count; g++) {
+                        same = state->groups[g].span.start ==
+                          best_groups[g].span.start &&
+                          state->groups[g].span.end == best_groups[g].span.end;
+                    }
 
-            best_match_pos = state->match_pos;
-            best_text_pos = state->text_pos;
-
-            if (state->max_cost == 0)
-                break;
-
-            if (enhance_match) {
-                if (state->reverse) {
-                    state->slice_start = state->text_pos;
-                    state->slice_end = state->match_pos;
-                } else {
-                    state->slice_start = state->match_pos;
-                    state->slice_end = state->text_pos;
+                    if (same && !enhance_match)
+                        break;
                 }
+
+                /* Save the best result so far. */
+                best_groups = save_groups(safe_state, best_groups);
+                if (!best_groups) {
+                    status = RE_ERROR_MEMORY;
+                    break;
+                }
+
+                best_match_pos = state->match_pos;
+                best_text_pos = state->text_pos;
+
+                if (state->total_cost == 0)
+                    break;
             }
-        } else
-            lower_cost = state->max_cost + 1;
 
-        if (lower_cost >= upper_cost)
-            break;
+            if (get_best || !enhance_match)
+                break;
 
-        /* Reduce the maximum permitted cost and try again. */
-        state->max_cost = (lower_cost + upper_cost) / 2;
+            if (state->total_cost > lowest_cost)
+                break;
+
+            if (state->reverse) {
+                state->slice_start = state->text_pos;
+                state->slice_end = state->match_pos;
+            } else {
+                state->slice_start = state->match_pos;
+                state->slice_end = state->text_pos;
+            }
+
+            lowest_cost = state->total_cost;
+            if (state->max_cost == PY_SSIZE_T_MAX)
+                state->max_cost = 0;
+        } else {
+            if (!get_best)
+                break;
+
+            ++state->max_cost;
+        }
     }
 
     state->slice_start = slice_start;
@@ -18573,7 +18750,7 @@ static PyGetSetDef match_getset[] = {
 #endif
     {"fuzzy_counts", (getter)match_fuzzy_counts, (setter)NULL,
       "A tuple of the number of substitutions, insertions and deletions."},
-    {NULL}  /* Sentinel */
+    {NULL} /* Sentinel */
 };
 
 static PyMemberDef match_members[] = {
@@ -18587,13 +18764,13 @@ static PyMemberDef match_members[] = {
     {"partial", T_BOOL, offsetof(MatchObject, partial), READONLY,
       "Whether it's a partial match."},
 #endif
-    {NULL}  /* Sentinel */
+    {NULL} /* Sentinel */
 };
 
 static PyMappingMethods match_as_mapping = {
-    (lenfunc)match_length,       /* mp_length */
-    (binaryfunc)match_getitem,   /* mp_subscript */
-    0,                           /* mp_ass_subscript */
+    (lenfunc)match_length, /* mp_length */
+    (binaryfunc)match_getitem, /* mp_subscript */
+    0, /* mp_ass_subscript */
 };
 
 static PyTypeObject Match_Type = {
@@ -18988,7 +19165,7 @@ static void scanner_dealloc(PyObject* self_) {
 static PyMemberDef scanner_members[] = {
     {"pattern", T_OBJECT, offsetof(ScannerObject, pattern), READONLY,
       "The regex object that produced this scanner object."},
-    {NULL}  /* Sentinel */
+    {NULL} /* Sentinel */
 };
 
 static PyTypeObject Scanner_Type = {
@@ -19449,9 +19626,9 @@ static PyObject* capture_getitem(CaptureObject* self, PyObject* item) {
 }
 
 static PyMappingMethods capture_as_mapping = {
-    (lenfunc)capture_length,       /* mp_length */
-    (binaryfunc)capture_getitem,   /* mp_subscript */
-    0,                           /* mp_ass_subscript */
+    (lenfunc)capture_length, /* mp_length */
+    (binaryfunc)capture_getitem, /* mp_subscript */
+    0, /* mp_ass_subscript */
 };
 
 /* CaptureObject's methods. */
@@ -19483,7 +19660,7 @@ static PyObject* capture_str(PyObject* self_) {
 static PyMemberDef splitter_members[] = {
     {"pattern", T_OBJECT, offsetof(SplitterObject, pattern), READONLY,
       "The regex object that produced this splitter object."},
-    {NULL}  /* Sentinel */
+    {NULL} /* Sentinel */
 };
 
 static PyTypeObject Splitter_Type = {
@@ -20978,7 +21155,7 @@ static PyObject* pattern_groupindex(PyObject* self_) {
 static PyGetSetDef pattern_getset[] = {
     {"groupindex", (getter)pattern_groupindex, (setter)NULL,
       "A dictionary mapping group names to group numbers."},
-    {NULL}  /* Sentinel */
+    {NULL} /* Sentinel */
 };
 
 static PyMemberDef pattern_members[] = {
@@ -20990,7 +21167,7 @@ static PyMemberDef pattern_members[] = {
       READONLY, "The number of capturing groups in the pattern."},
     {"named_lists", T_OBJECT, offsetof(PatternObject, named_lists), READONLY,
       "The named lists used by the regex."},
-    {NULL}  /* Sentinel */
+    {NULL} /* Sentinel */
 };
 
 static PyTypeObject Pattern_Type = {
@@ -21131,6 +21308,16 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
+        case RE_OP_GROUP_CALL:
+        case RE_OP_REF_GROUP:
+        case RE_OP_REF_GROUP_FLD:
+        case RE_OP_REF_GROUP_FLD_REV:
+        case RE_OP_REF_GROUP_IGN:
+        case RE_OP_REF_GROUP_IGN_REV:
+        case RE_OP_REF_GROUP_REV:
+            result = RE_STATUS_REF;
+            node = node->next_1.node;
+            break;
         case RE_OP_GROUP_EXISTS:
         {
             RE_STATUS_T branch_1_result;
@@ -21145,16 +21332,6 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             node->status = RE_STATUS_VISITED_AG | status;
             return status;
         }
-        case RE_OP_GROUP_CALL:
-        case RE_OP_REF_GROUP:
-        case RE_OP_REF_GROUP_FLD:
-        case RE_OP_REF_GROUP_FLD_REV:
-        case RE_OP_REF_GROUP_IGN:
-        case RE_OP_REF_GROUP_IGN_REV:
-        case RE_OP_REF_GROUP_REV:
-            result = RE_STATUS_REF;
-            node = node->next_1.node;
-            break;
         case RE_OP_SUCCESS:
             node->status = RE_STATUS_VISITED_AG | result;
             return result;
@@ -21214,6 +21391,7 @@ Py_LOCAL_INLINE(BOOL) record_subpattern_repeats_and_fuzzy_sections(RE_Node*
 
         switch (node->op) {
         case RE_OP_BRANCH:
+        case RE_OP_GROUP_EXISTS:
             if (!record_subpattern_repeats_and_fuzzy_sections(parent_node,
               offset, repeat_count, node->next_1.node))
                 return FALSE;
@@ -21248,12 +21426,6 @@ Py_LOCAL_INLINE(BOOL) record_subpattern_repeats_and_fuzzy_sections(RE_Node*
             if (!add_index(parent_node, offset, node->values[0]))
                 return FALSE;
             node = node->next_1.node;
-            break;
-        case RE_OP_GROUP_EXISTS:
-            if (!record_subpattern_repeats_and_fuzzy_sections(parent_node,
-              offset, repeat_count, node->next_1.node))
-                return FALSE;
-            node = node->nonstring.next_2.node;
             break;
         default:
             node = node->next_1.node;
@@ -22122,6 +22294,127 @@ Py_LOCAL_INLINE(int) build_CHARACTER_or_PROPERTY(RE_CompileArgs* args) {
     return RE_ERROR_SUCCESS;
 }
 
+/* Builds a CONDITIONAL node. */
+Py_LOCAL_INLINE(int) build_CONDITIONAL(RE_CompileArgs* args) {
+    RE_CODE flags;
+    BOOL forward;
+    RE_Node* test_node;
+    RE_CompileArgs subargs;
+    int status;
+    RE_Node* end_test_node;
+    RE_Node* end_node;
+    Py_ssize_t min_width;
+
+    /* codes: opcode, flags, forward, sequence, next, sequence, next, sequence,
+     * end.
+     */
+    if (args->code + 4 > args->end_code)
+        return RE_ERROR_ILLEGAL;
+
+    flags = args->code[1];
+    forward = (BOOL)args->code[2];
+
+    /* Create a node for the lookaround. */
+    test_node = create_node(args->pattern, RE_OP_CONDITIONAL, flags, 0, 0);
+    if (!test_node)
+        return RE_ERROR_MEMORY;
+
+    args->code += 3;
+
+    add_node(args->end, test_node);
+
+    /* Compile the lookaround test and check that we've reached the end of the
+     * subpattern.
+     */
+    subargs = *args;
+    subargs.forward = forward;
+    status = build_sequence(&subargs);
+    if (status != RE_ERROR_SUCCESS)
+        return status;
+
+    if (subargs.code[0] != RE_OP_NEXT)
+        return RE_ERROR_ILLEGAL;
+
+    args->code = subargs.code;
+    ++args->code;
+
+    /* Check the lookaround subpattern. */
+    args->has_captures |= subargs.has_captures;
+    args->is_fuzzy |= subargs.is_fuzzy;
+
+    /* Create the node to terminate the test. */
+    end_test_node = create_node(args->pattern, RE_OP_END_CONDITIONAL, 0, 0, 0);
+    if (!end_test_node)
+        return RE_ERROR_MEMORY;
+
+    /* test node -> test -> end test node */
+    add_node(test_node, subargs.start);
+    add_node(subargs.end, end_test_node);
+
+    /* Compile the true branch. */
+    subargs = *args;
+    subargs.min_width = 0;
+    subargs.has_captures = FALSE;
+    subargs.is_fuzzy = FALSE;
+    status = build_sequence(&subargs);
+    if (status != RE_ERROR_SUCCESS)
+        return status;
+
+    /* Check the true branch. */
+    args->code = subargs.code;
+    args->has_captures |= subargs.has_captures;
+    args->is_fuzzy |= subargs.is_fuzzy;
+
+    min_width = subargs.min_width;
+
+    /* Create the terminating node. */
+    end_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
+    if (!end_node)
+        return RE_ERROR_MEMORY;
+
+    /* end test node -> true branch -> end node */
+    add_node(end_test_node, subargs.start);
+    add_node(subargs.end, end_node);
+
+    if (args->code[0] == RE_OP_NEXT) {
+        /* There's a false branch. */
+        ++args->code;
+
+        /* Compile the false branch. */
+        subargs.code = args->code;
+        subargs.min_width = 0;
+        subargs.has_captures = FALSE;
+        subargs.is_fuzzy = FALSE;
+        status = build_sequence(&subargs);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
+
+        /* Check the false branch. */
+        args->code = subargs.code;
+        args->has_captures |= subargs.has_captures;
+        args->is_fuzzy |= subargs.is_fuzzy;
+
+        min_width = min_ssize_t(min_width, subargs.min_width);
+
+        /* test node -> false branch -> end node */
+        add_node(test_node, subargs.start);
+        add_node(subargs.end, end_node);
+    } else
+        /* end test node -> end node */
+        add_node(end_test_node, end_node);
+
+    if (args->code[0] != RE_OP_END)
+        return RE_ERROR_ILLEGAL;
+
+    args->min_width += min_width;
+
+    ++args->code;
+
+    args->end = end_node;
+
+    return RE_ERROR_SUCCESS;
+}
+
 /* Builds a GROUP node. */
 Py_LOCAL_INLINE(int) build_GROUP(RE_CompileArgs* args) {
     RE_CODE private_group;
@@ -22871,6 +23164,12 @@ Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
         case RE_OP_PROPERTY_REV:
             /* A character literal or a property. */
             status = build_CHARACTER_or_PROPERTY(args);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
+            break;
+        case RE_OP_CONDITIONAL:
+            /* A lookaround conditional. */
+            status = build_CONDITIONAL(args);
             if (status != RE_ERROR_SUCCESS)
                 return status;
             break;
