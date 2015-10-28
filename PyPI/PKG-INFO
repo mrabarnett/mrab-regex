@@ -144,6 +144,28 @@ Description: Introduction
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
         
+        * Added support for lookaround in conditional pattern (Hg issue 163)
+        
+            The test of a conditional pattern can now be a lookaround.
+        
+            Examples::
+        
+                >>> regex.match(r'(?(?=\d)\d+|\w+)', '123abc')
+                <regex.Match object; span=(0, 3), match='123'>
+                >>> regex.match(r'(?(?=\d)\d+|\w+)', 'abc123')
+                <regex.Match object; span=(0, 6), match='abc123'>
+        
+            This is not quite the same as putting a lookaround in the first branch of a pair of alternatives.
+        
+            Examples::
+        
+                >>> print(regex.match(r'(?:(?=\d)\d+\b|\w+)', '123abc'))
+                <regex.Match object; span=(0, 6), match='123abc'>
+                >>> print(regex.match(r'(?(?=\d)\d+\b|\w+)', '123abc'))
+                None
+        
+            In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was _not_ attempted.
+        
         * Added POSIX matching (leftmost longest) (Hg issue 150)
         
             The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the ``POSIX`` flag (``(?p)``).
