@@ -2631,7 +2631,7 @@ xyzabc
         self.assertEqual(regex.search('(fuu){i<=2,d<=2,e<=5}', text).span(0,
           1), ((7, 10), (7, 10)))
         self.assertEqual(regex.search('(?e)(fuu){i<=2,d<=2,e<=5}',
-          text).span(0, 1), ((7, 10), (7, 10)))
+          text).span(0, 1), ((9, 10), (9, 10)))
         self.assertEqual(regex.search('(fuu){i<=3,d<=3,e}', text).span(0, 1),
           ((0, 0), (0, 0)))
         self.assertEqual(regex.search('(?b)(fuu){i<=3,d<=3,e}', text).span(0,
@@ -2644,7 +2644,7 @@ xyzabc
         self.assertEqual(regex.search('(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), ((0, 6), (0, 6)))
         self.assertEqual(regex.search('(?e)(foobar){e}',
-          'xirefoabralfobarxie').span(0, 1), ((0, 6), (0, 6)))
+          'xirefoabralfobarxie').span(0, 1), ((0, 3), (0, 3)))
         self.assertEqual(regex.search('(?b)(foobar){e}',
           'xirefoabralfobarxie').span(0, 1), ((11, 16), (11, 16)))
 
@@ -2655,7 +2655,7 @@ xyzabc
 
         # At most two inserts or substitutions and max two errors total.
         self.assertEqual(regex.search('(foobar){i<=2,s<=2,e<=2}',
-          'oobargoobaploowap').span(0, 1), ((5, 11), (5, 11)))
+          'oobargoobaploowap').span(0, 1), ((0, 5), (0, 5)))
 
         # Find best whole word match for "foobar".
         self.assertEqual(regex.search('\\b(foobar){e}\\b', 'zfoobarz').span(0,
@@ -2696,11 +2696,11 @@ xyzabc
         # Additionally, deletes cost two and substitutes one, and total
         # cost must be less than 4.
         self.assertEqual(regex.search('(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
-          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((6, 13), (6,
-          13)))
+          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((0, 5), (0,
+          5)))
         self.assertEqual(regex.search('(?b)(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
-          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((26, 33),
-          (26, 33)))
+          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((34, 39),
+          (34, 39)))
 
         # Partially fuzzy matches.
         self.assertEqual(regex.search('foo(bar){e<=1}zap', 'foobarzap').span(0,
@@ -3210,7 +3210,7 @@ xyzabc
         self.assertEqual(regex.match(r'(?:cats){e<=2}', 'c ats').fuzzy_counts,
           (1, 1, 0))
         self.assertEqual(regex.match(r'(?e)(?:cats){e<=2}',
-          'c ats').fuzzy_counts, (1, 1, 0))
+          'c ats').fuzzy_counts, (0, 1, 0))
         self.assertEqual(regex.match(r'(?b)(?:cats){e<=2}',
           'c ats').fuzzy_counts, (0, 1, 0))
 

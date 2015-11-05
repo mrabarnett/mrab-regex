@@ -187,8 +187,8 @@ typedef unsigned short RE_STATUS_T;
 
 /* The different error types for fuzzy matching. */
 #define RE_FUZZY_SUB 0
-#define RE_FUZZY_INS 1
-#define RE_FUZZY_DEL 2
+#define RE_FUZZY_DEL 1
+#define RE_FUZZY_INS 2
 #define RE_FUZZY_ERR 3
 #define RE_FUZZY_COUNT 3
 
@@ -210,6 +210,9 @@ typedef unsigned short RE_STATUS_T;
 #define RE_FUZZY_VAL_MIN_INS 2
 #define RE_FUZZY_VAL_MIN_DEL 3
 #define RE_FUZZY_VAL_MIN_ERR 4
+
+/* The maximum number of errors when trying to improve a fuzzy match. */
+#define RE_MAX_ERRORS 10
 
 /* The flags which will be set for full Unicode case folding. */
 #define RE_FULL_CASE_FOLDING (RE_FLAG_UNICODE | RE_FLAG_FULLCASE | RE_FLAG_IGNORECASE)
@@ -16349,18 +16352,16 @@ Py_LOCAL_INLINE(void) restore_fuzzy_counts(RE_State* state, size_t*
       sizeof(state->total_fuzzy_counts));
 }
 
-/* Performs a match or search from the current text position.
- *
- * The state can sometimes be shared across threads. In such instances there's
- * a lock (mutex) on it. The lock is held for the duration of matching.
+/* Performs a match or search from the current text position for a best fuzzy
+ * match.
  */
-Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
+Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
+  {
     RE_State* state;
     PatternObject* pattern;
     Py_ssize_t available;
-    BOOL get_best;
-    BOOL enhance_match;
-    size_t lowest_cost;
+    size_t lower_cost;
+    size_t upper_cost;
     RE_GroupData* best_groups;
     Py_ssize_t best_match_pos;
     BOOL must_advance;
@@ -16374,38 +16375,15 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     state = safe_state->re_state;
     pattern = state->pattern;
 
-    /* Release the GIL. */
-    release_GIL(safe_state);
-
-    /* Is there enough to search? */
-    if (state->reverse) {
-        if (state->text_pos < state->slice_start) {
-            acquire_GIL(safe_state);
-            return FALSE;
-        }
-
+    if (state->reverse)
         available = state->text_pos - state->slice_start;
-    } else {
-        if (state->text_pos > state->slice_end) {
-            acquire_GIL(safe_state);
-            return FALSE;
-        }
-
+    else
         available = state->slice_end - state->text_pos;
-    }
-
-    if (pattern->is_fuzzy) {
-        get_best = (pattern->flags & RE_FLAG_BESTMATCH) != 0;
-        enhance_match = !get_best && (pattern->flags & RE_FLAG_ENHANCEMATCH) !=
-          0;
-    } else {
-        get_best = FALSE;
-        enhance_match = FALSE;
-    }
 
     /* The maximum permitted cost. */
-    state->max_cost = pattern->is_fuzzy && !get_best ? PY_SSIZE_T_MAX : 0;
-    lowest_cost = PY_SSIZE_T_MAX;
+    state->max_cost = PY_SSIZE_T_MAX;
+    lower_cost = 0;
+    upper_cost = RE_MAX_ERRORS;
 
     best_groups = NULL;
 
@@ -16445,67 +16423,33 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
         if (status < 0)
             break;
 
-        if (!get_best && !enhance_match)
+        if (status == RE_ERROR_SUCCESS) {
+            save_fuzzy_counts(state, best_fuzzy_counts);
+
+            /* Save the best result so far. */
+            best_groups = save_groups(safe_state, best_groups);
+            if (!best_groups) {
+                status = RE_ERROR_MEMORY;
+                break;
+            }
+
+            best_match_pos = state->match_pos;
+            best_text_pos = state->text_pos;
+
+            if (state->total_cost == 0)
+                break;
+
+            if (state->total_cost < upper_cost)
+                upper_cost = state->total_cost;
+            else
+                upper_cost = RE_MAX_ERRORS + 1;
+        } else
+            lower_cost = state->max_cost + 1;
+
+        if (lower_cost >= upper_cost)
             break;
 
-        if (status == RE_ERROR_SUCCESS) {
-            if (state->total_cost < lowest_cost) {
-                save_fuzzy_counts(state, best_fuzzy_counts);
-
-                if (best_groups) {
-                    BOOL same;
-                    size_t g;
-
-                    /* Did we get the same match as the best so far? */
-                    same = state->match_pos == best_match_pos &&
-                      state->text_pos == best_text_pos;
-                    for (g = 0; same && g < pattern->public_group_count; g++) {
-                        same = state->groups[g].span.start ==
-                          best_groups[g].span.start &&
-                          state->groups[g].span.end == best_groups[g].span.end;
-                    }
-
-                    if (same && !enhance_match)
-                        break;
-                }
-
-                /* Save the best result so far. */
-                best_groups = save_groups(safe_state, best_groups);
-                if (!best_groups) {
-                    status = RE_ERROR_MEMORY;
-                    break;
-                }
-
-                best_match_pos = state->match_pos;
-                best_text_pos = state->text_pos;
-
-                if (state->total_cost == 0)
-                    break;
-            }
-
-            if (get_best || !enhance_match)
-                break;
-
-            if (state->total_cost > lowest_cost)
-                break;
-
-            if (state->reverse) {
-                state->slice_start = state->text_pos;
-                state->slice_end = state->match_pos;
-            } else {
-                state->slice_start = state->match_pos;
-                state->slice_end = state->text_pos;
-            }
-
-            lowest_cost = state->total_cost;
-            if (state->max_cost == PY_SSIZE_T_MAX)
-                state->max_cost = 0;
-        } else {
-            if (!get_best)
-                break;
-
-            ++state->max_cost;
-        }
+        state->max_cost = (lower_cost + upper_cost) / 2;
     }
 
     state->slice_start = slice_start;
@@ -16526,6 +16470,280 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
             restore_fuzzy_counts(state, best_fuzzy_counts);
         }
     }
+
+    return status;
+}
+
+/* Performs a match or search from the current text position for an enhanced
+ * fuzzy match.
+ */
+Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
+  search) {
+    RE_State* state;
+    PatternObject* pattern;
+    Py_ssize_t available;
+    size_t lowest_cost;
+    RE_GroupData* best_groups;
+    Py_ssize_t best_match_pos;
+    BOOL must_advance;
+    Py_ssize_t slice_start;
+    Py_ssize_t slice_end;
+    int status;
+    size_t best_fuzzy_counts[RE_FUZZY_COUNT];
+    Py_ssize_t best_text_pos = 0; /* Initialise to stop compiler warning. */
+    TRACE(("<<do_match>>\n"))
+
+    state = safe_state->re_state;
+    pattern = state->pattern;
+
+    if (state->reverse)
+        available = state->text_pos - state->slice_start;
+    else
+        available = state->slice_end - state->text_pos;
+
+    /* The maximum permitted cost. */
+    state->max_cost = PY_SSIZE_T_MAX;
+    lowest_cost = PY_SSIZE_T_MAX;
+
+    best_groups = NULL;
+
+    state->best_match_pos = state->text_pos;
+    state->best_text_pos = state->reverse ? state->slice_start :
+      state->slice_end;
+
+    best_match_pos = state->text_pos;
+    must_advance = state->must_advance;
+
+    slice_start = state->slice_start;
+    slice_end = state->slice_end;
+
+    for (;;) {
+        /* If there's a better match, it won't start earlier in the string than
+         * the current best match, so there's no need to start earlier than
+         * that match.
+         */
+        state->must_advance = must_advance;
+
+        /* Initialise the state. */
+        init_match(state);
+
+        status = RE_ERROR_SUCCESS;
+        if (state->max_cost == 0 && state->partial_side == RE_PARTIAL_NONE) {
+            /* An exact match, and partial matches not permitted. */
+            if (available < state->min_width || (available == 0 &&
+              state->must_advance))
+                status = RE_ERROR_FAILURE;
+        }
+
+        if (status == RE_ERROR_SUCCESS)
+            status = basic_match(safe_state, search);
+
+        /* Has an error occurred, or is it a partial match? */
+        if (status < 0)
+            break;
+
+        if (status == RE_ERROR_SUCCESS) {
+            BOOL better;
+
+            better = state->total_cost < lowest_cost;
+
+            if (better) {
+                BOOL same_match;
+
+                lowest_cost = state->total_cost;
+                state->max_cost = lowest_cost;
+
+                save_fuzzy_counts(state, best_fuzzy_counts);
+
+                same_match = state->match_pos == best_match_pos &&
+                  state->text_pos == best_text_pos;
+                same_match = FALSE;
+
+                if (best_groups) {
+                    size_t g;
+
+                    /* Did we get the same match as the best so far? */
+                    for (g = 0; same_match && g < pattern->public_group_count;
+                      g++) {
+                        same_match = state->groups[g].span.start ==
+                          best_groups[g].span.start &&
+                          state->groups[g].span.end == best_groups[g].span.end;
+                    }
+                }
+
+                /* Save the best result so far. */
+                best_groups = save_groups(safe_state, best_groups);
+                if (!best_groups) {
+                    status = RE_ERROR_MEMORY;
+                    break;
+                }
+
+                best_match_pos = state->match_pos;
+                best_text_pos = state->text_pos;
+
+                if (same_match || state->total_cost == 0)
+                    break;
+
+                state->max_cost = state->total_cost;
+                if (state->max_cost < RE_MAX_ERRORS)
+                    --state->max_cost;
+            } else
+                break;
+
+            if (state->reverse) {
+                state->slice_start = state->text_pos;
+                state->slice_end = state->match_pos;
+            } else {
+                state->slice_start = state->match_pos;
+                state->slice_end = state->text_pos;
+            }
+
+            state->text_pos = state->match_pos;
+
+            if (state->max_cost == PY_SSIZE_T_MAX)
+                state->max_cost = 0;
+        } else
+            break;
+    }
+
+    state->slice_start = slice_start;
+    state->slice_end = slice_end;
+
+    if (best_groups) {
+        if (status == RE_ERROR_SUCCESS && state->total_cost == 0)
+            /* We have a perfect match, so the previous best match. */
+            discard_groups(safe_state, best_groups);
+        else {
+            /* Restore the previous best match. */
+            status = RE_ERROR_SUCCESS;
+
+            state->match_pos = best_match_pos;
+            state->text_pos = best_text_pos;
+
+            restore_groups(safe_state, best_groups);
+            restore_fuzzy_counts(state, best_fuzzy_counts);
+        }
+    }
+
+    return status;
+}
+
+/* Performs a match or search from the current text position for a simple fuzzy
+ * match.
+ */
+Py_LOCAL_INLINE(int) do_simple_fuzzy_match(RE_SafeState* safe_state, BOOL
+  search) {
+    RE_State* state;
+    Py_ssize_t available;
+    int status;
+    TRACE(("<<do_match>>\n"))
+
+    state = safe_state->re_state;
+
+    if (state->reverse)
+        available = state->text_pos - state->slice_start;
+    else
+        available = state->slice_end - state->text_pos;
+
+    /* The maximum permitted cost. */
+    state->max_cost = PY_SSIZE_T_MAX;
+
+    state->best_match_pos = state->text_pos;
+    state->best_text_pos = state->reverse ? state->slice_start :
+      state->slice_end;
+
+    /* Initialise the state. */
+    init_match(state);
+
+    status = RE_ERROR_SUCCESS;
+    if (state->max_cost == 0 && state->partial_side == RE_PARTIAL_NONE) {
+        /* An exact match, and partial matches not permitted. */
+        if (available < state->min_width || (available == 0 &&
+          state->must_advance))
+            status = RE_ERROR_FAILURE;
+    }
+
+    if (status == RE_ERROR_SUCCESS)
+        status = basic_match(safe_state, search);
+
+    return status;
+}
+
+/* Performs a match or search from the current text position for an exact
+ * match.
+ */
+Py_LOCAL_INLINE(int) do_exact_match(RE_SafeState* safe_state, BOOL search) {
+    RE_State* state;
+    Py_ssize_t available;
+    int status;
+    TRACE(("<<do_match>>\n"))
+
+    state = safe_state->re_state;
+
+    if (state->reverse)
+        available = state->text_pos - state->slice_start;
+    else
+        available = state->slice_end - state->text_pos;
+
+    /* The maximum permitted cost. */
+    state->max_cost = 0;
+
+    state->best_match_pos = state->text_pos;
+    state->best_text_pos = state->reverse ? state->slice_start :
+      state->slice_end;
+
+    /* Initialise the state. */
+    init_match(state);
+
+    status = RE_ERROR_SUCCESS;
+    if (state->max_cost == 0 && state->partial_side == RE_PARTIAL_NONE) {
+        /* An exact match, and partial matches not permitted. */
+        if (available < state->min_width || (available == 0 &&
+          state->must_advance))
+            status = RE_ERROR_FAILURE;
+    }
+
+    if (status == RE_ERROR_SUCCESS)
+        status = basic_match(safe_state, search);
+
+    return status;
+}
+
+/* Performs a match or search from the current text position.
+ *
+ * The state can sometimes be shared across threads. In such instances there's
+ * a lock (mutex) on it. The lock is held for the duration of matching.
+ */
+Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
+    RE_State* state;
+    PatternObject* pattern;
+    int status;
+    TRACE(("<<do_match>>\n"))
+
+    state = safe_state->re_state;
+    pattern = state->pattern;
+
+    /* Is there enough to search? */
+    if (state->reverse) {
+        if (state->text_pos < state->slice_start)
+            return FALSE;
+    } else {
+        if (state->text_pos > state->slice_end)
+            return FALSE;
+    }
+
+    /* Release the GIL. */
+    release_GIL(safe_state);
+
+    if (pattern->is_fuzzy) {
+        if (pattern->flags & RE_FLAG_BESTMATCH)
+            status = do_best_fuzzy_match(safe_state, search);
+        else if (pattern->flags & RE_FLAG_ENHANCEMATCH)
+            status = do_enhanced_fuzzy_match(safe_state, search);
+        else
+            status = do_simple_fuzzy_match(safe_state, search);
+    } else
+        status = do_exact_match(safe_state, search);
 
     if (status == RE_ERROR_SUCCESS || status == RE_ERROR_PARTIAL) {
         Py_ssize_t max_end_index;

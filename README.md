@@ -1,44 +1,47 @@
-##Introduction##
+Introduction
+------------
 
 This new regex implementation is intended eventually to replace Python's current re module implementation.
 
 For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
 
-##Old vs new behaviour##
+Old vs new behaviour
+--------------------
 
 This module has 2 behaviours:
 
-**Version 0** behaviour (old behaviour, compatible with the current re module):
+* **Version 0** behaviour (old behaviour, compatible with the current re module):
 
-- Indicated by the `VERSION0` or `V0` flag, or `(?V0)` in the pattern.
+   * Indicated by the `VERSION0` or `V0` flag, or `(?V0)` in the pattern.
 
-- `.split` won't split a string at a zero-width match.
+   * `.split` won't split a string at a zero-width match.
 
-- Zero-width matches are handled like in the re module.
+   * Zero-width matches are handled like in the re module.
 
-- Inline flags apply to the entire pattern, and they can't be turned off.
+   * Inline flags apply to the entire pattern, and they can't be turned off.
 
-- Only simple sets are supported.
+   * Only simple sets are supported.
 
-- Case-insensitive matches in Unicode use simple case-folding by default.
+   * Case-insensitive matches in Unicode use simple case-folding by default.
 
-**Version 1** behaviour (new behaviour, different from the current re module):
+* **Version 1** behaviour (new behaviour, different from the current re module):
 
-- Indicated by the `VERSION1` or `V1` flag, or `(?V1)` in the pattern.
+   * Indicated by the `VERSION1` or `V1` flag, or `(?V1)` in the pattern.
 
-- `.split` will split a string at a zero-width match.
+   * `.split` will split a string at a zero-width match.
 
-- Zero-width matches are handled like in Perl and PCRE.
+   * Zero-width matches are handled like in Perl and PCRE.
 
-- Inline flags apply to the end of the group or pattern, and they can be turned off.
+   * Inline flags apply to the end of the group or pattern, and they can be turned off.
 
-- Nested sets and set operations are supported.
+   * Nested sets and set operations are supported.
 
-- Case-insensitive matches in Unicode use full case-folding by default.
+   * Case-insensitive matches in Unicode use full case-folding by default.
 
 If no version is specified, the regex module will default to `regex.DEFAULT_VERSION`. In the short term this will be `VERSION0`, but in the longer term it will be `VERSION1`.
 
-##Case-insensitive matches in Unicode##
+Case-insensitive matches in Unicode
+-----------------------------------
 
 The regex module supports both simple and full case-folding for case-insensitive matches in Unicode. Use of full case-folding can be turned on using the `FULLCASE` or `F` flag, or `(?f)` in the pattern. Please note that this flag affects how the `IGNORECASE` flag works; the `FULLCASE` flag itself does not turn on case-insensitive matching.
 
@@ -46,39 +49,41 @@ In the version 0 behaviour, the flag is off by default.
 
 In the version 1 behaviour, the flag is on by default.
 
-##Nested sets and set operations##
+Nested sets and set operations
+------------------------------
 
 It's not possible to support both simple sets, as used in the re module, and nested sets at the same time because of a difference in the meaning of an unescaped `"["` in a set.
 
 For example, the pattern `[[a-z]--[aeiou]]` is treated in the version 0 behaviour (simple sets, compatible with the re module) as:
 
-- Set containing "[" and the letters "a" to "z"
+* Set containing "[" and the letters "a" to "z"
 
-- Literal "--"
+* Literal "--"
 
-- Set containing letters "a", "e", "i", "o", "u"
+* Set containing letters "a", "e", "i", "o", "u"
 
 but in the version 1 behaviour (nested sets, enhanced behaviour) as:
 
-- Set which is:
+* Set which is:
 
-    - Set containing the letters "a" to "z"
+    * Set containing the letters "a" to "z"
 
-- but excluding:
+* but excluding:
 
-    - Set containing the letters "a", "e", "i", "o", "u"
+    * Set containing the letters "a", "e", "i", "o", "u"
 
 Version 0 behaviour: only simple sets are supported.
 
 Version 1 behaviour: nested sets and set operations are supported.
 
-##Flags##
+Flags
+-----
 
 There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.
 
 The scoped flags are: `FULLCASE`, `IGNORECASE`, `MULTILINE`, `DOTALL`, `VERBOSE`, `WORD`.
 
-The global flags are: `ASCII`, `BESTMATCH`, `ENHANCEMATCH`, `LOCALE`, `REVERSE`, `UNICODE`, `VERSION0`, `VERSION1`.
+The global flags are: `ASCII`, `BESTMATCH`, `ENHANCEMATCH`, `LOCALE`, `POSIX`, `REVERSE`, `UNICODE`, `VERSION0`, `VERSION1`.
 
 If neither the `ASCII`, `LOCALE` nor `UNICODE` flag is specified, it will default to `UNICODE` if the regex pattern is a Unicode string and `ASCII` if it's a bytestring.
 
@@ -86,7 +91,8 @@ The `ENHANCEMATCH` flag makes fuzzy matching attempt to improve the fit of the n
 
 The `BESTMATCH` flag makes fuzzy matching search for the best match instead of the next match.
 
-##Notes on named capture groups##
+Notes on named capture groups
+-----------------------------
 
 All capture groups have a group number, starting from 1.
 
@@ -96,33 +102,37 @@ The same name can be used by more than one group, with later captures 'overwriti
 
 Group numbers will be reused across different branches of a branch reset, eg. `(?|(first)|(second))` has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. `(?|(?P<foo>first)|(?P<bar>second))` has group 1 ("foo") and group 2 ("bar").
 
-In the regex `(\s+)(?|(?P<foo>[A-Z]+)|(\w+) (?<foo>[0-9]+)` there are 2 groups:
+In the regex `(\s+)(?|(?P<foo>[A-Z]+)|(\w+) (?P<foo>[0-9]+)` there are 2 groups:
 
-- `(\s+)` is group 1.
+* `(\s+)` is group 1.
 
-- `(?P<foo>[A-Z]+)` is group 2, also called "foo".
+* `(?P<foo>[A-Z]+)` is group 2, also called "foo".
 
-- `(\w+)` is group 2 because of the branch reset.
+* `(\w+)` is group 2 because of the branch reset.
 
-- `(?<foo>[0-9]+)` is group 2 because it's called "foo".
+* `(?P<foo>[0-9]+)` is group 2 because it's called "foo".
 
 If you want to prevent `(\w+)` from being group 2, you need to name it (different name, different group number).
 
-##Multithreading##
+Multithreading
+--------------
 
 The regex module releases the GIL during matching on instances of the built-in (immutable) string classes, enabling other Python threads to run concurrently. It is also possible to force the regex module to release the GIL during matching by calling the matching methods with the keyword argument `concurrent=True`. The behaviour is undefined if the string changes during matching, so use it *only* when it is guaranteed that that won't happen.
 
-##Building for 64-bits##
+Building for 64-bits
+--------------------
 
 If the source files are built for a 64-bit target then the string positions will also be 64-bit.
 
-##Unicode##
+Unicode
+-------
 
 This module supports Unicode 8.0.
 
 Full Unicode case-folding is supported.
 
-##Additional features##
+Additional features
+-------------------
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
@@ -130,7 +140,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     The test of a conditional pattern can now be a lookaround.
 
-    Examples::
+    Examples:
 
         >>> regex.match(r'(?(?=\d)\d+|\w+)', '123abc')
         <regex.Match object; span=(0, 3), match='123'>
@@ -139,20 +149,20 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     This is not quite the same as putting a lookaround in the first branch of a pair of alternatives.
 
-    Examples::
+    Examples:
 
         >>> print(regex.match(r'(?:(?=\d)\d+\b|\w+)', '123abc'))
         <regex.Match object; span=(0, 6), match='123abc'>
         >>> print(regex.match(r'(?(?=\d)\d+\b|\w+)', '123abc'))
         None
 
-    In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was _not_ attempted.
+    In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was **not** attempted.
 
 * Added POSIX matching (leftmost longest) (Hg issue 150)
 
     The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the `POSIX` flag (`(?p)`).
 
-    Examples::
+    Examples:
 
         >>> # Normal matching.
         >>> regex.search(r'Mr|Mrs', 'Mrs')
@@ -210,7 +220,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Examples:
 
-        >>> import regex
         >>> m = regex.match(r"(\w)+", "abc")
         >>> m.expandf("{1}")
         'c'
@@ -293,13 +302,13 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Examples:
 
-        # Version 0 behaviour (like re)
+        >>> # Version 0 behaviour (like re)
         >>> regex.sub('(?V0).*', 'x', 'test')
         'x'
         >>> regex.sub('(?V0).*?', '|', 'test')
         '|t|e|s|t|'
 
-        # Version 1 behaviour (like Perl)
+        >>> # Version 1 behaviour (like Perl)
         >>> regex.sub('(?V1).*', 'x', 'test')
         'xx'
         >>> regex.sub('(?V1).*?', '|', 'test')
@@ -312,12 +321,10 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
     Examples:
 
         >>> # Python 3.4 and later
-        >>> import regex
         >>> regex.match(b'.', bytearray(b'a')).group()
         b'a'
 
         >>> # Python 3.1-3.3
-        >>> import regex
         >>> regex.match(b'.', bytearray(b'a')).group()
         bytearray(b'a')
 
@@ -333,7 +340,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Examples:
 
-        >>> import regex
         >>> m = regex.match(r"(?:(?P<word>\w+) (?P<digits>\d+)\n)+", "one 1\ntwo 2\nthree 3\n")
         >>> m.groupdict()
         {'word': 'three', 'digits': '3'}
@@ -350,8 +356,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Examples:
 
-        >>> import regex
-        >>>
         >>> # With optional groups:
         >>>
         >>> # Both groups capture, the second capture 'overwriting' the first.
@@ -400,7 +404,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Examples:
 
-        >>> import regex
         >>> print(regex.fullmatch(r"abc", "abc").span())
         (0, 3)
         >>> print(regex.fullmatch(r"abc", "abcx"))
@@ -421,7 +424,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Examples:
 
-        >>> import regex
         >>> regex.subf(r"(\w+) (\w+)", "{0} => {2} {1}", "foo bar")
         'foo bar => bar foo'
         >>> regex.subf(r"(?P<word1>\w+) (?P<word2>\w+)", "{word2} {word1}", "foo bar")
@@ -433,7 +435,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Examples:
 
-        >>> import regex
         >>> m = regex.match(r"(\w+) (\w+)", "foo bar")
         >>> m.expandf("{0} => {2} {1}")
         'foo bar => bar foo'
@@ -448,7 +449,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Example:
 
-        >>> import regex
         >>> m = regex.search(r"\w+", "Hello world")
         >>> print(m.group())
         Hello
@@ -535,11 +535,11 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     The 3 types of error are:
 
-    1. Insertion, indicated by "i"
+    * Insertion, indicated by "i"
 
-    2. Deletion, indicated by "d"
+    * Deletion, indicated by "d"
 
-    3. Substitution, indicated by "s"
+    * Substitution, indicated by "s"
 
     In addition, "e" indicates any type of error.
 
@@ -547,51 +547,51 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Examples:
 
-    `foo` match "foo" exactly
+    * `foo` match "foo" exactly
 
-    `(?:foo){i}` match "foo", permitting insertions
+    * `(?:foo){i}` match "foo", permitting insertions
 
-    `(?:foo){d}` match "foo", permitting deletions
+    * `(?:foo){d}` match "foo", permitting deletions
 
-    `(?:foo){s}` match "foo", permitting substitutions
+    * `(?:foo){s}` match "foo", permitting substitutions
 
-    `(?:foo){i,s}` match "foo", permitting insertions and substitutions
+    * `(?:foo){i,s}` match "foo", permitting insertions and substitutions
 
-    `(?:foo){e}` match "foo", permitting errors
+    * `(?:foo){e}` match "foo", permitting errors
 
     If a certain type of error is specified, then any type not specified will **not** be permitted.
 
-    In the following examples I'll omit the item and write only the fuzziness.
+    In the following examples I'll omit the item and write only the fuzziness:
 
-    `{i<=3}` permit at most 3 insertions, but no other types
+    * `{i<=3}` permit at most 3 insertions, but no other types
 
-    `{d<=3}` permit at most 3 deletions, but no other types
+    * `{d<=3}` permit at most 3 deletions, but no other types
 
-    `{s<=3}` permit at most 3 substitutions, but no other types
+    * `{s<=3}` permit at most 3 substitutions, but no other types
 
-    `{i<=1,s<=2}` permit at most 1 insertion and at most 2 substitutions, but no deletions
+    * `{i<=1,s<=2}` permit at most 1 insertion and at most 2 substitutions, but no deletions
 
-    `{e<=3}` permit at most 3 errors
+    * `{e<=3}` permit at most 3 errors
 
-    `{1<=e<=3}` permit at least 1 and at most 3 errors
+    * `{1<=e<=3}` permit at least 1 and at most 3 errors
 
-    `{i<=2,d<=2,e<=3}` permit at most 2 insertions, at most 2 deletions, at most 3 errors in total, but no substitutions
+    * `{i<=2,d<=2,e<=3}` permit at most 2 insertions, at most 2 deletions, at most 3 errors in total, but no substitutions
 
     It's also possible to state the costs of each type of error and the maximum permitted total cost.
 
     Examples:
 
-    `{2i+2d+1s<=4}` each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
+    * `{2i+2d+1s<=4}` each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
 
-    `{i<=1,d<=1,s<=1,2i+2d+1s<=4}` at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
+    * `{i<=1,d<=1,s<=1,2i+2d+1s<=4}` at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
 
     You can also use "<" instead of "<=" if you want an exclusive minimum or maximum:
 
-    `{e<=3}` permit up to 3 errors
+    * `{e<=3}` permit up to 3 errors
 
-    `{e<4}` permit fewer than 4 errors
+    * `{e<4}` permit fewer than 4 errors
 
-    `{0<e<4}` permit more than 0 but fewer than 4 errors
+    * `{0<e<4}` permit more than 0 but fewer than 4 errors
 
     By default, fuzzy matching searches for the first match that meets the given constraints. The `ENHANCEMATCH` flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
 
@@ -599,11 +599,11 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     Further examples to note:
 
-    `regex.search("(dog){e}", "cat and dog")[1]` returns `"cat"` because that matches `"dog"` with 3 errors, which is within the limit (an unlimited number of errors is permitted).
+    * `regex.search("(dog){e}", "cat and dog")[1]` returns `"cat"` because that matches `"dog"` with 3 errors, which is within the limit (an unlimited number of errors is permitted).
 
-    `regex.search("(dog){e<=1}", "cat and dog")[1]` returns `" dog"` (with a leading space) because that matches `"dog"` with 1 error, which is within the limit (1 error is permitted).
+    * `regex.search("(dog){e<=1}", "cat and dog")[1]` returns `" dog"` (with a leading space) because that matches `"dog"` with 1 error, which is within the limit (1 error is permitted).
 
-    `regex.search("(?e)(dog){e<=1}", "cat and dog")[1]` returns `"dog"` (without a leading space) because the fuzzy search matches `" dog"` with 1 error, which is within the limit (1 error is permitted), and the `(?e)` then makes it attempt a better fit.
+    * `regex.search("(?e)(dog){e<=1}", "cat and dog")[1]` returns `"dog"` (without a leading space) because the fuzzy search matches `" dog"` with 1 error, which is within the limit (1 error is permitted), and the `(?e)` then makes it attempt a better fit.
 
     In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.
 
@@ -627,14 +627,14 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     One way is to build the pattern like this:
 
-        p = regex.compile(r"first|second|third|fourth|fifth")
+        >>> p = regex.compile(r"first|second|third|fourth|fifth")
 
     but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character that has a special meaning in a regex, and that if there is a shorter string that occurs initially in a longer string that the longer string is listed before the shorter one, for example, "cats" before "cat".
 
     The new alternative is to use a named list:
 
-        option_set = ["first", "second", "third", "fourth", "fifth"]
-        p = regex.compile(r"\L<options>", options=option_set)
+        >>> option_set = ["first", "second", "third", "fourth", "fifth"]
+        >>> p = regex.compile(r"\L<options>", options=option_set)
 
     The order of the items is irrelevant, they are treated as a set. The named lists are available as the `.named_lists` attribute of the pattern object :
 
@@ -663,45 +663,31 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     The operators, in order of increasing precedence, are:
 
-    1. `||` for union ("x||y" means "x or y")
+    * `||` for union ("x||y" means "x or y")
 
-    2. `~~` (double tilde) for symmetric difference ("x~~y" means "x or y, but not both")
+    * `~~` (double tilde) for symmetric difference ("x~~y" means "x or y, but not both")
 
-    3. `&&` for intersection ("x&&y" means "x and y")
+    * `&&` for intersection ("x&&y" means "x and y")
 
-    4. `--` (double dash) for difference ("x--y" means "x but not y")
+    * `--` (double dash) for difference ("x--y" means "x but not y")
 
     Implicit union, ie, simple juxtaposition like in `[ab]`, has the highest precedence. Thus, `[ab&&cd]` is the same as `[[a||b]&&[c||d]]`.
 
     Examples:
 
-    - `[ab]`
+    * `[ab]` # Set containing 'a' and 'b'
 
-        Set containing 'a' and 'b'
+    * `[a-z]` # Set containing 'a' .. 'z'
 
-    - `[a-z]`
+    * `[[a-z]--[qw]]` # Set containing 'a' .. 'z', but not 'q' or 'w'
 
-        Set containing 'a' .. 'z'
+    * `[a-z--qw]` # Same as above
 
-    - `[[a-z]--[qw]]`
+    * `[\p{L}--QW]` # Set containing all letters except 'Q' and 'W'
 
-        Set containing 'a' .. 'z', but not 'q' or 'w'
+    * `[\p{N}--[0-9]]` # Set containing all numbers except '0' .. '9'
 
-    - `[a-z--qw]`
-
-        Same as above
-
-    - `[\p{L}--QW]`
-
-        Set containing all letters except 'Q' and 'W'
-
-    - `[\p{N}--[0-9]]`
-
-        Set containing all numbers except '0' .. '9'
-
-    - `[\p{ASCII}&&\p{Letter}]`
-
-        Set containing all characters which are ASCII and letter
+    * `[\p{ASCII}&&\p{Letter}]` # Set containing all characters which are ASCII and letter
 
 * regex.escape (issue #2650)
 
@@ -718,21 +704,21 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:
 
-    - `matchobject.captures([group1, ...])`
+    * `matchobject.captures([group1, ...])`
 
-        Returns a list of the strings matched in a group or groups. Compare with `matchobject.group([group1, ...])`.
+        * Returns a list of the strings matched in a group or groups. Compare with `matchobject.group([group1, ...])`.
 
-    - `matchobject.starts([group])`
+    * `matchobject.starts([group])`
 
-        Returns a list of the start positions. Compare with `matchobject.start([group])`.
+        * Returns a list of the start positions. Compare with `matchobject.start([group])`.
 
-    - `matchobject.ends([group])`
+    * `matchobject.ends([group])`
 
-        Returns a list of the end positions. Compare with `matchobject.end([group])`.
+        * Returns a list of the end positions. Compare with `matchobject.end([group])`.
 
-    - `matchobject.spans([group])`
+    * `matchobject.spans([group])`
 
-        Returns a list of the spans. Compare with `matchobject.span([group])`.
+        * Returns a list of the spans. Compare with `matchobject.span([group])`.
 
     Examples:
 
@@ -880,27 +866,27 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     If the short form `\p{value}` is used, the properties are checked in the order: `General_Category`, `Script`, `Block`, binary property:
 
-    1. `Latin`, the 'Latin' script (`Script=Latin`).
+    * `Latin`, the 'Latin' script (`Script=Latin`).
 
-    2. `Cyrillic`, the 'Cyrillic' script (`Script=Cyrillic`).
+    * `Cyrillic`, the 'Cyrillic' script (`Script=Cyrillic`).
 
-    3. `BasicLatin`, the 'BasicLatin' block (`Block=BasicLatin`).
+    * `BasicLatin`, the 'BasicLatin' block (`Block=BasicLatin`).
 
-    4. `Alphabetic`, the 'Alphabetic' binary property (`Alphabetic=Yes`).
+    * `Alphabetic`, the 'Alphabetic' binary property (`Alphabetic=Yes`).
 
     A short form starting with `Is` indicates a script or binary property:
 
-    1. `IsLatin`, the 'Latin' script (`Script=Latin`).
+    * `IsLatin`, the 'Latin' script (`Script=Latin`).
 
-    2. `IsCyrillic`, the 'Cyrillic' script (`Script=Cyrillic`).
+    * `IsCyrillic`, the 'Cyrillic' script (`Script=Cyrillic`).
 
-    3. `IsAlphabetic`, the 'Alphabetic' binary property (`Alphabetic=Yes`).
+    * `IsAlphabetic`, the 'Alphabetic' binary property (`Alphabetic=Yes`).
 
     A short form starting with `In` indicates a block property:
 
-    1. `InBasicLatin`, the 'BasicLatin' block (`Block=BasicLatin`).
+    * `InBasicLatin`, the 'BasicLatin' block (`Block=BasicLatin`).
 
-    2. `InCyrillic`, the 'Cyrillic' block (`Block=Cyrillic`).
+    * `InCyrillic`, the 'Cyrillic' block (`Block=Cyrillic`).
 
 * POSIX character classes
 
@@ -929,13 +915,13 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
         >>> regex.findall(r"\G\w{2}", "abcd ef")
         ['ab', 'cd']
 
-    1. The search starts at position 0 and matches 2 letters 'ab'.
+    * The search starts at position 0 and matches 2 letters 'ab'.
 
-    2. The search continues at position 2 and matches 2 letters 'cd'.
+    * The search continues at position 2 and matches 2 letters 'cd'.
 
-    3. The search continues at position 4 and fails to match any letters.
+    * The search continues at position 4 and fails to match any letters.
 
-    4. The anchor stops the search start position from being advanced, so there are no more results.
+    * The anchor stops the search start position from being advanced, so there are no more results.
 
 * Reverse searching
 
@@ -961,13 +947,12 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * Branch reset
 
-    (?|...|...)
+    `(?|...|...)`
 
     Capture group numbers will be reused across the alternatives, but groups with different names will have different group numbers.
 
     Examples:
 
-        >>> import regex
         >>> regex.match(r"(?|(first)|(second))", "first").groups()
         ('first',)
         >>> regex.match(r"(?|(first)|(second))", "second").groups()

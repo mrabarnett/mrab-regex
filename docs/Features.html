@@ -3,13 +3,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.7: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.12: http://docutils.sourceforge.net/" />
 <title></title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 6194 2009-11-11 12:05:10Z milde $
+:Id: $Id: html4css1.css 7614 2013-02-21 15:55:51Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -47,6 +47,10 @@ blockquote.epigraph {
 dl.docutils dd {
   margin-bottom: 0.5em }
 
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
 /* Uncomment (and remove this text!) to get bold-faced definition list terms
 dl.docutils dt {
   font-weight: bold }
@@ -73,7 +77,7 @@ div.tip p.admonition-title {
 
 div.attention p.admonition-title, div.caution p.admonition-title,
 div.danger p.admonition-title, div.error p.admonition-title,
-div.warning p.admonition-title {
+div.warning p.admonition-title, .code .error {
   color: red ;
   font-weight: bold ;
   font-family: sans-serif }
@@ -157,17 +161,17 @@ h2.subtitle {
 hr.docutils {
   width: 75% }
 
-img.align-left, .figure.align-left{
+img.align-left, .figure.align-left, object.align-left {
   clear: left ;
   float: left ;
   margin-right: 1em }
 
-img.align-right, .figure.align-right {
+img.align-right, .figure.align-right, object.align-right {
   clear: right ;
   float: right ;
   margin-left: 1em }
 
-img.align-center, .figure.align-center {
+img.align-center, .figure.align-center, object.align-center {
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -185,7 +189,7 @@ img.align-center, .figure.align-center {
 
 /* reset inner alignment in figures */
 div.align-right {
-  text-align: left }
+  text-align: inherit }
 
 /* div.align-center * { */
 /*   text-align: left } */
@@ -245,9 +249,18 @@ pre.address {
   margin-top: 0 ;
   font: inherit }
 
-pre.literal-block, pre.doctest-block {
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
   margin-left: 2em ;
   margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
 
 span.classifier {
   font-family: sans-serif ;
@@ -300,6 +313,21 @@ table.docutils th.field-name, table.docinfo th.docinfo-name {
   white-space: nowrap ;
   padding-left: 0 }
 
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
 h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
 h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
   font-size: 100% }
@@ -321,24 +349,32 @@ ul.auto-toc {
 <div class="section" id="old-vs-new-behaviour">
 <h1>Old vs new behaviour</h1>
 <p>This module has 2 behaviours:</p>
-<p><strong>Version 0</strong> behaviour (old behaviour, compatible with the current re module):</p>
+<ul>
+<li><p class="first"><strong>Version 0</strong> behaviour (old behaviour, compatible with the current re module):</p>
 <blockquote>
-<p>Indicated by the <tt class="docutils literal">VERSION0</tt> or <tt class="docutils literal">V0</tt> flag, or <tt class="docutils literal"><span class="pre">(?V0)</span></tt> in the pattern.</p>
-<p><tt class="docutils literal">.split</tt> won't split a string at a zero-width match.</p>
-<p>Zero-width matches are handled like in the re module.</p>
-<p>Inline flags apply to the entire pattern, and they can't be turned off.</p>
-<p>Only simple sets are supported.</p>
-<p>Case-insensitive matches in Unicode use simple case-folding by default.</p>
+<ul class="simple">
+<li>Indicated by the <tt class="docutils literal">VERSION0</tt> or <tt class="docutils literal">V0</tt> flag, or <tt class="docutils literal"><span class="pre">(?V0)</span></tt> in the pattern.</li>
+<li><tt class="docutils literal">.split</tt> won't split a string at a zero-width match.</li>
+<li>Zero-width matches are handled like in the re module.</li>
+<li>Inline flags apply to the entire pattern, and they can't be turned off.</li>
+<li>Only simple sets are supported.</li>
+<li>Case-insensitive matches in Unicode use simple case-folding by default.</li>
+</ul>
 </blockquote>
-<p><strong>Version 1</strong> behaviour (new behaviour, different from the current re module):</p>
+</li>
+<li><p class="first"><strong>Version 1</strong> behaviour (new behaviour, different from the current re module):</p>
 <blockquote>
-<p>Indicated by the <tt class="docutils literal">VERSION1</tt> or <tt class="docutils literal">V1</tt> flag, or <tt class="docutils literal"><span class="pre">(?V1)</span></tt> in the pattern.</p>
-<p><tt class="docutils literal">.split</tt> will split a string at a zero-width match.</p>
-<p>Zero-width matches are handled like in Perl and PCRE.</p>
-<p>Inline flags apply to the end of the group or pattern, and they can be turned off.</p>
-<p>Nested sets and set operations are supported.</p>
-<p>Case-insensitive matches in Unicode use full case-folding by default.</p>
+<ul class="simple">
+<li>Indicated by the <tt class="docutils literal">VERSION1</tt> or <tt class="docutils literal">V1</tt> flag, or <tt class="docutils literal"><span class="pre">(?V1)</span></tt> in the pattern.</li>
+<li><tt class="docutils literal">.split</tt> will split a string at a zero-width match.</li>
+<li>Zero-width matches are handled like in Perl and PCRE.</li>
+<li>Inline flags apply to the end of the group or pattern, and they can be turned off.</li>
+<li>Nested sets and set operations are supported.</li>
+<li>Case-insensitive matches in Unicode use full case-folding by default.</li>
+</ul>
 </blockquote>
+</li>
+</ul>
 <p>If no version is specified, the regex module will default to <tt class="docutils literal">regex.DEFAULT_VERSION</tt>. In the short term this will be <tt class="docutils literal">VERSION0</tt>, but in the longer term it will be <tt class="docutils literal">VERSION1</tt>.</p>
 </div>
 <div class="section" id="case-insensitive-matches-in-unicode">
@@ -351,20 +387,28 @@ ul.auto-toc {
 <h1>Nested sets and set operations</h1>
 <p>It's not possible to support both simple sets, as used in the re module, and nested sets at the same time because of a difference in the meaning of an unescaped <tt class="docutils literal">&quot;[&quot;</tt> in a set.</p>
 <p>For example, the pattern <tt class="docutils literal"><span class="pre">[[a-z]--[aeiou]]</span></tt> is treated in the version 0 behaviour (simple sets, compatible with the re module) as:</p>
-<blockquote>
-<p>Set containing &quot;[&quot; and the letters &quot;a&quot; to &quot;z&quot;</p>
-<p>Literal &quot;--&quot;</p>
-<p>Set containing letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&quot;, &quot;u&quot;</p>
-</blockquote>
+<ul class="simple">
+<li>Set containing &quot;[&quot; and the letters &quot;a&quot; to &quot;z&quot;</li>
+<li>Literal &quot;--&quot;</li>
+<li>Set containing letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&quot;, &quot;u&quot;</li>
+</ul>
 <p>but in the version 1 behaviour (nested sets, enhanced behaviour) as:</p>
+<ul>
+<li><p class="first">Set which is:</p>
 <blockquote>
-<p>Set which is:</p>
-<blockquote>
-Set containing the letters &quot;a&quot; to &quot;z&quot;</blockquote>
-<p>but excluding:</p>
-<blockquote>
-Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&quot;, &quot;u&quot;</blockquote>
+<ul class="simple">
+<li>Set containing the letters &quot;a&quot; to &quot;z&quot;</li>
+</ul>
 </blockquote>
+</li>
+<li><p class="first">but excluding:</p>
+<blockquote>
+<ul class="simple">
+<li>Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&quot;, &quot;u&quot;</li>
+</ul>
+</blockquote>
+</li>
+</ul>
 <p>Version 0 behaviour: only simple sets are supported.</p>
 <p>Version 1 behaviour: nested sets and set operations are supported.</p>
 </div>
@@ -383,13 +427,13 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <p>Groups with the same group name will have the same group number, and groups with a different group name will have a different group number.</p>
 <p>The same name can be used by more than one group, with later captures 'overwriting' earlier captures. All of the captures of the group will be available from the <tt class="docutils literal">captures</tt> method of the match object.</p>
 <p>Group numbers will be reused across different branches of a branch reset, eg. <tt class="docutils literal"><span class="pre">(?|(first)|(second))</span></tt> has only group 1. If capture groups have different group names then they will, of course, have different group numbers, eg. <tt class="docutils literal"><span class="pre">(?|(?P&lt;foo&gt;first)|(?P&lt;bar&gt;second))</span></tt> has group 1 (&quot;foo&quot;) and group 2 (&quot;bar&quot;).</p>
-<p>In the regex <tt class="docutils literal"><span class="pre">(\s+)(?|(?P&lt;foo&gt;[A-Z]+)|(\w+)</span> <span class="pre">(?&lt;foo&gt;[0-9]+)</span></tt> there are 2 groups:</p>
-<ol class="arabic simple">
+<p>In the regex <tt class="docutils literal"><span class="pre">(\s+)(?|(?P&lt;foo&gt;[A-Z]+)|(\w+)</span> <span class="pre">(?P&lt;foo&gt;[0-9]+)</span></tt> there are 2 groups:</p>
+<ul class="simple">
 <li><tt class="docutils literal">(\s+)</tt> is group 1.</li>
 <li><tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;[A-Z]+)</span></tt> is group 2, also called &quot;foo&quot;.</li>
 <li><tt class="docutils literal">(\w+)</tt> is group 2 because of the branch reset.</li>
-<li><tt class="docutils literal"><span class="pre">(?&lt;foo&gt;[0-9]+)</span></tt> is group 2 because it's called &quot;foo&quot;.</li>
-</ol>
+<li><tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;[0-9]+)</span></tt> is group 2 because it's called &quot;foo&quot;.</li>
+</ul>
 <p>If you want to prevent <tt class="docutils literal">(\w+)</tt> from being group 2, you need to name it (different name, different group number).</p>
 </div>
 <div class="section" id="multithreading">
@@ -409,11 +453,37 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
+<li><p class="first">Added support for lookaround in conditional pattern (Hg issue 163)</p>
+<blockquote>
+<p>The test of a conditional pattern can now be a lookaround.</p>
+<p>Examples:</p>
+<blockquote>
+<pre class="doctest-block">
+&gt;&gt;&gt; regex.match(r'(?(?=\d)\d+|\w+)', '123abc')
+&lt;regex.Match object; span=(0, 3), match='123'&gt;
+&gt;&gt;&gt; regex.match(r'(?(?=\d)\d+|\w+)', 'abc123')
+&lt;regex.Match object; span=(0, 6), match='abc123'&gt;
+</pre>
+</blockquote>
+<p>This is not quite the same as putting a lookaround in the first branch of a pair of alternatives.</p>
+<p>Examples:</p>
+<blockquote>
+<pre class="doctest-block">
+&gt;&gt;&gt; print(regex.match(r'(?:(?=\d)\d+\b|\w+)', '123abc'))
+&lt;regex.Match object; span=(0, 6), match='123abc'&gt;
+&gt;&gt;&gt; print(regex.match(r'(?(?=\d)\d+\b|\w+)', '123abc'))
+None
+</pre>
+</blockquote>
+<p>In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was <strong>not</strong> attempted.</p>
+</blockquote>
+</li>
 <li><p class="first">Added POSIX matching (leftmost longest) (Hg issue 150)</p>
 <blockquote>
 <p>The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the <tt class="docutils literal">POSIX</tt> flag (<tt class="docutils literal"><span class="pre">(?p)</span></tt>).</p>
 <p>Examples:</p>
-<pre class="literal-block">
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; # Normal matching.
 &gt;&gt;&gt; regex.search(r'Mr|Mrs', 'Mrs')
 &lt;regex.Match object; span=(0, 2), match='Mr'&gt;
@@ -425,6 +495,7 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 &gt;&gt;&gt; regex.search(r'(?p)one(self)?(selfsufficient)?', 'oneselfsufficient')
 &lt;regex.Match object; span=(0, 17), match='oneselfsufficient'&gt;
 </pre>
+</blockquote>
 <p>Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.</p>
 </blockquote>
 </li>
@@ -432,10 +503,12 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <blockquote>
 <p>If there's no group called &quot;DEFINE&quot;, then ... will be ignored, but any group definitions within it will be available.</p>
 <p>Examples:</p>
-<pre class="literal-block">
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; regex.search(r'(?(DEFINE)(?P&lt;quant&gt;\d+)(?P&lt;item&gt;\w+))(?&amp;quant) (?&amp;item)', '5 elephants')
 &lt;regex.Match object; span=(0, 11), match='5 elephants'&gt;
 </pre>
+</blockquote>
 </blockquote>
 </li>
 <li><p class="first">Added <tt class="docutils literal">(*PRUNE)</tt>, <tt class="docutils literal">(*SKIP)</tt> and <tt class="docutils literal">(*FAIL)</tt> (Hg issue 153)</p>
@@ -450,7 +523,8 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 <p>Keeps the part of the entire match after the position where <tt class="docutils literal">\K</tt> occurred; the part before it is discarded.</p>
 <p>It does not affect what capture groups return.</p>
 <p>Examples:</p>
-<pre class="literal-block">
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; m = regex.search(r'(\w\w\K\w\w\w)', 'abcdef')
 &gt;&gt;&gt; m[0]
 'cde'
@@ -464,12 +538,14 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 'bcdef'
 </pre>
 </blockquote>
+</blockquote>
 </li>
 <li><p class="first">Added capture subscripting for <tt class="docutils literal">expandf</tt> and <tt class="docutils literal">subf</tt>/<tt class="docutils literal">subfn</tt> (Hg issue 133) <strong>(Python 2.6 and above)</strong></p>
 <blockquote>
 <p>You can now use subscripting to get the captures of a repeated capture group.</p>
 <p>Examples:</p>
-<pre class="literal-block">
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; m = regex.match(r&quot;(\w)+&quot;, &quot;abc&quot;)
 &gt;&gt;&gt; m.expandf(&quot;{1}&quot;)
 'c'
@@ -486,6 +562,7 @@ Set containing the letters &quot;a&quot;, &quot;e&quot;, &quot;i&quot;, &quot;o&
 &gt;&gt;&gt; m.expandf(&quot;{letter[-1]} {letter[-2]} {letter[-3]}&quot;)
 'c b a'
 </pre>
+</blockquote>
 </blockquote>
 </li>
 <li><p class="first">Added support for referring to a group by number using <tt class="docutils literal"><span class="pre">(?P=...)</span></tt>.</p>
@@ -562,36 +639,40 @@ False
 <p>Sometimes it's not clear how zero-width matches should be handled. For example, should <tt class="docutils literal">.*</tt> match 0 characters directly after matching &gt;0 characters?</p>
 <p>Most regex implementations follow the lead of Perl (PCRE), but the re module sometimes doesn't. The Perl behaviour appears to be the most common (and the re module is sometimes definitely wrong), so in version 1 the regex module follows the Perl behaviour, whereas in version 0 it follows the legacy re behaviour.</p>
 <p>Examples:</p>
-<pre class="literal-block">
-# Version 0 behaviour (like re)
+<blockquote>
+<pre class="doctest-block">
+&gt;&gt;&gt; # Version 0 behaviour (like re)
 &gt;&gt;&gt; regex.sub('(?V0).*', 'x', 'test')
 'x'
 &gt;&gt;&gt; regex.sub('(?V0).*?', '|', 'test')
 '|t|e|s|t|'
-
-# Version 1 behaviour (like Perl)
+</pre>
+<pre class="doctest-block">
+&gt;&gt;&gt; # Version 1 behaviour (like Perl)
 &gt;&gt;&gt; regex.sub('(?V1).*', 'x', 'test')
 'xx'
 &gt;&gt;&gt; regex.sub('(?V1).*?', '|', 'test')
 '|||||||||'
 </pre>
 </blockquote>
+</blockquote>
 </li>
 <li><p class="first">re.group() should never return a bytearray (issue #18468)</p>
 <blockquote>
 <p>For compatibility with the re module, the regex module returns all matching bytestrings as <tt class="docutils literal">bytes</tt>, starting from Python 3.4.</p>
 <p>Examples:</p>
-<pre class="literal-block">
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; # Python 3.4 and later
-&gt;&gt;&gt; import regex
 &gt;&gt;&gt; regex.match(b'.', bytearray(b'a')).group()
 b'a'
-
+</pre>
+<pre class="doctest-block">
 &gt;&gt;&gt; # Python 3.1-3.3
-&gt;&gt;&gt; import regex
 &gt;&gt;&gt; regex.match(b'.', bytearray(b'a')).group()
 bytearray(b'a')
 </pre>
+</blockquote>
 </blockquote>
 </li>
 <li><p class="first">Added <tt class="docutils literal">capturesdict</tt> (Hg issue 86)</p>
@@ -601,8 +682,8 @@ bytearray(b'a')
 <p><tt class="docutils literal">captures</tt> returns a list of all the captures of a group</p>
 <p><tt class="docutils literal">capturesdict</tt> returns a dict of the named groups and lists of all the captures of those groups.</p>
 <p>Examples:</p>
-<pre class="literal-block">
-&gt;&gt;&gt; import regex
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; m = regex.match(r&quot;(?:(?P&lt;word&gt;\w+) (?P&lt;digits&gt;\d+)\n)+&quot;, &quot;one 1\ntwo 2\nthree 3\n&quot;)
 &gt;&gt;&gt; m.groupdict()
 {'word': 'three', 'digits': '3'}
@@ -614,14 +695,14 @@ bytearray(b'a')
 {'word': ['one', 'two', 'three'], 'digits': ['1', '2', '3']}
 </pre>
 </blockquote>
+</blockquote>
 </li>
 <li><p class="first">Allow duplicate names of groups (Hg issue 87)</p>
 <blockquote>
 <p>Group names can now be duplicated.</p>
 <p>Examples:</p>
-<pre class="literal-block">
-&gt;&gt;&gt; import regex
-&gt;&gt;&gt;
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; # With optional groups:
 &gt;&gt;&gt;
 &gt;&gt;&gt; # Both groups capture, the second capture 'overwriting' the first.
@@ -665,13 +746,14 @@ bytearray(b'a')
 ['first', '']
 </pre>
 </blockquote>
+</blockquote>
 </li>
 <li><p class="first">Added <tt class="docutils literal">fullmatch</tt> (issue #16203)</p>
 <blockquote>
 <p><tt class="docutils literal">fullmatch</tt> behaves like <tt class="docutils literal">match</tt>, except that it must match all of the string.</p>
 <p>Examples:</p>
-<pre class="literal-block">
-&gt;&gt;&gt; import regex
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;abc&quot;).span())
 (0, 3)
 &gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;abcx&quot;))
@@ -687,26 +769,28 @@ None
 'abcd'
 </pre>
 </blockquote>
+</blockquote>
 </li>
 <li><p class="first">Added <tt class="docutils literal">subf</tt> and <tt class="docutils literal">subfn</tt> <strong>(Python 2.6 and above)</strong></p>
 <blockquote>
 <p><tt class="docutils literal">subf</tt> and <tt class="docutils literal">subfn</tt> are alternatives to <tt class="docutils literal">sub</tt> and <tt class="docutils literal">subn</tt> respectively. When passed a replacement string, they treat it as a format string.</p>
 <p>Examples:</p>
-<pre class="literal-block">
-&gt;&gt;&gt; import regex
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; regex.subf(r&quot;(\w+) (\w+)&quot;, &quot;{0} =&gt; {2} {1}&quot;, &quot;foo bar&quot;)
 'foo bar =&gt; bar foo'
 &gt;&gt;&gt; regex.subf(r&quot;(?P&lt;word1&gt;\w+) (?P&lt;word2&gt;\w+)&quot;, &quot;{word2} {word1}&quot;, &quot;foo bar&quot;)
 'bar foo'
 </pre>
 </blockquote>
+</blockquote>
 </li>
 <li><p class="first">Added <tt class="docutils literal">expandf</tt> to match object <strong>(Python 2.6 and above)</strong></p>
 <blockquote>
 <p><tt class="docutils literal">expandf</tt> is an alternative to <tt class="docutils literal">expand</tt>. When passed a replacement string, it treats it as a format string.</p>
 <p>Examples:</p>
-<pre class="literal-block">
-&gt;&gt;&gt; import regex
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; m = regex.match(r&quot;(\w+) (\w+)&quot;, &quot;foo bar&quot;)
 &gt;&gt;&gt; m.expandf(&quot;{0} =&gt; {2} {1}&quot;)
 'foo bar =&gt; bar foo'
@@ -716,13 +800,14 @@ None
 'bar foo'
 </pre>
 </blockquote>
+</blockquote>
 </li>
 <li><p class="first">Detach searched string</p>
 <blockquote>
 <p>A match object contains a reference to the string that was searched, via its <tt class="docutils literal">string</tt> attribute. The match object now has a <tt class="docutils literal">detach_string</tt> method that will 'detach' that string, making it available for garbage collection (this might save valuable memory if that string is very large).</p>
 <p>Example:</p>
-<pre class="literal-block">
-&gt;&gt;&gt; import regex
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; m = regex.search(r&quot;\w+&quot;, &quot;Hello world&quot;)
 &gt;&gt;&gt; print(m.group())
 Hello
@@ -734,6 +819,7 @@ Hello
 &gt;&gt;&gt; print(m.string)
 None
 </pre>
+</blockquote>
 </blockquote>
 </li>
 <li><p class="first">Characters in a group name (issue #14462)</p>
@@ -747,16 +833,19 @@ None
 <p><tt class="docutils literal"><span class="pre">(?R)</span></tt> or <tt class="docutils literal"><span class="pre">(?0)</span></tt> tries to match the entire regex recursively. <tt class="docutils literal"><span class="pre">(?1)</span></tt>, <tt class="docutils literal"><span class="pre">(?2)</span></tt>, etc, try to match the relevant capture group.</p>
 <p><tt class="docutils literal"><span class="pre">(?&amp;name)</span></tt> tries to match the named capture group.</p>
 <p>Examples:</p>
-<pre class="literal-block">
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; regex.match(r&quot;(Tarzan|Jane) loves (?1)&quot;, &quot;Tarzan loves Jane&quot;).groups()
 ('Tarzan',)
 &gt;&gt;&gt; regex.match(r&quot;(Tarzan|Jane) loves (?1)&quot;, &quot;Jane loves Tarzan&quot;).groups()
 ('Jane',)
-
+</pre>
+<pre class="doctest-block">
 &gt;&gt;&gt; m = regex.search(r&quot;(\w)(?:(?R)|(\w?))\1&quot;, &quot;kayak&quot;)
 &gt;&gt;&gt; m.group(0, 1, 2)
 ('kayak', 'k', None)
 </pre>
+</blockquote>
 <p>The first two examples show how the subpattern within the capture group is reused, but is _not_ itself a capture group. In other words, <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?1)&quot;</span></tt> is equivalent to <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?:Tarzan|Jane)&quot;</span></tt>.</p>
 <p>It's possible to backtrack into a recursed or repeated group.</p>
 <p>You can't call a group if there is more than one group with that group name or group number (<tt class="docutils literal">&quot;ambiguous group reference&quot;</tt>). For example, <tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;\w+)</span> <span class="pre">(?P&lt;foo&gt;\w+)</span> <span class="pre">(?&amp;foo)?</span></tt> has 2 groups called &quot;foo&quot; (both group 1) and <tt class="docutils literal"><span class="pre">(?|([A-Z]+)|([0-9]+))</span> <span class="pre">(?1)?</span></tt> has 2 groups with group number 1.</p>
@@ -766,23 +855,27 @@ None
 <li><p class="first">repr(regex) doesn't include actual regex (issue #13592)</p>
 <blockquote>
 <p>The repr of a compiled regex is now in the form of a eval-able string. For example:</p>
-<pre class="literal-block">
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; r = regex.compile(&quot;foo&quot;, regex.I)
 &gt;&gt;&gt; repr(r)
 &quot;regex.Regex('foo', flags=regex.I | regex.V0)&quot;
 &gt;&gt;&gt; r
 regex.Regex('foo', flags=regex.I | regex.V0)
 </pre>
+</blockquote>
 <p>The regex module has Regex as an alias for the 'compile' function.</p>
 </blockquote>
 </li>
 <li><p class="first">Improve the repr for regular expression match objects (issue #17087)</p>
 <blockquote>
 <p>The repr of a match object is now a more useful form. For example:</p>
-<pre class="literal-block">
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; regex.search(r&quot;\d+&quot;, &quot;abc012def&quot;)
 &lt;regex.Match object; span=(3, 6), match='012'&gt;
 </pre>
+</blockquote>
 </blockquote>
 </li>
 <li><p class="first">Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)</p>
@@ -818,35 +911,45 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 <p>In addition, &quot;e&quot; indicates any type of error.</p>
 <p>The fuzziness of a regex item is specified between &quot;{&quot; and &quot;}&quot; after the item.</p>
 <p>Examples:</p>
-<p><tt class="docutils literal">foo</tt> match &quot;foo&quot; exactly</p>
-<p><tt class="docutils literal"><span class="pre">(?:foo){i}</span></tt> match &quot;foo&quot;, permitting insertions</p>
-<p><tt class="docutils literal"><span class="pre">(?:foo){d}</span></tt> match &quot;foo&quot;, permitting deletions</p>
-<p><tt class="docutils literal"><span class="pre">(?:foo){s}</span></tt> match &quot;foo&quot;, permitting substitutions</p>
-<p><tt class="docutils literal"><span class="pre">(?:foo){i,s}</span></tt> match &quot;foo&quot;, permitting insertions and substitutions</p>
-<p><tt class="docutils literal"><span class="pre">(?:foo){e}</span></tt> match &quot;foo&quot;, permitting errors</p>
+<ul class="simple">
+<li><tt class="docutils literal">foo</tt> match &quot;foo&quot; exactly</li>
+<li><tt class="docutils literal"><span class="pre">(?:foo){i}</span></tt> match &quot;foo&quot;, permitting insertions</li>
+<li><tt class="docutils literal"><span class="pre">(?:foo){d}</span></tt> match &quot;foo&quot;, permitting deletions</li>
+<li><tt class="docutils literal"><span class="pre">(?:foo){s}</span></tt> match &quot;foo&quot;, permitting substitutions</li>
+<li><tt class="docutils literal"><span class="pre">(?:foo){i,s}</span></tt> match &quot;foo&quot;, permitting insertions and substitutions</li>
+<li><tt class="docutils literal"><span class="pre">(?:foo){e}</span></tt> match &quot;foo&quot;, permitting errors</li>
+</ul>
 <p>If a certain type of error is specified, then any type not specified will <strong>not</strong> be permitted.</p>
-<p>In the following examples I'll omit the item and write only the fuzziness.</p>
-<p><tt class="docutils literal"><span class="pre">{i&lt;=3}</span></tt> permit at most 3 insertions, but no other types</p>
-<p><tt class="docutils literal"><span class="pre">{d&lt;=3}</span></tt> permit at most 3 deletions, but no other types</p>
-<p><tt class="docutils literal"><span class="pre">{s&lt;=3}</span></tt> permit at most 3 substitutions, but no other types</p>
-<p><tt class="docutils literal"><span class="pre">{i&lt;=1,s&lt;=2}</span></tt> permit at most 1 insertion and at most 2 substitutions, but no deletions</p>
-<p><tt class="docutils literal"><span class="pre">{e&lt;=3}</span></tt> permit at most 3 errors</p>
-<p><tt class="docutils literal"><span class="pre">{1&lt;=e&lt;=3}</span></tt> permit at least 1 and at most 3 errors</p>
-<p><tt class="docutils literal"><span class="pre">{i&lt;=2,d&lt;=2,e&lt;=3}</span></tt> permit at most 2 insertions, at most 2 deletions, at most 3 errors in total, but no substitutions</p>
+<p>In the following examples I'll omit the item and write only the fuzziness:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">{i&lt;=3}</span></tt> permit at most 3 insertions, but no other types</li>
+<li><tt class="docutils literal"><span class="pre">{d&lt;=3}</span></tt> permit at most 3 deletions, but no other types</li>
+<li><tt class="docutils literal"><span class="pre">{s&lt;=3}</span></tt> permit at most 3 substitutions, but no other types</li>
+<li><tt class="docutils literal"><span class="pre">{i&lt;=1,s&lt;=2}</span></tt> permit at most 1 insertion and at most 2 substitutions, but no deletions</li>
+<li><tt class="docutils literal"><span class="pre">{e&lt;=3}</span></tt> permit at most 3 errors</li>
+<li><tt class="docutils literal"><span class="pre">{1&lt;=e&lt;=3}</span></tt> permit at least 1 and at most 3 errors</li>
+<li><tt class="docutils literal"><span class="pre">{i&lt;=2,d&lt;=2,e&lt;=3}</span></tt> permit at most 2 insertions, at most 2 deletions, at most 3 errors in total, but no substitutions</li>
+</ul>
 <p>It's also possible to state the costs of each type of error and the maximum permitted total cost.</p>
 <p>Examples:</p>
-<p><tt class="docutils literal"><span class="pre">{2i+2d+1s&lt;=4}</span></tt> each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4</p>
-<p><tt class="docutils literal"><span class="pre">{i&lt;=1,d&lt;=1,s&lt;=1,2i+2d+1s&lt;=4}</span></tt> at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">{2i+2d+1s&lt;=4}</span></tt> each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4</li>
+<li><tt class="docutils literal"><span class="pre">{i&lt;=1,d&lt;=1,s&lt;=1,2i+2d+1s&lt;=4}</span></tt> at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4</li>
+</ul>
 <p>You can also use &quot;&lt;&quot; instead of &quot;&lt;=&quot; if you want an exclusive minimum or maximum:</p>
-<p><tt class="docutils literal"><span class="pre">{e&lt;=3}</span></tt> permit up to 3 errors</p>
-<p><tt class="docutils literal">{e&lt;4}</tt> permit fewer than 4 errors</p>
-<p><tt class="docutils literal">{0&lt;e&lt;4}</tt> permit more than 0 but fewer than 4 errors</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">{e&lt;=3}</span></tt> permit up to 3 errors</li>
+<li><tt class="docutils literal">{e&lt;4}</tt> permit fewer than 4 errors</li>
+<li><tt class="docutils literal">{0&lt;e&lt;4}</tt> permit more than 0 but fewer than 4 errors</li>
+</ul>
 <p>By default, fuzzy matching searches for the first match that meets the given constraints. The <tt class="docutils literal">ENHANCEMATCH</tt> flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.</p>
 <p>The <tt class="docutils literal">BESTMATCH</tt> flag will make it search for the best match instead.</p>
 <p>Further examples to note:</p>
-<p><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;cat&quot;</tt> because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 3 errors, which is within the limit (an unlimited number of errors is permitted).</p>
-<p><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot; dog&quot;</tt> (with a leading space) because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted).</p>
-<p><tt class="docutils literal"><span class="pre">regex.search(&quot;(?e)(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;dog&quot;</tt> (without a leading space) because the fuzzy search matches <tt class="docutils literal">&quot; dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted), and the <tt class="docutils literal"><span class="pre">(?e)</span></tt> then makes it attempt a better fit.</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;cat&quot;</tt> because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 3 errors, which is within the limit (an unlimited number of errors is permitted).</li>
+<li><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot; dog&quot;</tt> (with a leading space) because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted).</li>
+<li><tt class="docutils literal"><span class="pre">regex.search(&quot;(?e)(dog){e&lt;=1}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;dog&quot;</tt> (without a leading space) because the fuzzy search matches <tt class="docutils literal">&quot; dog&quot;</tt> with 1 error, which is within the limit (1 error is permitted), and the <tt class="docutils literal"><span class="pre">(?e)</span></tt> then makes it attempt a better fit.</li>
+</ul>
 <p>In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.</p>
 <p>The match object has an attribute <tt class="docutils literal">fuzzy_counts</tt> which gives the total number of substitutions, insertions and deletions.</p>
 <blockquote>
@@ -870,20 +973,26 @@ regex.Regex('foo', flags=regex.I | regex.V0)
 <p><tt class="docutils literal">\L&lt;name&gt;</tt></p>
 <p>There are occasions where you may want to include a list (actually, a set) of options in a regex.</p>
 <p>One way is to build the pattern like this:</p>
-<pre class="literal-block">
-p = regex.compile(r&quot;first|second|third|fourth|fifth&quot;)
+<blockquote>
+<pre class="doctest-block">
+&gt;&gt;&gt; p = regex.compile(r&quot;first|second|third|fourth|fifth&quot;)
 </pre>
+</blockquote>
 <p>but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character that has a special meaning in a regex, and that if there is a shorter string that occurs initially in a longer string that the longer string is listed before the shorter one, for example, &quot;cats&quot; before &quot;cat&quot;.</p>
 <p>The new alternative is to use a named list:</p>
-<pre class="literal-block">
-option_set = [&quot;first&quot;, &quot;second&quot;, &quot;third&quot;, &quot;fourth&quot;, &quot;fifth&quot;]
-p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
+<blockquote>
+<pre class="doctest-block">
+&gt;&gt;&gt; option_set = [&quot;first&quot;, &quot;second&quot;, &quot;third&quot;, &quot;fourth&quot;, &quot;fifth&quot;]
+&gt;&gt;&gt; p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
 </pre>
-<p>The order of the items is irrelevant, they are treated as a set. The named lists are available as the <tt class="docutils literal">.named_lists</tt> attribute of the pattern object</p>
-<pre class="literal-block">
+</blockquote>
+<p>The order of the items is irrelevant, they are treated as a set. The named lists are available as the <tt class="docutils literal">.named_lists</tt> attribute of the pattern object :</p>
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; print(p.named_lists)
 {'options': frozenset({'second', 'fifth', 'fourth', 'third', 'first'})}
 </pre>
+</blockquote>
 </blockquote>
 </li>
 <li><p class="first">Start and end of word</p>
@@ -904,23 +1013,23 @@ p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
 <p><strong>Version 1 behaviour only</strong></p>
 <p>Set operators have been added, and a set <tt class="docutils literal"><span class="pre">[...]</span></tt> can include nested sets.</p>
 <p>The operators, in order of increasing precedence, are:</p>
-<blockquote>
-<p><tt class="docutils literal">||</tt> for union (&quot;x||y&quot; means &quot;x or y&quot;)</p>
-<p><tt class="docutils literal">~~</tt> (double tilde) for symmetric difference (&quot;x~~y&quot; means &quot;x or y, but not both&quot;)</p>
-<p><tt class="docutils literal">&amp;&amp;</tt> for intersection (&quot;x&amp;&amp;y&quot; means &quot;x and y&quot;)</p>
-<p><tt class="docutils literal"><span class="pre">--</span></tt> (double dash) for difference (&quot;x--y&quot; means &quot;x but not y&quot;)</p>
-</blockquote>
+<ul class="simple">
+<li><tt class="docutils literal">||</tt> for union (&quot;x||y&quot; means &quot;x or y&quot;)</li>
+<li><tt class="docutils literal">~~</tt> (double tilde) for symmetric difference (&quot;x~~y&quot; means &quot;x or y, but not both&quot;)</li>
+<li><tt class="docutils literal">&amp;&amp;</tt> for intersection (&quot;x&amp;&amp;y&quot; means &quot;x and y&quot;)</li>
+<li><tt class="docutils literal"><span class="pre">--</span></tt> (double dash) for difference (&quot;x--y&quot; means &quot;x but not y&quot;)</li>
+</ul>
 <p>Implicit union, ie, simple juxtaposition like in <tt class="docutils literal">[ab]</tt>, has the highest precedence. Thus, <tt class="docutils literal"><span class="pre">[ab&amp;&amp;cd]</span></tt> is the same as <tt class="docutils literal"><span class="pre">[[a||b]&amp;&amp;[c||d]]</span></tt>.</p>
 <p>Examples:</p>
-<blockquote>
-<p><tt class="docutils literal">[ab]</tt> # Set containing 'a' and 'b'</p>
-<p><tt class="docutils literal"><span class="pre">[a-z]</span></tt> # Set containing 'a' .. 'z'</p>
-<p><tt class="docutils literal"><span class="pre">[[a-z]--[qw]]</span></tt> # Set containing 'a' .. 'z', but not 'q' or 'w'</p>
-<p><tt class="docutils literal"><span class="pre">[a-z--qw]</span></tt> # Same as above</p>
-<p><tt class="docutils literal"><span class="pre">[\p{L}--QW]</span></tt> # Set containing all letters except 'Q' and 'W'</p>
-<p><tt class="docutils literal"><span class="pre">[\p{N}--[0-9]]</span></tt> # Set containing all numbers except '0' .. '9'</p>
-<p><tt class="docutils literal"><span class="pre">[\p{ASCII}&amp;&amp;\p{Letter}]</span></tt> # Set containing all characters which are ASCII and letter</p>
-</blockquote>
+<ul class="simple">
+<li><tt class="docutils literal">[ab]</tt> # Set containing 'a' and 'b'</li>
+<li><tt class="docutils literal"><span class="pre">[a-z]</span></tt> # Set containing 'a' .. 'z'</li>
+<li><tt class="docutils literal"><span class="pre">[[a-z]--[qw]]</span></tt> # Set containing 'a' .. 'z', but not 'q' or 'w'</li>
+<li><tt class="docutils literal"><span class="pre">[a-z--qw]</span></tt> # Same as above</li>
+<li><tt class="docutils literal"><span class="pre">[\p{L}--QW]</span></tt> # Set containing all letters except 'Q' and 'W'</li>
+<li><tt class="docutils literal"><span class="pre">[\p{N}--[0-9]]</span></tt> # Set containing all numbers except '0' .. '9'</li>
+<li><tt class="docutils literal"><span class="pre">[\p{ASCII}&amp;&amp;\p{Letter}]</span></tt> # Set containing all characters which are ASCII and letter</li>
+</ul>
 </blockquote>
 </li>
 <li><p class="first">regex.escape (issue #2650)</p>
@@ -940,22 +1049,36 @@ p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
 <li><p class="first">Repeated captures (issue #7132)</p>
 <blockquote>
 <p>A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:</p>
-<p><tt class="docutils literal"><span class="pre">matchobject.captures([group1,</span> <span class="pre">...])</span></tt></p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">matchobject.captures([group1,</span> <span class="pre">...])</span></tt></p>
 <blockquote>
-<p>Returns a list of the strings matched in a group or groups. Compare with <tt class="docutils literal"><span class="pre">matchobject.group([group1,</span> <span class="pre">...])</span></tt>.</p>
+<ul class="simple">
+<li>Returns a list of the strings matched in a group or groups. Compare with <tt class="docutils literal"><span class="pre">matchobject.group([group1,</span> <span class="pre">...])</span></tt>.</li>
+</ul>
 </blockquote>
-<p><tt class="docutils literal"><span class="pre">matchobject.starts([group])</span></tt></p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">matchobject.starts([group])</span></tt></p>
 <blockquote>
-<p>Returns a list of the start positions. Compare with <tt class="docutils literal"><span class="pre">matchobject.start([group])</span></tt>.</p>
+<ul class="simple">
+<li>Returns a list of the start positions. Compare with <tt class="docutils literal"><span class="pre">matchobject.start([group])</span></tt>.</li>
+</ul>
 </blockquote>
-<p><tt class="docutils literal"><span class="pre">matchobject.ends([group])</span></tt></p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">matchobject.ends([group])</span></tt></p>
 <blockquote>
-<p>Returns a list of the end positions. Compare with <tt class="docutils literal"><span class="pre">matchobject.end([group])</span></tt>.</p>
+<ul class="simple">
+<li>Returns a list of the end positions. Compare with <tt class="docutils literal"><span class="pre">matchobject.end([group])</span></tt>.</li>
+</ul>
 </blockquote>
-<p><tt class="docutils literal"><span class="pre">matchobject.spans([group])</span></tt></p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">matchobject.spans([group])</span></tt></p>
 <blockquote>
-<p>Returns a list of the spans. Compare with <tt class="docutils literal"><span class="pre">matchobject.span([group])</span></tt>.</p>
+<ul class="simple">
+<li>Returns a list of the spans. Compare with <tt class="docutils literal"><span class="pre">matchobject.span([group])</span></tt>.</li>
+</ul>
 </blockquote>
+</li>
+</ul>
 <p>Examples:</p>
 <blockquote>
 <pre class="doctest-block">
@@ -1084,6 +1207,7 @@ p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
 <li><p class="first">Subscripting for groups</p>
 <blockquote>
 <p>A match object accepts access to the captured groups via subscripting and slicing:</p>
+<blockquote>
 <pre class="doctest-block">
 &gt;&gt;&gt; m = regex.search(r&quot;(?P&lt;before&gt;.*?)(?P&lt;num&gt;\d+)(?P&lt;after&gt;.*)&quot;, &quot;pqr123stu&quot;)
 &gt;&gt;&gt; print m[&quot;before&quot;]
@@ -1097,6 +1221,7 @@ stu
 &gt;&gt;&gt; print m[:]
 ('pqr123stu', 'pqr', '123', 'stu')
 </pre>
+</blockquote>
 </blockquote>
 </li>
 <li><p class="first">Named groups</p>
@@ -1120,23 +1245,23 @@ stu
 <p><tt class="docutils literal">\p{property=value}</tt>; <tt class="docutils literal">\P{property=value}</tt>; <tt class="docutils literal">\p{value}</tt> ; <tt class="docutils literal">\P{value}</tt></p>
 <p>Many Unicode properties are supported, including blocks and scripts. <tt class="docutils literal">\p{property=value}</tt> or <tt class="docutils literal">\p{property:value}</tt> matches a character whose property <tt class="docutils literal">property</tt> has value <tt class="docutils literal">value</tt>. The inverse of <tt class="docutils literal">\p{property=value}</tt> is <tt class="docutils literal">\P{property=value}</tt> or <tt class="docutils literal"><span class="pre">\p{^property=value}</span></tt>.</p>
 <p>If the short form <tt class="docutils literal">\p{value}</tt> is used, the properties are checked in the order: <tt class="docutils literal">General_Category</tt>, <tt class="docutils literal">Script</tt>, <tt class="docutils literal">Block</tt>, binary property:</p>
-<ol class="arabic simple">
+<ul class="simple">
 <li><tt class="docutils literal">Latin</tt>, the 'Latin' script (<tt class="docutils literal">Script=Latin</tt>).</li>
 <li><tt class="docutils literal">Cyrillic</tt>, the 'Cyrillic' script (<tt class="docutils literal">Script=Cyrillic</tt>).</li>
 <li><tt class="docutils literal">BasicLatin</tt>, the 'BasicLatin' block (<tt class="docutils literal">Block=BasicLatin</tt>).</li>
 <li><tt class="docutils literal">Alphabetic</tt>, the 'Alphabetic' binary property (<tt class="docutils literal">Alphabetic=Yes</tt>).</li>
-</ol>
+</ul>
 <p>A short form starting with <tt class="docutils literal">Is</tt> indicates a script or binary property:</p>
-<ol class="arabic simple">
+<ul class="simple">
 <li><tt class="docutils literal">IsLatin</tt>, the 'Latin' script (<tt class="docutils literal">Script=Latin</tt>).</li>
 <li><tt class="docutils literal">IsCyrillic</tt>, the 'Cyrillic' script (<tt class="docutils literal">Script=Cyrillic</tt>).</li>
 <li><tt class="docutils literal">IsAlphabetic</tt>, the 'Alphabetic' binary property (<tt class="docutils literal">Alphabetic=Yes</tt>).</li>
-</ol>
+</ul>
 <p>A short form starting with <tt class="docutils literal">In</tt> indicates a block property:</p>
-<ol class="arabic simple">
+<ul class="simple">
 <li><tt class="docutils literal">InBasicLatin</tt>, the 'BasicLatin' block (<tt class="docutils literal">Block=BasicLatin</tt>).</li>
 <li><tt class="docutils literal">InCyrillic</tt>, the 'Cyrillic' block (<tt class="docutils literal">Block=Cyrillic</tt>).</li>
-</ol>
+</ul>
 </blockquote>
 </li>
 <li><p class="first">POSIX character classes</p>
@@ -1154,36 +1279,42 @@ stu
 <blockquote>
 <p><tt class="docutils literal">\G</tt></p>
 <p>A search anchor has been added. It matches at the position where each search started/continued and can be used for contiguous matches or in negative variable-length lookbehinds to limit how far back the lookbehind goes:</p>
+<blockquote>
 <pre class="doctest-block">
 &gt;&gt;&gt; regex.findall(r&quot;\w{2}&quot;, &quot;abcd ef&quot;)
 ['ab', 'cd', 'ef']
 &gt;&gt;&gt; regex.findall(r&quot;\G\w{2}&quot;, &quot;abcd ef&quot;)
 ['ab', 'cd']
 </pre>
-<ol class="arabic simple">
+</blockquote>
+<ul class="simple">
 <li>The search starts at position 0 and matches 2 letters 'ab'.</li>
 <li>The search continues at position 2 and matches 2 letters 'cd'.</li>
 <li>The search continues at position 4 and fails to match any letters.</li>
 <li>The anchor stops the search start position from being advanced, so there are no more results.</li>
-</ol>
+</ul>
 </blockquote>
 </li>
 <li><p class="first">Reverse searching</p>
 <blockquote>
 <p>Searches can now work backwards:</p>
+<blockquote>
 <pre class="doctest-block">
 &gt;&gt;&gt; regex.findall(r&quot;.&quot;, &quot;abc&quot;)
 ['a', 'b', 'c']
 &gt;&gt;&gt; regex.findall(r&quot;(?r).&quot;, &quot;abc&quot;)
 ['c', 'b', 'a']
 </pre>
+</blockquote>
 <p>Note: the result of a reverse search is not necessarily the reverse of a forward search:</p>
+<blockquote>
 <pre class="doctest-block">
 &gt;&gt;&gt; regex.findall(r&quot;..&quot;, &quot;abcde&quot;)
 ['ab', 'cd']
 &gt;&gt;&gt; regex.findall(r&quot;(?r)..&quot;, &quot;abcde&quot;)
 ['de', 'bc']
 </pre>
+</blockquote>
 </blockquote>
 </li>
 <li><p class="first">Matching a single grapheme</p>
@@ -1194,14 +1325,17 @@ stu
 </li>
 <li><p class="first">Branch reset</p>
 <blockquote>
-<p>(?|...|...)</p>
+<p><tt class="docutils literal"><span class="pre">(?|...|...)</span></tt></p>
 <p>Capture group numbers will be reused across the alternatives, but groups with different names will have different group numbers.</p>
-<p>Examples::
-&gt;&gt;&gt; import regex
+<p>Examples:</p>
+<blockquote>
+<pre class="doctest-block">
 &gt;&gt;&gt; regex.match(r&quot;(?|(first)|(second))&quot;, &quot;first&quot;).groups()
 ('first',)
 &gt;&gt;&gt; regex.match(r&quot;(?|(first)|(second))&quot;, &quot;second&quot;).groups()
-('second',)</p>
+('second',)
+</pre>
+</blockquote>
 <p>Note that there is only one group.</p>
 </blockquote>
 </li>
