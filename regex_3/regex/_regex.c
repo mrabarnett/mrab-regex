@@ -3170,10 +3170,6 @@ Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
         case RE_OP_START_GROUP:
             node = node->next_1.node;
             break;
-        case RE_OP_CONDITIONAL:
-        case RE_OP_LOOKAROUND:
-            node = node->nonstring.next_2.node;
-            break;
         case RE_OP_GREEDY_REPEAT:
         case RE_OP_LAZY_REPEAT:
             if (node->values[1] == 0)
@@ -3185,6 +3181,9 @@ Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
             if (node->values[1] == 0)
                 return node;
             return node->nonstring.next_2.node;
+        case RE_OP_LOOKAROUND:
+            node = node->nonstring.next_2.node;
+            break;
         default:
             if (is_firstset(node)) {
                 switch (node->next_1.node->op) {
@@ -14722,6 +14721,8 @@ backtrack:
                      */
                     node = bt_data->lookaround.node->nonstring.next_2.node;
                 }
+
+                discard_backtrack(state);
 
                 goto advance;
             } else {

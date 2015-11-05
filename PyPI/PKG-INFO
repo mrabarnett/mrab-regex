@@ -20,31 +20,31 @@ Description: Introduction
         
         * **Version 0** behaviour (old behaviour, compatible with the current re module):
         
-           * Indicated by the ``VERSION0`` or ``V0`` flag, or ``(?V0)`` in the pattern.
+            * Indicated by the ``VERSION0`` or ``V0`` flag, or ``(?V0)`` in the pattern.
         
-           * ``.split`` won't split a string at a zero-width match.
+            * ``.split`` won't split a string at a zero-width match.
         
-           * Zero-width matches are handled like in the re module.
+            * Zero-width matches are handled like in the re module.
         
-           * Inline flags apply to the entire pattern, and they can't be turned off.
+            * Inline flags apply to the entire pattern, and they can't be turned off.
         
-           * Only simple sets are supported.
+            * Only simple sets are supported.
         
-           * Case-insensitive matches in Unicode use simple case-folding by default.
+            * Case-insensitive matches in Unicode use simple case-folding by default.
         
         * **Version 1** behaviour (new behaviour, different from the current re module):
         
-           * Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
+            * Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
         
-           * ``.split`` will split a string at a zero-width match.
+            * ``.split`` will split a string at a zero-width match.
         
-           * Zero-width matches are handled like in Perl and PCRE.
+            * Zero-width matches are handled like in Perl and PCRE.
         
-           * Inline flags apply to the end of the group or pattern, and they can be turned off.
+            * Inline flags apply to the end of the group or pattern, and they can be turned off.
         
-           * Nested sets and set operations are supported.
+            * Nested sets and set operations are supported.
         
-           * Case-insensitive matches in Unicode use full case-folding by default.
+            * Case-insensitive matches in Unicode use full case-folding by default.
         
         If no version is specified, the regex module will default to ``regex.DEFAULT_VERSION``. In the short term this will be ``VERSION0``, but in the longer term it will be ``VERSION1``.
         

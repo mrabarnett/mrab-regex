@@ -3645,6 +3645,10 @@ thing
         self.assertEqual(regex.match(r'(?:(?=\d)\d+\b|\w+)', '123abc').span(),
           (0, 6))
         self.assertEqual(regex.match(r'(?(?=\d)\d+\b|\w+)', '123abc'), None)
+        self.assertEqual(regex.search(r'(?(?<=love\s)you|(?<=hate\s)her)',
+          "I love you").span(), (7, 10))
+        self.assertEqual(regex.findall(r'(?(?<=love\s)you|(?<=hate\s)her)',
+          "I love you but I don't hate her either"), ['you', 'her'])
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',

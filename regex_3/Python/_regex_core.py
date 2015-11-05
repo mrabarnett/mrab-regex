@@ -2992,7 +2992,7 @@ class LookAroundConditional(RegexBase):
 
     def _compile(self, reverse, fuzzy):
         code = [(OP.CONDITIONAL, int(self.positive), int(not self.behind))]
-        code.extend(self.subpattern.compile(reverse, fuzzy))
+        code.extend(self.subpattern.compile(self.behind, fuzzy))
         code.append((OP.NEXT, ))
         code.extend(self.yes_item.compile(reverse, fuzzy))
         add_code = self.no_item.compile(reverse, fuzzy)
@@ -3024,6 +3024,9 @@ class LookAroundConditional(RegexBase):
 
     def max_width(self):
         return max(self.yes_item.max_width(), self.no_item.max_width())
+
+    def get_required_string(self, reverse):
+        return self.max_width(), None
 
 class PrecompiledCode(RegexBase):
     def __init__(self, code):
