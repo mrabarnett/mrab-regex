@@ -2637,7 +2637,7 @@ xyzabc
 
         # At most two inserts or substitutions and max two errors total.
         self.assertEqual(regex.search('(foobar){i<=2,s<=2,e<=2}',
-          'oobargoobaploowap').span(0, 1), ((0, 5), (0, 5)))
+          'oobargoobaploowap').span(0, 1), ((5, 11), (5, 11)))
 
         # Find best whole word match for "foobar".
         self.assertEqual(regex.search('\\b(foobar){e}\\b', 'zfoobarz').span(0,
@@ -2678,8 +2678,8 @@ xyzabc
         # Additionally, deletes cost two and substitutes one, and total
         # cost must be less than 4.
         self.assertEqual(regex.search('(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
-          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((0, 5), (0,
-          5)))
+          '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((6, 13), (6,
+          13)))
         self.assertEqual(regex.search('(?b)(foobar){i<=1,d<=2,s<=3,2d+1s<4}',
           '3oifaowefbaoraofuiebofasebfaobfaorfeoaro').span(0, 1), ((34, 39),
           (34, 39)))

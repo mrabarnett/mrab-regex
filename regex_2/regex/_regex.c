@@ -187,29 +187,30 @@ typedef unsigned short RE_STATUS_T;
 
 /* The different error types for fuzzy matching. */
 #define RE_FUZZY_SUB 0
-#define RE_FUZZY_DEL 1
-#define RE_FUZZY_INS 2
+#define RE_FUZZY_INS 1
+#define RE_FUZZY_DEL 2
 #define RE_FUZZY_ERR 3
 #define RE_FUZZY_COUNT 3
 
 /* The various values in a FUZZY node. */
-#define RE_FUZZY_VAL_MAX_SUB 1
-#define RE_FUZZY_VAL_MAX_INS 2
-#define RE_FUZZY_VAL_MAX_DEL 3
-#define RE_FUZZY_VAL_MAX_ERR 4
-#define RE_FUZZY_VAL_SUB_COST 5
-#define RE_FUZZY_VAL_INS_COST 6
-#define RE_FUZZY_VAL_DEL_COST 7
-#define RE_FUZZY_VAL_MAX_COST 8
-
 #define RE_FUZZY_VAL_MAX_BASE 1
+#define RE_FUZZY_VAL_MAX_SUB (RE_FUZZY_VAL_MAX_BASE + RE_FUZZY_SUB)
+#define RE_FUZZY_VAL_MAX_INS (RE_FUZZY_VAL_MAX_BASE + RE_FUZZY_INS)
+#define RE_FUZZY_VAL_MAX_DEL (RE_FUZZY_VAL_MAX_BASE + RE_FUZZY_DEL)
+#define RE_FUZZY_VAL_MAX_ERR (RE_FUZZY_VAL_MAX_BASE + RE_FUZZY_ERR)
+
 #define RE_FUZZY_VAL_COST_BASE 5
+#define RE_FUZZY_VAL_SUB_COST (RE_FUZZY_VAL_COST_BASE + RE_FUZZY_SUB)
+#define RE_FUZZY_VAL_INS_COST (RE_FUZZY_VAL_COST_BASE + RE_FUZZY_INS)
+#define RE_FUZZY_VAL_DEL_COST (RE_FUZZY_VAL_COST_BASE + RE_FUZZY_DEL)
+#define RE_FUZZY_VAL_MAX_COST (RE_FUZZY_VAL_COST_BASE + RE_FUZZY_ERR)
 
 /* The various values in an END_FUZZY node. */
-#define RE_FUZZY_VAL_MIN_SUB 1
-#define RE_FUZZY_VAL_MIN_INS 2
-#define RE_FUZZY_VAL_MIN_DEL 3
-#define RE_FUZZY_VAL_MIN_ERR 4
+#define RE_FUZZY_VAL_MIN_BASE 1
+#define RE_FUZZY_VAL_MIN_SUB (RE_FUZZY_VAL_MIN_BASE + RE_FUZZY_SUB)
+#define RE_FUZZY_VAL_MIN_INS (RE_FUZZY_VAL_MIN_BASE + RE_FUZZY_INS)
+#define RE_FUZZY_VAL_MIN_DEL (RE_FUZZY_VAL_MIN_BASE + RE_FUZZY_DEL)
+#define RE_FUZZY_VAL_MIN_ERR (RE_FUZZY_VAL_MIN_BASE + RE_FUZZY_ERR)
 
 /* The maximum number of errors when trying to improve a fuzzy match. */
 #define RE_MAX_ERRORS 10
@@ -596,9 +597,8 @@ typedef struct RE_State {
     size_t best_fuzzy_counts[RE_FUZZY_COUNT]; /* Best totals for fuzzy matching. */
     RE_FuzzyGuards* fuzzy_guards; /* The guards for a fuzzy match. */
     size_t total_errors; /* The total number of errors of a fuzzy match. */
-    size_t total_cost; /* The total cost of a fuzzy match. */
-    size_t max_cost; /* The maximum permitted fuzzy cost. */
-    size_t lowest_cost; /* The lowest cost so far of an enhanced fuzzy match. */
+    size_t max_errors; /* The maximum permitted number of errors. */
+    size_t fewest_errors; /* The fewest errors so far of an enhanced fuzzy match. */
     /* The group call stack. */
     RE_GroupCallFrame* first_group_call_frame;
     RE_GroupCallFrame* current_group_call_frame;
@@ -775,6 +775,17 @@ typedef struct {
     int fuzzy_type;
     BOOL permit_insertion;
 } RE_FuzzyData;
+
+typedef struct RE_BestEntry {
+     Py_ssize_t match_pos;
+     Py_ssize_t text_pos;
+} RE_BestEntry;
+
+typedef struct RE_BestList {
+    int capacity;
+    int count;
+    RE_BestEntry* entries;
+} RE_BestList;
 
 /* Function types for getting info from a MatchObject. */
 typedef PyObject* (*RE_GetByIndexFunc)(MatchObject* self, Py_ssize_t index);
@@ -2805,7 +2816,6 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
 
     state->fuzzy_info.total_cost = 0;
     state->total_errors = 0;
-    state->total_cost = 0;
     state->too_few_errors = FALSE;
     state->found_match = FALSE;
     state->capture_change = 0;
@@ -9919,7 +9929,7 @@ Py_LOCAL_INLINE(BOOL) any_error_permitted(RE_State* state) {
 
     return fuzzy_info->total_cost <= values[RE_FUZZY_VAL_MAX_COST] &&
       fuzzy_info->counts[RE_FUZZY_ERR] < values[RE_FUZZY_VAL_MAX_ERR] &&
-      state->total_cost <= state->max_cost;
+      state->total_errors <= state->max_errors;
 }
 
 /* Checks whether this additional fuzzy error is permitted. */
@@ -9932,8 +9942,8 @@ Py_LOCAL_INLINE(BOOL) this_error_permitted(RE_State* state, int fuzzy_type) {
 
     return fuzzy_info->total_cost + values[RE_FUZZY_VAL_COST_BASE + fuzzy_type]
       <= values[RE_FUZZY_VAL_MAX_COST] && fuzzy_info->counts[fuzzy_type] <
-      values[RE_FUZZY_VAL_MAX_BASE + fuzzy_type] && state->total_cost +
-      values[RE_FUZZY_VAL_COST_BASE + fuzzy_type] <= state->max_cost;
+      values[RE_FUZZY_VAL_MAX_BASE + fuzzy_type] && state->total_errors + 1 <=
+      state->max_errors;
 }
 
 /* Checks whether we've reachsd the end of the text during a fuzzy partial
@@ -10067,7 +10077,6 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
-    state->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     *text_pos = data.new_text_pos;
     *node = data.new_node;
@@ -10101,7 +10110,6 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_item(RE_SafeState* safe_state, BOOL
         fuzzy_info->total_cost -= values[RE_FUZZY_VAL_COST_BASE +
           data.fuzzy_type];
         --state->total_errors;
-        state->total_cost -= values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     }
 
     /* Permit insertion except initially when searching (it's better just to
@@ -10135,7 +10143,6 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
-    state->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     *text_pos = data.new_text_pos;
     *node = data.new_node;
@@ -10217,7 +10224,6 @@ Py_LOCAL_INLINE(int) retry_fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t*
         fuzzy_info->counts[RE_FUZZY_ERR] -= count;
         fuzzy_info->total_cost -= values[RE_FUZZY_VAL_INS_COST] * count;
         state->total_errors -= count;
-        state->total_cost -= values[RE_FUZZY_VAL_INS_COST] * count;
         state->too_few_errors = bt_data->fuzzy_insert.too_few_errors;
 
         discard_backtrack(state);
@@ -10231,7 +10237,6 @@ Py_LOCAL_INLINE(int) retry_fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t*
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_INS_COST];
     ++state->total_errors;
-    state->total_cost += values[RE_FUZZY_VAL_INS_COST];
 
     /* Check whether there are too few errors. */
     state->too_few_errors = bt_data->fuzzy_insert.too_few_errors;
@@ -10308,7 +10313,6 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
-    state->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     *text_pos = data.new_text_pos;
     *string_pos = data.new_string_pos;
@@ -10343,7 +10347,6 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string(RE_SafeState* safe_state, BOOL
     --fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost -= values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     --state->total_errors;
-    state->total_cost -= values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     /* Permit insertion except initially when searching (it's better just to
      * start searching one character later).
@@ -10374,7 +10377,6 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
-    state->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     *text_pos = data.new_text_pos;
     *node = new_node;
@@ -10493,7 +10495,6 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
-    state->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     *text_pos = new_text_pos;
     *string_pos = data.new_string_pos;
@@ -10532,7 +10533,6 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string_fld(RE_SafeState* safe_state,
     --fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost -= values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     --state->total_errors;
-    state->total_cost -= values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     /* Permit insertion except initially when searching (it's better just to
      * start searching one character later).
@@ -10569,7 +10569,6 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
-    state->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     *text_pos = new_text_pos;
     *node = new_node;
@@ -10694,7 +10693,6 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
-    state->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     *text_pos = new_text_pos;
     *group_pos = new_group_pos;
@@ -10736,7 +10734,6 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_group_fld(RE_SafeState* safe_state, BOOL
     --fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost -= values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     --state->total_errors;
-    state->total_cost -= values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     /* Permit insertion except initially when searching (it's better just to
      * start searching one character later).
@@ -10767,7 +10764,6 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
-    state->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
 
     *text_pos = new_text_pos;
     *node = new_node;
@@ -11468,7 +11464,7 @@ Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, BOOL search) {
     pattern_step = state->reverse ? -1 : 1;
     string_pos = -1;
     do_search_start = pattern->do_search_start;
-    state->lowest_cost = state->max_cost;
+    state->fewest_errors = state->max_errors;
 
     if (do_search_start && pattern->req_string &&
       equivalent_nodes(start_pair.test, pattern->req_string))
@@ -16353,6 +16349,50 @@ Py_LOCAL_INLINE(void) restore_fuzzy_counts(RE_State* state, size_t*
       sizeof(state->total_fuzzy_counts));
 }
 
+/* Makes the list of best matches found so far. */
+Py_LOCAL_INLINE(void) make_best_list(RE_BestList* best_list) {
+    best_list->capacity = 0;
+    best_list->count = 0;
+    best_list->entries = NULL;
+}
+
+/* Clears the list of best matches found so far. */
+Py_LOCAL_INLINE(void) clear_best_list(RE_BestList* best_list) {
+    best_list->count = 0;
+}
+
+/* Adds a new entry to the list of best matches found so far. */
+Py_LOCAL_INLINE(BOOL) add_to_best_list(RE_SafeState* safe_state, RE_BestList*
+  best_list, Py_ssize_t match_pos, Py_ssize_t text_pos) {
+    RE_BestEntry* entry;
+
+    if (best_list->count >= best_list->capacity) {
+        RE_BestEntry* new_entries;
+
+        best_list->capacity = best_list->capacity == 0 ? 16 :
+          best_list->capacity * 2;
+        new_entries = safe_realloc(safe_state, best_list->entries,
+          best_list->capacity * sizeof(RE_BestEntry));
+        if (!new_entries)
+            return FALSE;
+
+        best_list->entries = new_entries;
+    }
+
+    entry = &best_list->entries[best_list->count++];
+    entry->match_pos = match_pos;
+    entry->text_pos = text_pos;
+
+    return TRUE;
+}
+
+/* Destroy the list of best matches found so far. */
+Py_LOCAL_INLINE(void) destroy_best_list(RE_SafeState* safe_state, RE_BestList*
+  best_list) {
+    if (best_list->entries)
+        safe_dealloc(safe_state, best_list->entries);
+}
+
 /* Performs a match or search from the current text position for a best fuzzy
  * match.
  */
@@ -16361,56 +16401,49 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
     RE_State* state;
     PatternObject* pattern;
     Py_ssize_t available;
-    size_t lower_cost;
-    size_t upper_cost;
-    RE_GroupData* best_groups;
-    Py_ssize_t best_match_pos;
+    int step;
+    size_t fewest_errors;
     BOOL must_advance;
-    Py_ssize_t slice_start;
-    Py_ssize_t slice_end;
+    BOOL found_match;
+    RE_BestList best_list;
+    Py_ssize_t start_pos;
     int status;
-    size_t best_fuzzy_counts[RE_FUZZY_COUNT];
-    Py_ssize_t best_text_pos = 0; /* Initialise to stop compiler warning. */
-    TRACE(("<<do_match>>\n"))
+    TRACE(("<<do_best_fuzzy_match>>\n"))
 
     state = safe_state->re_state;
     pattern = state->pattern;
 
-    if (state->reverse)
+    if (state->reverse) {
         available = state->text_pos - state->slice_start;
-    else
+        step = -1;
+    } else {
         available = state->slice_end - state->text_pos;
+        step = 1;
+    }
 
     /* The maximum permitted cost. */
-    state->max_cost = PY_SSIZE_T_MAX;
-    lower_cost = 0;
-    upper_cost = RE_MAX_ERRORS;
+    state->max_errors = PY_SSIZE_T_MAX;
+    fewest_errors = PY_SSIZE_T_MAX;
 
-    best_groups = NULL;
-
-    state->best_match_pos = state->text_pos;
     state->best_text_pos = state->reverse ? state->slice_start :
       state->slice_end;
 
-    best_match_pos = state->text_pos;
     must_advance = state->must_advance;
+    found_match = FALSE;
 
-    slice_start = state->slice_start;
-    slice_end = state->slice_end;
+    make_best_list(&best_list);
 
-    for (;;) {
-        /* If there's a better match, it won't start earlier in the string than
-         * the current best match, so there's no need to start earlier than
-         * that match.
-         */
-        state->text_pos = best_match_pos;
+    /* Search the text for the best match. */
+    start_pos = state->text_pos;
+    while (state->slice_start <= start_pos && start_pos <= state->slice_end) {
+        state->text_pos = start_pos;
         state->must_advance = must_advance;
 
         /* Initialise the state. */
         init_match(state);
 
         status = RE_ERROR_SUCCESS;
-        if (state->max_cost == 0 && state->partial_side == RE_PARTIAL_NONE) {
+        if (state->max_errors == 0 && state->partial_side == RE_PARTIAL_NONE) {
             /* An exact match, and partial matches not permitted. */
             if (available < state->min_width || (available == 0 &&
               state->must_advance))
@@ -16425,52 +16458,183 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
             break;
 
         if (status == RE_ERROR_SUCCESS) {
-            save_fuzzy_counts(state, best_fuzzy_counts);
+            /* It was a successful match. */
+            found_match = TRUE;
 
-            /* Save the best result so far. */
-            best_groups = save_groups(safe_state, best_groups);
-            if (!best_groups) {
-                status = RE_ERROR_MEMORY;
-                break;
-            }
+            if (state->total_errors < fewest_errors) {
+                /* This match was better than any of the previous ones. */
+                fewest_errors = state->total_errors;
 
-            best_match_pos = state->match_pos;
-            best_text_pos = state->text_pos;
+                if (state->total_errors == 0)
+                    /* It was a perfect match. */
+                    break;
 
-            if (state->total_cost == 0)
-                break;
+                /* Forget all the previous worse matches and remember this one.
+                 */
+                clear_best_list(&best_list);
+                if (!add_to_best_list(safe_state, &best_list, state->match_pos,
+                  state->text_pos))
+                    return RE_ERROR_MEMORY;
+            } else if (state->total_errors == fewest_errors)
+                /* This match was as good as the previous matches. Remember
+                 * this one.
+                 */
+                add_to_best_list(safe_state, &best_list, state->match_pos,
+                  state->text_pos);
+        }
 
-            if (state->total_cost < upper_cost)
-                upper_cost = state->total_cost;
-            else
-                upper_cost = RE_MAX_ERRORS + 1;
-        } else
-            lower_cost = state->max_cost + 1;
-
-        if (lower_cost >= upper_cost)
+        /* Should we keep searching? */
+        if (!search)
             break;
 
-        state->max_cost = (lower_cost + upper_cost) / 2;
+        start_pos = state->match_pos + step;
     }
 
-    state->slice_start = slice_start;
-    state->slice_end = slice_end;
+    if (found_match) {
+        /* We found a match. */
+        if (fewest_errors > 0) {
+            /* It doesn't look like a perfect match. */
+            int i;
+            Py_ssize_t slice_start;
+            Py_ssize_t slice_end;
+            size_t error_limit;
+            size_t best_fuzzy_counts[RE_FUZZY_COUNT];
+            RE_GroupData* best_groups;
+            Py_ssize_t best_match_pos;
+            Py_ssize_t best_text_pos;
 
-    if (best_groups) {
-        if (status == RE_ERROR_SUCCESS && state->total_cost == 0)
-            /* We have a perfect match, so the previous best match. */
-            discard_groups(safe_state, best_groups);
-        else {
-            /* Restore the previous best match. */
-            status = RE_ERROR_SUCCESS;
+            slice_start = state->slice_start;
+            slice_end = state->slice_end;
 
-            state->match_pos = best_match_pos;
-            state->text_pos = best_text_pos;
+            error_limit = fewest_errors;
 
-            restore_groups(safe_state, best_groups);
-            restore_fuzzy_counts(state, best_fuzzy_counts);
+            if (error_limit > RE_MAX_ERRORS)
+                error_limit = RE_MAX_ERRORS + 1;
+
+            best_groups = NULL;
+
+            /* Look again at the best of the matches that we've seen. */
+            for (i = 0; i < best_list.count; i++) {
+                RE_BestEntry* entry;
+                Py_ssize_t max_offset;
+                Py_ssize_t offset;
+
+                /* Look for the best fit at this position. */
+                entry = &best_list.entries[i];
+
+                if (search) {
+                    max_offset = state->reverse ? entry->match_pos -
+                      state->slice_start : state->slice_end - entry->match_pos;
+
+                    if (max_offset > (Py_ssize_t)fewest_errors)
+                        max_offset = (Py_ssize_t)fewest_errors;
+                } else
+                    max_offset = 0;
+
+                start_pos = entry->match_pos;
+                offset = 0;
+
+                while (offset <= max_offset) {
+                    state->max_errors = 1;
+
+                    while (state->max_errors <= error_limit) {
+                        state->text_pos = start_pos;
+                        init_match(state);
+                        status = basic_match(safe_state, FALSE);
+
+                        if (status == RE_ERROR_SUCCESS) {
+                            BOOL better;
+
+                            if (state->total_errors < error_limit || i == 0 &&
+                              offset == 0)
+                                better = TRUE;
+                            else if (state->total_errors == error_limit)
+                                /* The cost is as low as the current best, but
+                                 * is it earlier?
+                                 */
+                                better = state->reverse ? state->match_pos >
+                                  best_match_pos : state->match_pos <
+                                  best_match_pos;
+
+                            if (better) {
+                                save_fuzzy_counts(state, best_fuzzy_counts);
+
+                                best_groups = save_groups(safe_state,
+                                  best_groups);
+                                if (!best_groups) {
+                                    destroy_best_list(safe_state, &best_list);
+                                    return RE_ERROR_MEMORY;
+                                }
+
+                                best_match_pos = state->match_pos;
+                                best_text_pos = state->text_pos;
+                                error_limit = state->total_errors;
+                            }
+
+                            break;
+                        }
+
+                        ++state->max_errors;
+                    }
+
+                    start_pos += step;
+                    ++offset;
+                }
+
+                if (status == RE_ERROR_SUCCESS && state->total_errors == 0)
+                    break;
+            }
+
+            if (best_groups) {
+                status = RE_ERROR_SUCCESS;
+                state->match_pos = best_match_pos;
+                state->text_pos = best_text_pos;
+
+                restore_groups(safe_state, best_groups);
+                restore_fuzzy_counts(state, best_fuzzy_counts);
+            } else {
+                /* None of the "best" matches could be improved on, so pick the
+                 * first.
+                 */
+                RE_BestEntry* entry;
+
+                /* Look at only the part of the string around the match. */
+                entry = &best_list.entries[0];
+
+                if (state->reverse) {
+                    state->slice_start = entry->text_pos;
+                    state->slice_end = entry->match_pos;
+                } else {
+                    state->slice_start = entry->match_pos;
+                    state->slice_end = entry->text_pos;
+                }
+
+                /* We'll expand the part that we're looking at to take to
+                 * compensate for any matching errors that have occurred.
+                 */
+                if (state->slice_start - slice_start >=
+                  (Py_ssize_t)fewest_errors)
+                    state->slice_start -= (Py_ssize_t)fewest_errors;
+                else
+                    state->slice_start = slice_start;
+
+                if (slice_end - state->slice_end >= (Py_ssize_t)fewest_errors)
+                    state->slice_end += (Py_ssize_t)fewest_errors;
+                else
+                    state->slice_end = slice_end;
+
+                state->max_errors = fewest_errors;
+                state->text_pos = entry->match_pos;
+                init_match(state);
+                status = basic_match(safe_state, search);
+            }
+
+            state->slice_start = slice_start;
+            state->slice_end = slice_end;
         }
     }
+
+    destroy_best_list(safe_state, &best_list);
 
     return status;
 }
@@ -16483,7 +16647,7 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
     RE_State* state;
     PatternObject* pattern;
     Py_ssize_t available;
-    size_t lowest_cost;
+    size_t fewest_errors;
     RE_GroupData* best_groups;
     Py_ssize_t best_match_pos;
     BOOL must_advance;
@@ -16492,7 +16656,7 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
     int status;
     size_t best_fuzzy_counts[RE_FUZZY_COUNT];
     Py_ssize_t best_text_pos = 0; /* Initialise to stop compiler warning. */
-    TRACE(("<<do_match>>\n"))
+    TRACE(("<<do_enhanced_fuzzy_match>>\n"))
 
     state = safe_state->re_state;
     pattern = state->pattern;
@@ -16503,8 +16667,8 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
         available = state->slice_end - state->text_pos;
 
     /* The maximum permitted cost. */
-    state->max_cost = PY_SSIZE_T_MAX;
-    lowest_cost = PY_SSIZE_T_MAX;
+    state->max_errors = PY_SSIZE_T_MAX;
+    fewest_errors = PY_SSIZE_T_MAX;
 
     best_groups = NULL;
 
@@ -16529,7 +16693,7 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
         init_match(state);
 
         status = RE_ERROR_SUCCESS;
-        if (state->max_cost == 0 && state->partial_side == RE_PARTIAL_NONE) {
+        if (state->max_errors == 0 && state->partial_side == RE_PARTIAL_NONE) {
             /* An exact match, and partial matches not permitted. */
             if (available < state->min_width || (available == 0 &&
               state->must_advance))
@@ -16546,13 +16710,13 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
         if (status == RE_ERROR_SUCCESS) {
             BOOL better;
 
-            better = state->total_cost < lowest_cost;
+            better = state->total_errors < fewest_errors;
 
             if (better) {
                 BOOL same_match;
 
-                lowest_cost = state->total_cost;
-                state->max_cost = lowest_cost;
+                fewest_errors = state->total_errors;
+                state->max_errors = fewest_errors;
 
                 save_fuzzy_counts(state, best_fuzzy_counts);
 
@@ -16582,12 +16746,12 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
                 best_match_pos = state->match_pos;
                 best_text_pos = state->text_pos;
 
-                if (same_match || state->total_cost == 0)
+                if (same_match || state->total_errors == 0)
                     break;
 
-                state->max_cost = state->total_cost;
-                if (state->max_cost < RE_MAX_ERRORS)
-                    --state->max_cost;
+                state->max_errors = state->total_errors;
+                if (state->max_errors < RE_MAX_ERRORS)
+                    --state->max_errors;
             } else
                 break;
 
@@ -16601,8 +16765,8 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
 
             state->text_pos = state->match_pos;
 
-            if (state->max_cost == PY_SSIZE_T_MAX)
-                state->max_cost = 0;
+            if (state->max_errors == PY_SSIZE_T_MAX)
+                state->max_errors = 0;
         } else
             break;
     }
@@ -16611,7 +16775,7 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
     state->slice_end = slice_end;
 
     if (best_groups) {
-        if (status == RE_ERROR_SUCCESS && state->total_cost == 0)
+        if (status == RE_ERROR_SUCCESS && state->total_errors == 0)
             /* We have a perfect match, so the previous best match. */
             discard_groups(safe_state, best_groups);
         else {
@@ -16637,7 +16801,7 @@ Py_LOCAL_INLINE(int) do_simple_fuzzy_match(RE_SafeState* safe_state, BOOL
     RE_State* state;
     Py_ssize_t available;
     int status;
-    TRACE(("<<do_match>>\n"))
+    TRACE(("<<do_simple_fuzzy_match>>\n"))
 
     state = safe_state->re_state;
 
@@ -16647,7 +16811,7 @@ Py_LOCAL_INLINE(int) do_simple_fuzzy_match(RE_SafeState* safe_state, BOOL
         available = state->slice_end - state->text_pos;
 
     /* The maximum permitted cost. */
-    state->max_cost = PY_SSIZE_T_MAX;
+    state->max_errors = PY_SSIZE_T_MAX;
 
     state->best_match_pos = state->text_pos;
     state->best_text_pos = state->reverse ? state->slice_start :
@@ -16657,7 +16821,7 @@ Py_LOCAL_INLINE(int) do_simple_fuzzy_match(RE_SafeState* safe_state, BOOL
     init_match(state);
 
     status = RE_ERROR_SUCCESS;
-    if (state->max_cost == 0 && state->partial_side == RE_PARTIAL_NONE) {
+    if (state->max_errors == 0 && state->partial_side == RE_PARTIAL_NONE) {
         /* An exact match, and partial matches not permitted. */
         if (available < state->min_width || (available == 0 &&
           state->must_advance))
@@ -16677,7 +16841,7 @@ Py_LOCAL_INLINE(int) do_exact_match(RE_SafeState* safe_state, BOOL search) {
     RE_State* state;
     Py_ssize_t available;
     int status;
-    TRACE(("<<do_match>>\n"))
+    TRACE(("<<do_exact_match>>\n"))
 
     state = safe_state->re_state;
 
@@ -16687,7 +16851,7 @@ Py_LOCAL_INLINE(int) do_exact_match(RE_SafeState* safe_state, BOOL search) {
         available = state->slice_end - state->text_pos;
 
     /* The maximum permitted cost. */
-    state->max_cost = 0;
+    state->max_errors = 0;
 
     state->best_match_pos = state->text_pos;
     state->best_text_pos = state->reverse ? state->slice_start :
@@ -16697,7 +16861,7 @@ Py_LOCAL_INLINE(int) do_exact_match(RE_SafeState* safe_state, BOOL search) {
     init_match(state);
 
     status = RE_ERROR_SUCCESS;
-    if (state->max_cost == 0 && state->partial_side == RE_PARTIAL_NONE) {
+    if (state->max_errors == 0 && state->partial_side == RE_PARTIAL_NONE) {
         /* An exact match, and partial matches not permitted. */
         if (available < state->min_width || (available == 0 &&
           state->must_advance))
