@@ -16576,7 +16576,7 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
             error_limit = fewest_errors;
 
             if (error_limit > RE_MAX_ERRORS)
-                error_limit = RE_MAX_ERRORS + 1;
+                error_limit = RE_MAX_ERRORS;
 
             best_groups = NULL;
 
@@ -16595,6 +16595,9 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
 
                     if (max_offset > (Py_ssize_t)fewest_errors)
                         max_offset = (Py_ssize_t)fewest_errors;
+
+                    if (max_offset > error_limit)
+                        max_offset = error_limit;
                 } else
                     max_offset = 0;
 
