@@ -788,8 +788,8 @@ typedef struct RE_BestEntry {
 } RE_BestEntry;
 
 typedef struct RE_BestList {
-    int capacity;
-    int count;
+    size_t capacity;
+    size_t count;
     RE_BestEntry* entries;
 } RE_BestList;
 
@@ -1203,10 +1203,10 @@ Py_LOCAL_INLINE(BOOL) locale_has_property(RE_LocaleInfo* locale_info, RE_CODE
 
     switch (property >> 16) {
     case RE_PROP_ALNUM >> 16:
-        v = (RE_UINT32)locale_isalnum(locale_info, ch);
+        v = locale_isalnum(locale_info, ch) != 0;
         break;
     case RE_PROP_ALPHA >> 16:
-        v = (RE_UINT32)locale_isalpha(locale_info, ch);
+        v = locale_isalpha(locale_info, ch) != 0;
         break;
     case RE_PROP_ANY >> 16:
         v = 1;
@@ -1223,25 +1223,25 @@ Py_LOCAL_INLINE(BOOL) locale_has_property(RE_LocaleInfo* locale_info, RE_CODE
             v = ch <= RE_LOCALE_MAX;
             break;
         case RE_PROP_CASEDLETTER:
-            v = (RE_UINT32)locale_isalpha(locale_info, ch) ? value : 0xFFFF;
+            v = locale_isalpha(locale_info, ch) ? value : 0xFFFF;
             break;
         case RE_PROP_CNTRL:
-            v = (RE_UINT32)locale_iscntrl(locale_info, ch) ? value : 0xFFFF;
+            v = locale_iscntrl(locale_info, ch) ? value : 0xFFFF;
             break;
         case RE_PROP_DIGIT:
-            v = (RE_UINT32)locale_isdigit(locale_info, ch) ? value : 0xFFFF;
+            v = locale_isdigit(locale_info, ch) ? value : 0xFFFF;
             break;
         case RE_PROP_GC_CN:
             v = ch > RE_LOCALE_MAX;
             break;
         case RE_PROP_GC_LL:
-            v = (RE_UINT32)locale_islower(locale_info, ch) ? value : 0xFFFF;
+            v = locale_islower(locale_info, ch) ? value : 0xFFFF;
             break;
         case RE_PROP_GC_LU:
-            v = (RE_UINT32)locale_isupper(locale_info, ch) ? value : 0xFFFF;
+            v = locale_isupper(locale_info, ch) ? value : 0xFFFF;
             break;
         case RE_PROP_GC_P:
-            v = (RE_UINT32)locale_ispunct(locale_info, ch) ? value : 0xFFFF;
+            v = locale_ispunct(locale_info, ch) ? value : 0xFFFF;
             break;
         default:
             v = 0xFFFF;
@@ -1249,37 +1249,37 @@ Py_LOCAL_INLINE(BOOL) locale_has_property(RE_LocaleInfo* locale_info, RE_CODE
         }
         break;
     case RE_PROP_GRAPH >> 16:
-        v = (RE_UINT32)locale_isgraph(locale_info, ch);
+        v = locale_isgraph(locale_info, ch) != 0;
         break;
     case RE_PROP_LOWER >> 16:
-        v = (RE_UINT32)locale_islower(locale_info, ch);
+        v = locale_islower(locale_info, ch) != 0;
         break;
     case RE_PROP_POSIX_ALNUM >> 16:
-        v = (RE_UINT32)(re_get_posix_alnum(ch) != 0);
+        v = re_get_posix_alnum(ch) != 0;
         break;
     case RE_PROP_POSIX_DIGIT >> 16:
-        v = (RE_UINT32)re_get_posix_digit(ch) != 0;
+        v = re_get_posix_digit(ch) != 0;
         break;
     case RE_PROP_POSIX_PUNCT >> 16:
-        v = (RE_UINT32)re_get_posix_punct(ch) != 0;
+        v = re_get_posix_punct(ch) != 0;
         break;
     case RE_PROP_POSIX_XDIGIT >> 16:
-        v = (RE_UINT32)re_get_posix_xdigit(ch) != 0;
+        v = re_get_posix_xdigit(ch) != 0;
         break;
     case RE_PROP_PRINT >> 16:
-        v = (RE_UINT32)locale_isprint(locale_info, ch);
+        v = locale_isprint(locale_info, ch) != 0;
         break;
     case RE_PROP_SPACE >> 16:
-        v = (RE_UINT32)locale_isspace(locale_info, ch);
+        v = locale_isspace(locale_info, ch) != 0;
         break;
     case RE_PROP_UPPER >> 16:
-        v = (RE_UINT32)locale_isupper(locale_info, ch);
+        v = locale_isupper(locale_info, ch) != 0;
         break;
     case RE_PROP_WORD >> 16:
-        v = (RE_UINT32)(ch == '_' || locale_isalnum(locale_info, ch));
+        v = ch == '_' || locale_isalnum(locale_info, ch) != 0;
         break;
     case RE_PROP_XDIGIT >> 16:
-        v = (RE_UINT32)(re_get_hex_digit(ch) != 0);
+        v = re_get_hex_digit(ch) != 0;
         break;
     default:
         v = 0;
@@ -6140,8 +6140,8 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld(RE_SafeState* safe_state,
             f_pos = 0;
         }
 
-        if (same_char_ign(encoding, locale_info, values[s_pos], folded[f_pos]))
-          {
+        if (s_pos < length && same_char_ign(encoding, locale_info,
+          values[s_pos], folded[f_pos])) {
             ++s_pos;
             ++f_pos;
 
@@ -6215,8 +6215,8 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld_rev(RE_SafeState* safe_state,
             f_pos = 0;
         }
 
-        if (same_char_ign(encoding, locale_info, values[length - s_pos - 1],
-          folded[folded_len - f_pos - 1])) {
+        if (s_pos < length && same_char_ign(encoding, locale_info,
+          values[length - s_pos - 1], folded[folded_len - f_pos - 1])) {
             ++s_pos;
             ++f_pos;
 
@@ -9119,50 +9119,6 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_SafeState* safe_state, size_t index,
         guard_list = &state->repeats[index].tail_guard_list;
 
     return is_guarded(guard_list, text_pos);
-}
-
-/* Resets the guards inside atomic groups and lookarounds. */
-Py_LOCAL_INLINE(void) reset_guards(RE_State* state, RE_CODE* values) {
-    PatternObject* pattern;
-    size_t repeat_count;
-
-    pattern = state->pattern;
-    repeat_count = pattern->repeat_count;
-
-    if (values) {
-        size_t i;
-
-        for (i = 1; i <= values[0]; i++) {
-            size_t index;
-
-            index = values[i];
-
-            if (index < repeat_count) {
-                reset_guard_list(&state->repeats[index].body_guard_list);
-                reset_guard_list(&state->repeats[index].tail_guard_list);
-            } else {
-                index -= repeat_count;
-
-                reset_guard_list(&state->fuzzy_guards[index].body_guard_list);
-                reset_guard_list(&state->fuzzy_guards[index].tail_guard_list);
-            }
-        }
-    } else {
-        size_t index;
-        size_t fuzzy_count;
-
-        for (index = 0; index < repeat_count; index++) {
-            reset_guard_list(&state->repeats[index].body_guard_list);
-            reset_guard_list(&state->repeats[index].tail_guard_list);
-        }
-
-        fuzzy_count = pattern->fuzzy_count;
-
-        for (index = 0; index < fuzzy_count; index++) {
-            reset_guard_list(&state->fuzzy_guards[index].body_guard_list);
-            reset_guard_list(&state->fuzzy_guards[index].tail_guard_list);
-        }
-    }
 }
 
 /* Builds a Unicode string. */
@@ -12151,7 +12107,7 @@ advance:
             try_tail = (!changed || rp_data->count >= node->values[1]) &&
               !is_repeat_guarded(safe_state, index, state->text_pos,
               RE_STATUS_TAIL);
-            if(try_tail) {
+            if (try_tail) {
                 tail_status = try_match(state, &node->nonstring.next_2,
                   state->text_pos, &next_tail_position);
                 if (tail_status < 0)
@@ -12955,7 +12911,7 @@ advance:
                 body_status = RE_ERROR_FAILURE;
 
             try_tail = node->values[1] == 0;
-            if(try_tail) {
+            if (try_tail) {
                 tail_status = try_match(state, &node->nonstring.next_2,
                   state->text_pos, &next_tail_position);
                 if (tail_status < 0)
@@ -16441,7 +16397,6 @@ Py_LOCAL_INLINE(void) destroy_best_list(RE_SafeState* safe_state, RE_BestList*
 Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
   {
     RE_State* state;
-    PatternObject* pattern;
     Py_ssize_t available;
     int step;
     size_t fewest_errors;
@@ -16453,7 +16408,6 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
     TRACE(("<<do_best_fuzzy_match>>\n"))
 
     state = safe_state->re_state;
-    pattern = state->pattern;
 
     if (state->reverse) {
         available = state->text_pos - state->slice_start;
@@ -16571,8 +16525,8 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
                     if (max_offset > (Py_ssize_t)fewest_errors)
                         max_offset = (Py_ssize_t)fewest_errors;
 
-                    if (max_offset > error_limit)
-                        max_offset = error_limit;
+                    if (max_offset > (Py_ssize_t)error_limit)
+                        max_offset = (Py_ssize_t)error_limit;
                 } else
                     max_offset = 0;
 
@@ -23507,7 +23461,7 @@ Py_LOCAL_INLINE(int) build_SUCCESS(RE_CompileArgs* args) {
     /* code: opcode. */
 
     /* Create the node. */
-    node = create_node(args->pattern, args->code[0], 0, 0, 0);
+    node = create_node(args->pattern, (RE_UINT8)args->code[0], 0, 0, 0);
     if (!node)
         return RE_ERROR_MEMORY;
 
@@ -23914,8 +23868,8 @@ Py_LOCAL_INLINE(void) scan_locale_chars(RE_LocaleInfo* locale_info) {
             props |= RE_LOCALE_UPPER;
 
         locale_info->properties[c] = props;
-        locale_info->uppercase[c] = toupper(c);
-        locale_info->lowercase[c] = tolower(c);
+        locale_info->uppercase[c] = (unsigned char)toupper(c);
+        locale_info->lowercase[c] = (unsigned char)tolower(c);
     }
 }
 
@@ -24057,8 +24011,11 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
 
     /* Make a node for the required string, if there's one. */
     if (req_chars) {
-        /* Remove the FULLCASE flag if it's not a Unicode pattern. */
-        if (!(self->flags & RE_FLAG_UNICODE))
+        /* Remove the FULLCASE flag if it's not a Unicode pattern or not
+         * ignoring case.
+         */
+        if (!(self->flags & RE_FLAG_UNICODE) || !(self->flags &
+          RE_FLAG_IGNORECASE))
             req_flags &= ~RE_FLAG_FULLCASE;
 
         if (self->flags & RE_FLAG_REVERSE) {
