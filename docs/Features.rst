@@ -14,9 +14,11 @@ This module has 2 behaviours:
 
     * Indicated by the ``VERSION0`` or ``V0`` flag, or ``(?V0)`` in the pattern.
 
-    * ``.split`` won't split a string at a zero-width match.
+    * Zero-width matches are handled like in the re module:
 
-    * Zero-width matches are handled like in the re module.
+        * ``.split`` won't split a string at a zero-width match.
+
+        * ``.sub`` will advance by one character after a zero-width match.
 
     * Inline flags apply to the entire pattern, and they can't be turned off.
 
@@ -28,9 +30,11 @@ This module has 2 behaviours:
 
     * Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
 
-    * ``.split`` will split a string at a zero-width match.
+    * Zero-width matches are handled like in Perl and PCRE:
 
-    * Zero-width matches are handled like in Perl and PCRE.
+        * ``.split`` will split a string at a zero-width match.
+
+        * ``.sub`` will handle zero-width matches correctly.
 
     * Inline flags apply to the end of the group or pattern, and they can be turned off.
 

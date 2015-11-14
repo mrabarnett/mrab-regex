@@ -121,6 +121,9 @@ FULLIGNORECASE = FULLCASE | IGNORECASE
 
 FULL_CASE_FOLDING = UNICODE | FULLIGNORECASE
 
+CASE_FLAGS_COMBINATIONS = {0: 0, FULLCASE: 0, IGNORECASE: IGNORECASE,
+  FULLIGNORECASE: FULLIGNORECASE}
+
 # The number of digits in hexadecimal escapes.
 HEX_ESCAPES = {"x": 2, "u": 4, "U": 8}
 
@@ -1791,7 +1794,7 @@ class RegexBase:
         if case_flags is None:
             case_flags = self.case_flags
         else:
-            case_flags = case_flags & CASE_FLAGS
+            case_flags = CASE_FLAGS_COMBINATIONS[case_flags & CASE_FLAGS]
         if zerowidth is None:
             zerowidth = self.zerowidth
         else:
@@ -2375,7 +2378,7 @@ class Character(RegexBase):
         RegexBase.__init__(self)
         self.value = value
         self.positive = bool(positive)
-        self.case_flags = case_flags
+        self.case_flags = CASE_FLAGS_COMBINATIONS[case_flags]
         self.zerowidth = bool(zerowidth)
 
         if (self.positive and (self.case_flags & FULLIGNORECASE) ==
@@ -3047,7 +3050,7 @@ class Property(RegexBase):
         RegexBase.__init__(self)
         self.value = value
         self.positive = bool(positive)
-        self.case_flags = case_flags
+        self.case_flags = CASE_FLAGS_COMBINATIONS[case_flags]
         self.zerowidth = bool(zerowidth)
 
         self._key = (self.__class__, self.value, self.positive,
@@ -3106,7 +3109,7 @@ class Range(RegexBase):
         self.lower = lower
         self.upper = upper
         self.positive = bool(positive)
-        self.case_flags = case_flags
+        self.case_flags = CASE_FLAGS_COMBINATIONS[case_flags]
         self.zerowidth = bool(zerowidth)
 
         self._key = (self.__class__, self.lower, self.upper, self.positive,
@@ -3182,7 +3185,7 @@ class RefGroup(RegexBase):
         self.info = info
         self.group = group
         self.position = position
-        self.case_flags = case_flags
+        self.case_flags = CASE_FLAGS_COMBINATIONS[case_flags]
 
         self._key = self.__class__, self.group, self.case_flags
 
@@ -3309,7 +3312,7 @@ class Sequence(RegexBase):
         return fs | set([None])
 
     def has_simple_start(self):
-        return self.items and self.items[0].has_simple_start()
+        return bool(self.items) and self.items[0].has_simple_start()
 
     def _compile(self, reverse, fuzzy):
         seq = self.items
@@ -3374,7 +3377,7 @@ class SetBase(RegexBase):
         self.info = info
         self.items = tuple(items)
         self.positive = bool(positive)
-        self.case_flags = case_flags
+        self.case_flags = CASE_FLAGS_COMBINATIONS[case_flags]
         self.zerowidth = bool(zerowidth)
 
         self.char_width = 1
@@ -3652,7 +3655,7 @@ class String(RegexBase):
 
     def __init__(self, characters, case_flags=NOCASE):
         self.characters = tuple(characters)
-        self.case_flags = case_flags
+        self.case_flags = CASE_FLAGS_COMBINATIONS[case_flags]
 
         if (self.case_flags & FULLIGNORECASE) == FULLIGNORECASE:
             folded_characters = []
@@ -3715,7 +3718,7 @@ class StringSet(RegexBase):
     def __init__(self, info, name, case_flags=NOCASE):
         self.info = info
         self.name = name
-        self.case_flags = case_flags
+        self.case_flags = CASE_FLAGS_COMBINATIONS[case_flags]
 
         self._key = self.__class__, self.name, self.case_flags
 
