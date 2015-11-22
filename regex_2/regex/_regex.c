@@ -11293,8 +11293,6 @@ Py_LOCAL_INLINE(BOOL) check_posix_match(RE_SafeState* safe_state) {
     RE_State* state;
     Py_ssize_t best_length;
     Py_ssize_t new_length;
-    size_t group_count;
-    size_t g;
 
     state = safe_state->re_state;
 
@@ -11316,53 +11314,6 @@ Py_LOCAL_INLINE(BOOL) check_posix_match(RE_SafeState* safe_state) {
         /* It's a longer match. */
         return save_best_match(safe_state);
 
-    if (new_length < best_length)
-        /* It's a shorter match. */
-        return TRUE;
-
-    group_count = state->pattern->true_group_count;
-
-    /* Check the capture groups. */
-    for (g = 0; g < group_count; g++) {
-        RE_GroupData* current;
-        RE_GroupData* best;
-
-        current = &state->groups[g];
-        best = &state->best_match_groups[g];
-
-        if (state->reverse) {
-            /* We're searching backwards. */
-            if (current->span.start > best->span.start)
-                /* It's a earlier match. */
-                return save_best_match(safe_state);
-
-            if (current->span.start < best->span.start)
-                /* It's a later match. */
-                return TRUE;
-        } else {
-            /* We're searching forwards. */
-            if (current->span.start < best->span.start)
-                /* It's a earlier match. */
-                return save_best_match(safe_state);
-
-            if (current->span.start > best->span.start)
-                /* It's a later match. */
-                return TRUE;
-        }
-
-        best_length = best->span.end - best->span.start;
-        new_length = current->span.end - current->span.start;
-
-        if (new_length > best_length)
-            /* It's a longer match. */
-            return save_best_match(safe_state);
-
-        if (new_length < best_length)
-            /* It's a shorter match. */
-            return TRUE;
-    }
-
-    /* The matches are identical. */
     return TRUE;
 }
 
@@ -21286,6 +21237,7 @@ static RE_FlagName flag_names[] = {
     {"I", RE_FLAG_IGNORECASE},
     {"L", RE_FLAG_LOCALE},
     {"M", RE_FLAG_MULTILINE},
+    {"P", RE_FLAG_POSIX},
     {"R", RE_FLAG_REVERSE},
     {"T", RE_FLAG_TEMPLATE},
     {"U", RE_FLAG_UNICODE},

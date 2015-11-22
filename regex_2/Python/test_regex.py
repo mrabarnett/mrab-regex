@@ -3546,6 +3546,14 @@ thing
         self.assertEqual(regex.findall(r'(?(?<=love\s)you|(?<=hate\s)her)',
           "I love you but I don't hate her either"), ['you', 'her'])
 
+        # Hg issue #180: bug of POSIX matching.
+        self.assertEqual(regex.search(r'(?p)a*(.*?)', 'aaabbb').group(0, 1),
+          ('aaabbb', 'bbb'))
+        self.assertEqual(regex.search(r'(?p)a*(.*)', 'aaabbb').group(0, 1),
+          ('aaabbb', 'bbb'))
+        self.assertEqual(regex.sub(r'(?p)a*(.*?)', r'\1', 'aaabbb'), 'bbb')
+        self.assertEqual(regex.sub(r'(?p)a*(.*)', r'\1', 'aaabbb'), 'bbb')
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

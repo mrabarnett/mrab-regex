@@ -12,35 +12,35 @@ This module has 2 behaviours:
 
 * **Version 0** behaviour (old behaviour, compatible with the current re module):
 
-    * Indicated by the ``VERSION0`` or ``V0`` flag, or ``(?V0)`` in the pattern.
+  * Indicated by the ``VERSION0`` or ``V0`` flag, or ``(?V0)`` in the pattern.
 
-    * Zero-width matches are handled like in the re module:
+  * Zero-width matches are handled like in the re module:
 
-        * ``.split`` won't split a string at a zero-width match.
+    * ``.split`` won't split a string at a zero-width match.
 
-        * ``.sub`` will advance by one character after a zero-width match.
+    * ``.sub`` will advance by one character after a zero-width match.
 
-    * Inline flags apply to the entire pattern, and they can't be turned off.
+  * Inline flags apply to the entire pattern, and they can't be turned off.
 
-    * Only simple sets are supported.
+  * Only simple sets are supported.
 
-    * Case-insensitive matches in Unicode use simple case-folding by default.
+  * Case-insensitive matches in Unicode use simple case-folding by default.
 
 * **Version 1** behaviour (new behaviour, different from the current re module):
 
-    * Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
+  * Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
 
-    * Zero-width matches are handled like in Perl and PCRE:
+  * Zero-width matches are handled like in Perl and PCRE:
 
-        * ``.split`` will split a string at a zero-width match.
+    * ``.split`` will split a string at a zero-width match.
 
-        * ``.sub`` will handle zero-width matches correctly.
+    * ``.sub`` will handle zero-width matches correctly.
 
-    * Inline flags apply to the end of the group or pattern, and they can be turned off.
+  * Inline flags apply to the end of the group or pattern, and they can be turned off.
 
-    * Nested sets and set operations are supported.
+  * Nested sets and set operations are supported.
 
-    * Case-insensitive matches in Unicode use full case-folding by default.
+  * Case-insensitive matches in Unicode use full case-folding by default.
 
 If no version is specified, the regex module will default to ``regex.DEFAULT_VERSION``. In the short term this will be ``VERSION0``, but in the longer term it will be ``VERSION1``.
 
@@ -70,11 +70,11 @@ but in the version 1 behaviour (nested sets, enhanced behaviour) as:
 
 * Set which is:
 
-    * Set containing the letters "a" to "z"
+  * Set containing the letters "a" to "z"
 
 * but excluding:
 
-    * Set containing the letters "a", "e", "i", "o", "u"
+  * Set containing the letters "a", "e", "i", "o", "u"
 
 Version 0 behaviour: only simple sets are supported.
 
@@ -142,834 +142,894 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * Added support for lookaround in conditional pattern (Hg issue 163)
 
-    The test of a conditional pattern can now be a lookaround.
+  The test of a conditional pattern can now be a lookaround.
 
-    Examples:
+  Examples:
 
-        >>> regex.match(r'(?(?=\d)\d+|\w+)', '123abc')
-        <regex.Match object; span=(0, 3), match='123'>
-        >>> regex.match(r'(?(?=\d)\d+|\w+)', 'abc123')
-        <regex.Match object; span=(0, 6), match='abc123'>
+  .. sourcecode:: python
 
-    This is not quite the same as putting a lookaround in the first branch of a pair of alternatives.
+    >>> regex.match(r'(?(?=\d)\d+|\w+)', '123abc')
+    <regex.Match object; span=(0, 3), match='123'>
+    >>> regex.match(r'(?(?=\d)\d+|\w+)', 'abc123')
+    <regex.Match object; span=(0, 6), match='abc123'>
 
-    Examples:
+  This is not quite the same as putting a lookaround in the first branch of a pair of alternatives.
 
-        >>> print(regex.match(r'(?:(?=\d)\d+\b|\w+)', '123abc'))
-        <regex.Match object; span=(0, 6), match='123abc'>
-        >>> print(regex.match(r'(?(?=\d)\d+\b|\w+)', '123abc'))
-        None
+  Examples:
 
-    In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was **not** attempted.
+  .. sourcecode:: python
+
+    >>> print(regex.match(r'(?:(?=\d)\d+\b|\w+)', '123abc'))
+    <regex.Match object; span=(0, 6), match='123abc'>
+    >>> print(regex.match(r'(?(?=\d)\d+\b|\w+)', '123abc'))
+    None
+
+  In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was **not** attempted.
 
 * Added POSIX matching (leftmost longest) (Hg issue 150)
 
-    The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the ``POSIX`` flag (``(?p)``).
+  The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the ``POSIX`` flag (``(?p)``).
 
-    Examples:
+  Examples:
 
-        >>> # Normal matching.
-        >>> regex.search(r'Mr|Mrs', 'Mrs')
-        <regex.Match object; span=(0, 2), match='Mr'>
-        >>> regex.search(r'one(self)?(selfsufficient)?', 'oneselfsufficient')
-        <regex.Match object; span=(0, 7), match='oneself'>
-        >>> # POSIX matching.
-        >>> regex.search(r'(?p)Mr|Mrs', 'Mrs')
-        <regex.Match object; span=(0, 3), match='Mrs'>
-        >>> regex.search(r'(?p)one(self)?(selfsufficient)?', 'oneselfsufficient')
-        <regex.Match object; span=(0, 17), match='oneselfsufficient'>
+  .. sourcecode:: python
 
-    Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.
+    >>> # Normal matching.
+    >>> regex.search(r'Mr|Mrs', 'Mrs')
+    <regex.Match object; span=(0, 2), match='Mr'>
+    >>> regex.search(r'one(self)?(selfsufficient)?', 'oneselfsufficient')
+    <regex.Match object; span=(0, 7), match='oneself'>
+    >>> # POSIX matching.
+    >>> regex.search(r'(?p)Mr|Mrs', 'Mrs')
+    <regex.Match object; span=(0, 3), match='Mrs'>
+    >>> regex.search(r'(?p)one(self)?(selfsufficient)?', 'oneselfsufficient')
+    <regex.Match object; span=(0, 17), match='oneselfsufficient'>
+
+  Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.
 
 * Added ``(?(DEFINE)...)`` (Hg issue 152)
 
-    If there's no group called "DEFINE", then ... will be ignored, but any group definitions within it will be available.
+  If there's no group called "DEFINE", then ... will be ignored, but any group definitions within it will be available.
 
-    Examples:
+  Examples:
 
-        >>> regex.search(r'(?(DEFINE)(?P<quant>\d+)(?P<item>\w+))(?&quant) (?&item)', '5 elephants')
-        <regex.Match object; span=(0, 11), match='5 elephants'>
+  .. sourcecode:: python
+
+    >>> regex.search(r'(?(DEFINE)(?P<quant>\d+)(?P<item>\w+))(?&quant) (?&item)', '5 elephants')
+    <regex.Match object; span=(0, 11), match='5 elephants'>
 
 * Added ``(*PRUNE)``, ``(*SKIP)`` and ``(*FAIL)`` (Hg issue 153)
 
-    ``(*PRUNE)`` discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
+  ``(*PRUNE)`` discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
 
-    ``(*SKIP)`` is similar to ``(*PRUNE)``, except that it also sets where in the text the next attempt to match will start. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
+  ``(*SKIP)`` is similar to ``(*PRUNE)``, except that it also sets where in the text the next attempt to match will start. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
 
-    ``(*FAIL)`` causes immediate backtracking. ``(*F)`` is a permitted abbreviation.
+  ``(*FAIL)`` causes immediate backtracking. ``(*F)`` is a permitted abbreviation.
 
 * Added ``\K`` (Hg issue 151)
 
-    Keeps the part of the entire match after the position where ``\K`` occurred; the part before it is discarded.
+  Keeps the part of the entire match after the position where ``\K`` occurred; the part before it is discarded.
 
-    It does not affect what capture groups return.
+  It does not affect what capture groups return.
 
-    Examples:
+  Examples:
 
-        >>> m = regex.search(r'(\w\w\K\w\w\w)', 'abcdef')
-        >>> m[0]
-        'cde'
-        >>> m[1]
-        'abcde'
-        >>>
-        >>> m = regex.search(r'(?r)(\w\w\K\w\w\w)', 'abcdef')
-        >>> m[0]
-        'bc'
-        >>> m[1]
-        'bcdef'
+  .. sourcecode:: python
+
+    >>> m = regex.search(r'(\w\w\K\w\w\w)', 'abcdef')
+    >>> m[0]
+    'cde'
+    >>> m[1]
+    'abcde'
+    >>>
+    >>> m = regex.search(r'(?r)(\w\w\K\w\w\w)', 'abcdef')
+    >>> m[0]
+    'bc'
+    >>> m[1]
+    'bcdef'
 
 * Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (Hg issue 133) **(Python 2.6 and above)**
 
-    You can now use subscripting to get the captures of a repeated capture group.
+  You can now use subscripting to get the captures of a repeated capture group.
 
-    Examples:
+  Examples:
 
-        >>> m = regex.match(r"(\w)+", "abc")
-        >>> m.expandf("{1}")
-        'c'
-        >>> m.expandf("{1[0]} {1[1]} {1[2]}")
-        'a b c'
-        >>> m.expandf("{1[-1]} {1[-2]} {1[-3]}")
-        'c b a'
-        >>>
-        >>> m = regex.match(r"(?P<letter>\w)+", "abc")
-        >>> m.expandf("{letter}")
-        'c'
-        >>> m.expandf("{letter[0]} {letter[1]} {letter[2]}")
-        'a b c'
-        >>> m.expandf("{letter[-1]} {letter[-2]} {letter[-3]}")
-        'c b a'
+  .. sourcecode:: python
+
+    >>> m = regex.match(r"(\w)+", "abc")
+    >>> m.expandf("{1}")
+    'c'
+    >>> m.expandf("{1[0]} {1[1]} {1[2]}")
+    'a b c'
+    >>> m.expandf("{1[-1]} {1[-2]} {1[-3]}")
+    'c b a'
+    >>>
+    >>> m = regex.match(r"(?P<letter>\w)+", "abc")
+    >>> m.expandf("{letter}")
+    'c'
+    >>> m.expandf("{letter[0]} {letter[1]} {letter[2]}")
+    'a b c'
+    >>> m.expandf("{letter[-1]} {letter[-2]} {letter[-3]}")
+    'c b a'
 
 * Added support for referring to a group by number using ``(?P=...)``.
 
-    This is in addition to the existing ``\g<...>``.
+  This is in addition to the existing ``\g<...>``.
 
 * Fixed the handling of locale-sensitive regexes.
 
-    The ``LOCALE`` flag is intended for legacy code and has limited support. You're still recommended to use Unicode instead.
+  The ``LOCALE`` flag is intended for legacy code and has limited support. You're still recommended to use Unicode instead.
 
 * Added partial matches (Hg issue 102)
 
-    A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.
+  A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.
 
-    Partial matches are supported by ``match``, ``search``, ``fullmatch`` and ``finditer`` with the ``partial`` keyword argument.
+  Partial matches are supported by ``match``, ``search``, ``fullmatch`` and ``finditer`` with the ``partial`` keyword argument.
 
-    Match objects have a ``partial`` attribute, which is ``True`` if it's a partial match.
+  Match objects have a ``partial`` attribute, which is ``True`` if it's a partial match.
 
-    For example, if you wanted a user to enter a 4-digit number and check it character by character as it was being entered:
+  For example, if you wanted a user to enter a 4-digit number and check it character by character as it was being entered:
 
-        >>> pattern = regex.compile(r'\d{4}')
+  .. sourcecode:: python
 
-        >>> # Initially, nothing has been entered:
-        >>> print(pattern.fullmatch('', partial=True))
-        <regex.Match object; span=(0, 0), match='', partial=True>
+    >>> pattern = regex.compile(r'\d{4}')
 
-        >>> # An empty string is OK, but it's only a partial match.
-        >>> # The user enters a letter:
-        >>> print(pattern.fullmatch('a', partial=True))
-        None
-        >>> # It'll never match.
+    >>> # Initially, nothing has been entered:
+    >>> print(pattern.fullmatch('', partial=True))
+    <regex.Match object; span=(0, 0), match='', partial=True>
 
-        >>> # The user deletes that and enters a digit:
-        >>> print(pattern.fullmatch('1', partial=True))
-        <regex.Match object; span=(0, 1), match='1', partial=True>
-        >>> # It matches this far, but it's only a partial match.
+    >>> # An empty string is OK, but it's only a partial match.
+    >>> # The user enters a letter:
+    >>> print(pattern.fullmatch('a', partial=True))
+    None
+    >>> # It'll never match.
 
-        >>> # The user enters 2 more digits:
-        >>> print(pattern.fullmatch('123', partial=True))
-        <regex.Match object; span=(0, 3), match='123', partial=True>
-        >>> # It matches this far, but it's only a partial match.
+    >>> # The user deletes that and enters a digit:
+    >>> print(pattern.fullmatch('1', partial=True))
+    <regex.Match object; span=(0, 1), match='1', partial=True>
+    >>> # It matches this far, but it's only a partial match.
 
-        >>> # The user enters another digit:
-        >>> print(pattern.fullmatch('1234', partial=True))
-        <regex.Match object; span=(0, 4), match='1234'>
-        >>> # It's a complete match.
+    >>> # The user enters 2 more digits:
+    >>> print(pattern.fullmatch('123', partial=True))
+    <regex.Match object; span=(0, 3), match='123', partial=True>
+    >>> # It matches this far, but it's only a partial match.
 
-        >>> # If the user enters another digit:
-        >>> print(pattern.fullmatch('12345', partial=True))
-        None
-        >>> # It's no longer a match.
+    >>> # The user enters another digit:
+    >>> print(pattern.fullmatch('1234', partial=True))
+    <regex.Match object; span=(0, 4), match='1234'>
+    >>> # It's a complete match.
 
-        >>> # This is a partial match:
-        >>> pattern.match('123', partial=True).partial
-        True
+    >>> # If the user enters another digit:
+    >>> print(pattern.fullmatch('12345', partial=True))
+    None
+    >>> # It's no longer a match.
 
-        >>> # This is a complete match:
-        >>> pattern.match('1233', partial=True).partial
-        False
+    >>> # This is a partial match:
+    >>> pattern.match('123', partial=True).partial
+    True
+
+    >>> # This is a complete match:
+    >>> pattern.match('1233', partial=True).partial
+    False
 
 * ``*`` operator not working correctly with sub() (Hg issue 106)
 
-    Sometimes it's not clear how zero-width matches should be handled. For example, should ``.*`` match 0 characters directly after matching >0 characters?
+  Sometimes it's not clear how zero-width matches should be handled. For example, should ``.*`` match 0 characters directly after matching >0 characters?
 
-    Most regex implementations follow the lead of Perl (PCRE), but the re module sometimes doesn't. The Perl behaviour appears to be the most common (and the re module is sometimes definitely wrong), so in version 1 the regex module follows the Perl behaviour, whereas in version 0 it follows the legacy re behaviour.
+  Most regex implementations follow the lead of Perl (PCRE), but the re module sometimes doesn't. The Perl behaviour appears to be the most common (and the re module is sometimes definitely wrong), so in version 1 the regex module follows the Perl behaviour, whereas in version 0 it follows the legacy re behaviour.
 
-    Examples:
+  Examples:
 
-        >>> # Version 0 behaviour (like re)
-        >>> regex.sub('(?V0).*', 'x', 'test')
-        'x'
-        >>> regex.sub('(?V0).*?', '|', 'test')
-        '|t|e|s|t|'
+  .. sourcecode:: python
 
-        >>> # Version 1 behaviour (like Perl)
-        >>> regex.sub('(?V1).*', 'x', 'test')
-        'xx'
-        >>> regex.sub('(?V1).*?', '|', 'test')
-        '|||||||||'
+    >>> # Version 0 behaviour (like re)
+    >>> regex.sub('(?V0).*', 'x', 'test')
+    'x'
+    >>> regex.sub('(?V0).*?', '|', 'test')
+    '|t|e|s|t|'
+
+    >>> # Version 1 behaviour (like Perl)
+    >>> regex.sub('(?V1).*', 'x', 'test')
+    'xx'
+    >>> regex.sub('(?V1).*?', '|', 'test')
+    '|||||||||'
 
 * re.group() should never return a bytearray (issue #18468)
 
-    For compatibility with the re module, the regex module returns all matching bytestrings as ``bytes``, starting from Python 3.4.
+  For compatibility with the re module, the regex module returns all matching bytestrings as ``bytes``, starting from Python 3.4.
 
-    Examples:
+  Examples:
 
-        >>> # Python 3.4 and later
-        >>> regex.match(b'.', bytearray(b'a')).group()
-        b'a'
+  .. sourcecode:: python
 
-        >>> # Python 3.1-3.3
-        >>> regex.match(b'.', bytearray(b'a')).group()
-        bytearray(b'a')
+    >>> # Python 3.4 and later
+    >>> regex.match(b'.', bytearray(b'a')).group()
+    b'a'
+
+    >>> # Python 3.1-3.3
+    >>> regex.match(b'.', bytearray(b'a')).group()
+    bytearray(b'a')
 
 * Added ``capturesdict`` (Hg issue 86)
 
-    ``capturesdict`` is a combination of ``groupdict`` and ``captures``:
+  ``capturesdict`` is a combination of ``groupdict`` and ``captures``:
 
-    ``groupdict`` returns a dict of the named groups and the last capture of those groups.
+  ``groupdict`` returns a dict of the named groups and the last capture of those groups.
 
-    ``captures`` returns a list of all the captures of a group
+  ``captures`` returns a list of all the captures of a group
 
-    ``capturesdict`` returns a dict of the named groups and lists of all the captures of those groups.
+  ``capturesdict`` returns a dict of the named groups and lists of all the captures of those groups.
 
-    Examples:
+  Examples:
 
-        >>> m = regex.match(r"(?:(?P<word>\w+) (?P<digits>\d+)\n)+", "one 1\ntwo 2\nthree 3\n")
-        >>> m.groupdict()
-        {'word': 'three', 'digits': '3'}
-        >>> m.captures("word")
-        ['one', 'two', 'three']
-        >>> m.captures("digits")
-        ['1', '2', '3']
-        >>> m.capturesdict()
-        {'word': ['one', 'two', 'three'], 'digits': ['1', '2', '3']}
+  .. sourcecode:: python
+
+    >>> m = regex.match(r"(?:(?P<word>\w+) (?P<digits>\d+)\n)+", "one 1\ntwo 2\nthree 3\n")
+    >>> m.groupdict()
+    {'word': 'three', 'digits': '3'}
+    >>> m.captures("word")
+    ['one', 'two', 'three']
+    >>> m.captures("digits")
+    ['1', '2', '3']
+    >>> m.capturesdict()
+    {'word': ['one', 'two', 'three'], 'digits': ['1', '2', '3']}
 
 * Allow duplicate names of groups (Hg issue 87)
 
-    Group names can now be duplicated.
+  Group names can now be duplicated.
 
-    Examples:
+  Examples:
 
-        >>> # With optional groups:
-        >>>
-        >>> # Both groups capture, the second capture 'overwriting' the first.
-        >>> m = regex.match(r"(?P<item>\w+)? or (?P<item>\w+)?", "first or second")
-        >>> m.group("item")
-        'second'
-        >>> m.captures("item")
-        ['first', 'second']
-        >>> # Only the second group captures.
-        >>> m = regex.match(r"(?P<item>\w+)? or (?P<item>\w+)?", " or second")
-        >>> m.group("item")
-        'second'
-        >>> m.captures("item")
-        ['second']
-        >>> # Only the first group captures.
-        >>> m = regex.match(r"(?P<item>\w+)? or (?P<item>\w+)?", "first or ")
-        >>> m.group("item")
-        'first'
-        >>> m.captures("item")
-        ['first']
-        >>>
-        >>> # With mandatory groups:
-        >>>
-        >>> # Both groups capture, the second capture 'overwriting' the first.
-        >>> m = regex.match(r"(?P<item>\w*) or (?P<item>\w*)?", "first or second")
-        >>> m.group("item")
-        'second'
-        >>> m.captures("item")
-        ['first', 'second']
-        >>> # Again, both groups capture, the second capture 'overwriting' the first.
-        >>> m = regex.match(r"(?P<item>\w*) or (?P<item>\w*)", " or second")
-        >>> m.group("item")
-        'second'
-        >>> m.captures("item")
-        ['', 'second']
-        >>> # And yet again, both groups capture, the second capture 'overwriting' the first.
-        >>> m = regex.match(r"(?P<item>\w*) or (?P<item>\w*)", "first or ")
-        >>> m.group("item")
-        ''
-        >>> m.captures("item")
-        ['first', '']
+  .. sourcecode:: python
+
+    >>> # With optional groups:
+    >>>
+    >>> # Both groups capture, the second capture 'overwriting' the first.
+    >>> m = regex.match(r"(?P<item>\w+)? or (?P<item>\w+)?", "first or second")
+    >>> m.group("item")
+    'second'
+    >>> m.captures("item")
+    ['first', 'second']
+    >>> # Only the second group captures.
+    >>> m = regex.match(r"(?P<item>\w+)? or (?P<item>\w+)?", " or second")
+    >>> m.group("item")
+    'second'
+    >>> m.captures("item")
+    ['second']
+    >>> # Only the first group captures.
+    >>> m = regex.match(r"(?P<item>\w+)? or (?P<item>\w+)?", "first or ")
+    >>> m.group("item")
+    'first'
+    >>> m.captures("item")
+    ['first']
+    >>>
+    >>> # With mandatory groups:
+    >>>
+    >>> # Both groups capture, the second capture 'overwriting' the first.
+    >>> m = regex.match(r"(?P<item>\w*) or (?P<item>\w*)?", "first or second")
+    >>> m.group("item")
+    'second'
+    >>> m.captures("item")
+    ['first', 'second']
+    >>> # Again, both groups capture, the second capture 'overwriting' the first.
+    >>> m = regex.match(r"(?P<item>\w*) or (?P<item>\w*)", " or second")
+    >>> m.group("item")
+    'second'
+    >>> m.captures("item")
+    ['', 'second']
+    >>> # And yet again, both groups capture, the second capture 'overwriting' the first.
+    >>> m = regex.match(r"(?P<item>\w*) or (?P<item>\w*)", "first or ")
+    >>> m.group("item")
+    ''
+    >>> m.captures("item")
+    ['first', '']
 
 * Added ``fullmatch`` (issue #16203)
 
-    ``fullmatch`` behaves like ``match``, except that it must match all of the string.
+  ``fullmatch`` behaves like ``match``, except that it must match all of the string.
 
-    Examples:
+  Examples:
 
-        >>> print(regex.fullmatch(r"abc", "abc").span())
-        (0, 3)
-        >>> print(regex.fullmatch(r"abc", "abcx"))
-        None
-        >>> print(regex.fullmatch(r"abc", "abcx", endpos=3).span())
-        (0, 3)
-        >>> print(regex.fullmatch(r"abc", "xabcy", pos=1, endpos=4).span())
-        (1, 4)
-        >>>
-        >>> regex.match(r"a.*?", "abcd").group(0)
-        'a'
-        >>> regex.fullmatch(r"a.*?", "abcd").group(0)
-        'abcd'
+  .. sourcecode:: python
+
+    >>> print(regex.fullmatch(r"abc", "abc").span())
+    (0, 3)
+    >>> print(regex.fullmatch(r"abc", "abcx"))
+    None
+    >>> print(regex.fullmatch(r"abc", "abcx", endpos=3).span())
+    (0, 3)
+    >>> print(regex.fullmatch(r"abc", "xabcy", pos=1, endpos=4).span())
+    (1, 4)
+    >>>
+    >>> regex.match(r"a.*?", "abcd").group(0)
+    'a'
+    >>> regex.fullmatch(r"a.*?", "abcd").group(0)
+    'abcd'
 
 * Added ``subf`` and ``subfn`` **(Python 2.6 and above)**
 
-    ``subf`` and ``subfn`` are alternatives to ``sub`` and ``subn`` respectively. When passed a replacement string, they treat it as a format string.
+  ``subf`` and ``subfn`` are alternatives to ``sub`` and ``subn`` respectively. When passed a replacement string, they treat it as a format string.
 
-    Examples:
+  Examples:
 
-        >>> regex.subf(r"(\w+) (\w+)", "{0} => {2} {1}", "foo bar")
-        'foo bar => bar foo'
-        >>> regex.subf(r"(?P<word1>\w+) (?P<word2>\w+)", "{word2} {word1}", "foo bar")
-        'bar foo'
+  .. sourcecode:: python
+
+    >>> regex.subf(r"(\w+) (\w+)", "{0} => {2} {1}", "foo bar")
+    'foo bar => bar foo'
+    >>> regex.subf(r"(?P<word1>\w+) (?P<word2>\w+)", "{word2} {word1}", "foo bar")
+    'bar foo'
 
 * Added ``expandf`` to match object **(Python 2.6 and above)**
 
-    ``expandf`` is an alternative to ``expand``. When passed a replacement string, it treats it as a format string.
+  ``expandf`` is an alternative to ``expand``. When passed a replacement string, it treats it as a format string.
 
-    Examples:
+  Examples:
 
-        >>> m = regex.match(r"(\w+) (\w+)", "foo bar")
-        >>> m.expandf("{0} => {2} {1}")
-        'foo bar => bar foo'
-        >>>
-        >>> m = regex.match(r"(?P<word1>\w+) (?P<word2>\w+)", "foo bar")
-        >>> m.expandf("{word2} {word1}")
-        'bar foo'
+  .. sourcecode:: python
+
+    >>> m = regex.match(r"(\w+) (\w+)", "foo bar")
+    >>> m.expandf("{0} => {2} {1}")
+    'foo bar => bar foo'
+    >>>
+    >>> m = regex.match(r"(?P<word1>\w+) (?P<word2>\w+)", "foo bar")
+    >>> m.expandf("{word2} {word1}")
+    'bar foo'
 
 * Detach searched string
 
-    A match object contains a reference to the string that was searched, via its ``string`` attribute. The match object now has a ``detach_string`` method that will 'detach' that string, making it available for garbage collection (this might save valuable memory if that string is very large).
+  A match object contains a reference to the string that was searched, via its ``string`` attribute. The match object now has a ``detach_string`` method that will 'detach' that string, making it available for garbage collection (this might save valuable memory if that string is very large).
 
-    Example:
+  Example:
 
-        >>> m = regex.search(r"\w+", "Hello world")
-        >>> print(m.group())
-        Hello
-        >>> print(m.string)
-        Hello world
-        >>> m.detach_string()
-        >>> print(m.group())
-        Hello
-        >>> print(m.string)
-        None
+  .. sourcecode:: python
+
+    >>> m = regex.search(r"\w+", "Hello world")
+    >>> print(m.group())
+    Hello
+    >>> print(m.string)
+    Hello world
+    >>> m.detach_string()
+    >>> print(m.group())
+    Hello
+    >>> print(m.string)
+    None
 
 * Characters in a group name (issue #14462)
 
-    A group name can now contain the same characters as an identifier. These are different in Python 2 and Python 3.
+  A group name can now contain the same characters as an identifier. These are different in Python 2 and Python 3.
 
 * Recursive patterns (Hg issue 27)
 
-    Recursive and repeated patterns are supported.
+  Recursive and repeated patterns are supported.
 
-    ``(?R)`` or ``(?0)`` tries to match the entire regex recursively. ``(?1)``, ``(?2)``, etc, try to match the relevant capture group.
+  ``(?R)`` or ``(?0)`` tries to match the entire regex recursively. ``(?1)``, ``(?2)``, etc, try to match the relevant capture group.
 
-    ``(?&name)`` tries to match the named capture group.
+  ``(?&name)`` tries to match the named capture group.
 
-    Examples:
+  Examples:
 
-        >>> regex.match(r"(Tarzan|Jane) loves (?1)", "Tarzan loves Jane").groups()
-        ('Tarzan',)
-        >>> regex.match(r"(Tarzan|Jane) loves (?1)", "Jane loves Tarzan").groups()
-        ('Jane',)
+  .. sourcecode:: python
 
-        >>> m = regex.search(r"(\w)(?:(?R)|(\w?))\1", "kayak")
-        >>> m.group(0, 1, 2)
-        ('kayak', 'k', None)
+    >>> regex.match(r"(Tarzan|Jane) loves (?1)", "Tarzan loves Jane").groups()
+    ('Tarzan',)
+    >>> regex.match(r"(Tarzan|Jane) loves (?1)", "Jane loves Tarzan").groups()
+    ('Jane',)
 
-    The first two examples show how the subpattern within the capture group is reused, but is _not_ itself a capture group. In other words, ``"(Tarzan|Jane) loves (?1)"`` is equivalent to ``"(Tarzan|Jane) loves (?:Tarzan|Jane)"``.
+    >>> m = regex.search(r"(\w)(?:(?R)|(\w?))\1", "kayak")
+    >>> m.group(0, 1, 2)
+    ('kayak', 'k', None)
 
-    It's possible to backtrack into a recursed or repeated group.
+  The first two examples show how the subpattern within the capture group is reused, but is _not_ itself a capture group. In other words, ``"(Tarzan|Jane) loves (?1)"`` is equivalent to ``"(Tarzan|Jane) loves (?:Tarzan|Jane)"``.
 
-    You can't call a group if there is more than one group with that group name or group number (``"ambiguous group reference"``). For example, ``(?P<foo>\w+) (?P<foo>\w+) (?&foo)?`` has 2 groups called "foo" (both group 1) and ``(?|([A-Z]+)|([0-9]+)) (?1)?`` has 2 groups with group number 1.
+  It's possible to backtrack into a recursed or repeated group.
 
-    The alternative forms ``(?P>name)`` and ``(?P&name)`` are also supported.
+  You can't call a group if there is more than one group with that group name or group number (``"ambiguous group reference"``). For example, ``(?P<foo>\w+) (?P<foo>\w+) (?&foo)?`` has 2 groups called "foo" (both group 1) and ``(?|([A-Z]+)|([0-9]+)) (?1)?`` has 2 groups with group number 1.
+
+  The alternative forms ``(?P>name)`` and ``(?P&name)`` are also supported.
 
 * repr(regex) doesn't include actual regex (issue #13592)
 
-    The repr of a compiled regex is now in the form of a eval-able string. For example:
+  The repr of a compiled regex is now in the form of a eval-able string. For example:
 
-        >>> r = regex.compile("foo", regex.I)
-        >>> repr(r)
-        "regex.Regex('foo', flags=regex.I | regex.V0)"
-        >>> r
-        regex.Regex('foo', flags=regex.I | regex.V0)
+  .. sourcecode:: python
 
-    The regex module has Regex as an alias for the 'compile' function.
+    >>> r = regex.compile("foo", regex.I)
+    >>> repr(r)
+    "regex.Regex('foo', flags=regex.I | regex.V0)"
+    >>> r
+    regex.Regex('foo', flags=regex.I | regex.V0)
+
+  The regex module has Regex as an alias for the 'compile' function.
 
 * Improve the repr for regular expression match objects (issue #17087)
 
-    The repr of a match object is now a more useful form. For example:
+  The repr of a match object is now a more useful form. For example:
 
-        >>> regex.search(r"\d+", "abc012def")
-        <regex.Match object; span=(3, 6), match='012'>
+  .. sourcecode:: python
+
+    >>> regex.search(r"\d+", "abc012def")
+    <regex.Match object; span=(3, 6), match='012'>
 
 * Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)
 
-    The source code of the regex module has been updated to support PEP 393 ("Flexible String Representation"), which is new in Python 3.3.
+  The source code of the regex module has been updated to support PEP 393 ("Flexible String Representation"), which is new in Python 3.3.
 
 * Full Unicode case-folding is supported.
 
-    In version 1 behaviour, the regex module uses full case-folding when performing case-insensitive matches in Unicode.
+  In version 1 behaviour, the regex module uses full case-folding when performing case-insensitive matches in Unicode.
 
-    Examples (in Python 3):
+  Examples (in Python 3):
 
-        >>> regex.match(r"(?iV1)strasse", "stra\N{LATIN SMALL LETTER SHARP S}e").span()
-        (0, 6)
-        >>> regex.match(r"(?iV1)stra\N{LATIN SMALL LETTER SHARP S}e", "STRASSE").span()
-        (0, 7)
+  .. sourcecode:: python
 
-    In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.
+    >>> regex.match(r"(?iV1)strasse", "stra\N{LATIN SMALL LETTER SHARP S}e").span()
+    (0, 6)
+    >>> regex.match(r"(?iV1)stra\N{LATIN SMALL LETTER SHARP S}e", "STRASSE").span()
+    (0, 7)
+
+  In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.
 
 * Approximate "fuzzy" matching (Hg issue 12, Hg issue 41, Hg issue 109)
 
-    Regex usually attempts an exact match, but sometimes an approximate, or "fuzzy", match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.
+  Regex usually attempts an exact match, but sometimes an approximate, or "fuzzy", match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.
 
-    A fuzzy regex specifies which types of errors are permitted, and, optionally, either the minimum and maximum or only the maximum permitted number of each type. (You cannot specify only a minimum.)
+  A fuzzy regex specifies which types of errors are permitted, and, optionally, either the minimum and maximum or only the maximum permitted number of each type. (You cannot specify only a minimum.)
 
-    The 3 types of error are:
+  The 3 types of error are:
 
-    * Insertion, indicated by "i"
+  * Insertion, indicated by "i"
 
-    * Deletion, indicated by "d"
+  * Deletion, indicated by "d"
 
-    * Substitution, indicated by "s"
+  * Substitution, indicated by "s"
 
-    In addition, "e" indicates any type of error.
+  In addition, "e" indicates any type of error.
 
-    The fuzziness of a regex item is specified between "{" and "}" after the item.
+  The fuzziness of a regex item is specified between "{" and "}" after the item.
 
-    Examples:
+  Examples:
 
-    * ``foo`` match "foo" exactly
+  * ``foo`` match "foo" exactly
 
-    * ``(?:foo){i}`` match "foo", permitting insertions
+  * ``(?:foo){i}`` match "foo", permitting insertions
 
-    * ``(?:foo){d}`` match "foo", permitting deletions
+  * ``(?:foo){d}`` match "foo", permitting deletions
 
-    * ``(?:foo){s}`` match "foo", permitting substitutions
+  * ``(?:foo){s}`` match "foo", permitting substitutions
 
-    * ``(?:foo){i,s}`` match "foo", permitting insertions and substitutions
+  * ``(?:foo){i,s}`` match "foo", permitting insertions and substitutions
 
-    * ``(?:foo){e}`` match "foo", permitting errors
+  * ``(?:foo){e}`` match "foo", permitting errors
 
-    If a certain type of error is specified, then any type not specified will **not** be permitted.
+  If a certain type of error is specified, then any type not specified will **not** be permitted.
 
-    In the following examples I'll omit the item and write only the fuzziness:
+  In the following examples I'll omit the item and write only the fuzziness:
 
-    * ``{i<=3}`` permit at most 3 insertions, but no other types
+  * ``{i<=3}`` permit at most 3 insertions, but no other types
 
-    * ``{d<=3}`` permit at most 3 deletions, but no other types
+  * ``{d<=3}`` permit at most 3 deletions, but no other types
 
-    * ``{s<=3}`` permit at most 3 substitutions, but no other types
+  * ``{s<=3}`` permit at most 3 substitutions, but no other types
 
-    * ``{i<=1,s<=2}`` permit at most 1 insertion and at most 2 substitutions, but no deletions
+  * ``{i<=1,s<=2}`` permit at most 1 insertion and at most 2 substitutions, but no deletions
 
-    * ``{e<=3}`` permit at most 3 errors
+  * ``{e<=3}`` permit at most 3 errors
 
-    * ``{1<=e<=3}`` permit at least 1 and at most 3 errors
+  * ``{1<=e<=3}`` permit at least 1 and at most 3 errors
 
-    * ``{i<=2,d<=2,e<=3}`` permit at most 2 insertions, at most 2 deletions, at most 3 errors in total, but no substitutions
+  * ``{i<=2,d<=2,e<=3}`` permit at most 2 insertions, at most 2 deletions, at most 3 errors in total, but no substitutions
 
-    It's also possible to state the costs of each type of error and the maximum permitted total cost.
+  It's also possible to state the costs of each type of error and the maximum permitted total cost.
 
-    Examples:
+  Examples:
 
-    * ``{2i+2d+1s<=4}`` each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
+  * ``{2i+2d+1s<=4}`` each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
 
-    * ``{i<=1,d<=1,s<=1,2i+2d+1s<=4}`` at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
+  * ``{i<=1,d<=1,s<=1,2i+2d+1s<=4}`` at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
 
-    You can also use "<" instead of "<=" if you want an exclusive minimum or maximum:
+  You can also use "<" instead of "<=" if you want an exclusive minimum or maximum:
 
-    * ``{e<=3}`` permit up to 3 errors
+  * ``{e<=3}`` permit up to 3 errors
 
-    * ``{e<4}`` permit fewer than 4 errors
+  * ``{e<4}`` permit fewer than 4 errors
 
-    * ``{0<e<4}`` permit more than 0 but fewer than 4 errors
+  * ``{0<e<4}`` permit more than 0 but fewer than 4 errors
 
-    By default, fuzzy matching searches for the first match that meets the given constraints. The ``ENHANCEMATCH`` flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
+  By default, fuzzy matching searches for the first match that meets the given constraints. The ``ENHANCEMATCH`` flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
 
-    The ``BESTMATCH`` flag will make it search for the best match instead.
+  The ``BESTMATCH`` flag will make it search for the best match instead.
 
-    Further examples to note:
+  Further examples to note:
 
-    * ``regex.search("(dog){e}", "cat and dog")[1]`` returns ``"cat"`` because that matches ``"dog"`` with 3 errors, which is within the limit (an unlimited number of errors is permitted).
+  * ``regex.search("(dog){e}", "cat and dog")[1]`` returns ``"cat"`` because that matches ``"dog"`` with 3 errors, which is within the limit (an unlimited number of errors is permitted).
 
-    * ``regex.search("(dog){e<=1}", "cat and dog")[1]`` returns ``" dog"`` (with a leading space) because that matches ``"dog"`` with 1 error, which is within the limit (1 error is permitted).
+  * ``regex.search("(dog){e<=1}", "cat and dog")[1]`` returns ``" dog"`` (with a leading space) because that matches ``"dog"`` with 1 error, which is within the limit (1 error is permitted).
 
-    * ``regex.search("(?e)(dog){e<=1}", "cat and dog")[1]`` returns ``"dog"`` (without a leading space) because the fuzzy search matches ``" dog"`` with 1 error, which is within the limit (1 error is permitted), and the ``(?e)`` then makes it attempt a better fit.
+  * ``regex.search("(?e)(dog){e<=1}", "cat and dog")[1]`` returns ``"dog"`` (without a leading space) because the fuzzy search matches ``" dog"`` with 1 error, which is within the limit (1 error is permitted), and the ``(?e)`` then makes it attempt a better fit.
 
-    In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.
+  In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.
 
-    The match object has an attribute ``fuzzy_counts`` which gives the total number of substitutions, insertions and deletions.
+  The match object has an attribute ``fuzzy_counts`` which gives the total number of substitutions, insertions and deletions.
 
-        >>> # A 'raw' fuzzy match:
-        >>> regex.fullmatch(r"(?:cats|cat){e<=1}", "cat").fuzzy_counts
-        (0, 0, 1)
-        >>> # 0 substitutions, 0 insertions, 1 deletion.
+  .. sourcecode:: python
 
-        >>> # A better match might be possible if the ENHANCEMATCH flag used:
-        >>> regex.fullmatch(r"(?e)(?:cats|cat){e<=1}", "cat").fuzzy_counts
-        (0, 0, 0)
-        >>> # 0 substitutions, 0 insertions, 0 deletions.
+    >>> # A 'raw' fuzzy match:
+    >>> regex.fullmatch(r"(?:cats|cat){e<=1}", "cat").fuzzy_counts
+    (0, 0, 1)
+    >>> # 0 substitutions, 0 insertions, 1 deletion.
+
+    >>> # A better match might be possible if the ENHANCEMATCH flag used:
+    >>> regex.fullmatch(r"(?e)(?:cats|cat){e<=1}", "cat").fuzzy_counts
+    (0, 0, 0)
+    >>> # 0 substitutions, 0 insertions, 0 deletions.
 
 * Named lists (Hg issue 11)
 
-    ``\L<name>``
+  ``\L<name>``
 
-    There are occasions where you may want to include a list (actually, a set) of options in a regex.
+  There are occasions where you may want to include a list (actually, a set) of options in a regex.
 
-    One way is to build the pattern like this:
+  One way is to build the pattern like this:
 
-        >>> p = regex.compile(r"first|second|third|fourth|fifth")
+  .. sourcecode:: python
 
-    but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character that has a special meaning in a regex, and that if there is a shorter string that occurs initially in a longer string that the longer string is listed before the shorter one, for example, "cats" before "cat".
+    >>> p = regex.compile(r"first|second|third|fourth|fifth")
 
-    The new alternative is to use a named list:
+  but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character that has a special meaning in a regex, and that if there is a shorter string that occurs initially in a longer string that the longer string is listed before the shorter one, for example, "cats" before "cat".
 
-        >>> option_set = ["first", "second", "third", "fourth", "fifth"]
-        >>> p = regex.compile(r"\L<options>", options=option_set)
+  The new alternative is to use a named list:
 
-    The order of the items is irrelevant, they are treated as a set. The named lists are available as the ``.named_lists`` attribute of the pattern object :
+  .. sourcecode:: python
 
-        >>> print(p.named_lists)
-        {'options': frozenset({'second', 'fifth', 'fourth', 'third', 'first'})}
+    >>> option_set = ["first", "second", "third", "fourth", "fifth"]
+    >>> p = regex.compile(r"\L<options>", options=option_set)
+
+  The order of the items is irrelevant, they are treated as a set. The named lists are available as the ``.named_lists`` attribute of the pattern object :
+
+  .. sourcecode:: python
+
+    >>> print(p.named_lists)
+    {'options': frozenset({'second', 'fifth', 'fourth', 'third', 'first'})}
 
 * Start and end of word
 
-    ``\m`` matches at the start of a word.
+  ``\m`` matches at the start of a word.
 
-    ``\M`` matches at the end of a word.
+  ``\M`` matches at the end of a word.
 
-    Compare with ``\b``, which matches at the start or end of a word.
+  Compare with ``\b``, which matches at the start or end of a word.
 
 * Unicode line separators
 
-    Normally the only line separator is ``\n`` (``\x0A``), but if the ``WORD`` flag is turned on then the line separators are the pair ``\x0D\x0A``, and ``\x0A``, ``\x0B``, ``\x0C`` and ``\x0D``, plus ``\x85``, ``\u2028`` and ``\u2029`` when working with Unicode.
+  Normally the only line separator is ``\n`` (``\x0A``), but if the ``WORD`` flag is turned on then the line separators are the pair ``\x0D\x0A``, and ``\x0A``, ``\x0B``, ``\x0C`` and ``\x0D``, plus ``\x85``, ``\u2028`` and ``\u2029`` when working with Unicode.
 
-    This affects the regex dot ``"."``, which, with the ``DOTALL`` flag turned off, matches any character except a line separator. It also affects the line anchors ``^`` and ``$`` (in multiline mode).
+  This affects the regex dot ``"."``, which, with the ``DOTALL`` flag turned off, matches any character except a line separator. It also affects the line anchors ``^`` and ``$`` (in multiline mode).
 
 * Set operators
 
-    **Version 1 behaviour only**
+  **Version 1 behaviour only**
 
-    Set operators have been added, and a set ``[...]`` can include nested sets.
+  Set operators have been added, and a set ``[...]`` can include nested sets.
 
-    The operators, in order of increasing precedence, are:
+  The operators, in order of increasing precedence, are:
 
-    * ``||`` for union ("x||y" means "x or y")
+  * ``||`` for union ("x||y" means "x or y")
 
-    * ``~~`` (double tilde) for symmetric difference ("x~~y" means "x or y, but not both")
+  * ``~~`` (double tilde) for symmetric difference ("x~~y" means "x or y, but not both")
 
-    * ``&&`` for intersection ("x&&y" means "x and y")
+  * ``&&`` for intersection ("x&&y" means "x and y")
 
-    * ``--`` (double dash) for difference ("x--y" means "x but not y")
+  * ``--`` (double dash) for difference ("x--y" means "x but not y")
 
-    Implicit union, ie, simple juxtaposition like in ``[ab]``, has the highest precedence. Thus, ``[ab&&cd]`` is the same as ``[[a||b]&&[c||d]]``.
+  Implicit union, ie, simple juxtaposition like in ``[ab]``, has the highest precedence. Thus, ``[ab&&cd]`` is the same as ``[[a||b]&&[c||d]]``.
 
-    Examples:
+  Examples:
 
-    * ``[ab]`` # Set containing 'a' and 'b'
+  * ``[ab]`` # Set containing 'a' and 'b'
 
-    * ``[a-z]`` # Set containing 'a' .. 'z'
+  * ``[a-z]`` # Set containing 'a' .. 'z'
 
-    * ``[[a-z]--[qw]]`` # Set containing 'a' .. 'z', but not 'q' or 'w'
+  * ``[[a-z]--[qw]]`` # Set containing 'a' .. 'z', but not 'q' or 'w'
 
-    * ``[a-z--qw]`` # Same as above
+  * ``[a-z--qw]`` # Same as above
 
-    * ``[\p{L}--QW]`` # Set containing all letters except 'Q' and 'W'
+  * ``[\p{L}--QW]`` # Set containing all letters except 'Q' and 'W'
 
-    * ``[\p{N}--[0-9]]`` # Set containing all numbers except '0' .. '9'
+  * ``[\p{N}--[0-9]]`` # Set containing all numbers except '0' .. '9'
 
-    * ``[\p{ASCII}&&\p{Letter}]`` # Set containing all characters which are ASCII and letter
+  * ``[\p{ASCII}&&\p{Letter}]`` # Set containing all characters which are ASCII and letter
 
 * regex.escape (issue #2650)
 
-    regex.escape has an additional keyword parameter ``special_only``. When True, only 'special' regex characters, such as '?', are escaped.
+  regex.escape has an additional keyword parameter ``special_only``. When True, only 'special' regex characters, such as '?', are escaped.
 
-    Examples:
+  Examples:
 
-        >>> regex.escape("foo!?")
-        'foo\\!\\?'
-        >>> regex.escape("foo!?", special_only=True)
-        'foo!\\?'
+  .. sourcecode:: python
+
+    >>> regex.escape("foo!?")
+    'foo\\!\\?'
+    >>> regex.escape("foo!?", special_only=True)
+    'foo!\\?'
 
 * Repeated captures (issue #7132)
 
-    A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:
+  A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:
 
-    * ``matchobject.captures([group1, ...])``
+  * ``matchobject.captures([group1, ...])``
 
-        * Returns a list of the strings matched in a group or groups. Compare with ``matchobject.group([group1, ...])``.
+    * Returns a list of the strings matched in a group or groups. Compare with ``matchobject.group([group1, ...])``.
 
-    * ``matchobject.starts([group])``
+  * ``matchobject.starts([group])``
 
-        * Returns a list of the start positions. Compare with ``matchobject.start([group])``.
+    * Returns a list of the start positions. Compare with ``matchobject.start([group])``.
 
-    * ``matchobject.ends([group])``
+  * ``matchobject.ends([group])``
 
-        * Returns a list of the end positions. Compare with ``matchobject.end([group])``.
+    * Returns a list of the end positions. Compare with ``matchobject.end([group])``.
 
-    * ``matchobject.spans([group])``
+  * ``matchobject.spans([group])``
 
-        * Returns a list of the spans. Compare with ``matchobject.span([group])``.
+    * Returns a list of the spans. Compare with ``matchobject.span([group])``.
 
-    Examples:
+  Examples:
 
-        >>> m = regex.search(r"(\w{3})+", "123456789")
-        >>> m.group(1)
-        '789'
-        >>> m.captures(1)
-        ['123', '456', '789']
-        >>> m.start(1)
-        6
-        >>> m.starts(1)
-        [0, 3, 6]
-        >>> m.end(1)
-        9
-        >>> m.ends(1)
-        [3, 6, 9]
-        >>> m.span(1)
-        (6, 9)
-        >>> m.spans(1)
-        [(0, 3), (3, 6), (6, 9)]
+  .. sourcecode:: python
+
+    >>> m = regex.search(r"(\w{3})+", "123456789")
+    >>> m.group(1)
+    '789'
+    >>> m.captures(1)
+    ['123', '456', '789']
+    >>> m.start(1)
+    6
+    >>> m.starts(1)
+    [0, 3, 6]
+    >>> m.end(1)
+    9
+    >>> m.ends(1)
+    [3, 6, 9]
+    >>> m.span(1)
+    (6, 9)
+    >>> m.spans(1)
+    [(0, 3), (3, 6), (6, 9)]
 
 * Atomic grouping (issue #433030)
 
-    ``(?>...)``
+  ``(?>...)``
 
-    If the following pattern subsequently fails, then the subpattern as a whole will fail.
+  If the following pattern subsequently fails, then the subpattern as a whole will fail.
 
 * Possessive quantifiers.
 
-    ``(?:...)?+`` ; ``(?:...)*+`` ; ``(?:...)++`` ; ``(?:...){min,max}+``
+  ``(?:...)?+`` ; ``(?:...)*+`` ; ``(?:...)++`` ; ``(?:...){min,max}+``
 
-    The subpattern is matched up to 'max' times. If the following pattern subsequently fails, then all of the repeated subpatterns will fail as a whole. For example, ``(?:...)++`` is equivalent to ``(?>(?:...)+)``.
+  The subpattern is matched up to 'max' times. If the following pattern subsequently fails, then all of the repeated subpatterns will fail as a whole. For example, ``(?:...)++`` is equivalent to ``(?>(?:...)+)``.
 
 * Scoped flags (issue #433028)
 
-    ``(?flags-flags:...)``
+  ``(?flags-flags:...)``
 
-    The flags will apply only to the subpattern. Flags can be turned on or off.
+  The flags will apply only to the subpattern. Flags can be turned on or off.
 
 * Inline flags (issue #433024, issue #433027)
 
-    ``(?flags-flags)``
+  ``(?flags-flags)``
 
-    Version 0 behaviour: the flags apply to the entire pattern, and they can't be turned off.
+  Version 0 behaviour: the flags apply to the entire pattern, and they can't be turned off.
 
-    Version 1 behaviour: the flags apply to the end of the group or pattern, and they can be turned on or off.
+  Version 1 behaviour: the flags apply to the end of the group or pattern, and they can be turned on or off.
 
 * Repeated repeats (issue #2537)
 
-    A regex like ``((x|y+)*)*`` will be accepted and will work correctly, but should complete more quickly.
+  A regex like ``((x|y+)*)*`` will be accepted and will work correctly, but should complete more quickly.
 
 * Definition of 'word' character (issue #1693050)
 
-    The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
+  The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
 
 * Groups in lookahead and lookbehind (issue #814253)
 
-    Groups and group references are permitted in both lookahead and lookbehind.
+  Groups and group references are permitted in both lookahead and lookbehind.
 
 * Variable-length lookbehind
 
-    A lookbehind can match a variable-length string.
+  A lookbehind can match a variable-length string.
 
 * Correct handling of charset with ignore case flag (issue #3511)
 
-    Ranges within charsets are handled correctly when the ignore-case flag is turned on.
+  Ranges within charsets are handled correctly when the ignore-case flag is turned on.
 
 * Unmatched group in replacement (issue #1519638)
 
-    An unmatched group is treated as an empty string in a replacement template.
+  An unmatched group is treated as an empty string in a replacement template.
 
 * 'Pathological' patterns (issue #1566086, issue #1662581, issue #1448325, issue #1721518, issue #1297193)
 
-    'Pathological' patterns should complete more quickly.
+  'Pathological' patterns should complete more quickly.
 
 * Flags argument for regex.split, regex.sub and regex.subn (issue #3482)
 
-    ``regex.split``, ``regex.sub`` and ``regex.subn`` support a 'flags' argument.
+  ``regex.split``, ``regex.sub`` and ``regex.subn`` support a 'flags' argument.
 
 * Pos and endpos arguments for regex.sub and regex.subn
 
-    ``regex.sub`` and ``regex.subn`` support 'pos' and 'endpos' arguments.
+  ``regex.sub`` and ``regex.subn`` support 'pos' and 'endpos' arguments.
 
 * 'Overlapped' argument for regex.findall and regex.finditer
 
-    ``regex.findall`` and ``regex.finditer`` support an 'overlapped' flag which permits overlapped matches.
+  ``regex.findall`` and ``regex.finditer`` support an 'overlapped' flag which permits overlapped matches.
 
 * Unicode escapes (issue #3665)
 
-    The Unicode escapes ``\uxxxx`` and ``\Uxxxxxxxx`` are supported.
+  The Unicode escapes ``\uxxxx`` and ``\Uxxxxxxxx`` are supported.
 
 * Large patterns (issue #1160)
 
-    Patterns can be much larger.
+  Patterns can be much larger.
 
 * Zero-width match with regex.finditer (issue #1647489)
 
-    ``regex.finditer`` behaves correctly when it splits at a zero-width match.
+  ``regex.finditer`` behaves correctly when it splits at a zero-width match.
 
 * Zero-width split with regex.split (issue #3262)
 
-    Version 0 behaviour: a string won't be split at a zero-width match.
+  Version 0 behaviour: a string won't be split at a zero-width match.
 
-    Version 1 behaviour: a string will be split at a zero-width match.
+  Version 1 behaviour: a string will be split at a zero-width match.
 
 * Splititer
 
-    ``regex.splititer`` has been added. It's a generator equivalent of ``regex.split``.
+  ``regex.splititer`` has been added. It's a generator equivalent of ``regex.split``.
 
 * Subscripting for groups
 
-    A match object accepts access to the captured groups via subscripting and slicing:
+  A match object accepts access to the captured groups via subscripting and slicing:
 
-        >>> m = regex.search(r"(?P<before>.*?)(?P<num>\d+)(?P<after>.*)", "pqr123stu")
-        >>> print m["before"]
-        pqr
-        >>> print m["num"]
-        123
-        >>> print m["after"]
-        stu
-        >>> print len(m)
-        4
-        >>> print m[:]
-        ('pqr123stu', 'pqr', '123', 'stu')
+  .. sourcecode:: python
+
+    >>> m = regex.search(r"(?P<before>.*?)(?P<num>\d+)(?P<after>.*)", "pqr123stu")
+    >>> print m["before"]
+    pqr
+    >>> print m["num"]
+    123
+    >>> print m["after"]
+    stu
+    >>> print len(m)
+    4
+    >>> print m[:]
+    ('pqr123stu', 'pqr', '123', 'stu')
 
 * Named groups
 
-    Groups can be named with ``(?<name>...)`` as well as the current ``(?P<name>...)``.
+  Groups can be named with ``(?<name>...)`` as well as the current ``(?P<name>...)``.
 
 * Group references
 
-    Groups can be referenced within a pattern with ``\g<name>``. This also allows there to be more than 99 groups.
+  Groups can be referenced within a pattern with ``\g<name>``. This also allows there to be more than 99 groups.
 
 * Named characters
 
-    ``\N{name}``
+  ``\N{name}``
 
-    Named characters are supported. (Note: only those known by Python's Unicode database are supported.)
+  Named characters are supported. (Note: only those known by Python's Unicode database are supported.)
 
 * Unicode codepoint properties, including scripts and blocks
 
-    ``\p{property=value}``; ``\P{property=value}``; ``\p{value}`` ; ``\P{value}``
+  ``\p{property=value}``; ``\P{property=value}``; ``\p{value}`` ; ``\P{value}``
 
-    Many Unicode properties are supported, including blocks and scripts. ``\p{property=value}`` or ``\p{property:value}`` matches a character whose property ``property`` has value ``value``. The inverse of ``\p{property=value}`` is ``\P{property=value}`` or ``\p{^property=value}``.
+  Many Unicode properties are supported, including blocks and scripts. ``\p{property=value}`` or ``\p{property:value}`` matches a character whose property ``property`` has value ``value``. The inverse of ``\p{property=value}`` is ``\P{property=value}`` or ``\p{^property=value}``.
 
-    If the short form ``\p{value}`` is used, the properties are checked in the order: ``General_Category``, ``Script``, ``Block``, binary property:
+  If the short form ``\p{value}`` is used, the properties are checked in the order: ``General_Category``, ``Script``, ``Block``, binary property:
 
-    * ``Latin``, the 'Latin' script (``Script=Latin``).
+  * ``Latin``, the 'Latin' script (``Script=Latin``).
 
-    * ``Cyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
+  * ``Cyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
 
-    * ``BasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
+  * ``BasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
 
-    * ``Alphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
+  * ``Alphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
 
-    A short form starting with ``Is`` indicates a script or binary property:
+  A short form starting with ``Is`` indicates a script or binary property:
 
-    * ``IsLatin``, the 'Latin' script (``Script=Latin``).
+  * ``IsLatin``, the 'Latin' script (``Script=Latin``).
 
-    * ``IsCyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
+  * ``IsCyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
 
-    * ``IsAlphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
+  * ``IsAlphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
 
-    A short form starting with ``In`` indicates a block property:
+  A short form starting with ``In`` indicates a block property:
 
-    * ``InBasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
+  * ``InBasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
 
-    * ``InCyrillic``, the 'Cyrillic' block (``Block=Cyrillic``).
+  * ``InCyrillic``, the 'Cyrillic' block (``Block=Cyrillic``).
 
 * POSIX character classes
 
-    ``[[:alpha:]]``; ``[[:^alpha:]]``
+  ``[[:alpha:]]``; ``[[:^alpha:]]``
 
-    POSIX character classes are supported. These are normally treated as an alternative form of ``\p{...}``.
+  POSIX character classes are supported. These are normally treated as an alternative form of ``\p{...}``.
 
-    The exceptions are ``alnum``, ``digit``, ``punct`` and ``xdigit``, whose definitions are different from those of Unicode.
+  The exceptions are ``alnum``, ``digit``, ``punct`` and ``xdigit``, whose definitions are different from those of Unicode.
 
-    ``[[:alnum:]]`` is equivalent to ``\p{posix_alnum}``.
+  ``[[:alnum:]]`` is equivalent to ``\p{posix_alnum}``.
 
-    ``[[:digit:]]`` is equivalent to ``\p{posix_digit}``.
+  ``[[:digit:]]`` is equivalent to ``\p{posix_digit}``.
 
-    ``[[:punct:]]`` is equivalent to ``\p{posix_punct}``.
+  ``[[:punct:]]`` is equivalent to ``\p{posix_punct}``.
 
-    ``[[:xdigit:]]`` is equivalent to ``\p{posix_xdigit}``.
+  ``[[:xdigit:]]`` is equivalent to ``\p{posix_xdigit}``.
 
 * Search anchor
 
-    ``\G``
+  ``\G``
 
-    A search anchor has been added. It matches at the position where each search started/continued and can be used for contiguous matches or in negative variable-length lookbehinds to limit how far back the lookbehind goes:
+  A search anchor has been added. It matches at the position where each search started/continued and can be used for contiguous matches or in negative variable-length lookbehinds to limit how far back the lookbehind goes:
 
-        >>> regex.findall(r"\w{2}", "abcd ef")
-        ['ab', 'cd', 'ef']
-        >>> regex.findall(r"\G\w{2}", "abcd ef")
-        ['ab', 'cd']
+  .. sourcecode:: python
 
-    * The search starts at position 0 and matches 2 letters 'ab'.
+    >>> regex.findall(r"\w{2}", "abcd ef")
+    ['ab', 'cd', 'ef']
+    >>> regex.findall(r"\G\w{2}", "abcd ef")
+    ['ab', 'cd']
 
-    * The search continues at position 2 and matches 2 letters 'cd'.
+  * The search starts at position 0 and matches 2 letters 'ab'.
 
-    * The search continues at position 4 and fails to match any letters.
+  * The search continues at position 2 and matches 2 letters 'cd'.
 
-    * The anchor stops the search start position from being advanced, so there are no more results.
+  * The search continues at position 4 and fails to match any letters.
+
+  * The anchor stops the search start position from being advanced, so there are no more results.
 
 * Reverse searching
 
-    Searches can now work backwards:
+  Searches can now work backwards:
 
-        >>> regex.findall(r".", "abc")
-        ['a', 'b', 'c']
-        >>> regex.findall(r"(?r).", "abc")
-        ['c', 'b', 'a']
+  .. sourcecode:: python
 
-    Note: the result of a reverse search is not necessarily the reverse of a forward search:
+    >>> regex.findall(r".", "abc")
+    ['a', 'b', 'c']
+    >>> regex.findall(r"(?r).", "abc")
+    ['c', 'b', 'a']
 
-        >>> regex.findall(r"..", "abcde")
-        ['ab', 'cd']
-        >>> regex.findall(r"(?r)..", "abcde")
-        ['de', 'bc']
+  Note: the result of a reverse search is not necessarily the reverse of a forward search:
+
+  .. sourcecode:: python
+
+    >>> regex.findall(r"..", "abcde")
+    ['ab', 'cd']
+    >>> regex.findall(r"(?r)..", "abcde")
+    ['de', 'bc']
 
 * Matching a single grapheme
 
-    ``\X``
+  ``\X``
 
-    The grapheme matcher is supported. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``.
+  The grapheme matcher is supported. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``.
 
 * Branch reset
 
-    ``(?|...|...)``
+  ``(?|...|...)``
 
-    Capture group numbers will be reused across the alternatives, but groups with different names will have different group numbers.
+  Capture group numbers will be reused across the alternatives, but groups with different names will have different group numbers.
 
-    Examples:
+  Examples:
 
-        >>> regex.match(r"(?|(first)|(second))", "first").groups()
-        ('first',)
-        >>> regex.match(r"(?|(first)|(second))", "second").groups()
-        ('second',)
+  .. sourcecode:: python
 
-    Note that there is only one group.
+    >>> regex.match(r"(?|(first)|(second))", "first").groups()
+    ('first',)
+    >>> regex.match(r"(?|(first)|(second))", "second").groups()
+    ('second',)
+
+  Note that there is only one group.
 
 * Default Unicode word boundary
 
-    The ``WORD`` flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to ``\b`` and ``\B``.
+  The ``WORD`` flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to ``\b`` and ``\B``.
 
 * SRE engine do not release the GIL (issue #1366311)
 
-    The regex module can release the GIL during matching (see the above section on multithreading).
+  The regex module can release the GIL during matching (see the above section on multithreading).
 
-    Iterators can be safely shared across threads.
+  Iterators can be safely shared across threads.
