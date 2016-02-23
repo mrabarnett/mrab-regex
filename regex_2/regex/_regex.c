@@ -21533,12 +21533,64 @@ Py_LOCAL_INLINE(void) skip_one_way_branches(PatternObject* pattern) {
         pattern->start_node = pattern->start_node->next_1.node;
 }
 
+/* A stack of nodes for checking repeat guards. */
+typedef struct GuardCheckStack {
+    Py_ssize_t capacity;
+    Py_ssize_t count;
+    RE_Node** items;
+} GuardCheckStack;
+
+/* Initialises a guard check stack. */
+Py_LOCAL_INLINE(void) GuardCheckStack_init(GuardCheckStack *stack) {
+    stack->capacity = 0;
+    stack->count = 0;
+    stack->items = NULL;
+}
+
+/* Finalises a guard check stack. */
+Py_LOCAL_INLINE(void) GuardCheckStack_fini(GuardCheckStack *stack) {
+    PyMem_Free(stack->items);
+    stack->capacity = 0;
+    stack->count = 0;
+    stack->items = NULL;
+}
+
+/* Pushes an item onto a guard check stack. */
+Py_LOCAL_INLINE(BOOL) GuardCheckStack_push(GuardCheckStack *stack, RE_Node*
+  node) {
+    if (stack->count >= stack->capacity) {
+        Py_ssize_t new_capacity;
+        RE_Node** new_items;
+
+        new_capacity = stack->capacity * 2;
+        if (new_capacity == 0)
+            new_capacity = 16;
+
+        new_items = (RE_Node**)PyMem_Realloc(stack->items, new_capacity *
+          sizeof(RE_Node*));
+        if (!new_items)
+            return FALSE;
+
+        stack->capacity = new_capacity;
+        stack->items = new_items;
+    }
+
+    stack->items[stack->count++] = node;
+
+    return TRUE;
+}
+
+/* Pops an item off a guard check stack. Returns NULL if the stack is empty. */
+Py_LOCAL_INLINE(RE_Node*) GuardCheckStack_pop(GuardCheckStack *stack) {
+    return stack->count > 0 ? stack->items[--stack->count] : NULL;
+}
+
 /* Adds guards to repeats which are followed by a reference to a group.
  *
  * Returns whether a guard was added for a node at or after the given node.
  */
-Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
-  node) {
+Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern,
+  GuardCheckStack *stack, RE_Node* node) {
     RE_STATUS_T result;
 
     result = RE_STATUS_NEITHER;
@@ -21550,16 +21602,38 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
         switch (node->op) {
         case RE_OP_BRANCH:
         {
-            RE_STATUS_T branch_1_result;
-            RE_STATUS_T branch_2_result;
-            RE_STATUS_T status;
+            RE_Node* branch_1;
+            RE_Node* branch_2;
+            BOOL visited_1;
+            BOOL visited_2;
 
-            branch_1_result = add_repeat_guards(pattern, node->next_1.node);
-            branch_2_result = add_repeat_guards(pattern,
-              node->nonstring.next_2.node);
-            status = max_status_3(result, branch_1_result, branch_2_result);
-            node->status = RE_STATUS_VISITED_AG | status;
-            return status;
+            branch_1 = node->next_1.node;
+            branch_2 = node->nonstring.next_2.node;
+            visited_1 = (branch_1->status & RE_STATUS_VISITED_AG);
+            visited_2 = (branch_2->status & RE_STATUS_VISITED_AG);
+
+            if (visited_1 && visited_2) {
+                RE_STATUS_T branch_1_status;
+                RE_STATUS_T branch_2_status;
+
+                branch_1_status = branch_1->status & (RE_STATUS_REPEAT |
+                  RE_STATUS_REF);
+                branch_2_status = branch_2->status & (RE_STATUS_REPEAT |
+                  RE_STATUS_REF);
+                node->status = RE_STATUS_VISITED_AG | max_status_3(result,
+                  branch_1_status, branch_2_status);
+            } else {
+                GuardCheckStack_push(stack, node);
+                if (!visited_2)
+                    GuardCheckStack_push(stack, branch_2);
+                if (!visited_1)
+                    GuardCheckStack_push(stack, branch_1);
+            }
+
+            node = GuardCheckStack_pop(stack);
+            if (!node)
+                return result;
+            break;
         }
         case RE_OP_END_GREEDY_REPEAT:
         case RE_OP_END_LAZY_REPEAT:
@@ -21578,8 +21652,9 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             if (limited)
                 body_result = RE_STATUS_LIMITED;
             else
-                body_result = add_repeat_guards(pattern, node->next_1.node);
-            tail_result = add_repeat_guards(pattern,
+                body_result = add_repeat_guards(pattern, stack,
+                  node->next_1.node);
+            tail_result = add_repeat_guards(pattern, stack,
               node->nonstring.next_2.node);
 
             repeat_info = &pattern->repeat_info[node->values[0]];
@@ -21604,7 +21679,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             RE_STATUS_T status;
 
             limited = ~node->values[2] != 0;
-            tail_result = add_repeat_guards(pattern, node->next_1.node);
+            tail_result = add_repeat_guards(pattern, stack, node->next_1.node);
 
             repeat_info = &pattern->repeat_info[node->values[0]];
             repeat_info->status |= RE_STATUS_BODY;
@@ -21634,8 +21709,9 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
             RE_STATUS_T branch_2_result;
             RE_STATUS_T status;
 
-            branch_1_result = add_repeat_guards(pattern, node->next_1.node);
-            branch_2_result = add_repeat_guards(pattern,
+            branch_1_result = add_repeat_guards(pattern, stack,
+              node->next_1.node);
+            branch_2_result = add_repeat_guards(pattern, stack,
               node->nonstring.next_2.node);
             status = max_status_4(result, branch_1_result, branch_2_result,
               RE_STATUS_REF);
@@ -21930,6 +22006,7 @@ Py_LOCAL_INLINE(void) set_test_nodes(PatternObject* pattern) {
 /* Optimises the pattern. */
 Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     size_t i;
+    GuardCheckStack guard_check_stack;
 
     /* Building the nodes is made simpler by allowing branches to have a single
      * exit. These need to be removed.
@@ -21939,7 +22016,9 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     /* Add position guards for repeat bodies containing a reference to a group
      * or repeat tails followed at some point by a reference to a group.
      */
-    add_repeat_guards(pattern, pattern->start_node);
+    GuardCheckStack_init(&guard_check_stack);
+    add_repeat_guards(pattern, &guard_check_stack, pattern->start_node);
+    GuardCheckStack_fini(&guard_check_stack);
 
     /* Record the index of repeats and fuzzy sections within the body of atomic
      * and lookaround nodes.
