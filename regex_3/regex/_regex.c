@@ -778,6 +778,13 @@ typedef struct RE_BestList {
     RE_BestEntry* entries;
 } RE_BestList;
 
+/* A stack of nodes. */
+typedef struct NodeStack {
+    Py_ssize_t capacity;
+    Py_ssize_t count;
+    RE_Node** items;
+} NodeStack;
+
 /* Function types for getting info from a MatchObject. */
 typedef PyObject* (*RE_GetByIndexFunc)(MatchObject* self, Py_ssize_t index);
 
@@ -21504,31 +21511,23 @@ Py_LOCAL_INLINE(void) skip_one_way_branches(PatternObject* pattern) {
         pattern->start_node = pattern->start_node->next_1.node;
 }
 
-/* A stack of nodes for checking repeat guards. */
-typedef struct GuardCheckStack {
-    Py_ssize_t capacity;
-    Py_ssize_t count;
-    RE_Node** items;
-} GuardCheckStack;
-
-/* Initialises a guard check stack. */
-Py_LOCAL_INLINE(void) GuardCheckStack_init(GuardCheckStack *stack) {
+/* Initialises a node stack. */
+Py_LOCAL_INLINE(void) NodeStack_init(NodeStack *stack) {
     stack->capacity = 0;
     stack->count = 0;
     stack->items = NULL;
 }
 
-/* Finalises a guard check stack. */
-Py_LOCAL_INLINE(void) GuardCheckStack_fini(GuardCheckStack *stack) {
+/* Finalises a node stack. */
+Py_LOCAL_INLINE(void) NodeStack_fini(NodeStack *stack) {
     PyMem_Free(stack->items);
     stack->capacity = 0;
     stack->count = 0;
     stack->items = NULL;
 }
 
-/* Pushes an item onto a guard check stack. */
-Py_LOCAL_INLINE(BOOL) GuardCheckStack_push(GuardCheckStack *stack, RE_Node*
-  node) {
+/* Pushes an item onto a node stack. */
+Py_LOCAL_INLINE(BOOL) NodeStack_push(NodeStack *stack, RE_Node* node) {
     if (stack->count >= stack->capacity) {
         Py_ssize_t new_capacity;
         RE_Node** new_items;
@@ -21551,8 +21550,8 @@ Py_LOCAL_INLINE(BOOL) GuardCheckStack_push(GuardCheckStack *stack, RE_Node*
     return TRUE;
 }
 
-/* Pops an item off a guard check stack. Returns NULL if the stack is empty. */
-Py_LOCAL_INLINE(RE_Node*) GuardCheckStack_pop(GuardCheckStack *stack) {
+/* Pops an item off a node stack. Returns NULL if the stack is empty. */
+Py_LOCAL_INLINE(RE_Node*) NodeStack_pop(NodeStack *stack) {
     return stack->count > 0 ? stack->items[--stack->count] : NULL;
 }
 
@@ -21561,7 +21560,7 @@ Py_LOCAL_INLINE(RE_Node*) GuardCheckStack_pop(GuardCheckStack *stack) {
  * Returns whether a guard was added for a node at or after the given node.
  */
 Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern,
-  GuardCheckStack *stack, RE_Node* node) {
+  NodeStack *stack, RE_Node* node) {
     RE_STATUS_T result;
 
     result = RE_STATUS_NEITHER;
@@ -21594,14 +21593,14 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern,
                 node->status = RE_STATUS_VISITED_AG | max_status_3(result,
                   branch_1_status, branch_2_status);
             } else {
-                GuardCheckStack_push(stack, node);
+                NodeStack_push(stack, node);
                 if (!visited_2)
-                    GuardCheckStack_push(stack, branch_2);
+                    NodeStack_push(stack, branch_2);
                 if (!visited_1)
-                    GuardCheckStack_push(stack, branch_1);
+                    NodeStack_push(stack, branch_1);
             }
 
-            node = GuardCheckStack_pop(stack);
+            node = NodeStack_pop(stack);
             if (!node)
                 return result;
             break;
@@ -21795,14 +21794,23 @@ Py_LOCAL_INLINE(BOOL) record_subpattern_repeats_and_fuzzy_sections(RE_Node*
 
 /* Marks nodes which are being used as used. */
 Py_LOCAL_INLINE(void) use_nodes(RE_Node* node) {
-    while (node && !(node->status & RE_STATUS_USED)) {
-        node->status |= RE_STATUS_USED;
-        if (!(node->status & RE_STATUS_STRING)) {
-            if (node->nonstring.next_2.node)
-                use_nodes(node->nonstring.next_2.node);
+    NodeStack stack;
+
+    NodeStack_init(&stack);
+
+    while (node) {
+        while (node && !(node->status & RE_STATUS_USED)) {
+            node->status |= RE_STATUS_USED;
+            if (!(node->status & RE_STATUS_STRING)) {
+                if (node->nonstring.next_2.node)
+                    NodeStack_push(&stack, node->nonstring.next_2.node);
+            }
+            node = node->next_1.node;
         }
-        node = node->next_1.node;
+        node = NodeStack_pop(&stack);
     }
+
+    NodeStack_fini(&stack);
 }
 
 /* Discards any unused nodes.
@@ -21977,7 +21985,7 @@ Py_LOCAL_INLINE(void) set_test_nodes(PatternObject* pattern) {
 /* Optimises the pattern. */
 Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     size_t i;
-    GuardCheckStack guard_check_stack;
+    NodeStack node_stack;
 
     /* Building the nodes is made simpler by allowing branches to have a single
      * exit. These need to be removed.
@@ -21987,9 +21995,9 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     /* Add position guards for repeat bodies containing a reference to a group
      * or repeat tails followed at some point by a reference to a group.
      */
-    GuardCheckStack_init(&guard_check_stack);
-    add_repeat_guards(pattern, &guard_check_stack, pattern->start_node);
-    GuardCheckStack_fini(&guard_check_stack);
+    NodeStack_init(&node_stack);
+    add_repeat_guards(pattern, &node_stack, pattern->start_node);
+    NodeStack_fini(&node_stack);
 
     /* Record the index of repeats and fuzzy sections within the body of atomic
      * and lookaround nodes.
