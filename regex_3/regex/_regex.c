@@ -7121,9 +7121,13 @@ Py_LOCAL_INLINE(int) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         break;
     case RE_OP_BRANCH:
         status = try_match(state, &test->next_1, text_pos, next_position);
-        if (status == RE_ERROR_FAILURE)
-            status = try_match(state, &test->nonstring.next_2, text_pos,
-              next_position);
+        if (status == RE_ERROR_FAILURE) {
+            if (test->nonstring.next_2.node->op == RE_OP_BRANCH)
+                status = RE_ERROR_SUCCESS;
+            else
+                status = try_match(state, &test->nonstring.next_2, text_pos,
+                  next_position);
+        }
         break;
     case RE_OP_CHARACTER:
         status = try_match_CHARACTER(state, test, text_pos);
