@@ -760,12 +760,12 @@ typedef struct RE_CompileArgs {
  * of them. Empty strings aren't recorded, so if 'list' and 'item' are both
  * NULL then the result is an empty string.
  */
-typedef struct JoinInfo {
+typedef struct RE_JoinInfo {
     PyObject* list; /* The list of slices if there are more than 2 of them. */
     PyObject* item; /* The slice if there is only 1 of them. */
     BOOL reversed; /* Whether the slices have been found in reverse order. */
     BOOL is_unicode; /* Whether the string is Unicode. */
-} JoinInfo;
+} RE_JoinInfo;
 
 /* Info about fuzzy matching. */
 typedef struct {
@@ -793,12 +793,24 @@ typedef struct RE_BestList {
     RE_BestEntry* entries;
 } RE_BestList;
 
+/* A stack of guard checks. */
+typedef struct RE_Check {
+    RE_Node* node;
+    RE_STATUS_T result;
+} RE_Check;
+
+typedef struct RE_CheckStack {
+    Py_ssize_t capacity;
+    Py_ssize_t count;
+    RE_Check* items;
+} RE_CheckStack;
+
 /* A stack of nodes. */
-typedef struct NodeStack {
+typedef struct RE_NodeStack {
     Py_ssize_t capacity;
     Py_ssize_t count;
     RE_Node** items;
-} NodeStack;
+} RE_NodeStack;
 
 /* Function types for getting info from a MatchObject. */
 typedef PyObject* (*RE_GetByIndexFunc)(MatchObject* self, Py_ssize_t index);
@@ -18272,8 +18284,8 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
 }
 
 /* Initialises the join list. */
-Py_LOCAL_INLINE(void) init_join_list(JoinInfo* join_info, BOOL reversed, BOOL
-  is_unicode) {
+Py_LOCAL_INLINE(void) init_join_list(RE_JoinInfo* join_info, BOOL reversed,
+  BOOL is_unicode) {
     join_info->list = NULL;
     join_info->item = NULL;
     join_info->reversed = reversed;
@@ -18281,7 +18293,7 @@ Py_LOCAL_INLINE(void) init_join_list(JoinInfo* join_info, BOOL reversed, BOOL
 }
 
 /* Adds an item to the join list. */
-Py_LOCAL_INLINE(int) add_to_join_list(JoinInfo* join_info, PyObject* item) {
+Py_LOCAL_INLINE(int) add_to_join_list(RE_JoinInfo* join_info, PyObject* item) {
     PyObject* new_item;
     int status;
 
@@ -18350,13 +18362,13 @@ error:
 }
 
 /* Clears the join list. */
-Py_LOCAL_INLINE(void) clear_join_list(JoinInfo* join_info) {
+Py_LOCAL_INLINE(void) clear_join_list(RE_JoinInfo* join_info) {
     Py_XDECREF(join_info->list);
     Py_XDECREF(join_info->item);
 }
 
 /* Joins together a list of strings for pattern_subx. */
-Py_LOCAL_INLINE(PyObject*) join_list_info(JoinInfo* join_info) {
+Py_LOCAL_INLINE(PyObject*) join_list_info(RE_JoinInfo* join_info) {
     /* If the list already exists then just do the join. */
     if (join_info->list) {
         PyObject* joiner;
@@ -18457,7 +18469,7 @@ Py_LOCAL_INLINE(Py_ssize_t) check_replacement_string(PyObject* str_replacement,
 static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     Py_ssize_t literal_length;
     PyObject* replacement;
-    JoinInfo join_info;
+    RE_JoinInfo join_info;
     Py_ssize_t size;
     Py_ssize_t i;
 
@@ -18687,7 +18699,7 @@ error:
 Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self);
 
 /* MatchObject's '__copy__' method. */
-static PyObject* match_copy(MatchObject* self, PyObject *unused) {
+static PyObject* match_copy(MatchObject* self, PyObject* unused) {
     return make_match_copy(self);
 }
 
@@ -19387,7 +19399,7 @@ static PyObject* scanner_match(ScannerObject* self, PyObject* unused) {
 }
 
 /* ScannerObject's 'search' method. */
-static PyObject* scanner_search(ScannerObject* self, PyObject *unused) {
+static PyObject* scanner_search(ScannerObject* self, PyObject* unused) {
     return scanner_search_or_match(self, TRUE);
 }
 
@@ -19441,7 +19453,7 @@ Py_LOCAL_INLINE(PyObject*) make_scanner_copy(ScannerObject* self) {
 }
 
 /* ScannerObject's '__copy__' method. */
-static PyObject* scanner_copy(ScannerObject* self, PyObject *unused) {
+static PyObject* scanner_copy(ScannerObject* self, PyObject* unused) {
     return make_scanner_copy(self);
 }
 
@@ -19723,7 +19735,7 @@ error:
 }
 
 /* SplitterObject's 'split' method. */
-static PyObject* splitter_split(SplitterObject* self, PyObject *unused) {
+static PyObject* splitter_split(SplitterObject* self, PyObject* unused) {
     PyObject* result;
 
     result = next_split_part(self);
@@ -19788,7 +19800,7 @@ Py_LOCAL_INLINE(PyObject*) make_splitter_copy(SplitterObject* self) {
 }
 
 /* SplitterObject's '__copy__' method. */
-static PyObject* splitter_copy(SplitterObject* self, PyObject *unused) {
+static PyObject* splitter_copy(SplitterObject* self, PyObject* unused) {
     return make_splitter_copy(self);
 }
 
@@ -20250,7 +20262,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     BOOL is_template = FALSE;
     RE_State state;
     RE_SafeState safe_state;
-    JoinInfo join_info;
+    RE_JoinInfo join_info;
     Py_ssize_t sub_count;
     Py_ssize_t last_pos;
     Py_ssize_t step;
@@ -21041,7 +21053,7 @@ Py_LOCAL_INLINE(PyObject*) make_pattern_copy(PatternObject* self) {
 }
 
 /* PatternObject's '__copy__' method. */
-static PyObject* pattern_copy(PatternObject* self, PyObject *unused) {
+static PyObject* pattern_copy(PatternObject* self, PyObject* unused) {
     return make_pattern_copy(self);
 }
 
@@ -21379,8 +21391,8 @@ static PyObject* pattern_repr(PyObject* self_) {
     int flag_count;
     unsigned int i;
     Py_ssize_t pos;
-    PyObject *key;
-    PyObject *value;
+    PyObject* key;
+    PyObject* value;
     PyObject* separator;
     PyObject* result;
 
@@ -21544,33 +21556,36 @@ Py_LOCAL_INLINE(void) skip_one_way_branches(PatternObject* pattern) {
         pattern->start_node = pattern->start_node->next_1.node;
 }
 
-/* Initialises a node stack. */
-Py_LOCAL_INLINE(void) NodeStack_init(NodeStack *stack) {
+/* Initialises a check stack. */
+Py_LOCAL_INLINE(void) CheckStack_init(RE_CheckStack* stack) {
     stack->capacity = 0;
     stack->count = 0;
     stack->items = NULL;
 }
 
-/* Finalises a node stack. */
-Py_LOCAL_INLINE(void) NodeStack_fini(NodeStack *stack) {
+/* Finalises a check stack. */
+Py_LOCAL_INLINE(void) CheckStack_fini(RE_CheckStack* stack) {
     PyMem_Free(stack->items);
     stack->capacity = 0;
     stack->count = 0;
     stack->items = NULL;
 }
 
-/* Pushes an item onto a node stack. */
-Py_LOCAL_INLINE(BOOL) NodeStack_push(NodeStack *stack, RE_Node* node) {
+/* Pushes an item onto a check stack. */
+Py_LOCAL_INLINE(BOOL) CheckStack_push(RE_CheckStack* stack, RE_Node* node,
+  RE_STATUS_T result) {
+    RE_Check* check;
+
     if (stack->count >= stack->capacity) {
         Py_ssize_t new_capacity;
-        RE_Node** new_items;
+        RE_Check* new_items;
 
         new_capacity = stack->capacity * 2;
         if (new_capacity == 0)
             new_capacity = 16;
 
-        new_items = (RE_Node**)PyMem_Realloc(stack->items, new_capacity *
-          sizeof(RE_Node*));
+        new_items = (RE_Check*)PyMem_Realloc(stack->items, new_capacity *
+          sizeof(RE_Check));
         if (!new_items)
             return FALSE;
 
@@ -21578,157 +21593,235 @@ Py_LOCAL_INLINE(BOOL) NodeStack_push(NodeStack *stack, RE_Node* node) {
         stack->items = new_items;
     }
 
-    stack->items[stack->count++] = node;
+    check = &stack->items[stack->count++];
+    check->node = node;
+    check->result = result;
 
     return TRUE;
 }
 
-/* Pops an item off a node stack. Returns NULL if the stack is empty. */
-Py_LOCAL_INLINE(RE_Node*) NodeStack_pop(NodeStack *stack) {
-    return stack->count > 0 ? stack->items[--stack->count] : NULL;
+/* Pops an item off a check stack. Returns NULL if the stack is empty. */
+Py_LOCAL_INLINE(RE_Check*) CheckStack_pop(RE_CheckStack* stack) {
+    return stack->count > 0 ? &stack->items[--stack->count] : NULL;
 }
 
-/* Adds guards to repeats which are followed by a reference to a group.
- *
- * Returns whether a guard was added for a node at or after the given node.
- */
-Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern,
-  NodeStack *stack, RE_Node* node) {
-    RE_STATUS_T result;
+/* Adds guards to repeats which are followed by a reference to a group. */
+Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
+  start_node) {
+    RE_CheckStack stack;
 
-    result = RE_STATUS_NEITHER;
+    CheckStack_init(&stack);
+
+    CheckStack_push(&stack, start_node, RE_STATUS_NEITHER);
 
     for (;;) {
-        if (node->status & RE_STATUS_VISITED_AG)
-            return node->status & (RE_STATUS_REPEAT | RE_STATUS_REF);
+        RE_Check* check;
+        RE_Node* node;
+        RE_STATUS_T result;
 
-        switch (node->op) {
-        case RE_OP_BRANCH:
-        {
-            RE_Node* branch_1;
-            RE_Node* branch_2;
-            BOOL visited_1;
-            BOOL visited_2;
+        check = CheckStack_pop(&stack);
 
-            branch_1 = node->next_1.node;
-            branch_2 = node->nonstring.next_2.node;
-            visited_1 = (branch_1->status & RE_STATUS_VISITED_AG);
-            visited_2 = (branch_2->status & RE_STATUS_VISITED_AG);
+        if (!check)
+            break;
 
-            if (visited_1 && visited_2) {
-                RE_STATUS_T branch_1_status;
-                RE_STATUS_T branch_2_status;
+        node = check->node;
+        result = check->result;
 
-                branch_1_status = branch_1->status & (RE_STATUS_REPEAT |
-                  RE_STATUS_REF);
-                branch_2_status = branch_2->status & (RE_STATUS_REPEAT |
-                  RE_STATUS_REF);
-                node->status = RE_STATUS_VISITED_AG | max_status_3(result,
-                  branch_1_status, branch_2_status);
-            } else {
-                NodeStack_push(stack, node);
-                if (!visited_2)
-                    NodeStack_push(stack, branch_2);
-                if (!visited_1)
-                    NodeStack_push(stack, branch_1);
+        if (!(node->status & RE_STATUS_VISITED_AG)) {
+            switch (check->node->op) {
+            case RE_OP_BRANCH:
+            {
+                RE_Node* branch_1;
+                RE_Node* branch_2;
+                BOOL visited_branch_1;
+                BOOL visited_branch_2;
+
+                branch_1 = node->next_1.node;
+                branch_2 = node->nonstring.next_2.node;
+                visited_branch_1 = (branch_1->status & RE_STATUS_VISITED_AG);
+                visited_branch_2 = (branch_2->status & RE_STATUS_VISITED_AG);
+
+                if (visited_branch_1 && visited_branch_2) {
+                    RE_STATUS_T branch_1_result;
+                    RE_STATUS_T branch_2_result;
+
+                    branch_1_result = branch_1->status & (RE_STATUS_REPEAT |
+                      RE_STATUS_REF);
+                    branch_2_result = branch_2->status & (RE_STATUS_REPEAT |
+                      RE_STATUS_REF);
+
+                    node->status = RE_STATUS_VISITED_AG | max_status_3(result,
+                      branch_1_result, branch_2_result);
+                } else {
+                    CheckStack_push(&stack, node, result);
+                    if (!visited_branch_2)
+                        CheckStack_push(&stack, branch_2, RE_STATUS_NEITHER);
+                    if (!visited_branch_1)
+                        CheckStack_push(&stack, branch_1, RE_STATUS_NEITHER);
+                }
+                break;
             }
+            case RE_OP_END_GREEDY_REPEAT:
+            case RE_OP_END_LAZY_REPEAT:
+                node->status |= RE_STATUS_VISITED_AG;
+                break;
+            case RE_OP_GREEDY_REPEAT:
+            case RE_OP_LAZY_REPEAT:
+            {
+                BOOL limited;
+                RE_Node* body;
+                RE_Node* tail;
+                BOOL visited_body;
+                BOOL visited_tail;
 
-            node = NodeStack_pop(stack);
-            if (!node)
-                return result;
-            break;
-        }
-        case RE_OP_END_GREEDY_REPEAT:
-        case RE_OP_END_LAZY_REPEAT:
-            node->status |= RE_STATUS_VISITED_AG;
-            return result;
-        case RE_OP_GREEDY_REPEAT:
-        case RE_OP_LAZY_REPEAT:
-        {
-            BOOL limited;
-            RE_STATUS_T body_result;
-            RE_STATUS_T tail_result;
-            RE_RepeatInfo* repeat_info;
-            RE_STATUS_T status;
+                limited = ~node->values[2] != 0;
 
-            limited = ~node->values[2] != 0;
-            if (limited)
-                body_result = RE_STATUS_LIMITED;
-            else
-                body_result = add_repeat_guards(pattern, stack,
-                  node->next_1.node);
-            tail_result = add_repeat_guards(pattern, stack,
-              node->nonstring.next_2.node);
+                body = node->next_1.node;
+                tail = node->nonstring.next_2.node;
+                visited_body = (body->status & RE_STATUS_VISITED_AG);
+                visited_tail = (tail->status & RE_STATUS_VISITED_AG);
 
-            repeat_info = &pattern->repeat_info[node->values[0]];
-            if (body_result != RE_STATUS_REF)
-                repeat_info->status |= RE_STATUS_BODY;
-            if (tail_result != RE_STATUS_REF)
-                repeat_info->status |= RE_STATUS_TAIL;
-            if (limited)
-                result = max_status_2(result, RE_STATUS_LIMITED);
-            else
-                result = max_status_2(result, RE_STATUS_REPEAT);
-            status = max_status_3(result, body_result, tail_result);
-            node->status |= RE_STATUS_VISITED_AG | status;
-            return status;
-        }
-        case RE_OP_GREEDY_REPEAT_ONE:
-        case RE_OP_LAZY_REPEAT_ONE:
-        {
-            BOOL limited;
-            RE_STATUS_T tail_result;
-            RE_RepeatInfo* repeat_info;
-            RE_STATUS_T status;
+                if (visited_body && visited_tail) {
+                    RE_STATUS_T body_result;
+                    RE_STATUS_T tail_result;
+                    RE_RepeatInfo* repeat_info;
 
-            limited = ~node->values[2] != 0;
-            tail_result = add_repeat_guards(pattern, stack, node->next_1.node);
+                    body_result = body->status & (RE_STATUS_REPEAT |
+                      RE_STATUS_REF);
+                    tail_result = tail->status & (RE_STATUS_REPEAT |
+                      RE_STATUS_REF);
 
-            repeat_info = &pattern->repeat_info[node->values[0]];
-            repeat_info->status |= RE_STATUS_BODY;
-            if (tail_result != RE_STATUS_REF)
-                repeat_info->status |= RE_STATUS_TAIL;
-            if (limited)
-                result = max_status_2(result, RE_STATUS_LIMITED);
-            else
-                result = max_status_2(result, RE_STATUS_REPEAT);
-            status = max_status_3(result, RE_STATUS_REPEAT, tail_result);
-            node->status = RE_STATUS_VISITED_AG | status;
-            return status;
-        }
-        case RE_OP_GROUP_CALL:
-        case RE_OP_REF_GROUP:
-        case RE_OP_REF_GROUP_FLD:
-        case RE_OP_REF_GROUP_FLD_REV:
-        case RE_OP_REF_GROUP_IGN:
-        case RE_OP_REF_GROUP_IGN_REV:
-        case RE_OP_REF_GROUP_REV:
-            result = RE_STATUS_REF;
-            node = node->next_1.node;
-            break;
-        case RE_OP_GROUP_EXISTS:
-        {
-            RE_STATUS_T branch_1_result;
-            RE_STATUS_T branch_2_result;
-            RE_STATUS_T status;
+                    repeat_info = &pattern->repeat_info[node->values[0]];
+                    if (body_result != RE_STATUS_REF)
+                        repeat_info->status |= RE_STATUS_BODY;
+                    if (tail_result != RE_STATUS_REF)
+                        repeat_info->status |= RE_STATUS_TAIL;
 
-            branch_1_result = add_repeat_guards(pattern, stack,
-              node->next_1.node);
-            branch_2_result = add_repeat_guards(pattern, stack,
-              node->nonstring.next_2.node);
-            status = max_status_4(result, branch_1_result, branch_2_result,
-              RE_STATUS_REF);
-            node->status = RE_STATUS_VISITED_AG | status;
-            return status;
-        }
-        case RE_OP_SUCCESS:
-            node->status = RE_STATUS_VISITED_AG | result;
-            return result;
-        default:
-            node = node->next_1.node;
-            break;
+                    if (limited)
+                        result = max_status_2(result, RE_STATUS_LIMITED);
+                    else
+                        result = max_status_2(result, RE_STATUS_REPEAT);
+                    node->status |= RE_STATUS_VISITED_AG | max_status_3(result,
+                      body_result, tail_result);
+                } else {
+                    CheckStack_push(&stack, node, result);
+                    if (!visited_tail)
+                        CheckStack_push(&stack, tail, RE_STATUS_NEITHER);
+                    if (!visited_body) {
+                        if (limited)
+                            body->status = RE_STATUS_VISITED_AG |
+                              RE_STATUS_LIMITED;
+                        else
+                            CheckStack_push(&stack, body, RE_STATUS_NEITHER);
+                    }
+                }
+                break;
+            }
+            case RE_OP_GREEDY_REPEAT_ONE:
+            case RE_OP_LAZY_REPEAT_ONE:
+            {
+                RE_Node* tail;
+                BOOL visited_tail;
+
+                tail = node->next_1.node;
+                visited_tail = (tail->status & RE_STATUS_VISITED_AG);
+
+                if (visited_tail) {
+                    BOOL limited;
+                    RE_STATUS_T tail_result;
+                    RE_RepeatInfo* repeat_info;
+
+                    limited = ~node->values[2] != 0;
+
+                    tail_result = tail->status & (RE_STATUS_REPEAT |
+                      RE_STATUS_REF);
+
+                    repeat_info = &pattern->repeat_info[node->values[0]];
+                    repeat_info->status |= RE_STATUS_BODY;
+
+                    if (tail_result != RE_STATUS_REF)
+                        repeat_info->status |= RE_STATUS_TAIL;
+
+                    if (limited)
+                        result = max_status_2(result, RE_STATUS_LIMITED);
+                    else
+                        result = max_status_2(result, RE_STATUS_REPEAT);
+                    node->status = RE_STATUS_VISITED_AG | max_status_3(result,
+                      RE_STATUS_REPEAT, tail_result);
+                } else {
+                    CheckStack_push(&stack, node, result);
+                    CheckStack_push(&stack, tail, RE_STATUS_NEITHER);
+                }
+                break;
+            }
+            case RE_OP_GROUP_CALL:
+            case RE_OP_REF_GROUP:
+            case RE_OP_REF_GROUP_FLD:
+            case RE_OP_REF_GROUP_FLD_REV:
+            case RE_OP_REF_GROUP_IGN:
+            case RE_OP_REF_GROUP_IGN_REV:
+            case RE_OP_REF_GROUP_REV:
+            {
+                RE_Node* tail;
+                BOOL visited_tail;
+
+                tail = node->next_1.node;
+                visited_tail = (tail->status & RE_STATUS_VISITED_AG);
+
+                if (visited_tail)
+                    node->status |= RE_STATUS_VISITED_AG | RE_STATUS_REF;
+                else {
+                    CheckStack_push(&stack, node, result);
+                    CheckStack_push(&stack, tail, RE_STATUS_NEITHER);
+                }
+                break;
+            }
+            case RE_OP_GROUP_EXISTS:
+            {
+                RE_Node* branch_1;
+                RE_Node* branch_2;
+                BOOL visited_branch_1;
+                BOOL visited_branch_2;
+
+                branch_1 = node->next_1.node;
+                branch_2 = node->nonstring.next_2.node;
+                visited_branch_1 = (branch_1->status & RE_STATUS_VISITED_AG);
+                visited_branch_2 = (branch_2->status & RE_STATUS_VISITED_AG);
+
+                if (visited_branch_1 && visited_branch_2) {
+                    RE_STATUS_T branch_1_result;
+                    RE_STATUS_T branch_2_result;
+
+                    branch_1_result = branch_1->status & (RE_STATUS_REPEAT |
+                      RE_STATUS_REF);
+                    branch_2_result = branch_2->status & (RE_STATUS_REPEAT |
+                      RE_STATUS_REF);
+
+                    node->status = RE_STATUS_VISITED_AG | max_status_4(result,
+                      branch_1_result, branch_2_result, RE_STATUS_REF);
+                } else {
+                    CheckStack_push(&stack, node, result);
+                    if (!visited_branch_2)
+                        CheckStack_push(&stack, branch_2, RE_STATUS_NEITHER);
+                    if (!visited_branch_1)
+                        CheckStack_push(&stack, branch_1, RE_STATUS_NEITHER);
+                }
+                break;
+            }
+            case RE_OP_SUCCESS:
+                node->status = RE_STATUS_VISITED_AG | result;
+                break;
+            default:
+                node->status |= RE_STATUS_VISITED_AG;
+                CheckStack_push(&stack, node->next_1.node, result);
+                break;
+            }
         }
     }
+
+    CheckStack_fini(&stack);
+
+    return start_node->status & (RE_STATUS_REPEAT | RE_STATUS_REF);
 }
 
 /* Adds an index to a node's values unless it's already present.
@@ -21825,9 +21918,53 @@ Py_LOCAL_INLINE(BOOL) record_subpattern_repeats_and_fuzzy_sections(RE_Node*
     return TRUE;
 }
 
+/* Initialises a node stack. */
+Py_LOCAL_INLINE(void) NodeStack_init(RE_NodeStack* stack) {
+    stack->capacity = 0;
+    stack->count = 0;
+    stack->items = NULL;
+}
+
+/* Finalises a node stack. */
+Py_LOCAL_INLINE(void) NodeStack_fini(RE_NodeStack* stack) {
+    PyMem_Free(stack->items);
+    stack->capacity = 0;
+    stack->count = 0;
+    stack->items = NULL;
+}
+
+/* Pushes an item onto a node stack. */
+Py_LOCAL_INLINE(BOOL) NodeStack_push(RE_NodeStack* stack, RE_Node* node) {
+    if (stack->count >= stack->capacity) {
+        Py_ssize_t new_capacity;
+        RE_Node** new_items;
+
+        new_capacity = stack->capacity * 2;
+        if (new_capacity == 0)
+            new_capacity = 16;
+
+        new_items = (RE_Node**)PyMem_Realloc(stack->items, new_capacity *
+          sizeof(RE_Node*));
+        if (!new_items)
+            return FALSE;
+
+        stack->capacity = new_capacity;
+        stack->items = new_items;
+    }
+
+    stack->items[stack->count++] = node;
+
+    return TRUE;
+}
+
+/* Pops an item off a node stack. Returns NULL if the stack is empty. */
+Py_LOCAL_INLINE(RE_Node*) NodeStack_pop(RE_NodeStack* stack) {
+    return stack->count > 0 ? stack->items[--stack->count] : NULL;
+}
+
 /* Marks nodes which are being used as used. */
 Py_LOCAL_INLINE(void) use_nodes(RE_Node* node) {
-    NodeStack stack;
+    RE_NodeStack stack;
 
     NodeStack_init(&stack);
 
@@ -22018,7 +22155,6 @@ Py_LOCAL_INLINE(void) set_test_nodes(PatternObject* pattern) {
 /* Optimises the pattern. */
 Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     size_t i;
-    NodeStack node_stack;
 
     /* Building the nodes is made simpler by allowing branches to have a single
      * exit. These need to be removed.
@@ -22028,9 +22164,7 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     /* Add position guards for repeat bodies containing a reference to a group
      * or repeat tails followed at some point by a reference to a group.
      */
-    NodeStack_init(&node_stack);
-    add_repeat_guards(pattern, &node_stack, pattern->start_node);
-    NodeStack_fini(&node_stack);
+    add_repeat_guards(pattern, pattern->start_node);
 
     /* Record the index of repeats and fuzzy sections within the body of atomic
      * and lookaround nodes.
