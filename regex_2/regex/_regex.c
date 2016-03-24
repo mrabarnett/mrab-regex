@@ -7137,16 +7137,6 @@ Py_LOCAL_INLINE(int) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     case RE_OP_BOUNDARY:
         status = try_match_BOUNDARY(state, test, text_pos);
         break;
-    case RE_OP_BRANCH:
-        status = try_match(state, &test->next_1, text_pos, next_position);
-        if (status == RE_ERROR_FAILURE) {
-            if (test->nonstring.next_2.node->op == RE_OP_BRANCH)
-                status = RE_ERROR_SUCCESS;
-            else
-                status = try_match(state, &test->nonstring.next_2, text_pos,
-                  next_position);
-        }
-        break;
     case RE_OP_CHARACTER:
         status = try_match_CHARACTER(state, test, text_pos);
         break;
@@ -9514,6 +9504,7 @@ Py_LOCAL_INLINE(int) string_set_match_fld_fwdrev(RE_SafeState* safe_state,
     Py_ssize_t first;
     Py_ssize_t last;
     PyObject* string_set;
+    void* folded_buffer;
 
     state = safe_state->re_state;
     full_case_fold = state->encoding->full_case_fold;
@@ -9657,13 +9648,18 @@ Py_LOCAL_INLINE(int) string_set_match_fld_fwdrev(RE_SafeState* safe_state,
         goto finished;
     }
 
+    /* Point to the used portion of the folded buffer. */
+    folded_buffer = (void*)((Py_UCS1*)folded + first * folded_charsize);
+    last -= first;
+    first = 0;
+
     /* We've already looked for a partial match (if allowed), but what about a
      * complete match?
      */
     while (len >= min_len) {
         if (end_of_fold[len]) {
-            status = string_set_contains_ign(state, string_set, folded, first,
-              last, folded_charsize);
+            status = string_set_contains_ign(state, string_set, folded_buffer,
+              first, last, folded_charsize);
 
             if (status == 1) {
                 /* Advance past the match. */
@@ -11398,7 +11394,7 @@ start_match:
     /* Locate the required string, if there's one, unless this is a recursive
      * call of 'basic_match'.
      */
-    if (!pattern->req_string)
+    if (!pattern->req_string || state->text_pos < state->req_pos)
         found_pos = state->text_pos;
     else {
         found_pos = locate_required_string(safe_state, search);

@@ -293,30 +293,43 @@ def is_cased(info, char):
 
 def _compile_firstset(info, fs):
     "Compiles the firstset for the pattern."
-    if not fs or None in fs:
+    fs = _check_firstset(info, fs)
+    if not fs:
         return []
-
-    # If we ignore the case, for simplicity we won't build a firstset.
-    members = set()
-    for i in fs:
-        if isinstance(i, Character) and not i.positive:
-            return []
-
-        if i.case_flags:
-            if isinstance(i, Character):
-                if is_cased(info, i.value):
-                    return []
-            elif isinstance(i, SetBase):
-                return []
-
-        members.add(i.with_flags(case_flags=NOCASE))
-
-    # Build the firstset.
-    fs = SetUnion(info, list(members), zerowidth=True)
-    fs = fs.optimise(info, in_set=True)
 
     # Compile the firstset.
     return fs.compile(bool(info.flags & REVERSE))
+
+def _check_firstset(info, fs):
+    "Checks the firstset for the pattern."
+    if not fs or None in fs:
+        return None
+
+    # If we ignore the case, for simplicity we won't build a firstset.
+    members = set()
+    case_flags = NOCASE
+    for i in fs:
+        if isinstance(i, Character) and not i.positive:
+            return None
+
+#        if i.case_flags:
+#            if isinstance(i, Character):
+#                if is_cased(info, i.value):
+#                    return []
+#            elif isinstance(i, SetBase):
+#                return []
+        case_flags |= i.case_flags
+        members.add(i.with_flags(case_flags=NOCASE))
+
+    if case_flags == (FULLCASE | IGNORECASE):
+        return None
+
+    # Build the firstset.
+    fs = SetUnion(info, list(members), case_flags=case_flags & ~FULLCASE,
+      zerowidth=True)
+    fs = fs.optimise(info, in_set=True)
+
+    return fs
 
 def _flatten_code(code):
     "Flattens the code from a list of tuples."
@@ -1990,10 +2003,29 @@ class Branch(RegexBase):
 
         if len(branches) > 1:
             sequence = [Branch(branches)]
+            if not prefix:
+                # We might be able to add a quick precheck before the branches.
+                self._add_precheck(info, branches, sequence)
         else:
             sequence = branches
 
         return make_sequence(prefix + sequence)
+
+    def _add_precheck(self, info, branches, sequence):
+        charset = set()
+        for branch in branches:
+            if type(branch) is Literal and branch.case_flags == NOCASE:
+                charset.add(branch.characters[0])
+            else:
+                return
+
+        if not charset:
+            return
+
+        firstset = _check_firstset(info, [Character(c) for c in charset])
+
+        if firstset:
+            sequence.insert(0, firstset)
 
     def pack_characters(self, info):
         self.branches = [b.pack_characters(info) for b in self.branches]
@@ -3253,7 +3285,7 @@ class Sequence(RegexBase):
         characters = []
         case_flags = NOCASE
         for s in self.items:
-            if type(s) is Character and s.positive:
+            if type(s) is Character and s.positive and not s.zerowidth:
                 if s.case_flags != case_flags:
                     # Different case sensitivity, so flush, unless neither the
                     # previous nor the new character are cased.
