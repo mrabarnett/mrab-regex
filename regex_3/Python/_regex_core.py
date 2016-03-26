@@ -293,14 +293,15 @@ def is_cased(info, char):
 
 def _compile_firstset(info, fs):
     "Compiles the firstset for the pattern."
-    fs = _check_firstset(info, fs)
+    reverse = bool(info.flags & REVERSE)
+    fs = _check_firstset(info, reverse, fs)
     if not fs:
         return []
 
     # Compile the firstset.
-    return fs.compile(bool(info.flags & REVERSE))
+    return fs.compile(reverse)
 
-def _check_firstset(info, fs):
+def _check_firstset(info, reverse, fs):
     "Checks the firstset for the pattern."
     if not fs or None in fs:
         return None
@@ -327,7 +328,7 @@ def _check_firstset(info, fs):
     # Build the firstset.
     fs = SetUnion(info, list(members), case_flags=case_flags & ~FULLCASE,
       zerowidth=True)
-    fs = fs.optimise(info, in_set=True)
+    fs = fs.optimise(info, reverse, in_set=True)
 
     return fs
 
@@ -1822,7 +1823,7 @@ class RegexBase:
     def fix_groups(self, pattern, reverse, fuzzy):
         pass
 
-    def optimise(self, info):
+    def optimise(self, info, reverse):
         return self
 
     def pack_characters(self, info):
@@ -1930,8 +1931,8 @@ class Atomic(RegexBase):
     def fix_groups(self, pattern, reverse, fuzzy):
         self.subpattern.fix_groups(pattern, reverse, fuzzy)
 
-    def optimise(self, info):
-        self.subpattern = self.subpattern.optimise(info)
+    def optimise(self, info, reverse):
+        self.subpattern = self.subpattern.optimise(info, reverse)
 
         if self.subpattern.is_empty():
             return self.subpattern
@@ -1991,27 +1992,39 @@ class Branch(RegexBase):
         for b in self.branches:
             b.fix_groups(pattern, reverse, fuzzy)
 
-    def optimise(self, info):
+    def optimise(self, info, reverse):
         # Flatten branches within branches.
-        branches = Branch._flatten_branches(info, self.branches)
+        branches = Branch._flatten_branches(info, reverse, self.branches)
 
         # Move any common prefix or suffix out of the branches.
-        prefix, branches = Branch._split_common_prefix(info, branches)
+        if reverse:
+            suffix, branches = Branch._split_common_suffix(info, branches)
+            prefix = []
+        else:
+            prefix, branches = Branch._split_common_prefix(info, branches)
+            suffix = []
 
         # Try to reduce adjacent single-character branches to sets.
-        branches = Branch._reduce_to_set(info, branches)
+        branches = Branch._reduce_to_set(info, reverse, branches)
 
         if len(branches) > 1:
             sequence = [Branch(branches)]
-            if not prefix:
+
+            if not prefix or not suffix:
                 # We might be able to add a quick precheck before the branches.
-                self._add_precheck(info, branches, sequence)
+                firstset = self._add_precheck(info, reverse, branches)
+
+                if firstset:
+                    if reverse:
+                        sequence.append(firstset)
+                    else:
+                        sequence.insert(0, firstset)
         else:
             sequence = branches
 
-        return make_sequence(prefix + sequence)
+        return make_sequence(prefix + sequence + suffix)
 
-    def _add_precheck(self, info, branches, sequence):
+    def _add_precheck(self, info, reverse, branches):
         charset = set()
         for branch in branches:
             if type(branch) is Literal and branch.case_flags == NOCASE:
@@ -2020,12 +2033,9 @@ class Branch(RegexBase):
                 return
 
         if not charset:
-            return
+            return None
 
-        firstset = _check_firstset(info, [Character(c) for c in charset])
-
-        if firstset:
-            sequence.insert(0, firstset)
+        return _check_firstset(info, reverse, [Character(c) for c in charset])
 
     def pack_characters(self, info):
         self.branches = [b.pack_characters(info) for b in self.branches]
@@ -2069,11 +2079,11 @@ class Branch(RegexBase):
             b.dump(indent + 1, reverse)
 
     @staticmethod
-    def _flatten_branches(info, branches):
+    def _flatten_branches(info, reverse, branches):
         # Flatten the branches so that there aren't branches of branches.
         new_branches = []
         for b in branches:
-            b = b.optimise(info)
+            b = b.optimise(info, reverse)
             if isinstance(b, Branch):
                 new_branches.extend(b.branches)
             else:
@@ -2217,7 +2227,7 @@ class Branch(RegexBase):
         return True
 
     @staticmethod
-    def _merge_common_prefixes(info, branches):
+    def _merge_common_prefixes(info, reverse, branches):
         # Branches with the same case-sensitive character prefix can be grouped
         # together if they are separated only by other branches with a
         # character prefix.
@@ -2235,7 +2245,8 @@ class Branch(RegexBase):
                 prefixed[b.items[0].value].append(b.items)
                 order.setdefault(b.items[0].value, len(order))
             else:
-                Branch._flush_char_prefix(info, prefixed, order, new_branches)
+                Branch._flush_char_prefix(info, reverse, prefixed, order,
+                  new_branches)
 
                 new_branches.append(b)
 
@@ -2248,7 +2259,7 @@ class Branch(RegexBase):
         return isinstance(c, Character) and c.positive and not c.case_flags
 
     @staticmethod
-    def _reduce_to_set(info, branches):
+    def _reduce_to_set(info, reverse, branches):
         # Can the branches be reduced to a set?
         new_branches = []
         items = set()
@@ -2258,24 +2269,25 @@ class Branch(RegexBase):
                 # Branch starts with a single character.
                 if b.case_flags != case_flags:
                     # Different case sensitivity, so flush.
-                    Branch._flush_set_members(info, items, case_flags,
+                    Branch._flush_set_members(info, reverse, items, case_flags,
                       new_branches)
 
                     case_flags = b.case_flags
 
                 items.add(b.with_flags(case_flags=NOCASE))
             else:
-                Branch._flush_set_members(info, items, case_flags,
+                Branch._flush_set_members(info, reverse, items, case_flags,
                   new_branches)
 
                 new_branches.append(b)
 
-        Branch._flush_set_members(info, items, case_flags, new_branches)
+        Branch._flush_set_members(info, reverse, items, case_flags,
+          new_branches)
 
         return new_branches
 
     @staticmethod
-    def _flush_char_prefix(info, prefixed, order, new_branches):
+    def _flush_char_prefix(info, reverse, prefixed, order, new_branches):
         # Flush the prefixed branches.
         if not prefixed:
             return
@@ -2295,13 +2307,13 @@ class Branch(RegexBase):
                         optional = True
 
                 sequence = Sequence([Character(value), Branch(subbranches)])
-                new_branches.append(sequence.optimise(info))
+                new_branches.append(sequence.optimise(info, reverse))
 
         prefixed.clear()
         order.clear()
 
     @staticmethod
-    def _flush_set_members(info, items, case_flags, new_branches):
+    def _flush_set_members(info, reverse, items, case_flags, new_branches):
         # Flush the set members.
         if not items:
             return
@@ -2309,7 +2321,7 @@ class Branch(RegexBase):
         if len(items) == 1:
             item = list(items)[0]
         else:
-            item = SetUnion(info, list(items)).optimise(info)
+            item = SetUnion(info, list(items)).optimise(info, reverse)
 
         new_branches.append(item.with_flags(case_flags=case_flags))
 
@@ -2425,7 +2437,7 @@ class Character(RegexBase):
     def rebuild(self, positive, case_flags, zerowidth):
         return Character(self.value, positive, case_flags, zerowidth)
 
-    def optimise(self, info, in_set=False):
+    def optimise(self, info, reverse, in_set=False):
         return self
 
     def get_firstset(self, reverse):
@@ -2501,9 +2513,9 @@ class Conditional(RegexBase):
         self.yes_item.fix_groups(pattern, reverse, fuzzy)
         self.no_item.fix_groups(pattern, reverse, fuzzy)
 
-    def optimise(self, info):
-        yes_item = self.yes_item.optimise(info)
-        no_item = self.no_item.optimise(info)
+    def optimise(self, info, reverse):
+        yes_item = self.yes_item.optimise(info, reverse)
+        no_item = self.no_item.optimise(info, reverse)
 
         return Conditional(info, self.group, yes_item, no_item, self.position)
 
@@ -2758,8 +2770,8 @@ class GreedyRepeat(RegexBase):
     def fix_groups(self, pattern, reverse, fuzzy):
         self.subpattern.fix_groups(pattern, reverse, fuzzy)
 
-    def optimise(self, info):
-        subpattern = self.subpattern.optimise(info)
+    def optimise(self, info, reverse):
+        subpattern = self.subpattern.optimise(info, reverse)
 
         return type(self)(subpattern, self.min_count, self.max_count)
 
@@ -2847,8 +2859,8 @@ class Group(RegexBase):
         self.info.defined_groups[self.group] = (self, reverse, fuzzy)
         self.subpattern.fix_groups(pattern, reverse, fuzzy)
 
-    def optimise(self, info):
-        subpattern = self.subpattern.optimise(info)
+    def optimise(self, info, reverse):
+        subpattern = self.subpattern.optimise(info, reverse)
 
         return Group(self.info, self.group, subpattern)
 
@@ -2932,8 +2944,8 @@ class LookAround(RegexBase):
     def fix_groups(self, pattern, reverse, fuzzy):
         self.subpattern.fix_groups(pattern, self.behind, fuzzy)
 
-    def optimise(self, info):
-        subpattern = self.subpattern.optimise(info)
+    def optimise(self, info, reverse):
+        subpattern = self.subpattern.optimise(info, reverse)
         if self.positive and subpattern.is_empty():
             return subpattern
 
@@ -2990,10 +3002,10 @@ class LookAroundConditional(RegexBase):
         self.yes_item.fix_groups(pattern, reverse, fuzzy)
         self.no_item.fix_groups(pattern, reverse, fuzzy)
 
-    def optimise(self, info):
-        subpattern = self.subpattern.optimise(info)
-        yes_item = self.yes_item.optimise(info)
-        no_item = self.no_item.optimise(info)
+    def optimise(self, info, reverse):
+        subpattern = self.subpattern.optimise(info, reverse)
+        yes_item = self.yes_item.optimise(info, reverse)
+        no_item = self.no_item.optimise(info, reverse)
 
         return LookAroundConditional(self.behind, self.positive, subpattern,
           yes_item, no_item)
@@ -3091,7 +3103,7 @@ class Property(RegexBase):
     def rebuild(self, positive, case_flags, zerowidth):
         return Property(self.value, positive, case_flags, zerowidth)
 
-    def optimise(self, info, in_set=False):
+    def optimise(self, info, reverse, in_set=False):
         return self
 
     def get_firstset(self, reverse):
@@ -3150,7 +3162,7 @@ class Range(RegexBase):
     def rebuild(self, positive, case_flags, zerowidth):
         return Range(self.lower, self.upper, positive, case_flags, zerowidth)
 
-    def optimise(self, info, in_set=False):
+    def optimise(self, info, reverse, in_set=False):
         # Is the range case-sensitive?
         if not self.positive or not (self.case_flags & IGNORECASE) or in_set:
             return self
@@ -3267,11 +3279,11 @@ class Sequence(RegexBase):
         for s in self.items:
             s.fix_groups(pattern, reverse, fuzzy)
 
-    def optimise(self, info):
+    def optimise(self, info, reverse):
         # Flatten the sequences.
         items = []
         for s in self.items:
-            s = s.optimise(info)
+            s = s.optimise(info, reverse)
             if isinstance(s, Sequence):
                 items.extend(s.items)
             else:
@@ -3419,7 +3431,7 @@ class SetBase(RegexBase):
 
     def rebuild(self, positive, case_flags, zerowidth):
         return type(self)(self.info, self.items, positive, case_flags,
-          zerowidth).optimise(self.info)
+          zerowidth).optimise(self.info, False)
 
     def get_firstset(self, reverse):
         return set([self])
@@ -3512,16 +3524,17 @@ class SetDiff(SetBase):
       True): OP.SET_DIFF_IGN_REV}
     _op_name = "SET_DIFF"
 
-    def optimise(self, info, in_set=False):
+    def optimise(self, info, reverse, in_set=False):
         items = self.items
         if len(items) > 2:
             items = [items[0], SetUnion(info, items[1 : ])]
 
         if len(items) == 1:
             return items[0].with_flags(case_flags=self.case_flags,
-              zerowidth=self.zerowidth).optimise(info, in_set)
+              zerowidth=self.zerowidth).optimise(info, reverse, in_set)
 
-        self.items = tuple(m.optimise(info, in_set=True) for m in items)
+        self.items = tuple(m.optimise(info, reverse, in_set=True) for m in
+          items)
 
         return self._handle_case_folding(info, in_set)
 
@@ -3537,10 +3550,10 @@ class SetInter(SetBase):
       (FULLIGNORECASE, True): OP.SET_INTER_IGN_REV}
     _op_name = "SET_INTER"
 
-    def optimise(self, info, in_set=False):
+    def optimise(self, info, reverse, in_set=False):
         items = []
         for m in self.items:
-            m = m.optimise(info, in_set=True)
+            m = m.optimise(info, reverse, in_set=True)
             if isinstance(m, SetInter) and m.positive:
                 # Intersection in intersection.
                 items.extend(m.items)
@@ -3549,7 +3562,7 @@ class SetInter(SetBase):
 
         if len(items) == 1:
             return items[0].with_flags(case_flags=self.case_flags,
-              zerowidth=self.zerowidth).optimise(info, in_set)
+              zerowidth=self.zerowidth).optimise(info, reverse, in_set)
 
         self.items = tuple(items)
 
@@ -3567,10 +3580,10 @@ class SetSymDiff(SetBase):
       OP.SET_SYM_DIFF_REV, (FULLIGNORECASE, True): OP.SET_SYM_DIFF_IGN_REV}
     _op_name = "SET_SYM_DIFF"
 
-    def optimise(self, info, in_set=False):
+    def optimise(self, info, reverse, in_set=False):
         items = []
         for m in self.items:
-            m = m.optimise(info, in_set=True)
+            m = m.optimise(info, reverse, in_set=True)
             if isinstance(m, SetSymDiff) and m.positive:
                 # Symmetric difference in symmetric difference.
                 items.extend(m.items)
@@ -3579,7 +3592,7 @@ class SetSymDiff(SetBase):
 
         if len(items) == 1:
             return items[0].with_flags(case_flags=self.case_flags,
-              zerowidth=self.zerowidth).optimise(info, in_set)
+              zerowidth=self.zerowidth).optimise(info, reverse, in_set)
 
         self.items = tuple(items)
 
@@ -3600,10 +3613,10 @@ class SetUnion(SetBase):
       (FULLIGNORECASE, True): OP.SET_UNION_IGN_REV}
     _op_name = "SET_UNION"
 
-    def optimise(self, info, in_set=False):
+    def optimise(self, info, reverse, in_set=False):
         items = []
         for m in self.items:
-            m = m.optimise(info, in_set=True)
+            m = m.optimise(info, reverse, in_set=True)
             if isinstance(m, SetUnion) and m.positive:
                 # Union in union.
                 items.extend(m.items)
@@ -3614,7 +3627,7 @@ class SetUnion(SetBase):
             i = items[0]
             return i.with_flags(positive=i.positive == self.positive,
               case_flags=self.case_flags,
-              zerowidth=self.zerowidth).optimise(info, in_set)
+              zerowidth=self.zerowidth).optimise(info, reverse, in_set)
 
         self.items = tuple(items)
 
@@ -3785,7 +3798,8 @@ class StringSet(RegexBase):
                 branch = Branch(branches)
             else:
                 branch = branches[0]
-            branch = branch.optimise(self.info).pack_characters(self.info)
+            branch = branch.optimise(self.info,
+              reverse).pack_characters(self.info)
 
             return branch.compile(reverse, fuzzy)
         else:
@@ -4195,7 +4209,8 @@ class Scanner:
             source.ignore_space = bool(info.flags & VERBOSE)
             parsed = _parse_pattern(source, info)
             if not source.at_end():
-                raise error("unbalanced parenthesis", source.string, source.pos)
+                raise error("unbalanced parenthesis", source.string,
+                  source.pos)
 
             # We want to forbid capture groups within each phrase.
             patterns.append(parsed.remove_captures())
@@ -4206,7 +4221,8 @@ class Scanner:
         parsed = Branch(patterns)
 
         # Optimise the compound pattern.
-        parsed = parsed.optimise(info)
+        reverse = bool(info.flags & REVERSE)
+        parsed = parsed.optimise(info, reverse)
         parsed = parsed.pack_characters(info)
 
         # Get the required string.

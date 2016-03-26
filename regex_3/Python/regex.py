@@ -239,7 +239,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
   "WORD", "error", "Regex"]
 
-__version__ = "2.4.85"
+__version__ = "2.4.87"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -542,7 +542,7 @@ def _compile(pattern, flags=0, kwargs={}):
         parsed.dump(indent=0, reverse=reverse)
 
     # Optimise the parsed pattern.
-    parsed = parsed.optimise(info)
+    parsed = parsed.optimise(info, reverse)
     parsed = parsed.pack_characters(info)
 
     # Get the required string.

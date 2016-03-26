@@ -3541,12 +3541,28 @@ thing
         self.assertEqual(regex.match(r'(?:(?=\d)\d+\b|\w+)', '123abc').span(),
           (0, 6))
         self.assertEqual(regex.match(r'(?(?=\d)\d+\b|\w+)', '123abc'), None)
+        self.assertEqual(regex.search(r'(?(?<=love\s)you|(?<=hate\s)her)',
+          "I love you").span(), (7, 10))
+        self.assertEqual(regex.findall(r'(?(?<=love\s)you|(?<=hate\s)her)',
+          "I love you but I don't hate her either"), ['you', 'her'])
+
+        # Hg issue #180: bug of POSIX matching.
+        self.assertEqual(regex.search(r'(?p)a*(.*?)', 'aaabbb').group(0, 1),
+          ('aaabbb', 'bbb'))
+        self.assertEqual(regex.search(r'(?p)a*(.*)', 'aaabbb').group(0, 1),
+          ('aaabbb', 'bbb'))
+        self.assertEqual(regex.sub(r'(?p)a*(.*?)', r'\1', 'aaabbb'), 'bbb')
+        self.assertEqual(regex.sub(r'(?p)a*(.*)', r'\1', 'aaabbb'), 'bbb')
 
         # Hg issue 192: Named lists reverse matching doesn't work with IGNORECASE and V1
         self.assertEqual(regex.match(r'(?irV0)\L<kw>', '21', kw=['1']).span(),
           (1, 2))
         self.assertEqual(regex.match(r'(?irV1)\L<kw>', '21', kw=['1']).span(),
           (1, 2))
+
+        # Hg issue #193: Alternation and .REVERSE flag.
+        self.assertEqual(regex.search('a|b', '111a222').span(), (3, 4))
+        self.assertEqual(regex.search('(?r)a|b', '111a222').span(), (3, 4))
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
