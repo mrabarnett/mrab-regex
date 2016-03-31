@@ -13335,8 +13335,10 @@ advance:
                     gfolded_pos = 0;
                 }
 
-                if (folded_pos < folded_len && folded[folded_pos] ==
-                  gfolded[gfolded_pos]) {
+                if (folded_pos < folded_len && same_char_ign(encoding,
+                  locale_info,
+                   folded[folded_pos],
+                   gfolded[gfolded_pos])) {
                     ++folded_pos;
                     ++gfolded_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
@@ -13438,8 +13440,9 @@ advance:
                     gfolded_pos = gfolded_len;
                 }
 
-                if (folded_pos > 0 && folded[folded_pos - 1] ==
-                  gfolded[gfolded_pos - 1]) {
+                if (folded_pos > 0 && same_char_ign(encoding, locale_info,
+                   folded[folded_pos - 1],
+                   gfolded[gfolded_pos - 1])) {
                     --folded_pos;
                     --gfolded_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {

@@ -3668,6 +3668,14 @@ thing
         self.assertEqual(regex.search('a|b', '111a222').span(), (3, 4))
         self.assertEqual(regex.search('(?r)a|b', '111a222').span(), (3, 4))
 
+        # Hg issue #194: .FULLCASE and Backreference
+        self.assertEqual(regex.search(r'(?if)<(CLI)><\1>',
+          '<cli><cli>').span(), (0, 10))
+        self.assertEqual(regex.search(r'(?if)<(CLI)><\1>',
+          '<cli><clI>').span(), (0, 10))
+        self.assertEqual(regex.search(r'(?ifr)<\1><(CLI)>',
+          '<cli><clI>').span(), (0, 10))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
