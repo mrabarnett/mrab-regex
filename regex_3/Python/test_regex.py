@@ -3,6 +3,7 @@ import string
 from weakref import proxy
 import unittest
 import copy
+import pickle
 from test.support import run_unittest
 import sys
 
@@ -3675,6 +3676,12 @@ thing
           '<cli><clI>').span(), (0, 10))
         self.assertEqual(regex.search(r'(?ifr)<\1><(CLI)>',
           '<cli><clI>').span(), (0, 10))
+
+        # Hg issue #195: Pickle (or otherwise serial) the compiled regex
+        r = regex.compile(r'\L<options>', options=['foo', 'bar'])
+        p = pickle.dumps(r)
+        r = pickle.loads(p)
+        self.assertEqual(r.match('foo').span(), (0, 3))
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',

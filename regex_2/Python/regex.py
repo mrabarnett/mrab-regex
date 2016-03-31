@@ -239,7 +239,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
   "WORD", "error", "Regex"]
 
-__version__ = "2.4.88"
+__version__ = "2.4.89"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -678,10 +678,10 @@ Regex = compile
 # Register myself for pickling.
 import copy_reg as _copy_reg
 
-def _pickle(p):
-    return _compile, (p.pattern, p.flags)
+def _pickle(pattern):
+    return _regex.compile, pattern._pickled_data
 
-_copy_reg.pickle(_pattern_type, _pickle, _compile)
+_copy_reg.pickle(_pattern_type, _pickle)
 
 if not hasattr(str, "format"):
     # Strings don't have the .format method (below Python 2.6).

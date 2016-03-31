@@ -671,6 +671,7 @@ typedef struct PatternObject {
     BOOL is_fuzzy; /* Whether it's a fuzzy pattern. */
     BOOL do_search_start; /* Whether to do an initial search. */
     BOOL recursive; /* Whether the entire pattern is recursive. */
+    PyObject* pickled_data; /* The data needed for pickling/unpickling. */
 } PatternObject;
 
 /* The MatchObject created when a match is found. */
@@ -21471,6 +21472,8 @@ static PyMemberDef pattern_members[] = {
       READONLY, "The number of capturing groups in the pattern."},
     {"named_lists", T_OBJECT, offsetof(PatternObject, named_lists), READONLY,
       "The named lists used by the regex."},
+    {"_pickled_data", T_OBJECT, offsetof(PatternObject, pickled_data),
+      READONLY, "Data used for pickling."},
     {NULL} /* Sentinel */
 };
 
@@ -24187,6 +24190,15 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
         }
 
         scan_locale_chars(self->locale_info);
+    }
+
+    /* Build the data needed for picking. */
+    self->pickled_data = Py_BuildValue("OnOOOOOnOnn", pattern, flags,
+      code_list, groupindex, indexgroup, named_lists, named_list_indexes,
+      req_offset, required_chars, req_flags, public_group_count);
+    if (!self->pickled_data) {
+        Py_DECREF(self);
+        return NULL;
     }
 
     return (PyObject*)self;
