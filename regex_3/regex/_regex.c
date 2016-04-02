@@ -631,6 +631,7 @@ typedef struct PatternObject {
     PyObject_HEAD
     PyObject* pattern; /* Pattern source (or None). */
     Py_ssize_t flags; /* Flags used when compiling pattern source. */
+    RE_UINT8* packed_code_list;
     PyObject* weakreflist; /* List of weak references */
     /* Nodes into which the regular expression is compiled. */
     RE_Node* start_node;
@@ -666,12 +667,14 @@ typedef struct PatternObject {
     RE_GroupData* groups_storage;
     RE_RepeatData* repeats_storage;
     size_t fuzzy_count; /* The number of fuzzy sections. */
+    /* Additional info. */
     Py_ssize_t req_offset; /* The offset to the required string. */
+    PyObject* required_chars;
+    Py_ssize_t req_flags;
     RE_Node* req_string; /* The required string. */
     BOOL is_fuzzy; /* Whether it's a fuzzy pattern. */
     BOOL do_search_start; /* Whether to do an initial search. */
     BOOL recursive; /* Whether the entire pattern is recursive. */
-    PyObject* pickled_data; /* The data needed for pickling/unpickling. */
 } PatternObject;
 
 /* The MatchObject created when a match is found. */
@@ -10057,6 +10060,7 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
+    ++state->capture_change;
 
     *text_pos = data.new_text_pos;
     *node = data.new_node;
@@ -10123,6 +10127,7 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
+    ++state->capture_change;
 
     *text_pos = data.new_text_pos;
     *node = data.new_node;
@@ -10217,6 +10222,7 @@ Py_LOCAL_INLINE(int) retry_fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t*
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_INS_COST];
     ++state->total_errors;
+    ++state->capture_change;
 
     /* Check whether there are too few errors. */
     state->too_few_errors = bt_data->fuzzy_insert.too_few_errors;
@@ -10293,6 +10299,7 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
+    ++state->capture_change;
 
     *text_pos = data.new_text_pos;
     *string_pos = data.new_string_pos;
@@ -10357,6 +10364,7 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
+    ++state->capture_change;
 
     *text_pos = data.new_text_pos;
     *node = new_node;
@@ -10475,6 +10483,7 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
+    ++state->capture_change;
 
     *text_pos = new_text_pos;
     *string_pos = data.new_string_pos;
@@ -10549,6 +10558,7 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
+    ++state->capture_change;
 
     *text_pos = new_text_pos;
     *node = new_node;
@@ -10673,6 +10683,7 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
+    ++state->capture_change;
 
     *text_pos = new_text_pos;
     *group_pos = new_group_pos;
@@ -10744,6 +10755,7 @@ found:
     ++fuzzy_info->counts[RE_FUZZY_ERR];
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_COST_BASE + data.fuzzy_type];
     ++state->total_errors;
+    ++state->capture_change;
 
     *text_pos = new_text_pos;
     *node = new_node;
@@ -12054,6 +12066,12 @@ advance:
             changed = rp_data->capture_change != state->capture_change ||
               state->text_pos != rp_data->start;
 
+            /* Additional checks are needed if there's fuzzy matching. */
+            if (changed && state->pattern->is_fuzzy && rp_data->count >=
+              node->values[1])
+                changed = !(node->step == 1 ? state->text_pos >=
+                  state->slice_end : state->text_pos <= state->slice_start);
+
             /* The counts are of type size_t, so the format needs to specify
              * that.
              */
@@ -12218,6 +12236,12 @@ advance:
              */
             changed = rp_data->capture_change != state->capture_change ||
               state->text_pos != rp_data->start;
+
+            /* Additional checks are needed if there's fuzzy matching. */
+            if (changed && state->pattern->is_fuzzy && rp_data->count >=
+              node->values[1])
+                changed = !(node->step == 1 ? state->text_pos >=
+                  state->slice_end : state->text_pos <= state->slice_start);
 
             /* The counts are of type size_t, so the format needs to specify
              * that.
@@ -21189,7 +21213,9 @@ static void pattern_dealloc(PyObject* self_) {
 
     Py_DECREF(self->named_lists);
     Py_DECREF(self->named_list_indexes);
+    Py_DECREF(self->required_chars);
     re_dealloc(self->locale_info);
+    re_dealloc(self->packed_code_list);
     PyObject_DEL(self);
 }
 
@@ -21256,6 +21282,113 @@ Py_LOCAL_INLINE(BOOL) append_integer(PyObject* list, Py_ssize_t value) {
         return FALSE;
 
     return TRUE;
+}
+
+/* Packs the code list that's needed for pickling. */
+Py_LOCAL_INLINE(RE_UINT8*) pack_code_list(RE_CODE* code, Py_ssize_t code_len) {
+    Py_ssize_t max_size;
+    RE_UINT8* packed;
+    Py_ssize_t count;
+    RE_UINT32 value;
+    Py_ssize_t i;
+    RE_UINT8* new_packed;
+
+    /* What is the maximum number of bytes needed to store it?
+     *
+     * A 32-bit RE_CODE might need 5 bytes ((32 + 6) / 7).
+     */
+    max_size = code_len * 5 + ((sizeof(Py_ssize_t) * 8) + 6) / 7;
+
+    packed = (RE_UINT8*)re_alloc((size_t)max_size);
+    count = 0;
+
+    /* Store the length of the code list. */
+    value = (RE_UINT32)code_len;
+
+    while (value >= 0x80) {
+        packed[count++] = 0x80 | (value & 0x7F);
+        value >>= 7;
+    }
+
+    packed[count++] = value;
+
+    /* Store each of the elements of the code list. */
+    for (i = 0; i < code_len; i++) {
+        value = (RE_UINT32)code[i];
+
+        while (value >= 0x80) {
+            packed[count++] = 0x80 | (value & 0x7F);
+            value >>= 7;
+        }
+
+        packed[count++] = value;
+    }
+
+    /* Discard the unused bytes. */
+    new_packed = re_realloc(packed, count);
+    if (new_packed)
+        packed = new_packed;
+
+    return packed;
+}
+
+/* Unpacks the code list that's needed for pickling. */
+Py_LOCAL_INLINE(PyObject*) unpack_code_list(RE_UINT8* packed) {
+    PyObject* code_list;
+    Py_ssize_t index;
+    RE_UINT32 value;
+    int shift;
+    size_t count;
+
+    code_list = PyList_New(0);
+    if (!code_list)
+        return NULL;
+
+    index = 0;
+
+    /* Unpack the length of the code list. */
+    value = 0;
+    shift = 0;
+
+    while (packed[index] >= 0x80) {
+        value |= (RE_UINT32)(packed[index++] & 0x7F) << shift;
+        shift += 7;
+    }
+
+    value |= (RE_UINT32)packed[index++] << shift;
+    count = (size_t)value;
+
+    /* Unpack each of the elements of the code list. */
+    while (count > 0) {
+        PyObject* obj;
+        int status;
+
+        value = 0;
+        shift = 0;
+
+        while (packed[index] >= 0x80) {
+            value |= (RE_UINT32)(packed[index++] & 0x7F) << shift;
+            shift += 7;
+        }
+
+        value |= (RE_UINT32)packed[index++] << shift;
+        obj = PyLong_FromSize_t((size_t)value);
+        if (!obj)
+            goto error;
+
+        status = PyList_Append(code_list, obj);
+        Py_DECREF(obj);
+        if (status == -1)
+            goto error;
+
+        --count;
+    }
+
+    return code_list;
+
+error:
+    Py_DECREF(code_list);
+    return NULL;
 }
 
 /* MatchObject's '__repr__' method. */
@@ -21457,9 +21590,32 @@ static PyObject* pattern_groupindex(PyObject* self_) {
     return PyDict_Copy(self->groupindex);
 }
 
+/* PatternObject's '_pickled_data' method. */
+static PyObject* pattern_pickled_data(PyObject* self_) {
+    PatternObject* self;
+    PyObject* code_list;
+    PyObject* pickled_data;
+
+    self = (PatternObject*)self_;
+
+    code_list = unpack_code_list(self->packed_code_list);
+    if (!code_list)
+        return NULL;
+
+    /* Build the data needed for picking. */
+    pickled_data = Py_BuildValue("OnOOOOOnOnn", self->pattern, self->flags,
+      code_list, self->groupindex, self->indexgroup, self->named_lists,
+      self->named_list_indexes, self->req_offset, self->required_chars,
+      self->req_flags, self->public_group_count);
+
+    return pickled_data;
+}
+
 static PyGetSetDef pattern_getset[] = {
     {"groupindex", (getter)pattern_groupindex, (setter)NULL,
       "A dictionary mapping group names to group numbers."},
+    {"_pickled_data", (getter)pattern_pickled_data, (setter)NULL,
+      "Data used for pickling."},
     {NULL} /* Sentinel */
 };
 
@@ -21472,8 +21628,6 @@ static PyMemberDef pattern_members[] = {
       READONLY, "The number of capturing groups in the pattern."},
     {"named_lists", T_OBJECT, offsetof(PatternObject, named_lists), READONLY,
       "The named lists used by the regex."},
-    {"_pickled_data", T_OBJECT, offsetof(PatternObject, pickled_data),
-      READONLY, "Data used for pickling."},
     {NULL} /* Sentinel */
 };
 
@@ -21623,7 +21777,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                     branch_2_result = branch_2->status & (RE_STATUS_REPEAT |
                       RE_STATUS_REF);
 
-                    node->status = RE_STATUS_VISITED_AG | max_status_3(result,
+                    node->status |= RE_STATUS_VISITED_AG | max_status_3(result,
                       branch_1_result, branch_2_result);
                 } else {
                     CheckStack_push(&stack, node, result);
@@ -21682,7 +21836,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                         CheckStack_push(&stack, tail, RE_STATUS_NEITHER);
                     if (!visited_body) {
                         if (limited)
-                            body->status = RE_STATUS_VISITED_AG |
+                            body->status |= RE_STATUS_VISITED_AG |
                               RE_STATUS_LIMITED;
                         else
                             CheckStack_push(&stack, body, RE_STATUS_NEITHER);
@@ -21719,7 +21873,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                         result = max_status_2(result, RE_STATUS_LIMITED);
                     else
                         result = max_status_2(result, RE_STATUS_REPEAT);
-                    node->status = RE_STATUS_VISITED_AG | max_status_3(result,
+                    node->status |= RE_STATUS_VISITED_AG | max_status_3(result,
                       RE_STATUS_REPEAT, tail_result);
                 } else {
                     CheckStack_push(&stack, node, result);
@@ -21770,7 +21924,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                     branch_2_result = branch_2->status & (RE_STATUS_REPEAT |
                       RE_STATUS_REF);
 
-                    node->status = RE_STATUS_VISITED_AG | max_status_4(result,
+                    node->status |= RE_STATUS_VISITED_AG | max_status_4(result,
                       branch_1_result, branch_2_result, RE_STATUS_REF);
                 } else {
                     CheckStack_push(&stack, node, result);
@@ -21782,7 +21936,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                 break;
             }
             case RE_OP_SUCCESS:
-                node->status = RE_STATUS_VISITED_AG | result;
+                node->status |= RE_STATUS_VISITED_AG | result;
                 break;
             default:
                 node->status |= RE_STATUS_VISITED_AG;
@@ -24022,6 +24176,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     Py_ssize_t i;
     RE_CODE* req_chars;
     size_t req_length;
+    RE_UINT8* packed_code_list;
     PatternObject* self;
     BOOL unicode;
     BOOL locale;
@@ -24058,10 +24213,20 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     /* Get the required characters. */
     get_required_chars(required_chars, &req_chars, &req_length);
 
+    /* Pack the code list in case it's needed for pickling. */
+    packed_code_list = pack_code_list(code, code_len);
+    if (!packed_code_list) {
+        set_error(RE_ERROR_MEMORY, NULL);
+        re_dealloc(req_chars);
+        re_dealloc(code);
+        return NULL;
+    }
+
     /* Create the PatternObject. */
     self = PyObject_NEW(PatternObject, &Pattern_Type);
     if (!self) {
         set_error(RE_ERROR_MEMORY, NULL);
+        re_dealloc(packed_code_list);
         re_dealloc(req_chars);
         re_dealloc(code);
         return NULL;
@@ -24070,6 +24235,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     /* Initialise the PatternObject. */
     self->pattern = pattern;
     self->flags = flags;
+    self->packed_code_list = packed_code_list;
     self->weakreflist = NULL;
     self->start_node = NULL;
     self->repeat_count = 0;
@@ -24098,6 +24264,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->fuzzy_count = 0;
     self->recursive = FALSE;
     self->req_offset = req_offset;
+    self->required_chars = required_chars;
+    self->req_flags = req_flags;
     self->req_string = NULL;
     self->locale_info = NULL;
     Py_INCREF(self->pattern);
@@ -24105,6 +24273,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     Py_INCREF(self->indexgroup);
     Py_INCREF(self->named_lists);
     Py_INCREF(self->named_list_indexes);
+    Py_INCREF(self->required_chars);
 
     /* Initialise the character encoding. */
     unicode = (flags & RE_FLAG_UNICODE) != 0;
@@ -24190,15 +24359,6 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
         }
 
         scan_locale_chars(self->locale_info);
-    }
-
-    /* Build the data needed for picking. */
-    self->pickled_data = Py_BuildValue("OnOOOOOnOnn", pattern, flags,
-      code_list, groupindex, indexgroup, named_lists, named_list_indexes,
-      req_offset, required_chars, req_flags, public_group_count);
-    if (!self->pickled_data) {
-        Py_DECREF(self);
-        return NULL;
     }
 
     return (PyObject*)self;

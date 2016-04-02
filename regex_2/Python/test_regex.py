@@ -3579,6 +3579,20 @@ thing
         r = pickle.loads(p)
         self.assertEqual(r.match('foo').span(), (0, 3))
 
+        # Hg issue #196: Fuzzy matching on repeated regex not working as expected
+        self.assertEqual(regex.match('(x{6}){e<=1}', 'xxxxxx',
+          flags=regex.BESTMATCH).span(), (0, 6))
+        self.assertEqual(regex.match('(x{6}){e<=1}', 'xxxxx',
+          flags=regex.BESTMATCH).span(), (0, 5))
+        self.assertEqual(regex.match('(x{6}){e<=1}', 'x',
+          flags=regex.BESTMATCH), None)
+        self.assertEqual(regex.match('(?r)(x{6}){e<=1}', 'xxxxxx',
+          flags=regex.BESTMATCH).span(), (0, 6))
+        self.assertEqual(regex.match('(?r)(x{6}){e<=1}', 'xxxxx',
+          flags=regex.BESTMATCH).span(), (0, 5))
+        self.assertEqual(regex.match('(?r)(x{6}){e<=1}', 'x',
+          flags=regex.BESTMATCH), None)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
