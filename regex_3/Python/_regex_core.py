@@ -586,7 +586,7 @@ def parse_cost_constraint(source, constraints):
         else:
             # There's a maximum cost.
             cost_pos = source.pos
-            max_cost = int(parse_count(source))
+            max_cost = parse_cost_limit(source)
 
             # Inclusive or exclusive limit?
             if not max_inc:
@@ -599,38 +599,49 @@ def parse_cost_constraint(source, constraints):
     elif ch in DIGITS:
         # Syntax: cost ("<=" | "<") constraint ("<=" | "<") cost
         source.pos = saved_pos
-        try:
-            # Minimum cost.
-            min_cost = int(parse_count(source))
 
-            min_inc = parse_fuzzy_compare(source)
-            if min_inc is None:
-                raise ParseError()
+        # Minimum cost.
+        cost_pos = source.pos
+        min_cost = parse_cost_limit(source)
 
-            constraint = parse_constraint(source, constraints, source.get())
-
-            max_inc = parse_fuzzy_compare(source)
-            if max_inc is None:
-                raise ParseError()
-
-            # Maximum cost.
-            cost_pos = source.pos
-            max_cost = int(parse_count(source))
-
-            # Inclusive or exclusive limits?
-            if not min_inc:
-                min_cost += 1
-            if not max_inc:
-                max_cost -= 1
-
-            if not 0 <= min_cost <= max_cost:
-                raise error("bad fuzzy cost limit", source.string, cost_pos)
-
-            constraints[constraint] = min_cost, max_cost
-        except ValueError:
+        min_inc = parse_fuzzy_compare(source)
+        if min_inc is None:
             raise ParseError()
+
+        constraint = parse_constraint(source, constraints, source.get())
+
+        max_inc = parse_fuzzy_compare(source)
+        if max_inc is None:
+            raise ParseError()
+
+        # Maximum cost.
+        cost_pos = source.pos
+        max_cost = parse_cost_limit(source)
+
+        # Inclusive or exclusive limits?
+        if not min_inc:
+            min_cost += 1
+        if not max_inc:
+            max_cost -= 1
+
+        if not 0 <= min_cost <= max_cost:
+            raise error("bad fuzzy cost limit", source.string, cost_pos)
+
+        constraints[constraint] = min_cost, max_cost
     else:
         raise ParseError()
+
+def parse_cost_limit(source):
+    "Parses a cost limit."
+    cost_pos = source.pos
+    digits = parse_count(source)
+
+    try:
+        return int(digits)
+    except ValueError:
+        pass
+
+    raise error("bad fuzzy cost limit", source.string, cost_pos)
 
 def parse_constraint(source, constraints, ch):
     "Parses a constraint."
@@ -1166,7 +1177,7 @@ def parse_escape(source, info, in_set):
         raise error("bad escape (end of pattern)", source.string, source.pos)
     if ch in HEX_ESCAPES:
         # A hexadecimal escape sequence.
-        return parse_hex_escape(source, info, HEX_ESCAPES[ch], in_set, ch)
+        return parse_hex_escape(source, info, ch, HEX_ESCAPES[ch], in_set, ch)
     elif ch == "g" and not in_set:
         # A group reference.
         saved_pos = source.pos
@@ -1274,18 +1285,28 @@ def parse_octal_escape(source, info, digits, in_set):
             raise error("bad escape \\%s" % digits[0], source.string,
               source.pos)
 
-def parse_hex_escape(source, info, expected_len, in_set, type):
+def parse_hex_escape(source, info, esc, expected_len, in_set, type):
     "Parses a hex escape sequence."
+    saved_pos = source.pos
     digits = []
     for i in range(expected_len):
         ch = source.get()
         if ch not in HEX_DIGITS:
             raise error("incomplete escape \\%s%s" % (type, ''.join(digits)),
-              source.string, source.pos)
+              source.string, saved_pos)
         digits.append(ch)
 
-    value = int("".join(digits), 16)
-    return make_character(info, value, in_set)
+    try:
+        value = int("".join(digits), 16)
+    except ValueError:
+        pass
+    else:
+        if value < 0x110000:
+            return make_character(info, value, in_set)
+
+    # Bad hex escape.
+    raise error("bad hex escape \\%s%s" % (esc, ''.join(digits)),
+      source.string, saved_pos)
 
 def parse_group_ref(source, info):
     "Parses a group reference."

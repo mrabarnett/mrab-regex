@@ -3697,6 +3697,13 @@ thing
         self.assertEqual(regex.match('(?r)(x{6}){e<=1}', 'x',
           flags=regex.BESTMATCH), None)
 
+        # Hg issue 197: ValueError in regex.compile
+        self.assertRaises(regex.error, lambda:
+          regex.compile(b'00000\\0\\00\^\50\\00\U05000000'))
+
+        # Hg issue 198: ValueError in regex.compile
+        self.assertRaises(regex.error, lambda: regex.compile(b"{e<l"))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
