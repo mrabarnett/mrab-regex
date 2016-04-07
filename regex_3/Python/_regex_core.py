@@ -2431,6 +2431,15 @@ class CallGroup(RegexBase):
     def max_width(self):
         return UNLIMITED
 
+class CallRef(RegexBase):
+    def __init__(self, ref, parsed):
+        self.ref = ref
+        self.parsed = parsed
+
+    def _compile(self, reverse, fuzzy):
+        return ([(OP.CALL_REF, self.ref)] + self.parsed._compile(reverse,
+          fuzzy) + [(OP.END, )])
+
 class Character(RegexBase):
     _opcode = {(NOCASE, False): OP.CHARACTER, (IGNORECASE, False):
       OP.CHARACTER_IGN, (FULLCASE, False): OP.CHARACTER, (FULLIGNORECASE,
@@ -4178,7 +4187,8 @@ def _check_group_features(info, parsed):
                     # The pattern as a whole doesn't have the features we want,
                     # so we'll need to make a copy of it with the desired
                     # features.
-                    additional_groups.append((parsed, reverse, fuzzy))
+                    additional_groups.append((CallRef(len(call_refs), parsed),
+                      reverse, fuzzy))
             else:
                 # Calling a capture group.
                 def_info = info.defined_groups[call.group]
