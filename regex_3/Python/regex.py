@@ -239,7 +239,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
   "WORD", "error", "Regex"]
 
-__version__ = "2.4.91"
+__version__ = "2.4.92"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -580,7 +580,9 @@ def _compile(pattern, flags=0, kwargs={}):
 
     # Compile the additional copies of the groups that we need.
     for group, rev, fuz in info.additional_groups:
-        code += group.compile(rev, fuz)
+        key = (group.group, rev, fuz)
+        if key in info.call_refs:
+            code += group.compile(rev, fuz)
 
     # Flatten the code into a list of ints.
     code = _flatten_code(code)

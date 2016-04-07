@@ -3704,6 +3704,9 @@ thing
         # Hg issue 198: ValueError in regex.compile
         self.assertRaises(regex.error, lambda: regex.compile(b"{e<l"))
 
+        # Hg issue 199: Segfault in re.compile
+        self.assertEquals(bool(regex.compile('((?0)){e}')), True)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
