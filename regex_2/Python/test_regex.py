@@ -3603,8 +3603,14 @@ thing
         # Hg issue 199: Segfault in re.compile
         self.assertEquals(bool(regex.compile('((?0)){e}')), True)
 
-        # Hg Issue 200: AttributeError in regex.compile with latest regex
+        # Hg issue 200: AttributeError in regex.compile with latest regex
         self.assertEquals(bool(regex.compile('\x00?(?0){e}')), True)
+
+        # Hg issue 201: ENHANCEMATCH crashes interpreter
+        self.assertEquals(regex.findall(r'((brown)|(lazy)){1<=e<=3} ((dog)|(fox)){1<=e<=3}',
+          'The quick borwn fax jumped over the lzy hog', regex.ENHANCEMATCH),
+          [('borwn', 'borwn', '', 'fax', '', 'fax'), ('lzy', '', 'lzy', 'hog',
+          'hog', '')])
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',

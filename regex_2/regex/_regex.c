@@ -16273,11 +16273,21 @@ Py_LOCAL_INLINE(void) restore_groups(RE_SafeState* safe_state, RE_GroupData*
     state = safe_state->re_state;
     pattern = state->pattern;
 
-    for (g = 0; g < pattern->true_group_count; g++)
-        re_dealloc(state->groups[g].captures);
+    for (g = 0; g < pattern->true_group_count; g++) {
+        RE_GroupData* group;
+        RE_GroupData* saved;
 
-    Py_MEMCPY(state->groups, saved_groups, pattern->true_group_count *
-      sizeof(RE_GroupData));
+        group = &state->groups[g];
+        saved = &saved_groups[g];
+
+        group->span = saved->span;
+
+        group->capture_count = saved->capture_count;
+        Py_MEMCPY(group->captures, saved->captures, saved->capture_count *
+          sizeof(RE_GroupSpan));
+
+        re_dealloc(saved->captures);
+    }
 
     re_dealloc(saved_groups);
 
