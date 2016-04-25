@@ -6843,8 +6843,10 @@ Py_LOCAL_INLINE(int) try_match_STRING(RE_State* state, RE_NextNode* next,
 
     for (s_pos = 0; s_pos < length; s_pos++) {
         if (text_pos + s_pos >= state->slice_end) {
-            if (state->partial_side == RE_PARTIAL_RIGHT)
+            if (state->partial_side == RE_PARTIAL_RIGHT) {
+                next_position->text_pos = text_pos;
                 return RE_ERROR_PARTIAL;
+            }
 
             return RE_ERROR_FAILURE;
         }
@@ -6891,8 +6893,13 @@ Py_LOCAL_INLINE(int) try_match_STRING_FLD(RE_State* state, RE_NextNode* next,
         if (f_pos >= folded_len) {
             /* Fetch and casefold another character. */
             if (text_pos >= state->slice_end) {
-                if (state->partial_side == RE_PARTIAL_RIGHT)
+                if (state->partial_side == RE_PARTIAL_RIGHT) {
+                    if (next->match_step == 0)
+                        next_position->text_pos = start_pos;
+                    else
+                        next_position->text_pos = text_pos;
                     return RE_ERROR_PARTIAL;
+                }
 
                 return RE_ERROR_FAILURE;
             }
@@ -6959,8 +6966,13 @@ Py_LOCAL_INLINE(int) try_match_STRING_FLD_REV(RE_State* state, RE_NextNode*
         if (f_pos >= folded_len) {
             /* Fetch and casefold another character. */
             if (text_pos <= state->slice_start) {
-                if (state->partial_side == RE_PARTIAL_LEFT)
+                if (state->partial_side == RE_PARTIAL_LEFT) {
+                    if (next->match_step == 0)
+                        next_position->text_pos = start_pos;
+                    else
+                        next_position->text_pos = text_pos;
                     return RE_ERROR_PARTIAL;
+                }
 
                 return RE_ERROR_FAILURE;
             }
@@ -7011,8 +7023,10 @@ Py_LOCAL_INLINE(int) try_match_STRING_IGN(RE_State* state, RE_NextNode* next,
 
     for (s_pos = 0; s_pos < length; s_pos++) {
         if (text_pos + s_pos >= state->slice_end) {
-            if (state->partial_side == RE_PARTIAL_RIGHT)
+            if (state->partial_side == RE_PARTIAL_RIGHT) {
+                next_position->text_pos = text_pos;
                 return RE_ERROR_PARTIAL;
+            }
 
             return RE_ERROR_FAILURE;
         }
@@ -7048,8 +7062,10 @@ Py_LOCAL_INLINE(int) try_match_STRING_IGN_REV(RE_State* state, RE_NextNode*
 
     for (s_pos = 0; s_pos < length; s_pos++) {
         if (text_pos - s_pos <= state->slice_start) {
-            if (state->partial_side == RE_PARTIAL_LEFT)
+            if (state->partial_side == RE_PARTIAL_LEFT) {
+                next_position->text_pos = text_pos;
                 return RE_ERROR_PARTIAL;
+            }
 
             return RE_ERROR_FAILURE;
         }
@@ -7079,8 +7095,10 @@ Py_LOCAL_INLINE(int) try_match_STRING_REV(RE_State* state, RE_NextNode* next,
 
     for (s_pos = 0; s_pos < length; s_pos++) {
         if (text_pos - s_pos <= state->slice_start) {
-            if (state->partial_side == RE_PARTIAL_LEFT)
+            if (state->partial_side == RE_PARTIAL_LEFT) {
+                next_position->text_pos = text_pos;
                 return RE_ERROR_PARTIAL;
+            }
 
             return RE_ERROR_FAILURE;
         }
@@ -8618,6 +8636,11 @@ again:
             int status;
 
             status = try_match(state, &test->next_1, text_pos, new_position);
+            if (status == RE_ERROR_PARTIAL) {
+                new_position->node = node;
+                new_position->text_pos = start_pos;
+                return status;
+            }
             if (status < 0)
                 return status;
 
@@ -11453,7 +11476,7 @@ next_match_1:
              */
             status = search_start(safe_state, &start_pair, &new_position, 0);
             if (status == RE_ERROR_PARTIAL) {
-                state->match_pos = state->text_pos;
+                state->match_pos = new_position.text_pos;
                 return status;
             } else if (status != RE_ERROR_SUCCESS)
                 return status;

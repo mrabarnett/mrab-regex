@@ -3716,6 +3716,11 @@ thing
           [('borwn', 'borwn', '', 'fax', '', 'fax'), ('lzy', '', 'lzy', 'hog',
           'hog', '')])
 
+        # Hg issue 203: partial matching bug
+        self.assertEquals(regex.search(r'\d\d\d-\d\d-\d\d\d\d',
+          "My SSN is 999-89-76, but don't tell.", partial=True).span(), (36,
+          36))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
