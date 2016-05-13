@@ -13,7 +13,7 @@ DOCS_DIR = os.path.join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2016.04.25',
+    version='2016.05.13',
     description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
 

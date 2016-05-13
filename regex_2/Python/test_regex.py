@@ -3617,6 +3617,25 @@ thing
           "My SSN is 999-89-76, but don't tell.", partial=True).span(), (36,
           36))
 
+        # Hg issue 204: confusion of (?aif) flags
+        upper_i = u'\N{CYRILLIC CAPITAL LETTER SHORT I}'
+        lower_i = u'\N{CYRILLIC SMALL LETTER SHORT I}'
+
+        self.assertEquals(bool(regex.match(ur'(?ui)' + upper_i,
+          lower_i)), True)
+        self.assertEquals(bool(regex.match(ur'(?ui)' + lower_i,
+          upper_i)), True)
+
+        self.assertEquals(bool(regex.match(ur'(?ai)' + upper_i,
+          lower_i)), False)
+        self.assertEquals(bool(regex.match(ur'(?ai)' + lower_i,
+          upper_i)), False)
+
+        self.assertEquals(bool(regex.match(ur'(?afi)' + upper_i,
+          lower_i)), False)
+        self.assertEquals(bool(regex.match(ur'(?afi)' + lower_i,
+          upper_i)), False)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

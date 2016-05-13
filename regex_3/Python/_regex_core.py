@@ -340,28 +340,38 @@ def _flatten_code(code):
 
     return flat_code
 
+def make_case_flags(info):
+    "Makes the case flags."
+    flags = info.flags & CASE_FLAGS
+
+    # Turn off FULLCASE if ASCII is turned on.
+    if info.flags & ASCII:
+        flags &= ~FULLCASE
+
+    return flags
+
 def make_character(info, value, in_set=False):
     "Makes a character literal."
     if in_set:
         # A character set is built case-sensitively.
         return Character(value)
 
-    return Character(value, case_flags=info.flags & CASE_FLAGS)
+    return Character(value, case_flags=make_case_flags(info))
 
 def make_ref_group(info, name, position):
     "Makes a group reference."
-    return RefGroup(info, name, position, case_flags=info.flags & CASE_FLAGS)
+    return RefGroup(info, name, position, case_flags=make_case_flags(info))
 
 def make_string_set(info, name):
     "Makes a string set."
-    return StringSet(info, name, case_flags=info.flags & CASE_FLAGS)
+    return StringSet(info, name, case_flags=make_case_flags(info))
 
 def make_property(info, prop, in_set):
     "Makes a property."
     if in_set:
         return prop
 
-    return prop.with_flags(case_flags=info.flags & CASE_FLAGS)
+    return prop.with_flags(case_flags=make_case_flags(info))
 
 def _parse_pattern(source, info):
     "Parses a pattern, eg. 'a|b|c'."
@@ -710,7 +720,7 @@ def parse_literal_and_element(source, info):
     inline flag or None if it has reached the end of a sequence.
     """
     characters = []
-    case_flags = info.flags & CASE_FLAGS
+    case_flags = make_case_flags(info)
     while True:
         saved_pos = source.pos
         ch = source.get()
@@ -1410,7 +1420,7 @@ def parse_set(source, info):
     if negate:
         item = item.with_flags(positive=not item.positive)
 
-    item = item.with_flags(case_flags=info.flags & CASE_FLAGS)
+    item = item.with_flags(case_flags=make_case_flags(info))
 
     return item
 
