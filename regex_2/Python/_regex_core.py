@@ -528,10 +528,6 @@ def parse_limited_quantifier(source):
         # No minimum means 0 and no maximum means unlimited.
         min_count = int(min_count or 0)
         max_count = int(max_count) if max_count else None
-
-        if max_count is not None and min_count > max_count:
-            raise error("min repeat greater than max repeat", source.string,
-              saved_pos)
     else:
         if not min_count:
             source.pos = saved_pos
@@ -539,21 +535,25 @@ def parse_limited_quantifier(source):
 
         min_count = max_count = int(min_count)
 
-    if is_above_limit(min_count) or is_above_limit(max_count):
-        raise error("repeat count too big", source.string, saved_pos)
-
     if not source.match ("}"):
         source.pos = saved_pos
         return None
+
+    if is_above_limit(min_count) or is_above_limit(max_count):
+        raise error("repeat count too big", source.string, saved_pos)
+
+    if max_count is not None and min_count > max_count:
+        raise error("min repeat greater than max repeat", source.string,
+          saved_pos)
 
     return min_count, max_count
 
 def parse_fuzzy(source, ch):
     "Parses a fuzzy setting, if present."
+    saved_pos = source.pos
+
     if ch != "{":
         return None
-
-    saved_pos = source.pos
 
     constraints = {}
     try:

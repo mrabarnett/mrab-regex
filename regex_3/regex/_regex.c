@@ -9767,6 +9767,7 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
     Py_ssize_t first;
     Py_ssize_t last;
     PyObject* string_set;
+    void* folded_buffer;
 
     state = safe_state->re_state;
     simple_case_fold = state->encoding->simple_case_fold;
@@ -9835,12 +9836,17 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
     }
 
     if (reverse) {
-        first = f_pos;
+        first = f_pos + 1;
         last = max_len;
     } else {
         first = 0;
         last = f_pos;
     }
+
+    /* Point to the used portion of the folded buffer. */
+    folded_buffer = (void*)((Py_UCS1*)folded + first * folded_charsize);
+    last -= first;
+    first = 0;
 
     /* If we didn't get all of the characters we need, is a partial match
      * allowed?
@@ -9863,8 +9869,8 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
           state->pattern->partial_named_lists[partial_side][node->values[0]];
 
         /* Is the text we have a partial match? */
-        status = string_set_contains_ign(state, string_set, folded, first,
-          last, folded_charsize);
+        status = string_set_contains_ign(state, string_set, folded_buffer,
+          first, last, folded_charsize);
         if (status < 0)
             goto finished;
 
@@ -9892,8 +9898,8 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
      * complete match?
      */
     while (len >= min_len) {
-        status = string_set_contains_ign(state, string_set, folded, first,
-          last, folded_charsize);
+        status = string_set_contains_ign(state, string_set, folded_buffer,
+          first, last, folded_charsize);
 
         if (status == 1) {
             /* Advance past the match. */

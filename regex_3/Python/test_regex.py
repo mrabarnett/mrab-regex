@@ -3740,6 +3740,16 @@ thing
         self.assertEquals(bool(regex.match(r'(?afi)' + lower_i,
           upper_i)), False)
 
+        # Hg issue 205: Named list and (?ri) flags
+        self.assertEquals(bool(regex.search(r'(?i)\L<aa>', '22', aa=['121',
+          '22'])), True)
+        self.assertEquals(bool(regex.search(r'(?ri)\L<aa>', '22', aa=['121',
+          '22'])), True)
+        self.assertEquals(bool(regex.search(r'(?fi)\L<aa>', '22', aa=['121',
+          '22'])), True)
+        self.assertEquals(bool(regex.search(r'(?fri)\L<aa>', '22', aa=['121',
+          '22'])), True)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
