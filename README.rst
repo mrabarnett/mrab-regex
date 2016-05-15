@@ -140,7 +140,7 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
-* Fixed support for pickling (Hg issue 195)
+* Fixed support for pickling compiled regexes (Hg issue 195)
 
 * Added support for lookaround in conditional pattern (Hg issue 163)
 

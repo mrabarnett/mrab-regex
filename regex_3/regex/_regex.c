@@ -631,7 +631,7 @@ typedef struct PatternObject {
     PyObject_HEAD
     PyObject* pattern; /* Pattern source (or None). */
     Py_ssize_t flags; /* Flags used when compiling pattern source. */
-    RE_UINT8* packed_code_list;
+    PyObject* packed_code_list;
     PyObject* weakreflist; /* List of weak references */
     /* Nodes into which the regular expression is compiled. */
     RE_Node* start_node;
@@ -9132,10 +9132,14 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_SafeState* safe_state, size_t index,
 }
 
 /* Builds a Unicode string. */
-Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t len,
-  Py_ssize_t buffer_charsize) {
+Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t start,
+  Py_ssize_t end, Py_ssize_t buffer_charsize) {
 #if PY_VERSION_HEX >= 0x03030000
+    Py_ssize_t len;
     int kind;
+
+    buffer = (void*)((RE_UINT8*)buffer + start * buffer_charsize);
+    len = end - start;
 
     switch (buffer_charsize) {
     case 1:
@@ -9154,16 +9158,25 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t len,
 
     return PyUnicode_FromKindAndData(kind, buffer, len);
 #else
+    Py_ssize_t len;
+
+    buffer = (void*)((RE_UINT8*)buffer + start * buffer_charsize);
+    len = end - start;
+
     return PyUnicode_FromUnicode(buffer, len);
 #endif
 }
 
 /* Builds a bytestring. Returns NULL if any member is too wide. */
-Py_LOCAL_INLINE(PyObject*) build_bytes_value(void* buffer, Py_ssize_t len,
-  Py_ssize_t buffer_charsize) {
+Py_LOCAL_INLINE(PyObject*) build_bytes_value(void* buffer, Py_ssize_t start,
+  Py_ssize_t end, Py_ssize_t buffer_charsize) {
+    Py_ssize_t len;
     Py_UCS1* byte_buffer;
     Py_ssize_t i;
     PyObject* result;
+
+    buffer = (void*)((RE_UINT8*)buffer + start * buffer_charsize);
+    len = end - start;
 
     if (buffer_charsize == 1)
         return Py_BuildValue("y#", buffer, len);
@@ -9199,11 +9212,10 @@ Py_LOCAL_INLINE(int) string_set_contains(RE_State* state, PyObject* string_set,
     int status;
 
     if (state->is_unicode)
-        string = build_unicode_value(state->point_to(state->text, first), last
-          - first, state->charsize);
+        string = build_unicode_value(state->text, first, last,
+          state->charsize);
     else
-        string = build_bytes_value(state->point_to(state->text, first), last -
-          first, state->charsize);
+        string = build_bytes_value(state->text, first, last, state->charsize);
     if (!string)
         return RE_ERROR_INTERNAL;
 
@@ -9215,8 +9227,8 @@ Py_LOCAL_INLINE(int) string_set_contains(RE_State* state, PyObject* string_set,
 
 /* Looks for a string in a string set, ignoring case. */
 Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
-  string_set, void* buffer, Py_ssize_t index, Py_ssize_t len, Py_ssize_t
-  buffer_charsize) {
+  string_set, void* buffer, Py_ssize_t first, Py_ssize_t last, Py_ssize_t
+   index, Py_ssize_t buffer_charsize) {
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
     void (*set_char_at)(void* text, Py_ssize_t pos, Py_UCS4 ch);
     RE_EncodingTable* encoding;
@@ -9248,11 +9260,11 @@ Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
     possible_turkic = encoding->possible_turkic;
 
     /* Look for a possible Turkic 'I'. */
-    while (index < len && !possible_turkic(locale_info, char_at(buffer,
+    while (index < last && !possible_turkic(locale_info, char_at(buffer,
       index)))
         ++index;
 
-    if (index < len) {
+    if (index < last) {
         /* Possible Turkic 'I'. */
         int count;
         int i;
@@ -9267,8 +9279,8 @@ Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
             set_char_at(buffer, index, codepoints[i]);
 
             /* Recurse for the remainder of the string. */
-            status = string_set_contains_ign(state, string_set, buffer, index +
-              1, len, buffer_charsize);
+            status = string_set_contains_ign(state, string_set, buffer, first,
+              last, index + 1, buffer_charsize);
             if (status != 0)
                 return status;
         }
@@ -9280,9 +9292,9 @@ Py_LOCAL_INLINE(int) string_set_contains_ign(RE_State* state, PyObject*
         int status;
 
         if (state->is_unicode)
-            string = build_unicode_value(buffer, len, buffer_charsize);
+            string = build_unicode_value(buffer, first, last, buffer_charsize);
         else
-            string = build_bytes_value(buffer, len, buffer_charsize);
+            string = build_bytes_value(buffer, first, last, buffer_charsize);
         if (!string)
             return RE_ERROR_MEMORY;
 
@@ -9546,7 +9558,6 @@ Py_LOCAL_INLINE(int) string_set_match_fld_fwdrev(RE_SafeState* safe_state,
     Py_ssize_t first;
     Py_ssize_t last;
     PyObject* string_set;
-    void* folded_buffer;
 
     state = safe_state->re_state;
     full_case_fold = state->encoding->full_case_fold;
@@ -9671,7 +9682,7 @@ Py_LOCAL_INLINE(int) string_set_match_fld_fwdrev(RE_SafeState* safe_state,
 
         /* Is the text we have a partial match? */
         status = string_set_contains_ign(state, string_set, folded, first,
-          last, folded_charsize);
+          last, first, folded_charsize);
         if (status < 0)
             goto finished;
 
@@ -9695,18 +9706,13 @@ Py_LOCAL_INLINE(int) string_set_match_fld_fwdrev(RE_SafeState* safe_state,
         goto finished;
     }
 
-    /* Point to the used portion of the folded buffer. */
-    folded_buffer = (void*)((Py_UCS1*)folded + first * folded_charsize);
-    last -= first;
-    first = 0;
-
     /* We've already looked for a partial match (if allowed), but what about a
      * complete match?
      */
     while (len >= min_len) {
         if (end_of_fold[len]) {
-            status = string_set_contains_ign(state, string_set, folded_buffer,
-              first, last, folded_charsize);
+            status = string_set_contains_ign(state, string_set, folded, first,
+              last, first, folded_charsize);
 
             if (status == 1) {
                 /* Advance past the match. */
@@ -9767,7 +9773,6 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
     Py_ssize_t first;
     Py_ssize_t last;
     PyObject* string_set;
-    void* folded_buffer;
 
     state = safe_state->re_state;
     simple_case_fold = state->encoding->simple_case_fold;
@@ -9843,11 +9848,6 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
         last = f_pos;
     }
 
-    /* Point to the used portion of the folded buffer. */
-    folded_buffer = (void*)((Py_UCS1*)folded + first * folded_charsize);
-    last -= first;
-    first = 0;
-
     /* If we didn't get all of the characters we need, is a partial match
      * allowed?
      */
@@ -9869,8 +9869,8 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
           state->pattern->partial_named_lists[partial_side][node->values[0]];
 
         /* Is the text we have a partial match? */
-        status = string_set_contains_ign(state, string_set, folded_buffer,
-          first, last, folded_charsize);
+        status = string_set_contains_ign(state, string_set, folded, first,
+          last, first, folded_charsize);
         if (status < 0)
             goto finished;
 
@@ -9898,8 +9898,8 @@ Py_LOCAL_INLINE(int) string_set_match_ign_fwdrev(RE_SafeState* safe_state,
      * complete match?
      */
     while (len >= min_len) {
-        status = string_set_contains_ign(state, string_set, folded_buffer,
-          first, last, folded_charsize);
+        status = string_set_contains_ign(state, string_set, folded, first,
+          last, first, folded_charsize);
 
         if (status == 1) {
             /* Advance past the match. */
@@ -21254,7 +21254,7 @@ static void pattern_dealloc(PyObject* self_) {
     Py_DECREF(self->named_list_indexes);
     Py_DECREF(self->required_chars);
     re_dealloc(self->locale_info);
-    re_dealloc(self->packed_code_list);
+    Py_DECREF(self->packed_code_list);
     PyObject_DEL(self);
 }
 
@@ -21324,13 +21324,13 @@ Py_LOCAL_INLINE(BOOL) append_integer(PyObject* list, Py_ssize_t value) {
 }
 
 /* Packs the code list that's needed for pickling. */
-Py_LOCAL_INLINE(RE_UINT8*) pack_code_list(RE_CODE* code, Py_ssize_t code_len) {
+Py_LOCAL_INLINE(PyObject*) pack_code_list(RE_CODE* code, Py_ssize_t code_len) {
     Py_ssize_t max_size;
     RE_UINT8* packed;
     Py_ssize_t count;
     RE_UINT32 value;
     Py_ssize_t i;
-    RE_UINT8* new_packed;
+    PyObject* packed_code_list;
 
     /* What is the maximum number of bytes needed to store it?
      *
@@ -21363,17 +21363,16 @@ Py_LOCAL_INLINE(RE_UINT8*) pack_code_list(RE_CODE* code, Py_ssize_t code_len) {
         packed[count++] = value;
     }
 
-    /* Discard the unused bytes. */
-    new_packed = re_realloc(packed, count);
-    if (new_packed)
-        packed = new_packed;
+    packed_code_list = PyBytes_FromStringAndSize((const char *)packed, count);
+    re_dealloc(packed);
 
-    return packed;
+    return packed_code_list;
 }
 
 /* Unpacks the code list that's needed for pickling. */
-Py_LOCAL_INLINE(PyObject*) unpack_code_list(RE_UINT8* packed) {
+Py_LOCAL_INLINE(PyObject*) unpack_code_list(PyObject* packed) {
     PyObject* code_list;
+    RE_UINT8* packed_data;
     Py_ssize_t index;
     RE_UINT32 value;
     int shift;
@@ -21383,18 +21382,19 @@ Py_LOCAL_INLINE(PyObject*) unpack_code_list(RE_UINT8* packed) {
     if (!code_list)
         return NULL;
 
+    packed_data = (RE_UINT8*)PyBytes_AsString(packed);
     index = 0;
 
     /* Unpack the length of the code list. */
     value = 0;
     shift = 0;
 
-    while (packed[index] >= 0x80) {
-        value |= (RE_UINT32)(packed[index++] & 0x7F) << shift;
+    while (packed_data[index] >= 0x80) {
+        value |= (RE_UINT32)(packed_data[index++] & 0x7F) << shift;
         shift += 7;
     }
 
-    value |= (RE_UINT32)packed[index++] << shift;
+    value |= (RE_UINT32)packed_data[index++] << shift;
     count = (size_t)value;
 
     /* Unpack each of the elements of the code list. */
@@ -21405,12 +21405,12 @@ Py_LOCAL_INLINE(PyObject*) unpack_code_list(RE_UINT8* packed) {
         value = 0;
         shift = 0;
 
-        while (packed[index] >= 0x80) {
-            value |= (RE_UINT32)(packed[index++] & 0x7F) << shift;
+        while (packed_data[index] >= 0x80) {
+            value |= (RE_UINT32)(packed_data[index++] & 0x7F) << shift;
             shift += 7;
         }
 
-        value |= (RE_UINT32)packed[index++] << shift;
+        value |= (RE_UINT32)packed_data[index++] << shift;
         obj = PyLong_FromSize_t((size_t)value);
         if (!obj)
             goto error;
@@ -21632,20 +21632,15 @@ static PyObject* pattern_groupindex(PyObject* self_) {
 /* PatternObject's '_pickled_data' method. */
 static PyObject* pattern_pickled_data(PyObject* self_) {
     PatternObject* self;
-    PyObject* code_list;
     PyObject* pickled_data;
 
     self = (PatternObject*)self_;
 
-    code_list = unpack_code_list(self->packed_code_list);
-    if (!code_list)
-        return NULL;
-
     /* Build the data needed for picking. */
     pickled_data = Py_BuildValue("OnOOOOOnOnn", self->pattern, self->flags,
-      code_list, self->groupindex, self->indexgroup, self->named_lists,
-      self->named_list_indexes, self->req_offset, self->required_chars,
-      self->req_flags, self->public_group_count);
+      self->packed_code_list, self->groupindex, self->indexgroup,
+      self->named_lists, self->named_list_indexes, self->req_offset,
+      self->required_chars, self->req_flags, self->public_group_count);
 
     return pickled_data;
 }
@@ -24210,12 +24205,13 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     PyObject* required_chars;
     Py_ssize_t req_flags;
     size_t public_group_count;
+    BOOL unpacked;
     Py_ssize_t code_len;
     RE_CODE* code;
     Py_ssize_t i;
     RE_CODE* req_chars;
     size_t req_length;
-    RE_UINT8* packed_code_list;
+    PyObject* packed_code_list;
     PatternObject* self;
     BOOL unicode;
     BOOL locale;
@@ -24227,11 +24223,29 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
       &req_offset, &required_chars, &req_flags, &public_group_count))
         return NULL;
 
+    /* If it came from a pickled source, code_list will be a packed code list
+     * in a bytestring.
+     */
+    if (PyBytes_Check(code_list)) {
+        packed_code_list = code_list;
+        code_list = unpack_code_list(packed_code_list);
+        if (!code_list)
+            return NULL;
+
+        unpacked = TRUE;
+    } else
+        unpacked = FALSE;
+
     /* Read the regex code. */
     code_len = PyList_GET_SIZE(code_list);
     code = (RE_CODE*)re_alloc((size_t)code_len * sizeof(RE_CODE));
-    if (!code)
+    if (!code) {
+        if (unpacked)
+            /* code_list has been built from a packed code list. */
+            Py_DECREF(code_list);
+
         return NULL;
+    }
 
     for (i = 0; i < code_len; i++) {
         PyObject* o;
@@ -24252,20 +24266,25 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     /* Get the required characters. */
     get_required_chars(required_chars, &req_chars, &req_length);
 
-    /* Pack the code list in case it's needed for pickling. */
-    packed_code_list = pack_code_list(code, code_len);
-    if (!packed_code_list) {
-        set_error(RE_ERROR_MEMORY, NULL);
-        re_dealloc(req_chars);
-        re_dealloc(code);
-        return NULL;
+    if (!unpacked) {
+        /* Pack the code list in case it's needed for pickling. */
+        packed_code_list = pack_code_list(code, code_len);
+        if (!packed_code_list) {
+            set_error(RE_ERROR_MEMORY, NULL);
+            re_dealloc(req_chars);
+            re_dealloc(code);
+            return NULL;
+        }
     }
 
     /* Create the PatternObject. */
     self = PyObject_NEW(PatternObject, &Pattern_Type);
     if (!self) {
         set_error(RE_ERROR_MEMORY, NULL);
-        re_dealloc(packed_code_list);
+        if (unpacked)
+            Py_DECREF(code_list);
+        else
+            Py_DECREF(packed_code_list);
         re_dealloc(req_chars);
         re_dealloc(code);
         return NULL;
@@ -24308,6 +24327,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->req_string = NULL;
     self->locale_info = NULL;
     Py_INCREF(self->pattern);
+    if (unpacked)
+        Py_INCREF(self->packed_code_list);
     Py_INCREF(self->groupindex);
     Py_INCREF(self->indexgroup);
     Py_INCREF(self->named_lists);
@@ -24340,6 +24361,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     if (!ok) {
         Py_DECREF(self);
         re_dealloc(req_chars);
+        if (unpacked)
+            Py_DECREF(code_list);
         return NULL;
     }
 
@@ -24394,17 +24417,25 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
         self->locale_info = re_alloc(sizeof(RE_LocaleInfo));
         if (!self->locale_info) {
             Py_DECREF(self);
+            if (unpacked)
+                Py_DECREF(code_list);
             return NULL;
         }
 
         scan_locale_chars(self->locale_info);
     }
 
+    if (unpacked)
+        Py_DECREF(code_list);
+
     return (PyObject*)self;
 
 error:
     re_dealloc(code);
     set_error(RE_ERROR_ILLEGAL, NULL);
+    if (unpacked)
+        Py_DECREF(code_list);
+
     return NULL;
 }
 
@@ -24567,9 +24598,9 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
 
     /* Build the result string. */
     if (str_info.is_unicode)
-        result = build_unicode_value(folded, folded_len, folded_charsize);
+        result = build_unicode_value(folded, 0, folded_len, folded_charsize);
     else
-        result = build_bytes_value(folded, folded_len, folded_charsize);
+        result = build_bytes_value(folded, 0, folded_len, folded_charsize);
 
     re_dealloc(folded);
 
@@ -24604,7 +24635,7 @@ static PyObject* get_expand_on_folding(PyObject* self, PyObject* unused) {
 
         codepoint = re_expand_on_folding[i];
 
-        item = build_unicode_value(&codepoint, 1, sizeof(codepoint));
+        item = build_unicode_value(&codepoint, 0, 1, sizeof(codepoint));
         if (!item)
             goto error;
 

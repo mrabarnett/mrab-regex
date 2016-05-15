@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2016.05.14
+Version: 2016.05.15
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -148,7 +148,7 @@ Description: Introduction
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
         
-        * Fixed support for pickling (Hg issue 195)
+        * Fixed support for pickling compiled regexes (Hg issue 195)
         
         * Added support for lookaround in conditional pattern (Hg issue 163)
         

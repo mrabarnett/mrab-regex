@@ -3750,6 +3750,12 @@ thing
         self.assertEquals(bool(regex.search(r'(?fri)\L<aa>', '22', aa=['121',
           '22'])), True)
 
+        # Hg issue 208: Named list, (?ri) flags, Backreference
+        self.assertEquals(regex.search(r'(?r)\1dog..(?<=(\L<aa>))$', 'ccdogcc',
+          aa=['bcb', 'cc']). span(), (0, 7))
+        self.assertEquals(regex.search(r'(?ir)\1dog..(?<=(\L<aa>))$',
+          'ccdogcc', aa=['bcb', 'cc']). span(), (0, 7))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
