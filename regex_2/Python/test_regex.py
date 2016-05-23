@@ -3652,6 +3652,12 @@ thing
         self.assertEquals(regex.search(r'(?ir)\1dog..(?<=(\L<aa>))$',
           'ccdogcc', aa=['bcb', 'cc']). span(), (0, 7))
 
+        # Hg issue #210: Fuzzy matching and Backreference
+        self.assertEquals(regex.search(r'(2)(?:\1{5}){e<=1}',
+          '3222212').span(), (1, 7))
+        self.assertEquals(regex.search(r'(\d)(?:\1{5}){e<=1}',
+          '3222212').span(), (1, 7))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

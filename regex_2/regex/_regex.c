@@ -2770,6 +2770,27 @@ Py_LOCAL_INLINE(void) clear_groups(RE_State* state) {
     }
 }
 
+/* Resets the various guards. */
+Py_LOCAL_INLINE(void) reset_guards(RE_State* state) {
+    size_t i;
+
+    /* Reset the guards for the repeats. */
+    for (i = 0; i < state->pattern->repeat_count; i++) {
+        reset_guard_list(&state->repeats[i].body_guard_list);
+        reset_guard_list(&state->repeats[i].tail_guard_list);
+    }
+
+    /* Reset the guards for the fuzzy sections. */
+    for (i = 0; i < state->pattern->fuzzy_count; i++) {
+        reset_guard_list(&state->fuzzy_guards[i].body_guard_list);
+        reset_guard_list(&state->fuzzy_guards[i].tail_guard_list);
+    }
+
+    /* Reset the guards for the group calls. */
+    for (i = 0; i < state->pattern->call_ref_info_count; i++)
+        reset_guard_list(&state->group_call_guard_list[i]);
+}
+
 /* Initialises the state for a match. */
 Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     RE_AtomicBlock* current;
@@ -2793,24 +2814,11 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
         state->current_atomic_block->count = 0;
     }
 
-    /* Reset the guards for the repeats. */
-    for (i = 0; i < state->pattern->repeat_count; i++) {
-        reset_guard_list(&state->repeats[i].body_guard_list);
-        reset_guard_list(&state->repeats[i].tail_guard_list);
-    }
-
-    /* Reset the guards for the fuzzy sections. */
-    for (i = 0; i < state->pattern->fuzzy_count; i++) {
-        reset_guard_list(&state->fuzzy_guards[i].body_guard_list);
-        reset_guard_list(&state->fuzzy_guards[i].tail_guard_list);
-    }
-
     /* Clear the groups. */
     clear_groups(state);
 
-    /* Reset the guards for the group calls. */
-    for (i = 0; i < state->pattern->call_ref_info_count; i++)
-        reset_guard_list(&state->group_call_guard_list[i]);
+    /* Reset the guards. */
+    reset_guards(state);
 
     /* Clear the counts and cost for matching. */
     if (state->pattern->is_fuzzy) {
@@ -14826,6 +14834,9 @@ backtrack:
 
             /* Clear the groups. */
             clear_groups(state);
+
+            /* Reset the guards. */
+            reset_guards(state);
 
             goto start_match;
         }
