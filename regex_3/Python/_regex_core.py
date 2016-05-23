@@ -656,10 +656,10 @@ def parse_cost_limit(source):
 def parse_constraint(source, constraints, ch):
     "Parses a constraint."
     if ch not in "deis":
-        raise error("bad fuzzy constraint", source.string, source.pos)
+        raise ParseError()
 
     if ch in constraints:
-        raise error("repeated fuzzy constraint", source.string, source.pos)
+        raise ParseError()
 
     return ch
 
@@ -685,7 +685,7 @@ def parse_cost_equation(source, constraints):
 
     max_inc = parse_fuzzy_compare(source)
     if max_inc is None:
-        raise error("missing fuzzy cost limit", source.string, source.pos)
+        raise ParseError()
 
     max_cost = int(parse_count(source))
 
