@@ -371,6 +371,7 @@ typedef struct RE_AtomicData {
     RE_BacktrackData* backtrack;
     struct RE_SavedGroups* saved_groups;
     struct RE_SavedRepeats* saved_repeats;
+    struct RE_GroupCallFrame* call_frame;
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
     Py_ssize_t text_pos;
@@ -2788,7 +2789,6 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state) {
 /* Initialises the state for a match. */
 Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     RE_AtomicBlock* current;
-    size_t i;
 
     /* Reset the backtrack. */
     state->current_backtrack_block = &state->backtrack_block;
@@ -11722,6 +11722,7 @@ advance:
             atomic->is_lookaround = FALSE;
             atomic->has_groups = (node->status & RE_STATUS_HAS_GROUPS) != 0;
             atomic->has_repeats = (node->status & RE_STATUS_HAS_REPEATS) != 0;
+            atomic->call_frame = state->current_group_call_frame;
 
             /* Save the groups and repeats. */
             if (atomic->has_groups && !push_groups(safe_state))
@@ -14598,7 +14599,7 @@ backtrack:
         case RE_OP_ATOMIC: /* Start of an atomic group. */
         {
             RE_AtomicData* atomic;
-            /* backtrack to the start of an atomic group. */
+            /* Backtrack to the start of an atomic group. */
             atomic = pop_atomic(safe_state);
 
             if (atomic->has_repeats)
@@ -14609,6 +14610,7 @@ backtrack:
 
             state->too_few_errors = bt_data->atomic.too_few_errors;
             state->capture_change = bt_data->atomic.capture_change;
+            state->current_group_call_frame = atomic->call_frame;
 
             discard_backtrack(state);
             break;

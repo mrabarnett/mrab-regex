@@ -3762,6 +3762,12 @@ thing
         self.assertEquals(regex.search(r'(\d)(?:\1{5}){e<=1}',
           '3222212').span(), (1, 7))
 
+        # Hg issue #211: Segmentation fault with recursive matches and atomic groups
+        self.assertEquals(regex.match(r'''\A(?P<whole>(?>\((?&whole)\)|[+\-]))\Z''',
+          '((-))').span(), (0, 5))
+        self.assertEquals(regex.match(r'''\A(?P<whole>(?>\((?&whole)\)|[+\-]))\Z''',
+          '((-)+)'), None)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
