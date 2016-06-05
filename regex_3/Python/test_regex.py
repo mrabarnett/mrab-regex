@@ -3756,17 +3756,23 @@ thing
         self.assertEquals(regex.search(r'(?ir)\1dog..(?<=(\L<aa>))$',
           'ccdogcc', aa=['bcb', 'cc']). span(), (0, 7))
 
-        # Hg issue #210: Fuzzy matching and Backreference
+        # Hg issue 210: Fuzzy matching and Backreference
         self.assertEquals(regex.search(r'(2)(?:\1{5}){e<=1}',
           '3222212').span(), (1, 7))
         self.assertEquals(regex.search(r'(\d)(?:\1{5}){e<=1}',
           '3222212').span(), (1, 7))
 
-        # Hg issue #211: Segmentation fault with recursive matches and atomic groups
+        # Hg issue 211: Segmentation fault with recursive matches and atomic groups
         self.assertEquals(regex.match(r'''\A(?P<whole>(?>\((?&whole)\)|[+\-]))\Z''',
           '((-))').span(), (0, 5))
         self.assertEquals(regex.match(r'''\A(?P<whole>(?>\((?&whole)\)|[+\-]))\Z''',
           '((-)+)'), None)
+
+        # Hg Issue #212: Unexpected matching difference with .*? between re and regex
+        self.assertEquals(regex.match(r"x.*? (.).*\1(.*)\1",
+          'x  |y| z|').span(), (0, 9))
+        self.assertEquals(regex.match(r"\.sr (.*?) (.)(.*)\2(.*)\2(.*)",
+          r'.sr  h |<nw>|<span class="locked">|').span(), (0, 35))
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',

@@ -22015,9 +22015,24 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                 node->status |= RE_STATUS_VISITED_AG | result;
                 break;
             default:
-                node->status |= RE_STATUS_VISITED_AG;
-                CheckStack_push(&stack, node->next_1.node, result);
+            {
+                RE_Node* tail;
+                BOOL visited_tail;
+                RE_STATUS_T tail_result;
+
+                tail = node->next_1.node;
+                visited_tail = (tail->status & RE_STATUS_VISITED_AG);
+
+                if (visited_tail) {
+                    tail_result = tail->status & (RE_STATUS_REPEAT |
+                      RE_STATUS_REF);
+                    node->status |= RE_STATUS_VISITED_AG | tail_result;
+                } else {
+                    CheckStack_push(&stack, node, result);
+                    CheckStack_push(&stack, node->next_1.node, result);
+                }
                 break;
+            }
             }
         }
     }
