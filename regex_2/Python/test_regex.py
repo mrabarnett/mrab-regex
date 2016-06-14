@@ -1629,7 +1629,7 @@ class RegexTests(unittest.TestCase):
         self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(d))(e)",
           "cde").groups(), ('c', 'd', 'e'))
 
-        # Hg issue 87.
+        # Hg issue 87: Allow duplicate names of groups
         self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
           "abe").groups(), ("a", "b", "e"))
         self.assertEqual(regex.match(r"(?|(?<a>a)(?<b>b)|(c)(?<a>d))(e)",
@@ -2757,7 +2757,7 @@ xyzabc
           ""])
         self.assertEqual(regex.findall(r"(?:Q+){e}","abc"), ["abc", ""])
 
-        # Hg issue 41.
+        # Hg issue 41: = for fuzzy matches
         self.assertEqual(regex.match(r"(?:service detection){0<e<5}",
           "servic detection").span(), (0, 16))
         self.assertEqual(regex.match(r"(?:service detection){0<e<5}",
@@ -2769,7 +2769,7 @@ xyzabc
         self.assertEqual(regex.match(r"(?:service detection){0<e<5}",
           "in service detection").span(), (0, 20))
 
-        # Hg issue 109.
+        # Hg issue 109: Edit distance of fuzzy match
         self.assertEqual(regex.fullmatch(r"(?:cats|cat){e<=1}",
           "cat").fuzzy_counts, (0, 0, 1))
         self.assertEqual(regex.fullmatch(r"(?e)(?:cats|cat){e<=1}",
@@ -2934,14 +2934,14 @@ xyzabc
           endpos=4)), True)
 
     def test_hg_bugs(self):
-        # Hg issue 28.
+        # Hg issue 28: regex.compile("(?>b)") causes "TypeError: 'Character' object is not subscriptable"
         self.assertEqual(bool(regex.compile("(?>b)", flags=regex.V1)), True)
 
-        # Hg issue 29.
+        # Hg issue 29: regex.compile("^((?>\w+)|(?>\s+))*$") causes "TypeError: 'GreedyRepeat' object is not iterable"
         self.assertEqual(bool(regex.compile(r"^((?>\w+)|(?>\s+))*$",
           flags=regex.V1)), True)
 
-        # Hg issue 31.
+        # Hg issue 31: atomic and normal groups in recursive patterns
         self.assertEqual(regex.findall(r"\((?:(?>[^()]+)|(?R))*\)",
           "a(bcd(e)f)g(h)"), ['(bcd(e)f)', '(h)'])
         self.assertEqual(regex.findall(r"\((?:(?:[^()]+)|(?R))*\)",
@@ -2956,68 +2956,68 @@ xyzabc
           regex.finditer(r"\((?:[^()]*+|(?0))*\)", "a(b(c(de)fg)h")],
           ['(c(de)fg)'])
 
-        # Hg issue 32.
+        # Hg issue 32: regex.search("a(bc)d", "abcd", regex.I|regex.V1) returns None
         self.assertEqual(regex.search("a(bc)d", "abcd", regex.I |
           regex.V1).group(0), "abcd")
 
-        # Hg issue 33.
+        # Hg issue 33: regex.search("([\da-f:]+)$", "E", regex.I|regex.V1) returns None
         self.assertEqual(regex.search("([\da-f:]+)$", "E", regex.I |
           regex.V1).group(0), "E")
         self.assertEqual(regex.search("([\da-f:]+)$", "e", regex.I |
           regex.V1).group(0), "e")
 
-        # Hg issue 34.
+        # Hg issue 34: regex.search("^(?=ab(de))(abd)(e)", "abde").groups() returns (None, 'abd', 'e') instead of ('de', 'abd', 'e')
         self.assertEqual(regex.search("^(?=ab(de))(abd)(e)", "abde").groups(),
           ('de', 'abd', 'e'))
 
-        # Hg issue 35.
+        # Hg issue 35: regex.compile("\ ", regex.X) causes "_regex_core.error: bad escape"
         self.assertEqual(bool(regex.match(r"\ ", " ", flags=regex.X)), True)
 
-        # Hg issue 36.
+        # Hg issue 36: regex.search("^(a|)\1{2}b", "b") returns None
         self.assertEqual(regex.search(r"^(a|)\1{2}b", "b").group(0, 1), ('b',
           ''))
 
-        # Hg issue 37.
+        # Hg issue 37: regex.search("^(a){0,0}", "abc").group(0,1) returns ('a', 'a') instead of ('', None)
         self.assertEqual(regex.search("^(a){0,0}", "abc").group(0, 1), ('',
           None))
 
-        # Hg issue 38.
+        # Hg issue 38: regex.search("(?>.*/)b", "a/b") returns None
         self.assertEqual(regex.search("(?>.*/)b", "a/b").group(0), "a/b")
 
-        # Hg issue 39.
+        # Hg issue 39: regex.search("((?i)blah)\\s+\\1", "blah BLAH") doesn't return None
         self.assertEqual(regex.search(r"(?V0)((?i)blah)\s+\1",
           "blah BLAH").group(0, 1), ("blah BLAH", "blah"))
         self.assertEqual(regex.search(r"(?V1)((?i)blah)\s+\1", "blah BLAH"),
           None)
 
-        # Hg issue 40.
+        # Hg issue 40: regex.search("(\()?[^()]+(?(1)\)|)", "(abcd").group(0) returns "bcd" instead of "abcd"
         self.assertEqual(regex.search(r"(\()?[^()]+(?(1)\)|)",
           "(abcd").group(0), "abcd")
 
-        # Hg issue 42.
+        # Hg issue 42: regex.search("(a*)*", "a", flags=regex.V1).span(1) returns (0, 1) instead of (1, 1)
         self.assertEqual(regex.search("(a*)*", "a").span(1), (1, 1))
         self.assertEqual(regex.search("(a*)*", "aa").span(1), (2, 2))
         self.assertEqual(regex.search("(a*)*", "aaa").span(1), (3, 3))
 
-        # Hg issue 43.
+        # Hg issue 43: regex.compile("a(?#xxx)*") causes "_regex_core.error: nothing to repeat"
         self.assertEqual(regex.search("a(?#xxx)*", "aaa").group(), "aaa")
 
-        # Hg issue 44.
+        # Hg issue 44: regex.compile("(?=abc){3}abc") causes "_regex_core.error: nothing to repeat"
         self.assertEqual(regex.search("(?=abc){3}abc", "abcabcabc").span(), (0,
           3))
 
-        # Hg issue 45.
+        # Hg issue 45: regex.compile("^(?:a(?:(?:))+)+") causes "_regex_core.error: nothing to repeat"
         self.assertEqual(regex.search("^(?:a(?:(?:))+)+", "a").span(), (0, 1))
         self.assertEqual(regex.search("^(?:a(?:(?:))+)+", "aa").span(), (0, 2))
 
-        # Hg issue 46.
+        # Hg issue 46: regex.compile("a(?x: b c )d") causes "_regex_core.error: missing )"
         self.assertEqual(regex.search("a(?x: b c )d", "abcd").group(0), "abcd")
 
-        # Hg issue 47.
+        # Hg issue 47: regex.compile("a#comment\n*", flags=regex.X) causes "_regex_core.error: nothing to repeat"
         self.assertEqual(regex.search("a#comment\n*", "aaa",
           flags=regex.X).group(0), "aaa")
 
-        # Hg issue 48.
+        # Hg issue 48: regex.search("(a(?(1)\\1)){4}", "a"*10, flags=regex.V1).group(0,1) returns ('aaaaa', 'a') instead of ('aaaaaaaaaa', 'aaaa')
         self.assertEqual(regex.search(r"(?V1)(a(?(1)\1)){1}",
           "aaaaaaaaaa").span(0, 1), ((0, 1), (0, 1)))
         self.assertEqual(regex.search(r"(?V1)(a(?(1)\1)){2}",
@@ -3027,11 +3027,11 @@ xyzabc
         self.assertEqual(regex.search(r"(?V1)(a(?(1)\1)){4}",
           "aaaaaaaaaa").span(0, 1), ((0, 10), (6, 10)))
 
-        # Hg issue 49.
+        # Hg issue 49: regex.search("(a)(?<=b(?1))", "baz", regex.V1) returns None incorrectly
         self.assertEqual(regex.search("(?V1)(a)(?<=b(?1))", "baz").group(0),
           "a")
 
-        # Hg issue 50.
+        # Hg issue 50: not all keywords are found by named list with overlapping keywords when full Unicode casefolding is required
         self.assertEqual(regex.findall(ur'(?fi)\L<keywords>',
           u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05',
           keywords=['post','pos']), [u'POST', u'Post', u'post', u'po\u017Ft',
@@ -3046,46 +3046,46 @@ xyzabc
           u'POST, Post, post, po\u017Ft, po\uFB06, and po\uFB05'), [u'POST',
           u'Post', u'post', u'po\u017Ft', u'po\uFB06', u'po\uFB05'])
 
-        # Hg issue 51.
+        # Hg issue 51: regex.search("((a)(?1)|(?2))", "a", flags=regex.V1) returns None incorrectly
         self.assertEqual(regex.search("(?V1)((a)(?1)|(?2))", "a").group(0, 1,
           2), ('a', 'a', None))
 
-        # Hg issue 52.
+        # Hg issue 52: regex.search("(\\1xx|){6}", "xx", flags=regex.V1).span(0,1) returns incorrect value
         self.assertEqual(regex.search(r"(?V1)(\1xx|){6}", "xx").span(0, 1),
           ((0, 2), (2, 2)))
 
-        # Hg issue 53.
+        # Hg issue 53: regex.search("(a|)+", "a") causes MemoryError
         self.assertEqual(regex.search("(a|)+", "a").group(0, 1), ("a", ""))
 
-        # Hg issue 54.
+        # Hg issue 54: regex.search("(a|)*\\d", "a"*80) causes MemoryError
         self.assertEqual(regex.search(r"(a|)*\d", "a" * 80), None)
 
-        # Hg issue 55.
+        # Hg issue 55: regex.search("^(?:a?b?)*$", "ac") take a very long time.
         self.assertEqual(regex.search("^(?:a?b?)*$", "ac"), None)
 
-        # Hg issue 58.
+        # Hg issue 58: bad named character escape sequences like "\\N{1}" treats as "N"
         self.assertRaisesRegex(regex.error, self.UNDEF_CHAR_NAME, lambda:
           regex.compile("\\N{1}"))
 
-        # Hg issue 59.
+        # Hg issue 59: regex.search("\\Z", "a\na\n") returns None incorrectly
         self.assertEqual(regex.search("\\Z", "a\na\n").span(0), (4, 4))
 
-        # Hg issue 60.
+        # Hg issue 60: regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}", "xayxay") returns None incorrectly
         self.assertEqual(regex.search("(q1|.)*(q2|.)*(x(a|bc)*y){2,}",
           "xayxay").group(0), "xayxay")
 
-        # Hg issue 61.
+        # Hg issue 61: regex.search("[^a]", "A", regex.I).group(0) returns '' incorrectly
         self.assertEqual(regex.search("(?i)[^a]", "A"), None)
 
-        # Hg issue 63.
+        # Hg issue 63: regex.search("[[:ascii:]]", "\N{KELVIN SIGN}", flags=regex.I|regex.V1) doesn't return None
         self.assertEqual(regex.search(u"(?iu)[[:ascii:]]", u"\N{KELVIN SIGN}"),
           None)
 
-        # Hg issue 66.
+        # Hg issue 66: regex.search("((a|b(?1)c){3,5})", "baaaaca", flags=regex.V1).groups() returns ('baaaac', 'baaaac') instead of ('aaaa', 'a')
         self.assertEqual(regex.search("((a|b(?1)c){3,5})", "baaaaca").group(0,
           1, 2), ('aaaa', 'aaaa', 'a'))
 
-        # Hg issue 71.
+        # Hg issue 71: non-greedy quantifier in lookbehind
         self.assertEqual(regex.findall(r"(?<=:\S+ )\w+", ":9 abc :10 def"),
           ['abc', 'def'])
         self.assertEqual(regex.findall(r"(?<=:\S* )\w+", ":9 abc :10 def"),
@@ -3095,7 +3095,7 @@ xyzabc
         self.assertEqual(regex.findall(r"(?<=:\S*? )\w+", ":9 abc :10 def"),
           ['abc', 'def'])
 
-        # Hg issue 73.
+        # Hg issue 73: conditional patterns
         self.assertEqual(regex.search(r"(?:fe)?male", "female").group(),
           "female")
         self.assertEqual([m.group() for m in
@@ -3103,52 +3103,52 @@ xyzabc
           "female: her dog; male: his cat. asdsasda")], ['female: her dog',
           'male: his cat'])
 
-        # Hg issue 78.
+        # Hg issue 78: "Captures"doesn't work for recursive calls
         self.assertEqual(regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))',
           'aaa(((1+0)+1)+1)bbb').captures('rec'), ['(1+0)', '((1+0)+1)',
           '(((1+0)+1)+1)'])
 
-        # Hg issue 80.
+        # Hg issue 80: Escape characters throws an exception
         self.assertRaisesRegex(regex.error, self.BAD_ESCAPE, lambda:
           regex.sub('x', '\\', 'x'), )
 
-        # Hg issue 82.
+        # Hg issue 82: error range does not work
         fz = "(CAGCCTCCCATTTCAGAATATACATCC){1<e<=2}"
         seq = "tcagacgagtgcgttgtaaaacgacggccagtCAGCCTCCCATTCAGAATATACATCCcgacggccagttaaaaacaatgccaaggaggtcatagctgtttcctgccagttaaaaacaatgccaaggaggtcatagctgtttcctgacgcactcgtctgagcgggctggcaagg"
         self.assertEqual(regex.search(fz, seq, regex.BESTMATCH)[0],
           "tCAGCCTCCCATTCAGAATATACATCC")
 
-        # Hg issue 83.
+        # Hg issue 83: slash handling in presence of a quantifier
         self.assertEqual(regex.findall(r"c..+/c", "cA/c\ncAb/c"), ['cAb/c'])
 
-        # Hg issue 85.
+        # Hg issue 85: Non-conformance to Unicode UAX#29 re: ZWJ / ZWNJ
         self.assertEqual(repr(regex.sub(ur"(?u)(\w+)", ur"[\1]",
           u'\u0905\u0928\u094d\u200d\u0928 \u0d28\u0d4d\u200d \u0915\u093f\u0928',
           regex.WORD)),
           repr(u'[\u0905\u0928\u094d\u200d\u0928] [\u0d28\u0d4d\u200d] [\u0915\u093f\u0928]'))
 
-        # Hg issue 88.
+        # Hg issue 88: regex.match() hangs
         self.assertEqual(regex.match(r".*a.*ba.*aa", "ababba"), None)
 
-        # Hg issue 87.
+        # Hg issue 87: Allow duplicate names of groups
         self.assertEqual(regex.match(r'(?<x>a(?<x>b))', "ab").spans("x"), [(1,
           2), (0, 2)])
 
-        # Hg issue 91.
+        # Hg issue 91: match.expand is extremely slow
         # Check that the replacement cache works.
         self.assertEqual(regex.sub(r'(-)', lambda m: m.expand(r'x'), 'a-b-c'),
           'axbxc')
 
-        # Hg issue 94.
+        # Hg issue 94: Python crashes when executing regex updates pattern.findall
         rx = regex.compile(r'\bt(est){i<2}', flags=regex.V1)
         self.assertEqual(rx.search("Some text"), None)
         self.assertEqual(rx.findall("Some text"), [])
 
-        # Hg issue 95.
+        # Hg issue 95: 'pos' for regex.error
         self.assertRaisesRegex(regex.error, self.MULTIPLE_REPEAT, lambda:
           regex.compile(r'.???'))
 
-        # Hg issue 97.
+        # Hg issue 97: behaviour of regex.escape's special_only is wrong
         self.assertEqual(regex.escape(u'foo!?'), u'foo\\!\\?')
         self.assertEqual(regex.escape(u'foo!?', special_only=True), u'foo!\\?')
 
@@ -3156,7 +3156,7 @@ xyzabc
         self.assertEqual(regex.escape('foo!?', special_only=True),
           'foo!\\?')
 
-        # Hg issue 100.
+        # Hg issue 100: strange results from regex.search
         self.assertEqual(regex.search('^([^z]*(?:WWWi|W))?$',
           'WWWi').groups(), ('WWWi', ))
         self.assertEqual(regex.search('^([^z]*(?:WWWi|w))?$',
@@ -3164,7 +3164,7 @@ xyzabc
         self.assertEqual(regex.search('^([^z]*?(?:WWWi|W))?$',
           'WWWi').groups(), ('WWWi', ))
 
-        # Hg issue 101.
+        # Hg issue 101: findall() broken (seems like memory corruption)
         pat = regex.compile(r'xxx', flags=regex.FULLCASE | regex.UNICODE)
         self.assertEqual([x.group() for x in pat.finditer('yxxx')], ['xxx'])
         self.assertEqual(pat.findall('yxxx'), ['xxx'])
@@ -3182,18 +3182,18 @@ xyzabc
         self.assertEqual([x.group() for x in pat.finditer(raw)], ['xxx'])
         self.assertEqual(pat.findall(raw), ['xxx'])
 
-        # Hg issue 106.
+        # Hg issue 106: * operator not working correctly with sub()
         self.assertEqual(regex.sub('(?V0).*', 'x', 'test'), 'x')
         self.assertEqual(regex.sub('(?V1).*', 'x', 'test'), 'xx')
 
         self.assertEqual(regex.sub('(?V0).*?', '|', 'test'), '|t|e|s|t|')
         self.assertEqual(regex.sub('(?V1).*?', '|', 'test'), '|||||||||')
 
-        # Hg issue 112.
+        # Hg issue 112: re: OK, but regex: SystemError
         self.assertEqual(regex.sub(r'^(@)\n(?!.*?@)(.*)',
           r'\1\n==========\n\2', '@\n', flags=regex.DOTALL), '@\n==========\n')
 
-        # Hg issue 109.
+        # Hg issue 109: Edit distance of fuzzy match
         self.assertEqual(regex.match(r'(?:cats|cat){e<=1}',
          'caz').fuzzy_counts, (1, 0, 0))
         self.assertEqual(regex.match(r'(?e)(?:cats|cat){e<=1}',
@@ -3229,17 +3229,17 @@ xyzabc
         self.assertEqual(regex.match(r'(?b)(?:cats){e<=1}',
           'c ats').fuzzy_counts, (0, 1, 0))
 
-        # Hg issue 115.
+        # Hg issue 115: Infinite loop when processing backreferences
         self.assertEqual(regex.findall(r'\bof ([a-z]+) of \1\b',
           'To make use of one of these modules'), [])
 
-        # Hg issue 125.
+        # Hg issue 125: Reference to entire match (\g&lt;0&gt;) in Pattern.sub() doesn't work as of 2014.09.22 release.
         self.assertEqual(regex.sub(r'x', r'\g<0>', 'x'), 'x')
 
         # Unreported issue: no such builtin as 'ascii' in Python 2.
         self.assertEqual(bool(regex.match(r'a', 'a', regex.DEBUG)), True)
 
-        # Hg issue 131.
+        # Hg issue 131: nested sets behaviour
         self.assertEqual(regex.findall(r'(?V1)[[b-e]--cd]', 'abcdef'), ['b',
           'e'])
         self.assertEqual(regex.findall(r'(?V1)[b-e--cd]', 'abcdef'), ['b',
@@ -3249,7 +3249,7 @@ xyzabc
         self.assertEqual(regex.findall(r'(?V1)[bcde--cd]', 'abcdef'), ['b',
           'e'])
 
-        # Hg issue 132.
+        # Hg issue 132: index out of range on null property \p{}
         self.assertRaisesRegex(regex.error, '^unknown property at position 4$',
           lambda: regex.compile(ur'\p{}'))
 
@@ -3365,7 +3365,7 @@ xyzabc
         self.assertEqual(regex.fullmatch('(a)*abc', 'ab',
           partial=True).partial, True)
 
-        # Hg Issue #143: Partial matches have incorrect span if prefix is '.'
+        # Hg issue 143: Partial matches have incorrect span if prefix is '.'
         # wildcard.
         self.assertEqual(regex.search('OXRG', 'OOGOX', partial=True).span(),
           (3, 5))
@@ -3394,6 +3394,17 @@ xyzabc
           regex.finditer(r'(?fi)(?:error){e}', 'regex failure')], [(0, 5), (5,
           10), (10, 13), (13, 13)])
 
+        # Hg issue 150: Have an option for POSIX-compatible longest match of
+        # alternates.
+        self.assertEqual(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
+          '10b12')[0], '10b12')
+        self.assertEqual(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
+          '10E+12')[0], '10E+12')
+
+        self.assertEqual(regex.search(r'(?p)(\w|ae|oe|ue|ss)', 'ae')[0], 'ae')
+        self.assertEqual(regex.search(r'(?p)one(self)?(selfsufficient)?',
+          'oneselfsufficient')[0], 'oneselfsufficient')
+
         # Hg issue 151: Request: \K.
         self.assertEqual(regex.search(r'(ab\Kcd)', 'abcd').group(0, 1), ('cd',
           'abcd'))
@@ -3408,6 +3419,10 @@ xyzabc
           'ab'])
         self.assertEqual(regex.findall(r'(?r)(\w\w\K\w\w)', 'abcdefgh'),
           ['efgh', 'abcd'])
+
+        # Hg issue 152: Request: Request: (?(DEFINE)...).
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<quant>\d+)(?<item>\w+))(?&quant) (?&item)',
+          '5 elephants')[0], '5 elephants')
 
         # Hg issue 153: Request: (*SKIP).
         self.assertEqual(regex.search(r'12(*FAIL)|3', '123')[0], '3')
@@ -3478,20 +3493,12 @@ xyzabc
         self.assertEqual(regex.search(r'(?r)\d++(?<=2(*SKIP)3)zzd|[3d]$',
           '124zzd')[0], 'd')
 
-        # Hg issue 152: Request: Request: (?(DEFINE)...).
-        self.assertEqual(regex.search(r'(?(DEFINE)(?<quant>\d+)(?<item>\w+))(?&quant) (?&item)',
-          '5 elephants')[0], '5 elephants')
-
-        # Hg issue 150: Have an option for POSIX-compatible longest match of
-        # alternates.
-        self.assertEqual(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
-          '10b12')[0], '10b12')
-        self.assertEqual(regex.search(r'(?p)\d+(\w(\d*)?|[eE]([+-]\d+))',
-          '10E+12')[0], '10E+12')
-
-        self.assertEqual(regex.search(r'(?p)(\w|ae|oe|ue|ss)', 'ae')[0], 'ae')
-        self.assertEqual(regex.search(r'(?p)one(self)?(selfsufficient)?',
-          'oneselfsufficient')[0], 'oneselfsufficient')
+        # Hg issue 154: Segmentation fault 11 when working with an atomic group
+        text = """June 30, December 31, 2013 2012
+some words follow:
+more words and numbers 1,234,567 9,876,542
+more words and numbers 1,234,567 9,876,542"""
+        self.assertEqual(len(regex.findall(r'(?<!\d)(?>2014|2013 ?2012)', text)), 1)
 
         # Hg issue 156: regression on atomic grouping
         self.assertEqual(regex.match('1(?>2)', '12').span(), (0, 2))
@@ -3547,7 +3554,7 @@ thing
         self.assertEqual(regex.findall(r'(?(?<=love\s)you|(?<=hate\s)her)',
           "I love you but I don't hate her either"), ['you', 'her'])
 
-        # Hg issue #180: bug of POSIX matching.
+        # Hg issue 180: bug of POSIX matching.
         self.assertEqual(regex.search(r'(?p)a*(.*?)', 'aaabbb').group(0, 1),
           ('aaabbb', 'bbb'))
         self.assertEqual(regex.search(r'(?p)a*(.*)', 'aaabbb').group(0, 1),
@@ -3561,11 +3568,11 @@ thing
         self.assertEqual(regex.match(r'(?irV1)\L<kw>', '21', kw=['1']).span(),
           (1, 2))
 
-        # Hg issue #193: Alternation and .REVERSE flag.
+        # Hg issue 193: Alternation and .REVERSE flag.
         self.assertEqual(regex.search('a|b', '111a222').span(), (3, 4))
         self.assertEqual(regex.search('(?r)a|b', '111a222').span(), (3, 4))
 
-        # Hg issue #194: .FULLCASE and Backreference
+        # Hg issue 194: .FULLCASE and Backreference
         self.assertEqual(regex.search(r'(?if)<(CLI)><\1>',
           '<cli><cli>').span(), (0, 10))
         self.assertEqual(regex.search(r'(?if)<(CLI)><\1>',
@@ -3573,13 +3580,13 @@ thing
         self.assertEqual(regex.search(r'(?ifr)<\1><(CLI)>',
           '<cli><clI>').span(), (0, 10))
 
-        # Hg issue #195: Pickle (or otherwise serial) the compiled regex
+        # Hg issue 195: Pickle (or otherwise serial) the compiled regex
         r = regex.compile(r'\L<options>', options=['foo', 'bar'])
         p = pickle.dumps(r)
         r = pickle.loads(p)
         self.assertEqual(r.match('foo').span(), (0, 3))
 
-        # Hg issue #196: Fuzzy matching on repeated regex not working as expected
+        # Hg issue 196: Fuzzy matching on repeated regex not working as expected
         self.assertEqual(regex.match('(x{6}){e<=1}', 'xxxxxx',
           flags=regex.BESTMATCH).span(), (0, 6))
         self.assertEqual(regex.match('(x{6}){e<=1}', 'xxxxx',
@@ -3664,11 +3671,16 @@ thing
         self.assertEquals(regex.match(r'''\A(?P<whole>(?>\((?&whole)\)|[+\-]))\Z''',
           '((-)+)'), None)
 
-        # Hg Issue #212: Unexpected matching difference with .*? between re and regex
+        # Hg issue 212: Unexpected matching difference with .*? between re and regex
         self.assertEquals(regex.match(r"x.*? (.).*\1(.*)\1",
           'x  |y| z|').span(), (0, 9))
         self.assertEquals(regex.match(r"\.sr (.*?) (.)(.*)\2(.*)\2(.*)",
           r'.sr  h |<nw>|<span class="locked">|').span(), (0, 35))
+
+        # Hg issue 213: Segmentation Fault
+        a = '"\\xF9\\x80\\xAEqdz\\x95L\\xA7\\x89[\\xFE \\x91)\\xF9]\\xDB\'\\x99\\x09=\\x00\\xFD\\x98\\x22\\xDD\\xF1\\xB6\\xC3 Z\\xB6gv\\xA5x\\x93P\\xE1r\\x14\\x8Cv\\x0C\\xC0w\\x15r\\xFFc%" '
+        py_regex_pattern = r'''(?P<http_referer>((?>(?<!\\)(?>"(?>\\.|[^\\"]+)+"|""|(?>'(?>\\.|[^\\']+)+')|''|(?>`(?>\\.|[^\\`]+)+`)|``)))) (?P<useragent>((?>(?<!\\)(?>"(?>\\.|[^\\"]+)+"|""|(?>'(?>\\.|[^\\']+)+')|''|(?>`(?>\\.|[^\\`]+)+`)|``))))'''
+        self.assertEqual(bool(regex.search(py_regex_pattern, a)), False)
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',

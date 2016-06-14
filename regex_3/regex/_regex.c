@@ -2920,16 +2920,12 @@ Py_LOCAL_INLINE(RE_AtomicData*) push_atomic(RE_SafeState* safe_state) {
             next->previous = current;
             next->next = NULL;
             next->capacity = RE_ATOMIC_BLOCK_SIZE;
-            if (current)
-                /* The current block is the last one. */
-                current->next = next;
-            else
-                /* The new block is the first one. */
-                state->current_atomic_block = next;
+
             current = next;
         }
 
         current->count = 0;
+        state->current_atomic_block = current;
     }
 
     return &current->items[current->count++];
@@ -11997,6 +11993,7 @@ advance:
         case RE_OP_END_ATOMIC: /* End of an atomic group. */
         {
             RE_AtomicData* atomic;
+            TRACE(("%s\n", re_op_text[node->op]))
 
             /* Discard any backtracking info from inside the atomic group. */
             atomic = top_atomic(safe_state);
@@ -12009,6 +12006,7 @@ advance:
         case RE_OP_END_CONDITIONAL: /* End of a conditional subpattern. */
         {
             RE_AtomicData* conditional;
+            TRACE(("%s\n", re_op_text[node->op]))
 
             conditional = pop_atomic(safe_state);
             while (!conditional->is_lookaround) {
@@ -14599,6 +14597,8 @@ backtrack:
         case RE_OP_ATOMIC: /* Start of an atomic group. */
         {
             RE_AtomicData* atomic;
+            TRACE(("%s\n", re_op_text[bt_data->op]))
+
             /* Backtrack to the start of an atomic group. */
             atomic = pop_atomic(safe_state);
 
