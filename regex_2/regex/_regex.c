@@ -18786,6 +18786,12 @@ static PyObject* match_regs(MatchObject* self) {
     PyObject* item;
     size_t g;
 
+    if (self->regs) {
+        Py_INCREF(self->regs);
+
+        return self->regs;
+    }
+
     regs = PyTuple_New((Py_ssize_t)self->group_count + 1);
     if (!regs)
         return NULL;
@@ -18809,10 +18815,11 @@ static PyObject* match_regs(MatchObject* self) {
         PyTuple_SET_ITEM(regs, g + 1, item);
     }
 
-    Py_INCREF(regs);
     self->regs = regs;
 
-    return regs;
+    Py_INCREF(self->regs);
+
+    return self->regs;
 
 error:
     Py_DECREF(regs);
@@ -19250,11 +19257,26 @@ Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self) {
     if (!match)
         return NULL;
 
-    Py_MEMCPY(match, self, sizeof(MatchObject));
-
+    match->string = self->string;
+    match->substring = self->substring;
+    match->substring_offset = self->substring_offset;
+    match->pattern = self->pattern;
+    match->pos = self->pos;
+    match->endpos = self->endpos;
+    match->match_start = self->match_start;
+    match->match_end = self->match_end;
+    match->lastindex = self->lastindex;
+    match->lastgroup = self->lastgroup;
+    match->group_count = self->group_count;
+    match->groups = NULL; /* Copy them later. */
+    match->regs = self->regs;
+    Py_MEMCPY(match->fuzzy_counts, self->fuzzy_counts,
+      sizeof(self->fuzzy_counts));
+    match->partial = self->partial;
     Py_INCREF(match->string);
     Py_INCREF(match->substring);
     Py_INCREF(match->pattern);
+    Py_XINCREF(match->regs);
 
     /* Copy the groups to the MatchObject. */
     if (self->group_count > 0) {
@@ -21118,7 +21140,10 @@ static PyObject* pattern_finditer(PatternObject* pattern, PyObject* args,
     return pattern_scanner(pattern, args, kwargs);
 }
 
-/* Makes a copy of a PatternObject. */
+/* Makes a copy of a PatternObject.
+ *
+ * It actually doesn't make a copy, just returns the original object.
+ */
 Py_LOCAL_INLINE(PyObject*) make_pattern_copy(PatternObject* self) {
     Py_INCREF(self);
     return (PyObject*)self;
