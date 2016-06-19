@@ -103,6 +103,7 @@ typedef RE_UINT32 RE_STATUS_T;
 #define RE_MODULE "regex"
 
 /* Error codes. */
+#define RE_ERROR_INITIALISING 2 /* Initialising object. */
 #define RE_ERROR_SUCCESS 1 /* Successful match. */
 #define RE_ERROR_FAILURE 0 /* Unsuccessful match. */
 #define RE_ERROR_ILLEGAL -1 /* Illegal code. */
@@ -2098,6 +2099,8 @@ Py_LOCAL_INLINE(PyObject*) get_object(char* module_name, char* object_name);
 /* Sets the error message. */
 Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
     TRACE(("<<set_error>>\n"))
+
+    PyErr_Clear();
 
     if (!error_exception)
         error_exception = get_object("_" RE_MODULE "_core", "error");
@@ -17534,13 +17537,13 @@ Py_LOCAL_INLINE(Py_ssize_t) as_string_index(PyObject* obj, Py_ssize_t def) {
         return def;
 
     value = PyInt_AsSsize_t(obj);
-    if (value != -1 || !PyErr_Occurred())
+    if (!(value == -1 && PyErr_Occurred()))
         return value;
 
     PyErr_Clear();
 
     value = PyLong_AsLong(obj);
-    if (value != -1 || !PyErr_Occurred())
+    if (!(value == -1 && PyErr_Occurred()))
         return value;
 
     set_error(RE_ERROR_INDEX, NULL);
@@ -17933,13 +17936,13 @@ Py_LOCAL_INLINE(Py_ssize_t) as_group_index(PyObject* obj) {
     Py_ssize_t value;
 
     value = PyInt_AsSsize_t(obj);
-    if (value != -1 || !PyErr_Occurred())
+    if (!(value == -1 && PyErr_Occurred()))
         return value;
 
     PyErr_Clear();
 
     value = PyLong_AsLong(obj);
-    if (value != -1 || !PyErr_Occurred())
+    if (!(value == -1 && PyErr_Occurred()))
         return value;
 
     set_error(RE_ERROR_INDEX, NULL);
@@ -17956,7 +17959,7 @@ Py_LOCAL_INLINE(Py_ssize_t) match_get_group_index(MatchObject* self, PyObject*
 
     /* Is the index an integer? */
     group = as_group_index(index);
-    if (group != -1 || !PyErr_Occurred()) {
+    if (!(group == -1 && PyErr_Occurred())) {
         Py_ssize_t min_group = 0;
 
         /* Adjust negative indices where valid and allowed. */
@@ -17971,17 +17974,17 @@ Py_LOCAL_INLINE(Py_ssize_t) match_get_group_index(MatchObject* self, PyObject*
         return -1;
     }
 
+    PyErr_Clear();
+
     /* The index might be a group name. */
     if (self->pattern->groupindex) {
         /* Look up the name. */
-        PyErr_Clear();
-
         index = PyObject_GetItem(self->pattern->groupindex, index);
         if (index) {
             /* Check that we have an integer. */
             group = as_group_index(index);
             Py_DECREF(index);
-            if (group != -1 || !PyErr_Occurred())
+            if (!(group == -1 && PyErr_Occurred()))
                 return group;
         }
     }
@@ -19583,7 +19586,8 @@ static void scanner_dealloc(PyObject* self_) {
 
     self = (ScannerObject*)self_;
 
-    state_fini(&self->state);
+    if (self->status != RE_ERROR_INITIALISING)
+        state_fini(&self->state);
     Py_DECREF(self->pattern);
     PyObject_DEL(self);
 }
@@ -19679,11 +19683,12 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
 
     self->pattern = pattern;
     Py_INCREF(self->pattern);
+    self->status = RE_ERROR_INITIALISING;
 
     /* The MatchObject, and therefore repeated captures, will be visible. */
     if (!state_init(&self->state, pattern, string, start, end, overlapped != 0,
       conc, part, TRUE, TRUE, FALSE)) {
-        PyObject_DEL(self);
+        Py_DECREF(self);
         return NULL;
     }
 
@@ -19925,7 +19930,8 @@ static void splitter_dealloc(PyObject* self_) {
 
     self = (SplitterObject*)self_;
 
-    state_fini(&self->state);
+    if (self->status != RE_ERROR_INITIALISING)
+        state_fini(&self->state);
     Py_DECREF(self->pattern);
     PyObject_DEL(self);
 }
@@ -19940,13 +19946,13 @@ Py_LOCAL_INLINE(Py_ssize_t) index_to_integer(PyObject* item) {
     Py_ssize_t value;
 
     value = PyInt_AsSsize_t(item);
-    if (value != -1 || !PyErr_Occurred())
+    if (!(value == -1 && PyErr_Occurred()))
         return value;
 
     PyErr_Clear();
 
     value = PyLong_AsLong(item);
-    if (value != -1 || !PyErr_Occurred())
+    if (!(value == -1 && PyErr_Occurred()))
         return value;
 
     PyErr_Clear();
@@ -19983,6 +19989,7 @@ Py_LOCAL_INLINE(Py_ssize_t) index_to_integer(PyObject* item) {
     }
 
 error:
+    PyErr_Clear();
     PyErr_Format(PyExc_TypeError, "list indices must be integers, not %.200s",
       item->ob_type->tp_name);
 
@@ -20102,7 +20109,6 @@ Py_LOCAL_INLINE(PyObject*) pattern_splitter(PatternObject* pattern, PyObject*
     /* Create split state object. */
     int conc;
     SplitterObject* self;
-    RE_State* state;
 
     PyObject* string;
     Py_ssize_t maxsplit = 0;
@@ -20123,25 +20129,24 @@ Py_LOCAL_INLINE(PyObject*) pattern_splitter(PatternObject* pattern, PyObject*
 
     self->pattern = pattern;
     Py_INCREF(self->pattern);
+    self->status = RE_ERROR_INITIALISING;
 
     if (maxsplit == 0)
         maxsplit = PY_SSIZE_T_MAX;
 
-    state = &self->state;
-
     /* The MatchObject, and therefore repeated captures, will not be visible.
      */
-    if (!state_init(state, pattern, string, 0, PY_SSIZE_T_MAX, FALSE, conc,
-      FALSE, TRUE, FALSE, FALSE)) {
-        PyObject_DEL(self);
+    if (!state_init(&self->state, pattern, string, 0, PY_SSIZE_T_MAX, FALSE,
+      conc, FALSE, TRUE, FALSE, FALSE)) {
+        Py_DECREF(self);
         return NULL;
     }
 
     self->maxsplit = maxsplit;
-    self->last_pos = state->reverse ? state->text_length : 0;
+    self->last_pos = self->state.reverse ? self->state.text_length : 0;
     self->split_count = 0;
     self->index = 0;
-    self->status = 1;
+    self->status = RE_ERROR_SUCCESS;
 
     return (PyObject*) self;
 }
