@@ -1564,7 +1564,10 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     Py_ssize_t pos_p1;
     int prop_p1;
 
-    /* Break at the start and end of the text. */
+    /* Break at the start and end of the text, unless the text is empty. */
+    if (state->text_length == 0)
+        return FALSE;
+
     /* WB1 */
     if (text_pos <= 0)
         return TRUE;
@@ -1584,11 +1587,20 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
         return FALSE;
 
     /* Otherwise break before and after Newlines (including CR and LF). */
-    /* WB3a and WB3b */
+    /* WB3a */
     if (prop_m1 == RE_BREAK_NEWLINE || prop_m1 == RE_BREAK_CR || prop_m1 ==
-      RE_BREAK_LF || prop == RE_BREAK_NEWLINE || prop == RE_BREAK_CR || prop ==
       RE_BREAK_LF)
         return TRUE;
+
+    /* WB3b */
+    if (prop == RE_BREAK_NEWLINE || prop == RE_BREAK_CR || prop == RE_BREAK_LF)
+        return TRUE;
+
+    /* Don't break within emoji zwj sequences. */
+    /* WB3c */
+    if (prop_m1 == RE_BREAK_ZWJ && (prop == RE_BREAK_GLUEAFTERZWJ || prop ==
+      RE_BREAK_EBASEGAZ))
+        return FALSE;
 
     /* WB4 */
     /* Get the property of the previous character, ignoring Format and Extend
@@ -1598,7 +1610,8 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     prop_m1 = RE_BREAK_OTHER;
     while (pos_m1 >= 0) {
         prop_m1 = (int)re_get_word_break(char_at(state->text, pos_m1));
-        if (prop_m1 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT)
+        if (prop_m1 != RE_BREAK_EXTEND && prop_m1 != RE_BREAK_FORMAT && prop_m1
+          != RE_BREAK_ZWJ)
             break;
 
         --pos_m1;
@@ -1611,7 +1624,8 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     prop_m2 = RE_BREAK_OTHER;
     while (pos_m2 >= 0) {
         prop_m2 = (int)re_get_word_break(char_at(state->text, pos_m2));
-        if (prop_m2 != RE_BREAK_EXTEND && prop_m2 != RE_BREAK_FORMAT)
+        if (prop_m2 != RE_BREAK_EXTEND && prop_m2 != RE_BREAK_FORMAT && prop_m2
+          != RE_BREAK_ZWJ)
             break;
 
         --pos_m2;
@@ -1624,7 +1638,8 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     prop_p0 = prop;
     while (pos_p0 < state->text_length) {
         prop_p0 = (int)re_get_word_break(char_at(state->text, pos_p0));
-        if (prop_p0 != RE_BREAK_EXTEND && prop_p0 != RE_BREAK_FORMAT)
+        if (prop_p0 != RE_BREAK_EXTEND && prop_p0 != RE_BREAK_FORMAT && prop_p0
+          != RE_BREAK_ZWJ)
             break;
 
         ++pos_p0;
@@ -1637,7 +1652,8 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     prop_p1 = RE_BREAK_OTHER;
     while (pos_p1 < state->text_length) {
         prop_p1 = (int)re_get_word_break(char_at(state->text, pos_p1));
-        if (prop_p1 != RE_BREAK_EXTEND && prop_p1 != RE_BREAK_FORMAT)
+        if (prop_p1 != RE_BREAK_EXTEND && prop_p1 != RE_BREAK_FORMAT && prop_p1
+          != RE_BREAK_ZWJ)
             break;
 
         ++pos_p1;
@@ -1662,19 +1678,23 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
       prop_p0 == RE_BREAK_SINGLEQUOTE) && (prop_p1 == RE_BREAK_ALETTER ||
       prop_p1 == RE_BREAK_HEBREWLETTER))
         return FALSE;
+
     /* WB7 */
     if ((prop_m2 == RE_BREAK_ALETTER || prop_m2 == RE_BREAK_HEBREWLETTER) &&
       (prop_m1 == RE_BREAK_MIDLETTER || prop_m1 == RE_BREAK_MIDNUMLET ||
       prop_m1 == RE_BREAK_SINGLEQUOTE) && (prop_p0 == RE_BREAK_ALETTER ||
       prop_p0 == RE_BREAK_HEBREWLETTER))
         return FALSE;
+
     /* WB7a */
     if (prop_m1 == RE_BREAK_HEBREWLETTER && prop_p0 == RE_BREAK_SINGLEQUOTE)
         return FALSE;
+
     /* WB7b */
     if (prop_m1 == RE_BREAK_HEBREWLETTER && prop_p0 == RE_BREAK_DOUBLEQUOTE &&
       prop_p1 == RE_BREAK_HEBREWLETTER)
         return FALSE;
+
     /* WB7c */
     if (prop_m2 == RE_BREAK_HEBREWLETTER && prop_m1 == RE_BREAK_DOUBLEQUOTE &&
       prop_p0 == RE_BREAK_HEBREWLETTER)
@@ -1686,10 +1706,12 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     /* WB8 */
     if (prop_m1 == RE_BREAK_NUMERIC && prop_p0 == RE_BREAK_NUMERIC)
         return FALSE;
+
     /* WB9 */
     if ((prop_m1 == RE_BREAK_ALETTER || prop_m1 == RE_BREAK_HEBREWLETTER) &&
       prop_p0 == RE_BREAK_NUMERIC)
         return FALSE;
+
     /* WB10 */
     if (prop_m1 == RE_BREAK_NUMERIC && (prop_p0 == RE_BREAK_ALETTER || prop_p0
       == RE_BREAK_HEBREWLETTER))
@@ -1701,6 +1723,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
       == RE_BREAK_MIDNUMLET || prop_m1 == RE_BREAK_SINGLEQUOTE) && prop_p0 ==
       RE_BREAK_NUMERIC)
         return FALSE;
+
     /* WB12 */
     if (prop_m1 == RE_BREAK_NUMERIC && (prop_p0 == RE_BREAK_MIDNUM || prop_p0
       == RE_BREAK_MIDNUMLET || prop_p0 == RE_BREAK_SINGLEQUOTE) && prop_p1 ==
@@ -1718,20 +1741,44 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
       prop_m1 == RE_BREAK_NUMERIC || prop_m1 == RE_BREAK_KATAKANA || prop_m1 ==
       RE_BREAK_EXTENDNUMLET) && prop_p0 == RE_BREAK_EXTENDNUMLET)
         return FALSE;
+
     /* WB13b */
     if (prop_m1 == RE_BREAK_EXTENDNUMLET && (prop_p0 == RE_BREAK_ALETTER ||
       prop_p0 == RE_BREAK_HEBREWLETTER || prop_p0 == RE_BREAK_NUMERIC ||
       prop_p0 == RE_BREAK_KATAKANA))
         return FALSE;
 
-    /* Don't break between regional indicator symbols. */
-    /* WB13c */
-    if (prop_m1 == RE_BREAK_REGIONALINDICATOR && prop_p0 ==
-      RE_BREAK_REGIONALINDICATOR)
+    /* Don't break within emoji modifier sequences. */
+    /* WB14 */
+    if ((prop_m1 == RE_BREAK_EBASE || prop_m1 == RE_BREAK_EBASEGAZ) && prop_p0
+      == RE_BREAK_EMODIFIER)
         return FALSE;
 
+    /* Don't break within emoji flag sequences. That is, don't break between
+     * regional indicator (RI) symbols if there is an odd number of RI
+     * characters before the break point.
+     */
+    /* WB15 and WB16 */
+    prop = (int)re_get_word_break(char_at(state->text, text_pos));
+    if (prop == RE_BREAK_REGIONALINDICATOR) {
+        Py_ssize_t pos;
+
+        pos = text_pos - 1;
+        while (pos >= 0) {
+            prop = (int)re_get_word_break(char_at(state->text, pos));
+            if (prop != RE_BREAK_REGIONALINDICATOR)
+                break;
+
+            --pos;
+        }
+        ++pos;
+
+        if ((text_pos - pos) % 2 != 0)
+            return FALSE;
+    }
+
     /* Otherwise, break everywhere (including around ideographs). */
-    /* WB14 */
+    /* WB999 */
     return TRUE;
 }
 
@@ -1898,6 +1945,10 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
     int prop;
     int prop_m1;
 
+    /* Break at the start and end of text, unless the text is empty. */
+    if (state->text_length == 0)
+        return FALSE;
+
     /* Break at the start and end of the text. */
     /* GB1 */
     if (text_pos <= 0)
@@ -1919,10 +1970,14 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
         return FALSE;
 
     /* Otherwise break before and after controls (including CR and LF). */
-    /* GB4 and GB5 */
+    /* GB4 */
     if (prop_m1 == RE_GBREAK_CONTROL || prop_m1 == RE_GBREAK_CR || prop_m1 ==
-      RE_GBREAK_LF || prop == RE_GBREAK_CONTROL || prop == RE_GBREAK_CR || prop
-      == RE_GBREAK_LF)
+      RE_GBREAK_LF)
+        return TRUE;
+
+    /* GB5 */
+    if (prop == RE_GBREAK_CONTROL || prop == RE_GBREAK_CR || prop ==
+      RE_GBREAK_LF)
         return TRUE;
 
     /* Don't break Hangul syllable sequences. */
@@ -1930,24 +1985,20 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
     if (prop_m1 == RE_GBREAK_L && (prop == RE_GBREAK_L || prop == RE_GBREAK_V
       || prop == RE_GBREAK_LV || prop == RE_GBREAK_LVT))
         return FALSE;
+
     /* GB7 */
     if ((prop_m1 == RE_GBREAK_LV || prop_m1 == RE_GBREAK_V) && (prop ==
       RE_GBREAK_V || prop == RE_GBREAK_T))
         return FALSE;
+
     /* GB8 */
     if ((prop_m1 == RE_GBREAK_LVT || prop_m1 == RE_GBREAK_T) && (prop ==
       RE_GBREAK_T))
         return FALSE;
 
-    /* Don't break between regional indicator symbols. */
-    /* GB8a */
-    if (prop_m1 == RE_GBREAK_REGIONALINDICATOR && prop ==
-      RE_GBREAK_REGIONALINDICATOR)
-        return FALSE;
-
     /* Don't break just before Extend characters. */
     /* GB9 */
-    if (prop == RE_GBREAK_EXTEND)
+    if (prop == RE_GBREAK_EXTEND || prop == RE_GBREAK_ZWJ)
         return FALSE;
 
     /* Don't break before SpacingMarks, or after Prepend characters. */
@@ -1959,8 +2010,57 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
     if (prop_m1 == RE_GBREAK_PREPEND)
         return FALSE;
 
-    /* Otherwise, break everywhere. */
+    /* Don't break within emoji modifier sequences or emoji zwj sequences. */
     /* GB10 */
+    if (prop == RE_GBREAK_EMODIFIER) {
+        Py_ssize_t pos;
+
+        pos = text_pos - 1;
+        while (pos >= 0) {
+            int prev_prop;
+
+            prev_prop = (int)re_get_grapheme_cluster_break(char_at(state->text,
+              pos));
+            if (prev_prop != RE_GBREAK_EXTEND) {
+                if (prev_prop == RE_GBREAK_EBASE || prev_prop ==
+                  RE_GBREAK_EBASE)
+                    return FALSE;
+                break;
+            }
+            --pos;
+        }
+    }
+
+    /* GB11 */
+    if (prop_m1 == RE_GBREAK_ZWJ && (prop == RE_GBREAK_GLUEAFTERZWJ || prop ==
+      RE_GBREAK_EBASE))
+        return FALSE;
+
+    /* Don't break within emoji flag sequences. That is, don't break between
+     * regional indicator (RI) symbols if there is an odd number of RI
+     * characters before the break point.
+     */
+    /* GB12 and GB13 */
+    if (prop == RE_GBREAK_REGIONALINDICATOR) {
+        Py_ssize_t pos;
+
+        pos = text_pos - 1;
+        while (pos >= 0) {
+            prop = (int)re_get_grapheme_cluster_break(char_at(state->text,
+              pos));
+            if (prop != RE_GBREAK_REGIONALINDICATOR)
+                break;
+
+            --pos;
+        }
+        ++pos;
+
+        if ((text_pos - pos) % 2 != 0)
+            return FALSE;
+    }
+
+    /* Otherwise, break everywhere. */
+    /* GB999 */
     return TRUE;
 }
 

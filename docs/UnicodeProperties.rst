@@ -1,4 +1,4 @@
-The following is a list of the 81 properties which are supported by this module:
+The following is a list of the 82 properties which are supported by this module:
 
 Alphabetic [Alpha]
     No [F, False, N]
@@ -54,6 +54,7 @@ Blank
     Yes [T, True, Y]
 
 Block [blk]
+    Adlam
     Aegean_Numbers
     Ahom
     Alchemical_Symbols [Alchemical]
@@ -78,6 +79,7 @@ Block [blk]
     Bassa_Vah
     Batak
     Bengali
+    Bhaiksuki
     Block_Elements
     Bopomofo
     Bopomofo_Extended [Bopomofo_Ext]
@@ -123,6 +125,7 @@ Block [blk]
     Cyrillic
     Cyrillic_Extended_A [Cyrillic_Ext_A]
     Cyrillic_Extended_B [Cyrillic_Ext_B]
+    Cyrillic_Extended_C [Cyrillic_Ext_C]
     Cyrillic_Supplement [Cyrillic_Sup, Cyrillic_Supplementary]
     Deseret
     Devanagari
@@ -148,6 +151,7 @@ Block [blk]
     Georgian
     Georgian_Supplement [Georgian_Sup]
     Glagolitic
+    Glagolitic_Supplement [Glagolitic_Sup]
     Gothic
     Grantha
     Greek_And_Coptic [Greek]
@@ -167,6 +171,7 @@ Block [blk]
     High_Surrogates
     Hiragana
     Ideographic_Description_Characters [IDC]
+    Ideographic_Symbols_And_Punctuation [Ideographic_Symbols]
     Imperial_Aramaic
     Inscriptional_Pahlavi
     Inscriptional_Parthian
@@ -208,6 +213,7 @@ Block [blk]
     Malayalam
     Mandaic
     Manichaean
+    Marchen
     Mathematical_Alphanumeric_Symbols [Math_Alphanum]
     Mathematical_Operators [Math_Operators]
     Meetei_Mayek
@@ -225,6 +231,7 @@ Block [blk]
     Modi
     Modifier_Tone_Letters
     Mongolian
+    Mongolian_Supplement [Mongolian_Sup]
     Mro
     Multani
     Musical_Symbols [Music]
@@ -232,6 +239,7 @@ Block [blk]
     Myanmar_Extended_A [Myanmar_Ext_A]
     Myanmar_Extended_B [Myanmar_Ext_B]
     Nabataean
+    Newa
     New_Tai_Lue
     NKo
     No_Block [NB]
@@ -248,6 +256,7 @@ Block [blk]
     Optical_Character_Recognition [OCR]
     Oriya
     Ornamental_Dingbats
+    Osage
     Osmanya
     Pahawh_Hmong
     Palmyrene
@@ -298,6 +307,8 @@ Block [blk]
     Tai_Xuan_Jing_Symbols [Tai_Xuan_Jing]
     Takri
     Tamil
+    Tangut
+    Tangut_Components
     Telugu
     Thaana
     Thai
@@ -506,6 +517,10 @@ Grapheme_Cluster_Break [GCB]
     Control [CN]
     CR
     Extend [EX]
+    E_Base [EB]
+    E_Base_GAZ [EBG]
+    E_Modifier [EM]
+    Glue_After_Zwj [GAZ]
     L
     LF
     LV
@@ -516,6 +531,7 @@ Grapheme_Cluster_Break [GCB]
     SpacingMark [SM]
     T
     V
+    ZWJ
 
 Grapheme_Extend [Gr_Ext]
     No [F, False, N]
@@ -615,6 +631,9 @@ Indic_Syllabic_Category [InSC]
     Vowel_Independent
 
 Joining_Group [jg]
+    African_Feh
+    African_Noon
+    African_Qaf
     Ain
     Alaph
     Alef
@@ -729,6 +748,8 @@ Line_Break [lb]
     Conditional_Japanese_Starter [CJ]
     Contingent_Break [CB]
     Exclamation [EX]
+    E_Base [EB]
+    E_Modifier [EM]
     Glue [GL]
     H2
     H3
@@ -754,6 +775,7 @@ Line_Break [lb]
     Surrogate [SG]
     Unknown [XX]
     Word_Joiner [WJ]
+    ZWJ
     ZWSpace [ZW]
 
 Logical_Order_Exception [LOE]
@@ -785,9 +807,12 @@ Numeric_Value [nv]
     1/10
     1/12
     1/16
+    1/160
     1/2
+    1/20
     1/3
     1/4
+    1/40
     1/5
     1/6
     1/7
@@ -837,9 +862,11 @@ Numeric_Value [nv]
     3
     3/16
     3/2
+    3/20
     3/4
     3/5
     3/8
+    3/80
     30
     300
     3000
@@ -967,6 +994,10 @@ Posix_XDigit
     No [F, False, N]
     Yes [T, True, Y]
 
+Prepended_Concatenation_Mark [PCM]
+    No [F, False, N]
+    Yes [T, True, Y]
+
 Print
     No [F, False, N]
     Yes [T, True, Y]
@@ -980,6 +1011,7 @@ Radical
     Yes [T, True, Y]
 
 Script [sc]
+    Adlam [Adlm]
     Ahom
     Anatolian_Hieroglyphs [Hluw]
     Arabic [Arab]
@@ -990,6 +1022,7 @@ Script [sc]
     Bassa_Vah [Bass]
     Batak [Batk]
     Bengali [Beng]
+    Bhaiksuki [Bhks]
     Bopomofo [Bopo]
     Brahmi [Brah]
     Braille [Brai]
@@ -1052,6 +1085,7 @@ Script [sc]
     Malayalam [Mlym]
     Mandaic [Mand]
     Manichaean [Mani]
+    Marchen [Marc]
     Meetei_Mayek [Mtei]
     Mende_Kikakui [Mend]
     Meroitic_Cursive [Merc]
@@ -1063,6 +1097,7 @@ Script [sc]
     Multani [Mult]
     Myanmar [Mymr]
     Nabataean [Nbat]
+    Newa
     New_Tai_Lue [Talu]
     Nko [Nkoo]
     Ogham [Ogam]
@@ -1075,6 +1110,7 @@ Script [sc]
     Old_Turkic [Orkh]
     Ol_Chiki [Olck]
     Oriya [Orya]
+    Osage [Osge]
     Osmanya [Osma]
     Pahawh_Hmong [Hmng]
     Palmyrene [Palm]
@@ -1102,6 +1138,7 @@ Script [sc]
     Tai_Viet [Tavt]
     Takri [Takr]
     Tamil [Taml]
+    Tangut [Tang]
     Telugu [Telu]
     Thaana [Thaa]
     Thai
@@ -1131,11 +1168,11 @@ Sentence_Break [SB]
     STerm [ST]
     Upper [UP]
 
-Soft_Dotted [SD]
+Sentence_Terminal [STerm]
     No [F, False, N]
     Yes [T, True, Y]
 
-STerm
+Soft_Dotted [SD]
     No [F, False, N]
     Yes [T, True, Y]
 
@@ -1169,7 +1206,11 @@ Word_Break [WB]
     Double_Quote [DQ]
     Extend
     ExtendNumLet [EX]
+    E_Base [EB]
+    E_Base_GAZ [EBG]
+    E_Modifier [EM]
     Format [FO]
+    Glue_After_Zwj [GAZ]
     Hebrew_Letter [HL]
     Katakana [KA]
     LF
@@ -1181,6 +1222,7 @@ Word_Break [WB]
     Other [XX]
     Regional_Indicator [RI]
     Single_Quote [SQ]
+    ZWJ
 
 XDigit
     No [F, False, N]
