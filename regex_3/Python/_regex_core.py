@@ -2057,9 +2057,11 @@ class Branch(RegexBase):
 
     def _add_precheck(self, info, reverse, branches):
         charset = set()
+        pos = -1 if reverse else 0
+
         for branch in branches:
             if type(branch) is Literal and branch.case_flags == NOCASE:
-                charset.add(branch.characters[0])
+                charset.add(branch.characters[pos])
             else:
                 return
 
@@ -2985,7 +2987,7 @@ class LookAround(RegexBase):
         self.subpattern.fix_groups(pattern, self.behind, fuzzy)
 
     def optimise(self, info, reverse):
-        subpattern = self.subpattern.optimise(info, reverse)
+        subpattern = self.subpattern.optimise(info, self.behind)
         if self.positive and subpattern.is_empty():
             return subpattern
 
@@ -3043,9 +3045,9 @@ class LookAroundConditional(RegexBase):
         self.no_item.fix_groups(pattern, reverse, fuzzy)
 
     def optimise(self, info, reverse):
-        subpattern = self.subpattern.optimise(info, reverse)
-        yes_item = self.yes_item.optimise(info, reverse)
-        no_item = self.no_item.optimise(info, reverse)
+        subpattern = self.subpattern.optimise(info, self.behind)
+        yes_item = self.yes_item.optimise(info, self.behind)
+        no_item = self.no_item.optimise(info, self.behind)
 
         return LookAroundConditional(self.behind, self.positive, subpattern,
           yes_item, no_item)

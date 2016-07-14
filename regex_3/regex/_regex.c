@@ -2012,7 +2012,7 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
               pos));
             if (prev_prop != RE_GBREAK_EXTEND) {
                 if (prev_prop == RE_GBREAK_EBASE || prev_prop ==
-                  RE_GBREAK_EBASE)
+                  RE_GBREAK_EBASEGAZ)
                     return FALSE;
                 break;
             }
@@ -2022,7 +2022,7 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
 
     /* GB11 */
     if (prop_m1 == RE_GBREAK_ZWJ && (prop == RE_GBREAK_GLUEAFTERZWJ || prop ==
-      RE_GBREAK_EBASE))
+      RE_GBREAK_EBASEGAZ))
         return FALSE;
 
     /* Don't break within emoji flag sequences. That is, don't break between
@@ -14905,7 +14905,7 @@ backtrack:
             discard_backtrack(state);
             break;
         }
-        case RE_OP_FAILURE:
+        case RE_OP_FAILURE: /* Failure. */
         {
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
@@ -22058,28 +22058,6 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                 }
                 break;
             }
-            case RE_OP_GROUP_CALL:
-            case RE_OP_REF_GROUP:
-            case RE_OP_REF_GROUP_FLD:
-            case RE_OP_REF_GROUP_FLD_REV:
-            case RE_OP_REF_GROUP_IGN:
-            case RE_OP_REF_GROUP_IGN_REV:
-            case RE_OP_REF_GROUP_REV:
-            {
-                RE_Node* tail;
-                BOOL visited_tail;
-
-                tail = node->next_1.node;
-                visited_tail = (tail->status & RE_STATUS_VISITED_AG);
-
-                if (visited_tail)
-                    node->status |= RE_STATUS_VISITED_AG | RE_STATUS_REF;
-                else {
-                    CheckStack_push(&stack, node, result);
-                    CheckStack_push(&stack, tail, RE_STATUS_NEITHER);
-                }
-                break;
-            }
             case RE_OP_GROUP_EXISTS:
             {
                 RE_Node* branch_1;
@@ -22109,6 +22087,27 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                         CheckStack_push(&stack, branch_2, RE_STATUS_NEITHER);
                     if (!visited_branch_1)
                         CheckStack_push(&stack, branch_1, RE_STATUS_NEITHER);
+                }
+                break;
+            }
+            case RE_OP_REF_GROUP:
+            case RE_OP_REF_GROUP_FLD:
+            case RE_OP_REF_GROUP_FLD_REV:
+            case RE_OP_REF_GROUP_IGN:
+            case RE_OP_REF_GROUP_IGN_REV:
+            case RE_OP_REF_GROUP_REV:
+            {
+                RE_Node* tail;
+                BOOL visited_tail;
+
+                tail = node->next_1.node;
+                visited_tail = (tail->status & RE_STATUS_VISITED_AG);
+
+                if (visited_tail)
+                    node->status |= RE_STATUS_VISITED_AG | RE_STATUS_REF;
+                else {
+                    CheckStack_push(&stack, node, result);
+                    CheckStack_push(&stack, tail, RE_STATUS_NEITHER);
                 }
                 break;
             }
