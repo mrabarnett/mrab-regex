@@ -3110,7 +3110,7 @@ class LookAroundConditional(RegexBase):
         print("%sEITHER" % (INDENT * indent))
         self.yes_item.dump(indent + 1, reverse)
         if not self.no_item.is_empty():
-            print("%sOR".format(INDENT * indent))
+            print("%sOR" % (INDENT * indent))
             self.no_item.dump(indent + 1, reverse)
 
     def is_empty(self):

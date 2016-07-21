@@ -3682,12 +3682,16 @@ thing
         py_regex_pattern = r'''(?P<http_referer>((?>(?<!\\)(?>"(?>\\.|[^\\"]+)+"|""|(?>'(?>\\.|[^\\']+)+')|''|(?>`(?>\\.|[^\\`]+)+`)|``)))) (?P<useragent>((?>(?<!\\)(?>"(?>\\.|[^\\"]+)+"|""|(?>'(?>\\.|[^\\']+)+')|''|(?>`(?>\\.|[^\\`]+)+`)|``))))'''
         self.assertEqual(bool(regex.search(py_regex_pattern, a)), False)
 
-        # Hg  Issue 216: Invalid match when using negative lookbehind and pipe
+        # Hg Issue 216: Invalid match when using negative lookbehind and pipe
         self.assertEqual(bool(regex.match('foo(?<=foo)', 'foo')), True)
         self.assertEqual(bool(regex.match('foo(?<!foo)', 'foo')), False)
         self.assertEqual(bool(regex.match('foo(?<=foo|x)', 'foo')), True)
         self.assertEqual(bool(regex.match('foo(?<!foo|x)', 'foo')), False)
-        
+
+        # Hg issue 217: Core dump in conditional ahead match and matching \! character
+        self.assertEqual(bool(regex.match(r'(?(?=.*\!.*)(?P<true>.*\!\w*\:.*)|(?P<false>.*))',
+          '!')), False)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

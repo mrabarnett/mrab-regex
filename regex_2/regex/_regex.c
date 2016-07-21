@@ -14808,7 +14808,10 @@ backtrack:
                  * backtracked inside and already restored the groups. We also
                  * need to restore certain flags.
                  */
-                if (bt_data->lookaround.node->match)
+                RE_Node* node;
+
+                node = bt_data->lookaround.node;
+                if (node->match && (node->status & RE_STATUS_HAS_GROUPS))
                     pop_groups(state);
 
                 state->too_few_errors = bt_data->lookaround.too_few_errors;
