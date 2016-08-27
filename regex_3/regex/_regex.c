@@ -1536,6 +1536,15 @@ Py_LOCAL_INLINE(BOOL) is_unicode_vowel(Py_UCS4 ch) {
     }
 }
 
+/* Checks whether a character is a Unicode apostrophe.
+ *
+ * This could be U+0027 (APOSTROPHE) or U+2019 (RIGHT SINGLE QUOTATION MARK /
+ * curly apostrophe).
+ */
+static BOOL is_unicode_apostrophe(Py_UCS4 ch) {
+    return ch == 0x27 || ch == 0x2019;
+}
+
 /* Checks whether a position is on a default word boundary.
  *
  * The rules are defined here:
@@ -1656,7 +1665,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
 
     /* Break between apostrophe and vowels (French, Italian). */
     /* WB5a */
-    if (pos_m1 >= 0 && char_at(state->text, pos_m1) == '\'' &&
+    if (pos_m1 >= 0 && is_unicode_apostrophe(char_at(state->text, pos_m1)) &&
       is_unicode_vowel(char_at(state->text, text_pos)))
         return TRUE;
 
@@ -1838,7 +1847,8 @@ Py_LOCAL_INLINE(BOOL) unicode_at_default_word_start_or_end(RE_State* state,
     if (prop_m1 == RE_BREAK_ALETTER && prop == RE_BREAK_ALETTER)
         return FALSE;
 
-    if (pos_m1 >= 0 && char_m1 == '\'' && is_unicode_vowel(char_0))
+    if (pos_m1 >= 0 && is_unicode_apostrophe(char_m1) &&
+      is_unicode_vowel(char_0))
         return TRUE;
 
     pos_p1 = text_pos + 1;
