@@ -2838,6 +2838,9 @@ class GreedyRepeat(RegexBase):
     def is_atomic(self):
         return self.min_count == self.max_count and self.subpattern.is_atomic()
 
+    def can_be_affix(self):
+        return False
+
     def contains_group(self):
         return self.subpattern.contains_group()
 

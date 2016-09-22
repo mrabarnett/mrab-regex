@@ -3796,6 +3796,10 @@ thing
         self.assertEqual(bool(regex.match(r'(?(?=.*\!.*)(?P<true>.*\!\w*\:.*)|(?P<false>.*))',
           '!')), False)
 
+        # Hg issue 220: Misbehavior of group capture with OR operand
+        self.assertEqual(regex.match(r'\w*(ea)\w*|\w*e(?!a)\w*',
+          'easier').groups(), ('ea', ))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
