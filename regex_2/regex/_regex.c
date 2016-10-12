@@ -24801,6 +24801,11 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     release_buffer(&str_info);
 
 #endif
+    if (PyErr_Occurred()) {
+        Py_XDECREF(result);
+        result = NULL;
+    }
+
     return result;
 }
 

@@ -17137,10 +17137,6 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
      * and a character size. Return FALSE if the object is not a string (or not
      * compatible).
      */
-    PyBufferProcs* buffer;
-    Py_ssize_t bytes;
-    Py_ssize_t size;
-
     /* Unicode objects do not support the buffer API. So, get the data directly
      * instead.
      */
@@ -17164,50 +17160,23 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
     }
 
     /* Get pointer to string buffer. */
-    buffer = Py_TYPE(string)->tp_as_buffer;
-    str_info->view.len = -1;
-
-    if (!buffer) {
+    if (PyObject_GetBuffer(string, &str_info->view, PyBUF_SIMPLE) != 0) {
+        printf("PyObject_GetBuffer failed!\n");
         PyErr_SetString(PyExc_TypeError, "expected string or buffer");
         return FALSE;
     }
 
-    if (!buffer->bf_getbuffer || (*buffer->bf_getbuffer)(string,
-      &str_info->view, PyBUF_SIMPLE) < 0) {
-        PyErr_SetString(PyExc_TypeError, "expected string or buffer");
-        return FALSE;
-    }
-
-    str_info->should_release = TRUE;
-
-    /* Determine buffer size. */
-    bytes = str_info->view.len;
-    str_info->characters = str_info->view.buf;
-
-    if (str_info->characters == NULL) {
+    if (!str_info->view.buf) {
         PyBuffer_Release(&str_info->view);
         PyErr_SetString(PyExc_ValueError, "buffer is NULL");
         return FALSE;
     }
 
-    if (bytes < 0) {
-        PyBuffer_Release(&str_info->view);
-        PyErr_SetString(PyExc_TypeError, "buffer has negative size");
-        return FALSE;
-    }
+    str_info->should_release = TRUE;
 
-    /* Determine character size. */
-    size = PyObject_Size(string);
-
-    if (PyBytes_Check(string) || bytes == size)
-        str_info->charsize = 1;
-    else {
-        PyBuffer_Release(&str_info->view);
-        PyErr_SetString(PyExc_TypeError, "buffer size mismatch");
-        return FALSE;
-    }
-
-    str_info->length = size;
+    str_info->characters = str_info->view.buf;
+    str_info->length = str_info->view.len;
+    str_info->charsize = 1;
     str_info->is_unicode = FALSE;
 
     return TRUE;
@@ -24776,6 +24745,11 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
 
     /* Release the original string's buffer. */
     release_buffer(&str_info);
+
+    if (PyErr_Occurred()) {
+        Py_XDECREF(result);
+        result = NULL;
+    }
 
     return result;
 }
