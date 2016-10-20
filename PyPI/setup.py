@@ -3,7 +3,10 @@
 import os
 import sys
 
-from distutils.core import setup, Extension
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup, Extension
 
 MAJOR, MINOR = sys.version_info[:2]
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
