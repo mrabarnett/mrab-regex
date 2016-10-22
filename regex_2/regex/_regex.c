@@ -17116,7 +17116,7 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
      * instead.
      */
     if (PyUnicode_Check(string)) {
-        /* Unicode strings doesn't always support the buffer interface. */
+        /* Unicode strings don't always support the buffer interface. */
         str_info->characters = (void*)PyUnicode_AS_DATA(string);
         str_info->length = PyUnicode_GET_SIZE(string);
         str_info->charsize = sizeof(Py_UNICODE);
@@ -17125,6 +17125,39 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
         return TRUE;
     }
 
+#if defined(PYPY_VERSION)
+    if (PyString_Check(string)) {
+        /* Bytestrings don't always support the buffer interface. */
+        str_info->characters = (void*)PyString_AS_STRING(string);
+        str_info->length = PyString_GET_SIZE(string);
+        str_info->charsize = 1;
+        str_info->is_unicode = FALSE;
+        str_info->should_release = FALSE;
+        return TRUE;
+    }
+
+#endif
+#if defined(PYPY_VERSION)
+    /* Get pointer to string buffer. */
+    if (PyObject_GetBuffer(string, &str_info->view, PyBUF_SIMPLE) != 0) {
+        printf("PyObject_GetBuffer failed!\n");
+        PyErr_SetString(PyExc_TypeError, "expected string or buffer");
+        return FALSE;
+    }
+
+    if (!str_info->view.buf) {
+        PyBuffer_Release(&str_info->view);
+        PyErr_SetString(PyExc_ValueError, "buffer is NULL");
+        return FALSE;
+    }
+
+    str_info->should_release = TRUE;
+
+    str_info->characters = str_info->view.buf;
+    str_info->length = str_info->view.len;
+    str_info->charsize = 1;
+    str_info->is_unicode = FALSE;
+#else
     /* Get pointer to string buffer. */
 #if PY_VERSION_HEX >= 0x02060000
     buffer = Py_TYPE(string)->tp_as_buffer;
@@ -17196,6 +17229,7 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
 
     str_info->length = size;
     str_info->is_unicode = FALSE;
+#endif
 
     return TRUE;
 }
@@ -24801,11 +24835,6 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     release_buffer(&str_info);
 
 #endif
-    if (PyErr_Occurred()) {
-        Py_XDECREF(result);
-        result = NULL;
-    }
-
     return result;
 }
 

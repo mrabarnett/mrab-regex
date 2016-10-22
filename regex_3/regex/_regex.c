@@ -17141,7 +17141,7 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
      * instead.
      */
     if (PyUnicode_Check(string)) {
-        /* Unicode strings doesn't always support the buffer interface. */
+        /* Unicode strings don't always support the buffer interface. */
 #if PY_VERSION_HEX >= 0x03030000
         if (PyUnicode_READY(string) == -1)
             return FALSE;
@@ -17159,9 +17159,20 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
         return TRUE;
     }
 
+#if defined(PYPY_VERSION)
+    if (PyBytes_Check(string)) {
+        /* Bytestrings don't always support the buffer interface. */
+        str_info->characters = (void*)PyBytes_AS_STRING(string);
+        str_info->length = PyBytes_GET_SIZE(string);
+        str_info->charsize = 1;
+        str_info->is_unicode = FALSE;
+        str_info->should_release = FALSE;
+        return TRUE;
+    }
+
+#endif
     /* Get pointer to string buffer. */
     if (PyObject_GetBuffer(string, &str_info->view, PyBUF_SIMPLE) != 0) {
-        printf("PyObject_GetBuffer failed!\n");
         PyErr_SetString(PyExc_TypeError, "expected string or buffer");
         return FALSE;
     }
@@ -24745,11 +24756,6 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
 
     /* Release the original string's buffer. */
     release_buffer(&str_info);
-
-    if (PyErr_Occurred()) {
-        Py_XDECREF(result);
-        result = NULL;
-    }
 
     return result;
 }
