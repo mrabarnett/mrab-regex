@@ -10081,7 +10081,7 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
             return RE_ERROR_SUCCESS;
         case RE_FUZZY_INS:
             /* Could the character at text_pos have been inserted? */
-            if (!data->permit_insertion)
+            if (!data->permit_insertion || step == 0)
                 return RE_ERROR_FAILURE;
 
             new_pos = data->new_text_pos + step;
@@ -10093,6 +10093,9 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
             return check_fuzzy_partial(state, new_pos);
         case RE_FUZZY_SUB:
             /* Could the character at text_pos have been substituted? */
+            if (step == 0)
+                return RE_ERROR_FAILURE;
+
             new_pos = data->new_text_pos + step;
             if (state->slice_start <= new_pos && new_pos <= state->slice_end) {
                 data->new_text_pos = new_pos;
@@ -16615,13 +16618,14 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
                  */
                 add_to_best_list(safe_state, &best_list, state->match_pos,
                   state->text_pos);
-        }
+        } else
+            start_pos = state->match_pos + step;
 
         /* Should we keep searching? */
         if (!search)
             break;
 
-        start_pos = state->match_pos + step;
+        state->max_errors = fewest_errors - 1;
     }
 
     if (found_match) {

@@ -3696,6 +3696,17 @@ thing
         self.assertEqual(regex.match(r'\w*(ea)\w*|\w*e(?!a)\w*',
           'easier').groups(), ('ea', ))
 
+        # Hg issue 225: BESTMATCH in fuzzy match not working
+        self.assertEqual(regex.search('(^1234$){i,d}', '12234',
+          regex.BESTMATCH).span(), (0, 5))
+        self.assertEqual(regex.search('(^1234$){i,d}', '12234',
+          regex.BESTMATCH).fuzzy_counts, (0, 1, 0))
+
+        self.assertEqual(regex.search('(^1234$){s,i,d}', '12234',
+          regex.BESTMATCH).span(), (0, 5))
+        self.assertEqual(regex.search('(^1234$){s,i,d}', '12234',
+          regex.BESTMATCH).fuzzy_counts, (0, 1, 0))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
