@@ -3707,6 +3707,12 @@ thing
         self.assertEqual(regex.search('(^1234$){s,i,d}', '12234',
           regex.BESTMATCH).fuzzy_counts, (0, 1, 0))
 
+        # Hg issue 226: Error matching at start of string
+        self.assertEqual(regex.search('(^123$){s,i,d}', 'xxxxxxxx123',
+          regex.BESTMATCH).span(), (0, 11))
+        self.assertEqual(regex.search('(^123$){s,i,d}', 'xxxxxxxx123',
+          regex.BESTMATCH).fuzzy_counts, (0, 8, 0))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

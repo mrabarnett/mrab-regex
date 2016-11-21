@@ -10029,7 +10029,7 @@ Py_LOCAL_INLINE(BOOL) any_error_permitted(RE_State* state) {
 
     return fuzzy_info->total_cost <= values[RE_FUZZY_VAL_MAX_COST] &&
       fuzzy_info->counts[RE_FUZZY_ERR] < values[RE_FUZZY_VAL_MAX_ERR] &&
-      state->total_errors <= state->max_errors;
+      state->total_errors < state->max_errors;
 }
 
 /* Checks whether this additional fuzzy error is permitted. */
@@ -10042,7 +10042,7 @@ Py_LOCAL_INLINE(BOOL) this_error_permitted(RE_State* state, int fuzzy_type) {
 
     return fuzzy_info->total_cost + values[RE_FUZZY_VAL_COST_BASE + fuzzy_type]
       <= values[RE_FUZZY_VAL_MAX_COST] && fuzzy_info->counts[fuzzy_type] <
-      values[RE_FUZZY_VAL_MAX_BASE + fuzzy_type] && state->total_errors + 1 <=
+      values[RE_FUZZY_VAL_MAX_BASE + fuzzy_type] && state->total_errors <
       state->max_errors;
 }
 
@@ -10074,6 +10074,9 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
         switch (data->fuzzy_type) {
         case RE_FUZZY_DEL:
             /* Could a character at text_pos have been deleted? */
+            if (step == 0)
+                return RE_ERROR_FAILURE;
+
             if (is_string)
                 data->new_string_pos += step;
             else
@@ -10081,10 +10084,13 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
             return RE_ERROR_SUCCESS;
         case RE_FUZZY_INS:
             /* Could the character at text_pos have been inserted? */
-            if (!data->permit_insertion || step == 0)
+            if (!data->permit_insertion)
                 return RE_ERROR_FAILURE;
 
-            new_pos = data->new_text_pos + step;
+            if (step == 0)
+                new_pos = data->new_text_pos + data->step;
+            else
+                new_pos = data->new_text_pos + step;
             if (state->slice_start <= new_pos && new_pos <= state->slice_end) {
                 data->new_text_pos = new_pos;
                 return RE_ERROR_SUCCESS;
