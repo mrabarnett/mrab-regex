@@ -10961,6 +10961,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
               state->text_pos, limit, &is_partial);
         else {
             found_pos = state->req_pos;
+            end_pos = state->req_end;
             is_partial = FALSE;
         }
 
@@ -11005,6 +11006,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
               state->text_pos, limit, &end_pos, &is_partial);
         else {
             found_pos = state->req_pos;
+            end_pos = state->req_end;
             is_partial = FALSE;
         }
 
@@ -11048,6 +11050,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
               state->text_pos, limit, &end_pos, &is_partial);
         else {
             found_pos = state->req_pos;
+            end_pos = state->req_end;
             is_partial = FALSE;
         }
 
@@ -11091,6 +11094,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
               state->text_pos, limit, &is_partial);
         else {
             found_pos = state->req_pos;
+            end_pos = state->req_end;
             is_partial = FALSE;
         }
 
@@ -11135,6 +11139,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
               state->text_pos, limit, &is_partial);
         else {
             found_pos = state->req_pos;
+            end_pos = state->req_end;
             is_partial = FALSE;
         }
 
@@ -11179,6 +11184,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_SafeState* safe_state,
               state->text_pos, limit, &is_partial);
         else {
             found_pos = state->req_pos;
+            end_pos = state->req_end;
             is_partial = FALSE;
         }
 

@@ -3817,6 +3817,10 @@ thing
         self.assertEqual(regex.search('(^123$){s,i,d}', 'xxxxxxxx123',
           regex.BESTMATCH).fuzzy_counts, (0, 8, 0))
 
+        # Hg issue 227: Incorrect behavior for ? operator with UNICODE + IGNORECASE
+        self.assertEqual(regex.search(r'a?yz', 'xxxxyz', flags=regex.FULLCASE |
+          regex.IGNORECASE).span(), (4, 6))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
