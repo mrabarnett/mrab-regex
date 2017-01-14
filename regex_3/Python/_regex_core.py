@@ -495,35 +495,7 @@ def apply_constraint(source, info, constraints, characters, case_flags,
             sequence.append(Fuzzy(element, constraints))
 
 def append_literal(characters, case_flags, sequence):
-    if not characters:
-        return
-
-    if (case_flags & IGNORECASE) == IGNORECASE:
-        # Does the case-sensitive literal start or end with any caseless
-        # characters?
-        s = 0
-        n = len(characters)
-
-        while s < n and not is_cased_f(case_flags, characters[s]):
-            s += 1
-
-        e = n
-
-        while e - 1 > s and not is_cased_f(case_flags, characters[e - 1]):
-            e -= 1
-
-        if 0 < s:
-            # Caseless.
-            sequence.append(Literal(characters[ : s], case_flags=NOCASE))
-
-        if s < e:
-            # Cased.
-            sequence.append(Literal(characters[s : e], case_flags=case_flags))
-
-        if e < n:
-            # Caseless.
-            sequence.append(Literal(characters[e : ], case_flags=NOCASE))
-    else:
+    if characters:
         sequence.append(Literal(characters, case_flags=case_flags))
 
 def PossessiveRepeat(element, min_count, max_count):
@@ -3457,12 +3429,78 @@ class Sequence(RegexBase):
             if not any(is_cased_i(info, c) for c in characters):
                 case_flags = NOCASE
 
-        if len(characters) == 1:
-            items.append(Character(characters[0], case_flags=case_flags))
+        if (case_flags & FULLIGNORECASE) == FULLIGNORECASE:
+            literals = Sequence._fix_full_casefold(characters)
+
+            for item in literals:
+                chars = item.characters
+
+                if len(chars) == 1:
+                    items.append(Character(chars[0], case_flags=item.case_flags))
+                else:
+                    items.append(String(chars, case_flags=item.case_flags))
         else:
-            items.append(String(characters, case_flags=case_flags))
+            if len(characters) == 1:
+                items.append(Character(characters[0], case_flags=case_flags))
+            else:
+                items.append(String(characters, case_flags=case_flags))
 
         characters[:] = []
+
+    @staticmethod
+    def _fix_full_casefold(characters):
+        # Split a literal needing full case-folding into chunks that need it
+        # and chunks that can use simple case-folding, which is faster.
+        expanded = [_regex.fold_case(FULL_CASE_FOLDING, c) for c in
+          _regex.get_expand_on_folding()]
+        string = _regex.fold_case(FULL_CASE_FOLDING, ''.join(chr(c)
+          for c in characters)).lower()
+        chunks = []
+
+        for e in expanded:
+            found = string.find(e)
+
+            while found >= 0:
+                chunks.append((found, found + len(e)))
+                found = string.find(e, found + 1)
+
+        pos = 0
+        literals = []
+
+        for start, end in Sequence._merge_chunks(chunks):
+            if pos < start:
+                literals.append(Literal(characters[pos : start],
+                  case_flags=IGNORECASE))
+
+            literals.append(Literal(characters[start : end],
+              case_flags=FULLIGNORECASE))
+            pos = end
+
+        if pos < len(characters):
+            literals.append(Literal(characters[pos : ], case_flags=IGNORECASE))
+
+        return literals
+
+    @staticmethod
+    def _merge_chunks(chunks):
+        if len(chunks) < 2:
+            return chunks
+
+        chunks.sort()
+
+        start, end = chunks[0]
+        new_chunks = []
+
+        for s, e in chunks[1 : ]:
+            if s <= end:
+                end = max(end, e)
+            else:
+                new_chunks.append((start, end))
+                start, end = s, e
+
+        new_chunks.append((start, end))
+
+        return new_chunks
 
     def is_empty(self):
         return all(i.is_empty() for i in self.items)

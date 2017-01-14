@@ -2421,6 +2421,31 @@ Py_LOCAL_INLINE(BOOL) same_char_ign(RE_EncodingTable* encoding, RE_LocaleInfo*
     return FALSE;
 }
 
+/* Checks whether 2 characters are the same, ignoring case. The first character
+ * is already case-folded or is a possible Turkic 'I'.
+ */
+Py_LOCAL_INLINE(BOOL) same_char_ign_turkic(RE_EncodingTable* encoding,
+  RE_LocaleInfo* locale_info, Py_UCS4 ch1, Py_UCS4 ch2) {
+    int count;
+    Py_UCS4 cases[RE_MAX_CASES];
+    int i;
+
+    if (ch1 == ch2)
+        return TRUE;
+
+    if (!encoding->possible_turkic(locale_info, ch1))
+        return FALSE;
+
+    count = encoding->all_turkic_i(locale_info, ch1, cases);
+
+    for (i = 1; i < count; i++) {
+        if (cases[i] == ch2)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
 /* Wrapper for calling 'same_char' via a pointer. */
 static BOOL same_char_ign_wrapper(RE_EncodingTable* encoding, RE_LocaleInfo*
   locale_info, Py_UCS4 ch1, Py_UCS4 ch2) {
@@ -6221,7 +6246,6 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld(RE_SafeState* safe_state,
     Py_ssize_t length;
     Py_ssize_t s_pos;
     Py_UCS4 folded[RE_MAX_FOLDED];
-
     state = safe_state->re_state;
     encoding = state->encoding;
     locale_info = state->locale_info;
@@ -6256,7 +6280,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld(RE_SafeState* safe_state,
             f_pos = 0;
         }
 
-        if (s_pos < length && same_char_ign(encoding, locale_info,
+        if (s_pos < length && same_char_ign_turkic(encoding, locale_info,
           values[s_pos], folded[f_pos])) {
             ++s_pos;
             ++f_pos;
@@ -6297,7 +6321,6 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld_rev(RE_SafeState* safe_state,
     Py_ssize_t length;
     Py_ssize_t s_pos;
     Py_UCS4 folded[RE_MAX_FOLDED];
-
     state = safe_state->re_state;
     encoding = state->encoding;
     locale_info = state->locale_info;
@@ -6331,7 +6354,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld_rev(RE_SafeState* safe_state,
             f_pos = 0;
         }
 
-        if (s_pos < length && same_char_ign(encoding, locale_info,
+        if (s_pos < length && same_char_ign_turkic(encoding, locale_info,
           values[length - s_pos - 1], folded[folded_len - f_pos - 1])) {
             ++s_pos;
             ++f_pos;
@@ -7032,8 +7055,8 @@ Py_LOCAL_INLINE(int) try_match_STRING_FLD(RE_State* state, RE_NextNode* next,
             f_pos = 0;
         }
 
-        if (!same_char_ign(encoding, locale_info, folded[f_pos],
-          values[s_pos]))
+        if (!same_char_ign(encoding, locale_info, values[s_pos],
+          folded[f_pos]))
             return RE_ERROR_FAILURE;
 
         ++s_pos;
@@ -7105,8 +7128,8 @@ Py_LOCAL_INLINE(int) try_match_STRING_FLD_REV(RE_State* state, RE_NextNode*
             f_pos = 0;
         }
 
-        if (!same_char_ign(encoding, locale_info, folded[folded_len - f_pos -
-          1], values[length - s_pos - 1]))
+        if (!same_char_ign(encoding, locale_info, values[length - s_pos - 1],
+          folded[folded_len - f_pos - 1]))
             return RE_ERROR_FAILURE;
 
         ++s_pos;
@@ -13522,8 +13545,8 @@ advance:
 
                 if (folded_pos < folded_len && same_char_ign(encoding,
                   locale_info,
-                   folded[folded_pos],
-                   gfolded[gfolded_pos])) {
+                   gfolded[gfolded_pos],
+                   folded[folded_pos])) {
                     ++folded_pos;
                     ++gfolded_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
@@ -13626,8 +13649,8 @@ advance:
                 }
 
                 if (folded_pos > 0 && same_char_ign(encoding, locale_info,
-                   folded[folded_pos - 1],
-                   gfolded[gfolded_pos - 1])) {
+                   gfolded[gfolded_pos - 1],
+                   folded[folded_pos - 1])) {
                     --folded_pos;
                     --gfolded_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
@@ -14194,7 +14217,7 @@ advance:
                     }
 
                     if (folded_pos < folded_len && same_char_ign(encoding,
-                      locale_info, folded[folded_pos], values[string_pos])) {
+                      locale_info, values[string_pos], folded[folded_pos])) {
                         ++string_pos;
                         ++folded_pos;
 
@@ -14306,7 +14329,7 @@ advance:
                     }
 
                     if (folded_pos > 0 && same_char_ign(encoding, locale_info,
-                      folded[folded_pos - 1], values[string_pos - 1])) {
+                      values[string_pos - 1], folded[folded_pos - 1])) {
                         --string_pos;
                         --folded_pos;
 
@@ -15540,6 +15563,7 @@ backtrack:
             RE_Node* repeated;
             RE_Node* test;
             BOOL match;
+            Py_ssize_t skip_pos;
             BOOL m;
             size_t index;
             TRACE(("%s\n", re_op_text[bt_data->op]))
@@ -15569,7 +15593,7 @@ backtrack:
             index = node->values[0];
 
             match = FALSE;
-
+            skip_pos = -1;
             if (test->status & RE_STATUS_FUZZY) {
                 for (;;) {
                     RE_Position next_position;
@@ -15866,6 +15890,7 @@ backtrack:
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
                             match = TRUE;
+                            skip_pos = new_pos;
                             break;
                         }
                     }
@@ -15923,6 +15948,7 @@ backtrack:
                         if (!is_repeat_guarded(safe_state, index, pos,
                           RE_STATUS_TAIL)) {
                             match = TRUE;
+                            skip_pos = new_pos;
                             break;
                         }
                     }
@@ -16165,6 +16191,12 @@ backtrack:
                 }
 
                 node = node->next_1.node;
+
+                if (skip_pos >= 0) {
+                    state->text_pos = skip_pos;
+                    node = node->next_1.node;
+                }
+
                 goto advance;
             } else {
                 /* The tail couldn't match. */
