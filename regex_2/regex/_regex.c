@@ -653,6 +653,7 @@ typedef struct PatternObject {
     RE_Node* start_test;
     size_t true_group_count; /* The true number of capture groups. */
     size_t public_group_count; /* The number of public capture groups. */
+    size_t visible_capture_count; /* The number of capture groups that are visible (not hidden in (?(DEFINE)...). */
     size_t repeat_count; /* The number of repeats. */
     Py_ssize_t group_end_index; /* The number of group closures. */
     PyObject* groupindex;
@@ -750,6 +751,7 @@ typedef struct RE_CompileArgs {
     RE_Node* start; /* The start node. */
     RE_Node* end; /* The end node. */
     size_t repeat_depth; /* The nesting depth of the repeat. */
+    size_t visible_capture_count; /* The number of capture groups that are visible (not hidden in (?(DEFINE)...). */
     BOOL forward; /* Whether it's a forward (not reverse) pattern. */
     BOOL visible_captures; /* Whether all of the captures will be visible. */
     BOOL has_captures; /* Whether the pattern has capture groups. */
@@ -757,6 +759,7 @@ typedef struct RE_CompileArgs {
     BOOL within_fuzzy; /* Whether the subpattern is within a fuzzy section. */
     BOOL has_groups; /* Whether the subpattern contains captures. */
     BOOL has_repeats; /* Whether the subpattern contains repeats. */
+    BOOL in_define; /* Whether we're in (?(DEFINE)...). */
 } RE_CompileArgs;
 
 /* The string slices which will be concatenated to make the result string of
@@ -21270,7 +21273,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
             break;
 
         /* Don't bother to build a MatchObject. */
-        switch (self->public_group_count) {
+        switch (self->visible_capture_count) {
         case 0:
             if (state.reverse) {
                 b = state.text_pos;
@@ -23013,6 +23016,7 @@ Py_LOCAL_INLINE(int) build_FUZZY(RE_CompileArgs* args) {
     args->is_fuzzy = TRUE;
     args->has_groups |= subargs.has_groups;
     args->has_repeats |= subargs.has_repeats;
+    args->visible_capture_count = subargs.visible_capture_count;
 
     ++args->code;
 
@@ -23053,15 +23057,16 @@ Py_LOCAL_INLINE(int) build_ATOMIC(RE_CompileArgs* args) {
         return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
-    ++args->code;
-
-    /* Check the subpattern. */
     args->min_width += subargs.min_width;
     args->has_captures |= subargs.has_captures;
     args->is_fuzzy |= subargs.is_fuzzy;
     args->has_groups |= subargs.has_groups;
     args->has_repeats |= subargs.has_repeats;
+    args->visible_capture_count = subargs.visible_capture_count;
 
+    ++args->code;
+
+    /* Check the subpattern. */
     if (subargs.has_groups)
         atomic_node->status |= RE_STATUS_HAS_GROUPS;
 
@@ -23174,6 +23179,7 @@ Py_LOCAL_INLINE(int) build_BRANCH(RE_CompileArgs* args) {
         return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
+    args->visible_capture_count = subargs.visible_capture_count;
 
     ++args->code;
     args->min_width += min_width;
@@ -23222,6 +23228,7 @@ Py_LOCAL_INLINE(int) build_CALL_REF(RE_CompileArgs* args) {
     args->is_fuzzy |= subargs.is_fuzzy;
     args->has_groups |= subargs.has_groups;
     args->has_repeats |= subargs.has_repeats;
+    args->visible_capture_count = subargs.visible_capture_count;
 
     ++args->code;
 
@@ -23318,14 +23325,15 @@ Py_LOCAL_INLINE(int) build_CONDITIONAL(RE_CompileArgs* args) {
         return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
-    ++args->code;
-
-    /* Check the lookaround subpattern. */
     args->has_captures |= subargs.has_captures;
     args->is_fuzzy |= subargs.is_fuzzy;
     args->has_groups |= subargs.has_groups;
     args->has_repeats |= subargs.has_repeats;
+    args->visible_capture_count = subargs.visible_capture_count;
 
+    ++args->code;
+
+    /* Check the lookaround subpattern. */
     if (subargs.has_groups)
         test_node->status |= RE_STATUS_HAS_GROUPS;
 
@@ -23353,6 +23361,7 @@ Py_LOCAL_INLINE(int) build_CONDITIONAL(RE_CompileArgs* args) {
     args->is_fuzzy |= subargs.is_fuzzy;
     args->has_groups |= subargs.has_groups;
     args->has_repeats |= subargs.has_repeats;
+    args->visible_capture_count = subargs.visible_capture_count;
 
     min_width = subargs.min_width;
 
@@ -23381,6 +23390,7 @@ Py_LOCAL_INLINE(int) build_CONDITIONAL(RE_CompileArgs* args) {
         args->is_fuzzy |= subargs.is_fuzzy;
         args->has_groups |= subargs.has_groups;
         args->has_repeats |= subargs.has_repeats;
+        args->visible_capture_count = subargs.visible_capture_count;
 
         min_width = min_ssize_t(min_width, subargs.min_width);
 
@@ -23459,6 +23469,10 @@ Py_LOCAL_INLINE(int) build_GROUP(RE_CompileArgs* args) {
     args->is_fuzzy |= subargs.is_fuzzy;
     args->has_groups |= TRUE;
     args->has_repeats |= subargs.has_repeats;
+    args->visible_capture_count = subargs.visible_capture_count;
+
+    if (!args->in_define)
+        ++args->visible_capture_count;
 
     ++args->code;
 
@@ -23540,6 +23554,7 @@ Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
     start_node->values[0] = group;
 
     subargs = *args;
+    subargs.in_define = TRUE;
     status = build_sequence(&subargs);
     if (status != RE_ERROR_SUCCESS)
         return status;
@@ -23549,6 +23564,7 @@ Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
     args->is_fuzzy |= subargs.is_fuzzy;
     args->has_groups |= subargs.has_groups;
     args->has_repeats |= subargs.has_repeats;
+    args->visible_capture_count = subargs.visible_capture_count;
 
     min_width = subargs.min_width;
 
@@ -23572,6 +23588,7 @@ Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
         args->code = subargs.code;
         args->has_captures |= subargs.has_captures;
         args->is_fuzzy |= subargs.is_fuzzy;
+        args->visible_capture_count = subargs.visible_capture_count;
 
         if (group == 0) {
             /* Join the 2 branches end-to-end and bypass it. The sequence
@@ -23584,6 +23601,7 @@ Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
         } else {
             args->has_groups |= subargs.has_groups;
             args->has_repeats |= subargs.has_repeats;
+            args->visible_capture_count = subargs.visible_capture_count;
 
             min_width = min_ssize_t(min_width, subargs.min_width);
 
@@ -23656,6 +23674,7 @@ Py_LOCAL_INLINE(int) build_LOOKAROUND(RE_CompileArgs* args) {
     args->is_fuzzy |= subargs.is_fuzzy;
     args->has_groups |= subargs.has_groups;
     args->has_repeats |= subargs.has_repeats;
+    args->visible_capture_count = subargs.visible_capture_count;
 
     if (subargs.has_groups)
         lookaround_node->status |= RE_STATUS_HAS_GROUPS;
@@ -23792,6 +23811,7 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
         args->is_fuzzy |= subargs.is_fuzzy;
         args->has_groups |= subargs.has_groups;
         args->has_repeats |= subargs.has_repeats;
+        args->visible_capture_count = subargs.visible_capture_count;
 
         ++args->code;
 
@@ -23837,6 +23857,7 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
         args->is_fuzzy |= subargs.is_fuzzy;
         args->has_groups |= subargs.has_groups;
         args->has_repeats = TRUE;
+        args->visible_capture_count = subargs.visible_capture_count;
 
         ++args->code;
 
@@ -24335,6 +24356,8 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     args.repeat_depth = 0;
     args.is_fuzzy = FALSE;
     args.within_fuzzy = FALSE;
+    args.visible_capture_count = 0;
+    args.in_define = FALSE;
     status = build_sequence(&args);
     if (status == RE_ERROR_ILLEGAL)
         set_error(RE_ERROR_ILLEGAL, NULL);
@@ -24346,6 +24369,7 @@ Py_LOCAL_INLINE(BOOL) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     pattern->is_fuzzy = args.is_fuzzy;
     pattern->do_search_start = TRUE;
     pattern->start_node = args.start;
+    pattern->visible_capture_count = args.visible_capture_count;
 
     /* Optimise the pattern. */
     if (!optimise_pattern(pattern))
@@ -24580,6 +24604,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->repeat_count = 0;
     self->true_group_count = 0;
     self->public_group_count = public_group_count;
+    self->visible_capture_count = 0;
     self->group_end_index = 0;
     self->groupindex = groupindex;
     self->indexgroup = indexgroup;

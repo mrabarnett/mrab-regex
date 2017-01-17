@@ -3717,6 +3717,12 @@ thing
         self.assertEqual(regex.search(r'a?yz', 'xxxxyz', flags=regex.FULLCASE |
           regex.IGNORECASE).span(), (4, 6))
 
+        # Hg issue 230: Is it a bug of (?(DEFINE)...)
+        self.assertEqual(regex.findall(r'(?:(?![a-d]).)+', 'abcdefgh'),
+          ['efgh'])
+        self.assertEqual(regex.findall(r'''(?(DEFINE)(?P<mydef>(?:(?![a-d]).)))(?&mydef)+''',
+          'abcdefgh'), ['efgh'])
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
