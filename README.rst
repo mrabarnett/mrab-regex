@@ -1,9 +1,7 @@
 Introduction
 ------------
 
-This new regex implementation is intended eventually to replace Python's current re module implementation.
-
-For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.
+This regex implementation is backwards-compatible with the standard 're' module, but offers additional functionality.
 
 Old vs new behaviour
 --------------------
@@ -42,7 +40,7 @@ This module has 2 behaviours:
 
   * Case-insensitive matches in Unicode use full case-folding by default.
 
-If no version is specified, the regex module will default to ``regex.DEFAULT_VERSION``. In the short term this will be ``VERSION0``, but in the longer term it will be ``VERSION1``.
+If no version is specified, the regex module will default to ``regex.DEFAULT_VERSION``.
 
 Case-insensitive matches in Unicode
 -----------------------------------

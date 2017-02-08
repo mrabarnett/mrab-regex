@@ -6,7 +6,10 @@ typedef unsigned int RE_UINT32;
 typedef signed int RE_INT32;
 
 typedef unsigned char BOOL;
-enum {FALSE, TRUE};
+#if !defined(FALSE) || !defined(TRUE)
+#define FALSE 0
+#define TRUE 1
+#endif
 
 #define RE_ASCII_MAX 0x7F
 #define RE_LOCALE_MAX 0xFF
