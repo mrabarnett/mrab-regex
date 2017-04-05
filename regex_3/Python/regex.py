@@ -239,7 +239,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
   "WORD", "error", "Regex"]
 
-__version__ = "2.4.118"
+__version__ = "2.4.119"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -364,7 +364,7 @@ def escape(pattern, special_only=False):
     s = []
     if special_only:
         for c in p:
-            if c in _METACHARS:
+            if c in _METACHARS or c.isspace():
                 s.append("\\")
                 s.append(c)
             elif c == "\x00":
@@ -408,7 +408,7 @@ from _regex_core import (ALNUM as _ALNUM, Info as _Info, OP as _OP, Source as
 
 DEFAULT_VERSION = VERSION0
 
-_METACHARS = frozenset("()[]{}?*+|^$\\.")
+_METACHARS = frozenset("()[]{}?*+|^$\\.-#")
 
 _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
 
