@@ -343,8 +343,7 @@ ul.auto-toc {
 
 <div class="section" id="introduction">
 <h1>Introduction</h1>
-<p>This new regex implementation is intended eventually to replace Python's current re module implementation.</p>
-<p>For testing and comparison with the current 're' module the new implementation is in the form of a module called 'regex'.</p>
+<p>This regex implementation is backwards-compatible with the standard 're' module, but offers additional functionality.</p>
 </div>
 <div class="section" id="old-vs-new-behaviour">
 <h1>Old vs new behaviour</h1>
@@ -375,7 +374,7 @@ ul.auto-toc {
 </ul>
 </li>
 </ul>
-<p>If no version is specified, the regex module will default to <tt class="docutils literal">regex.DEFAULT_VERSION</tt>. In the short term this will be <tt class="docutils literal">VERSION0</tt>, but in the longer term it will be <tt class="docutils literal">VERSION1</tt>.</p>
+<p>If no version is specified, the regex module will default to <tt class="docutils literal">regex.DEFAULT_VERSION</tt>.</p>
 </div>
 <div class="section" id="case-insensitive-matches-in-unicode">
 <h1>Case-insensitive matches in Unicode</h1>
@@ -440,14 +439,16 @@ ul.auto-toc {
 </div>
 <div class="section" id="unicode">
 <h1>Unicode</h1>
-<p>This module supports Unicode 8.0.</p>
+<p>This module supports Unicode 9.0.</p>
 <p>Full Unicode case-folding is supported.</p>
 </div>
 <div class="section" id="additional-features">
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <ul>
-<li><p class="first">Added support for lookaround in conditional pattern (Hg issue 163)</p>
+<li><p class="first">Fixed support for pickling compiled regexes (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/195">Hg issue 195</a>)</p>
+</li>
+<li><p class="first">Added support for lookaround in conditional pattern (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/163">Hg issue 163</a>)</p>
 <p>The test of a conditional pattern can now be a lookaround.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -466,7 +467,7 @@ ul.auto-toc {
 </pre>
 <p>In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was <strong>not</strong> attempted.</p>
 </li>
-<li><p class="first">Added POSIX matching (leftmost longest) (Hg issue 150)</p>
+<li><p class="first">Added POSIX matching (leftmost longest) (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/150">Hg issue 150</a>)</p>
 <p>The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the <tt class="docutils literal">POSIX</tt> flag (<tt class="docutils literal"><span class="pre">(?p)</span></tt>).</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -483,7 +484,7 @@ ul.auto-toc {
 </pre>
 <p>Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.</p>
 </li>
-<li><p class="first">Added <tt class="docutils literal"><span class="pre">(?(DEFINE)...)</span></tt> (Hg issue 152)</p>
+<li><p class="first">Added <tt class="docutils literal"><span class="pre">(?(DEFINE)...)</span></tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/152">Hg issue 152</a>)</p>
 <p>If there's no group called &quot;DEFINE&quot;, then ... will be ignored, but any group definitions within it will be available.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -491,12 +492,12 @@ ul.auto-toc {
 <span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">11</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'5 elephants'</span><span class="operator">&gt;</span>
 </pre>
 </li>
-<li><p class="first">Added <tt class="docutils literal">(*PRUNE)</tt>, <tt class="docutils literal">(*SKIP)</tt> and <tt class="docutils literal">(*FAIL)</tt> (Hg issue 153)</p>
+<li><p class="first">Added <tt class="docutils literal">(*PRUNE)</tt>, <tt class="docutils literal">(*SKIP)</tt> and <tt class="docutils literal">(*FAIL)</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/153">Hg issue 153</a>)</p>
 <p><tt class="docutils literal">(*PRUNE)</tt> discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.</p>
 <p><tt class="docutils literal">(*SKIP)</tt> is similar to <tt class="docutils literal">(*PRUNE)</tt>, except that it also sets where in the text the next attempt to match will start. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.</p>
 <p><tt class="docutils literal">(*FAIL)</tt> causes immediate backtracking. <tt class="docutils literal">(*F)</tt> is a permitted abbreviation.</p>
 </li>
-<li><p class="first">Added <tt class="docutils literal">\K</tt> (Hg issue 151)</p>
+<li><p class="first">Added <tt class="docutils literal">\K</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/151">Hg issue 151</a>)</p>
 <p>Keeps the part of the entire match after the position where <tt class="docutils literal">\K</tt> occurred; the part before it is discarded.</p>
 <p>It does not affect what capture groups return.</p>
 <p>Examples:</p>
@@ -514,7 +515,7 @@ ul.auto-toc {
 <span class="literal string">'bcdef'</span>
 </pre>
 </li>
-<li><p class="first">Added capture subscripting for <tt class="docutils literal">expandf</tt> and <tt class="docutils literal">subf</tt>/<tt class="docutils literal">subfn</tt> (Hg issue 133) <strong>(Python 2.6 and above)</strong></p>
+<li><p class="first">Added capture subscripting for <tt class="docutils literal">expandf</tt> and <tt class="docutils literal">subf</tt>/<tt class="docutils literal">subfn</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/133">Hg issue 133</a>) <strong>(Python 2.6 and above)</strong></p>
 <p>You can now use subscripting to get the captures of a repeated capture group.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -541,7 +542,7 @@ ul.auto-toc {
 <li><p class="first">Fixed the handling of locale-sensitive regexes.</p>
 <p>The <tt class="docutils literal">LOCALE</tt> flag is intended for legacy code and has limited support. You're still recommended to use Unicode instead.</p>
 </li>
-<li><p class="first">Added partial matches (Hg issue 102)</p>
+<li><p class="first">Added partial matches (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/102">Hg issue 102</a>)</p>
 <p>A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.</p>
 <p>Partial matches are supported by <tt class="docutils literal">match</tt>, <tt class="docutils literal">search</tt>, <tt class="docutils literal">fullmatch</tt> and <tt class="docutils literal">finditer</tt> with the <tt class="docutils literal">partial</tt> keyword argument.</p>
 <p>Match objects have a <tt class="docutils literal">partial</tt> attribute, which is <tt class="docutils literal">True</tt> if it's a partial match.</p>
@@ -588,7 +589,7 @@ ul.auto-toc {
 <span class="name builtin pseudo">False</span>
 </pre>
 </li>
-<li><p class="first"><tt class="docutils literal">*</tt> operator not working correctly with sub() (Hg issue 106)</p>
+<li><p class="first"><tt class="docutils literal">*</tt> operator not working correctly with sub() (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/106">Hg issue 106</a>)</p>
 <p>Sometimes it's not clear how zero-width matches should be handled. For example, should <tt class="docutils literal">.*</tt> match 0 characters directly after matching &gt;0 characters?</p>
 <p>Most regex implementations follow the lead of Perl (PCRE), but the re module sometimes doesn't. The Perl behaviour appears to be the most common (and the re module is sometimes definitely wrong), so in version 1 the regex module follows the Perl behaviour, whereas in version 0 it follows the legacy re behaviour.</p>
 <p>Examples:</p>
@@ -606,7 +607,7 @@ ul.auto-toc {
 <span class="literal string">'|||||||||'</span>
 </pre>
 </li>
-<li><p class="first">re.group() should never return a bytearray (issue #18468)</p>
+<li><p class="first">re.group() should never return a bytearray (<a class="reference external" href="https://bugs.python.org/issue18468">issue #18468</a>)</p>
 <p>For compatibility with the re module, the regex module returns all matching bytestrings as <tt class="docutils literal">bytes</tt>, starting from Python 3.4.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -619,7 +620,7 @@ ul.auto-toc {
 <span class="name builtin">bytearray</span><span class="punctuation">(</span><span class="name">b</span><span class="literal string">'a'</span><span class="punctuation">)</span>
 </pre>
 </li>
-<li><p class="first">Added <tt class="docutils literal">capturesdict</tt> (Hg issue 86)</p>
+<li><p class="first">Added <tt class="docutils literal">capturesdict</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/86">Hg issue 86</a>)</p>
 <p><tt class="docutils literal">capturesdict</tt> is a combination of <tt class="docutils literal">groupdict</tt> and <tt class="docutils literal">captures</tt>:</p>
 <p><tt class="docutils literal">groupdict</tt> returns a dict of the named groups and the last capture of those groups.</p>
 <p><tt class="docutils literal">captures</tt> returns a list of all the captures of a group</p>
@@ -637,7 +638,7 @@ ul.auto-toc {
 <span class="punctuation">{</span><span class="literal string">'word'</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="literal string">'one'</span><span class="punctuation">,</span> <span class="literal string">'two'</span><span class="punctuation">,</span> <span class="literal string">'three'</span><span class="punctuation">],</span> <span class="literal string">'digits'</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="literal string">'1'</span><span class="punctuation">,</span> <span class="literal string">'2'</span><span class="punctuation">,</span> <span class="literal string">'3'</span><span class="punctuation">]}</span>
 </pre>
 </li>
-<li><p class="first">Allow duplicate names of groups (Hg issue 87)</p>
+<li><p class="first">Allow duplicate names of groups (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/87">Hg issue 87</a>)</p>
 <p>Group names can now be duplicated.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -684,7 +685,7 @@ ul.auto-toc {
 <span class="punctuation">[</span><span class="literal string">'first'</span><span class="punctuation">,</span> <span class="literal string">''</span><span class="punctuation">]</span>
 </pre>
 </li>
-<li><p class="first">Added <tt class="docutils literal">fullmatch</tt> (issue #16203)</p>
+<li><p class="first">Added <tt class="docutils literal">fullmatch</tt> (<a class="reference external" href="https://bugs.python.org/issue16203">issue #16203</a>)</p>
 <p><tt class="docutils literal">fullmatch</tt> behaves like <tt class="docutils literal">match</tt>, except that it must match all of the string.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -742,10 +743,10 @@ ul.auto-toc {
 <span class="name builtin pseudo">None</span>
 </pre>
 </li>
-<li><p class="first">Characters in a group name (issue #14462)</p>
+<li><p class="first">Characters in a group name (<a class="reference external" href="https://bugs.python.org/issue14462">issue #14462</a>)</p>
 <p>A group name can now contain the same characters as an identifier. These are different in Python 2 and Python 3.</p>
 </li>
-<li><p class="first">Recursive patterns (Hg issue 27)</p>
+<li><p class="first">Recursive patterns (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/27">Hg issue 27</a>)</p>
 <p>Recursive and repeated patterns are supported.</p>
 <p><tt class="docutils literal"><span class="pre">(?R)</span></tt> or <tt class="docutils literal"><span class="pre">(?0)</span></tt> tries to match the entire regex recursively. <tt class="docutils literal"><span class="pre">(?1)</span></tt>, <tt class="docutils literal"><span class="pre">(?2)</span></tt>, etc, try to match the relevant capture group.</p>
 <p><tt class="docutils literal"><span class="pre">(?&amp;name)</span></tt> tries to match the named capture group.</p>
@@ -765,7 +766,7 @@ ul.auto-toc {
 <p>You can't call a group if there is more than one group with that group name or group number (<tt class="docutils literal">&quot;ambiguous group reference&quot;</tt>). For example, <tt class="docutils literal"><span class="pre">(?P&lt;foo&gt;\w+)</span> <span class="pre">(?P&lt;foo&gt;\w+)</span> <span class="pre">(?&amp;foo)?</span></tt> has 2 groups called &quot;foo&quot; (both group 1) and <tt class="docutils literal"><span class="pre">(?|([A-Z]+)|([0-9]+))</span> <span class="pre">(?1)?</span></tt> has 2 groups with group number 1.</p>
 <p>The alternative forms <tt class="docutils literal"><span class="pre">(?P&gt;name)</span></tt> and <tt class="docutils literal"><span class="pre">(?P&amp;name)</span></tt> are also supported.</p>
 </li>
-<li><p class="first">repr(regex) doesn't include actual regex (issue #13592)</p>
+<li><p class="first">repr(regex) doesn't include actual regex (<a class="reference external" href="https://bugs.python.org/issue13592">issue #13592</a>)</p>
 <p>The repr of a compiled regex is now in the form of a eval-able string. For example:</p>
 <pre class="code python literal-block">
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">r</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string">&quot;foo&quot;</span><span class="punctuation">,</span> <span class="name">regex</span><span class="operator">.</span><span class="name">I</span><span class="punctuation">)</span>
@@ -776,14 +777,14 @@ ul.auto-toc {
 </pre>
 <p>The regex module has Regex as an alias for the 'compile' function.</p>
 </li>
-<li><p class="first">Improve the repr for regular expression match objects (issue #17087)</p>
+<li><p class="first">Improve the repr for regular expression match objects (<a class="reference external" href="https://bugs.python.org/issue17087">issue #17087</a>)</p>
 <p>The repr of a match object is now a more useful form. For example:</p>
 <pre class="code python literal-block">
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r&quot;\d+&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abc012def&quot;</span><span class="punctuation">)</span>
 <span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">3</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'012'</span><span class="operator">&gt;</span>
 </pre>
 </li>
-<li><p class="first">Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)</p>
+<li><p class="first">Python lib re cannot handle Unicode properly due to narrow/wide bug (<a class="reference external" href="https://bugs.python.org/issue12729">issue #12729</a>)</p>
 <p>The source code of the regex module has been updated to support PEP 393 (&quot;Flexible String Representation&quot;), which is new in Python 3.3.</p>
 </li>
 <li><p class="first">Full Unicode case-folding is supported.</p>
@@ -797,7 +798,7 @@ ul.auto-toc {
 </pre>
 <p>In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.</p>
 </li>
-<li><p class="first">Approximate &quot;fuzzy&quot; matching (Hg issue 12, Hg issue 41, Hg issue 109)</p>
+<li><p class="first">Approximate &quot;fuzzy&quot; matching (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/12">Hg issue 12</a>, <a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/41">Hg issue 41</a>, <a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/109">Hg issue 109</a>)</p>
 <p>Regex usually attempts an exact match, but sometimes an approximate, or &quot;fuzzy&quot;, match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.</p>
 <p>A fuzzy regex specifies which types of errors are permitted, and, optionally, either the minimum and maximum or only the maximum permitted number of each type. (You cannot specify only a minimum.)</p>
 <p>The 3 types of error are:</p>
@@ -862,7 +863,7 @@ ul.auto-toc {
 <span class="operator">&gt;&gt;&gt;</span> <span class="comment"># 0 substitutions, 0 insertions, 0 deletions.</span>
 </pre>
 </li>
-<li><p class="first">Named lists (Hg issue 11)</p>
+<li><p class="first">Named lists (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/11">Hg issue 11</a>)</p>
 <p><tt class="docutils literal">\L&lt;name&gt;</tt></p>
 <p>There are occasions where you may want to include a list (actually, a set) of options in a regex.</p>
 <p>One way is to build the pattern like this:</p>
@@ -912,7 +913,7 @@ ul.auto-toc {
 <li><tt class="docutils literal"><span class="pre">[\p{ASCII}&amp;&amp;\p{Letter}]</span></tt> # Set containing all characters which are ASCII and letter</li>
 </ul>
 </li>
-<li><p class="first">regex.escape (issue #2650)</p>
+<li><p class="first">regex.escape (<a class="reference external" href="https://bugs.python.org/issue2650">issue #2650</a>)</p>
 <p>regex.escape has an additional keyword parameter <tt class="docutils literal">special_only</tt>. When True, only 'special' regex characters, such as '?', are escaped.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -922,7 +923,7 @@ ul.auto-toc {
 <span class="literal string">'foo!</span><span class="literal string escape">\\</span><span class="literal string">?'</span>
 </pre>
 </li>
-<li><p class="first">Repeated captures (issue #7132)</p>
+<li><p class="first">Repeated captures (<a class="reference external" href="https://bugs.python.org/issue7132">issue #7132</a>)</p>
 <p>A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:</p>
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">matchobject.captures([group1,</span> <span class="pre">...])</span></tt><ul>
@@ -963,7 +964,7 @@ ul.auto-toc {
 <span class="punctuation">[(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="punctuation">(</span><span class="literal number integer">3</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="punctuation">(</span><span class="literal number integer">6</span><span class="punctuation">,</span> <span class="literal number integer">9</span><span class="punctuation">)]</span>
 </pre>
 </li>
-<li><p class="first">Atomic grouping (issue #433030)</p>
+<li><p class="first">Atomic grouping (<a class="reference external" href="https://bugs.python.org/issue433030">issue #433030</a>)</p>
 <p><tt class="docutils literal"><span class="pre">(?&gt;...)</span></tt></p>
 <p>If the following pattern subsequently fails, then the subpattern as a whole will fail.</p>
 </li>
@@ -971,37 +972,37 @@ ul.auto-toc {
 <p><tt class="docutils literal"><span class="pre">(?:...)?+</span></tt> ; <tt class="docutils literal"><span class="pre">(?:...)*+</span></tt> ; <tt class="docutils literal"><span class="pre">(?:...)++</span></tt> ; <tt class="docutils literal"><span class="pre">(?:...){min,max}+</span></tt></p>
 <p>The subpattern is matched up to 'max' times. If the following pattern subsequently fails, then all of the repeated subpatterns will fail as a whole. For example, <tt class="docutils literal"><span class="pre">(?:...)++</span></tt> is equivalent to <tt class="docutils literal"><span class="pre">(?&gt;(?:...)+)</span></tt>.</p>
 </li>
-<li><p class="first">Scoped flags (issue #433028)</p>
+<li><p class="first">Scoped flags (<a class="reference external" href="https://bugs.python.org/issue433028">issue #433028</a>)</p>
 <p><tt class="docutils literal"><span class="pre">(?flags-flags:...)</span></tt></p>
 <p>The flags will apply only to the subpattern. Flags can be turned on or off.</p>
 </li>
-<li><p class="first">Inline flags (issue #433024, issue #433027)</p>
+<li><p class="first">Inline flags (<a class="reference external" href="https://bugs.python.org/issue433024">issue #433024</a>, <a class="reference external" href="https://bugs.python.org/issue433027">issue #433027</a>)</p>
 <p><tt class="docutils literal"><span class="pre">(?flags-flags)</span></tt></p>
 <p>Version 0 behaviour: the flags apply to the entire pattern, and they can't be turned off.</p>
 <p>Version 1 behaviour: the flags apply to the end of the group or pattern, and they can be turned on or off.</p>
 </li>
-<li><p class="first">Repeated repeats (issue #2537)</p>
+<li><p class="first">Repeated repeats (<a class="reference external" href="https://bugs.python.org/issue2537">issue #2537</a>)</p>
 <p>A regex like <tt class="docutils literal"><span class="pre">((x|y+)*)*</span></tt> will be accepted and will work correctly, but should complete more quickly.</p>
 </li>
-<li><p class="first">Definition of 'word' character (issue #1693050)</p>
+<li><p class="first">Definition of 'word' character (<a class="reference external" href="https://bugs.python.org/issue1693050">issue #1693050</a>)</p>
 <p>The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at <tt class="docutils literal"><span class="pre">http://www.unicode.org/reports/tr29/</span></tt>. This applies to <tt class="docutils literal">\w</tt>, <tt class="docutils literal">\W</tt>, <tt class="docutils literal">\b</tt> and <tt class="docutils literal">\B</tt>.</p>
 </li>
-<li><p class="first">Groups in lookahead and lookbehind (issue #814253)</p>
+<li><p class="first">Groups in lookahead and lookbehind (<a class="reference external" href="https://bugs.python.org/issue814253">issue #814253</a>)</p>
 <p>Groups and group references are permitted in both lookahead and lookbehind.</p>
 </li>
 <li><p class="first">Variable-length lookbehind</p>
 <p>A lookbehind can match a variable-length string.</p>
 </li>
-<li><p class="first">Correct handling of charset with ignore case flag (issue #3511)</p>
+<li><p class="first">Correct handling of charset with ignore case flag (<a class="reference external" href="https://bugs.python.org/issue3511">issue #3511</a>)</p>
 <p>Ranges within charsets are handled correctly when the ignore-case flag is turned on.</p>
 </li>
-<li><p class="first">Unmatched group in replacement (issue #1519638)</p>
+<li><p class="first">Unmatched group in replacement (<a class="reference external" href="https://bugs.python.org/issue1519638">issue #1519638</a>)</p>
 <p>An unmatched group is treated as an empty string in a replacement template.</p>
 </li>
-<li><p class="first">'Pathological' patterns (issue #1566086, issue #1662581, issue #1448325, issue #1721518, issue #1297193)</p>
+<li><p class="first">'Pathological' patterns (<a class="reference external" href="https://bugs.python.org/issue1566086">issue #1566086</a>, <a class="reference external" href="https://bugs.python.org/issue1662581">issue #1662581</a>, <a class="reference external" href="https://bugs.python.org/issue1448325">issue #1448325</a>, <a class="reference external" href="https://bugs.python.org/issue1721518">issue #1721518</a>, <a class="reference external" href="https://bugs.python.org/issue1297193">issue #1297193</a>)</p>
 <p>'Pathological' patterns should complete more quickly.</p>
 </li>
-<li><p class="first">Flags argument for regex.split, regex.sub and regex.subn (issue #3482)</p>
+<li><p class="first">Flags argument for regex.split, regex.sub and regex.subn (<a class="reference external" href="https://bugs.python.org/issue3482">issue #3482</a>)</p>
 <p><tt class="docutils literal">regex.split</tt>, <tt class="docutils literal">regex.sub</tt> and <tt class="docutils literal">regex.subn</tt> support a 'flags' argument.</p>
 </li>
 <li><p class="first">Pos and endpos arguments for regex.sub and regex.subn</p>
@@ -1010,16 +1011,16 @@ ul.auto-toc {
 <li><p class="first">'Overlapped' argument for regex.findall and regex.finditer</p>
 <p><tt class="docutils literal">regex.findall</tt> and <tt class="docutils literal">regex.finditer</tt> support an 'overlapped' flag which permits overlapped matches.</p>
 </li>
-<li><p class="first">Unicode escapes (issue #3665)</p>
+<li><p class="first">Unicode escapes (<a class="reference external" href="https://bugs.python.org/issue3665">issue #3665</a>)</p>
 <p>The Unicode escapes <tt class="docutils literal">\uxxxx</tt> and <tt class="docutils literal">\Uxxxxxxxx</tt> are supported.</p>
 </li>
-<li><p class="first">Large patterns (issue #1160)</p>
+<li><p class="first">Large patterns (<a class="reference external" href="https://bugs.python.org/issue1160">issue #1160</a>)</p>
 <p>Patterns can be much larger.</p>
 </li>
-<li><p class="first">Zero-width match with regex.finditer (issue #1647489)</p>
+<li><p class="first">Zero-width match with regex.finditer (<a class="reference external" href="https://bugs.python.org/issue1647489">issue #1647489</a>)</p>
 <p><tt class="docutils literal">regex.finditer</tt> behaves correctly when it splits at a zero-width match.</p>
 </li>
-<li><p class="first">Zero-width split with regex.split (issue #3262)</p>
+<li><p class="first">Zero-width split with regex.split (<a class="reference external" href="https://bugs.python.org/issue3262">issue #3262</a>)</p>
 <p>Version 0 behaviour: a string won't be split at a zero-width match.</p>
 <p>Version 1 behaviour: a string will be split at a zero-width match.</p>
 </li>
@@ -1134,7 +1135,7 @@ ul.auto-toc {
 <li><p class="first">Default Unicode word boundary</p>
 <p>The <tt class="docutils literal">WORD</tt> flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to <tt class="docutils literal">\b</tt> and <tt class="docutils literal">\B</tt>.</p>
 </li>
-<li><p class="first">SRE engine do not release the GIL (issue #1366311)</p>
+<li><p class="first">SRE engine do not release the GIL (<a class="reference external" href="https://bugs.python.org/issue1366311">issue #1366311</a>)</p>
 <p>The regex module can release the GIL during matching (see the above section on multithreading).</p>
 <p>Iterators can be safely shared across threads.</p>
 </li>

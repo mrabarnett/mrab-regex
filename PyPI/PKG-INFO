@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2017.02.08
+Version: 2017.04.05
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -146,9 +146,9 @@ Description: Introduction
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
         
-        * Fixed support for pickling compiled regexes (Hg issue 195)
+        * Fixed support for pickling compiled regexes (`Hg issue 195 <https://bitbucket.org/mrabarnett/mrab-regex/issues/195>`_)
         
-        * Added support for lookaround in conditional pattern (Hg issue 163)
+        * Added support for lookaround in conditional pattern (`Hg issue 163 <https://bitbucket.org/mrabarnett/mrab-regex/issues/163>`_)
         
           The test of a conditional pattern can now be a lookaround.
         
@@ -174,7 +174,7 @@ Description: Introduction
         
           In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was **not** attempted.
         
-        * Added POSIX matching (leftmost longest) (Hg issue 150)
+        * Added POSIX matching (leftmost longest) (`Hg issue 150 <https://bitbucket.org/mrabarnett/mrab-regex/issues/150>`_)
         
           The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the ``POSIX`` flag (``(?p)``).
         
@@ -195,7 +195,7 @@ Description: Introduction
         
           Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.
         
-        * Added ``(?(DEFINE)...)`` (Hg issue 152)
+        * Added ``(?(DEFINE)...)`` (`Hg issue 152 <https://bitbucket.org/mrabarnett/mrab-regex/issues/152>`_)
         
           If there's no group called "DEFINE", then ... will be ignored, but any group definitions within it will be available.
         
@@ -206,7 +206,7 @@ Description: Introduction
             >>> regex.search(r'(?(DEFINE)(?P<quant>\d+)(?P<item>\w+))(?&quant) (?&item)', '5 elephants')
             <regex.Match object; span=(0, 11), match='5 elephants'>
         
-        * Added ``(*PRUNE)``, ``(*SKIP)`` and ``(*FAIL)`` (Hg issue 153)
+        * Added ``(*PRUNE)``, ``(*SKIP)`` and ``(*FAIL)`` (`Hg issue 153 <https://bitbucket.org/mrabarnett/mrab-regex/issues/153>`_)
         
           ``(*PRUNE)`` discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
         
@@ -214,7 +214,7 @@ Description: Introduction
         
           ``(*FAIL)`` causes immediate backtracking. ``(*F)`` is a permitted abbreviation.
         
-        * Added ``\K`` (Hg issue 151)
+        * Added ``\K`` (`Hg issue 151 <https://bitbucket.org/mrabarnett/mrab-regex/issues/151>`_)
         
           Keeps the part of the entire match after the position where ``\K`` occurred; the part before it is discarded.
         
@@ -236,7 +236,7 @@ Description: Introduction
             >>> m[1]
             'bcdef'
         
-        * Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (Hg issue 133) **(Python 2.6 and above)**
+        * Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (`Hg issue 133 <https://bitbucket.org/mrabarnett/mrab-regex/issues/133>`_) **(Python 2.6 and above)**
         
           You can now use subscripting to get the captures of a repeated capture group.
         
@@ -268,7 +268,7 @@ Description: Introduction
         
           The ``LOCALE`` flag is intended for legacy code and has limited support. You're still recommended to use Unicode instead.
         
-        * Added partial matches (Hg issue 102)
+        * Added partial matches (`Hg issue 102 <https://bitbucket.org/mrabarnett/mrab-regex/issues/102>`_)
         
           A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.
         
@@ -320,7 +320,7 @@ Description: Introduction
             >>> pattern.match('1233', partial=True).partial
             False
         
-        * ``*`` operator not working correctly with sub() (Hg issue 106)
+        * ``*`` operator not working correctly with sub() (`Hg issue 106 <https://bitbucket.org/mrabarnett/mrab-regex/issues/106>`_)
         
           Sometimes it's not clear how zero-width matches should be handled. For example, should ``.*`` match 0 characters directly after matching >0 characters?
         
@@ -342,7 +342,7 @@ Description: Introduction
             >>> regex.sub('(?V1).*?', '|', 'test')
             '|||||||||'
         
-        * re.group() should never return a bytearray (issue #18468)
+        * re.group() should never return a bytearray (`issue #18468 <https://bugs.python.org/issue18468>`_)
         
           For compatibility with the re module, the regex module returns all matching bytestrings as ``bytes``, starting from Python 3.4.
         
@@ -358,7 +358,7 @@ Description: Introduction
             >>> regex.match(b'.', bytearray(b'a')).group()
             bytearray(b'a')
         
-        * Added ``capturesdict`` (Hg issue 86)
+        * Added ``capturesdict`` (`Hg issue 86 <https://bitbucket.org/mrabarnett/mrab-regex/issues/86>`_)
         
           ``capturesdict`` is a combination of ``groupdict`` and ``captures``:
         
@@ -382,7 +382,7 @@ Description: Introduction
             >>> m.capturesdict()
             {'word': ['one', 'two', 'three'], 'digits': ['1', '2', '3']}
         
-        * Allow duplicate names of groups (Hg issue 87)
+        * Allow duplicate names of groups (`Hg issue 87 <https://bitbucket.org/mrabarnett/mrab-regex/issues/87>`_)
         
           Group names can now be duplicated.
         
@@ -432,7 +432,7 @@ Description: Introduction
             >>> m.captures("item")
             ['first', '']
         
-        * Added ``fullmatch`` (issue #16203)
+        * Added ``fullmatch`` (`issue #16203 <https://bugs.python.org/issue16203>`_)
         
           ``fullmatch`` behaves like ``match``, except that it must match all of the string.
         
@@ -502,11 +502,11 @@ Description: Introduction
             >>> print(m.string)
             None
         
-        * Characters in a group name (issue #14462)
+        * Characters in a group name (`issue #14462 <https://bugs.python.org/issue14462>`_)
         
           A group name can now contain the same characters as an identifier. These are different in Python 2 and Python 3.
         
-        * Recursive patterns (Hg issue 27)
+        * Recursive patterns (`Hg issue 27 <https://bitbucket.org/mrabarnett/mrab-regex/issues/27>`_)
         
           Recursive and repeated patterns are supported.
         
@@ -535,7 +535,7 @@ Description: Introduction
         
           The alternative forms ``(?P>name)`` and ``(?P&name)`` are also supported.
         
-        * repr(regex) doesn't include actual regex (issue #13592)
+        * repr(regex) doesn't include actual regex (`issue #13592 <https://bugs.python.org/issue13592>`_)
         
           The repr of a compiled regex is now in the form of a eval-able string. For example:
         
@@ -549,7 +549,7 @@ Description: Introduction
         
           The regex module has Regex as an alias for the 'compile' function.
         
-        * Improve the repr for regular expression match objects (issue #17087)
+        * Improve the repr for regular expression match objects (`issue #17087 <https://bugs.python.org/issue17087>`_)
         
           The repr of a match object is now a more useful form. For example:
         
@@ -558,7 +558,7 @@ Description: Introduction
             >>> regex.search(r"\d+", "abc012def")
             <regex.Match object; span=(3, 6), match='012'>
         
-        * Python lib re cannot handle Unicode properly due to narrow/wide bug (issue #12729)
+        * Python lib re cannot handle Unicode properly due to narrow/wide bug (`issue #12729 <https://bugs.python.org/issue12729>`_)
         
           The source code of the regex module has been updated to support PEP 393 ("Flexible String Representation"), which is new in Python 3.3.
         
@@ -577,7 +577,7 @@ Description: Introduction
         
           In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.
         
-        * Approximate "fuzzy" matching (Hg issue 12, Hg issue 41, Hg issue 109)
+        * Approximate "fuzzy" matching (`Hg issue 12 <https://bitbucket.org/mrabarnett/mrab-regex/issues/12>`_, `Hg issue 41 <https://bitbucket.org/mrabarnett/mrab-regex/issues/41>`_, `Hg issue 109 <https://bitbucket.org/mrabarnett/mrab-regex/issues/109>`_)
         
           Regex usually attempts an exact match, but sometimes an approximate, or "fuzzy", match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.
         
@@ -671,7 +671,7 @@ Description: Introduction
             (0, 0, 0)
             >>> # 0 substitutions, 0 insertions, 0 deletions.
         
-        * Named lists (Hg issue 11)
+        * Named lists (`Hg issue 11 <https://bitbucket.org/mrabarnett/mrab-regex/issues/11>`_)
         
           ``\L<name>``
         
@@ -747,7 +747,7 @@ Description: Introduction
         
           * ``[\p{ASCII}&&\p{Letter}]`` # Set containing all characters which are ASCII and letter
         
-        * regex.escape (issue #2650)
+        * regex.escape (`issue #2650 <https://bugs.python.org/issue2650>`_)
         
           regex.escape has an additional keyword parameter ``special_only``. When True, only 'special' regex characters, such as '?', are escaped.
         
@@ -760,7 +760,7 @@ Description: Introduction
             >>> regex.escape("foo!?", special_only=True)
             'foo!\\?'
         
-        * Repeated captures (issue #7132)
+        * Repeated captures (`issue #7132 <https://bugs.python.org/issue7132>`_)
         
           A match object has additional methods which return information on all the successful matches of a repeated capture group. These methods are:
         
@@ -802,7 +802,7 @@ Description: Introduction
             >>> m.spans(1)
             [(0, 3), (3, 6), (6, 9)]
         
-        * Atomic grouping (issue #433030)
+        * Atomic grouping (`issue #433030 <https://bugs.python.org/issue433030>`_)
         
           ``(?>...)``
         
@@ -814,13 +814,13 @@ Description: Introduction
         
           The subpattern is matched up to 'max' times. If the following pattern subsequently fails, then all of the repeated subpatterns will fail as a whole. For example, ``(?:...)++`` is equivalent to ``(?>(?:...)+)``.
         
-        * Scoped flags (issue #433028)
+        * Scoped flags (`issue #433028 <https://bugs.python.org/issue433028>`_)
         
           ``(?flags-flags:...)``
         
           The flags will apply only to the subpattern. Flags can be turned on or off.
         
-        * Inline flags (issue #433024, issue #433027)
+        * Inline flags (`issue #433024 <https://bugs.python.org/issue433024>`_, `issue #433027 <https://bugs.python.org/issue433027>`_)
         
           ``(?flags-flags)``
         
@@ -828,15 +828,15 @@ Description: Introduction
         
           Version 1 behaviour: the flags apply to the end of the group or pattern, and they can be turned on or off.
         
-        * Repeated repeats (issue #2537)
+        * Repeated repeats (`issue #2537 <https://bugs.python.org/issue2537>`_)
         
           A regex like ``((x|y+)*)*`` will be accepted and will work correctly, but should complete more quickly.
         
-        * Definition of 'word' character (issue #1693050)
+        * Definition of 'word' character (`issue #1693050 <https://bugs.python.org/issue1693050>`_)
         
           The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
         
-        * Groups in lookahead and lookbehind (issue #814253)
+        * Groups in lookahead and lookbehind (`issue #814253 <https://bugs.python.org/issue814253>`_)
         
           Groups and group references are permitted in both lookahead and lookbehind.
         
@@ -844,19 +844,19 @@ Description: Introduction
         
           A lookbehind can match a variable-length string.
         
-        * Correct handling of charset with ignore case flag (issue #3511)
+        * Correct handling of charset with ignore case flag (`issue #3511 <https://bugs.python.org/issue3511>`_)
         
           Ranges within charsets are handled correctly when the ignore-case flag is turned on.
         
-        * Unmatched group in replacement (issue #1519638)
+        * Unmatched group in replacement (`issue #1519638 <https://bugs.python.org/issue1519638>`_)
         
           An unmatched group is treated as an empty string in a replacement template.
         
-        * 'Pathological' patterns (issue #1566086, issue #1662581, issue #1448325, issue #1721518, issue #1297193)
+        * 'Pathological' patterns (`issue #1566086 <https://bugs.python.org/issue1566086>`_, `issue #1662581 <https://bugs.python.org/issue1662581>`_, `issue #1448325 <https://bugs.python.org/issue1448325>`_, `issue #1721518 <https://bugs.python.org/issue1721518>`_, `issue #1297193 <https://bugs.python.org/issue1297193>`_)
         
           'Pathological' patterns should complete more quickly.
         
-        * Flags argument for regex.split, regex.sub and regex.subn (issue #3482)
+        * Flags argument for regex.split, regex.sub and regex.subn (`issue #3482 <https://bugs.python.org/issue3482>`_)
         
           ``regex.split``, ``regex.sub`` and ``regex.subn`` support a 'flags' argument.
         
@@ -868,19 +868,19 @@ Description: Introduction
         
           ``regex.findall`` and ``regex.finditer`` support an 'overlapped' flag which permits overlapped matches.
         
-        * Unicode escapes (issue #3665)
+        * Unicode escapes (`issue #3665 <https://bugs.python.org/issue3665>`_)
         
           The Unicode escapes ``\uxxxx`` and ``\Uxxxxxxxx`` are supported.
         
-        * Large patterns (issue #1160)
+        * Large patterns (`issue #1160 <https://bugs.python.org/issue1160>`_)
         
           Patterns can be much larger.
         
-        * Zero-width match with regex.finditer (issue #1647489)
+        * Zero-width match with regex.finditer (`issue #1647489 <https://bugs.python.org/issue1647489>`_)
         
           ``regex.finditer`` behaves correctly when it splits at a zero-width match.
         
-        * Zero-width split with regex.split (issue #3262)
+        * Zero-width split with regex.split (`issue #3262 <https://bugs.python.org/issue3262>`_)
         
           Version 0 behaviour: a string won't be split at a zero-width match.
         
@@ -1036,7 +1036,7 @@ Description: Introduction
         
           The ``WORD`` flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to ``\b`` and ``\B``.
         
-        * SRE engine do not release the GIL (issue #1366311)
+        * SRE engine do not release the GIL (`issue #1366311 <https://bugs.python.org/issue1366311>`_)
         
           The regex module can release the GIL during matching (see the above section on multithreading).
         
@@ -1047,9 +1047,11 @@ Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: Python Software Foundation License
 Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2
 Classifier: Programming Language :: Python :: 2.5
 Classifier: Programming Language :: Python :: 2.6
 Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.1
 Classifier: Programming Language :: Python :: 3.2
 Classifier: Programming Language :: Python :: 3.3
