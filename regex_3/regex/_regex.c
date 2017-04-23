@@ -287,6 +287,12 @@ typedef struct RE_FuzzyInfo {
     size_t total_cost;
 } RE_FuzzyInfo;
 
+/* Info about a group's span. */
+typedef struct RE_GroupSpan {
+    Py_ssize_t start;
+    Py_ssize_t end;
+} RE_GroupSpan;
+
 /* Storage for backtrack data. */
 typedef struct RE_BacktrackData {
     union {
@@ -324,8 +330,10 @@ typedef struct RE_BacktrackData {
             RE_INT8 step;
         } fuzzy_string;
         struct {
+            RE_GroupSpan span;
             Py_ssize_t text_pos;
             Py_ssize_t current_capture;
+            size_t capture_count;
             RE_CODE private_index;
             RE_CODE public_index;
             BOOL capture;
@@ -435,12 +443,6 @@ typedef struct RE_Node {
     RE_UINT8 op;
     BOOL match;
 } RE_Node;
-
-/* Info about a group's span. */
-typedef struct RE_GroupSpan {
-    Py_ssize_t start;
-    Py_ssize_t end;
-} RE_GroupSpan;
 
 /* Span of a guard (inclusive range). */
 typedef struct RE_GuardSpan {
@@ -12389,10 +12391,14 @@ advance:
 
             /* Save the capture? */
             if (node->values[2]) {
-                group->current_capture = (Py_ssize_t)group->capture_count;
+                bt_data->group.capture_count = group->capture_count;
                 if (!save_capture(safe_state, private_index, public_index))
                     return RE_ERROR_MEMORY;
+                group->current_capture = (Py_ssize_t)group->capture_count - 1;
             }
+
+            if (!state->visible_captures)
+                bt_data->group.span = group->captures[0];
 
             node = node->next_1.node;
             break;
@@ -14054,10 +14060,14 @@ advance:
 
             /* Save the capture? */
             if (node->values[2]) {
-                group->current_capture = (Py_ssize_t)group->capture_count;
+                bt_data->group.capture_count = group->capture_count;
                 if (!save_capture(safe_state, private_index, public_index))
                     return RE_ERROR_MEMORY;
+                group->current_capture = (Py_ssize_t)group->capture_count - 1;
             }
+
+            if (!state->visible_captures)
+                bt_data->group.span = group->captures[0];
 
             node = node->next_1.node;
             break;
@@ -14945,16 +14955,21 @@ backtrack:
             private_index = bt_data->group.private_index;
             group = &state->groups[private_index - 1];
 
-            /* Unsave the capture? */
-            if (bt_data->group.capture)
-                unsave_capture(state, bt_data->group.private_index,
-                  bt_data->group.public_index);
-
             if (pattern->group_info[private_index - 1].referenced &&
               group->span.end != bt_data->group.text_pos)
                 --state->capture_change;
             group->span.end = bt_data->group.text_pos;
             group->current_capture = bt_data->group.current_capture;
+
+            /* Unsave the capture? */
+            if (bt_data->group.capture) {
+                unsave_capture(state, bt_data->group.private_index,
+                  bt_data->group.public_index);
+                group->capture_count = bt_data->group.capture_count;
+            }
+
+            if (!state->visible_captures)
+                group->captures[0] = bt_data->group.span;
 
             discard_backtrack(state);
             break;
@@ -16387,16 +16402,21 @@ backtrack:
             private_index = bt_data->group.private_index;
             group = &state->groups[private_index - 1];
 
-            /* Unsave the capture? */
-            if (bt_data->group.capture)
-                unsave_capture(state, bt_data->group.private_index,
-                  bt_data->group.public_index);
-
             if (pattern->group_info[private_index - 1].referenced &&
               group->span.start != bt_data->group.text_pos)
                 --state->capture_change;
             group->span.start = bt_data->group.text_pos;
             group->current_capture = bt_data->group.current_capture;
+
+            /* Unsave the capture? */
+            if (bt_data->group.capture) {
+                unsave_capture(state, bt_data->group.private_index,
+                  bt_data->group.public_index);
+                group->capture_count = bt_data->group.capture_count;
+            }
+
+            if (!state->visible_captures)
+                group->captures[0] = bt_data->group.span;
 
             discard_backtrack(state);
             break;

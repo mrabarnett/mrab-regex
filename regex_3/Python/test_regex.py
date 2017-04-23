@@ -3827,6 +3827,18 @@ thing
         self.assertEqual(regex.findall(r'''(?(DEFINE)(?P<mydef>(?:(?![a-d]).)))(?&mydef)+''',
           'abcdefgh'), ['efgh'])
 
+        # Hg issue 238: Not fully re backward compatible
+        self.assertEqual(regex.findall(r'((\w{1,3})(\.{2,10})){1,3}',
+          '"Erm....yes. T..T...Thank you for that."'), [('Erm....', 'Erm',
+          '....'), ('T...', 'T', '...')])
+        self.assertEqual(regex.findall(r'((\w{1,3})(\.{2,10})){3}',
+          '"Erm....yes. T..T...Thank you for that."'), [])
+        self.assertEqual(regex.findall(r'((\w{1,3})(\.{2,10})){2}',
+          '"Erm....yes. T..T...Thank you for that."'), [('T...', 'T', '...')])
+        self.assertEqual(regex.findall(r'((\w{1,3})(\.{2,10})){1}',
+          '"Erm....yes. T..T...Thank you for that."'), [('Erm....', 'Erm',
+          '....'), ('T..', 'T', '..'), ('T...', 'T', '...')])
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

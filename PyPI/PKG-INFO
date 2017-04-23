@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2017.04.05
+Version: 2017.04.23
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -1041,7 +1041,6 @@ Description: Introduction
           The regex module can release the GIL during matching (see the above section on multithreading).
         
           Iterators can be safely shared across threads.
-
 Platform: UNKNOWN
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers
