@@ -50,6 +50,14 @@
 #include "pyport.h"
 #include "pythread.h"
 
+#if PY_VERSION_HEX < 0x03070000
+/* Issue 29943: PySlice_GetIndicesEx change broke ABI in 3.5 and 3.6 branches
+ */
+#if defined(PySlice_GetIndicesEx)
+#undef PySlice_GetIndicesEx
+#endif
+#endif
+
 #if PY_VERSION_HEX < 0x03030000
 typedef unsigned char Py_UCS1;
 typedef unsigned short Py_UCS2;
