@@ -353,7 +353,7 @@ def template(pattern, flags=0):
     "Compile a template pattern, returning a pattern object."
     return _compile(pattern, flags | TEMPLATE)
 
-def escape(pattern, special_only=False):
+def escape(pattern, special_only=True):
     "Escape all non-alphanumeric characters or special characters in pattern."
     # Convert it to Unicode.
     if isinstance(pattern, bytes):
@@ -408,7 +408,7 @@ from _regex_core import (ALNUM as _ALNUM, Info as _Info, OP as _OP, Source as
 
 DEFAULT_VERSION = VERSION0
 
-_METACHARS = frozenset("()[]{}?*+|^$\\.-#")
+_METACHARS = frozenset("()[]{}?*+|^$\\.-#&~")
 
 _regex_core.DEFAULT_VERSION = DEFAULT_VERSION
 
