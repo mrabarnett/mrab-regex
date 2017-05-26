@@ -3149,12 +3149,15 @@ xyzabc
           regex.compile(r'.???'))
 
         # Hg issue 97: behaviour of regex.escape's special_only is wrong
-        self.assertEqual(regex.escape(u'foo!?'), u'foo\\!\\?')
+        # Hg issue 244: Make `special_only=True` the default in `regex.escape()`
+        self.assertEqual(regex.escape(u'foo!?', special_only=False), u'foo\\!\\?')
         self.assertEqual(regex.escape(u'foo!?', special_only=True), u'foo!\\?')
+        self.assertEqual(regex.escape(u'foo!?'), u'foo!\\?')
 
-        self.assertEqual(regex.escape('foo!?'), 'foo\\!\\?')
+        self.assertEqual(regex.escape('foo!?', special_only=False), 'foo\\!\\?')
         self.assertEqual(regex.escape('foo!?', special_only=True),
           'foo!\\?')
+        self.assertEqual(regex.escape('foo!?'), 'foo!\\?')
 
         # Hg issue 100: strange results from regex.search
         self.assertEqual(regex.search('^([^z]*(?:WWWi|W))?$',

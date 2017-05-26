@@ -28,6 +28,17 @@ __all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH",
 
 # The regex exception.
 class error(Exception):
+    """Exception raised for invalid regular expressions.
+
+    Attributes:
+
+        msg: The unformatted error message
+        pattern: The regular expression pattern
+        pos: The position in the pattern where compilation failed, or None
+        lineno: The line number where compilation failed, unless pos is None
+        colno: The column number where compilation failed, unless pos is None
+    """
+
     def __init__(self, message, pattern=None, pos=None):
         newline = '\n' if isinstance(pattern, str) else b'\n'
         self.msg = message
