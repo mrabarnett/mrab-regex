@@ -3025,7 +3025,15 @@ class LookAround(RegexBase):
         return self.subpattern.contains_group()
 
     def _compile(self, reverse, fuzzy):
-        return ([(OP.LOOKAROUND, int(self.positive), int(not self.behind))] +
+        flags = 0
+        if self.positive:
+            flags |= POSITIVE_OP
+        if fuzzy:
+            flags |= FUZZY_OP
+        if reverse:
+            flags |= REVERSE_OP
+
+        return ([(OP.LOOKAROUND, flags, int(not self.behind))] +
           self.subpattern.compile(self.behind) + [(OP.END, )])
 
     def dump(self, indent, reverse):

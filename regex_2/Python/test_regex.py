@@ -3738,6 +3738,27 @@ thing
           '"Erm....yes. T..T...Thank you for that."'), [('Erm....', 'Erm',
           '....'), ('T..', 'T', '..'), ('T...', 'T', '...')])
 
+        # Hg issue 247: Unexpected result with fuzzy matching and lookahead expression
+        self.assertEqual(regex.search(r'(?:ESTONIA(?!\w)){e<=1}',
+          'ESTONIAN WORKERS').group(), 'ESTONIAN')
+        self.assertEqual(regex.search(r'(?:ESTONIA(?=\W)){e<=1}',
+          'ESTONIAN WORKERS').group(), 'ESTONIAN')
+
+        self.assertEqual(regex.search(r'(?:(?<!\w)ESTONIA){e<=1}',
+          'BLUB NESTONIA').group(), 'NESTONIA')
+        self.assertEqual(regex.search(r'(?:(?<=\W)ESTONIA){e<=1}',
+          'BLUB NESTONIA').group(), 'NESTONIA')
+
+        self.assertEqual(regex.search(r'(?r)(?:ESTONIA(?!\w)){e<=1}',
+          'ESTONIAN WORKERS').group(), 'ESTONIAN')
+        self.assertEqual(regex.search(r'(?r)(?:ESTONIA(?=\W)){e<=1}',
+          'ESTONIAN WORKERS').group(), 'ESTONIAN')
+
+        self.assertEqual(regex.search(r'(?r)(?:(?<!\w)ESTONIA){e<=1}',
+          'BLUB NESTONIA').group(), 'NESTONIA')
+        self.assertEqual(regex.search(r'(?r)(?:(?<=\W)ESTONIA){e<=1}',
+          'BLUB NESTONIA').group(), 'NESTONIA')
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

@@ -12583,6 +12583,8 @@ advance:
 
                 node = node->next_1.node;
             } else {
+                RE_Node* look_node;
+
                 /* It's a negative lookaround that's succeeded. The groups and
                  * certain flags may have changed. We need to restore them and
                  * then backtrack.
@@ -12598,8 +12600,26 @@ advance:
                 state->capture_change =
                   lookaround->backtrack->lookaround.capture_change;
 
-                discard_backtrack(state);
-                goto backtrack;
+                look_node = lookaround->node;
+
+                if (look_node->status & RE_STATUS_FUZZY) {
+                    status = fuzzy_match_item(safe_state, search,
+                      &state->text_pos, &look_node, 0);
+                    if (status < 0)
+                        return status;
+
+                    if (!look_node) {
+                        discard_backtrack(state);
+                        goto backtrack;
+                    }
+
+                    discard_backtrack(state);
+                    discard_backtrack(state);
+                    node = node->next_1.node;
+                } else {
+                    discard_backtrack(state);
+                    goto backtrack;
+                }
             }
             break;
         }
@@ -16289,7 +16309,26 @@ backtrack:
                 state->capture_change = bt_data->lookaround.capture_change;
 
                 if (bt_data->lookaround.node->match) {
+                    RE_Node* look_node;
+
                     /* It's a positive lookaround that's failed. */
+                    look_node = bt_data->lookaround.node;
+
+                    if (look_node->status & RE_STATUS_FUZZY) {
+                        status = fuzzy_match_item(safe_state, search,
+                          &state->text_pos, &look_node, 0);
+                        if (status < 0)
+                            return status;
+
+                        if (look_node) {
+                            node =
+                              bt_data->lookaround.node->nonstring.next_2.node;
+                            discard_backtrack(state);
+                            discard_backtrack(state);
+                            goto advance;
+                        }
+                    }
+
                     discard_backtrack(state);
                 } else {
                     /* It's a negative lookaround that's failed. Record that
@@ -16298,9 +16337,12 @@ backtrack:
                      */
                     bt_data->lookaround.inside = FALSE;
                     node = bt_data->lookaround.node->nonstring.next_2.node;
+                    discard_backtrack(state);
                     goto advance;
                 }
             } else {
+                RE_Node* look_node;
+
                 /* Backtracked to a lookaround. If it's a positive lookaround
                  * that succeeded, we need to restore the groups; if it's a
                  * negative lookaround that failed, it would have completely
@@ -16313,6 +16355,21 @@ backtrack:
 
                 state->too_few_errors = bt_data->lookaround.too_few_errors;
                 state->capture_change = bt_data->lookaround.capture_change;
+
+                look_node = bt_data->lookaround.node;
+
+                if (look_node->status & RE_STATUS_FUZZY) {
+                    status = fuzzy_match_item(safe_state, search,
+                      &state->text_pos, &look_node, 0);
+                    if (status < 0)
+                        return status;
+
+                    if (look_node) {
+                        node = bt_data->lookaround.node->nonstring.next_2.node;
+                        discard_backtrack(state);
+                        goto advance;
+                    }
+                }
 
                 discard_backtrack(state);
             }
