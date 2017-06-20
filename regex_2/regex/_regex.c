@@ -13055,6 +13055,7 @@ advance:
         {
             RE_CODE index;
             RE_RepeatData* rp_data;
+            BOOL changed;
             RE_BacktrackData* bt_data;
             BOOL try_body;
             int body_status;
@@ -13067,6 +13068,9 @@ advance:
             /* Repeat indexes are 0-based. */
             index = node->values[0];
             rp_data = &state->repeats[index];
+
+            /* Has a capture group change? */
+            changed = rp_data->capture_change != state->capture_change;
 
             /* We might need to backtrack into the head, so save the current
              * repeat.
@@ -13086,8 +13090,9 @@ advance:
             rp_data->capture_change = state->capture_change;
 
             /* Could the body or tail match? */
-            try_body = node->values[2] > 0 && !is_repeat_guarded(safe_state,
-              index, state->text_pos, RE_STATUS_BODY);
+            try_body = changed && state->pattern->is_fuzzy || node->values[2] >
+              0 && !is_repeat_guarded(safe_state, index, state->text_pos,
+              RE_STATUS_BODY);
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);

@@ -3863,6 +3863,16 @@ thing
         self.assertEqual(regex.search(r'(?r)(?:(?<=\W)ESTONIA){e<=1}',
           'BLUB NESTONIA').group(), 'NESTONIA')
 
+        # Hg issue 248: Unexpected result with fuzzy matching and more than one non-greedy quantifier
+        self.assertEquals(regex.search(r'(?:A.*B.*CDE){e<=2}',
+          'A B CYZ').group(), 'A B CYZ')
+        self.assertEquals(regex.search(r'(?:A.*B.*?CDE){e<=2}',
+          'A B CYZ').group(), 'A B CYZ')
+        self.assertEquals(regex.search(r'(?:A.*?B.*CDE){e<=2}',
+          'A B CYZ').group(), 'A B CYZ')
+        self.assertEquals(regex.search(r'(?:A.*?B.*?CDE){e<=2}',
+          'A B CYZ').group(), 'A B CYZ')
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
