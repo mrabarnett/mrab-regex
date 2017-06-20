@@ -353,7 +353,7 @@ def template(pattern, flags=0):
     "Compile a template pattern, returning a pattern object."
     return _compile(pattern, flags | TEMPLATE)
 
-def escape(pattern, special_only=True):
+def escape(pattern, special_only=True, literal_spaces=False):
     "Escape all non-alphanumeric characters or special characters in pattern."
     # Convert it to Unicode.
     if isinstance(pattern, bytes):
@@ -364,7 +364,9 @@ def escape(pattern, special_only=True):
     s = []
     if special_only:
         for c in p:
-            if c in _METACHARS or c.isspace():
+            if c == " " and literal_spaces:
+                s.append(c)
+            elif c in _METACHARS or c.isspace():
                 s.append("\\")
                 s.append(c)
             elif c == "\x00":
@@ -373,7 +375,9 @@ def escape(pattern, special_only=True):
                 s.append(c)
     else:
         for c in p:
-            if c in _ALNUM:
+            if c == " " and literal_spaces:
+                s.append(c)
+            elif c in _ALNUM:
                 s.append(c)
             elif c == "\x00":
                 s.append("\\000")
