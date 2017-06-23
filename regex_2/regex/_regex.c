@@ -2017,7 +2017,7 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
       RE_GBREAK_T))
         return FALSE;
 
-    /* Don't break just before Extend characters. */
+    /* Don't break just before Extend characters or zwj. */
     /* GB9 */
     if (prop == RE_GBREAK_EXTEND || prop == RE_GBREAK_ZWJ)
         return FALSE;

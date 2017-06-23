@@ -86,24 +86,24 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_PROP_S_MASK 0x0F000000
 #define RE_PROP_Z_MASK 0x00007000
 
-#define RE_PROP_ALNUM 0x470001
+#define RE_PROP_ALNUM 0x480001
 #define RE_PROP_ALPHA 0x070001
-#define RE_PROP_ANY 0x480001
+#define RE_PROP_ANY 0x490001
 #define RE_PROP_ASCII 0x010001
-#define RE_PROP_BLANK 0x490001
+#define RE_PROP_BLANK 0x4A0001
 #define RE_PROP_CNTRL 0x00000F
 #define RE_PROP_DIGIT 0x000009
-#define RE_PROP_GRAPH 0x4A0001
+#define RE_PROP_GRAPH 0x4B0001
 #define RE_PROP_LOWER 0x080001
-#define RE_PROP_PRINT 0x4B0001
+#define RE_PROP_PRINT 0x4C0001
 #define RE_PROP_SPACE 0x190001
 #define RE_PROP_UPPER 0x090001
-#define RE_PROP_WORD 0x4C0001
-#define RE_PROP_XDIGIT 0x4D0001
-#define RE_PROP_POSIX_ALNUM 0x4F0001
-#define RE_PROP_POSIX_DIGIT 0x4E0001
-#define RE_PROP_POSIX_PUNCT 0x500001
-#define RE_PROP_POSIX_XDIGIT 0x510001
+#define RE_PROP_WORD 0x4D0001
+#define RE_PROP_XDIGIT 0x4E0001
+#define RE_PROP_POSIX_ALNUM 0x500001
+#define RE_PROP_POSIX_DIGIT 0x4F0001
+#define RE_PROP_POSIX_PUNCT 0x510001
+#define RE_PROP_POSIX_XDIGIT 0x520001
 
 #define RE_BREAK_OTHER 0
 #define RE_BREAK_DOUBLEQUOTE 1
@@ -147,11 +147,11 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_GBREAK_GLUEAFTERZWJ 16
 #define RE_GBREAK_EBASEGAZ 17
 
-extern char* re_strings[1336];
-extern RE_Property re_properties[150];
-extern RE_PropertyValue re_property_values[1469];
+extern char* re_strings[1362];
+extern RE_Property re_properties[152];
+extern RE_PropertyValue re_property_values[1499];
 extern RE_UINT16 re_expand_on_folding[104];
-extern RE_GetPropertyFunc re_get_property[82];
+extern RE_GetPropertyFunc re_get_property[83];
 
 RE_UINT32 re_get_general_category(RE_UINT32 ch);
 RE_UINT32 re_get_block(RE_UINT32 ch);
@@ -211,6 +211,7 @@ RE_UINT32 re_get_variation_selector(RE_UINT32 ch);
 RE_UINT32 re_get_pattern_white_space(RE_UINT32 ch);
 RE_UINT32 re_get_pattern_syntax(RE_UINT32 ch);
 RE_UINT32 re_get_prepended_concatenation_mark(RE_UINT32 ch);
+RE_UINT32 re_get_regional_indicator(RE_UINT32 ch);
 RE_UINT32 re_get_hangul_syllable_type(RE_UINT32 ch);
 RE_UINT32 re_get_bidi_class(RE_UINT32 ch);
 RE_UINT32 re_get_canonical_combining_class(RE_UINT32 ch);

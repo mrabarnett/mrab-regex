@@ -1,4 +1,4 @@
-The following is a list of the 82 properties which are supported by this module:
+The following is a list of the 83 properties which are supported by this module:
 
 Alphabetic [Alpha]
     No [F, False, N]
@@ -108,6 +108,7 @@ Block [blk]
     CJK_Unified_Ideographs_Extension_C [CJK_Ext_C]
     CJK_Unified_Ideographs_Extension_D [CJK_Ext_D]
     CJK_Unified_Ideographs_Extension_E [CJK_Ext_E]
+    CJK_Unified_Ideographs_Extension_F [CJK_Ext_F]
     Combining_Diacritical_Marks [Diacriticals]
     Combining_Diacritical_Marks_Extended [Diacriticals_Ext]
     Combining_Diacritical_Marks_For_Symbols [Combining_Marks_For_Symbols, Diacriticals_For_Symbols]
@@ -178,6 +179,7 @@ Block [blk]
     IPA_Extensions [IPA_Ext]
     Javanese
     Kaithi
+    Kana_Extended_A [Kana_Ext_A]
     Kana_Supplement [Kana_Sup]
     Kanbun
     Kangxi_Radicals [Kangxi]
@@ -214,6 +216,7 @@ Block [blk]
     Mandaic
     Manichaean
     Marchen
+    Masaram_Gondi
     Mathematical_Alphanumeric_Symbols [Math_Alphanum]
     Mathematical_Operators [Math_Operators]
     Meetei_Mayek
@@ -244,6 +247,7 @@ Block [blk]
     NKo
     No_Block [NB]
     Number_Forms
+    Nushu
     Ogham
     Old_Hungarian
     Old_Italic
@@ -282,6 +286,7 @@ Block [blk]
     Sinhala_Archaic_Numbers
     Small_Form_Variants [Small_Forms]
     Sora_Sompeng
+    Soyombo
     Spacing_Modifier_Letters [Modifier_Letters]
     Specials
     Sundanese
@@ -298,6 +303,7 @@ Block [blk]
     Sutton_SignWriting
     Syloti_Nagri
     Syriac
+    Syriac_Supplement [Syriac_Sup]
     Tagalog
     Tagbanwa
     Tags
@@ -328,6 +334,7 @@ Block [blk]
     Yijing_Hexagram_Symbols [Yijing]
     Yi_Radicals
     Yi_Syllables
+    Zanabazar_Square
 
 Canonical_Combining_Class [ccc]
     Above [230, A]
@@ -579,6 +586,7 @@ ID_Start [IDS]
 
 Indic_Positional_Category [InPC]
     Bottom
+    Bottom_And_Left
     Bottom_And_Right
     Left
     Left_And_Right
@@ -661,6 +669,17 @@ Joining_Group [jg]
     Knotted_Heh
     Lam
     Lamadh
+    Malayalam_Bha
+    Malayalam_Ja
+    Malayalam_Lla
+    Malayalam_Llla
+    Malayalam_Nga
+    Malayalam_Nna
+    Malayalam_Nnna
+    Malayalam_Nya
+    Malayalam_Ra
+    Malayalam_Ssa
+    Malayalam_Tta
     Manichaean_Aleph
     Manichaean_Ayin
     Manichaean_Beth
@@ -1010,6 +1029,10 @@ Radical
     No [F, False, N]
     Yes [T, True, Y]
 
+Regional_Indicator [RI]
+    No [F, False, N]
+    Yes [T, True, Y]
+
 Script [sc]
     Adlam [Adlm]
     Ahom
@@ -1086,6 +1109,7 @@ Script [sc]
     Mandaic [Mand]
     Manichaean [Mani]
     Marchen [Marc]
+    Masaram_Gondi [Gonm]
     Meetei_Mayek [Mtei]
     Mende_Kikakui [Mend]
     Meroitic_Cursive [Merc]
@@ -1100,6 +1124,7 @@ Script [sc]
     Newa
     New_Tai_Lue [Talu]
     Nko [Nkoo]
+    Nushu [Nshu]
     Ogham [Ogam]
     Old_Hungarian [Hung]
     Old_Italic [Ital]
@@ -1128,6 +1153,7 @@ Script [sc]
     SignWriting [Sgnw]
     Sinhala [Sinh]
     Sora_Sompeng [Sora]
+    Soyombo [Soyo]
     Sundanese [Sund]
     Syloti_Nagri [Sylo]
     Syriac [Syrc]
@@ -1150,6 +1176,7 @@ Script [sc]
     Vai [Vaii]
     Warang_Citi [Wara]
     Yi [Yiii]
+    Zanabazar_Square [Zanb]
 
 Sentence_Break [SB]
     ATerm [AT]

@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2017.06.20
+Version: 2017.06.23
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -137,7 +137,7 @@ Description: Introduction
         Unicode
         -------
         
-        This module supports Unicode 9.0.
+        This module supports Unicode 10.0.
         
         Full Unicode case-folding is supported.
         

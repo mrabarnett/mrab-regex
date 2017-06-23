@@ -129,7 +129,7 @@ If the source files are built for a 64-bit target then the string positions will
 Unicode
 -------
 
-This module supports Unicode 9.0.
+This module supports Unicode 10.0.
 
 Full Unicode case-folding is supported.
 
