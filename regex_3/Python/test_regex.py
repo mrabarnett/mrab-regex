@@ -3881,6 +3881,13 @@ thing
 
         self.assertEquals(regex.escape(' ,0A['), '\\ ,0A\\[')
 
+        # Hg issue 251: Segfault with a particular expression
+        self.assertEquals(regex.search(r'(?(?=A)A|B)', 'A').span(), (0, 1))
+        self.assertEquals(regex.search(r'(?(?=A)A|B)', 'B').span(), (0, 1))
+        self.assertEquals(regex.search(r'(?(?=A)A|)', 'B').span(), (0, 0))
+        self.assertEquals(regex.search(r'(?(?=X)X|)', '').span(), (0, 0))
+        self.assertEquals(regex.search(r'(?(?=X))', '').span(), (0, 0))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

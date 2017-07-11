@@ -23404,9 +23404,12 @@ Py_LOCAL_INLINE(int) build_CONDITIONAL(RE_CompileArgs* args) {
         /* test node -> false branch -> end node */
         add_node(test_node, subargs.start);
         add_node(subargs.end, end_node);
-    } else
-        /* end test node -> end node */
-        add_node(end_test_node, end_node);
+    } else {
+        min_width = 0;
+
+        /* test node -> end node */
+        add_node(test_node, end_node);
+    }
 
     if (args->code[0] != RE_OP_END)
         return RE_ERROR_ILLEGAL;
