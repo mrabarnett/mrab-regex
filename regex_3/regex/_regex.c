@@ -19499,7 +19499,8 @@ Py_LOCAL_INLINE(RE_GroupData*) copy_groups(RE_GroupData* groups, size_t
         copy->captures = &spans_copy[offset];
         offset += orig->capture_count;
 
-        if (orig->capture_count > 0) {
+        if (orig->span.start >= 0 && orig->span.end >= 0 && orig->capture_count
+          > 0) {
             Py_MEMCPY(copy->captures, orig->captures, orig->capture_count *
               sizeof(RE_GroupSpan));
             copy->capture_capacity = orig->capture_count;
