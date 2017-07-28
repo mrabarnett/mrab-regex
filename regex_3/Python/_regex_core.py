@@ -2956,7 +2956,7 @@ class Group(RegexBase):
             public_group = self.info.private_groups[private_group]
             private_group = self.info.group_count - private_group
 
-        code += ([(OP.GROUP, private_group, public_group)] +
+        code += ([(OP.GROUP, int(not reverse), private_group, public_group)] +
           self.subpattern.compile(reverse, fuzzy) + [(OP.END, )])
 
         if ref is not None:

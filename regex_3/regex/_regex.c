@@ -19499,8 +19499,7 @@ Py_LOCAL_INLINE(RE_GroupData*) copy_groups(RE_GroupData* groups, size_t
         copy->captures = &spans_copy[offset];
         offset += orig->capture_count;
 
-        if (orig->span.start >= 0 && orig->span.end >= 0 && orig->capture_count
-          > 0) {
+        if (orig->capture_count > 0) {
             Py_MEMCPY(copy->captures, orig->captures, orig->capture_count *
               sizeof(RE_GroupSpan));
             copy->capture_capacity = orig->capture_count;
@@ -23426,6 +23425,7 @@ Py_LOCAL_INLINE(int) build_CONDITIONAL(RE_CompileArgs* args) {
 
 /* Builds a GROUP node. */
 Py_LOCAL_INLINE(int) build_GROUP(RE_CompileArgs* args) {
+    BOOL forward;
     RE_CODE private_group;
     RE_CODE public_group;
     RE_Node* start_node;
@@ -23433,19 +23433,20 @@ Py_LOCAL_INLINE(int) build_GROUP(RE_CompileArgs* args) {
     RE_CompileArgs subargs;
     int status;
 
-    /* codes: opcode, private_group, public_group. */
-    if (args->code + 2 > args->end_code)
+    /* codes: opcode, forward, private_group, public_group. */
+    if (args->code + 3 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
-    private_group = args->code[1];
-    public_group = args->code[2];
+    forward = (BOOL)args->code[1];
+    private_group = args->code[2];
+    public_group = args->code[3];
 
-    args->code += 3;
+    args->code += 4;
 
     /* Create nodes for the start and end of the capture group. */
-    start_node = create_node(args->pattern, args->forward ? RE_OP_START_GROUP :
+    start_node = create_node(args->pattern, forward ? RE_OP_START_GROUP :
       RE_OP_END_GROUP, 0, 0, 3);
-    end_node = create_node(args->pattern, args->forward ? RE_OP_END_GROUP :
+    end_node = create_node(args->pattern, forward ? RE_OP_END_GROUP :
       RE_OP_START_GROUP, 0, 0, 3);
     if (!start_node || !end_node)
         return RE_ERROR_MEMORY;

@@ -3828,21 +3828,21 @@ thing
         self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?&func)',
           'abc').groupdict(), {'func': None})
         self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?&func)',
-          'abc').capturesdict(), {'func': []})
+          'abc').capturesdict(), {'func': ['a']})
 
         self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?=(?&func))',
           'abc').groups(), (None, ))
         self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?=(?&func))',
           'abc').groupdict(), {'func': None})
         self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?=(?&func))',
-          'abc').capturesdict(), {'func': []})
+          'abc').capturesdict(), {'func': ['a']})
 
         self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
           'abc').groups(), (None, ))
         self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
           'abc').groupdict(), {'func': None})
         self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
-          'abc').capturesdict(), {'func': []})
+          'abc').capturesdict(), {'func': ['a']})
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
