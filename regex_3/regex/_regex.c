@@ -53,7 +53,7 @@
 #if PY_VERSION_HEX < 0x03070000
 /* Issue 29943: PySlice_GetIndicesEx change broke ABI in 3.5 and 3.6 branches
  */
-#if defined(PySlice_GetIndicesEx)
+#if defined(PySlice_GetIndicesEx) && !defined(PYPY_VERSION)
 #undef PySlice_GetIndicesEx
 #endif
 #endif

@@ -20,7 +20,7 @@ sources = [os.path.join(PKG_BASE, 'regex', '_regex.c'),
 
 setup(
     name='regex',
-    version='2017.04.05',
+    version='2017.07.28',
     description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
 
