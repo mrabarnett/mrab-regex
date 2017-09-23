@@ -50,12 +50,6 @@
 #include "pyport.h"
 #include "pythread.h"
 
-/* Issue 29943: PySlice_GetIndicesEx change broke ABI in 3.5 and 3.6 branches
- */
-#if defined(PySlice_GetIndicesEx)
-#undef PySlice_GetIndicesEx
-#endif
-
 #if PY_VERSION_HEX < 0x02060000
 #if SIZEOF_SIZE_T == SIZEOF_LONG_LONG
 #define T_PYSSIZET T_LONGLONG

@@ -1,5 +1,3 @@
-#! python3.5
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
 import os
@@ -15,12 +13,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 PKG_BASE = 'regex_%i' % MAJOR
 DOCS_DIR = os.path.join(BASE_DIR, 'docs')
-sources = [os.path.join(PKG_BASE, 'regex', '_regex.c'),
-      os.path.join(PKG_BASE, 'regex', '_regex_unicode.c')]
 
 setup(
     name='regex',
-    version='2017.07.28',
+    version='2017.09.23',
     description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
 
@@ -56,6 +52,6 @@ setup(
     py_modules = ['regex', '_regex_core', 'test_regex'],
     package_dir={'': PKG_BASE},
 
-    ext_modules=[Extension('_regex', [os.path.join(PKG_BASE, 'regex', '_regex.c'),
-      os.path.join(PKG_BASE, 'regex', '_regex_unicode.c')])],
+    ext_modules=[Extension('_regex', [os.path.join(PKG_BASE, '_regex.c'),
+      os.path.join(PKG_BASE, '_regex_unicode.c')])],
     )

@@ -11,12 +11,12 @@ except ImportError:
 MAJOR, MINOR = sys.version_info[:2]
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-PKG_BASE = 'Python%i' % MAJOR
+PKG_BASE = 'regex_%i' % MAJOR
 DOCS_DIR = os.path.join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2017.07.28',
+    version='2017.09.23',
     description='Alternative regular expression module, to replace re.',
     long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
 
