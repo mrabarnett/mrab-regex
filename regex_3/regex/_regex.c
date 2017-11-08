@@ -9287,6 +9287,87 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_SafeState* safe_state, size_t index,
 /* Builds a Unicode string. */
 Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t start,
   Py_ssize_t end, Py_ssize_t buffer_charsize) {
+#if defined(PYPY_VERSION) && PY_VERSION_HEX < 0x05090000
+#if Py_UNICODE_SIZE != 4
+#error "Needs to be a wide build."
+#endif
+    Py_ssize_t len;
+    Py_UCS4* codepoints;
+    PyObject* result;
+
+    len = end - start;
+    codepoints = (Py_UCS4*)re_alloc(len * 4);
+    if (!codepoints)
+        return NULL;
+
+    switch (buffer_charsize) {
+    case 1:
+    {
+        Py_UCS1* from_ptr;
+        Py_UCS1* end_ptr;
+        Py_UCS4* to_ptr;
+
+        from_ptr = (Py_UCS1*)buffer + start;
+        end_ptr = (Py_UCS1*)buffer + end;
+        to_ptr = codepoints;
+
+        while (from_ptr < end_ptr)
+            *to_ptr++ = *from_ptr++;
+
+        break;
+    }
+    case 2:
+    {
+        Py_UCS2* from_ptr;
+        Py_UCS2* end_ptr;
+        Py_UCS4* to_ptr;
+
+        from_ptr = (Py_UCS2*)buffer + start;
+        end_ptr = (Py_UCS2*)buffer + end;
+        to_ptr = codepoints;
+
+        while (from_ptr < end_ptr)
+            *to_ptr++ = *from_ptr++;
+
+        break;
+    }
+    case 4:
+    {
+        Py_UCS4* from_ptr;
+        Py_UCS4* end_ptr;
+        Py_UCS4* to_ptr;
+
+        from_ptr = (Py_UCS4*)buffer + start;
+        end_ptr = (Py_UCS4*)buffer + end;
+        to_ptr = codepoints;
+
+        while (from_ptr < end_ptr)
+            *to_ptr++ = *from_ptr++;
+
+        break;
+    }
+    default:
+    {
+        Py_UCS1* from_ptr;
+        Py_UCS1* end_ptr;
+        Py_UCS4* to_ptr;
+
+        from_ptr = (Py_UCS1*)buffer + start;
+        end_ptr = (Py_UCS1*)buffer + end;
+        to_ptr = codepoints;
+
+        while (from_ptr < end_ptr)
+            *to_ptr++ = *from_ptr++;
+
+        break;
+    }
+    }
+
+    result = PyUnicode_FromUnicode(codepoints, len);
+    re_dealloc(codepoints);
+
+    return result;
+#else
 #if PY_VERSION_HEX >= 0x03030000
     Py_ssize_t len;
     int kind;
@@ -9317,6 +9398,7 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t start,
     len = end - start;
 
     return PyUnicode_FromUnicode(buffer, len);
+#endif
 #endif
 }
 
@@ -11454,13 +11536,16 @@ Py_LOCAL_INLINE(BOOL) save_best_match(RE_SafeState* safe_state) {
         best->span = group->span;
         best->capture_count = group->capture_count;
 
-        if (best->capture_count < best->capture_capacity) {
+        if (best->capture_count > best->capture_capacity) {
+            RE_GroupSpan* new_captures;
+
             /* We need more space for the captures. */
-            re_dealloc(best->captures);
-            best->captures = (RE_GroupSpan*)re_alloc(best->capture_capacity *
-              sizeof(RE_GroupSpan));
-            if (!best->captures)
+            best->capture_capacity = best->capture_count;
+            new_captures = (RE_GroupSpan*)re_realloc(best->captures,
+              best->capture_capacity * sizeof(RE_GroupSpan));
+            if (!new_captures)
                 goto error;
+            best->captures = new_captures;
         }
 
         /* Copy the captures for this group. */
