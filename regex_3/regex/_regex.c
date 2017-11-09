@@ -20253,6 +20253,57 @@ static void splitter_dealloc(PyObject* self_) {
     PyObject_DEL(self);
 }
 
+#if defined(PYPY_VERSION) && PY_VERSION_HEX < 0x05090000
+Py_LOCAL_INLINE(BOOL) is_whitespace(Py_UCS4 c) {
+    return 0x09 <= c && c <= 0x0D || c == ' ';
+}
+
+Py_LOCAL_INLINE(BOOL) is_digit(Py_UCS4 c) {
+    return '0' <= c && c <= '9';
+}
+
+Py_LOCAL_INLINE(PyObject*) integer_from_unicode(PyObject* item) {
+    int kind;
+    void* data;
+    Py_ssize_t length;
+    char* buffer;
+    Py_ssize_t count;
+    Py_ssize_t index;
+    PyObject* value;
+
+    kind = PyUnicode_KIND(item);
+    data = PyUnicode_DATA(item);
+    length = PyUnicode_GET_LENGTH(item);
+    buffer = (char*)re_alloc(length + 1);
+    if (!buffer)
+        return NULL;
+    count = 0;
+
+    for (index = 0; index < length; index++) {
+        Py_UCS4 c;
+
+        c = PyUnicode_READ(kind, data, index);
+        if (is_whitespace(c) || c == '+' || c == '-' || is_digit(c))
+            buffer[count++] = c;
+        else
+            goto error;
+    }
+
+    buffer[count] = '\0';
+
+    value = PyLong_FromString(buffer, NULL, 0);
+    re_dealloc(buffer);
+
+    return value;
+
+error:
+    re_dealloc(buffer);
+    PyErr_Format(PyExc_ValueError,
+      "invalid literal for int() with base %d: %.200R", 10, item);
+    return NULL;
+}
+#endif
+
 /* Converts a captures index to an integer.
  *
  * A negative capture index in 'expandf' and 'subf' is passed as a string
@@ -20275,12 +20326,16 @@ Py_LOCAL_INLINE(Py_ssize_t) index_to_integer(PyObject* item) {
         Py_ssize_t length;
 #endif
 
+#if defined(PYPY_VERSION) && PY_VERSION_HEX < 0x05090000
+        int_obj = integer_from_unicode(item);
+#else
 #if PY_VERSION_HEX >= 0x03030000
         int_obj = PyLong_FromUnicodeObject(item, 0);
 #else
         characters = (Py_UNICODE*)PyUnicode_AS_DATA(item);
         length = PyUnicode_GET_SIZE(item);
         int_obj = PyLong_FromUnicode(characters, length, 0);
+#endif
 #endif
         if (!int_obj)
             goto error;

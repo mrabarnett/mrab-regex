@@ -20328,9 +20328,6 @@ Py_LOCAL_INLINE(Py_ssize_t) index_to_integer(PyObject* item) {
         Py_UNICODE* characters;
         Py_ssize_t length;
 
-        characters = (Py_UNICODE*)PyUnicode_AS_DATA(item);
-        length = PyUnicode_GET_SIZE(item);
-        int_obj = PyLong_FromUnicode(characters, length, 0);
         if (!int_obj)
             goto error;
 
