@@ -462,7 +462,7 @@ class RegexTests(unittest.TestCase):
         self.assertEqual(regex.match(r'^(?:(a)|c)(\1)?$', 'c')[:], ('c', None,
           None))
 
-        self.assertEqual(regex.findall("(?i)(.{1,40}?),(.{1,40}?)(?:;)+(.{1,80}).{1,40}?\\3(\ |;)+(.{1,80}?)\\1",
+        self.assertEqual(regex.findall(r"(?i)(.{1,40}?),(.{1,40}?)(?:;)+(.{1,80}).{1,40}?\3(\ |;)+(.{1,80}?)\1",
           "TEST, BEST; LEST ; Lest 123 Test, Best"), [('TEST', ' BEST',
           ' LEST', ' ', '123 ')])
 
@@ -975,27 +975,27 @@ class RegexTests(unittest.TestCase):
         for flags in (0, regex.UNICODE):
             pat = regex.compile(u'\xc0', flags | regex.IGNORECASE)
             self.assertEqual(bool(pat.match(u'\xe0')), True)
-            pat = regex.compile(u'\w', flags)
+            pat = regex.compile(ur'\w', flags)
             self.assertEqual(bool(pat.match(u'\xe0')), True)
 
         pat = regex.compile(u'\xc0', regex.ASCII | regex.IGNORECASE)
         self.assertEqual(pat.match(u'\xe0'), None)
         pat = regex.compile(u'(?a)\xc0', regex.IGNORECASE)
         self.assertEqual(pat.match(u'\xe0'), None)
-        pat = regex.compile(u'\w', regex.ASCII)
+        pat = regex.compile(ur'\w', regex.ASCII)
         self.assertEqual(pat.match(u'\xe0'), None)
-        pat = regex.compile(u'(?a)\w')
+        pat = regex.compile(ur'(?a)\w')
         self.assertEqual(pat.match(u'\xe0'), None)
 
         # String patterns.
         for flags in (0, regex.ASCII):
             pat = regex.compile('\xc0', flags | regex.IGNORECASE)
             self.assertEqual(pat.match('\xe0'), None)
-            pat = regex.compile('\w')
+            pat = regex.compile(r'\w')
             self.assertEqual(pat.match('\xe0'), None)
 
         self.assertRaisesRegex(ValueError, self.MIXED_FLAGS, lambda:
-          regex.compile('(?au)\w'))
+          regex.compile(r'(?au)\w'))
 
     def test_subscripting_match(self):
         m = regex.match(r'(?<a>\w)', 'xy')
@@ -1345,6 +1345,7 @@ class RegexTests(unittest.TestCase):
 
     def test_zerowidth(self):
         # Issue 3262.
+
         self.assertEqual(regex.split(r"\b", "a b"), ['a b'])
         self.assertEqual(regex.split(r"(?V1)\b", "a b"), ['', 'a', ' ', 'b',
           ''])
@@ -1354,8 +1355,8 @@ class RegexTests(unittest.TestCase):
           'bar'])
         self.assertEqual([m[0] for m in regex.finditer(r"^|\w+", "foo bar")],
           ['', 'foo', 'bar'])
-        self.assertEqual(regex.findall(r"(?r)^|\w+", "foo bar"), ['bar', 'foo',
-          ''])
+        self.assertEqual(regex.findall(r"(?r)^|\w+", "foo bar"), ['bar',
+          'foo', ''])
         self.assertEqual([m[0] for m in regex.finditer(r"(?r)^|\w+",
           "foo bar")], ['bar', 'foo', ''])
         self.assertEqual(regex.findall(r"(?V1)^|\w+", "foo bar"), ['', 'foo',
@@ -1713,8 +1714,8 @@ class RegexTests(unittest.TestCase):
           "c"])
         self.assertEqual(regex.findall(r"(?iV1)[[a-z]--[aei]]", "abc"), ["b",
           "c"])
-        self.assertEqual(regex.findall("(?V1)[\w--a]","abc"), ["b", "c"])
-        self.assertEqual(regex.findall("(?iV1)[\w--a]","abc"), ["b", "c"])
+        self.assertEqual(regex.findall(r"(?V1)[\w--a]","abc"), ["b", "c"])
+        self.assertEqual(regex.findall(r"(?iV1)[\w--a]","abc"), ["b", "c"])
 
     def test_various(self):
         tests = [
@@ -1780,7 +1781,7 @@ class RegexTests(unittest.TestCase):
 
             (r'\x00ff', '\377', '', repr(None)),
             (r'\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', repr('\t\n\v\r\f\ag')),
-            ('\t\n\v\r\f\a\g', '\t\n\v\r\f\ag', '0', repr('\t\n\v\r\f\ag')),
+            ('\t\n\v\r\f\a\\g', '\t\n\v\r\f\ag', '0', repr('\t\n\v\r\f\ag')),
             (r'\t\n\v\r\f\a', '\t\n\v\r\f\a', '0', repr(chr(9) + chr(10) +
               chr(11) + chr(13) + chr(12) + chr(7))),
             (r'[\t][\n][\v][\r][\f][\b]', '\t\n\v\r\f\b', '0',
@@ -2307,7 +2308,7 @@ class RegexTests(unittest.TestCase):
             # Lookbehind: split by : but not if it is escaped by -.
             ('(?<!-):(.*?)(?<!-):', 'a:bc-:de:f', '1', repr('bc-:de')),
             # Escaping with \ as we know it.
-            ('(?<!\\\):(.*?)(?<!\\\):', 'a:bc\\:de:f', '1', repr('bc\\:de')),
+            ('(?<!\\\\):(.*?)(?<!\\\\):', 'a:bc\\:de:f', '1', repr('bc\\:de')),
             # Terminating with ' and escaping with ? as in edifact.
             ("(?<!\\?)'(.*?)(?<!\\?)'", "a'bc?'de'f", '1', repr("bc?'de")),
 
@@ -2462,10 +2463,8 @@ xyzabc
                     self.assertEqual(actual, expected)
 
     def test_replacement(self):
-        self.assertEqual(regex.sub("test\?", "result\?\.\a\q\m\n", "test?"),
-          "result\?\.\a\q\m\n")
-        self.assertEqual(regex.sub(r"test\?", "result\?\.\a\q\m\n", "test?"),
-          "result\?\.\a\q\m\n")
+        self.assertEqual(regex.sub(r"test\?", "result\\?\\.\a\\q\\m\n", "test?"),
+          "result\\?\\.\a\\q\\m\n")
 
         self.assertEqual(regex.sub('(.)', r"\1\1", 'x'), 'xx')
         self.assertEqual(regex.sub('(.)', regex.escape(r"\1\1"), 'x'), r"\1\1")
@@ -2514,9 +2513,9 @@ xyzabc
         m = regex.search(r'A\s*?.*?(\n+.*?\s*?){0,2}\(X', 'A\n1\nS\n1 (X')
         self.assertEqual(m.span(0, 1), ((0, 10), (5, 8)))
 
-        m = regex.search('Derde\s*:', 'aaaaaa:\nDerde:')
+        m = regex.search(r'Derde\s*:', 'aaaaaa:\nDerde:')
         self.assertEqual(m.span(), (8, 14))
-        m = regex.search('Derde\s*:', 'aaaaa:\nDerde:')
+        m = regex.search(r'Derde\s*:', 'aaaaa:\nDerde:')
         self.assertEqual(m.span(), (7, 13))
 
     def test_turkic(self):
@@ -2753,9 +2752,9 @@ xyzabc
         self.assertEqual(regex.search(ur"(\w+) (\1{e<=1})",
           u"foo fou").groups(), (u"foo", u"fou"))
 
-        self.assertEqual(regex.findall(r"(?:(?:QR)+){e}","abcde"), ["abcde",
+        self.assertEqual(regex.findall(r"(?:(?:QR)+){e}", "abcde"), ["abcde",
           ""])
-        self.assertEqual(regex.findall(r"(?:Q+){e}","abc"), ["abc", ""])
+        self.assertEqual(regex.findall(r"(?:Q+){e}", "abc"), ["abc", ""])
 
         # Hg issue 41: = for fuzzy matches
         self.assertEqual(regex.match(r"(?:service detection){0<e<5}",
@@ -2857,21 +2856,21 @@ xyzabc
     def test_copy(self):
         # PatternObjects are immutable, therefore there's no need to clone them.
         r = regex.compile("a")
-        self.assert_(copy.copy(r) is r)
-        self.assert_(copy.deepcopy(r) is r)
+        self.assertTrue(copy.copy(r) is r)
+        self.assertTrue(copy.deepcopy(r) is r)
 
         # MatchObjects are normally mutable because the target string can be
         # detached. However, after the target string has been detached, a
         # MatchObject becomes immutable, so there's no need to clone it.
         m = r.match("a")
-        self.assert_(copy.copy(m) is not m)
-        self.assert_(copy.deepcopy(m) is not m)
+        self.assertTrue(copy.copy(m) is not m)
+        self.assertTrue(copy.deepcopy(m) is not m)
 
-        self.assert_(m.string is not None)
+        self.assertTrue(m.string is not None)
         m2 = copy.copy(m)
         m2.detach_string()
-        self.assert_(m.string is not None)
-        self.assert_(m2.string is None)
+        self.assertTrue(m.string is not None)
+        self.assertTrue(m2.string is None)
 
         # The following behaviour matches that of the re module.
         it = regex.finditer(".", "ab")
@@ -2965,9 +2964,9 @@ xyzabc
 
         # Hg issue 33: regex.search("([\da-f:]+)$", "E", regex.I|regex.V1)
         # returns None
-        self.assertEqual(regex.search("([\da-f:]+)$", "E", regex.I |
+        self.assertEqual(regex.search(r"([\da-f:]+)$", "E", regex.I |
           regex.V1).group(0), "E")
-        self.assertEqual(regex.search("([\da-f:]+)$", "e", regex.I |
+        self.assertEqual(regex.search(r"([\da-f:]+)$", "e", regex.I |
           regex.V1).group(0), "e")
 
         # Hg issue 34: regex.search("^(?=ab(de))(abd)(e)", "abde").groups()
@@ -3636,25 +3635,25 @@ thing
 
         # Hg issue 197: ValueError in regex.compile
         self.assertRaises(regex.error, lambda:
-          regex.compile('00000\\0\\00\^\50\\00\U05000000'))
+          regex.compile('00000\\0\\00\\^\50\\00\\U05000000'))
 
         # Hg issue 198: ValueError in regex.compile
         self.assertRaises(regex.error, lambda: regex.compile("{e<l"))
 
         # Hg issue 199: Segfault in re.compile
-        self.assertEquals(bool(regex.compile('((?0)){e}')), True)
+        self.assertEqual(bool(regex.compile('((?0)){e}')), True)
 
         # Hg issue 200: AttributeError in regex.compile with latest regex
-        self.assertEquals(bool(regex.compile('\x00?(?0){e}')), True)
+        self.assertEqual(bool(regex.compile('\x00?(?0){e}')), True)
 
         # Hg issue 201: ENHANCEMATCH crashes interpreter
-        self.assertEquals(regex.findall(r'((brown)|(lazy)){1<=e<=3} ((dog)|(fox)){1<=e<=3}',
+        self.assertEqual(regex.findall(r'((brown)|(lazy)){1<=e<=3} ((dog)|(fox)){1<=e<=3}',
           'The quick borwn fax jumped over the lzy hog', regex.ENHANCEMATCH),
           [('borwn', 'borwn', '', 'fax', '', 'fax'), ('lzy', '', 'lzy', 'hog',
           'hog', '')])
 
         # Hg issue 203: partial matching bug
-        self.assertEquals(regex.search(r'\d\d\d-\d\d-\d\d\d\d',
+        self.assertEqual(regex.search(r'\d\d\d-\d\d-\d\d\d\d',
           "My SSN is 999-89-76, but don't tell.", partial=True).span(), (36,
           36))
 
@@ -3662,55 +3661,55 @@ thing
         upper_i = u'\N{CYRILLIC CAPITAL LETTER SHORT I}'
         lower_i = u'\N{CYRILLIC SMALL LETTER SHORT I}'
 
-        self.assertEquals(bool(regex.match(ur'(?ui)' + upper_i,
+        self.assertEqual(bool(regex.match(ur'(?ui)' + upper_i,
           lower_i)), True)
-        self.assertEquals(bool(regex.match(ur'(?ui)' + lower_i,
+        self.assertEqual(bool(regex.match(ur'(?ui)' + lower_i,
           upper_i)), True)
 
-        self.assertEquals(bool(regex.match(ur'(?ai)' + upper_i,
+        self.assertEqual(bool(regex.match(ur'(?ai)' + upper_i,
           lower_i)), False)
-        self.assertEquals(bool(regex.match(ur'(?ai)' + lower_i,
+        self.assertEqual(bool(regex.match(ur'(?ai)' + lower_i,
           upper_i)), False)
 
-        self.assertEquals(bool(regex.match(ur'(?afi)' + upper_i,
+        self.assertEqual(bool(regex.match(ur'(?afi)' + upper_i,
           lower_i)), False)
-        self.assertEquals(bool(regex.match(ur'(?afi)' + lower_i,
+        self.assertEqual(bool(regex.match(ur'(?afi)' + lower_i,
           upper_i)), False)
 
         # Hg issue 205: Named list and (?ri) flags
-        self.assertEquals(bool(regex.search(r'(?i)\L<aa>', '22', aa=['121',
+        self.assertEqual(bool(regex.search(r'(?i)\L<aa>', '22', aa=['121',
           '22'])), True)
-        self.assertEquals(bool(regex.search(r'(?ri)\L<aa>', '22', aa=['121',
+        self.assertEqual(bool(regex.search(r'(?ri)\L<aa>', '22', aa=['121',
           '22'])), True)
-        self.assertEquals(bool(regex.search(r'(?fi)\L<aa>', '22', aa=['121',
+        self.assertEqual(bool(regex.search(r'(?fi)\L<aa>', '22', aa=['121',
           '22'])), True)
-        self.assertEquals(bool(regex.search(r'(?fri)\L<aa>', '22', aa=['121',
+        self.assertEqual(bool(regex.search(r'(?fri)\L<aa>', '22', aa=['121',
           '22'])), True)
 
         # Hg issue 208: Named list, (?ri) flags, Backreference
-        self.assertEquals(regex.search(r'(?r)\1dog..(?<=(\L<aa>))$', 'ccdogcc',
+        self.assertEqual(regex.search(r'(?r)\1dog..(?<=(\L<aa>))$', 'ccdogcc',
           aa=['bcb', 'cc']). span(), (0, 7))
-        self.assertEquals(regex.search(r'(?ir)\1dog..(?<=(\L<aa>))$',
+        self.assertEqual(regex.search(r'(?ir)\1dog..(?<=(\L<aa>))$',
           'ccdogcc', aa=['bcb', 'cc']). span(), (0, 7))
 
         # Hg issue 210: Fuzzy matching and Backreference
-        self.assertEquals(regex.search(r'(2)(?:\1{5}){e<=1}',
+        self.assertEqual(regex.search(r'(2)(?:\1{5}){e<=1}',
           '3222212').span(), (1, 7))
-        self.assertEquals(regex.search(r'(\d)(?:\1{5}){e<=1}',
+        self.assertEqual(regex.search(r'(\d)(?:\1{5}){e<=1}',
           '3222212').span(), (1, 7))
 
         # Hg issue 211: Segmentation fault with recursive matches and atomic
         # groups
-        self.assertEquals(regex.match(r'''\A(?P<whole>(?>\((?&whole)\)|[+\-]))\Z''',
+        self.assertEqual(regex.match(r'''\A(?P<whole>(?>\((?&whole)\)|[+\-]))\Z''',
           '((-))').span(), (0, 5))
-        self.assertEquals(regex.match(r'''\A(?P<whole>(?>\((?&whole)\)|[+\-]))\Z''',
+        self.assertEqual(regex.match(r'''\A(?P<whole>(?>\((?&whole)\)|[+\-]))\Z''',
           '((-)+)'), None)
 
         # Hg issue 212: Unexpected matching difference with .*? between re and
         # regex
-        self.assertEquals(regex.match(r"x.*? (.).*\1(.*)\1",
+        self.assertEqual(regex.match(r"x.*? (.).*\1(.*)\1",
           'x  |y| z|').span(), (0, 9))
-        self.assertEquals(regex.match(r"\.sr (.*?) (.)(.*)\2(.*)\2(.*)",
+        self.assertEqual(regex.match(r"\.sr (.*?) (.)(.*)\2(.*)\2(.*)",
           r'.sr  h |<nw>|<span class="locked">|').span(), (0, 35))
 
         # Hg issue 213: Segmentation Fault
@@ -3797,51 +3796,51 @@ thing
 
         # Hg issue 248: Unexpected result with fuzzy matching and more than one
         # non-greedy quantifier
-        self.assertEquals(regex.search(r'(?:A.*B.*CDE){e<=2}',
+        self.assertEqual(regex.search(r'(?:A.*B.*CDE){e<=2}',
           'A B CYZ').group(), 'A B CYZ')
-        self.assertEquals(regex.search(r'(?:A.*B.*?CDE){e<=2}',
+        self.assertEqual(regex.search(r'(?:A.*B.*?CDE){e<=2}',
           'A B CYZ').group(), 'A B CYZ')
-        self.assertEquals(regex.search(r'(?:A.*?B.*CDE){e<=2}',
+        self.assertEqual(regex.search(r'(?:A.*?B.*CDE){e<=2}',
           'A B CYZ').group(), 'A B CYZ')
-        self.assertEquals(regex.search(r'(?:A.*?B.*?CDE){e<=2}',
+        self.assertEqual(regex.search(r'(?:A.*?B.*?CDE){e<=2}',
           'A B CYZ').group(), 'A B CYZ')
 
         # Hg issue 249: Add an option to regex.escape() to not escape spaces
-        self.assertEquals(regex.escape(' ,0A[', special_only=False, literal_spaces=False), '\\ \\,0A\\[')
-        self.assertEquals(regex.escape(' ,0A[', special_only=False, literal_spaces=True), ' \\,0A\\[')
-        self.assertEquals(regex.escape(' ,0A[', special_only=True, literal_spaces=False), '\\ ,0A\\[')
-        self.assertEquals(regex.escape(' ,0A[', special_only=True, literal_spaces=True), ' ,0A\\[')
+        self.assertEqual(regex.escape(' ,0A[', special_only=False, literal_spaces=False), '\\ \\,0A\\[')
+        self.assertEqual(regex.escape(' ,0A[', special_only=False, literal_spaces=True), ' \\,0A\\[')
+        self.assertEqual(regex.escape(' ,0A[', special_only=True, literal_spaces=False), '\\ ,0A\\[')
+        self.assertEqual(regex.escape(' ,0A[', special_only=True, literal_spaces=True), ' ,0A\\[')
 
-        self.assertEquals(regex.escape(' ,0A['), '\\ ,0A\\[')
+        self.assertEqual(regex.escape(' ,0A['), '\\ ,0A\\[')
 
         # Hg issue 251: Segfault with a particular expression
-        self.assertEquals(regex.search(r'(?(?=A)A|B)', 'A').span(), (0, 1))
-        self.assertEquals(regex.search(r'(?(?=A)A|B)', 'B').span(), (0, 1))
-        self.assertEquals(regex.search(r'(?(?=A)A|)', 'B').span(), (0, 0))
-        self.assertEquals(regex.search(r'(?(?=X)X|)', '').span(), (0, 0))
-        self.assertEquals(regex.search(r'(?(?=X))', '').span(), (0, 0))
+        self.assertEqual(regex.search(r'(?(?=A)A|B)', 'A').span(), (0, 1))
+        self.assertEqual(regex.search(r'(?(?=A)A|B)', 'B').span(), (0, 1))
+        self.assertEqual(regex.search(r'(?(?=A)A|)', 'B').span(), (0, 0))
+        self.assertEqual(regex.search(r'(?(?=X)X|)', '').span(), (0, 0))
+        self.assertEqual(regex.search(r'(?(?=X))', '').span(), (0, 0))
 
         # Hg issue 252: Empty capture strings when using DEFINE group reference
         # within look-behind expression
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?&func)',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.))(?&func)',
           'abc').groups(), (None, ))
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?&func)',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.))(?&func)',
           'abc').groupdict(), {'func': None})
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?&func)',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.))(?&func)',
           'abc').capturesdict(), {'func': ['a']})
 
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?=(?&func))',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.))(?=(?&func))',
           'abc').groups(), (None, ))
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?=(?&func))',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.))(?=(?&func))',
           'abc').groupdict(), {'func': None})
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.))(?=(?&func))',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.))(?=(?&func))',
           'abc').capturesdict(), {'func': ['a']})
 
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
           'abc').groups(), (None, ))
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
           'abc').groupdict(), {'func': None})
-        self.assertEquals(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
+        self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
           'abc').capturesdict(), {'func': ['a']})
 
     def test_subscripted_captures(self):

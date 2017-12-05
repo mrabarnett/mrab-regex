@@ -50,16 +50,6 @@
 #include "pyport.h"
 #include "pythread.h"
 
-#if PY_VERSION_HEX < 0x02060000
-#if SIZEOF_SIZE_T == SIZEOF_LONG_LONG
-#define T_PYSSIZET T_LONGLONG
-#elif SIZEOF_SIZE_T == SIZEOF_LONG
-#define T_PYSSIZET T_LONG
-#else
-#error size_t is the same size as neither LONG nor LONGLONG
-#endif
-
-#endif
 typedef unsigned char Py_UCS1;
 typedef unsigned short Py_UCS2;
 
@@ -95,9 +85,7 @@ typedef RE_UINT32 RE_STATUS_T;
 /* Flags for the kind of 'sub' call: 'sub', 'subn', 'subf', 'subfn'. */
 #define RE_SUB 0x0
 #define RE_SUBN 0x1
-#if PY_VERSION_HEX >= 0x02060000
 #define RE_SUBF 0x2
-#endif
 
 /* The name of this module, minus the leading underscore. */
 #define RE_MODULE "regex"
@@ -325,13 +313,13 @@ typedef struct RE_BacktrackData {
         } fuzzy_insert;
         struct {
             RE_Position position;
-            RE_INT8 fuzzy_type;
+            RE_UINT8 fuzzy_type;
             RE_INT8 step;
         } fuzzy_item;
         struct {
             RE_Position position;
             Py_ssize_t string_pos;
-            RE_INT8 fuzzy_type;
+            RE_UINT8 fuzzy_type;
             RE_INT8 folded_pos;
             RE_INT8 folded_len;
             RE_INT8 gfolded_pos;
@@ -531,9 +519,7 @@ typedef struct RE_GroupCallFrame {
 
 /* Info about a string argument. */
 typedef struct RE_StringInfo {
-#if PY_VERSION_HEX >= 0x02060000
     Py_buffer view; /* View of the string if it's a buffer object. */
-#endif
     void* characters; /* Pointer to the characters of the string. */
     Py_ssize_t length; /* Length of the string. */
     Py_ssize_t charsize; /* Size of the characters in the string. */
@@ -552,14 +538,29 @@ typedef struct {
     Py_ssize_t match_pos;
 } RE_SearchPosition;
 
+typedef struct RE_FuzzyChange {
+    RE_UINT8 type;
+    Py_ssize_t pos;
+} RE_FuzzyChange;
+
+typedef struct RE_FuzzyChangesList {
+    size_t capacity;
+    size_t count;
+    RE_FuzzyChange* items;
+} RE_FuzzyChangesList;
+
+typedef struct RE_BestChangesList {
+    size_t capacity;
+    size_t count;
+    RE_FuzzyChangesList* lists;
+} RE_BestChangesList;
+
 /* The state object used during matching. */
 typedef struct RE_State {
     struct PatternObject* pattern; /* Parent PatternObject. */
     /* Info about the string being matched. */
     PyObject* string;
-#if PY_VERSION_HEX >= 0x02060000
     Py_buffer view; /* View of the string if it's a buffer object. */
-#endif
     Py_ssize_t charsize;
     void* text;
     Py_ssize_t text_length;
@@ -611,6 +612,7 @@ typedef struct RE_State {
     RE_GroupCallFrame* first_group_call_frame;
     RE_GroupCallFrame* current_group_call_frame;
     RE_GuardList* group_call_guard_list;
+    RE_FuzzyChangesList fuzzy_changes;
     RE_SearchPosition search_positions[MAX_SEARCH_POSITIONS]; /* Where the search matches next. */
     size_t capture_change; /* Incremented every time a captive group changes. */
     Py_ssize_t req_pos; /* The position where the required string matched. */
@@ -712,6 +714,7 @@ typedef struct MatchObject {
     RE_GroupData* groups; /* The capture groups. */
     PyObject* regs;
     size_t fuzzy_counts[RE_FUZZY_COUNT];
+    RE_FuzzyChange* fuzzy_changes;
     BOOL partial; /* Whether it's a partial match. */
 } MatchObject;
 
@@ -734,7 +737,6 @@ typedef struct SplitterObject {
     Py_ssize_t index;
     int status;
 } SplitterObject;
-#if PY_VERSION_HEX >= 0x02060000
 
 /* The CaptureObject. */
 typedef struct CaptureObject {
@@ -742,7 +744,6 @@ typedef struct CaptureObject {
     Py_ssize_t group_index;
     MatchObject** match_indirect;
 } CaptureObject;
-#endif
 
 /* Info used when compiling a pattern to nodes. */
 typedef struct RE_CompileArgs {
@@ -789,7 +790,7 @@ typedef struct {
     int folded_len;
     int new_gfolded_pos;
     int new_group_pos;
-    int fuzzy_type;
+    RE_UINT8 fuzzy_type;
     BOOL permit_insertion;
 } RE_FuzzyData;
 
@@ -811,15 +812,15 @@ typedef struct RE_Check {
 } RE_Check;
 
 typedef struct RE_CheckStack {
-    Py_ssize_t capacity;
-    Py_ssize_t count;
+    size_t capacity;
+    size_t count;
     RE_Check* items;
 } RE_CheckStack;
 
 /* A stack of nodes. */
 typedef struct RE_NodeStack {
-    Py_ssize_t capacity;
-    Py_ssize_t count;
+    size_t capacity;
+    size_t count;
     RE_Node** items;
 } RE_NodeStack;
 
@@ -2601,8 +2602,8 @@ Py_LOCAL_INLINE(BOOL) matches_member(RE_EncodingTable* encoding, RE_LocaleInfo*
     {
         /* values are: char_code, char_code, ... */
         size_t i;
-        TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
-          member->value_count))
+        TRACE(("%s %d %" PY_FORMAT_SIZE_T "d\n", re_op_text[member->op],
+          member->match, member->value_count))
 
         for (i = 0; i < member->value_count; i++) {
             if (ch == member->values[i])
@@ -2968,6 +2969,8 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
         memset(state->fuzzy_info.counts, 0, sizeof(state->fuzzy_info.counts));
         memset(state->total_fuzzy_counts, 0,
           sizeof(state->total_fuzzy_counts));
+
+    state->fuzzy_changes.count = 0;
     }
 
     state->fuzzy_info.total_cost = 0;
@@ -7985,7 +7988,7 @@ Py_LOCAL_INLINE(int) search_start(RE_SafeState* safe_state, RE_NextNode* next,
     state = safe_state->re_state;
 
     start_pos = state->text_pos;
-    TRACE(("<<search_start>> at %d\n", start_pos))
+    TRACE(("<<search_start>> at %" PY_FORMAT_SIZE_T "d\n", start_pos))
 
     test = next->test;
     node = next->node;
@@ -10143,7 +10146,8 @@ Py_LOCAL_INLINE(BOOL) any_error_permitted(RE_State* state) {
 }
 
 /* Checks whether this additional fuzzy error is permitted. */
-Py_LOCAL_INLINE(BOOL) this_error_permitted(RE_State* state, int fuzzy_type) {
+Py_LOCAL_INLINE(BOOL) this_error_permitted(RE_State* state, RE_UINT8
+  fuzzy_type) {
     RE_FuzzyInfo* fuzzy_info;
     RE_CODE* values;
 
@@ -10173,6 +10177,168 @@ Py_LOCAL_INLINE(int) check_fuzzy_partial(RE_State* state, Py_ssize_t text_pos)
     }
 
     return RE_ERROR_FAILURE;
+}
+
+/* Records a change in a fuzzy change. */
+Py_LOCAL_INLINE(BOOL) record_fuzzy(RE_SafeState* safe_state, RE_UINT8
+  fuzzy_type, Py_ssize_t text_pos) {
+    RE_FuzzyChangesList* change_list;
+    RE_FuzzyChange* change;
+
+    change_list = &safe_state->re_state->fuzzy_changes;
+
+    if (change_list->count >= change_list->capacity) {
+        RE_FuzzyChange* new_items;
+
+        change_list->capacity = change_list->capacity == 0 ? 64 :
+          change_list->capacity * 2;
+
+        new_items = (RE_FuzzyChange*)safe_realloc(safe_state,
+          change_list->items, (size_t)change_list->capacity *
+          sizeof(RE_FuzzyChange));
+        if (!new_items)
+            return FALSE;
+
+        change_list->items = new_items;
+    }
+
+    change = &change_list->items[change_list->count++];
+    change->type = fuzzy_type;
+    change->pos = text_pos;
+
+    return TRUE;
+}
+
+/* "Unrecords" a change in a fuzzy change. */
+Py_LOCAL_INLINE(void) unrecord_fuzzy(RE_SafeState* safe_state) {
+    --safe_state->re_state->fuzzy_changes.count;
+}
+
+/* Makes a list of lists of fuzzy changes. */
+Py_LOCAL_INLINE(void) make_best_changes_list(RE_BestChangesList*
+  best_changes_list) {
+    best_changes_list->capacity = 0;
+    best_changes_list->count = 0;
+    best_changes_list->lists = NULL;
+}
+
+/* Clears a list of lists of fuzzy changes. */
+Py_LOCAL_INLINE(void) clear_best_fuzzy_changes(RE_SafeState* safe_state,
+  RE_BestChangesList* best_changes_list) {
+    size_t i;
+
+    for (i = 0; i < best_changes_list->count; i++) {
+        RE_FuzzyChangesList* list;
+
+        list = &best_changes_list->lists[i];
+        list->capacity = 0;
+        list->count = 0;
+        safe_dealloc(safe_state, list->items);
+        list->items = NULL;
+    }
+
+    best_changes_list->count = 0;
+}
+
+/* Destroys a list of lists of fuzzy changes. */
+Py_LOCAL_INLINE(void) destroy_best_changes_list(RE_SafeState* safe_state,
+  RE_BestChangesList* best_changes_list) {
+    clear_best_fuzzy_changes(safe_state, best_changes_list);
+    safe_dealloc(safe_state, best_changes_list->lists);
+}
+
+/* Adds a list of fuzzy changes to a list of best fuzzy changes. */
+Py_LOCAL_INLINE(BOOL) add_best_fuzzy_changes(RE_SafeState* safe_state,
+  RE_BestChangesList* best_changes_list) {
+    RE_State* state;
+    size_t size;
+    RE_FuzzyChange* items;
+    RE_FuzzyChangesList* changes;
+
+    state = safe_state->re_state;
+
+    if (best_changes_list->count >= best_changes_list->capacity) {
+        RE_FuzzyChangesList* new_lists;
+
+        best_changes_list->capacity = best_changes_list->capacity == 0 ? 64 :
+          best_changes_list->capacity * 2;
+
+        new_lists = (RE_FuzzyChangesList*)safe_realloc(safe_state,
+          best_changes_list->lists, (size_t)best_changes_list->capacity *
+          sizeof(RE_FuzzyChangesList));
+        if (!new_lists)
+            return FALSE;
+
+        best_changes_list->lists = new_lists;
+    }
+
+    size = (size_t)state->fuzzy_changes.count * sizeof(RE_FuzzyChange);
+    items = (RE_FuzzyChange*)safe_alloc(safe_state, size);
+    if (!items)
+        return FALSE;
+    memmove(items, state->fuzzy_changes.items, size);
+
+    changes = &best_changes_list->lists[best_changes_list->count++];
+    changes->capacity = state->fuzzy_changes.count;
+    changes->count = state->fuzzy_changes.count;
+    changes->items = items;
+
+    return TRUE;
+}
+
+/* Initialises a list of fuzzy changes. */
+Py_LOCAL_INLINE(void) make_changes_list(RE_SafeState* safe_state,
+  RE_FuzzyChangesList* best_changes_list) {
+    best_changes_list->capacity = 0;
+    best_changes_list->count = 0;
+    best_changes_list->items = NULL;
+}
+
+/* Finitialises a list of fuzzy changes. */
+Py_LOCAL_INLINE(void) destroy_changes_list(RE_SafeState* safe_state,
+  RE_FuzzyChangesList* best_changes_list) {
+    safe_dealloc(safe_state, best_changes_list->items);
+}
+
+/* Saves a list of fuzzy changes. */
+Py_LOCAL_INLINE(BOOL) save_fuzzy_changes(RE_SafeState* safe_state,
+  RE_FuzzyChangesList* best_changes_list) {
+    if (safe_state->re_state->fuzzy_changes.count >
+      best_changes_list->capacity) {
+        RE_FuzzyChange* new_items;
+
+        if (best_changes_list->capacity == 0)
+            best_changes_list->capacity = 64;
+
+        while (best_changes_list->capacity <
+          safe_state->re_state->fuzzy_changes.count)
+            best_changes_list->capacity *= 2;
+
+        new_items = (RE_FuzzyChange*)safe_realloc(safe_state,
+          best_changes_list->items, (size_t)best_changes_list->capacity *
+          sizeof(RE_FuzzyChange));
+        if (!new_items)
+            return FALSE;
+
+        best_changes_list->items = new_items;
+    }
+
+    memmove(best_changes_list->items,
+      safe_state->re_state->fuzzy_changes.items,
+      (size_t)safe_state->re_state->fuzzy_changes.count *
+      sizeof(RE_FuzzyChange));
+    best_changes_list->count = safe_state->re_state->fuzzy_changes.count;
+
+    return TRUE;
+}
+
+/* Restores a list of fuzzy changes. */
+Py_LOCAL_INLINE(void) restore_fuzzy_changes(RE_SafeState* safe_state,
+  RE_FuzzyChangesList* best_changes_list) {
+    memmove(safe_state->re_state->fuzzy_changes.items,
+      best_changes_list->items, (size_t)best_changes_list->count *
+      sizeof(RE_FuzzyChange));
+    safe_state->re_state->fuzzy_changes.count = best_changes_list->count;
 }
 
 /* Checks a fuzzy match of an item. */
@@ -10289,8 +10455,11 @@ found:
     bt_data = state->backtrack;
     bt_data->fuzzy_item.position.text_pos = *text_pos;
     bt_data->fuzzy_item.position.node = *node;
-    bt_data->fuzzy_item.fuzzy_type = (RE_INT8)data.fuzzy_type;
+    bt_data->fuzzy_item.fuzzy_type = data.fuzzy_type;
     bt_data->fuzzy_item.step = (RE_INT8)step;
+
+    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+        return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -10317,6 +10486,8 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_item(RE_SafeState* safe_state, BOOL
     state = safe_state->re_state;
     fuzzy_info = &state->fuzzy_info;
     values = fuzzy_info->node->values;
+
+    unrecord_fuzzy(safe_state);
 
     bt_data = state->backtrack;
     data.new_text_pos = bt_data->fuzzy_item.position.text_pos;
@@ -10357,7 +10528,10 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_item(RE_SafeState* safe_state, BOOL
     return RE_ERROR_SUCCESS;
 
 found:
-    bt_data->fuzzy_item.fuzzy_type = (RE_INT8)data.fuzzy_type;
+    bt_data->fuzzy_item.fuzzy_type = data.fuzzy_type;
+
+    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+        return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -10401,7 +10575,7 @@ Py_LOCAL_INLINE(int) fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t
       fuzzy_info->counts[RE_FUZZY_INS] < values[RE_FUZZY_VAL_MIN_INS] ||
       fuzzy_info->counts[RE_FUZZY_SUB] < values[RE_FUZZY_VAL_MIN_SUB] ||
       fuzzy_info->counts[RE_FUZZY_ERR] < values[RE_FUZZY_VAL_MIN_ERR])
-      state->too_few_errors = RE_ERROR_SUCCESS;
+        state->too_few_errors = RE_ERROR_SUCCESS;
 
     return RE_ERROR_SUCCESS;
 }
@@ -10528,8 +10702,11 @@ found:
     bt_data->fuzzy_string.position.text_pos = *text_pos;
     bt_data->fuzzy_string.position.node = node;
     bt_data->fuzzy_string.string_pos = *string_pos;
-    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)data.fuzzy_type;
+    bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
     bt_data->fuzzy_string.step = (RE_INT8)step;
+
+    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos))
+        return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -10558,6 +10735,8 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string(RE_SafeState* safe_state, BOOL
     state = safe_state->re_state;
     fuzzy_info = &state->fuzzy_info;
     values = fuzzy_info->node->values;
+
+    unrecord_fuzzy(safe_state);
 
     bt_data = state->backtrack;
     data.new_text_pos = bt_data->fuzzy_string.position.text_pos;
@@ -10594,7 +10773,10 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string(RE_SafeState* safe_state, BOOL
     return RE_ERROR_SUCCESS;
 
 found:
-    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)data.fuzzy_type;
+    bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
+
+    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+        return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -10712,8 +10894,11 @@ found:
     bt_data->fuzzy_string.string_pos = *string_pos;
     bt_data->fuzzy_string.folded_pos = (RE_INT8)(*folded_pos);
     bt_data->fuzzy_string.folded_len = (RE_INT8)folded_len;
-    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)data.fuzzy_type;
+    bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
     bt_data->fuzzy_string.step = (RE_INT8)step;
+
+    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+        return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -10744,6 +10929,8 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string_fld(RE_SafeState* safe_state,
     state = safe_state->re_state;
     fuzzy_info = &state->fuzzy_info;
     values = fuzzy_info->node->values;
+
+    unrecord_fuzzy(safe_state);
 
     bt_data = state->backtrack;
     new_text_pos = bt_data->fuzzy_string.position.text_pos;
@@ -10788,7 +10975,10 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string_fld(RE_SafeState* safe_state,
     return RE_ERROR_SUCCESS;
 
 found:
-    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)data.fuzzy_type;
+    bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
+
+    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+        return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -10912,8 +11102,11 @@ found:
     bt_data->fuzzy_string.folded_len = (RE_INT8)folded_len;
     bt_data->fuzzy_string.gfolded_pos = (RE_INT8)(*gfolded_pos);
     bt_data->fuzzy_string.gfolded_len = (RE_INT8)gfolded_len;
-    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)data.fuzzy_type;
+    bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
     bt_data->fuzzy_string.step = (RE_INT8)step;
+
+    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+        return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -10946,6 +11139,8 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_group_fld(RE_SafeState* safe_state, BOOL
     state = safe_state->re_state;
     fuzzy_info = &state->fuzzy_info;
     values = fuzzy_info->node->values;
+
+    unrecord_fuzzy(safe_state);
 
     bt_data = state->backtrack;
     new_text_pos = bt_data->fuzzy_string.position.text_pos;
@@ -10985,7 +11180,10 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_group_fld(RE_SafeState* safe_state, BOOL
     return RE_ERROR_SUCCESS;
 
 found:
-    bt_data->fuzzy_string.fuzzy_type = (RE_INT8)data.fuzzy_type;
+    bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
+
+    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+        return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
     ++fuzzy_info->counts[RE_FUZZY_ERR];
@@ -11777,7 +11975,7 @@ next_match_2:
 advance:
     /* The main matching loop. */
     for (;;) {
-        TRACE(("%d|", state->text_pos))
+        TRACE(("%" PY_FORMAT_SIZE_T "d|", state->text_pos))
 
         /* Should we abort the matching? */
         ++state->iterations;
@@ -12323,9 +12521,8 @@ advance:
             /* The counts are of type size_t, so the format needs to specify
              * that.
              */
-            TRACE(("min is %" PY_FORMAT_SIZE_T "u, max is %" PY_FORMAT_SIZE_T
-              "u, count is %" PY_FORMAT_SIZE_T "u\n", node->values[1],
-              node->values[2], rp_data->count))
+            TRACE(("min is %u, max is %u, count is %" PY_FORMAT_SIZE_T "u\n",
+              node->values[1], node->values[2], rp_data->count))
 
             /* Could the body or tail match? */
             try_body = changed && (rp_data->count < node->values[2] ||
@@ -12498,9 +12695,8 @@ advance:
             /* The counts are of type size_t, so the format needs to specify
              * that.
              */
-            TRACE(("min is %" PY_FORMAT_SIZE_T "u, max is %" PY_FORMAT_SIZE_T
-              "u, count is %" PY_FORMAT_SIZE_T "u\n", node->values[1],
-              node->values[2], rp_data->count))
+            TRACE(("min is %u, max is %u, count is %" PY_FORMAT_SIZE_T "u\n",
+              node->values[1], node->values[2], rp_data->count))
 
             /* Could the body or tail match? */
             try_body = changed && (rp_data->count < node->values[2] ||
@@ -13169,9 +13365,9 @@ advance:
             rp_data->capture_change = state->capture_change;
 
             /* Could the body or tail match? */
-            try_body = changed && state->pattern->is_fuzzy || node->values[2] >
-              0 && !is_repeat_guarded(safe_state, index, state->text_pos,
-              RE_STATUS_BODY);
+            try_body = (changed && state->pattern->is_fuzzy) ||
+              (node->values[2] > 0 && !is_repeat_guarded(safe_state, index,
+              state->text_pos, RE_STATUS_BODY));
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
@@ -14237,7 +14433,7 @@ advance:
         {
             Py_ssize_t length;
             RE_CODE* values;
-            TRACE(("%s %d\n", re_op_text[node->op], node->value_count))
+            TRACE(("%s %zd\n", re_op_text[node->op], node->value_count))
 
             if ((node->status & RE_STATUS_REQUIRED) && state->text_pos ==
               state->req_pos && string_pos < 0)
@@ -14294,7 +14490,7 @@ advance:
             RE_CODE* values;
             int folded_len;
             Py_UCS4 folded[RE_MAX_FOLDED];
-            TRACE(("%s %d\n", re_op_text[node->op], node->value_count))
+            TRACE(("%s %zd\n", re_op_text[node->op], node->value_count))
 
             if ((node->status & RE_STATUS_REQUIRED) && state->text_pos ==
               state->req_pos && string_pos < 0)
@@ -14405,7 +14601,7 @@ advance:
             RE_CODE* values;
             int folded_len;
             Py_UCS4 folded[RE_MAX_FOLDED];
-            TRACE(("%s %d\n", re_op_text[node->op], node->value_count))
+            TRACE(("%s %zd\n", re_op_text[node->op], node->value_count))
 
             if ((node->status & RE_STATUS_REQUIRED) && state->text_pos ==
               state->req_pos && string_pos < 0)
@@ -14513,7 +14709,7 @@ advance:
         {
             Py_ssize_t length;
             RE_CODE* values;
-            TRACE(("%s %d\n", re_op_text[node->op], node->value_count))
+            TRACE(("%s %zd\n", re_op_text[node->op], node->value_count))
 
             if ((node->status & RE_STATUS_REQUIRED) && state->text_pos ==
               state->req_pos && string_pos < 0)
@@ -14566,7 +14762,7 @@ advance:
         {
             Py_ssize_t length;
             RE_CODE* values;
-            TRACE(("%s %d\n", re_op_text[node->op], node->value_count))
+            TRACE(("%s %zd\n", re_op_text[node->op], node->value_count))
 
             if ((node->status & RE_STATUS_REQUIRED) && state->text_pos ==
               state->req_pos && string_pos < 0)
@@ -14619,7 +14815,7 @@ advance:
         {
             Py_ssize_t length;
             RE_CODE* values;
-            TRACE(("%s %d\n", re_op_text[node->op], node->value_count))
+            TRACE(("%s %zd\n", re_op_text[node->op], node->value_count))
 
             if ((node->status & RE_STATUS_REQUIRED) && state->text_pos ==
               state->req_pos && string_pos < 0)
@@ -16478,7 +16674,7 @@ backtrack:
         case RE_OP_STRING_IGN_REV: /* A string, backwards, ignoring case. */
         case RE_OP_STRING_REV: /* A string, backwards. */
         {
-            BOOL matched;
+            BOOL matched = FALSE;
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             status = retry_fuzzy_match_string(safe_state, search,
@@ -16495,7 +16691,7 @@ backtrack:
         case RE_OP_REF_GROUP_FLD: /* Reference to a capture group, ignoring case. */
         case RE_OP_REF_GROUP_FLD_REV: /* Reference to a capture group, backwards, ignoring case. */
         {
-            BOOL matched;
+            BOOL matched = FALSE;
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             status = retry_fuzzy_match_group_fld(safe_state, search,
@@ -16542,7 +16738,7 @@ backtrack:
         case RE_OP_STRING_FLD: /* A string, ignoring case. */
         case RE_OP_STRING_FLD_REV: /* A string, backwards, ignoring case. */
         {
-            BOOL matched;
+            BOOL matched = FALSE;
             TRACE(("%s\n", re_op_text[bt_data->op]))
 
             status = retry_fuzzy_match_string_fld(safe_state, search,
@@ -16758,8 +16954,9 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
     BOOL must_advance;
     BOOL found_match;
     RE_BestList best_list;
+    RE_BestChangesList best_changes_list;
     Py_ssize_t start_pos;
-    int status;
+    int status = RE_ERROR_FAILURE;
     TRACE(("<<do_best_fuzzy_match>>\n"))
 
     state = safe_state->re_state;
@@ -16783,6 +16980,7 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
     found_match = FALSE;
 
     make_best_list(&best_list);
+    make_best_changes_list(&best_changes_list);
 
     /* Search the text for the best match. */
     start_pos = state->text_pos;
@@ -16825,13 +17023,20 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
                 clear_best_list(&best_list);
                 if (!add_to_best_list(safe_state, &best_list, state->match_pos,
                   state->text_pos))
-                    return RE_ERROR_MEMORY;
-            } else if (state->total_errors == fewest_errors)
+                    goto error;
+
+                clear_best_fuzzy_changes(safe_state, &best_changes_list);
+                if (!add_best_fuzzy_changes(safe_state, &best_changes_list))
+                    goto error;
+            } else if (state->total_errors == fewest_errors) {
                 /* This match was as good as the previous matches. Remember
                  * this one.
                  */
                 add_to_best_list(safe_state, &best_list, state->match_pos,
                   state->text_pos);
+                if (!add_best_fuzzy_changes(safe_state, &best_changes_list))
+                    goto error;
+            }
         } else
             start_pos = state->match_pos + step;
 
@@ -16843,16 +17048,18 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
     }
 
     if (found_match) {
+        RE_FuzzyChangesList* list;
+
         /* We found a match. */
         if (fewest_errors > 0) {
             /* It doesn't look like a perfect match. */
-            int i;
+            size_t i;
             Py_ssize_t slice_start;
             Py_ssize_t slice_end;
             size_t error_limit;
             size_t best_fuzzy_counts[RE_FUZZY_COUNT];
             RE_GroupData* best_groups;
-            Py_ssize_t best_match_pos;
+            Py_ssize_t best_match_pos = 0;
             Py_ssize_t best_text_pos;
 
             slice_start = state->slice_start;
@@ -16898,10 +17105,10 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
                         status = basic_match(safe_state, FALSE);
 
                         if (status == RE_ERROR_SUCCESS) {
-                            BOOL better;
+                            BOOL better = FALSE;
 
-                            if (state->total_errors < error_limit || i == 0 &&
-                              offset == 0)
+                            if (state->total_errors < error_limit || (i == 0 &&
+                              offset == 0))
                                 better = TRUE;
                             else if (state->total_errors == error_limit)
                                 /* The cost is as low as the current best, but
@@ -16916,10 +17123,8 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
 
                                 best_groups = save_groups(safe_state,
                                   best_groups);
-                                if (!best_groups) {
-                                    destroy_best_list(safe_state, &best_list);
-                                    return RE_ERROR_MEMORY;
-                                }
+                                if (!best_groups)
+                                    goto error;
 
                                 best_match_pos = state->match_pos;
                                 best_text_pos = state->text_pos;
@@ -16986,12 +17191,24 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
 
             state->slice_start = slice_start;
             state->slice_end = slice_end;
-        }
+
+            list = &best_changes_list.lists[0];
+            state->fuzzy_changes.count = list->count;
+            memmove(state->fuzzy_changes.items, list->items,
+              (size_t)list->count * sizeof(RE_FuzzyChange));
+        } else
+            state->fuzzy_changes.count = 0;
     }
 
     destroy_best_list(safe_state, &best_list);
+    destroy_best_changes_list(safe_state, &best_changes_list);
 
     return status;
+
+error:
+    destroy_best_list(safe_state, &best_list);
+    destroy_best_changes_list(safe_state, &best_changes_list);
+    return RE_ERROR_MEMORY;
 }
 
 /* Performs a match or search from the current text position for an enhanced
@@ -17011,10 +17228,13 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
     int status;
     size_t best_fuzzy_counts[RE_FUZZY_COUNT];
     Py_ssize_t best_text_pos = 0; /* Initialise to stop compiler warning. */
+    RE_FuzzyChangesList best_changes_list;
     TRACE(("<<do_enhanced_fuzzy_match>>\n"))
 
     state = safe_state->re_state;
     pattern = state->pattern;
+
+    make_changes_list(safe_state, &best_changes_list);
 
     if (state->reverse)
         available = state->text_pos - state->slice_start;
@@ -17074,6 +17294,8 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
                 state->max_errors = fewest_errors;
 
                 save_fuzzy_counts(state, best_fuzzy_counts);
+                if (!save_fuzzy_changes(safe_state, &best_changes_list))
+                    goto error;
 
                 same_match = state->match_pos == best_match_pos &&
                   state->text_pos == best_text_pos;
@@ -17143,9 +17365,17 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
             restore_groups(safe_state, best_groups);
             restore_fuzzy_counts(state, best_fuzzy_counts);
         }
+
+        restore_fuzzy_changes(safe_state, &best_changes_list);
     }
 
+    destroy_changes_list(safe_state, &best_changes_list);
+
     return status;
+
+error:
+    destroy_changes_list(safe_state, &best_changes_list);
+    return RE_ERROR_MEMORY;
 }
 
 /* Performs a match or search from the current text position for a simple fuzzy
@@ -17293,8 +17523,8 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
             /* The string positions are of type Py_ssize_t, so the format needs
              * to specify that.
              */
-            TRACE(("group %d from %" PY_FORMAT_SIZE_T "d to %" PY_FORMAT_SIZE_T
-              "d\n", g + 1, span->start, span->end))
+            TRACE(("group %zd from %" PY_FORMAT_SIZE_T "d to %"
+              PY_FORMAT_SIZE_T "d\n", g + 1, span->start, span->end))
 
             if (span->start >= 0 && span->end >= 0 && group_info[g].end_index >
               max_end_index) {
@@ -17377,26 +17607,19 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
     str_info->is_unicode = FALSE;
 #else
     /* Get pointer to string buffer. */
-#if PY_VERSION_HEX >= 0x02060000
     buffer = Py_TYPE(string)->tp_as_buffer;
     str_info->view.len = -1;
-#else
-    buffer = string->ob_type->tp_as_buffer;
-#endif
 
     if (!buffer) {
         PyErr_SetString(PyExc_TypeError, "expected string or buffer");
         return FALSE;
     }
 
-#if PY_VERSION_HEX >= 0x02060000
     if (buffer->bf_getbuffer && (*buffer->bf_getbuffer)(string,
       &str_info->view, PyBUF_SIMPLE) >= 0)
         /* It's a new-style buffer. */
         str_info->should_release = TRUE;
-    else
-#endif
-    if (buffer->bf_getreadbuffer && buffer->bf_getsegcount &&
+    else if (buffer->bf_getreadbuffer && buffer->bf_getsegcount &&
       buffer->bf_getsegcount(string, NULL) == 1)
         /* It's an old-style buffer. */
         str_info->should_release = FALSE;
@@ -17406,7 +17629,6 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
     }
 
     /* Determine buffer size. */
-#if PY_VERSION_HEX >= 0x02060000
     if (str_info->should_release) {
         /* It's a new-style buffer. */
         bytes = str_info->view.len;
@@ -17418,15 +17640,13 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
             return FALSE;
         }
     } else
-#endif
         /* It's an old-style buffer. */
         bytes = buffer->bf_getreadbuffer(string, 0, &str_info->characters);
 
     if (bytes < 0) {
-#if PY_VERSION_HEX >= 0x02060000
         if (str_info->should_release)
             PyBuffer_Release(&str_info->view);
-#endif
+
         PyErr_SetString(PyExc_TypeError, "buffer has negative size");
         return FALSE;
     }
@@ -17437,10 +17657,9 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
     if (PyString_Check(string) || bytes == size)
         str_info->charsize = 1;
     else {
-#if PY_VERSION_HEX >= 0x02060000
         if (str_info->should_release)
             PyBuffer_Release(&str_info->view);
-#endif
+
         PyErr_SetString(PyExc_TypeError, "buffer size mismatch");
         return FALSE;
     }
@@ -17562,13 +17781,11 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->charsize = str_info->charsize;
     state->is_unicode = str_info->is_unicode;
 
-#if PY_VERSION_HEX >= 0x02060000
     /* Are we using a buffer object? If so, we need to copy the info. */
     state->should_release = str_info->should_release;
     if (state->should_release)
         state->view = str_info->view;
 
-#endif
     switch (state->charsize) {
     case 1:
         state->char_at = bytes1_char_at;
@@ -17673,6 +17890,10 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
           sizeof(RE_FuzzyGuards));
     }
 
+    state->fuzzy_changes.capacity = 0;
+    state->fuzzy_changes.count = 0;
+    state->fuzzy_changes.items = NULL;
+
     Py_INCREF(state->pattern);
     Py_INCREF(state->string);
 
@@ -17715,14 +17936,12 @@ error:
     return FALSE;
 }
 
-#if PY_VERSION_HEX >= 0x02060000
 /* Releases the string's buffer, if necessary. */
 Py_LOCAL_INLINE(void) release_buffer(RE_StringInfo* str_info) {
     if (str_info->should_release)
         PyBuffer_Release(&str_info->view);
 }
 
-#endif
 /* Initialises a state object. */
 Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
   PyObject* string, Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int
@@ -17740,10 +17959,7 @@ Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
     if (!state_init_2(state, pattern, string, &str_info, start, end,
       overlapped, concurrent, partial, use_lock, visible_captures, match_all))
       {
-#if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
-
-#endif
         return FALSE;
     }
 
@@ -17882,13 +18098,13 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
     if (state->fuzzy_guards)
         dealloc_fuzzy_guards(state->fuzzy_guards, pattern->fuzzy_count);
 
+    re_dealloc(state->fuzzy_changes.items);
+
     Py_DECREF(state->pattern);
     Py_DECREF(state->string);
-#if PY_VERSION_HEX >= 0x02060000
 
     if (state->should_release)
         PyBuffer_Release(&state->view);
-#endif
 }
 
 /* Converts a string index to an integer.
@@ -17926,6 +18142,8 @@ static void match_dealloc(PyObject* self_) {
     Py_DECREF(self->pattern);
     if (self->groups)
         re_dealloc(self->groups);
+    if (self->fuzzy_changes)
+        re_dealloc(self->fuzzy_changes);
     Py_XDECREF(self->regs);
     PyObject_DEL(self);
 }
@@ -18882,26 +19100,19 @@ Py_LOCAL_INLINE(Py_ssize_t) check_replacement_string(PyObject* str_replacement,
         char_at = bytes4_char_at;
         break;
     default:
-#if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
-#endif
         return -1;
     }
 
     for (pos = 0; pos < str_info.length; pos++) {
         if (char_at(str_info.characters, pos) == special_char) {
-#if PY_VERSION_HEX >= 0x02060000
             release_buffer(&str_info);
-
-#endif
             return -1;
         }
     }
 
-#if PY_VERSION_HEX >= 0x02060000
     release_buffer(&str_info);
 
-#endif
     return str_info.length;
 }
 
@@ -18965,51 +19176,6 @@ error:
     return NULL;
 }
 
-#if PY_VERSION_HEX >= 0x02060000
-/* Gets a MatchObject's group dictionary. */
-Py_LOCAL_INLINE(PyObject*) match_get_group_dict(MatchObject* self) {
-    PyObject* result;
-    PyObject* keys;
-    Py_ssize_t g;
-
-    result = PyDict_New();
-    if (!result || !self->pattern->groupindex)
-        return result;
-
-    keys = PyMapping_Keys(self->pattern->groupindex);
-    if (!keys)
-        goto failed;
-
-    for (g = 0; g < PyList_GET_SIZE(keys); g++) {
-        PyObject* key;
-        PyObject* value;
-        int status;
-
-        /* PyList_GET_ITEM borrows a reference. */
-        key = PyList_GET_ITEM(keys, g);
-        if (!key)
-            goto failed;
-
-        value = match_get_group(self, key, Py_None, FALSE);
-        if (!value)
-            goto failed;
-
-        status = PyDict_SetItem(result, key, value);
-        Py_DECREF(value);
-        if (status < 0)
-            goto failed;
-    }
-
-    Py_DECREF(keys);
-
-    return result;
-
-failed:
-    Py_XDECREF(keys);
-    Py_DECREF(result);
-    return NULL;
-}
-
 static PyTypeObject Capture_Type = {
     PyObject_HEAD_INIT(NULL)
     0,
@@ -19032,7 +19198,6 @@ Py_LOCAL_INLINE(PyObject*) make_capture_object(MatchObject** match_indirect,
     return (PyObject*)capture;
 }
 
-#if PY_VERSION_HEX >= 0x02060000
 /* Makes a MatchObject's capture dictionary. */
 Py_LOCAL_INLINE(PyObject*) make_capture_dict(MatchObject* match, MatchObject**
   match_indirect) {
@@ -19094,7 +19259,6 @@ failed:
     Py_DECREF(result);
     return NULL;
 }
-#endif
 
 /* MatchObject's 'expandf' method. */
 static PyObject* match_expandf(MatchObject* self, PyObject* str_template) {
@@ -19135,7 +19299,6 @@ error:
     return NULL;
 }
 
-#endif
 Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self);
 
 /* MatchObject's '__copy__' method. */
@@ -19359,13 +19522,11 @@ PyDoc_STRVAR(match_expand_doc,
     Return the string obtained by doing backslash substitution on the template,\n\
     as done by the sub() method.");
 
-#if PY_VERSION_HEX >= 0x02060000
 PyDoc_STRVAR(match_expandf_doc,
     "expandf(format) --> string.\n\
     Return the string obtained by using the format, as done by the subf()\n\
     method.");
 
-#endif
 PyDoc_STRVAR(match_captures_doc,
     "captures([group1, ...]) --> list of strings or tuple of list of strings.\n\
     Return the captures of one or more subgroups of the match.  If there is a\n\
@@ -19417,9 +19578,7 @@ static PyMethodDef match_methods[] = {
     {"capturesdict", (PyCFunction)match_capturesdict, METH_NOARGS,
       match_capturesdict_doc},
     {"expand", (PyCFunction)match_expand, METH_O, match_expand_doc},
-#if PY_VERSION_HEX >= 0x02060000
     {"expandf", (PyCFunction)match_expandf, METH_O, match_expandf_doc},
-#endif
     {"captures", (PyCFunction)match_captures, METH_VARARGS,
       match_captures_doc},
     {"starts", (PyCFunction)match_starts, METH_VARARGS, match_starts_doc},
@@ -19488,21 +19647,6 @@ static PyObject* match_string(PyObject* self_) {
         return Py_None;
     }
 }
-#if PY_VERSION_HEX < 0x02060000
-
-/* MatchObject's 'partial' attribute. */
-static PyObject* match_partial(PyObject* self_) {
-    MatchObject* self;
-    PyObject* result;
-
-    self = (MatchObject*)self_;
-
-    result = self->partial ? Py_True : Py_False;
-    Py_INCREF(result);
-
-    return result;
-}
-#endif
 
 /* MatchObject's 'fuzzy_counts' attribute. */
 static PyObject* match_fuzzy_counts(PyObject* self_) {
@@ -19514,6 +19658,83 @@ static PyObject* match_fuzzy_counts(PyObject* self_) {
       self->fuzzy_counts[RE_FUZZY_INS], self->fuzzy_counts[RE_FUZZY_DEL]);
 }
 
+/* MatchObject's 'fuzzy_changes' attribute. */
+static PyObject* match_fuzzy_changes(PyObject* self_) {
+    MatchObject* self;
+    PyObject* sub_changes;
+    PyObject* ins_changes;
+    PyObject* del_changes;
+    size_t count;
+    Py_ssize_t offset;
+    size_t i;
+    PyObject* result;
+
+    self = (MatchObject*)self_;
+
+    sub_changes = PyList_New(0);
+    ins_changes = PyList_New(0);
+    del_changes = PyList_New(0);
+    if (!sub_changes || !ins_changes || !del_changes)
+        goto error;
+
+    count = self->fuzzy_counts[RE_FUZZY_SUB] + self->fuzzy_counts[RE_FUZZY_INS]
+      + self->fuzzy_counts[RE_FUZZY_DEL];
+    offset = 0;
+
+    for (i = 0; i < count; i++) {
+        RE_FuzzyChange* change;
+        Py_ssize_t pos;
+        PyObject* position;
+        int status;
+
+        change = &self->fuzzy_changes[i];
+
+        pos = change->pos;
+        if (change->type == RE_FUZZY_DEL) {
+            pos += offset;
+            ++offset;
+        }
+
+        position = Py_BuildValue("n", pos);
+        if (!position)
+            goto error;
+
+        switch (change->type) {
+        case RE_FUZZY_DEL:
+            status = PyList_Append(del_changes, position);
+            break;
+        case RE_FUZZY_INS:
+            status = PyList_Append(ins_changes, position);
+            break;
+        case RE_FUZZY_SUB:
+            status = PyList_Append(sub_changes, position);
+            break;
+        default:
+            status = 0;
+            break;
+        }
+
+        Py_DECREF(position);
+
+        if (status == -1)
+            goto error;
+    }
+
+    result = PyTuple_Pack(3, sub_changes, ins_changes, del_changes);
+
+    Py_DECREF(sub_changes);
+    Py_DECREF(ins_changes);
+    Py_DECREF(del_changes);
+
+    return result;
+
+error:
+    Py_XDECREF(sub_changes);
+    Py_XDECREF(ins_changes);
+    Py_XDECREF(del_changes);
+    return NULL;
+}
+
 static PyGetSetDef match_getset[] = {
     {"lastindex", (getter)match_lastindex, (setter)NULL,
       "The group number of the last matched capturing group, or None."},
@@ -19523,12 +19744,10 @@ static PyGetSetDef match_getset[] = {
       "A tuple of the spans of the capturing groups."},
     {"string", (getter)match_string, (setter)NULL,
       "The string that was searched, or None if it has been detached."},
-#if PY_VERSION_HEX < 0x02060000
-    {"partial", (getter)match_partial, (setter)NULL,
-      "Whether it's a partial match."},
-#endif
     {"fuzzy_counts", (getter)match_fuzzy_counts, (setter)NULL,
       "A tuple of the number of substitutions, insertions and deletions."},
+    {"fuzzy_changes", (getter)match_fuzzy_changes, (setter)NULL,
+      "A tuple of the positions of the substitutions, insertions and deletions."},
     {NULL} /* Sentinel */
 };
 
@@ -19539,10 +19758,8 @@ static PyMemberDef match_members[] = {
       "The position at which the regex engine starting searching."},
     {"endpos", T_PYSSIZET, offsetof(MatchObject, endpos), READONLY,
       "The final position beyond which the regex engine won't search."},
-#if PY_VERSION_HEX >= 0x02060000
     {"partial", T_BOOL, offsetof(MatchObject, partial), READONLY,
       "Whether it's a partial match."},
-#endif
     {NULL} /* Sentinel */
 };
 
@@ -19640,6 +19857,7 @@ Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self) {
     match->regs = self->regs;
     Py_MEMCPY(match->fuzzy_counts, self->fuzzy_counts,
       sizeof(self->fuzzy_counts));
+    match->fuzzy_changes = NULL; /* Copy them later. */
     match->partial = self->partial;
     Py_INCREF(match->string);
     Py_INCREF(match->substring);
@@ -19653,6 +19871,22 @@ Py_LOCAL_INLINE(PyObject*) make_match_copy(MatchObject* self) {
             Py_DECREF(match);
             return NULL;
         }
+    }
+
+    /* Copy the fuzzy changes to the MatchObject. */
+    if (self->fuzzy_changes) {
+        size_t total_changes;
+        size_t size;
+
+        total_changes = self->fuzzy_counts[RE_FUZZY_SUB] +
+          self->fuzzy_counts[RE_FUZZY_INS] + self->fuzzy_counts[RE_FUZZY_DEL];
+        size = (size_t)total_changes * sizeof(RE_FuzzyChange);
+        match->fuzzy_changes = (RE_FuzzyChange*)re_alloc(size);
+        if (!match->fuzzy_changes) {
+            Py_DECREF(match);
+            return NULL;
+        }
+        memmove(match->fuzzy_changes, self->fuzzy_changes, size);
     }
 
     return (PyObject*)match;
@@ -19685,6 +19919,19 @@ Py_LOCAL_INLINE(PyObject*) pattern_new_match(PatternObject* pattern, RE_State*
               state->total_fuzzy_counts[RE_FUZZY_DEL];
         } else
             memset(match->fuzzy_counts, 0, sizeof(match->fuzzy_counts));
+
+        if (state->fuzzy_changes.count > 0) {
+            size_t size;
+
+            size = state->fuzzy_changes.count * sizeof(RE_FuzzyChange);
+            match->fuzzy_changes = (RE_FuzzyChange*)re_alloc(size);
+            if (!match->fuzzy_changes) {
+                Py_DECREF(match);
+                return NULL;
+            }
+            memmove(match->fuzzy_changes, state->fuzzy_changes.items, size);
+        } else
+            match->fuzzy_changes = NULL;
 
         match->partial = status == RE_ERROR_PARTIAL;
         Py_INCREF(match->string);
@@ -20300,7 +20547,6 @@ static void splitter_dealloc(PyObject* self_) {
     Py_DECREF(self->pattern);
     PyObject_DEL(self);
 }
-#if PY_VERSION_HEX >= 0x02060000
 
 /* Converts a captures index to an integer.
  *
@@ -20328,6 +20574,9 @@ Py_LOCAL_INLINE(Py_ssize_t) index_to_integer(PyObject* item) {
         Py_UNICODE* characters;
         Py_ssize_t length;
 
+        characters = (Py_UNICODE*)PyUnicode_AS_DATA(item);
+        length = PyUnicode_GET_SIZE(item);
+        int_obj = PyLong_FromUnicode(characters, length, 0);
         if (!int_obj)
             goto error;
 
@@ -20403,7 +20652,7 @@ static PyObject* capture_getitem(CaptureObject* self, PyObject* item) {
         group = &match->groups[self->group_index - 1];
 
         if (index < 0)
-            index += group->capture_count;
+            index += (Py_ssize_t)group->capture_count;
 
         if (index < 0 || index >= (Py_ssize_t)group->capture_count) {
             PyErr_SetString(PyExc_IndexError, "list index out of range");
@@ -20450,7 +20699,6 @@ static PyObject* capture_str(PyObject* self_) {
 
     return match_get_group_by_index(match, self->group_index, Py_None);
 }
-#endif
 
 static PyMemberDef splitter_members[] = {
     {"pattern", T_OBJECT, offsetof(SplitterObject, pattern), READONLY,
@@ -20717,9 +20965,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     BOOL is_callable = FALSE;
     PyObject* replacement = NULL;
     BOOL is_literal = FALSE;
-#if PY_VERSION_HEX >= 0x02060000
     BOOL is_format = FALSE;
-#endif
     BOOL is_template = FALSE;
     RE_State state;
     RE_SafeState safe_state;
@@ -20729,11 +20975,9 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     Py_ssize_t step;
     PyObject* item;
     MatchObject* match;
-#if PY_VERSION_HEX >= 0x02060000
     BOOL built_capture = FALSE;
-#endif
-    PyObject* args;
-    PyObject* kwargs;
+    PyObject* args = NULL;
+    PyObject* kwargs = NULL;
     Py_ssize_t end_pos;
 
     /* Get the string. */
@@ -20742,10 +20986,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
 
     /* Get the limits of the search. */
     if (!get_limits(pos, endpos, str_info.length, &start, &end)) {
-#if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
-
-#endif
         return NULL;
     }
 
@@ -20762,10 +21003,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         else
             result = string;
 
-#if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
 
-#endif
         return result;
     }
 
@@ -20779,7 +21018,6 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
 
         replacement = str_template;
         Py_INCREF(replacement);
-#if PY_VERSION_HEX >= 0x02060000
     } else if (sub_type & RE_SUBF) {
         /* Is it a literal format?
          *
@@ -20805,7 +21043,6 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                 return NULL;
             }
         }
-#endif
     } else {
         /* Is it a literal template?
          *
@@ -20828,10 +21065,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             replacement = call(RE_MODULE, "_compile_replacement_helper",
               PyTuple_Pack(2, self, str_template));
             if (!replacement) {
-#if PY_VERSION_HEX >= 0x02060000
                 release_buffer(&str_info);
-
-#endif
                 return NULL;
             }
         }
@@ -20840,16 +21074,10 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     /* The MatchObject, and therefore repeated captures, will be visible only
      * if the replacement is callable or subf is used.
      */
-#if PY_VERSION_HEX >= 0x02060000
     if (!state_init_2(&state, self, string, &str_info, start, end, FALSE,
       concurrent, FALSE, FALSE, is_callable || (sub_type & RE_SUBF) != 0,
       FALSE)) {
         release_buffer(&str_info);
-
-#else
-    if (!state_init_2(&state, self, string, &str_info, start, end, FALSE,
-      concurrent, FALSE, FALSE, is_callable, FALSE)) {
-#endif
         Py_XDECREF(replacement);
         return NULL;
     }
@@ -20895,7 +21123,6 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             status = add_to_join_list(&join_info, replacement);
             if (status < 0)
                 goto error;
-#if PY_VERSION_HEX >= 0x02060000
         } else if (is_format) {
             /* The replacement is a format string. */
             size_t g;
@@ -20914,7 +21141,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
              */
             if (!built_capture) {
                 /* The args are a tuple of the capture group matches. */
-                args = PyTuple_New(match->group_count + 1);
+                args = PyTuple_New((Py_ssize_t)match->group_count + 1);
                 if (!args) {
                     Py_DECREF(match);
                     goto error;
@@ -20948,7 +21175,6 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             Py_DECREF(item);
             if (status < 0)
                 goto error;
-#endif
         } else if (is_template) {
             /* The replacement is a list template. */
             Py_ssize_t count;
@@ -21076,13 +21302,11 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
 
     state_fini(&state);
 
-#if PY_VERSION_HEX >= 0x02060000
     if (built_capture) {
         Py_DECREF(kwargs);
         Py_DECREF(args);
     }
 
-#endif
     if (!item)
         return NULL;
 
@@ -21092,13 +21316,11 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     return item;
 
 error:
-#if PY_VERSION_HEX >= 0x02060000
     if (built_capture) {
         Py_DECREF(kwargs);
         Py_DECREF(args);
     }
 
-#endif
     clear_join_list(&join_info);
     state_fini(&state);
     Py_XDECREF(replacement);
@@ -21130,7 +21352,6 @@ static PyObject* pattern_sub(PatternObject* self, PyObject* args, PyObject*
       conc);
 }
 
-#if PY_VERSION_HEX >= 0x02060000
 /* PatternObject's 'subf' method. */
 static PyObject* pattern_subf(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
@@ -21156,7 +21377,6 @@ static PyObject* pattern_subf(PatternObject* self, PyObject* args, PyObject*
       conc);
 }
 
-#endif
 /* PatternObject's 'subn' method. */
 static PyObject* pattern_subn(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
@@ -21182,7 +21402,6 @@ static PyObject* pattern_subn(PatternObject* self, PyObject* args, PyObject*
       conc);
 }
 
-#if PY_VERSION_HEX >= 0x02060000
 /* PatternObject's 'subfn' method. */
 static PyObject* pattern_subfn(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
@@ -21208,12 +21427,10 @@ static PyObject* pattern_subfn(PatternObject* self, PyObject* args, PyObject*
       endpos, conc);
 }
 
-#endif
 /* PatternObject's 'split' method. */
 static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
     int conc;
-
     RE_State state;
     RE_SafeState safe_state;
     PyObject* list;
@@ -21546,28 +21763,24 @@ PyDoc_STRVAR(pattern_sub_doc,
     reverse pattern) non-overlapping occurrences of pattern in string by the\n\
     replacement repl.");
 
-#if PY_VERSION_HEX >= 0x02060000
 PyDoc_STRVAR(pattern_subf_doc,
     "subf(format, string, count=0, flags=0, pos=None, endpos=None, concurrent=None) --> newstring\n\
     Return the string obtained by replacing the leftmost (or rightmost with a\n\
     reverse pattern) non-overlapping occurrences of pattern in string by the\n\
     replacement format.");
 
-#endif
 PyDoc_STRVAR(pattern_subn_doc,
     "subn(repl, string, count=0, flags=0, pos=None, endpos=None, concurrent=None) --> (newstring, number of subs)\n\
     Return the tuple (new_string, number_of_subs_made) found by replacing the\n\
     leftmost (or rightmost with a reverse pattern) non-overlapping occurrences\n\
     of pattern with the replacement repl.");
 
-#if PY_VERSION_HEX >= 0x02060000
 PyDoc_STRVAR(pattern_subfn_doc,
     "subfn(format, string, count=0, flags=0, pos=None, endpos=None, concurrent=None) --> (newstring, number of subs)\n\
     Return the tuple (new_string, number_of_subs_made) found by replacing the\n\
     leftmost (or rightmost with a reverse pattern) non-overlapping occurrences\n\
     of pattern with the replacement format.");
 
-#endif
 PyDoc_STRVAR(pattern_split_doc,
     "split(string, string, maxsplit=0, concurrent=None) --> list.\n\
     Split string by the occurrences of pattern.");
@@ -21602,16 +21815,12 @@ static PyMethodDef pattern_methods[] = {
       pattern_search_doc},
     {"sub", (PyCFunction)pattern_sub, METH_VARARGS|METH_KEYWORDS,
       pattern_sub_doc},
-#if PY_VERSION_HEX >= 0x02060000
     {"subf", (PyCFunction)pattern_subf, METH_VARARGS|METH_KEYWORDS,
       pattern_subf_doc},
-#endif
     {"subn", (PyCFunction)pattern_subn, METH_VARARGS|METH_KEYWORDS,
       pattern_subn_doc},
-#if PY_VERSION_HEX >= 0x02060000
     {"subfn", (PyCFunction)pattern_subfn, METH_VARARGS|METH_KEYWORDS,
       pattern_subfn_doc},
-#endif
     {"split", (PyCFunction)pattern_split, METH_VARARGS|METH_KEYWORDS,
       pattern_split_doc},
     {"splititer", (PyCFunction)pattern_splititer, METH_VARARGS|METH_KEYWORDS,
@@ -21765,7 +21974,7 @@ Py_LOCAL_INLINE(PyObject*) pack_code_list(RE_CODE* code, Py_ssize_t code_len) {
      *
      * A 32-bit RE_CODE might need 5 bytes ((32 + 6) / 7).
      */
-    max_size = code_len * 5 + ((sizeof(Py_ssize_t) * 8) + 6) / 7;
+    max_size = code_len * 5 + (Py_ssize_t)((sizeof(Py_ssize_t) * 8) + 6) / 7;
 
     packed = (RE_UINT8*)re_alloc((size_t)max_size);
     count = 0;
@@ -21774,22 +21983,22 @@ Py_LOCAL_INLINE(PyObject*) pack_code_list(RE_CODE* code, Py_ssize_t code_len) {
     value = (RE_UINT32)code_len;
 
     while (value >= 0x80) {
-        packed[count++] = 0x80 | (value & 0x7F);
+        packed[count++] = 0x80 | (RE_UINT8)(value & 0x7F);
         value >>= 7;
     }
 
-    packed[count++] = value;
+    packed[count++] = (RE_UINT8)value;
 
     /* Store each of the elements of the code list. */
     for (i = 0; i < code_len; i++) {
         value = (RE_UINT32)code[i];
 
         while (value >= 0x80) {
-            packed[count++] = 0x80 | (value & 0x7F);
+            packed[count++] = 0x80 | (RE_UINT8)(value & 0x7F);
             value >>= 7;
         }
 
-        packed[count++] = value;
+        packed[count++] = (RE_UINT8)value;
     }
 
     packed_code_list = PyString_FromStringAndSize((const char *)packed, count);
@@ -21840,11 +22049,7 @@ Py_LOCAL_INLINE(PyObject*) unpack_code_list(PyObject* packed) {
         }
 
         value |= (RE_UINT32)packed_data[index++] << shift;
-#if PY_VERSION_HEX >= 0x02060000
         obj = PyLong_FromSize_t((size_t)value);
-#else
-        obj = PyLong_FromUnsignedLongLong((size_t)value);
-#endif
         if (!obj)
             goto error;
 
@@ -22172,7 +22377,7 @@ Py_LOCAL_INLINE(BOOL) CheckStack_push(RE_CheckStack* stack, RE_Node* node,
     RE_Check* check;
 
     if (stack->count >= stack->capacity) {
-        Py_ssize_t new_capacity;
+        size_t new_capacity;
         RE_Check* new_items;
 
         new_capacity = stack->capacity * 2;
@@ -22545,7 +22750,7 @@ Py_LOCAL_INLINE(void) NodeStack_fini(RE_NodeStack* stack) {
 /* Pushes an item onto a node stack. */
 Py_LOCAL_INLINE(BOOL) NodeStack_push(RE_NodeStack* stack, RE_Node* node) {
     if (stack->count >= stack->capacity) {
-        Py_ssize_t new_capacity;
+        size_t new_capacity;
         RE_Node** new_items;
 
         new_capacity = stack->capacity * 2;
@@ -24714,10 +24919,10 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     code_len = PyList_GET_SIZE(code_list);
     code = (RE_CODE*)re_alloc((size_t)code_len * sizeof(RE_CODE));
     if (!code) {
-        if (unpacked)
+        if (unpacked) {
             /* code_list has been built from a packed code list. */
             Py_DECREF(code_list);
-
+        }
         return NULL;
     }
 
@@ -24755,10 +24960,12 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self = PyObject_NEW(PatternObject, &Pattern_Type);
     if (!self) {
         set_error(RE_ERROR_MEMORY, NULL);
-        if (unpacked)
+        if (unpacked) {
             Py_DECREF(code_list);
-        else
+        } else {
             Py_DECREF(packed_code_list);
+        }
+
         re_dealloc(req_chars);
         re_dealloc(code);
         return NULL;
@@ -24802,8 +25009,9 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->req_string = NULL;
     self->locale_info = NULL;
     Py_INCREF(self->pattern);
-    if (unpacked)
+    if (unpacked) {
         Py_INCREF(self->packed_code_list);
+    }
     Py_INCREF(self->groupindex);
     Py_INCREF(self->indexgroup);
     Py_INCREF(self->named_lists);
@@ -24836,8 +25044,9 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     if (!ok) {
         Py_DECREF(self);
         re_dealloc(req_chars);
-        if (unpacked)
+        if (unpacked) {
             Py_DECREF(code_list);
+        }
         return NULL;
     }
 
@@ -24892,25 +25101,27 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
         self->locale_info = re_alloc(sizeof(RE_LocaleInfo));
         if (!self->locale_info) {
             Py_DECREF(self);
-            if (unpacked)
+            if (unpacked) {
                 Py_DECREF(code_list);
+            }
             return NULL;
         }
 
         scan_locale_chars(self->locale_info);
     }
 
-    if (unpacked)
+    if (unpacked) {
         Py_DECREF(code_list);
+    }
 
     return (PyObject*)self;
 
 error:
     re_dealloc(code);
     set_error(RE_ERROR_ILLEGAL, NULL);
-    if (unpacked)
+    if (unpacked) {
         Py_DECREF(code_list);
-
+    }
     return NULL;
 }
 
@@ -24965,10 +25176,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
         char_at = bytes4_char_at;
         break;
     default:
-#if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
-
-#endif
         return NULL;
     }
 
@@ -24998,10 +25206,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
         set_char_at = bytes4_set_char_at;
         break;
     default:
-#if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
-
-#endif
         return NULL;
     }
 
@@ -25016,10 +25221,7 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
 
     folded = re_alloc((size_t)(buf_size * folded_charsize));
     if (!folded) {
-#if PY_VERSION_HEX >= 0x02060000
         release_buffer(&str_info);
-
-#endif
         return NULL;
     }
 
@@ -25072,11 +25274,9 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
 
     re_dealloc(folded);
 
-#if PY_VERSION_HEX >= 0x02060000
     /* Release the original string's buffer. */
     release_buffer(&str_info);
 
-#endif
     return result;
 }
 
@@ -25351,7 +25551,6 @@ PyMODINIT_FUNC init_regex(void) {
     Splitter_Type.tp_iternext = splitter_iternext;
     Splitter_Type.tp_methods = splitter_methods;
     Splitter_Type.tp_members = splitter_members;
-#if PY_VERSION_HEX >= 0x02060000
 
     /* Initialise Capture_Type. */
     Capture_Type.tp_dealloc = capture_dealloc;
@@ -25359,7 +25558,6 @@ PyMODINIT_FUNC init_regex(void) {
     Capture_Type.tp_as_mapping = &capture_as_mapping;
     Capture_Type.tp_flags = Py_TPFLAGS_DEFAULT;
     Capture_Type.tp_methods = capture_methods;
-#endif
 
     /* Initialize object types */
     if (PyType_Ready(&Pattern_Type) < 0)
@@ -25370,10 +25568,8 @@ PyMODINIT_FUNC init_regex(void) {
         return;
     if (PyType_Ready(&Splitter_Type) < 0)
         return;
-#if PY_VERSION_HEX >= 0x02060000
     if (PyType_Ready(&Capture_Type) < 0)
         return;
-#endif
 
     error_exception = NULL;
 
@@ -25402,8 +25598,10 @@ PyMODINIT_FUNC init_regex(void) {
     }
 
     /* Initialise the property dictionary. */
-    if (!init_property_dict())
+    if (!init_property_dict()) {
+        Py_DECREF(m);
         return;
+    }
 }
 
 /* vim:ts=4:sw=4:et */

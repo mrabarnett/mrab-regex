@@ -3,13 +3,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.12: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.13.1: http://docutils.sourceforge.net/" />
 <title></title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 7614 2013-02-21 15:55:51Z milde $
+:Id: $Id: html4css1.css 7952 2016-07-26 18:15:59Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -36,6 +36,14 @@ table.borderless td, table.borderless th {
 
 .hidden {
   display: none }
+
+.subscript {
+  vertical-align: sub;
+  font-size: smaller }
+
+.superscript {
+  vertical-align: super;
+  font-size: smaller }
 
 a.toc-backref {
   text-decoration: none ;
@@ -161,18 +169,23 @@ h2.subtitle {
 hr.docutils {
   width: 75% }
 
-img.align-left, .figure.align-left, object.align-left {
+img.align-left, .figure.align-left, object.align-left, table.align-left {
   clear: left ;
   float: left ;
   margin-right: 1em }
 
-img.align-right, .figure.align-right, object.align-right {
+img.align-right, .figure.align-right, object.align-right, table.align-right {
   clear: right ;
   float: right ;
   margin-left: 1em }
 
 img.align-center, .figure.align-center, object.align-center {
   display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table.align-center {
   margin-left: auto;
   margin-right: auto;
 }
@@ -193,6 +206,15 @@ div.align-right {
 
 /* div.align-center * { */
 /*   text-align: left } */
+
+.align-top    {
+  vertical-align: top }
+
+.align-middle {
+  vertical-align: middle }
+
+.align-bottom {
+  vertical-align: bottom }
 
 ol.simple, ul.simple {
   margin-bottom: 1em }
@@ -345,13 +367,19 @@ ul.auto-toc {
 <h1>Introduction</h1>
 <p>This regex implementation is backwards-compatible with the standard 're' module, but offers additional functionality.</p>
 </div>
+<div class="section" id="note">
+<h1>Note</h1>
+<p>The re module's behaviour with zero-width matches changed in Python 3.7, and this module will follow that behaviour when compiled for Python 3.7.</p>
+</div>
 <div class="section" id="old-vs-new-behaviour">
 <h1>Old vs new behaviour</h1>
-<p>This module has 2 behaviours:</p>
+<p>In order to be compatible with the re module, this module has 2 behaviours:</p>
+<ul>
+<li><p class="first"><strong>Version 0</strong> behaviour (old behaviour, compatible with the re module):</p>
+<p>Please note that the re module's behaviour may change over time, and I'll endeavour to match that behaviour in version 0.</p>
 <ul class="simple">
-<li><strong>Version 0</strong> behaviour (old behaviour, compatible with the current re module):<ul>
 <li>Indicated by the <tt class="docutils literal">VERSION0</tt> or <tt class="docutils literal">V0</tt> flag, or <tt class="docutils literal"><span class="pre">(?V0)</span></tt> in the pattern.</li>
-<li>Zero-width matches are handled like in the re module:<ul>
+<li>Zero-width matches are not handled correctly in the re module before Python 3.7. The behaviour in those earlier versions is:<ul>
 <li><tt class="docutils literal">.split</tt> won't split a string at a zero-width match.</li>
 <li><tt class="docutils literal">.sub</tt> will advance by one character after a zero-width match.</li>
 </ul>
@@ -361,13 +389,10 @@ ul.auto-toc {
 <li>Case-insensitive matches in Unicode use simple case-folding by default.</li>
 </ul>
 </li>
-<li><strong>Version 1</strong> behaviour (new behaviour, different from the current re module):<ul>
+<li><p class="first"><strong>Version 1</strong> behaviour (new behaviour, possibly different from the re module):</p>
+<ul class="simple">
 <li>Indicated by the <tt class="docutils literal">VERSION1</tt> or <tt class="docutils literal">V1</tt> flag, or <tt class="docutils literal"><span class="pre">(?V1)</span></tt> in the pattern.</li>
-<li>Zero-width matches are handled like in Perl and PCRE:<ul>
-<li><tt class="docutils literal">.split</tt> will split a string at a zero-width match.</li>
-<li><tt class="docutils literal">.sub</tt> will handle zero-width matches correctly.</li>
-</ul>
-</li>
+<li>Zero-width matches are handled correctly.</li>
 <li>Inline flags apply to the end of the group or pattern, and they can be turned off.</li>
 <li>Nested sets and set operations are supported.</li>
 <li>Case-insensitive matches in Unicode use full case-folding by default.</li>
@@ -452,17 +477,17 @@ ul.auto-toc {
 <p>The test of a conditional pattern can now be a lookaround.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r'(?(?=\d)\d+|\w+)'</span><span class="punctuation">,</span> <span class="literal string">'123abc'</span><span class="punctuation">)</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'123'</span><span class="operator">&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r'(?(?=\d)\d+|\w+)'</span><span class="punctuation">,</span> <span class="literal string">'abc123'</span><span class="punctuation">)</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'abc123'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?(?=\d)\d+|\w+)'</span><span class="punctuation">,</span> <span class="literal string single">'123abc'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'123'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?(?=\d)\d+|\w+)'</span><span class="punctuation">,</span> <span class="literal string single">'abc123'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'abc123'</span><span class="operator">&gt;</span>
 </pre>
 <p>This is not quite the same as putting a lookaround in the first branch of a pair of alternatives.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r'(?:(?=\d)\d+\b|\w+)'</span><span class="punctuation">,</span> <span class="literal string">'123abc'</span><span class="punctuation">))</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'123abc'</span><span class="operator">&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r'(?(?=\d)\d+\b|\w+)'</span><span class="punctuation">,</span> <span class="literal string">'123abc'</span><span class="punctuation">))</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?:(?=\d)\d+\b|\w+)'</span><span class="punctuation">,</span> <span class="literal string single">'123abc'</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'123abc'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?(?=\d)\d+\b|\w+)'</span><span class="punctuation">,</span> <span class="literal string single">'123abc'</span><span class="punctuation">))</span>
 <span class="name builtin pseudo">None</span>
 </pre>
 <p>In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was <strong>not</strong> attempted.</p>
@@ -471,16 +496,16 @@ ul.auto-toc {
 <p>The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the <tt class="docutils literal">POSIX</tt> flag (<tt class="docutils literal"><span class="pre">(?p)</span></tt>).</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Normal matching.</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r'Mr|Mrs'</span><span class="punctuation">,</span> <span class="literal string">'Mrs'</span><span class="punctuation">)</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">2</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'Mr'</span><span class="operator">&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r'one(self)?(selfsufficient)?'</span><span class="punctuation">,</span> <span class="literal string">'oneselfsufficient'</span><span class="punctuation">)</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">7</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'oneself'</span><span class="operator">&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># POSIX matching.</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r'(?p)Mr|Mrs'</span><span class="punctuation">,</span> <span class="literal string">'Mrs'</span><span class="punctuation">)</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'Mrs'</span><span class="operator">&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r'(?p)one(self)?(selfsufficient)?'</span><span class="punctuation">,</span> <span class="literal string">'oneselfsufficient'</span><span class="punctuation">)</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">17</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'oneselfsufficient'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Normal matching.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'Mr|Mrs'</span><span class="punctuation">,</span> <span class="literal string single">'Mrs'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">2</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'Mr'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'one(self)?(selfsufficient)?'</span><span class="punctuation">,</span> <span class="literal string single">'oneselfsufficient'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">7</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'oneself'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># POSIX matching.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?p)Mr|Mrs'</span><span class="punctuation">,</span> <span class="literal string single">'Mrs'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'Mrs'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?p)one(self)?(selfsufficient)?'</span><span class="punctuation">,</span> <span class="literal string single">'oneselfsufficient'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">17</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'oneselfsufficient'</span><span class="operator">&gt;</span>
 </pre>
 <p>Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.</p>
 </li>
@@ -488,8 +513,8 @@ ul.auto-toc {
 <p>If there's no group called &quot;DEFINE&quot;, then ... will be ignored, but any group definitions within it will be available.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r'(?(DEFINE)(?P&lt;quant&gt;\d+)(?P&lt;item&gt;\w+))(?&amp;quant) (?&amp;item)'</span><span class="punctuation">,</span> <span class="literal string">'5 elephants'</span><span class="punctuation">)</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">11</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'5 elephants'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?(DEFINE)(?P&lt;quant&gt;\d+)(?P&lt;item&gt;\w+))(?&amp;quant) (?&amp;item)'</span><span class="punctuation">,</span> <span class="literal string single">'5 elephants'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">11</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'5 elephants'</span><span class="operator">&gt;</span>
 </pre>
 </li>
 <li><p class="first">Added <tt class="docutils literal">(*PRUNE)</tt>, <tt class="docutils literal">(*SKIP)</tt> and <tt class="docutils literal">(*FAIL)</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/153">Hg issue 153</a>)</p>
@@ -502,38 +527,38 @@ ul.auto-toc {
 <p>It does not affect what capture groups return.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r'(\w\w\K\w\w\w)'</span><span class="punctuation">,</span> <span class="literal string">'abcdef'</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(\w\w\K\w\w\w)'</span><span class="punctuation">,</span> <span class="literal string single">'abcdef'</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal number integer">0</span><span class="punctuation">]</span>
-<span class="literal string">'cde'</span>
+<span class="literal string single">'cde'</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal number integer">1</span><span class="punctuation">]</span>
-<span class="literal string">'abcde'</span>
+<span class="literal string single">'abcde'</span>
 <span class="operator">&gt;&gt;&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r'(?r)(\w\w\K\w\w\w)'</span><span class="punctuation">,</span> <span class="literal string">'abcdef'</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?r)(\w\w\K\w\w\w)'</span><span class="punctuation">,</span> <span class="literal string single">'abcdef'</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal number integer">0</span><span class="punctuation">]</span>
-<span class="literal string">'bc'</span>
+<span class="literal string single">'bc'</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal number integer">1</span><span class="punctuation">]</span>
-<span class="literal string">'bcdef'</span>
+<span class="literal string single">'bcdef'</span>
 </pre>
 </li>
-<li><p class="first">Added capture subscripting for <tt class="docutils literal">expandf</tt> and <tt class="docutils literal">subf</tt>/<tt class="docutils literal">subfn</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/133">Hg issue 133</a>) <strong>(Python 2.6 and above)</strong></p>
+<li><p class="first">Added capture subscripting for <tt class="docutils literal">expandf</tt> and <tt class="docutils literal">subf</tt>/<tt class="docutils literal">subfn</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/133">Hg issue 133</a>)</p>
 <p>You can now use subscripting to get the captures of a repeated capture group.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(\w)+&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abc&quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string">&quot;{1}&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'c'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string">&quot;{1[0]} {1[1]} {1[2]}&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'a b c'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string">&quot;{1[-1]} {1[-2]} {1[-3]}&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'c b a'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w)+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;{1}&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'c'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;{1[0]} {1[1]} {1[2]}&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'a b c'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;{1[-1]} {1[-2]} {1[-3]}&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'c b a'</span>
 <span class="operator">&gt;&gt;&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;letter&gt;\w)+&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abc&quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string">&quot;{letter}&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'c'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string">&quot;{letter[0]} {letter[1]} {letter[2]}&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'a b c'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string">&quot;{letter[-1]} {letter[-2]} {letter[-3]}&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'c b a'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;letter&gt;\w)+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;{letter}&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'c'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;{letter[0]} {letter[1]} {letter[2]}&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'a b c'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;{letter[-1]} {letter[-2]} {letter[-3]}&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'c b a'</span>
 </pre>
 </li>
 <li><p class="first">Added support for referring to a group by number using <tt class="docutils literal"><span class="pre">(?P=...)</span></tt>.</p>
@@ -548,76 +573,77 @@ ul.auto-toc {
 <p>Match objects have a <tt class="docutils literal">partial</tt> attribute, which is <tt class="docutils literal">True</tt> if it's a partial match.</p>
 <p>For example, if you wanted a user to enter a 4-digit number and check it character by character as it was being entered:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">pattern</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string">r'\d{4}'</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">pattern</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'\d{4}'</span><span class="punctuation">)</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Initially, nothing has been entered:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">''</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">''</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Initially, nothing has been entered:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">''</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">''</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="operator">&gt;</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># An empty string is OK, but it's only a partial match.</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># The user enters a letter:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">'a'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># An empty string is OK, but it's only a partial match.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># The user enters a letter:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'a'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
 <span class="name builtin pseudo">None</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># It'll never match.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It'll never match.</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># The user deletes that and enters a digit:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">'1'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'1'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="operator">&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># It matches this far, but it's only a partial match.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># The user deletes that and enters a digit:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'1'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'1'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It matches this far, but it's only a partial match.</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># The user enters 2 more digits:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">'123'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'123'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="operator">&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># It matches this far, but it's only a partial match.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># The user enters 2 more digits:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It matches this far, but it's only a partial match.</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># The user enters another digit:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">'1234'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">4</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'1234'</span><span class="operator">&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># It's a complete match.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># The user enters another digit:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'1234'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">4</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'1234'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It's a complete match.</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># If the user enters another digit:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">'12345'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># If the user enters another digit:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'12345'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>
 <span class="name builtin pseudo">None</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># It's no longer a match.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It's no longer a match.</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># This is a partial match:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">pattern</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">'123'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">partial</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># This is a partial match:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">pattern</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">partial</span>
 <span class="name builtin pseudo">True</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># This is a complete match:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">pattern</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">'1233'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">partial</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># This is a complete match:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">pattern</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string single">'1233'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">partial</span>
 <span class="name builtin pseudo">False</span>
 </pre>
 </li>
 <li><p class="first"><tt class="docutils literal">*</tt> operator not working correctly with sub() (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/106">Hg issue 106</a>)</p>
 <p>Sometimes it's not clear how zero-width matches should be handled. For example, should <tt class="docutils literal">.*</tt> match 0 characters directly after matching &gt;0 characters?</p>
-<p>Most regex implementations follow the lead of Perl (PCRE), but the re module sometimes doesn't. The Perl behaviour appears to be the most common (and the re module is sometimes definitely wrong), so in version 1 the regex module follows the Perl behaviour, whereas in version 0 it follows the legacy re behaviour.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Version 0 behaviour (like re)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string">'(?V0).*'</span><span class="punctuation">,</span> <span class="literal string">'x'</span><span class="punctuation">,</span> <span class="literal string">'test'</span><span class="punctuation">)</span>
-<span class="literal string">'x'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string">'(?V0).*?'</span><span class="punctuation">,</span> <span class="literal string">'|'</span><span class="punctuation">,</span> <span class="literal string">'test'</span><span class="punctuation">)</span>
-<span class="literal string">'|t|e|s|t|'</span>
+<span class="comment single"># Python 3.7 and later</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'.*'</span><span class="punctuation">,</span> <span class="literal string single">'x'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'xx'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'.*?'</span><span class="punctuation">,</span> <span class="literal string single">'|'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'|||||||||'</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Version 1 behaviour (like Perl)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string">'(?V1).*'</span><span class="punctuation">,</span> <span class="literal string">'x'</span><span class="punctuation">,</span> <span class="literal string">'test'</span><span class="punctuation">)</span>
-<span class="literal string">'xx'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string">'(?V1).*?'</span><span class="punctuation">,</span> <span class="literal string">'|'</span><span class="punctuation">,</span> <span class="literal string">'test'</span><span class="punctuation">)</span>
-<span class="literal string">'|||||||||'</span>
+<span class="comment single"># Python 3.6 and earlier</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'(?V0).*'</span><span class="punctuation">,</span> <span class="literal string single">'x'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'x'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'(?V1).*'</span><span class="punctuation">,</span> <span class="literal string single">'x'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'xx'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'(?V0).*?'</span><span class="punctuation">,</span> <span class="literal string single">'|'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'|t|e|s|t|'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'(?V1).*?'</span><span class="punctuation">,</span> <span class="literal string single">'|'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'|||||||||'</span>
 </pre>
 </li>
 <li><p class="first">re.group() should never return a bytearray (<a class="reference external" href="https://bugs.python.org/issue18468">issue #18468</a>)</p>
 <p>For compatibility with the re module, the regex module returns all matching bytestrings as <tt class="docutils literal">bytes</tt>, starting from Python 3.4.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Python 3.4 and later</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="name">b</span><span class="literal string">'.'</span><span class="punctuation">,</span> <span class="name builtin">bytearray</span><span class="punctuation">(</span><span class="name">b</span><span class="literal string">'a'</span><span class="punctuation">))</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">()</span>
-<span class="name">b</span><span class="literal string">'a'</span>
-
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Python 3.1-3.3</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="name">b</span><span class="literal string">'.'</span><span class="punctuation">,</span> <span class="name builtin">bytearray</span><span class="punctuation">(</span><span class="name">b</span><span class="literal string">'a'</span><span class="punctuation">))</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">()</span>
-<span class="name builtin">bytearray</span><span class="punctuation">(</span><span class="name">b</span><span class="literal string">'a'</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">b</span><span class="literal string single">'.'</span><span class="punctuation">,</span> <span class="name builtin">bytearray</span><span class="punctuation">(</span><span class="literal string affix">b</span><span class="literal string single">'a'</span><span class="punctuation">))</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">()</span>
+<span class="comment single"># Python 3.4 and later</span>
+<span class="literal string affix">b</span><span class="literal string single">'a'</span>
+<span class="comment single"># Python 3.3 and earlier</span>
+<span class="name builtin">bytearray</span><span class="punctuation">(</span><span class="literal string affix">b</span><span class="literal string single">'a'</span><span class="punctuation">)</span>
 </pre>
 </li>
 <li><p class="first">Added <tt class="docutils literal">capturesdict</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/86">Hg issue 86</a>)</p>
@@ -627,111 +653,111 @@ ul.auto-toc {
 <p><tt class="docutils literal">capturesdict</tt> returns a dict of the named groups and lists of all the captures of those groups.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?:(?P&lt;word&gt;\w+) (?P&lt;digits&gt;\d+)\n)+&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;one 1</span><span class="literal string escape">\n</span><span class="literal string">two 2</span><span class="literal string escape">\n</span><span class="literal string">three 3</span><span class="literal string escape">\n</span><span class="literal string">&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?:(?P&lt;word&gt;\w+) (?P&lt;digits&gt;\d+)\n)+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;one 1</span><span class="literal string escape">\n</span><span class="literal string double">two 2</span><span class="literal string escape">\n</span><span class="literal string double">three 3</span><span class="literal string escape">\n</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">groupdict</span><span class="punctuation">()</span>
-<span class="punctuation">{</span><span class="literal string">'word'</span><span class="punctuation">:</span> <span class="literal string">'three'</span><span class="punctuation">,</span> <span class="literal string">'digits'</span><span class="punctuation">:</span> <span class="literal string">'3'</span><span class="punctuation">}</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string">&quot;word&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'one'</span><span class="punctuation">,</span> <span class="literal string">'two'</span><span class="punctuation">,</span> <span class="literal string">'three'</span><span class="punctuation">]</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string">&quot;digits&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'1'</span><span class="punctuation">,</span> <span class="literal string">'2'</span><span class="punctuation">,</span> <span class="literal string">'3'</span><span class="punctuation">]</span>
+<span class="punctuation">{</span><span class="literal string single">'word'</span><span class="punctuation">:</span> <span class="literal string single">'three'</span><span class="punctuation">,</span> <span class="literal string single">'digits'</span><span class="punctuation">:</span> <span class="literal string single">'3'</span><span class="punctuation">}</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;word&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'one'</span><span class="punctuation">,</span> <span class="literal string single">'two'</span><span class="punctuation">,</span> <span class="literal string single">'three'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;digits&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'1'</span><span class="punctuation">,</span> <span class="literal string single">'2'</span><span class="punctuation">,</span> <span class="literal string single">'3'</span><span class="punctuation">]</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">capturesdict</span><span class="punctuation">()</span>
-<span class="punctuation">{</span><span class="literal string">'word'</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="literal string">'one'</span><span class="punctuation">,</span> <span class="literal string">'two'</span><span class="punctuation">,</span> <span class="literal string">'three'</span><span class="punctuation">],</span> <span class="literal string">'digits'</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="literal string">'1'</span><span class="punctuation">,</span> <span class="literal string">'2'</span><span class="punctuation">,</span> <span class="literal string">'3'</span><span class="punctuation">]}</span>
+<span class="punctuation">{</span><span class="literal string single">'word'</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="literal string single">'one'</span><span class="punctuation">,</span> <span class="literal string single">'two'</span><span class="punctuation">,</span> <span class="literal string single">'three'</span><span class="punctuation">],</span> <span class="literal string single">'digits'</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="literal string single">'1'</span><span class="punctuation">,</span> <span class="literal string single">'2'</span><span class="punctuation">,</span> <span class="literal string single">'3'</span><span class="punctuation">]}</span>
 </pre>
 </li>
 <li><p class="first">Allow duplicate names of groups (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/87">Hg issue 87</a>)</p>
 <p>Group names can now be duplicated.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># With optional groups:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># With optional groups:</span>
 <span class="operator">&gt;&gt;&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Both groups capture, the second capture 'overwriting' the first.</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;first or second&quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'second'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'first'</span><span class="punctuation">,</span> <span class="literal string">'second'</span><span class="punctuation">]</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Only the second group captures.</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot; or second&quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'second'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'second'</span><span class="punctuation">]</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Only the first group captures.</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;first or &quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'first'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'first'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Both groups capture, the second capture 'overwriting' the first.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first or second&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'second'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'first'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Only the second group captures.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot; or second&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'second'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'second'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Only the first group captures.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first or &quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'first'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'first'</span><span class="punctuation">]</span>
 <span class="operator">&gt;&gt;&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># With mandatory groups:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># With mandatory groups:</span>
 <span class="operator">&gt;&gt;&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Both groups capture, the second capture 'overwriting' the first.</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)?&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;first or second&quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'second'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'first'</span><span class="punctuation">,</span> <span class="literal string">'second'</span><span class="punctuation">]</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># Again, both groups capture, the second capture 'overwriting' the first.</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot; or second&quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'second'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">''</span><span class="punctuation">,</span> <span class="literal string">'second'</span><span class="punctuation">]</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># And yet again, both groups capture, the second capture 'overwriting' the first.</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;first or &quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="literal string">''</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string">&quot;item&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'first'</span><span class="punctuation">,</span> <span class="literal string">''</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Both groups capture, the second capture 'overwriting' the first.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first or second&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'second'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'first'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Again, both groups capture, the second capture 'overwriting' the first.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot; or second&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'second'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">''</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># And yet again, both groups capture, the second capture 'overwriting' the first.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first or &quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">''</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'first'</span><span class="punctuation">,</span> <span class="literal string single">''</span><span class="punctuation">]</span>
 </pre>
 </li>
 <li><p class="first">Added <tt class="docutils literal">fullmatch</tt> (<a class="reference external" href="https://bugs.python.org/issue16203">issue #16203</a>)</p>
 <p><tt class="docutils literal">fullmatch</tt> behaves like <tt class="docutils literal">match</tt>, except that it must match all of the string.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">r&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abc&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">())</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">())</span>
 <span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">r&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abcx&quot;</span><span class="punctuation">))</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcx&quot;</span><span class="punctuation">))</span>
 <span class="name builtin pseudo">None</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">r&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abcx&quot;</span><span class="punctuation">,</span> <span class="name">endpos</span><span class="operator">=</span><span class="literal number integer">3</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">())</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcx&quot;</span><span class="punctuation">,</span> <span class="name">endpos</span><span class="operator">=</span><span class="literal number integer">3</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">())</span>
 <span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">r&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;xabcy&quot;</span><span class="punctuation">,</span> <span class="name">pos</span><span class="operator">=</span><span class="literal number integer">1</span><span class="punctuation">,</span> <span class="name">endpos</span><span class="operator">=</span><span class="literal number integer">4</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">())</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;xabcy&quot;</span><span class="punctuation">,</span> <span class="name">pos</span><span class="operator">=</span><span class="literal number integer">1</span><span class="punctuation">,</span> <span class="name">endpos</span><span class="operator">=</span><span class="literal number integer">4</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">())</span>
 <span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">,</span> <span class="literal number integer">4</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;a.*?&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abcd&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">)</span>
-<span class="literal string">'a'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">r&quot;a.*?&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abcd&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">)</span>
-<span class="literal string">'abcd'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;a.*?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcd&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">)</span>
+<span class="literal string single">'a'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;a.*?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcd&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">)</span>
+<span class="literal string single">'abcd'</span>
 </pre>
 </li>
-<li><p class="first">Added <tt class="docutils literal">subf</tt> and <tt class="docutils literal">subfn</tt> <strong>(Python 2.6 and above)</strong></p>
+<li><p class="first">Added <tt class="docutils literal">subf</tt> and <tt class="docutils literal">subfn</tt></p>
 <p><tt class="docutils literal">subf</tt> and <tt class="docutils literal">subfn</tt> are alternatives to <tt class="docutils literal">sub</tt> and <tt class="docutils literal">subn</tt> respectively. When passed a replacement string, they treat it as a format string.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">subf</span><span class="punctuation">(</span><span class="literal string">r&quot;(\w+) (\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;{0} =&gt; {2} {1}&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;foo bar&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'foo bar =&gt; bar foo'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">subf</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;word1&gt;\w+) (?P&lt;word2&gt;\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;{word2} {word1}&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;foo bar&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'bar foo'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">subf</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w+) (\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;{0} =&gt; {2} {1}&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;foo bar&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'foo bar =&gt; bar foo'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">subf</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;word1&gt;\w+) (?P&lt;word2&gt;\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;{word2} {word1}&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;foo bar&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'bar foo'</span>
 </pre>
 </li>
-<li><p class="first">Added <tt class="docutils literal">expandf</tt> to match object <strong>(Python 2.6 and above)</strong></p>
+<li><p class="first">Added <tt class="docutils literal">expandf</tt> to match object</p>
 <p><tt class="docutils literal">expandf</tt> is an alternative to <tt class="docutils literal">expand</tt>. When passed a replacement string, it treats it as a format string.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(\w+) (\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;foo bar&quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string">&quot;{0} =&gt; {2} {1}&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'foo bar =&gt; bar foo'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w+) (\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;foo bar&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;{0} =&gt; {2} {1}&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'foo bar =&gt; bar foo'</span>
 <span class="operator">&gt;&gt;&gt;</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;word1&gt;\w+) (?P&lt;word2&gt;\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;foo bar&quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string">&quot;{word2} {word1}&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'bar foo'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;word1&gt;\w+) (?P&lt;word2&gt;\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;foo bar&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;{word2} {word1}&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'bar foo'</span>
 </pre>
 </li>
 <li><p class="first">Detach searched string</p>
 <p>A match object contains a reference to the string that was searched, via its <tt class="docutils literal">string</tt> attribute. The match object now has a <tt class="docutils literal">detach_string</tt> method that will 'detach' that string, making it available for garbage collection (this might save valuable memory if that string is very large).</p>
 <p>Example:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r&quot;\w+&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;Hello world&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\w+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;Hello world&quot;</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">())</span>
 <span class="name">Hello</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">m</span><span class="operator">.</span><span class="name">string</span><span class="punctuation">)</span>
@@ -752,14 +778,14 @@ ul.auto-toc {
 <p><tt class="docutils literal"><span class="pre">(?&amp;name)</span></tt> tries to match the named capture group.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(Tarzan|Jane) loves (?1)&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;Tarzan loves Jane&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
-<span class="punctuation">(</span><span class="literal string">'Tarzan'</span><span class="punctuation">,)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(Tarzan|Jane) loves (?1)&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;Jane loves Tarzan&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
-<span class="punctuation">(</span><span class="literal string">'Jane'</span><span class="punctuation">,)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(Tarzan|Jane) loves (?1)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;Tarzan loves Jane&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal string single">'Tarzan'</span><span class="punctuation">,)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(Tarzan|Jane) loves (?1)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;Jane loves Tarzan&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal string single">'Jane'</span><span class="punctuation">,)</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r&quot;(\w)(?:(?R)|(\w?))\1&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;kayak&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w)(?:(?R)|(\w?))\1&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;kayak&quot;</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">,</span> <span class="literal number integer">2</span><span class="punctuation">)</span>
-<span class="punctuation">(</span><span class="literal string">'kayak'</span><span class="punctuation">,</span> <span class="literal string">'k'</span><span class="punctuation">,</span> <span class="name builtin pseudo">None</span><span class="punctuation">)</span>
+<span class="punctuation">(</span><span class="literal string single">'kayak'</span><span class="punctuation">,</span> <span class="literal string single">'k'</span><span class="punctuation">,</span> <span class="name builtin pseudo">None</span><span class="punctuation">)</span>
 </pre>
 <p>The first two examples show how the subpattern within the capture group is reused, but is _not_ itself a capture group. In other words, <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?1)&quot;</span></tt> is equivalent to <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?:Tarzan|Jane)&quot;</span></tt>.</p>
 <p>It's possible to backtrack into a recursed or repeated group.</p>
@@ -769,19 +795,19 @@ ul.auto-toc {
 <li><p class="first">repr(regex) doesn't include actual regex (<a class="reference external" href="https://bugs.python.org/issue13592">issue #13592</a>)</p>
 <p>The repr of a compiled regex is now in the form of a eval-able string. For example:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">r</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string">&quot;foo&quot;</span><span class="punctuation">,</span> <span class="name">regex</span><span class="operator">.</span><span class="name">I</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">r</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string double">&quot;foo&quot;</span><span class="punctuation">,</span> <span class="name">regex</span><span class="operator">.</span><span class="name">I</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">repr</span><span class="punctuation">(</span><span class="name">r</span><span class="punctuation">)</span>
-<span class="literal string">&quot;regex.Regex('foo', flags=regex.I | regex.V0)&quot;</span>
+<span class="literal string double">&quot;regex.Regex('foo', flags=regex.I | regex.V0)&quot;</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">r</span>
-<span class="name">regex</span><span class="operator">.</span><span class="name">Regex</span><span class="punctuation">(</span><span class="literal string">'foo'</span><span class="punctuation">,</span> <span class="name">flags</span><span class="operator">=</span><span class="name">regex</span><span class="operator">.</span><span class="name">I</span> <span class="operator">|</span> <span class="name">regex</span><span class="operator">.</span><span class="name">V0</span><span class="punctuation">)</span>
+<span class="name">regex</span><span class="operator">.</span><span class="name">Regex</span><span class="punctuation">(</span><span class="literal string single">'foo'</span><span class="punctuation">,</span> <span class="name">flags</span><span class="operator">=</span><span class="name">regex</span><span class="operator">.</span><span class="name">I</span> <span class="operator">|</span> <span class="name">regex</span><span class="operator">.</span><span class="name">V0</span><span class="punctuation">)</span>
 </pre>
 <p>The regex module has Regex as an alias for the 'compile' function.</p>
 </li>
 <li><p class="first">Improve the repr for regular expression match objects (<a class="reference external" href="https://bugs.python.org/issue17087">issue #17087</a>)</p>
 <p>The repr of a match object is now a more useful form. For example:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r&quot;\d+&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abc012def&quot;</span><span class="punctuation">)</span>
-<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">3</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string">'012'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\d+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc012def&quot;</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">3</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'012'</span><span class="operator">&gt;</span>
 </pre>
 </li>
 <li><p class="first">Python lib re cannot handle Unicode properly due to narrow/wide bug (<a class="reference external" href="https://bugs.python.org/issue12729">issue #12729</a>)</p>
@@ -791,9 +817,9 @@ ul.auto-toc {
 <p>In version 1 behaviour, the regex module uses full case-folding when performing case-insensitive matches in Unicode.</p>
 <p>Examples (in Python 3):</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?iV1)strasse&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;stra</span><span class="literal string escape">\N{LATIN SMALL LETTER SHARP S}</span><span class="literal string">e&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">()</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?iV1)strasse&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;stra</span><span class="literal string escape">\N{LATIN SMALL LETTER SHARP S}</span><span class="literal string double">e&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">()</span>
 <span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?iV1)stra\N{LATIN SMALL LETTER SHARP S}e&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;STRASSE&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">()</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?iV1)stra\N{LATIN SMALL LETTER SHARP S}e&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;STRASSE&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">()</span>
 <span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">7</span><span class="punctuation">)</span>
 </pre>
 <p>In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.</p>
@@ -852,15 +878,42 @@ ul.auto-toc {
 <p>In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.</p>
 <p>The match object has an attribute <tt class="docutils literal">fuzzy_counts</tt> which gives the total number of substitutions, insertions and deletions.</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># A 'raw' fuzzy match:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">r&quot;(?:cats|cat){e&lt;=1}&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;cat&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">fuzzy_counts</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># A 'raw' fuzzy match:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?:cats|cat){e&lt;=1}&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;cat&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">fuzzy_counts</span>
 <span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># 0 substitutions, 0 insertions, 1 deletion.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># 0 substitutions, 0 insertions, 1 deletion.</span>
 
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># A better match might be possible if the ENHANCEMATCH flag used:</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string">r&quot;(?e)(?:cats|cat){e&lt;=1}&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;cat&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">fuzzy_counts</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># A better match might be possible if the ENHANCEMATCH flag used:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?e)(?:cats|cat){e&lt;=1}&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;cat&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">fuzzy_counts</span>
 <span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="comment"># 0 substitutions, 0 insertions, 0 deletions.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># 0 substitutions, 0 insertions, 0 deletions.</span>
+</pre>
+<p>The match object also has an attribute <tt class="docutils literal">fuzzy_fuzzy_changes</tt> which gives a tuple of the positions of the substitutions, insertions and deletions.</p>
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string single">'(fuu){i&lt;=2,d&lt;=2,e&lt;=5}'</span><span class="punctuation">,</span> <span class="literal string single">'anaconda foo bar'</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">7</span><span class="punctuation">,</span> <span class="literal number integer">10</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'a f'</span><span class="punctuation">,</span> <span class="name">fuzzy_counts</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">2</span><span class="punctuation">,</span> <span class="literal number integer">2</span><span class="punctuation">)</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">fuzzy_changes</span>
+<span class="punctuation">([],</span> <span class="punctuation">[</span><span class="literal number integer">7</span><span class="punctuation">,</span> <span class="literal number integer">8</span><span class="punctuation">],</span> <span class="punctuation">[</span><span class="literal number integer">10</span><span class="punctuation">,</span> <span class="literal number integer">11</span><span class="punctuation">])</span>
+</pre>
+<p>What this means is that if the matched part of the string had been:</p>
+<pre class="code python literal-block">
+<span class="literal string single">'anacondfuuoo bar'</span><span class="error">`</span>
+</pre>
+<p>it would've been an exact match.</p>
+<p>However, there were insertions at positions 7 and 8:</p>
+<pre class="code python literal-block">
+<span class="literal string single">'anaconda fuuoo bar'</span>
+        <span class="operator">^^</span>
+</pre>
+<p>and deletions at positions 10 and 11:</p>
+<pre class="code python literal-block">
+<span class="literal string single">'anaconda f~~oo bar'</span>
+           <span class="operator">^^</span>
+</pre>
+<p>So the actual string was:</p>
+<pre class="code python literal-block">
+<span class="literal string single">'anaconda foo bar'</span>
 </pre>
 </li>
 <li><p class="first">Named lists (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/11">Hg issue 11</a>)</p>
@@ -868,18 +921,18 @@ ul.auto-toc {
 <p>There are occasions where you may want to include a list (actually, a set) of options in a regex.</p>
 <p>One way is to build the pattern like this:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">p</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string">r&quot;first|second|third|fourth|fifth&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">p</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;first|second|third|fourth|fifth&quot;</span><span class="punctuation">)</span>
 </pre>
 <p>but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character that has a special meaning in a regex, and that if there is a shorter string that occurs initially in a longer string that the longer string is listed before the shorter one, for example, &quot;cats&quot; before &quot;cat&quot;.</p>
 <p>The new alternative is to use a named list:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">option_set</span> <span class="operator">=</span> <span class="punctuation">[</span><span class="literal string">&quot;first&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;second&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;third&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;fourth&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;fifth&quot;</span><span class="punctuation">]</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">p</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string">r&quot;\L&lt;options&gt;&quot;</span><span class="punctuation">,</span> <span class="name">options</span><span class="operator">=</span><span class="name">option_set</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">option_set</span> <span class="operator">=</span> <span class="punctuation">[</span><span class="literal string double">&quot;first&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;second&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;third&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;fourth&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;fifth&quot;</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">p</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\L&lt;options&gt;&quot;</span><span class="punctuation">,</span> <span class="name">options</span><span class="operator">=</span><span class="name">option_set</span><span class="punctuation">)</span>
 </pre>
 <p>The order of the items is irrelevant, they are treated as a set. The named lists are available as the <tt class="docutils literal">.named_lists</tt> attribute of the pattern object :</p>
 <pre class="code python literal-block">
 <span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">p</span><span class="operator">.</span><span class="name">named_lists</span><span class="punctuation">)</span>
-<span class="punctuation">{</span><span class="literal string">'options'</span><span class="punctuation">:</span> <span class="name builtin">frozenset</span><span class="punctuation">({</span><span class="literal string">'second'</span><span class="punctuation">,</span> <span class="literal string">'fifth'</span><span class="punctuation">,</span> <span class="literal string">'fourth'</span><span class="punctuation">,</span> <span class="literal string">'third'</span><span class="punctuation">,</span> <span class="literal string">'first'</span><span class="punctuation">})}</span>
+<span class="punctuation">{</span><span class="literal string single">'options'</span><span class="punctuation">:</span> <span class="name builtin">frozenset</span><span class="punctuation">({</span><span class="literal string single">'second'</span><span class="punctuation">,</span> <span class="literal string single">'fifth'</span><span class="punctuation">,</span> <span class="literal string single">'fourth'</span><span class="punctuation">,</span> <span class="literal string single">'third'</span><span class="punctuation">,</span> <span class="literal string single">'first'</span><span class="punctuation">})}</span>
 </pre>
 </li>
 <li><p class="first">Start and end of word</p>
@@ -917,10 +970,10 @@ ul.auto-toc {
 <p>regex.escape has an additional keyword parameter <tt class="docutils literal">special_only</tt>. When True, only 'special' regex characters, such as '?', are escaped.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string">&quot;foo!?&quot;</span><span class="punctuation">)</span>
-<span class="literal string">'foo</span><span class="literal string escape">\\</span><span class="literal string">!</span><span class="literal string escape">\\</span><span class="literal string">?'</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string">&quot;foo!?&quot;</span><span class="punctuation">,</span> <span class="name">special_only</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span>
-<span class="literal string">'foo!</span><span class="literal string escape">\\</span><span class="literal string">?'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo!?&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'foo!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo!?&quot;</span><span class="punctuation">,</span> <span class="name">special_only</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span>
+<span class="literal string single">'foo!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
 </pre>
 </li>
 <li><p class="first">Repeated captures (<a class="reference external" href="https://bugs.python.org/issue7132">issue #7132</a>)</p>
@@ -945,11 +998,11 @@ ul.auto-toc {
 </ul>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r&quot;(\w{3})+&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;123456789&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w{3})+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;123456789&quot;</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
-<span class="literal string">'789'</span>
+<span class="literal string single">'789'</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'123'</span><span class="punctuation">,</span> <span class="literal string">'456'</span><span class="punctuation">,</span> <span class="literal string">'789'</span><span class="punctuation">]</span>
+<span class="punctuation">[</span><span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="literal string single">'456'</span><span class="punctuation">,</span> <span class="literal string single">'789'</span><span class="punctuation">]</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">start</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
 <span class="literal number integer">6</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">starts</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
@@ -1021,8 +1074,8 @@ ul.auto-toc {
 <p><tt class="docutils literal">regex.finditer</tt> behaves correctly when it splits at a zero-width match.</p>
 </li>
 <li><p class="first">Zero-width split with regex.split (<a class="reference external" href="https://bugs.python.org/issue3262">issue #3262</a>)</p>
-<p>Version 0 behaviour: a string won't be split at a zero-width match.</p>
-<p>Version 1 behaviour: a string will be split at a zero-width match.</p>
+<p>Version 0 behaviour: same as re module (no split before Python 3.7).</p>
+<p>Version 1 behaviour: a string can be split at a zero-width match.</p>
 </li>
 <li><p class="first">Splititer</p>
 <p><tt class="docutils literal">regex.splititer</tt> has been added. It's a generator equivalent of <tt class="docutils literal">regex.split</tt>.</p>
@@ -1030,17 +1083,17 @@ ul.auto-toc {
 <li><p class="first">Subscripting for groups</p>
 <p>A match object accepts access to the captured groups via subscripting and slicing:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string">r&quot;(?P&lt;before&gt;.*?)(?P&lt;num&gt;\d+)(?P&lt;after&gt;.*)&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;pqr123stu&quot;</span><span class="punctuation">)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal string">&quot;before&quot;</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;before&gt;.*?)(?P&lt;num&gt;\d+)(?P&lt;after&gt;.*)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;pqr123stu&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">[</span><span class="literal string double">&quot;before&quot;</span><span class="punctuation">])</span>
 <span class="name">pqr</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal string">&quot;num&quot;</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">[</span><span class="literal string double">&quot;num&quot;</span><span class="punctuation">])</span>
 <span class="literal number integer">123</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal string">&quot;after&quot;</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">[</span><span class="literal string double">&quot;after&quot;</span><span class="punctuation">])</span>
 <span class="name">stu</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span> <span class="name builtin">len</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name builtin">len</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">))</span>
 <span class="literal number integer">4</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span> <span class="name">m</span><span class="punctuation">[:]</span>
-<span class="punctuation">(</span><span class="literal string">'pqr123stu'</span><span class="punctuation">,</span> <span class="literal string">'pqr'</span><span class="punctuation">,</span> <span class="literal string">'123'</span><span class="punctuation">,</span> <span class="literal string">'stu'</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">[:])</span>
+<span class="punctuation">(</span><span class="literal string single">'pqr123stu'</span><span class="punctuation">,</span> <span class="literal string single">'pqr'</span><span class="punctuation">,</span> <span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="literal string single">'stu'</span><span class="punctuation">)</span>
 </pre>
 </li>
 <li><p class="first">Named groups</p>
@@ -1088,10 +1141,10 @@ ul.auto-toc {
 <p><tt class="docutils literal">\G</tt></p>
 <p>A search anchor has been added. It matches at the position where each search started/continued and can be used for contiguous matches or in negative variable-length lookbehinds to limit how far back the lookbehind goes:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string">r&quot;\w{2}&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abcd ef&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'ab'</span><span class="punctuation">,</span> <span class="literal string">'cd'</span><span class="punctuation">,</span> <span class="literal string">'ef'</span><span class="punctuation">]</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string">r&quot;\G\w{2}&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abcd ef&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'ab'</span><span class="punctuation">,</span> <span class="literal string">'cd'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\w{2}&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcd ef&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'ab'</span><span class="punctuation">,</span> <span class="literal string single">'cd'</span><span class="punctuation">,</span> <span class="literal string single">'ef'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\G\w{2}&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcd ef&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'ab'</span><span class="punctuation">,</span> <span class="literal string single">'cd'</span><span class="punctuation">]</span>
 </pre>
 <ul class="simple">
 <li>The search starts at position 0 and matches 2 letters 'ab'.</li>
@@ -1103,17 +1156,17 @@ ul.auto-toc {
 <li><p class="first">Reverse searching</p>
 <p>Searches can now work backwards:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string">r&quot;.&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abc&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'a'</span><span class="punctuation">,</span> <span class="literal string">'b'</span><span class="punctuation">,</span> <span class="literal string">'c'</span><span class="punctuation">]</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string">r&quot;(?r).&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abc&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'c'</span><span class="punctuation">,</span> <span class="literal string">'b'</span><span class="punctuation">,</span> <span class="literal string">'a'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;.&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'a'</span><span class="punctuation">,</span> <span class="literal string single">'b'</span><span class="punctuation">,</span> <span class="literal string single">'c'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?r).&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'c'</span><span class="punctuation">,</span> <span class="literal string single">'b'</span><span class="punctuation">,</span> <span class="literal string single">'a'</span><span class="punctuation">]</span>
 </pre>
 <p>Note: the result of a reverse search is not necessarily the reverse of a forward search:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string">r&quot;..&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abcde&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'ab'</span><span class="punctuation">,</span> <span class="literal string">'cd'</span><span class="punctuation">]</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string">r&quot;(?r)..&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;abcde&quot;</span><span class="punctuation">)</span>
-<span class="punctuation">[</span><span class="literal string">'de'</span><span class="punctuation">,</span> <span class="literal string">'bc'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;..&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcde&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'ab'</span><span class="punctuation">,</span> <span class="literal string single">'cd'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?r)..&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcde&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'de'</span><span class="punctuation">,</span> <span class="literal string single">'bc'</span><span class="punctuation">]</span>
 </pre>
 </li>
 <li><p class="first">Matching a single grapheme</p>
@@ -1125,10 +1178,10 @@ ul.auto-toc {
 <p>Capture group numbers will be reused across the alternatives, but groups with different names will have different group numbers.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?|(first)|(second))&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;first&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
-<span class="punctuation">(</span><span class="literal string">'first'</span><span class="punctuation">,)</span>
-<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string">r&quot;(?|(first)|(second))&quot;</span><span class="punctuation">,</span> <span class="literal string">&quot;second&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
-<span class="punctuation">(</span><span class="literal string">'second'</span><span class="punctuation">,)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?|(first)|(second))&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal string single">'first'</span><span class="punctuation">,)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?|(first)|(second))&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;second&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal string single">'second'</span><span class="punctuation">,)</span>
 </pre>
 <p>Note that there is only one group.</p>
 </li>

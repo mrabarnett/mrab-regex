@@ -1,6 +1,6 @@
 regex is an alternative to the re package in the Python standard library. It is
 intended to act as a drop in replacement, and one day to replace re. regex is
-supported on Python v2.5 to v2.7 and v3.1 to v3.6.
+supported on Python v2.6 to v2.7 and v3.3 to v3.7.
 
 For a full list of features see Python2/Features.rst or Python3/Features.rst.
 

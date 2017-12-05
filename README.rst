@@ -3,16 +3,23 @@ Introduction
 
 This regex implementation is backwards-compatible with the standard 're' module, but offers additional functionality.
 
+Note
+----
+
+The re module's behaviour with zero-width matches changed in Python 3.7, and this module will follow that behaviour when compiled for Python 3.7.
+
 Old vs new behaviour
 --------------------
 
-This module has 2 behaviours:
+In order to be compatible with the re module, this module has 2 behaviours:
 
-* **Version 0** behaviour (old behaviour, compatible with the current re module):
+* **Version 0** behaviour (old behaviour, compatible with the re module):
+
+  Please note that the re module's behaviour may change over time, and I'll endeavour to match that behaviour in version 0.
 
   * Indicated by the ``VERSION0`` or ``V0`` flag, or ``(?V0)`` in the pattern.
 
-  * Zero-width matches are handled like in the re module:
+  * Zero-width matches are not handled correctly in the re module before Python 3.7. The behaviour in those earlier versions is:
 
     * ``.split`` won't split a string at a zero-width match.
 
@@ -24,15 +31,11 @@ This module has 2 behaviours:
 
   * Case-insensitive matches in Unicode use simple case-folding by default.
 
-* **Version 1** behaviour (new behaviour, different from the current re module):
+* **Version 1** behaviour (new behaviour, possibly different from the re module):
 
   * Indicated by the ``VERSION1`` or ``V1`` flag, or ``(?V1)`` in the pattern.
 
-  * Zero-width matches are handled like in Perl and PCRE:
-
-    * ``.split`` will split a string at a zero-width match.
-
-    * ``.sub`` will handle zero-width matches correctly.
+  * Zero-width matches are handled correctly.
 
   * Inline flags apply to the end of the group or pattern, and they can be turned off.
 
@@ -228,7 +231,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
     >>> m[1]
     'bcdef'
 
-* Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (`Hg issue 133 <https://bitbucket.org/mrabarnett/mrab-regex/issues/133>`_) **(Python 2.6 and above)**
+* Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (`Hg issue 133 <https://bitbucket.org/mrabarnett/mrab-regex/issues/133>`_)
 
   You can now use subscripting to get the captures of a repeated capture group.
 
@@ -316,21 +319,23 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
   Sometimes it's not clear how zero-width matches should be handled. For example, should ``.*`` match 0 characters directly after matching >0 characters?
 
-  Most regex implementations follow the lead of Perl (PCRE), but the re module sometimes doesn't. The Perl behaviour appears to be the most common (and the re module is sometimes definitely wrong), so in version 1 the regex module follows the Perl behaviour, whereas in version 0 it follows the legacy re behaviour.
-
   Examples:
 
   .. sourcecode:: python
 
-    >>> # Version 0 behaviour (like re)
+    # Python 3.7 and later
+    >>> regex.sub('.*', 'x', 'test')
+    'xx'
+    >>> regex.sub('.*?', '|', 'test')
+    '|||||||||'
+
+    # Python 3.6 and earlier
     >>> regex.sub('(?V0).*', 'x', 'test')
     'x'
-    >>> regex.sub('(?V0).*?', '|', 'test')
-    '|t|e|s|t|'
-
-    >>> # Version 1 behaviour (like Perl)
     >>> regex.sub('(?V1).*', 'x', 'test')
     'xx'
+    >>> regex.sub('(?V0).*?', '|', 'test')
+    '|t|e|s|t|'
     >>> regex.sub('(?V1).*?', '|', 'test')
     '|||||||||'
 
@@ -342,12 +347,10 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
   .. sourcecode:: python
 
-    >>> # Python 3.4 and later
     >>> regex.match(b'.', bytearray(b'a')).group()
+    # Python 3.4 and later
     b'a'
-
-    >>> # Python 3.1-3.3
-    >>> regex.match(b'.', bytearray(b'a')).group()
+    # Python 3.3 and earlier
     bytearray(b'a')
 
 * Added ``capturesdict`` (`Hg issue 86 <https://bitbucket.org/mrabarnett/mrab-regex/issues/86>`_)
@@ -446,7 +449,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
     >>> regex.fullmatch(r"a.*?", "abcd").group(0)
     'abcd'
 
-* Added ``subf`` and ``subfn`` **(Python 2.6 and above)**
+* Added ``subf`` and ``subfn``
 
   ``subf`` and ``subfn`` are alternatives to ``sub`` and ``subn`` respectively. When passed a replacement string, they treat it as a format string.
 
@@ -459,7 +462,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
     >>> regex.subf(r"(?P<word1>\w+) (?P<word2>\w+)", "{word2} {word1}", "foo bar")
     'bar foo'
 
-* Added ``expandf`` to match object **(Python 2.6 and above)**
+* Added ``expandf`` to match object
 
   ``expandf`` is an alternative to ``expand``. When passed a replacement string, it treats it as a format string.
 
@@ -663,6 +666,44 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
     (0, 0, 0)
     >>> # 0 substitutions, 0 insertions, 0 deletions.
 
+  The match object also has an attribute ``fuzzy_fuzzy_changes`` which gives a tuple of the positions of the substitutions, insertions and deletions.
+
+  .. sourcecode:: python
+
+    >>> m = regex.search('(fuu){i<=2,d<=2,e<=5}', 'anaconda foo bar')
+    >>> m
+    <regex.Match object; span=(7, 10), match='a f', fuzzy_counts=(0, 2, 2)>
+    >>> m.fuzzy_changes
+    ([], [7, 8], [10, 11])
+
+  What this means is that if the matched part of the string had been:
+
+  .. sourcecode:: python
+
+    'anacondfuuoo bar'`
+
+  it would've been an exact match.
+
+  However, there were insertions at positions 7 and 8:
+
+  .. sourcecode:: python
+
+    'anaconda fuuoo bar'
+            ^^
+
+  and deletions at positions 10 and 11:
+
+  .. sourcecode:: python
+
+    'anaconda f~~oo bar'
+               ^^
+
+  So the actual string was:
+
+  .. sourcecode:: python
+
+    'anaconda foo bar'
+
 * Named lists (`Hg issue 11 <https://bitbucket.org/mrabarnett/mrab-regex/issues/11>`_)
 
   ``\L<name>``
@@ -748,7 +789,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
   .. sourcecode:: python
 
     >>> regex.escape("foo!?")
-    'foo\\!\\?'
+    'foo!\\?'
     >>> regex.escape("foo!?", special_only=True)
     'foo!\\?'
 
@@ -874,9 +915,9 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
 * Zero-width split with regex.split (`issue #3262 <https://bugs.python.org/issue3262>`_)
 
-  Version 0 behaviour: a string won't be split at a zero-width match.
+  Version 0 behaviour: same as re module (no split before Python 3.7).
 
-  Version 1 behaviour: a string will be split at a zero-width match.
+  Version 1 behaviour: a string can be split at a zero-width match.
 
 * Splititer
 
@@ -889,15 +930,15 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
   .. sourcecode:: python
 
     >>> m = regex.search(r"(?P<before>.*?)(?P<num>\d+)(?P<after>.*)", "pqr123stu")
-    >>> print m["before"]
+    >>> print(m["before"])
     pqr
-    >>> print m["num"]
+    >>> print(m["num"])
     123
-    >>> print m["after"]
+    >>> print(m["after"])
     stu
-    >>> print len(m)
+    >>> print(len(m))
     4
-    >>> print m[:]
+    >>> print(m[:])
     ('pqr123stu', 'pqr', '123', 'stu')
 
 * Named groups
