@@ -620,9 +620,9 @@ ul.auto-toc {
 <pre class="code python literal-block">
 <span class="comment single"># Python 3.7 and later</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'.*'</span><span class="punctuation">,</span> <span class="literal string single">'x'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
-<span class="literal string single">'xx'</span>
+<span class="literal string single">'x'</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'.*?'</span><span class="punctuation">,</span> <span class="literal string single">'|'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
-<span class="literal string single">'|||||||||'</span>
+<span class="literal string single">'|||||'</span>
 
 <span class="comment single"># Python 3.6 and earlier</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'(?V0).*'</span><span class="punctuation">,</span> <span class="literal string single">'x'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
@@ -888,7 +888,7 @@ ul.auto-toc {
 <span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># 0 substitutions, 0 insertions, 0 deletions.</span>
 </pre>
-<p>The match object also has an attribute <tt class="docutils literal">fuzzy_fuzzy_changes</tt> which gives a tuple of the positions of the substitutions, insertions and deletions.</p>
+<p>The match object also has an attribute <tt class="docutils literal">fuzzy_changes</tt> which gives a tuple of the positions of the substitutions, insertions and deletions.</p>
 <pre class="code python literal-block">
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string single">'(fuu){i&lt;=2,d&lt;=2,e&lt;=5}'</span><span class="punctuation">,</span> <span class="literal string single">'anaconda foo bar'</span><span class="punctuation">)</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span>
@@ -898,7 +898,7 @@ ul.auto-toc {
 </pre>
 <p>What this means is that if the matched part of the string had been:</p>
 <pre class="code python literal-block">
-<span class="literal string single">'anacondfuuoo bar'</span><span class="error">`</span>
+<span class="literal string single">'anacondfuuoo bar'</span>
 </pre>
 <p>it would've been an exact match.</p>
 <p>However, there were insertions at positions 7 and 8:</p>
@@ -932,7 +932,10 @@ ul.auto-toc {
 <p>The order of the items is irrelevant, they are treated as a set. The named lists are available as the <tt class="docutils literal">.named_lists</tt> attribute of the pattern object :</p>
 <pre class="code python literal-block">
 <span class="operator">&gt;&gt;&gt;</span> <span class="keyword">print</span><span class="punctuation">(</span><span class="name">p</span><span class="operator">.</span><span class="name">named_lists</span><span class="punctuation">)</span>
-<span class="punctuation">{</span><span class="literal string single">'options'</span><span class="punctuation">:</span> <span class="name builtin">frozenset</span><span class="punctuation">({</span><span class="literal string single">'second'</span><span class="punctuation">,</span> <span class="literal string single">'fifth'</span><span class="punctuation">,</span> <span class="literal string single">'fourth'</span><span class="punctuation">,</span> <span class="literal string single">'third'</span><span class="punctuation">,</span> <span class="literal string single">'first'</span><span class="punctuation">})}</span>
+<span class="comment single"># Python 3</span>
+<span class="punctuation">{</span><span class="literal string single">'options'</span><span class="punctuation">:</span> <span class="name builtin">frozenset</span><span class="punctuation">({</span><span class="literal string single">'fifth'</span><span class="punctuation">,</span> <span class="literal string single">'first'</span><span class="punctuation">,</span> <span class="literal string single">'fourth'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">,</span> <span class="literal string single">'third'</span><span class="punctuation">})}</span>
+<span class="comment single"># Python 2</span>
+<span class="punctuation">{</span><span class="literal string single">'options'</span><span class="punctuation">:</span> <span class="name builtin">frozenset</span><span class="punctuation">([</span><span class="literal string single">'fifth'</span><span class="punctuation">,</span> <span class="literal string single">'fourth'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">,</span> <span class="literal string single">'third'</span><span class="punctuation">,</span> <span class="literal string single">'first'</span><span class="punctuation">])}</span>
 </pre>
 </li>
 <li><p class="first">Start and end of word</p>

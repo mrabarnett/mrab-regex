@@ -20147,9 +20147,7 @@ Py_LOCAL_INLINE(PyObject*) scanner_search_or_match(ScannerObject* self, BOOL
             state->text_pos = state->match_pos + step;
             state->must_advance = FALSE;
         } else
-            /* Continue from where we left off, but don't allow 2 contiguous
-             * zero-width matches.
-             */
+            /* Don't allow 2 contiguous zero-width matches. */
             state->must_advance = state->text_pos == state->match_pos;
     } else
         /* Internal error. */
@@ -20436,9 +20434,7 @@ retry:
                 self->last_pos = state->text_pos;
 
 #if PY_VERSION_HEX >= 0x03070000
-                /* Continue from where we left off, but don't allow 2
-                 * contiguous zero-width matches.
-                 */
+                /* Don't allow 2 contiguous zero-width matches. */
                 state->must_advance = state->text_pos == state->match_pos;
 #else
                 /* Version 0 behaviour is to advance one character if the match
@@ -20453,9 +20449,7 @@ retry:
 
                     state->must_advance = FALSE;
                 } else
-                    /* Continue from where we left off, but don't allow a
-                     * contiguous zero-width match.
-                     */
+                    /* Don't allow a contiguous zero-width match. */
                     state->must_advance = TRUE;
 #endif
             }
@@ -21363,10 +21357,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         last_pos = state.text_pos;
 
 #if PY_VERSION_HEX >= 0x03070000
-        /* Continue from where we left off, but don't allow 2 contiguous
-         * zero-width matches.
-         */
-        state.must_advance = state.text_pos == state.match_pos;
+        /* Don't allow a contiguous zero-width match. */
+        state.must_advance = TRUE;
 #else
         if (state.version_0) {
             /* Always advance after a zero-width match. */
@@ -21376,9 +21368,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             } else
                 state.must_advance = TRUE;
         } else
-            /* Continue from where we left off, but don't allow a contiguous
-             * zero-width match.
-             */
+            /* Don't allow 2 contiguous zero-width matches. */
             state.must_advance = state.match_pos == state.text_pos;
 #endif
     }
@@ -21659,10 +21649,8 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
         last_pos = state.text_pos;
 
 #if PY_VERSION_HEX >= 0x03070000
-        /* Continue from where we left off, but don't allow 2 contiguous
-         * zero-width matches.
-         */
-        state.must_advance = state.text_pos == state.match_pos;
+        /* Don't allow a contiguous zero-width match. */
+        state.must_advance = TRUE;
 #else
         /* Version 0 behaviour is to advance one character if the match was
          * zero-width. Unfortunately, this can give an incorrect result. GvR
@@ -21676,9 +21664,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
 
             state.must_advance = FALSE;
         } else
-            /* Continue from where we left off, but don't allow a contiguous
-             * zero-width match.
-             */
+            /* Don't allow a contiguous zero-width match. */
             state.must_advance = TRUE;
 #endif
     }
@@ -21827,9 +21813,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
             state.text_pos = state.match_pos + step;
             state.must_advance = FALSE;
         } else
-            /* Continue from where we left off, but don't allow 2 contiguous
-             * zero-width matches.
-             */
+            /* Don't allow 2 contiguous zero-width matches. */
             state.must_advance = state.text_pos == state.match_pos;
     }
 

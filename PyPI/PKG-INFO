@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2017.12.05
+Version: 2017.12.09
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -333,9 +333,9 @@ Description: Introduction
         
             # Python 3.7 and later
             >>> regex.sub('.*', 'x', 'test')
-            'xx'
+            'x'
             >>> regex.sub('.*?', '|', 'test')
-            '|||||||||'
+            '|||||'
         
             # Python 3.6 and earlier
             >>> regex.sub('(?V0).*', 'x', 'test')
@@ -674,7 +674,7 @@ Description: Introduction
             (0, 0, 0)
             >>> # 0 substitutions, 0 insertions, 0 deletions.
         
-          The match object also has an attribute ``fuzzy_fuzzy_changes`` which gives a tuple of the positions of the substitutions, insertions and deletions.
+          The match object also has an attribute ``fuzzy_changes`` which gives a tuple of the positions of the substitutions, insertions and deletions.
         
           .. sourcecode:: python
         
@@ -738,7 +738,10 @@ Description: Introduction
           .. sourcecode:: python
         
             >>> print(p.named_lists)
-            {'options': frozenset({'second', 'fifth', 'fourth', 'third', 'first'})}
+            # Python 3
+            {'options': frozenset({'fifth', 'first', 'fourth', 'second', 'third'})}
+            # Python 2
+            {'options': frozenset(['fifth', 'fourth', 'second', 'third', 'first'])}
         
         * Start and end of word
         

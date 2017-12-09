@@ -3418,9 +3418,8 @@ xyzabc
           [('', '1'), ('', '2'), ('', '3')])
 
         # Hg issue 147: Fuzzy match can return match points beyond buffer end.
-        self.assertEqual([m.span() for m in
-          regex.finditer(r'(?i)(?:error){e}', 'regex failure')], [(0, 5), (5,
-          10), (10, 13), (13, 13)])
+        self.assertEqual([m.span() for m in regex.finditer(r'(?i)(?:error){e}',
+          'regex failure')], [(0, 5), (5, 10), (10, 13), (13, 13)])
         self.assertEqual([m.span() for m in
           regex.finditer(r'(?fi)(?:error){e}', 'regex failure')], [(0, 5), (5,
           10), (10, 13), (13, 13)])

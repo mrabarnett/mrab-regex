@@ -217,11 +217,11 @@ class RegexTests(unittest.TestCase):
 
     def test_bug_462270(self):
         # Test for empty sub() behaviour, see SF bug #462270
+        self.assertEqual(regex.sub('(?V0)x*', '-', 'abxd'), '-a-b-d-')
         if sys.version_info >= (3, 7, 0):
-            self.assertEqual(regex.sub('(?V0)x*', '-', 'abxd'), '-a-b--d-')
+            self.assertEqual(regex.sub('(?V1)x*', '-', 'abxd'), '-a-b-d-')
         else:
-            self.assertEqual(regex.sub('(?V0)x*', '-', 'abxd'), '-a-b-d-')
-        self.assertEqual(regex.sub('(?V1)x*', '-', 'abxd'), '-a-b--d-')
+            self.assertEqual(regex.sub('(?V1)x*', '-', 'abxd'), '-a-b--d-')
         self.assertEqual(regex.sub('x+', '-', 'abxd'), 'ab-d')
 
     def test_bug_14462(self):
@@ -263,14 +263,14 @@ class RegexTests(unittest.TestCase):
     def test_re_split(self):
         self.assertEqual(regex.split(":", ":a:b::c"), ['', 'a', 'b', '', 'c'])
         if sys.version_info >= (3, 7, 0):
-            self.assertEqual(regex.split(":*", ":a:b::c"), ['', '', 'a', '',
-              'b', '', 'c', ''])
-            self.assertEqual(regex.split("(:*)", ":a:b::c"), ['', ':', '', '',
-              'a', ':', '', '', 'b', '::', '', '', 'c', '', ''])
-            self.assertEqual(regex.split("(?::*)", ":a:b::c"), ['', '', 'a',
-              '', 'b', '', 'c', ''])
-            self.assertEqual(regex.split("(:)*", ":a:b::c"), ['', ':', '',
-              None, 'a', ':', '', None, 'b', ':', '', None, 'c', None, ''])
+            self.assertEqual(regex.split(":*", ":a:b::c"), ['', 'a', 'b', 'c',
+              ''])
+            self.assertEqual(regex.split("(:*)", ":a:b::c"), ['', ':', 'a',
+              ':', 'b', '::', 'c', '', ''])
+            self.assertEqual(regex.split("(?::*)", ":a:b::c"), ['', 'a', 'b',
+              'c', ''])
+            self.assertEqual(regex.split("(:)*", ":a:b::c"), ['', ':', 'a',
+              ':', 'b', ':', 'c', None, ''])
         else:
             self.assertEqual(regex.split(":*", ":a:b::c"), ['', 'a', 'b', 'c'])
             self.assertEqual(regex.split("(:*)", ":a:b::c"), ['', ':', 'a',
@@ -316,12 +316,8 @@ class RegexTests(unittest.TestCase):
         self.assertEqual(regex.split(':', 'a:b:c:d', 2), ['a', 'b', 'c:d'])
         self.assertEqual(regex.split("(:)", ":a:b::c", 2), ['', ':', 'a', ':',
           'b::c'])
-        if sys.version_info >= (3, 7, 0):
-            self.assertEqual(regex.split("(:*)", ":a:b::c", 2), ['', ':', '',
-              '', 'a:b::c'])
-        else:
-            self.assertEqual(regex.split("(:*)", ":a:b::c", 2), ['', ':', 'a',
-              ':', 'b::c'])
+        self.assertEqual(regex.split("(:*)", ":a:b::c", 2), ['', ':', 'a', ':',
+          'b::c'])
 
     def test_re_findall(self):
         self.assertEqual(regex.findall(":+", "abc"), [])
@@ -1471,38 +1467,35 @@ class RegexTests(unittest.TestCase):
 
     def test_unmatched_in_sub(self):
         # Issue 1519638.
+        self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "xy"), 'y-x')
         if sys.version_info >= (3, 7, 0):
-            self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "xy"),
-              'y-x-')
-        else:
-            self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "xy"),
+            self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "xy"),
               'y-x')
-        self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "xy"), 'y-x-')
-        if sys.version_info >= (3, 7, 0):
-            self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "x"), '-x-')
         else:
-            self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "x"), '-x')
-        self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "x"), '-x-')
+            self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "xy"),
+              'y-x-')
+        self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "x"), '-x')
         if sys.version_info >= (3, 7, 0):
+            self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "x"), '-x')
+        else:
+            self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "x"), '-x-')
+        self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "y"), 'y-')
+        if sys.version_info >= (3, 7, 0):
+            self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "y"), 'y-')
+        else:
             self.assertEqual(regex.sub(r"(?V1)(x)?(y)?", r"\2-\1", "y"), 'y--')
-        else:
-            self.assertEqual(regex.sub(r"(?V0)(x)?(y)?", r"\2-\1", "y"), 'y-')
 
     def test_bug_10328 (self):
         # Issue 10328.
         pat = regex.compile(r'(?mV0)(?P<trailing_ws>[ \t]+\r*$)|(?P<no_final_newline>(?<=[^\n])\Z)')
-        if sys.version_info >= (3, 7, 0):
-            self.assertEqual(pat.subn(lambda m: '<' + m.lastgroup + '>',
-              'foobar '), ('foobar<trailing_ws><no_final_newline>', 2))
-        else:
-            self.assertEqual(pat.subn(lambda m: '<' + m.lastgroup + '>',
-              'foobar '), ('foobar<trailing_ws>', 1))
+        self.assertEqual(pat.subn(lambda m: '<' + m.lastgroup + '>',
+          'foobar '), ('foobar<trailing_ws>', 1))
         self.assertEqual([m.group() for m in pat.finditer('foobar ')],
           [' ', ''])
         pat = regex.compile(r'(?mV1)(?P<trailing_ws>[ \t]+\r*$)|(?P<no_final_newline>(?<=[^\n])\Z)')
         if sys.version_info >= (3, 7, 0):
             self.assertEqual(pat.subn(lambda m: '<' + m.lastgroup + '>',
-              'foobar '), ('foobar<trailing_ws><no_final_newline>', 2))
+              'foobar '), ('foobar<trailing_ws>', 1))
         else:
             self.assertEqual(pat.subn(lambda m: '<' + m.lastgroup + '>',
               'foobar '), ('foobar<trailing_ws><no_final_newline>', 2))
@@ -2985,10 +2978,10 @@ xyzabc
             self.assertTypedEqual(regex.split(":", string), ['', 'a', 'b', '',
               'c'])
             if sys.version_info >= (3, 7, 0):
-                self.assertTypedEqual(regex.split(":*", string), ['', '', 'a',
-                  '', 'b', '', 'c', ''])
+                self.assertTypedEqual(regex.split(":*", string), ['', 'a', 'b',
+                  'c', ''])
                 self.assertTypedEqual(regex.split("(:*)", string), ['', ':',
-                  '', '', 'a', ':', '', '', 'b', '::', '', '', 'c', '', ''])
+                  'a', ':', 'b', '::', 'c', '', ''])
             else:
                 self.assertTypedEqual(regex.split(":*", string), ['', 'a', 'b',
                   'c'])
@@ -3000,11 +2993,10 @@ xyzabc
             self.assertTypedEqual(regex.split(b":", string), [b'', b'a', b'b',
               b'', b'c'])
             if sys.version_info >= (3, 7, 0):
-                self.assertTypedEqual(regex.split(b":*", string), [b'', b'',
-                  b'a', b'', b'b', b'', b'c', b''])
+                self.assertTypedEqual(regex.split(b":*", string), [b'', b'a',
+                  b'b', b'c', b''])
                 self.assertTypedEqual(regex.split(b"(:*)", string), [b'', b':',
-                  b'', b'', b'a', b':', b'', b'', b'b', b'::', b'', b'', b'c', 
-                  b'', b''])
+                  b'a', b':', b'b', b'::', b'c', b'', b''])
             else:
                 self.assertTypedEqual(regex.split(b":*", string), [b'', b'a',
                   b'b', b'c'])
@@ -3379,17 +3371,18 @@ xyzabc
         self.assertEqual(pat.findall(raw), ['xxx'])
 
         # Hg issue 106: * operator not working correctly with sub()
+        self.assertEqual(regex.sub('(?V0).*', 'x', 'test'), 'x')
         if sys.version_info >= (3, 7, 0):
-            self.assertEqual(regex.sub('(?V0).*', 'x', 'test'), 'xx')
+            self.assertEqual(regex.sub('(?V1).*', 'x', 'test'), 'x')
         else:
-            self.assertEqual(regex.sub('(?V0).*', 'x', 'test'), 'x')
-        self.assertEqual(regex.sub('(?V1).*', 'x', 'test'), 'xx')
+            self.assertEqual(regex.sub('(?V1).*', 'x', 'test'), 'xx')
 
         if sys.version_info >= (3, 7, 0):
-            self.assertEqual(regex.sub('(?V0).*?', '|', 'test'), '|||||||||')
+            self.assertEqual(regex.sub('(?V0).*?', '|', 'test'), '|||||')
+            self.assertEqual(regex.sub('(?V1).*?', '|', 'test'), '|||||')
         else:
             self.assertEqual(regex.sub('(?V0).*?', '|', 'test'), '|t|e|s|t|')
-        self.assertEqual(regex.sub('(?V1).*?', '|', 'test'), '|||||||||')
+            self.assertEqual(regex.sub('(?V1).*?', '|', 'test'), '|||||||||')
 
         # Hg issue 112: re: OK, but regex: SystemError
         self.assertEqual(regex.sub(r'^(@)\n(?!.*?@)(.*)',
@@ -3596,7 +3589,7 @@ xyzabc
           'regex failure')], [(0, 5), (5, 10), (10, 13), (13, 13)])
         self.assertEqual([m.span() for m in
           regex.finditer(r'(?fi)(?:error){e}', 'regex failure')], [(0, 5), (5,
-            10), (10, 13), (13, 13)])
+          10), (10, 13), (13, 13)])
 
         # Hg issue 150: Have an option for POSIX-compatible longest match of
         # alternates.
@@ -4037,9 +4030,9 @@ thing
 
     def test_more_zerowidth(self):
         if sys.version_info >= (3, 7, 0):
-            self.assertEqual(regex.split(r'\b|:+', 'a::bc'), ['', 'a', '', '',
+            self.assertEqual(regex.split(r'\b|:+', 'a::bc'), ['', 'a', '',
               'bc', ''])
-            self.assertEqual(regex.sub(r'\b|:+', '-', 'a::bc'), '-a---bc-')
+            self.assertEqual(regex.sub(r'\b|:+', '-', 'a::bc'), '-a--bc-')
             self.assertEqual(regex.findall(r'\b|:+', 'a::bc'), ['', '', '::',
               '', ''])
             self.assertEqual([m.span() for m in regex.finditer(r'\b|:+',

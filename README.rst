@@ -325,9 +325,9 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     # Python 3.7 and later
     >>> regex.sub('.*', 'x', 'test')
-    'xx'
+    'x'
     >>> regex.sub('.*?', '|', 'test')
-    '|||||||||'
+    '|||||'
 
     # Python 3.6 and earlier
     >>> regex.sub('(?V0).*', 'x', 'test')
@@ -666,7 +666,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
     (0, 0, 0)
     >>> # 0 substitutions, 0 insertions, 0 deletions.
 
-  The match object also has an attribute ``fuzzy_fuzzy_changes`` which gives a tuple of the positions of the substitutions, insertions and deletions.
+  The match object also has an attribute ``fuzzy_changes`` which gives a tuple of the positions of the substitutions, insertions and deletions.
 
   .. sourcecode:: python
 
@@ -680,7 +680,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
   .. sourcecode:: python
 
-    'anacondfuuoo bar'`
+    'anacondfuuoo bar'
 
   it would've been an exact match.
 
@@ -730,7 +730,10 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
   .. sourcecode:: python
 
     >>> print(p.named_lists)
-    {'options': frozenset({'second', 'fifth', 'fourth', 'third', 'first'})}
+    # Python 3
+    {'options': frozenset({'fifth', 'first', 'fourth', 'second', 'third'})}
+    # Python 2
+    {'options': frozenset(['fifth', 'fourth', 'second', 'third', 'first'])}
 
 * Start and end of word
 

@@ -20088,9 +20088,7 @@ Py_LOCAL_INLINE(PyObject*) scanner_search_or_match(ScannerObject* self, BOOL
             state->text_pos = state->match_pos + step;
             state->must_advance = FALSE;
         } else
-            /* Continue from where we left off, but don't allow 2 contiguous
-             * zero-width matches.
-             */
+            /* Don't allow 2 contiguous zero-width matches. */
             state->must_advance = state->text_pos == state->match_pos;
     } else
         /* Internal error. */
@@ -20402,9 +20400,7 @@ retry:
 
                     state->must_advance = FALSE;
                 } else
-                    /* Continue from where we left off, but don't allow a
-                     * contiguous zero-width match.
-                     */
+                    /* Don't allow a contiguous zero-width match. */
                     state->must_advance = TRUE;
             }
         } else
@@ -21267,9 +21263,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             } else
                 state.must_advance = TRUE;
         } else
-            /* Continue from where we left off, but don't allow a contiguous
-             * zero-width match.
-             */
+            /* Don't allow 2 contiguous zero-width matches. */
             state.must_advance = state.match_pos == state.text_pos;
     }
 
@@ -21552,9 +21546,7 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
 
             state.must_advance = FALSE;
         } else
-            /* Continue from where we left off, but don't allow a contiguous
-             * zero-width match.
-             */
+            /* Don't allow a contiguous zero-width match. */
             state.must_advance = TRUE;
     }
 
@@ -21702,9 +21694,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
             state.text_pos = state.match_pos + step;
             state.must_advance = FALSE;
         } else
-            /* Continue from where we left off, but don't allow 2 contiguous
-             * zero-width matches.
-             */
+            /* Don't allow 2 contiguous zero-width matches. */
             state.must_advance = state.text_pos == state.match_pos;
     }
 
