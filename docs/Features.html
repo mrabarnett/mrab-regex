@@ -975,8 +975,22 @@ ul.auto-toc {
 <pre class="code python literal-block">
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo!?&quot;</span><span class="punctuation">)</span>
 <span class="literal string single">'foo!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo!?&quot;</span><span class="punctuation">,</span> <span class="name">special_only</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">)</span>
+<span class="literal string single">'foo</span><span class="literal string escape">\\</span><span class="literal string single">!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
 <span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo!?&quot;</span><span class="punctuation">,</span> <span class="name">special_only</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span>
 <span class="literal string single">'foo!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
+</pre>
+</li>
+<li><p class="first">regex.escape (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/249">Hg issue 249</a>)</p>
+<p>regex.escape has an additional keyword parameter <tt class="docutils literal">literal_spaces</tt>. When True, spaces are not escaped.</p>
+<p>Examples:</p>
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo bar!?&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'foo</span><span class="literal string escape">\\</span><span class="literal string single"> bar!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo bar!?&quot;</span><span class="punctuation">,</span> <span class="name">literal_spaces</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">)</span>
+<span class="literal string single">'foo</span><span class="literal string escape">\\</span><span class="literal string single"> bar!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo bar!?&quot;</span><span class="punctuation">,</span> <span class="name">literal_spaces</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span>
+<span class="literal string single">'foo bar!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
 </pre>
 </li>
 <li><p class="first">Repeated captures (<a class="reference external" href="https://bugs.python.org/issue7132">issue #7132</a>)</p>

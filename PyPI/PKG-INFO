@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2017.12.09
+Version: 2017.12.12
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -688,7 +688,7 @@ Description: Introduction
         
           .. sourcecode:: python
         
-            'anacondfuuoo bar'`
+            'anacondfuuoo bar'
         
           it would've been an exact match.
         
@@ -801,8 +801,25 @@ Description: Introduction
         
             >>> regex.escape("foo!?")
             'foo!\\?'
+            >>> regex.escape("foo!?", special_only=False)
+            'foo\\!\\?'
             >>> regex.escape("foo!?", special_only=True)
             'foo!\\?'
+        
+        * regex.escape (`Hg issue 249 <https://bitbucket.org/mrabarnett/mrab-regex/issues/249>`_)
+        
+          regex.escape has an additional keyword parameter ``literal_spaces``. When True, spaces are not escaped.
+        
+          Examples:
+        
+          .. sourcecode:: python
+        
+            >>> regex.escape("foo bar!?")
+            'foo\\ bar!\\?'
+            >>> regex.escape("foo bar!?", literal_spaces=False)
+            'foo\\ bar!\\?'
+            >>> regex.escape("foo bar!?", literal_spaces=True)
+            'foo bar!\\?'
         
         * Repeated captures (`issue #7132 <https://bugs.python.org/issue7132>`_)
         

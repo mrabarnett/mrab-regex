@@ -793,8 +793,25 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     >>> regex.escape("foo!?")
     'foo!\\?'
+    >>> regex.escape("foo!?", special_only=False)
+    'foo\\!\\?'
     >>> regex.escape("foo!?", special_only=True)
     'foo!\\?'
+
+* regex.escape (`Hg issue 249 <https://bitbucket.org/mrabarnett/mrab-regex/issues/249>`_)
+
+  regex.escape has an additional keyword parameter ``literal_spaces``. When True, spaces are not escaped.
+
+  Examples:
+
+  .. sourcecode:: python
+
+    >>> regex.escape("foo bar!?")
+    'foo\\ bar!\\?'
+    >>> regex.escape("foo bar!?", literal_spaces=False)
+    'foo\\ bar!\\?'
+    >>> regex.escape("foo bar!?", literal_spaces=True)
+    'foo bar!\\?'
 
 * Repeated captures (`issue #7132 <https://bugs.python.org/issue7132>`_)
 
