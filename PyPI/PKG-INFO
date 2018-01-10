@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2017.12.12
+Version: 2018.01.10
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -333,9 +333,9 @@ Description: Introduction
         
             # Python 3.7 and later
             >>> regex.sub('.*', 'x', 'test')
-            'x'
+            'xx'
             >>> regex.sub('.*?', '|', 'test')
-            '|||||'
+            '|||||||||'
         
             # Python 3.6 and earlier
             >>> regex.sub('(?V0).*', 'x', 'test')

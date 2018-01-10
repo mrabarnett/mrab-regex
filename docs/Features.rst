@@ -325,9 +325,9 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
     # Python 3.7 and later
     >>> regex.sub('.*', 'x', 'test')
-    'x'
+    'xx'
     >>> regex.sub('.*?', '|', 'test')
-    '|||||'
+    '|||||||||'
 
     # Python 3.6 and earlier
     >>> regex.sub('(?V0).*', 'x', 'test')

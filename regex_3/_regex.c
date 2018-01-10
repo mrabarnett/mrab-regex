@@ -20392,8 +20392,8 @@ Py_LOCAL_INLINE(PyObject*) next_split_part(SplitterObject* self) {
                 end_pos = state->slice_end;
             }
 
-#endif
 retry:
+#endif
             self->status = do_match(&safe_state, TRUE);
             if (self->status < 0)
                 goto error;
@@ -21064,7 +21064,9 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
     RE_JoinInfo join_info;
     Py_ssize_t sub_count;
     Py_ssize_t last_pos;
+#if PY_VERSION_HEX < 0x03070000
     Py_ssize_t step;
+#endif
     PyObject* item;
     MatchObject* match;
     BOOL built_capture = FALSE;
@@ -21187,7 +21189,9 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
 
     sub_count = 0;
     last_pos = state.reverse ? state.text_length : 0;
+#if PY_VERSION_HEX < 0x03070000
     step = state.reverse ? -1 : 1;
+#endif
     while (sub_count < maxsub) {
         int status;
 
@@ -21357,8 +21361,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
         last_pos = state.text_pos;
 
 #if PY_VERSION_HEX >= 0x03070000
-        /* Don't allow a contiguous zero-width match. */
-        state.must_advance = TRUE;
+        /* Don't allow 2 contiguous zero-width matches. */
+        state.must_advance = state.match_pos == state.text_pos;
 #else
         if (state.version_0) {
             /* Always advance after a zero-width match. */
@@ -21649,8 +21653,8 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
         last_pos = state.text_pos;
 
 #if PY_VERSION_HEX >= 0x03070000
-        /* Don't allow a contiguous zero-width match. */
-        state.must_advance = TRUE;
+        /* Don't allow 2 contiguous zero-width matches. */
+        state.must_advance = state.text_pos == state.match_pos;
 #else
         /* Version 0 behaviour is to advance one character if the match was
          * zero-width. Unfortunately, this can give an incorrect result. GvR

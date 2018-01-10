@@ -239,7 +239,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
   "WORD", "error", "Regex"]
 
-__version__ = "2.4.134"
+__version__ = "2.4.136"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -354,16 +354,12 @@ def template(pattern, flags=0):
     return _compile(pattern, flags | TEMPLATE)
 
 def escape(pattern, special_only=True, literal_spaces=False):
-    "Escape all non-alphanumeric characters or special characters in pattern."
-    # Convert it to Unicode.
-    if isinstance(pattern, bytes):
-        p = pattern.decode("latin-1")
-    else:
-        p = pattern
-
+    """Escape a string for use as a literal in a pattern. If special_only is
+    True, escape only special characters, else escape all non-alphanumeric
+    characters. If literal_spaces is True, don't escape spaces."""
     s = []
     if special_only:
-        for c in p:
+        for c in pattern:
             if c == " " and literal_spaces:
                 s.append(c)
             elif c in _METACHARS or c.isspace():
@@ -374,7 +370,7 @@ def escape(pattern, special_only=True, literal_spaces=False):
             else:
                 s.append(c)
     else:
-        for c in p:
+        for c in pattern:
             if c == " " and literal_spaces:
                 s.append(c)
             elif c in _ALNUM:
@@ -385,12 +381,7 @@ def escape(pattern, special_only=True, literal_spaces=False):
                 s.append("\\")
                 s.append(c)
 
-    r = "".join(s)
-    # Convert it back to bytes if necessary.
-    if isinstance(pattern, bytes):
-        r = r.encode("latin-1")
-
-    return r
+    return pattern[ : 0].join(s)
 
 # --------------------------------------------------------------------
 # Internals.
@@ -468,9 +459,9 @@ def _compile(pattern, flags=0, kwargs={}):
             pass
 
     # Guess the encoding from the class of the pattern string.
-    if isinstance(pattern, str):
+    if isinstance(pattern, unicode):
         guess_encoding = UNICODE
-    elif isinstance(pattern, bytes):
+    elif isinstance(pattern, str):
         guess_encoding = ASCII
     elif isinstance(pattern, _pattern_type):
         if flags:
@@ -497,7 +488,7 @@ def _compile(pattern, flags=0, kwargs={}):
         except _UnscopedFlagSet:
             # Remember the global flags for the next attempt.
             global_flags = info.global_flags
-        except error as e:
+        except error, e:
             caught_exception = e
 
         if caught_exception:
@@ -515,11 +506,8 @@ def _compile(pattern, flags=0, kwargs={}):
     if (info.flags & _ALL_ENCODINGS) not in (0, ASCII, LOCALE, UNICODE):
         raise ValueError("ASCII, LOCALE and UNICODE flags are mutually incompatible")
 
-    if isinstance(pattern, bytes) and (info.flags & UNICODE):
-        raise ValueError("cannot use UNICODE flag with a bytes pattern")
-
     if not (info.flags & _ALL_ENCODINGS):
-        if isinstance(pattern, str):
+        if isinstance(pattern, unicode):
             info.flags |= UNICODE
         else:
             info.flags |= ASCII
@@ -534,7 +522,7 @@ def _compile(pattern, flags=0, kwargs={}):
     caught_exception = None
     try:
         parsed.fix_groups(pattern, reverse, False)
-    except error as e:
+    except error, e:
         caught_exception = e
 
     if caught_exception:
@@ -612,8 +600,11 @@ def _compile(pattern, flags=0, kwargs={}):
 
     # Do we need to reduce the size of the cache?
     if len(_cache) >= _MAXCACHE:
-        with _cache_lock:
+        _cache_lock.acquire()
+        try:
             _shrink_cache(_cache, _named_args, _locale_sensitive, _MAXCACHE)
+        finally:
+            _cache_lock.release()
 
     if not debugging:
         if (info.flags & LOCALE) == 0:
@@ -644,14 +635,14 @@ def _compile_replacement_helper(pattern, template):
     if len(_replacement_cache) >= _MAXREPCACHE:
         _replacement_cache.clear()
 
-    is_unicode = isinstance(template, str)
+    is_unicode = isinstance(template, unicode)
     source = _Source(template)
     if is_unicode:
         def make_string(char_codes):
-            return "".join(chr(c) for c in char_codes)
+            return u"".join(unichr(c) for c in char_codes)
     else:
         def make_string(char_codes):
-            return bytes(char_codes)
+            return "".join(chr(c) for c in char_codes)
 
     compiled = []
     literal = []
@@ -691,9 +682,28 @@ _pattern_type = type(_compile("", 0, {}))
 Regex = compile
 
 # Register myself for pickling.
-import copyreg as _copy_reg
+import copy_reg as _copy_reg
 
 def _pickle(pattern):
     return _regex.compile, pattern._pickled_data
 
 _copy_reg.pickle(_pattern_type, _pickle)
+
+if not hasattr(str, "format"):
+    # Strings don't have the .format method (below Python 2.6).
+    while True:
+        _start = __doc__.find("    subf")
+        if _start < 0:
+            break
+
+        _end = __doc__.find("\n", _start) + 1
+        while __doc__.startswith("     ", _end):
+            _end = __doc__.find("\n", _end) + 1
+
+        __doc__ = __doc__[ : _start] + __doc__[_end : ]
+
+    __all__ = [_name for _name in __all__ if not _name.startswith("subf")]
+
+    del _start, _end
+
+    del subf, subfn
