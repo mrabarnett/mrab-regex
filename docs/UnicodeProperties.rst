@@ -1,4 +1,4 @@
-The following is a list of the 83 properties which are supported by this module:
+The following is a list of the 87 properties which are supported by this module:
 
 Alphabetic [Alpha]
     No [F, False, N]
@@ -808,6 +808,24 @@ Lowercase [Lower]
 Math
     No [F, False, N]
     Yes [T, True, Y]
+
+NFC_Quick_Check [NFC_QC]
+    Maybe [M]
+    No [N]
+    Yes [Y]
+
+NFD_Quick_Check [NFD_QC]
+    No [N]
+    Yes [Y]
+
+NFKC_Quick_Check [NFKC_QC]
+    Maybe [M]
+    No [N]
+    Yes [Y]
+
+NFKD_Quick_Check [NFKD_QC]
+    No [N]
+    Yes [Y]
 
 Noncharacter_Code_Point [NChar]
     No [F, False, N]

@@ -4015,6 +4015,9 @@ thing
         self.assertEqual(regex.search(r'(?(DEFINE)(?<func>.)).(?<=(?&func))',
           'abc').capturesdict(), {'func': ['a']})
 
+        # Hg issue 271: Comment logic different between Re and Regex
+        self.assertEqual(bool(regex.match(r'ab(?#comment\))cd', 'abcd')), True)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
