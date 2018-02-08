@@ -1639,7 +1639,9 @@ def standardise_name(name):
     except (ValueError, ZeroDivisionError):
         return "".join(ch for ch in name if ch not in "_- ").upper()
 
-_posix_classes = set('ALNUM DIGIT PUNCT XDIGIT'.split())
+_POSIX_CLASSES = set('ALNUM DIGIT PUNCT XDIGIT'.split())
+
+_BINARY_VALUES = set('YES Y NO N TRUE T FALSE F'.split())
 
 def lookup_property(property, value, positive, source=None, posix=False):
     "Looks up a property."
@@ -1650,7 +1652,7 @@ def lookup_property(property, value, positive, source=None, posix=False):
     if (property, value) == ("GENERALCATEGORY", "ASSIGNED"):
         property, value, positive = "GENERALCATEGORY", "UNASSIGNED", not positive
 
-    if posix and not property and value.upper() in _posix_classes:
+    if posix and not property and value.upper() in _POSIX_CLASSES:
         value = 'POSIX' + value
 
     if property:
@@ -1670,9 +1672,6 @@ def lookup_property(property, value, positive, source=None, posix=False):
 
             raise error("unknown property value", source.string, source.pos)
 
-        if "YES" in value_dict and val_id == 0:
-            positive, val_id = not positive, 1
-
         return Property((prop_id << 16) | val_id, positive)
 
     # Only the value is provided.
@@ -1687,9 +1686,10 @@ def lookup_property(property, value, positive, source=None, posix=False):
     prop = PROPERTIES.get(value)
     if prop:
         prop_id, value_dict = prop
-
-        if "YES" in value_dict:
+        if set(value_dict) == _BINARY_VALUES:
             return Property((prop_id << 16) | 1, positive)
+
+        return Property(prop_id << 16, not positive)
 
     # It might be the name of a binary property starting with a prefix.
     if value.startswith("IS"):

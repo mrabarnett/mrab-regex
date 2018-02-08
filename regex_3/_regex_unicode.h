@@ -149,7 +149,7 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 
 extern char* re_strings[1371];
 extern RE_Property re_properties[160];
-extern RE_PropertyValue re_property_values[1505];
+extern RE_PropertyValue re_property_values[1509];
 extern RE_UINT16 re_expand_on_folding[104];
 extern RE_GetPropertyFunc re_get_property[87];
 

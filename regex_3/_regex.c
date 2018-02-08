@@ -25578,7 +25578,7 @@ Py_LOCAL_INLINE(BOOL) init_property_dict(void) {
                 goto error;
         }
 
-        v = Py_BuildValue("i", value->id);
+        v = Py_BuildValue("i", (int)value->id);
         if (!v)
             goto error;
 
@@ -25600,7 +25600,7 @@ Py_LOCAL_INLINE(BOOL) init_property_dict(void) {
         int status;
 
         property = &re_properties[i];
-        v = Py_BuildValue("iO", property->id,
+        v = Py_BuildValue("iO", (int)property->id,
           value_dicts[property->value_set]);
         if (!v)
             goto error;
