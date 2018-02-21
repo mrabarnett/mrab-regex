@@ -15964,8 +15964,8 @@ backtrack:
                     limit = min_ssize_t(limit, state->slice_end - 1);
 
                     for (;;) {
-                        if (pos >= state->text_length && state->partial_side ==
-                          RE_PARTIAL_RIGHT)
+                        if (pos + 1 >= state->text_length &&
+                          state->partial_side == RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos >= limit)
@@ -16001,8 +16001,8 @@ backtrack:
                     limit = min_ssize_t(limit, state->slice_end - 1);
 
                     for (;;) {
-                        if (pos >= state->text_length && state->partial_side ==
-                          RE_PARTIAL_RIGHT)
+                        if (pos + 1 >= state->text_length &&
+                          state->partial_side == RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos >= limit)
@@ -16039,7 +16039,8 @@ backtrack:
                     limit = max_ssize_t(limit, state->slice_start + 1);
 
                     for (;;) {
-                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+                        if (pos - 1 <= 0 && state->partial_side ==
+                          RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)
@@ -16076,7 +16077,8 @@ backtrack:
                     limit = max_ssize_t(limit, state->slice_start + 1);
 
                     for (;;) {
-                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+                        if (pos - 1 <= 0 && state->partial_side ==
+                          RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)

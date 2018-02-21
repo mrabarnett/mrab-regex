@@ -4018,6 +4018,12 @@ thing
         # Hg issue 271: Comment logic different between Re and Regex
         self.assertEqual(bool(regex.match(r'ab(?#comment\))cd', 'abcd')), True)
 
+        # Hg issue 276: Partial Matches yield incorrect matches and bounds
+        self.assertEqual(regex.search(r'[a-z]+ [a-z]*?:', 'foo bar',
+          partial=True).span(), (0, 7))
+        self.assertEqual(regex.search(r'(?r):[a-z]*? [a-z]+', 'foo bar',
+          partial=True).span(), (0, 7))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
