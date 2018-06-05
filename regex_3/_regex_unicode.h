@@ -122,11 +122,12 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_BREAK_MIDNUMLET 14
 #define RE_BREAK_NUMERIC 15
 #define RE_BREAK_EXTENDNUMLET 16
-#define RE_BREAK_EBASE 17
-#define RE_BREAK_EMODIFIER 18
-#define RE_BREAK_ZWJ 19
-#define RE_BREAK_GLUEAFTERZWJ 20
-#define RE_BREAK_EBASEGAZ 21
+#define RE_BREAK_ZWJ 17
+#define RE_BREAK_WSEGSPACE 18
+#define RE_BREAK_EBASE 19
+#define RE_BREAK_EBASEGAZ 20
+#define RE_BREAK_EMODIFIER 21
+#define RE_BREAK_GLUEAFTERZWJ 22
 
 #define RE_GBREAK_OTHER 0
 #define RE_GBREAK_PREPEND 1
@@ -141,15 +142,15 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_GBREAK_T 10
 #define RE_GBREAK_LV 11
 #define RE_GBREAK_LVT 12
-#define RE_GBREAK_EBASE 13
-#define RE_GBREAK_EMODIFIER 14
-#define RE_GBREAK_ZWJ 15
-#define RE_GBREAK_GLUEAFTERZWJ 16
-#define RE_GBREAK_EBASEGAZ 17
+#define RE_GBREAK_ZWJ 13
+#define RE_GBREAK_EBASE 14
+#define RE_GBREAK_EBASEGAZ 15
+#define RE_GBREAK_EMODIFIER 16
+#define RE_GBREAK_GLUEAFTERZWJ 17
 
-extern char* re_strings[1371];
+extern char* re_strings[1396];
 extern RE_Property re_properties[160];
-extern RE_PropertyValue re_property_values[1509];
+extern RE_PropertyValue re_property_values[1541];
 extern RE_UINT16 re_expand_on_folding[104];
 extern RE_GetPropertyFunc re_get_property[87];
 

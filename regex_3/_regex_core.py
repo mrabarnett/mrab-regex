@@ -138,10 +138,6 @@ CASE_FLAGS_COMBINATIONS = {0: 0, FULLCASE: 0, IGNORECASE: IGNORECASE,
 # The number of digits in hexadecimal escapes.
 HEX_ESCAPES = {"x": 2, "u": 4, "U": 8}
 
-# A singleton which indicates a comment within a pattern.
-COMMENT = object()
-FLAGS = object()
-
 # The names of the opcodes.
 OPCODES = """
 FAILURE
@@ -400,66 +396,98 @@ def _parse_pattern(source, info):
 
 def parse_sequence(source, info):
     "Parses a sequence, eg. 'abc'."
-    sequence = []
-    applied = False
+    sequence = [None]
+    case_flags = make_case_flags(info)
     while True:
-        # Get literal characters followed by an element.
-        characters, case_flags, element = parse_literal_and_element(source,
-          info)
-        if not element:
-            # No element, just a literal. We've also reached the end of the
-            # sequence.
-            append_literal(characters, case_flags, sequence)
-            break
-
-        if element is COMMENT or element is FLAGS:
-            append_literal(characters, case_flags, sequence)
-        elif type(element) is tuple:
-            # It looks like we've found a quantifier.
-            ch, saved_pos = element
-
-            counts = parse_quantifier(source, info, ch)
-            if counts:
-                # It _is_ a quantifier.
-                apply_quantifier(source, info, counts, characters, case_flags,
-                  ch, saved_pos, applied, sequence)
-                applied = True
-            else:
-                # It's not a quantifier. Maybe it's a fuzzy constraint.
-                constraints = parse_fuzzy(source, ch)
-                if constraints:
-                    # It _is_ a fuzzy constraint.
-                    apply_constraint(source, info, constraints, characters,
-                      case_flags, saved_pos, applied, sequence)
-                    applied = True
+        saved_pos = source.pos
+        ch = source.get()
+        if ch in SPECIAL_CHARS:
+            if ch in ")|":
+                # The end of a sequence. At the end of the pattern ch is "".
+                source.pos = saved_pos
+                break
+            elif ch == "\\":
+                # An escape sequence outside a set.
+                sequence.append(parse_escape(source, info, False))
+            elif ch == "(":
+                # A parenthesised subpattern or a flag.
+                element = parse_paren(source, info)
+                if element is None:
+                    case_flags = make_case_flags(info)
                 else:
-                    # The element was just a literal.
-                    characters.append(ord(ch))
-                    append_literal(characters, case_flags, sequence)
-                    applied = False
+                    sequence.append(element)
+            elif ch == ".":
+                # Any character.
+                if info.flags & DOTALL:
+                    sequence.append(AnyAll())
+                elif info.flags & WORD:
+                    sequence.append(AnyU())
+                else:
+                    sequence.append(Any())
+            elif ch == "[":
+                # A character set.
+                sequence.append(parse_set(source, info))
+            elif ch == "^":
+                # The start of a line or the string.
+                if info.flags & MULTILINE:
+                    if info.flags & WORD:
+                        sequence.append(StartOfLineU())
+                    else:
+                        sequence.append(StartOfLine())
+                else:
+                    sequence.append(StartOfString())
+            elif ch == "$":
+                # The end of a line or the string.
+                if info.flags & MULTILINE:
+                    if info.flags & WORD:
+                        sequence.append(EndOfLineU())
+                    else:
+                        sequence.append(EndOfLine())
+                else:
+                    if info.flags & WORD:
+                        sequence.append(EndOfStringLineU())
+                    else:
+                        sequence.append(EndOfStringLine())
+            elif ch in "?*+{":
+                # Looks like a quantifier.
+                counts = parse_quantifier(source, info, ch)
+                if counts:
+                    # It _is_ a quantifier.
+                    apply_quantifier(source, info, counts, case_flags, ch,
+                      saved_pos, sequence)
+                    sequence.append(None)
+                else:
+                    # It's not a quantifier. Maybe it's a fuzzy constraint.
+                    constraints = parse_fuzzy(source, ch)
+                    if constraints:
+                        # It _is_ a fuzzy constraint.
+                        apply_constraint(source, info, constraints, case_flags,
+                          saved_pos, sequence)
+                        sequence.append(None)
+                    else:
+                        # The element was just a literal.
+                        sequence.append(Character(ord(ch),
+                          case_flags=case_flags))
+            else:
+                # A literal.
+                sequence.append(Character(ord(ch), case_flags=case_flags))
         else:
-            # We have a literal followed by something else.
-            append_literal(characters, case_flags, sequence)
-            sequence.append(element)
-            applied = False
+            # A literal.
+            sequence.append(Character(ord(ch), case_flags=case_flags))
 
-    return make_sequence(sequence)
+    sequence = [item for item in sequence if item is not None]
+    return Sequence(sequence)
 
-def apply_quantifier(source, info, counts, characters, case_flags, ch,
-  saved_pos, applied, sequence):
-    if characters:
-        # The quantifier applies to the last character.
-        append_literal(characters[ : -1], case_flags, sequence)
-        element = Character(characters[-1], case_flags=case_flags)
-    else:
-        # The quantifier applies to the last item in the sequence.
-        if applied:
+def apply_quantifier(source, info, counts, case_flags, ch, saved_pos,
+  sequence):
+    element = sequence.pop()
+    if element is None:
+        if sequence:
             raise error("multiple repeat", source.string, saved_pos)
+        raise error("nothing to repeat", source.string, saved_pos)
 
-        if not sequence:
-            raise error("nothing to repeat", source.string, saved_pos)
-
-        element = sequence.pop()
+    if isinstance(element, (GreedyRepeat, LazyRepeat, PossessiveRepeat)):
+        raise error("multiple repeat", source.string, saved_pos)
 
     min_count, max_count = counts
     saved_pos = source.pos
@@ -482,36 +510,19 @@ def apply_quantifier(source, info, counts, characters, case_flags, ch,
 
     sequence.append(element)
 
-def apply_constraint(source, info, constraints, characters, case_flags,
-  saved_pos, applied, sequence):
-    if characters:
-        # The constraint applies to the last character.
-        append_literal(characters[ : -1], case_flags, sequence)
-        element = Character(characters[-1], case_flags=case_flags)
-        sequence.append(Fuzzy(element, constraints))
+def apply_constraint(source, info, constraints, case_flags, saved_pos,
+  sequence):
+    element = sequence.pop()
+    if element is None:
+        raise error("nothing for fuzzy constraint", source.string, saved_pos)
+
+    # If a group is marked as fuzzy then put all of the fuzzy part in the
+    # group.
+    if isinstance(element, Group):
+        element.subpattern = Fuzzy(element.subpattern, constraints)
+        sequence.append(element)
     else:
-        # The constraint applies to the last item in the sequence.
-        if applied or not sequence:
-            raise error("nothing for fuzzy constraint", source.string,
-              saved_pos)
-
-        element = sequence.pop()
-
-        # If a group is marked as fuzzy then put all of the fuzzy part in the
-        # group.
-        if isinstance(element, Group):
-            element.subpattern = Fuzzy(element.subpattern, constraints)
-            sequence.append(element)
-        else:
-            sequence.append(Fuzzy(element, constraints))
-
-def append_literal(characters, case_flags, sequence):
-    if characters:
-        sequence.append(Literal(characters, case_flags=case_flags))
-
-def PossessiveRepeat(element, min_count, max_count):
-    "Builds a possessive repeat."
-    return Atomic(GreedyRepeat(element, min_count, max_count))
+        sequence.append(Fuzzy(element, constraints))
 
 _QUANTIFIERS = {"?": (0, 1), "*": (0, None), "+": (1, None)}
 
@@ -730,78 +741,6 @@ def parse_count(source):
     "Parses a quantifier's count, which can be empty."
     return source.get_while(DIGITS)
 
-def parse_literal_and_element(source, info):
-    """Parses a literal followed by an element. The element is FLAGS if it's an
-    inline flag or None if it has reached the end of a sequence.
-    """
-    characters = []
-    case_flags = make_case_flags(info)
-    while True:
-        saved_pos = source.pos
-        ch = source.get()
-        if ch in SPECIAL_CHARS:
-            if ch in ")|":
-                # The end of a sequence. At the end of the pattern ch is "".
-                source.pos = saved_pos
-                return characters, case_flags, None
-            elif ch == "\\":
-                # An escape sequence outside a set.
-                element = parse_escape(source, info, False)
-                return characters, case_flags, element
-            elif ch == "(":
-                # A parenthesised subpattern or a flag.
-                element = parse_paren(source, info)
-                if element and element is not COMMENT:
-                    return characters, case_flags, element
-            elif ch == ".":
-                # Any character.
-                if info.flags & DOTALL:
-                    element = AnyAll()
-                elif info.flags & WORD:
-                    element = AnyU()
-                else:
-                    element = Any()
-
-                return characters, case_flags, element
-            elif ch == "[":
-                # A character set.
-                element = parse_set(source, info)
-                return characters, case_flags, element
-            elif ch == "^":
-                # The start of a line or the string.
-                if info.flags & MULTILINE:
-                    if info.flags & WORD:
-                        element = StartOfLineU()
-                    else:
-                        element = StartOfLine()
-                else:
-                    element = StartOfString()
-
-                return characters, case_flags, element
-            elif ch == "$":
-                # The end of a line or the string.
-                if info.flags & MULTILINE:
-                    if info.flags & WORD:
-                        element = EndOfLineU()
-                    else:
-                        element = EndOfLine()
-                else:
-                    if info.flags & WORD:
-                        element = EndOfStringLineU()
-                    else:
-                        element = EndOfStringLine()
-
-                return characters, case_flags, element
-            elif ch in "?*+{":
-                # Looks like a quantifier.
-                return characters, case_flags, (ch, saved_pos)
-            else:
-                # A literal.
-                characters.append(ord(ch))
-        else:
-            # A literal.
-            characters.append(ord(ch))
-
 def parse_paren(source, info):
     """Parses a parenthesised subpattern or a flag. Returns FLAGS if it's an
     inline flag.
@@ -943,7 +882,7 @@ def parse_comment(source):
     source.pos = saved_pos
     source.expect(")")
 
-    return COMMENT
+    return None
 
 def parse_lookaround(source, info, behind, positive):
     "Parses a lookaround."
@@ -1118,7 +1057,7 @@ def parse_subpattern(source, info, flags_on, flags_off):
 def parse_flags_subpattern(source, info):
     """Parses a flags subpattern. It could be inline flags or a subpattern
     possibly with local flags. If it's a subpattern, then that's returned;
-    if it's a inline flags, then FLAGS is returned.
+    if it's a inline flags, then None is returned.
     """
     flags_on, flags_off = parse_flags(source, info)
 
@@ -1146,7 +1085,7 @@ def parse_flags_subpattern(source, info):
 
     if source.match(")"):
         parse_positional_flags(source, info, flags_on, flags_off)
-        return FLAGS
+        return None
 
     raise error("unknown extension", source.string, source.pos)
 
@@ -2912,6 +2851,36 @@ class GreedyRepeat(RegexBase):
 
         w = self.subpattern.max_width() * max_count
         return min(w, UNLIMITED), None
+
+class PossessiveRepeat(GreedyRepeat):
+    def is_atomic(self):
+        return True
+
+    def _compile(self, reverse, fuzzy):
+        subpattern = self.subpattern.compile(reverse, fuzzy)
+        if not subpattern:
+            return []
+
+        repeat = [self._opcode, self.min_count]
+        if self.max_count is None:
+            repeat.append(UNLIMITED)
+        else:
+            repeat.append(self.max_count)
+
+        return ([(OP.ATOMIC, ), tuple(repeat)] + subpattern + [(OP.END, ),
+          (OP.END, )])
+
+    def dump(self, indent, reverse):
+        print("{}ATOMIC".format(INDENT * indent))
+
+        if self.max_count is None:
+            limit = "INF"
+        else:
+            limit = self.max_count
+        print("{}{} {} {}".format(INDENT * (indent + 1), self._op_name,
+          self.min_count, limit))
+
+        self.subpattern.dump(indent + 2, reverse)
 
 class Group(RegexBase):
     def __init__(self, info, group, subpattern):

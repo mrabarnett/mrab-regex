@@ -11,7 +11,7 @@
  * 2010-01-16 mrab Re-written
  */
 
-/* Supports Unicode version 10.0.0. */
+/* Supports Unicode version 11.0.0. */
 
 #define RE_MAGIC 20100116
 
