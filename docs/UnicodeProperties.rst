@@ -1,4 +1,4 @@
-The following is a list of the 87 properties which are supported by this module:
+The following is a list of the 93 properties which are supported by this module:
 
 Alphabetic [Alpha]
     No [F, False, N]
@@ -477,6 +477,30 @@ East_Asian_Width [ea]
     Narrow [Na]
     Neutral [N]
     Wide [W]
+
+Emoji
+    No
+    Yes
+
+Emoji_Component
+    No
+    Yes
+
+Emoji_Modifier
+    No
+    Yes
+
+Emoji_Modifier_Base
+    No
+    Yes
+
+Emoji_Presentation
+    No
+    Yes
+
+Extended_Pictographic
+    No
+    Yes
 
 Extender [Ext]
     No [F, False, N]

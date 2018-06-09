@@ -1563,15 +1563,15 @@ class RegexTests(unittest.TestCase):
         text = "The  fox"
         self.assertEqual(regex.split(r'(?V1)\b', text), ['', 'The', '  ',
           'fox', ''])
-        self.assertEqual(regex.split(r'(?V1w)\b', text), ['', 'The', ' ',
-          ' ', 'fox', ''])
+        self.assertEqual(regex.split(r'(?V1w)\b', text), ['', 'The', '  ',
+          'fox', ''])
 
         text = "can't aujourd'hui l'objectif"
         self.assertEqual(regex.split(r'(?V1)\b', text), ['', 'can', "'",
           't', ' ', 'aujourd', "'", 'hui', ' ', 'l', "'", 'objectif',
           ''])
         self.assertEqual(regex.split(r'(?V1w)\b', text), ['', "can't", ' ',
-          "aujourd'hui", ' ', "l'", 'objectif', ''])
+          "aujourd'hui", ' ', "l'objectif", ''])
 
     def test_line_boundary(self):
         self.assertEqual(regex.findall(r".+", "Line 1\nLine 2\n"), ["Line 1",

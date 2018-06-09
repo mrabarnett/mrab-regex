@@ -1534,15 +1534,15 @@ class RegexTests(unittest.TestCase):
         text = u"The  fox"
         self.assertEqual(regex.split(ur'(?V1)\b', text), [u'', u'The', u'  ',
           u'fox', u''])
-        self.assertEqual(regex.split(ur'(?V1w)\b', text), [u'', u'The', u' ',
-          u' ', u'fox', u''])
+        self.assertEqual(regex.split(ur'(?V1w)\b', text), [u'', u'The', u'  ',
+          u'fox', u''])
 
         text = u"can't aujourd'hui l'objectif"
         self.assertEqual(regex.split(ur'(?V1)\b', text), [u'', u'can', u"'",
           u't', u' ', u'aujourd', u"'", u'hui', u' ', u'l', u"'", u'objectif',
           u''])
         self.assertEqual(regex.split(ur'(?V1w)\b', text), [u'', u"can't", u' ',
-          u"aujourd'hui", u' ', u"l'", u'objectif', u''])
+          u"aujourd'hui", u' ', u"l'objectif", u''])
 
     def test_line_boundary(self):
         self.assertEqual(regex.findall(r".+", "Line 1\nLine 2\n"), ["Line 1",
