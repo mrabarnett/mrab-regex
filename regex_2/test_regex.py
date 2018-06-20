@@ -1408,6 +1408,9 @@ class RegexTests(unittest.TestCase):
         self.assertEqual(regex.search(r"(?:(?:ab)+c)+", "abcabc").span(), (0,
           6))
 
+        # Hg issue 286.
+        self.assertEqual(regex.search(r"(?:a+){2,}", "aaa").span(), (0, 3))
+
     def test_lookbehind(self):
         self.assertEqual(regex.search(r"123(?<=a\d+)", "a123").span(), (1, 4))
         self.assertEqual(regex.search(r"123(?<=a\d+)", "b123"), None)

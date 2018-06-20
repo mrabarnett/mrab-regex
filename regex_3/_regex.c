@@ -15311,12 +15311,7 @@ backtrack:
             pos = state->text_pos + (Py_ssize_t)count * step;
             limit = state->text_pos + (Py_ssize_t)node->values[1] * step;
 
-            /* The tail failed to match at this position. */
-            if (!guard_repeat(safe_state, bt_data->repeat.index, pos,
-              RE_STATUS_TAIL, TRUE))
-                return RE_ERROR_MEMORY;
-
-            /* A (*SKIP) might have change the size of the slice. */
+            /* A (*SKIP) might have changed the size of the slice. */
             if (step > 0) {
                 if (limit < state->slice_start)
                     limit = state->slice_start;
