@@ -2782,6 +2782,10 @@ xyzabc
         self.assertEqual(regex.fullmatch(r"(?:cat){e<=1} (?:cat){e<=1}",
           "cat cot").fuzzy_counts, (1, 0, 0))
 
+        # Incorrect fuzzy changes
+        self.assertEqual(regex.search(r"(?e)(GTTTTCATTCCTCATA){i<=4,d<=4,s<=4,i+d+s<=8}",
+          "ATTATTTATTTTTCATA").fuzzy_changes, ([0, 6, 10, 11], [3], []))
+
     def test_recursive(self):
         self.assertEqual(regex.search(r"(\w)(?:(?R)|(\w?))\1", "xx")[ : ],
           ("xx", "x", ""))

@@ -2856,7 +2856,7 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
         memset(state->total_fuzzy_counts, 0,
           sizeof(state->total_fuzzy_counts));
 
-    state->fuzzy_changes.count = 0;
+        state->fuzzy_changes.count = 0;
     }
 
     state->fuzzy_info.total_cost = 0;
@@ -10379,7 +10379,8 @@ found:
     bt_data->fuzzy_item.fuzzy_type = data.fuzzy_type;
     bt_data->fuzzy_item.step = (RE_INT8)step;
 
-    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+    if (!record_fuzzy(safe_state, data.fuzzy_type, data.new_text_pos -
+      data.step))
         return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
@@ -10451,7 +10452,8 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_item(RE_SafeState* safe_state, BOOL
 found:
     bt_data->fuzzy_item.fuzzy_type = data.fuzzy_type;
 
-    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+    if (!record_fuzzy(safe_state, data.fuzzy_type, data.new_text_pos -
+      data.step))
         return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
@@ -10496,7 +10498,7 @@ Py_LOCAL_INLINE(int) fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t
       fuzzy_info->counts[RE_FUZZY_INS] < values[RE_FUZZY_VAL_MIN_INS] ||
       fuzzy_info->counts[RE_FUZZY_SUB] < values[RE_FUZZY_VAL_MIN_SUB] ||
       fuzzy_info->counts[RE_FUZZY_ERR] < values[RE_FUZZY_VAL_MIN_ERR])
-        state->too_few_errors = RE_ERROR_SUCCESS;
+        state->too_few_errors = TRUE;
 
     return RE_ERROR_SUCCESS;
 }
@@ -10563,7 +10565,7 @@ Py_LOCAL_INLINE(int) retry_fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t*
       fuzzy_info->counts[RE_FUZZY_INS] < values[RE_FUZZY_VAL_MIN_INS] ||
       fuzzy_info->counts[RE_FUZZY_SUB] < values[RE_FUZZY_VAL_MIN_SUB] ||
       fuzzy_info->counts[RE_FUZZY_ERR] < values[RE_FUZZY_VAL_MIN_ERR])
-      state->too_few_errors = RE_ERROR_SUCCESS;
+      state->too_few_errors = TRUE;
 
     *text_pos = new_text_pos + step * (Py_ssize_t)bt_data->fuzzy_insert.count;
     *node = new_node;
@@ -10626,7 +10628,8 @@ found:
     bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
     bt_data->fuzzy_string.step = (RE_INT8)step;
 
-    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos))
+    if (!record_fuzzy(safe_state, data.fuzzy_type, data.new_text_pos -
+      data.step))
         return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
@@ -10696,7 +10699,8 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string(RE_SafeState* safe_state, BOOL
 found:
     bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
 
-    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+    if (!record_fuzzy(safe_state, data.fuzzy_type, data.new_text_pos -
+      data.step))
         return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
@@ -10818,7 +10822,8 @@ found:
     bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
     bt_data->fuzzy_string.step = (RE_INT8)step;
 
-    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+    if (!record_fuzzy(safe_state, data.fuzzy_type, data.new_text_pos -
+      data.step))
         return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
@@ -10898,7 +10903,8 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string_fld(RE_SafeState* safe_state,
 found:
     bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
 
-    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+    if (!record_fuzzy(safe_state, data.fuzzy_type, data.new_text_pos -
+      data.step))
         return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
@@ -11026,7 +11032,8 @@ found:
     bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
     bt_data->fuzzy_string.step = (RE_INT8)step;
 
-    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+    if (!record_fuzzy(safe_state, data.fuzzy_type, data.new_text_pos -
+      data.step))
         return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
@@ -11103,7 +11110,8 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_group_fld(RE_SafeState* safe_state, BOOL
 found:
     bt_data->fuzzy_string.fuzzy_type = data.fuzzy_type;
 
-    if (!record_fuzzy(safe_state, data.fuzzy_type, *text_pos - data.step))
+    if (!record_fuzzy(safe_state, data.fuzzy_type, data.new_text_pos -
+      data.step))
         return RE_ERROR_FAILURE;
 
     ++fuzzy_info->counts[data.fuzzy_type];
