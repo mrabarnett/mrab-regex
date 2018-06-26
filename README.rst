@@ -501,7 +501,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
   It's possible to backtrack into a recursed or repeated group.
 
-  You can't call a group if there is more than one group with that group name or group number (``"ambiguous group reference"``). For example, ``(?P<foo>\w+) (?P<foo>\w+) (?&foo)?`` has 2 groups called "foo" (both group 1) and ``(?|([A-Z]+)|([0-9]+)) (?1)?`` has 2 groups with group number 1.
+  You can't call a group if there is more than one group with that group name or group number (``"ambiguous group reference"``).
 
   The alternative forms ``(?P>name)`` and ``(?P&name)`` are also supported.
 
@@ -556,15 +556,9 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
   In the following examples I'll omit the item and write only the fuzziness:
 
-  * ``{i<=3}`` permit at most 3 insertions, but no other types
-
   * ``{d<=3}`` permit at most 3 deletions, but no other types
 
-  * ``{s<=3}`` permit at most 3 substitutions, but no other types
-
   * ``{i<=1,s<=2}`` permit at most 1 insertion and at most 2 substitutions, but no deletions
-
-  * ``{e<=3}`` permit at most 3 errors
 
   * ``{1<=e<=3}`` permit at least 1 and at most 3 errors
 
@@ -578,13 +572,7 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
   * ``{i<=1,d<=1,s<=1,2i+2d+1s<=4}`` at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
 
-  You can also use "<" instead of "<=" if you want an exclusive minimum or maximum:
-
-  * ``{e<=3}`` permit up to 3 errors
-
-  * ``{e<4}`` permit fewer than 4 errors
-
-  * ``{0<e<4}`` permit more than 0 but fewer than 4 errors
+  You can also use "<" instead of "<=" if you want an exclusive minimum or maximum.
 
   By default, fuzzy matching searches for the first match that meets the given constraints. The ``ENHANCEMATCH`` flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
 
@@ -592,11 +580,11 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
   Further examples to note:
 
-  * ``regex.search("(dog){e}", "cat and dog")[1]`` returns ``"cat"`` because that matches ``"dog"`` with 3 errors, which is within the limit (an unlimited number of errors is permitted).
+  * ``regex.search("(dog){e}", "cat and dog")[1]`` returns ``"cat"`` because that matches ``"dog"`` with 3 errors (an unlimited number of errors is permitted).
 
-  * ``regex.search("(dog){e<=1}", "cat and dog")[1]`` returns ``" dog"`` (with a leading space) because that matches ``"dog"`` with 1 error, which is within the limit (1 error is permitted).
+  * ``regex.search("(dog){e<=1}", "cat and dog")[1]`` returns ``" dog"`` (with a leading space) because that matches ``"dog"`` with 1 error, which is within the limit.
 
-  * ``regex.search("(?e)(dog){e<=1}", "cat and dog")[1]`` returns ``"dog"`` (without a leading space) because the fuzzy search matches ``" dog"`` with 1 error, which is within the limit (1 error is permitted), and the ``(?e)`` then makes it attempt a better fit.
+  * ``regex.search("(?e)(dog){e<=1}", "cat and dog")[1]`` returns ``"dog"`` (without a leading space) because the fuzzy search matches ``" dog"`` with 1 error, which is within the limit, and the ``(?e)`` then it attempts a better fit.
 
   In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.
 
@@ -817,25 +805,13 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
   The flags will apply only to the subpattern. Flags can be turned on or off.
 
-* Inline flags (`issue #433024 <https://bugs.python.org/issue433024>`_, `issue #433027 <https://bugs.python.org/issue433027>`_)
-
-  ``(?flags-flags)``
-
-  Version 0 behaviour: the flags apply to the entire pattern, and they can't be turned off.
-
-  Version 1 behaviour: the flags apply to the end of the group or pattern, and they can be turned on or off.
-
 * Definition of 'word' character (`issue #1693050 <https://bugs.python.org/issue1693050>`_)
 
-  The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
+  The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``.
 
 * Variable-length lookbehind
 
   A lookbehind can match a variable-length string.
-
-* Unmatched group in replacement (`issue #1519638 <https://bugs.python.org/issue1519638>`_)
-
-  An unmatched group is treated as an empty string in a replacement template.
 
 * Flags argument for regex.split, regex.sub and regex.subn (`issue #3482 <https://bugs.python.org/issue3482>`_)
 
@@ -848,12 +824,6 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 * 'Overlapped' argument for regex.findall and regex.finditer
 
   ``regex.findall`` and ``regex.finditer`` support an 'overlapped' flag which permits overlapped matches.
-
-* Zero-width split with regex.split (`issue #3262 <https://bugs.python.org/issue3262>`_)
-
-  Version 0 behaviour: same as re module (no split before Python 3.7).
-
-  Version 1 behaviour: a string can be split at a zero-width match.
 
 * Splititer
 
