@@ -1581,12 +1581,22 @@ def numeric_to_rational(numeric):
 
     return result
 
+upper_trans = string.maketrans(string.ascii_lowercase, string.ascii_uppercase)
+
+def ascii_upper(s):
+    "Uppercases a bytestring in a locale-insensitive way within the ASCII range."
+    if isinstance(s, str):
+        return s.translate(upper_trans)
+
+    return s.upper()
+
+
 def standardise_name(name):
     "Standardises a property or value name."
     try:
         return numeric_to_rational("".join(name))
     except (ValueError, ZeroDivisionError):
-        return "".join(ch for ch in name if ch not in "_- ").upper()
+        return ascii_upper("".join(ch for ch in name if ch not in "_- "))
 
 _POSIX_CLASSES = set('ALNUM DIGIT PUNCT XDIGIT'.split())
 
@@ -1601,7 +1611,7 @@ def lookup_property(property, value, positive, source=None, posix=False):
     if (property, value) == ("GENERALCATEGORY", "ASSIGNED"):
         property, value, positive = "GENERALCATEGORY", "UNASSIGNED", not positive
 
-    if posix and not property and value.upper() in _POSIX_CLASSES:
+    if posix and not property and ascii_upper(value) in _POSIX_CLASSES:
         value = 'POSIX' + value
 
     if property:

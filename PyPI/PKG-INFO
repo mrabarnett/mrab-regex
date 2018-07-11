@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2018.06.21
+Version: 2018.07.11
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -132,11 +132,6 @@ Description: Introduction
         
         The regex module releases the GIL during matching on instances of the built-in (immutable) string classes, enabling other Python threads to run concurrently. It is also possible to force the regex module to release the GIL during matching by calling the matching methods with the keyword argument ``concurrent=True``. The behaviour is undefined if the string changes during matching, so use it *only* when it is guaranteed that that won't happen.
         
-        Building for 64-bits
-        --------------------
-        
-        If the source files are built for a 64-bit target then the string positions will also be 64-bit.
-        
         Unicode
         -------
         
@@ -148,8 +143,6 @@ Description: Introduction
         -------------------
         
         The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
-        
-        * Fixed support for pickling compiled regexes (`Hg issue 195 <https://bitbucket.org/mrabarnett/mrab-regex/issues/195>`_)
         
         * Added support for lookaround in conditional pattern (`Hg issue 163 <https://bitbucket.org/mrabarnett/mrab-regex/issues/163>`_)
         
@@ -347,20 +340,6 @@ Description: Introduction
             >>> regex.sub('(?V1).*?', '|', 'test')
             '|||||||||'
         
-        * re.group() should never return a bytearray (`issue #18468 <https://bugs.python.org/issue18468>`_)
-        
-          For compatibility with the re module, the regex module returns all matching bytestrings as ``bytes``, starting from Python 3.4.
-        
-          Examples:
-        
-          .. sourcecode:: python
-        
-            >>> regex.match(b'.', bytearray(b'a')).group()
-            # Python 3.4 and later
-            b'a'
-            # Python 3.3 and earlier
-            bytearray(b'a')
-        
         * Added ``capturesdict`` (`Hg issue 86 <https://bitbucket.org/mrabarnett/mrab-regex/issues/86>`_)
         
           ``capturesdict`` is a combination of ``groupdict`` and ``captures``:
@@ -488,7 +467,7 @@ Description: Introduction
         
         * Detach searched string
         
-          A match object contains a reference to the string that was searched, via its ``string`` attribute. The match object now has a ``detach_string`` method that will 'detach' that string, making it available for garbage collection (this might save valuable memory if that string is very large).
+          A match object contains a reference to the string that was searched, via its ``string`` attribute. The ``detach_string`` method will 'detach' that string, making it available for garbage collection, which might save valuable memory if that string is very large.
         
           Example:
         
@@ -504,10 +483,6 @@ Description: Introduction
             Hello
             >>> print(m.string)
             None
-        
-        * Characters in a group name (`issue #14462 <https://bugs.python.org/issue14462>`_)
-        
-          A group name can now contain the same characters as an identifier. These are different in Python 2 and Python 3.
         
         * Recursive patterns (`Hg issue 27 <https://bitbucket.org/mrabarnett/mrab-regex/issues/27>`_)
         
@@ -534,36 +509,9 @@ Description: Introduction
         
           It's possible to backtrack into a recursed or repeated group.
         
-          You can't call a group if there is more than one group with that group name or group number (``"ambiguous group reference"``). For example, ``(?P<foo>\w+) (?P<foo>\w+) (?&foo)?`` has 2 groups called "foo" (both group 1) and ``(?|([A-Z]+)|([0-9]+)) (?1)?`` has 2 groups with group number 1.
+          You can't call a group if there is more than one group with that group name or group number (``"ambiguous group reference"``).
         
           The alternative forms ``(?P>name)`` and ``(?P&name)`` are also supported.
-        
-        * repr(regex) doesn't include actual regex (`issue #13592 <https://bugs.python.org/issue13592>`_)
-        
-          The repr of a compiled regex is now in the form of a eval-able string. For example:
-        
-          .. sourcecode:: python
-        
-            >>> r = regex.compile("foo", regex.I)
-            >>> repr(r)
-            "regex.Regex('foo', flags=regex.I | regex.V0)"
-            >>> r
-            regex.Regex('foo', flags=regex.I | regex.V0)
-        
-          The regex module has Regex as an alias for the 'compile' function.
-        
-        * Improve the repr for regular expression match objects (`issue #17087 <https://bugs.python.org/issue17087>`_)
-        
-          The repr of a match object is now a more useful form. For example:
-        
-          .. sourcecode:: python
-        
-            >>> regex.search(r"\d+", "abc012def")
-            <regex.Match object; span=(3, 6), match='012'>
-        
-        * Python lib re cannot handle Unicode properly due to narrow/wide bug (`issue #12729 <https://bugs.python.org/issue12729>`_)
-        
-          The source code of the regex module has been updated to support PEP 393 ("Flexible String Representation"), which is new in Python 3.3.
         
         * Full Unicode case-folding is supported.
         
@@ -616,15 +564,9 @@ Description: Introduction
         
           In the following examples I'll omit the item and write only the fuzziness:
         
-          * ``{i<=3}`` permit at most 3 insertions, but no other types
-        
           * ``{d<=3}`` permit at most 3 deletions, but no other types
         
-          * ``{s<=3}`` permit at most 3 substitutions, but no other types
-        
           * ``{i<=1,s<=2}`` permit at most 1 insertion and at most 2 substitutions, but no deletions
-        
-          * ``{e<=3}`` permit at most 3 errors
         
           * ``{1<=e<=3}`` permit at least 1 and at most 3 errors
         
@@ -638,13 +580,7 @@ Description: Introduction
         
           * ``{i<=1,d<=1,s<=1,2i+2d+1s<=4}`` at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
         
-          You can also use "<" instead of "<=" if you want an exclusive minimum or maximum:
-        
-          * ``{e<=3}`` permit up to 3 errors
-        
-          * ``{e<4}`` permit fewer than 4 errors
-        
-          * ``{0<e<4}`` permit more than 0 but fewer than 4 errors
+          You can also use "<" instead of "<=" if you want an exclusive minimum or maximum.
         
           By default, fuzzy matching searches for the first match that meets the given constraints. The ``ENHANCEMATCH`` flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
         
@@ -652,11 +588,11 @@ Description: Introduction
         
           Further examples to note:
         
-          * ``regex.search("(dog){e}", "cat and dog")[1]`` returns ``"cat"`` because that matches ``"dog"`` with 3 errors, which is within the limit (an unlimited number of errors is permitted).
+          * ``regex.search("(dog){e}", "cat and dog")[1]`` returns ``"cat"`` because that matches ``"dog"`` with 3 errors (an unlimited number of errors is permitted).
         
-          * ``regex.search("(dog){e<=1}", "cat and dog")[1]`` returns ``" dog"`` (with a leading space) because that matches ``"dog"`` with 1 error, which is within the limit (1 error is permitted).
+          * ``regex.search("(dog){e<=1}", "cat and dog")[1]`` returns ``" dog"`` (with a leading space) because that matches ``"dog"`` with 1 error, which is within the limit.
         
-          * ``regex.search("(?e)(dog){e<=1}", "cat and dog")[1]`` returns ``"dog"`` (without a leading space) because the fuzzy search matches ``" dog"`` with 1 error, which is within the limit (1 error is permitted), and the ``(?e)`` then makes it attempt a better fit.
+          * ``regex.search("(?e)(dog){e<=1}", "cat and dog")[1]`` returns ``"dog"`` (without a leading space) because the fuzzy search matches ``" dog"`` with 1 error, which is within the limit, and the ``(?e)`` then it attempts a better fit.
         
           In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.
         
@@ -724,7 +660,7 @@ Description: Introduction
         
             >>> p = regex.compile(r"first|second|third|fourth|fifth")
         
-          but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped if they contain any character that has a special meaning in a regex, and that if there is a shorter string that occurs initially in a longer string that the longer string is listed before the shorter one, for example, "cats" before "cat".
+          but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped and properly ordered, for example, "cats" before "cat".
         
           The new alternative is to use a named list:
         
@@ -753,7 +689,7 @@ Description: Introduction
         
         * Unicode line separators
         
-          Normally the only line separator is ``\n`` (``\x0A``), but if the ``WORD`` flag is turned on then the line separators are the pair ``\x0D\x0A``, and ``\x0A``, ``\x0B``, ``\x0C`` and ``\x0D``, plus ``\x85``, ``\u2028`` and ``\u2029`` when working with Unicode.
+          Normally the only line separator is ``\n`` (``\x0A``), but if the ``WORD`` flag is turned on then the line separators are ``\x0D\x0A``, ``\x0A``, ``\x0B``, ``\x0C`` and ``\x0D``, plus ``\x85``, ``\u2028`` and ``\u2029`` when working with Unicode.
         
           This affects the regex dot ``"."``, which, with the ``DOTALL`` flag turned off, matches any character except a line separator. It also affects the line anchors ``^`` and ``$`` (in multiline mode).
         
@@ -799,8 +735,6 @@ Description: Introduction
         
           .. sourcecode:: python
         
-            >>> regex.escape("foo!?")
-            'foo!\\?'
             >>> regex.escape("foo!?", special_only=False)
             'foo\\!\\?'
             >>> regex.escape("foo!?", special_only=True)
@@ -814,8 +748,6 @@ Description: Introduction
         
           .. sourcecode:: python
         
-            >>> regex.escape("foo bar!?")
-            'foo\\ bar!\\?'
             >>> regex.escape("foo bar!?", literal_spaces=False)
             'foo\\ bar!\\?'
             >>> regex.escape("foo bar!?", literal_spaces=True)
@@ -881,41 +813,13 @@ Description: Introduction
         
           The flags will apply only to the subpattern. Flags can be turned on or off.
         
-        * Inline flags (`issue #433024 <https://bugs.python.org/issue433024>`_, `issue #433027 <https://bugs.python.org/issue433027>`_)
-        
-          ``(?flags-flags)``
-        
-          Version 0 behaviour: the flags apply to the entire pattern, and they can't be turned off.
-        
-          Version 1 behaviour: the flags apply to the end of the group or pattern, and they can be turned on or off.
-        
-        * Repeated repeats (`issue #2537 <https://bugs.python.org/issue2537>`_)
-        
-          A regex like ``((x|y+)*)*`` will be accepted and will work correctly, but should complete more quickly.
-        
         * Definition of 'word' character (`issue #1693050 <https://bugs.python.org/issue1693050>`_)
         
-          The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``. This applies to ``\w``, ``\W``, ``\b`` and ``\B``.
-        
-        * Groups in lookahead and lookbehind (`issue #814253 <https://bugs.python.org/issue814253>`_)
-        
-          Groups and group references are permitted in both lookahead and lookbehind.
+          The definition of a 'word' character has been expanded for Unicode. It now conforms to the Unicode specification at ``http://www.unicode.org/reports/tr29/``.
         
         * Variable-length lookbehind
         
           A lookbehind can match a variable-length string.
-        
-        * Correct handling of charset with ignore case flag (`issue #3511 <https://bugs.python.org/issue3511>`_)
-        
-          Ranges within charsets are handled correctly when the ignore-case flag is turned on.
-        
-        * Unmatched group in replacement (`issue #1519638 <https://bugs.python.org/issue1519638>`_)
-        
-          An unmatched group is treated as an empty string in a replacement template.
-        
-        * 'Pathological' patterns (`issue #1566086 <https://bugs.python.org/issue1566086>`_, `issue #1662581 <https://bugs.python.org/issue1662581>`_, `issue #1448325 <https://bugs.python.org/issue1448325>`_, `issue #1721518 <https://bugs.python.org/issue1721518>`_, `issue #1297193 <https://bugs.python.org/issue1297193>`_)
-        
-          'Pathological' patterns should complete more quickly.
         
         * Flags argument for regex.split, regex.sub and regex.subn (`issue #3482 <https://bugs.python.org/issue3482>`_)
         
@@ -928,24 +832,6 @@ Description: Introduction
         * 'Overlapped' argument for regex.findall and regex.finditer
         
           ``regex.findall`` and ``regex.finditer`` support an 'overlapped' flag which permits overlapped matches.
-        
-        * Unicode escapes (`issue #3665 <https://bugs.python.org/issue3665>`_)
-        
-          The Unicode escapes ``\uxxxx`` and ``\Uxxxxxxxx`` are supported.
-        
-        * Large patterns (`issue #1160 <https://bugs.python.org/issue1160>`_)
-        
-          Patterns can be much larger.
-        
-        * Zero-width match with regex.finditer (`issue #1647489 <https://bugs.python.org/issue1647489>`_)
-        
-          ``regex.finditer`` behaves correctly when it splits at a zero-width match.
-        
-        * Zero-width split with regex.split (`issue #3262 <https://bugs.python.org/issue3262>`_)
-        
-          Version 0 behaviour: same as re module (no split before Python 3.7).
-        
-          Version 1 behaviour: a string can be split at a zero-width match.
         
         * Splititer
         
@@ -960,10 +846,6 @@ Description: Introduction
             >>> m = regex.search(r"(?P<before>.*?)(?P<num>\d+)(?P<after>.*)", "pqr123stu")
             >>> print(m["before"])
             pqr
-            >>> print(m["num"])
-            123
-            >>> print(m["after"])
-            stu
             >>> print(len(m))
             4
             >>> print(m[:])
@@ -993,8 +875,6 @@ Description: Introduction
         
           * ``Latin``, the 'Latin' script (``Script=Latin``).
         
-          * ``Cyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
-        
           * ``BasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
         
           * ``Alphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
@@ -1003,15 +883,11 @@ Description: Introduction
         
           * ``IsLatin``, the 'Latin' script (``Script=Latin``).
         
-          * ``IsCyrillic``, the 'Cyrillic' script (``Script=Cyrillic``).
-        
           * ``IsAlphabetic``, the 'Alphabetic' binary property (``Alphabetic=Yes``).
         
           A short form starting with ``In`` indicates a block property:
         
           * ``InBasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
-        
-          * ``InCyrillic``, the 'Cyrillic' block (``Block=Cyrillic``).
         
         * POSIX character classes
         
@@ -1096,12 +972,6 @@ Description: Introduction
         * Default Unicode word boundary
         
           The ``WORD`` flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to ``\b`` and ``\B``.
-        
-        * SRE engine do not release the GIL (`issue #1366311 <https://bugs.python.org/issue1366311>`_)
-        
-          The regex module can release the GIL during matching (see the above section on multithreading).
-        
-          Iterators can be safely shared across threads.
 Platform: UNKNOWN
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers

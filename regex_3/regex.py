@@ -239,7 +239,7 @@ __all__ = ["compile", "escape", "findall", "finditer", "fullmatch", "match",
   "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X", "VERBOSE", "W",
   "WORD", "error", "Regex"]
 
-__version__ = "2.4.143"
+__version__ = "2.4.144"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -474,7 +474,7 @@ def _compile(pattern, flags=0, kwargs={}):
         guess_encoding = UNICODE
     elif isinstance(pattern, bytes):
         guess_encoding = ASCII
-    elif isinstance(pattern, _pattern_type):
+    elif isinstance(pattern, Pattern):
         if flags:
             raise ValueError("cannot process flags argument with a compiled pattern")
 
@@ -685,8 +685,9 @@ def _compile_replacement_helper(pattern, template):
 
     return compiled
 
-# We define _pattern_type here after all the support objects have been defined.
-_pattern_type = type(_compile("", 0, {}))
+# We define Pattern here after all the support objects have been defined.
+Pattern = type(_compile('', 0, {}))
+Match = type(_compile('', 0).match(''))
 
 # We'll define an alias for the 'compile' function so that the repr of a
 # pattern object is eval-able.
@@ -698,4 +699,4 @@ import copyreg as _copy_reg
 def _pickle(pattern):
     return _regex.compile, pattern._pickled_data
 
-_copy_reg.pickle(_pattern_type, _pickle)
+_copy_reg.pickle(Pattern, _pickle)
