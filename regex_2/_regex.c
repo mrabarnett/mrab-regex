@@ -1453,6 +1453,22 @@ Py_LOCAL_INLINE(BOOL) unicode_has_property(RE_CODE property, Py_UCS4 ch) {
         return FALSE;
 
     value = property & 0xFFFF;
+
+    if (prop == RE_PROP_SCX) {
+        int count;
+        RE_UINT8 scripts[RE_MAX_SCX];
+        int i;
+
+        count = re_get_script_extensions(ch, scripts);
+
+        for (i = 0; i < count; i++) {
+            if (scripts[i] == value)
+                return TRUE;
+        }
+
+        return FALSE;
+    }
+
     v = re_get_property[prop](ch);
 
     if (v == value)

@@ -17,6 +17,7 @@ typedef unsigned char BOOL;
 
 #define RE_MAX_CASES 4
 #define RE_MAX_FOLDED 3
+#define RE_MAX_SCX 19
 
 typedef struct RE_Property {
     RE_UINT16 name;
@@ -33,9 +34,10 @@ typedef struct RE_PropertyValue {
 typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 
 #define RE_PROP_GC 0x0
-#define RE_PROP_CASED 0xA
-#define RE_PROP_UPPERCASE 0x9
-#define RE_PROP_LOWERCASE 0x8
+#define RE_PROP_CASED 0xB
+#define RE_PROP_UPPERCASE 0xA
+#define RE_PROP_LOWERCASE 0x9
+#define RE_PROP_SCX 0x3
 
 #define RE_PROP_C 30
 #define RE_PROP_L 31
@@ -86,24 +88,24 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_PROP_S_MASK 0x0F000000
 #define RE_PROP_Z_MASK 0x00007000
 
-#define RE_PROP_ALNUM 0x520001
-#define RE_PROP_ALPHA 0x070001
-#define RE_PROP_ANY 0x530001
+#define RE_PROP_ALNUM 0x530001
+#define RE_PROP_ALPHA 0x080001
+#define RE_PROP_ANY 0x540001
 #define RE_PROP_ASCII 0x010001
-#define RE_PROP_BLANK 0x540001
+#define RE_PROP_BLANK 0x550001
 #define RE_PROP_CNTRL 0x00000F
 #define RE_PROP_DIGIT 0x000009
-#define RE_PROP_GRAPH 0x550001
-#define RE_PROP_LOWER 0x080001
-#define RE_PROP_PRINT 0x560001
-#define RE_PROP_SPACE 0x190001
-#define RE_PROP_UPPER 0x090001
-#define RE_PROP_WORD 0x570001
-#define RE_PROP_XDIGIT 0x580001
-#define RE_PROP_POSIX_ALNUM 0x5A0001
-#define RE_PROP_POSIX_DIGIT 0x590001
-#define RE_PROP_POSIX_PUNCT 0x5B0001
-#define RE_PROP_POSIX_XDIGIT 0x5C0001
+#define RE_PROP_GRAPH 0x560001
+#define RE_PROP_LOWER 0x090001
+#define RE_PROP_PRINT 0x570001
+#define RE_PROP_SPACE 0x1A0001
+#define RE_PROP_UPPER 0x0A0001
+#define RE_PROP_WORD 0x580001
+#define RE_PROP_XDIGIT 0x590001
+#define RE_PROP_POSIX_ALNUM 0x5B0001
+#define RE_PROP_POSIX_DIGIT 0x5A0001
+#define RE_PROP_POSIX_PUNCT 0x5C0001
+#define RE_PROP_POSIX_XDIGIT 0x5D0001
 
 #define RE_WBREAK_OTHER 0
 #define RE_WBREAK_DOUBLEQUOTE 1
@@ -192,15 +194,16 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_LBREAK_EMODIFIER 41
 #define RE_LBREAK_ZWJ 42
 
-extern char* re_strings[1402];
-extern RE_Property re_properties[166];
+extern char* re_strings[1404];
+extern RE_Property re_properties[168];
 extern RE_PropertyValue re_property_values[1543];
 extern RE_UINT16 re_expand_on_folding[104];
-extern RE_GetPropertyFunc re_get_property[93];
+extern RE_GetPropertyFunc re_get_property[94];
 
 RE_UINT32 re_get_general_category(RE_UINT32 ch);
 RE_UINT32 re_get_block(RE_UINT32 ch);
 RE_UINT32 re_get_script(RE_UINT32 ch);
+int re_get_script_extensions(RE_UINT32 ch, RE_UINT8* scripts);
 RE_UINT32 re_get_word_break(RE_UINT32 ch);
 RE_UINT32 re_get_grapheme_cluster_break(RE_UINT32 ch);
 RE_UINT32 re_get_sentence_break(RE_UINT32 ch);

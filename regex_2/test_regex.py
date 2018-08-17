@@ -3858,6 +3858,20 @@ thing
         self.assertEqual(regex.search(r'(?r):[a-z]*? [a-z]+', 'foo bar',
           partial=True).span(), (0, 7))
 
+        # Hg issue 291: Include Script Extensions as a supported Unicode property
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Script:Beng}',
+          u'\u09EF')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Script:Bengali}',
+          u'\u09EF')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Script_Extensions:Bengali}',
+          u'\u09EF')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Script_Extensions:Beng}',
+          u'\u09EF')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Script_Extensions:Cakm}',
+          u'\u09EF')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{Script_Extensions:Sylo}',
+          u'\u09EF')), True)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
