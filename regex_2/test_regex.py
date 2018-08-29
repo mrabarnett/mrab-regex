@@ -3872,6 +3872,20 @@ thing
         self.assertEqual(bool(regex.match(ur'(?u)\p{Script_Extensions:Sylo}',
           u'\u09EF')), True)
 
+        # Hg issue #293: scx (Script Extensions) property currently matches
+        # incorrectly
+        self.assertEqual(bool(regex.match(ur'(?u)\p{scx:Latin}', u'P')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{scx:Ahom}', u'P')), False)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{scx:Common}', u'4')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{scx:Caucasian_Albanian}', u'4')),
+          False)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{scx:Arabic}', u'\u062A')), True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{scx:Balinese}', u'\u062A')),
+          False)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{scx:Devanagari}', u'\u091C')),
+          True)
+        self.assertEqual(bool(regex.match(ur'(?u)\p{scx:Batak}', u'\u091C')), False)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
