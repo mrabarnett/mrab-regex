@@ -3886,6 +3886,80 @@ thing
           True)
         self.assertEqual(bool(regex.match(ur'(?u)\p{scx:Batak}', u'\u091C')), False)
 
+        # Hg issue 296: Group references are not taken into account when group is reporting the last match
+        self.assertEqual(regex.fullmatch('(?P<x>.)*(?&x)', 'abc').captures('x'),
+          ['a', 'b', 'c'])
+        self.assertEqual(regex.fullmatch('(?P<x>.)*(?&x)', 'abc').group('x'),
+          'b')
+
+        self.assertEqual(regex.fullmatch('(?P<x>.)(?P<x>.)(?P<x>.)',
+          'abc').captures('x'), ['a', 'b', 'c'])
+        self.assertEqual(regex.fullmatch('(?P<x>.)(?P<x>.)(?P<x>.)',
+          'abc').group('x'), 'c')
+
+        # Hg issue #299: Partial gives misleading results with "open ended" regexp
+        self.assertEqual(regex.match('(?:ab)*', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?:ab)*', 'abab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?:ab)*?', '', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?:ab)*+', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?:ab)*+', 'abab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?:ab)+', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?:ab)+', 'abab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?:ab)+?', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?:ab)++', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?:ab)++', 'abab', partial=True).partial,
+          False)
+
+        self.assertEqual(regex.match('(?r)(?:ab)*', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?r)(?:ab)*', 'abab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?r)(?:ab)*?', '', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?r)(?:ab)*+', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?r)(?:ab)*+', 'abab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?r)(?:ab)+', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?r)(?:ab)+', 'abab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?r)(?:ab)+?', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?r)(?:ab)++', 'ab', partial=True).partial,
+          False)
+        self.assertEqual(regex.match('(?r)(?:ab)++', 'abab', partial=True).partial,
+          False)
+
+        self.assertEqual(regex.match('a*', '', partial=True).partial, False)
+        self.assertEqual(regex.match('a*?', '', partial=True).partial, False)
+        self.assertEqual(regex.match('a*+', '', partial=True).partial, False)
+        self.assertEqual(regex.match('a+', '', partial=True).partial, True)
+        self.assertEqual(regex.match('a+?', '', partial=True).partial, True)
+        self.assertEqual(regex.match('a++', '', partial=True).partial, True)
+        self.assertEqual(regex.match('a+', 'a', partial=True).partial, False)
+        self.assertEqual(regex.match('a+?', 'a', partial=True).partial, False)
+        self.assertEqual(regex.match('a++', 'a', partial=True).partial, False)
+
+        self.assertEqual(regex.match('(?r)a*', '', partial=True).partial, False)
+        self.assertEqual(regex.match('(?r)a*?', '', partial=True).partial, False)
+        self.assertEqual(regex.match('(?r)a*+', '', partial=True).partial, False)
+        self.assertEqual(regex.match('(?r)a+', '', partial=True).partial, True)
+        self.assertEqual(regex.match('(?r)a+?', '', partial=True).partial, True)
+        self.assertEqual(regex.match('(?r)a++', '', partial=True).partial, True)
+        self.assertEqual(regex.match('(?r)a+', 'a', partial=True).partial, False)
+        self.assertEqual(regex.match('(?r)a+?', 'a', partial=True).partial, False)
+        self.assertEqual(regex.match('(?r)a++', 'a', partial=True).partial, False)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

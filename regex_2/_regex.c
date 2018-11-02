@@ -11683,6 +11683,12 @@ Py_LOCAL_INLINE(BOOL) check_posix_match(RE_SafeState* safe_state) {
     return TRUE;
 }
 
+/* Checks whether the current position is at the end of the text. */
+Py_LOCAL_INLINE(int) at_end(RE_State* state) {
+    return state->reverse ? state->text_pos == state->slice_start :
+      state->text_pos == state->slice_end;
+}
+
 /* Performs a depth-first match or search from the context. */
 Py_LOCAL_INLINE(int) basic_match(RE_SafeState* safe_state, BOOL search) {
     RE_State* state;
@@ -12421,8 +12427,13 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
-                if (body_status < 0)
-                    return body_status;
+                if (body_status < 0) {
+                    if (body_status == RE_ERROR_PARTIAL && rp_data->count >=
+                      node->values[1] && at_end(state))
+                        body_status = RE_ERROR_FAILURE;
+                    else
+                        return body_status;
+                }
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -12595,8 +12606,13 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
-                if (body_status < 0)
-                    return body_status;
+                if (body_status < 0) {
+                    if (body_status == RE_ERROR_PARTIAL && rp_data->count >=
+                      node->values[1] && at_end(state))
+                        body_status = RE_ERROR_FAILURE;
+                    else
+                        return body_status;
+                }
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -12966,8 +12982,13 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
-                if (body_status < 0)
-                    return body_status;
+                if (body_status < 0) {
+                    if (body_status == RE_ERROR_PARTIAL && rp_data->count >=
+                      node->values[1] && at_end(state))
+                        body_status = RE_ERROR_FAILURE;
+                    else
+                        return body_status;
+                }
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -13045,7 +13066,7 @@ advance:
              */
             count = count_one(state, node->nonstring.next_2.node,
               state->text_pos, node->values[2], &is_partial);
-            if (is_partial) {
+            if (is_partial && count < node->values[1]) {
                 state->text_pos += (Py_ssize_t)count * node->step;
                 return RE_ERROR_PARTIAL;
             }
@@ -13261,8 +13282,13 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
-                if (body_status < 0)
-                    return body_status;
+                if (body_status < 0) {
+                    if (body_status == RE_ERROR_PARTIAL && rp_data->count >=
+                      node->values[1] && at_end(state))
+                        body_status = RE_ERROR_FAILURE;
+                    else
+                        return body_status;
+                }
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -13343,7 +13369,7 @@ advance:
              */
             count = count_one(state, node->nonstring.next_2.node,
               state->text_pos, node->values[1], &is_partial);
-            if (is_partial) {
+            if (is_partial && count < node->values[1]) {
                 state->text_pos += (Py_ssize_t)count * node->step;
                 return RE_ERROR_PARTIAL;
             }

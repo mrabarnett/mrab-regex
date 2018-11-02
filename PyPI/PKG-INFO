@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2018.08.29
+Version: 2018.11.02
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -978,11 +978,8 @@ Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: Python Software Foundation License
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python :: 2
-Classifier: Programming Language :: Python :: 2.6
 Classifier: Programming Language :: Python :: 2.7
 Classifier: Programming Language :: Python :: 3
-Classifier: Programming Language :: Python :: 3.3
-Classifier: Programming Language :: Python :: 3.4
 Classifier: Programming Language :: Python :: 3.5
 Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
