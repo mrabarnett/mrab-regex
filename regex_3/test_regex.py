@@ -4133,6 +4133,9 @@ thing
         self.assertEqual(regex.match('(?r)a+?', 'a', partial=True).partial, False)
         self.assertEqual(regex.match('(?r)a++', 'a', partial=True).partial, False)
 
+        self.assertEqual(regex.match(r"(?:\s*\w+'*)+", 'whatever', partial=True).partial,
+          False)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

@@ -403,7 +403,7 @@ typedef struct RE_SavedGroups {
     size_t* counts;
 } RE_SavedGroups;
 
-/* Storage for info around a recursive by 'basic'match'. */
+/* Storage for info around a recursive by 'basic_match'. */
 typedef struct RE_Info {
     RE_BacktrackBlock* current_backtrack_block;
     size_t backtrack_count;
@@ -12606,13 +12606,8 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
-                if (body_status < 0) {
-                    if (body_status == RE_ERROR_PARTIAL && rp_data->count >=
-                      node->values[1] && at_end(state))
-                        body_status = RE_ERROR_FAILURE;
-                    else
-                        return body_status;
-                }
+                if (body_status < 0)
+                    return body_status;
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -12982,13 +12977,8 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
-                if (body_status < 0) {
-                    if (body_status == RE_ERROR_PARTIAL && rp_data->count >=
-                      node->values[1] && at_end(state))
-                        body_status = RE_ERROR_FAILURE;
-                    else
-                        return body_status;
-                }
+                if (body_status < 0)
+                    return body_status;
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -13066,7 +13056,7 @@ advance:
              */
             count = count_one(state, node->nonstring.next_2.node,
               state->text_pos, node->values[2], &is_partial);
-            if (is_partial && count < node->values[1]) {
+            if (is_partial) {
                 state->text_pos += (Py_ssize_t)count * node->step;
                 return RE_ERROR_PARTIAL;
             }
@@ -13282,13 +13272,8 @@ advance:
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
-                if (body_status < 0) {
-                    if (body_status == RE_ERROR_PARTIAL && rp_data->count >=
-                      node->values[1] && at_end(state))
-                        body_status = RE_ERROR_FAILURE;
-                    else
-                        return body_status;
-                }
+                if (body_status < 0)
+                    return body_status;
 
                 if (body_status == RE_ERROR_FAILURE)
                     try_body = FALSE;
@@ -13369,7 +13354,7 @@ advance:
              */
             count = count_one(state, node->nonstring.next_2.node,
               state->text_pos, node->values[1], &is_partial);
-            if (is_partial && count < node->values[1]) {
+            if (is_partial) {
                 state->text_pos += (Py_ssize_t)count * node->step;
                 return RE_ERROR_PARTIAL;
             }
@@ -17372,6 +17357,24 @@ Py_LOCAL_INLINE(int) do_exact_match(RE_SafeState* safe_state, BOOL search) {
     return status;
 }
 
+/* Performs the requested kind (i.e. fuzziness) of match. */
+Py_LOCAL_INLINE(int) do_match_2(RE_SafeState* safe_state, BOOL search) {
+    PatternObject* pattern;
+
+    pattern = safe_state->re_state->pattern;
+
+    if (! pattern->is_fuzzy)
+        return do_exact_match(safe_state, search);
+
+    if (pattern->flags & RE_FLAG_BESTMATCH)
+        return do_best_fuzzy_match(safe_state, search);
+
+    if (pattern->flags & RE_FLAG_ENHANCEMATCH)
+        return do_enhanced_fuzzy_match(safe_state, search);
+
+    return do_simple_fuzzy_match(safe_state, search);
+}
+
 /* Performs a match or search from the current text position.
  *
  * The state can sometimes be shared across threads. In such instances there's
@@ -17398,15 +17401,31 @@ Py_LOCAL_INLINE(int) do_match(RE_SafeState* safe_state, BOOL search) {
     /* Release the GIL. */
     release_GIL(safe_state);
 
-    if (pattern->is_fuzzy) {
-        if (pattern->flags & RE_FLAG_BESTMATCH)
-            status = do_best_fuzzy_match(safe_state, search);
-        else if (pattern->flags & RE_FLAG_ENHANCEMATCH)
-            status = do_enhanced_fuzzy_match(safe_state, search);
-        else
-            status = do_simple_fuzzy_match(safe_state, search);
-    } else
-        status = do_exact_match(safe_state, search);
+    /* Perform a normal match, but fall back to a partial match if requested.
+     */
+    if (safe_state->re_state->partial_side == RE_PARTIAL_NONE)
+        /* Normal match. */
+        status = do_match_2(safe_state, search);
+    else {
+        int partial_side;
+        Py_ssize_t text_pos;
+
+        partial_side = safe_state->re_state->partial_side;
+        text_pos = safe_state->re_state->text_pos;
+
+        /* Try a normal match first. */
+        safe_state->re_state->partial_side = RE_PARTIAL_NONE;
+
+        status = do_match_2(safe_state, search);
+
+        safe_state->re_state->partial_side = partial_side;
+
+        if (status == RE_ERROR_FAILURE) {
+            /* Fall back to the partial match as originally requested. */
+            safe_state->re_state->text_pos = text_pos;
+            status = do_match_2(safe_state, search);
+        }
+    }
 
     if (status == RE_ERROR_SUCCESS || status == RE_ERROR_PARTIAL) {
         Py_ssize_t max_end_index;
