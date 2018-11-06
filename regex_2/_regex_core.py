@@ -1582,14 +1582,8 @@ def numeric_to_rational(numeric):
     return result
 
 upper_trans = string.maketrans(string.ascii_lowercase, string.ascii_uppercase)
-
 def ascii_upper(s):
-    "Uppercases a bytestring in a locale-insensitive way within the ASCII range."
-    if isinstance(s, str):
-        return s.translate(upper_trans)
-
-    return s.upper()
-
+    return s.translate(upper_trans)
 
 def standardise_name(name):
     "Standardises a property or value name."
@@ -2723,7 +2717,7 @@ class Fuzzy(RegexBase):
 
     def __eq__(self, other):
         return (type(self) is type(other) and self.subpattern ==
-          other.subpattern)
+          other.subpattern and self.constraints == other.constraints)
 
     def max_width(self):
         return UNLIMITED

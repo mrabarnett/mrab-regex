@@ -2821,6 +2821,10 @@ xyzabc
         self.assertEqual(regex.search(r"(?e)(GTTTTCATTCCTCATA){i<=4,d<=4,s<=4,i+d+s<=8}",
           "ATTATTTATTTTTCATA").fuzzy_changes, ([0, 6, 10, 11], [3], []))
 
+        # Fuzzy constraints ignored when checking for prefix/suffix in branches
+        self.assertEqual(bool(regex.match('(?:fo){e<=1}|(?:fo){e<=2}', 'FO')),
+          True)
+
     def test_recursive(self):
         self.assertEqual(regex.search(r"(\w)(?:(?R)|(\w?))\1", "xx")[ : ],
           ("xx", "x", ""))
@@ -4070,7 +4074,7 @@ thing
         self.assertEqual(regex.fullmatch('(?P<x>.)(?P<x>.)(?P<x>.)',
           'abc').group('x'), 'c')
 
-        # Hg issue #299: Partial gives misleading results with "open ended" regexp
+        # Hg issue 299: Partial gives misleading results with "open ended" regexp
         self.assertEqual(regex.match('(?:ab)*', 'ab', partial=True).partial,
           False)
         self.assertEqual(regex.match('(?:ab)*', 'abab', partial=True).partial,
@@ -4135,6 +4139,42 @@ thing
 
         self.assertEqual(regex.match(r"(?:\s*\w+'*)+", 'whatever', partial=True).partial,
           False)
+
+        # Hg issue 300: segmentation fault
+        pattern = ('(?P<termini5>GGCGTCACACTTTGCTATGCCATAGCAT[AG]TTTATCCATAAGA'
+          'TTAGCGGATCCTACCTGACGCTTTTTATCGCAACTCTCTACTGTTTCTCCATAACAGAACATATTGA'
+          'CTATCCGGTATTACCCGGCATGACAGGAGTAAAA){e<=1}'
+          '(?P<gene>[ACGT]{1059}){e<=2}'
+          '(?P<spacer>TAATCGTCTTGTTTGATACACAAGGGTCGCATCTGCGGCCCTTTTGCTTTTTTAAG'
+          'TTGTAAGGATATGCCATTCTAGA){e<=0}'
+          '(?P<barcode>[ACGT]{18}){e<=0}'
+          '(?P<termini3>AGATCGG[CT]AGAGCGTCGTGTAGGGAAAGAGTGTGG){e<=1}')
+
+        text = ('GCACGGCGTCACACTTTGCTATGCCATAGCATATTTATCCATAAGATTAGCGGATCCTACC'
+          'TGACGCTTTTTATCGCAACTCTCTACTGTTTCTCCATAACAGAACATATTGACTATCCGGTATTACC'
+          'CGGCATGACAGGAGTAAAAATGGCTATCGACGAAAACAAACAGAAAGCGTTGGCGGCAGCACTGGGC'
+          'CAGATTGAGAAACAATTTGGTAAAGGCTCCATCATGCGCCTGGGTGAAGACCGTTCCATGGATGTGG'
+          'AAACCATCTCTACCGGTTCGCTTTCACTGGATATCGCGCTTGGGGCAGGTGGTCTGCCGATGGGCCG'
+          'TATCGTCGAAATCTACGGACCGGAATCTTCCGGTAAAACCACGCTGACGCTGCAGGTGATCGCCGCA'
+          'GCGCAGCGTGAAGGTAAAACCTGTGCGTTTATCGATGCTGAACACGCGCTGGACCCAATCTACGCAC'
+          'GTAAACTGGGCGTCGATATCGACAACCTGCTGTGCTCCCAGCCGGACACCGGCGAGCAGGCACTGGA'
+          'AATCTGTGACGCCCTGGCGCGTTCTGGCGCAGTAGACGTTATCGTCGTTGACTCCGTGGCGGCACTG'
+          'ACGCCGAAAGCGGAAATCGAAGGCGAAATCGGCGACTCTCATATGGGCCTTGCGGCACGTATGATGA'
+          'GCCAGGCGATGCGTAAGCTGGCGGGTAACCTGAAGCAGTCCAACACGCTGCTGATCTTCATCAACCC'
+          'CATCCGTATGAAAATTGGTGTGATGTTCGGCAACCCGGAAACCACTTACCGGTGGTAACGCGCTGAA'
+          'ATTCTACGCCTCTGTTCGTCTCGACATCCGTTAAATCGGCGCGGTGAAAGAGGGCGAAAACGTGGTG'
+          'GGTAGCGAAACCCGCGTGAAAGTGGTGAAGAACAAAATCGCTGCGCCGTTTAAACAGGCTGAATTCC'
+          'AGATCCTCTACGGCGAAGGTATCAACTTCTACCCCGAACTGGTTGACCTGGGCGTAAAAGAGAAGCT'
+          'GATCGAGAAAGCAGGCGCGTGGTACAGCTACAAAGGTGAGAAGATCGGTCAGGGTAAAGCGAATGCG'
+          'ACTGCCTGGCTGAAATTTAACCCGGAAACCGCGAAAGAGATCGAGTGAAAAGTACGTGAGTTGCTGC'
+          'TGAGCAACCCGAACTCAACGCCGGATTTCTCTGTAGATGATAGCGAAGGCGTAGCAGAAACTAACGA'
+          'AGATTTTTAATCGTCTTGTTTGATACACAAGGGTCGCATCTGCGGCCCTTTTGCTTTTTTAAGTTGT'
+          'AAGGATATGCCATTCTAGACAGTTAACACACCAACAAAGATCGGTAGAGCGTCGTGTAGGGAAAGAG'
+          'TGTGGTACC')
+
+        m = regex.search(pattern, text, flags=regex.BESTMATCH)
+        self.assertEqual(m.fuzzy_counts, (0, 1, 0))
+        self.assertEqual(m.fuzzy_changes, ([], [1206], []))
 
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',

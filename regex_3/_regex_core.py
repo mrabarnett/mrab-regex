@@ -2703,7 +2703,7 @@ class Fuzzy(RegexBase):
 
     def __eq__(self, other):
         return (type(self) is type(other) and self.subpattern ==
-          other.subpattern)
+          other.subpattern and self.constraints == other.constraints)
 
     def max_width(self):
         return UNLIMITED

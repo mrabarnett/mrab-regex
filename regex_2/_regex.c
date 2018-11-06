@@ -10097,6 +10097,14 @@ Py_LOCAL_INLINE(void) unrecord_fuzzy(RE_SafeState* safe_state) {
 }
 
 /* Makes a list of lists of fuzzy changes. */
+Py_LOCAL_INLINE(void) make_fuzzy_changes_list(RE_FuzzyChangesList*
+  changes_list) {
+    changes_list->capacity = 0;
+    changes_list->count = 0;
+    changes_list->items = NULL;
+}
+
+/* Makes a list of lists of fuzzy changes. */
 Py_LOCAL_INLINE(void) make_best_changes_list(RE_BestChangesList*
   best_changes_list) {
     best_changes_list->capacity = 0;
@@ -10517,6 +10525,9 @@ Py_LOCAL_INLINE(int) retry_fuzzy_insert(RE_SafeState* safe_state, Py_ssize_t*
     fuzzy_info->total_cost += values[RE_FUZZY_VAL_INS_COST];
     ++state->total_errors;
     ++state->capture_change;
+
+    if (!record_fuzzy(safe_state, RE_FUZZY_INS, new_text_pos))
+        return RE_ERROR_FAILURE;
 
     /* Check whether there are too few errors. */
     state->too_few_errors = bt_data->fuzzy_insert.too_few_errors;
@@ -16782,14 +16793,14 @@ Py_LOCAL_INLINE(void) discard_groups(RE_SafeState* safe_state, RE_GroupData*
     release_GIL(safe_state);
 }
 
-/* Saves the fuzzy info. */
+/* Saves the fuzzy counts. */
 Py_LOCAL_INLINE(void) save_fuzzy_counts(RE_State* state, size_t* fuzzy_counts)
   {
     Py_MEMCPY(fuzzy_counts, state->total_fuzzy_counts,
       sizeof(state->total_fuzzy_counts));
 }
 
-/* Restores the fuzzy info. */
+/* Restores the fuzzy counts. */
 Py_LOCAL_INLINE(void) restore_fuzzy_counts(RE_State* state, size_t*
   fuzzy_counts) {
     Py_MEMCPY(state->total_fuzzy_counts, fuzzy_counts,
@@ -16956,6 +16967,7 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
             Py_ssize_t slice_end;
             size_t error_limit;
             size_t best_fuzzy_counts[RE_FUZZY_COUNT];
+            RE_FuzzyChangesList best_fuzzy_changes;
             RE_GroupData* best_groups;
             Py_ssize_t best_match_pos = 0;
             Py_ssize_t best_text_pos;
@@ -16969,6 +16981,7 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
                 error_limit = RE_MAX_ERRORS;
 
             best_groups = NULL;
+            make_fuzzy_changes_list(&best_fuzzy_changes);
 
             /* Look again at the best of the matches that we've seen. */
             for (i = 0; i < best_list.count; i++) {
@@ -17018,6 +17031,9 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
 
                             if (better) {
                                 save_fuzzy_counts(state, best_fuzzy_counts);
+                                if (!save_fuzzy_changes(safe_state,
+                                  &best_fuzzy_changes))
+                                    goto error;
 
                                 best_groups = save_groups(safe_state,
                                   best_groups);
@@ -17050,6 +17066,7 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_SafeState* safe_state, BOOL search)
 
                 restore_groups(safe_state, best_groups);
                 restore_fuzzy_counts(state, best_fuzzy_counts);
+                restore_fuzzy_changes(safe_state, &best_fuzzy_changes);
             } else {
                 /* None of the "best" matches could be improved on, so pick the
                  * first.
@@ -17125,14 +17142,14 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
     Py_ssize_t slice_end;
     int status;
     size_t best_fuzzy_counts[RE_FUZZY_COUNT];
+    RE_FuzzyChangesList best_fuzzy_changes;
     Py_ssize_t best_text_pos = 0; /* Initialise to stop compiler warning. */
-    RE_FuzzyChangesList best_changes_list;
     TRACE(("<<do_enhanced_fuzzy_match>>\n"))
 
     state = safe_state->re_state;
     pattern = state->pattern;
 
-    make_changes_list(safe_state, &best_changes_list);
+    make_changes_list(safe_state, &best_fuzzy_changes);
 
     if (state->reverse)
         available = state->text_pos - state->slice_start;
@@ -17192,7 +17209,7 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
                 state->max_errors = fewest_errors;
 
                 save_fuzzy_counts(state, best_fuzzy_counts);
-                if (!save_fuzzy_changes(safe_state, &best_changes_list))
+                if (!save_fuzzy_changes(safe_state, &best_fuzzy_changes))
                     goto error;
 
                 same_match = state->match_pos == best_match_pos &&
@@ -17264,15 +17281,15 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_SafeState* safe_state, BOOL
             restore_fuzzy_counts(state, best_fuzzy_counts);
         }
 
-        restore_fuzzy_changes(safe_state, &best_changes_list);
+        restore_fuzzy_changes(safe_state, &best_fuzzy_changes);
     }
 
-    destroy_changes_list(safe_state, &best_changes_list);
+    destroy_changes_list(safe_state, &best_fuzzy_changes);
 
     return status;
 
 error:
-    destroy_changes_list(safe_state, &best_changes_list);
+    destroy_changes_list(safe_state, &best_fuzzy_changes);
     return RE_ERROR_MEMORY;
 }
 
