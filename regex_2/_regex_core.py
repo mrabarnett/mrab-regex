@@ -1583,7 +1583,11 @@ def numeric_to_rational(numeric):
 
 upper_trans = string.maketrans(string.ascii_lowercase, string.ascii_uppercase)
 def ascii_upper(s):
-    return s.translate(upper_trans)
+    "Uppercases a bytestring in a locale-insensitive way within the ASCII range."
+    if isinstance(s, str):
+        return s.translate(upper_trans)
+
+    return s.upper()
 
 def standardise_name(name):
     "Standardises a property or value name."
