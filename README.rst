@@ -67,6 +67,8 @@ For example, the pattern ``[[a-z]--[aeiou]]`` is treated in the version 0 behavi
 
 * Set containing letters "a", "e", "i", "o", "u"
 
+* Literal "]"
+
 but in the version 1 behaviour (nested sets, enhanced behaviour) as:
 
 * Set which is:
