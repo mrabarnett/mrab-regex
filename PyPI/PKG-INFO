@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2018.11.07
+Version: 2018.11.22
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -74,6 +74,8 @@ Description: Introduction
         * Literal "--"
         
         * Set containing letters "a", "e", "i", "o", "u"
+        
+        * Literal "]"
         
         but in the version 1 behaviour (nested sets, enhanced behaviour) as:
         

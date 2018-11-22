@@ -15294,6 +15294,11 @@ backtrack:
             pos = state->text_pos + (Py_ssize_t)count * step;
             limit = state->text_pos + (Py_ssize_t)node->values[1] * step;
 
+            /* The tail failed to match at this position. */
+            if (!guard_repeat(safe_state, bt_data->repeat.index, pos,
+              RE_STATUS_TAIL, TRUE))
+                return RE_ERROR_MEMORY;
+
             /* A (*SKIP) might have changed the size of the slice. */
             if (step > 0) {
                 if (limit < state->slice_start)
@@ -23271,7 +23276,7 @@ Py_LOCAL_INLINE(int) build_FUZZY(RE_CompileArgs* args) {
     RE_CompileArgs subargs;
     int status;
 
-    /* codes: opcode, flags, constraints, sequence, end. */
+    /* codes: opcode, flags, constraints, ..., end. */
     if (args->code + 13 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
@@ -23344,7 +23349,7 @@ Py_LOCAL_INLINE(int) build_ATOMIC(RE_CompileArgs* args) {
     int status;
     RE_Node* end_node;
 
-    /* codes: opcode, sequence, end. */
+    /* codes: opcode, ..., end. */
     if (args->code + 1 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
@@ -23430,7 +23435,7 @@ Py_LOCAL_INLINE(int) build_BRANCH(RE_CompileArgs* args) {
     RE_CompileArgs subargs;
     int status;
 
-    /* codes: opcode, branch, next, branch, end. */
+    /* codes: opcode, ..., next, ..., end. */
     if (args->code + 2 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
@@ -23602,9 +23607,7 @@ Py_LOCAL_INLINE(int) build_CONDITIONAL(RE_CompileArgs* args) {
     RE_Node* end_node;
     Py_ssize_t min_width;
 
-    /* codes: opcode, flags, forward, sequence, next, sequence, next, sequence,
-     * end.
-     */
+    /* codes: opcode, flags, forward, ..., next, ..., next, ..., end. */
     if (args->code + 4 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
@@ -23734,7 +23737,7 @@ Py_LOCAL_INLINE(int) build_GROUP(RE_CompileArgs* args) {
     RE_CompileArgs subargs;
     int status;
 
-    /* codes: opcode, forward, private_group, public_group. */
+    /* codes: opcode, forward, private_group, public_group, ..., end. */
     if (args->code + 3 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
@@ -23844,7 +23847,7 @@ Py_LOCAL_INLINE(int) build_GROUP_EXISTS(RE_CompileArgs* args) {
     int status;
     Py_ssize_t min_width;
 
-    /* codes: opcode, sequence, next, sequence, end. */
+    /* codes: opcode, ..., next, ..., end. */
     if (args->code + 2 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
@@ -23952,7 +23955,7 @@ Py_LOCAL_INLINE(int) build_LOOKAROUND(RE_CompileArgs* args) {
     RE_Node* end_node;
     RE_Node* next_node;
 
-    /* codes: opcode, flags, forward, sequence, end. */
+    /* codes: opcode, flags, forward, ..., end. */
     if (args->code + 3 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
@@ -24087,6 +24090,177 @@ Py_LOCAL_INLINE(int) build_REF_GROUP(RE_CompileArgs* args) {
     return RE_ERROR_SUCCESS;
 }
 
+Py_LOCAL_INLINE(BOOL) section_contains_repeat(RE_CODE** code, RE_CODE*
+  end_code);
+
+/* Checks whether a subsection of code contains a repeat. */
+Py_LOCAL_INLINE(BOOL) subsection_contains_repeat(int initial, RE_CODE** code,
+  RE_CODE* end_code) {
+    /* codes: code*initial, ..., (next, ..., )* end. */
+    *code += initial;
+
+    if (*code >= end_code)
+        return FALSE;
+
+    if (section_contains_repeat(code, end_code))
+        return TRUE;
+
+    while (*code < end_code && **code == RE_OP_NEXT) {
+        ++(*code);
+
+        if (*code >= end_code)
+            return FALSE;
+
+        if (section_contains_repeat(code, end_code))
+            return TRUE;
+    }
+
+    if (*code >= end_code)
+        return FALSE;
+
+    ++(*code);
+
+    return FALSE;
+}
+
+/* Checks whether a section of code contains a repeat. */
+Py_LOCAL_INLINE(BOOL) section_contains_repeat(RE_CODE** code, RE_CODE*
+  end_code) {
+    while (*code < end_code) {
+        /* The following code groups opcodes by format, not function. */
+        switch ((*code)[0]) {
+        case RE_OP_ANY:
+        case RE_OP_ANY_ALL:
+        case RE_OP_ANY_ALL_REV:
+        case RE_OP_ANY_REV:
+        case RE_OP_ANY_U:
+        case RE_OP_ANY_U_REV:
+        case RE_OP_FAILURE:
+        case RE_OP_PRUNE:
+        case RE_OP_SUCCESS:
+            /* codes: opcode. */
+            ++(*code);
+            break;
+        case RE_OP_ATOMIC:
+        case RE_OP_BRANCH:
+        case RE_OP_GROUP_EXISTS:
+            /* codes: opcode, ..., (next, ..., )* end. */
+            if (subsection_contains_repeat(1, code, end_code))
+                return TRUE;
+            break;
+        case RE_OP_BOUNDARY:
+        case RE_OP_CALL_REF:
+        case RE_OP_DEFAULT_BOUNDARY:
+        case RE_OP_DEFAULT_END_OF_WORD:
+        case RE_OP_DEFAULT_START_OF_WORD:
+        case RE_OP_END_OF_LINE:
+        case RE_OP_END_OF_LINE_U:
+        case RE_OP_END_OF_STRING:
+        case RE_OP_END_OF_STRING_LINE:
+        case RE_OP_END_OF_STRING_LINE_U:
+        case RE_OP_END_OF_WORD:
+        case RE_OP_GRAPHEME_BOUNDARY:
+        case RE_OP_GROUP_CALL:
+        case RE_OP_KEEP:
+        case RE_OP_SEARCH_ANCHOR:
+        case RE_OP_SKIP:
+        case RE_OP_START_OF_LINE:
+        case RE_OP_START_OF_LINE_U:
+        case RE_OP_START_OF_STRING:
+        case RE_OP_START_OF_WORD:
+            /* codes: opcode, value. */
+            *code += 2;
+            break;
+        case RE_OP_CHARACTER:
+        case RE_OP_CHARACTER_IGN:
+        case RE_OP_CHARACTER_IGN_REV:
+        case RE_OP_CHARACTER_REV:
+        case RE_OP_PROPERTY:
+        case RE_OP_PROPERTY_IGN:
+        case RE_OP_PROPERTY_IGN_REV:
+        case RE_OP_PROPERTY_REV:
+        case RE_OP_REF_GROUP:
+        case RE_OP_REF_GROUP_FLD:
+        case RE_OP_REF_GROUP_FLD_REV:
+        case RE_OP_REF_GROUP_IGN:
+        case RE_OP_REF_GROUP_IGN_REV:
+        case RE_OP_REF_GROUP_REV:
+            /* codes: opcode, value, value. */
+            *code += 3;
+            break;
+        case RE_OP_CONDITIONAL:
+        case RE_OP_FUZZY:
+        case RE_OP_LOOKAROUND:
+            /* codes: opcode, value, value, ..., (next, ..., )* end. */
+            if (subsection_contains_repeat(3, code, end_code))
+                return TRUE;
+            break;
+        case RE_OP_GREEDY_REPEAT:
+        case RE_OP_LAZY_REPEAT:
+            return TRUE;
+        case RE_OP_GROUP:
+            /* codes: opcode, value, value, value, ..., (next, ..., )* end. */
+            if (subsection_contains_repeat(4, code, end_code))
+                return TRUE;
+            break;
+        case RE_OP_RANGE:
+        case RE_OP_RANGE_IGN:
+        case RE_OP_RANGE_IGN_REV:
+        case RE_OP_RANGE_REV:
+        case RE_OP_STRING_SET:
+        case RE_OP_STRING_SET_FLD:
+        case RE_OP_STRING_SET_FLD_REV:
+        case RE_OP_STRING_SET_IGN:
+        case RE_OP_STRING_SET_IGN_REV:
+        case RE_OP_STRING_SET_REV:
+            /* codes: opcode, value, value, value. */
+            *code += 4;
+            break;
+        case RE_OP_SET_DIFF:
+        case RE_OP_SET_DIFF_IGN:
+        case RE_OP_SET_DIFF_IGN_REV:
+        case RE_OP_SET_DIFF_REV:
+        case RE_OP_SET_INTER:
+        case RE_OP_SET_INTER_IGN:
+        case RE_OP_SET_INTER_IGN_REV:
+        case RE_OP_SET_INTER_REV:
+        case RE_OP_SET_SYM_DIFF:
+        case RE_OP_SET_SYM_DIFF_IGN:
+        case RE_OP_SET_SYM_DIFF_IGN_REV:
+        case RE_OP_SET_SYM_DIFF_REV:
+        case RE_OP_SET_UNION:
+        case RE_OP_SET_UNION_IGN:
+        case RE_OP_SET_UNION_IGN_REV:
+        case RE_OP_SET_UNION_REV:
+            /* codes: opcode, value, ..., (next, ..., )* end. */
+            if (subsection_contains_repeat(2, code, end_code))
+                return TRUE;
+            break;
+        case RE_OP_STRING:
+        case RE_OP_STRING_FLD:
+        case RE_OP_STRING_FLD_REV:
+        case RE_OP_STRING_IGN:
+        case RE_OP_STRING_IGN_REV:
+        case RE_OP_STRING_REV:
+            /* codes: opcode, value, length, .... */
+            *code += 3 + (*code)[2];
+            break;
+        default:
+            /* We've found an opcode which we don't recognise. We'll leave it
+             * for the caller.
+             */
+            return FALSE;
+        }
+    }
+
+    return FALSE;
+}
+
+/* Checks whether a section of code contains a repeat. */
+Py_LOCAL_INLINE(BOOL) contains_repeat(RE_CODE* code, RE_CODE* end_code) {
+    return section_contains_repeat(&code, end_code);
+}
+
 /* Builds a REPEAT node. */
 Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
     BOOL greedy;
@@ -24094,7 +24268,7 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
     RE_CODE max_count;
     int status;
 
-    /* codes: opcode, min_count, max_count, sequence, end. */
+    /* codes: opcode, min_count, max_count, ..., end. */
     if (args->code + 3 > args->end_code)
         return RE_ERROR_ILLEGAL;
 
@@ -24132,88 +24306,135 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
         add_node(args->end, subargs.start);
         args->end = subargs.end;
     } else {
+        /* Extract the minimum number of repeats out of a repeat if it contains
+         * a repeat.
+         */
+        BOOL extracted_min;
         size_t index;
         RE_Node* repeat_node;
         RE_CompileArgs subargs;
 
-        index = args->pattern->repeat_count;
+        extracted_min = FALSE;
 
-        /* Create the nodes for the repeat. */
-        repeat_node = create_node(args->pattern, greedy ? RE_OP_GREEDY_REPEAT :
-          RE_OP_LAZY_REPEAT, 0, args->forward ? 1 : -1, 4);
-        if (!repeat_node || !record_repeat(args->pattern, index,
-          args->repeat_depth))
-            return RE_ERROR_MEMORY;
+        if (min_count > 0 && contains_repeat(args->code, args->end_code)) {
+            RE_CODE done_count;
 
-        repeat_node->values[0] = (RE_CODE)index;
-        repeat_node->values[1] = min_count;
-        repeat_node->values[2] = max_count;
-        repeat_node->values[3] = args->forward;
+            for (done_count = 0; done_count < min_count; done_count++) {
+                subargs = *args;
+                subargs.visible_captures = TRUE;
 
-        if (args->within_fuzzy)
-            args->pattern->repeat_info[index].status |= RE_STATUS_BODY;
+                status = build_sequence(&subargs);
+                if (status != RE_ERROR_SUCCESS)
+                    return status;
 
-        /* Compile the 'body' and check that we've reached the end of it. */
-        subargs = *args;
-        subargs.visible_captures = TRUE;
-        ++subargs.repeat_depth;
-        status = build_sequence(&subargs);
-        if (status != RE_ERROR_SUCCESS)
-            return status;
+                if (subargs.code[0] != RE_OP_END)
+                    return RE_ERROR_ILLEGAL;
 
-        if (subargs.code[0] != RE_OP_END)
-            return RE_ERROR_ILLEGAL;
+                args->visible_capture_count = subargs.visible_capture_count;
 
-        args->code = subargs.code;
-        args->min_width += (Py_ssize_t)min_count * subargs.min_width;
-        args->has_captures |= subargs.has_captures;
-        args->is_fuzzy |= subargs.is_fuzzy;
-        args->has_groups |= subargs.has_groups;
-        args->has_repeats = TRUE;
-        args->visible_capture_count = subargs.visible_capture_count;
+                add_node(args->end, subargs.start);
+                args->end = subargs.end;
+            }
 
-        ++args->code;
+            args->min_width += (Py_ssize_t)min_count * subargs.min_width;
+            args->has_captures |= subargs.has_captures;
+            args->is_fuzzy |= subargs.is_fuzzy;
+            args->has_groups |= subargs.has_groups;
+            args->has_repeats |= subargs.has_repeats;
 
-        /* Is it a repeat of something which will match a single character?
-         *
-         * If it's in a fuzzy section then it won't be optimised as a
-         * single-character repeat.
-         */
-        if (sequence_matches_one(subargs.start)) {
-            repeat_node->op = greedy ? RE_OP_GREEDY_REPEAT_ONE :
-              RE_OP_LAZY_REPEAT_ONE;
+            min_count -= done_count;
+            if (~max_count != 0)
+                max_count -= done_count;
+        }
 
-            /* Append the new sequence. */
-            add_node(args->end, repeat_node);
-            repeat_node->nonstring.next_2.node = subargs.start;
-            args->end = repeat_node;
+        /* We've extract the minimum number of repeats. Are there any left? */
+        if (extracted_min && max_count == 0) {
+            /* All done. */
+            args->code = subargs.code;
+            ++args->code;
         } else {
-            RE_Node* end_repeat_node;
-            RE_Node* end_node;
+            /* More to do. */
+            index = args->pattern->repeat_count;
 
-            end_repeat_node = create_node(args->pattern, greedy ?
-              RE_OP_END_GREEDY_REPEAT : RE_OP_END_LAZY_REPEAT, 0, args->forward
-              ? 1 : -1, 4);
-            if (!end_repeat_node)
+            /* Create the nodes for the repeat. */
+            repeat_node = create_node(args->pattern, greedy ?
+              RE_OP_GREEDY_REPEAT : RE_OP_LAZY_REPEAT, 0, args->forward ? 1 :
+              -1, 4);
+            if (!repeat_node || !record_repeat(args->pattern, index,
+              args->repeat_depth))
                 return RE_ERROR_MEMORY;
 
-            end_repeat_node->values[0] = repeat_node->values[0];
-            end_repeat_node->values[1] = repeat_node->values[1];
-            end_repeat_node->values[2] = repeat_node->values[2];
-            end_repeat_node->values[3] = args->forward;
+            repeat_node->values[0] = (RE_CODE)index;
+            repeat_node->values[1] = min_count;
+            repeat_node->values[2] = max_count;
+            repeat_node->values[3] = args->forward;
 
-            end_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
-            if (!end_node)
-                return RE_ERROR_MEMORY;
+            if (args->within_fuzzy)
+                args->pattern->repeat_info[index].status |= RE_STATUS_BODY;
 
-            /* Append the new sequence. */
-            add_node(args->end, repeat_node);
-            add_node(repeat_node, subargs.start);
-            add_node(repeat_node, end_node);
-            add_node(subargs.end, end_repeat_node);
-            add_node(end_repeat_node, subargs.start);
-            add_node(end_repeat_node, end_node);
-            args->end = end_node;
+            /* Compile the 'body' and check that we've reached the end of it.
+             */
+            subargs = *args;
+            subargs.visible_captures = TRUE;
+            ++subargs.repeat_depth;
+            status = build_sequence(&subargs);
+            if (status != RE_ERROR_SUCCESS)
+                return status;
+
+            if (subargs.code[0] != RE_OP_END)
+                return RE_ERROR_ILLEGAL;
+
+            args->code = subargs.code;
+            args->min_width += (Py_ssize_t)min_count * subargs.min_width;
+            args->has_captures |= subargs.has_captures;
+            args->is_fuzzy |= subargs.is_fuzzy;
+            args->has_groups |= subargs.has_groups;
+            args->has_repeats = TRUE;
+            args->visible_capture_count = subargs.visible_capture_count;
+
+            ++args->code;
+
+            /* Is it a repeat of something which will match a single character?
+             *
+             * If it's in a fuzzy section then it won't be optimised as a
+             * single-character repeat.
+             */
+            if (sequence_matches_one(subargs.start)) {
+                repeat_node->op = greedy ? RE_OP_GREEDY_REPEAT_ONE :
+                  RE_OP_LAZY_REPEAT_ONE;
+
+                /* Append the new sequence. */
+                add_node(args->end, repeat_node);
+                repeat_node->nonstring.next_2.node = subargs.start;
+                args->end = repeat_node;
+            } else {
+                RE_Node* end_repeat_node;
+                RE_Node* end_node;
+
+                end_repeat_node = create_node(args->pattern, greedy ?
+                  RE_OP_END_GREEDY_REPEAT : RE_OP_END_LAZY_REPEAT, 0,
+                  args->forward ? 1 : -1, 4);
+                if (!end_repeat_node)
+                    return RE_ERROR_MEMORY;
+
+                end_repeat_node->values[0] = repeat_node->values[0];
+                end_repeat_node->values[1] = repeat_node->values[1];
+                end_repeat_node->values[2] = repeat_node->values[2];
+                end_repeat_node->values[3] = args->forward;
+
+                end_node = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
+                if (!end_node)
+                    return RE_ERROR_MEMORY;
+
+                /* Append the new sequence. */
+                add_node(args->end, repeat_node);
+                add_node(repeat_node, subargs.start);
+                add_node(repeat_node, end_node);
+                add_node(subargs.end, end_repeat_node);
+                add_node(end_repeat_node, subargs.start);
+                add_node(end_repeat_node, end_node);
+                args->end = end_node;
+            }
         }
     }
 
@@ -24229,7 +24450,7 @@ Py_LOCAL_INLINE(int) build_STRING(RE_CompileArgs* args, BOOL is_charset) {
     RE_Node* node;
     size_t i;
 
-    /* codes: opcode, flags, length, characters. */
+    /* codes: opcode, flags, length, .... */
     flags = args->code[1];
     length = args->code[2];
     if (args->code + 3 + length > args->end_code)
@@ -24276,7 +24497,7 @@ Py_LOCAL_INLINE(int) build_SET(RE_CompileArgs* args) {
     Py_ssize_t min_width;
     int status;
 
-    /* codes: opcode, flags, members. */
+    /* codes: opcode, flags, ..., end. */
     op = (RE_UINT8)args->code[0];
     flags = args->code[1];
 
@@ -24387,7 +24608,7 @@ Py_LOCAL_INLINE(int) build_STRING_SET(RE_CompileArgs* args) {
 /* Builds a SUCCESS node . */
 Py_LOCAL_INLINE(int) build_SUCCESS(RE_CompileArgs* args) {
     RE_Node* node;
-    /* code: opcode. */
+    /* codes: opcode. */
 
     /* Create the node. */
     node = create_node(args->pattern, (RE_UINT8)args->code[0], 0, 0, 0);
