@@ -109,18 +109,6 @@ typedef RE_UINT32 RE_STATUS_T;
 #define RE_ERROR_NOT_UNICODE -12 /* Not a Unicode string. */
 #define RE_ERROR_PARTIAL -13 /* Partial match. */
 
-/* The initial maximum capacity of the guard block. */
-#define RE_INIT_GUARDS_BLOCK_SIZE 16
-
-/* The initial maximum capacity of the node list. */
-#define RE_INIT_NODE_LIST_SIZE 16
-
-/* The size increment for various allocation lists. */
-#define RE_LIST_SIZE_INC 16
-
-/* The initial maximum capacity of the capture groups. */
-#define RE_INIT_CAPTURE_SIZE 16
-
 /* Node bitflags. */
 #define RE_POSITIVE_OP 0x1
 #define RE_ZEROWIDTH_OP 0x2
@@ -2121,13 +2109,14 @@ Py_LOCAL_INLINE(BOOL) ByteStack_push(RE_SafeState* safe_state, ByteStack*
 
         new_capacity = stack->capacity;
 
-        if (new_capacity == 0)
-            new_capacity = 64;
-        else if (new_capacity == 64)
-            new_capacity = 1024;
-
-        while (new_count > new_capacity)
-            new_capacity = stack->capacity * 2;
+        do {
+            if (new_capacity == 0)
+                new_capacity = 64;
+            else if (new_capacity == 64)
+                new_capacity = 1024;
+            else
+                new_capacity *= 2;
+        } while (new_count > new_capacity);
 
         new_items = safe_realloc(safe_state, stack->items, new_capacity);
         if (!new_items)
@@ -2169,13 +2158,14 @@ Py_LOCAL_INLINE(BOOL) push_##TYPE_NAME(RE_SafeState* safe_state, ByteStack* stac
 \
         new_capacity = stack->capacity; \
 \
-        if (new_capacity == 0) \
-            new_capacity = 64; \
-        else if (new_capacity == 64) \
-            new_capacity = 1024; \
-\
-        while (new_count > new_capacity) \
-            new_capacity = stack->capacity * 2; \
+        do { \
+            if (new_capacity == 0) \
+                new_capacity = 64; \
+            else if (new_capacity == 64) \
+                new_capacity = 1024; \
+            else \
+                new_capacity *= 2; \
+        } while (new_count > new_capacity); \
 \
         new_items = safe_realloc(safe_state, stack->items, new_capacity); \
         if (!new_items) \
@@ -2207,13 +2197,14 @@ Py_LOCAL_INLINE(BOOL) push_##TYPE_NAME(RE_SafeState* safe_state, ByteStack* stac
 \
         new_capacity = stack->capacity; \
 \
-        if (new_capacity == 0) \
-            new_capacity = 64; \
-        else if (new_capacity == 64) \
-            new_capacity = 1024; \
-\
-        while (new_count > new_capacity) \
-            new_capacity = stack->capacity * 2; \
+        do { \
+            if (new_capacity == 0) \
+                new_capacity = 64; \
+            else if (new_capacity == 64) \
+                new_capacity = 1024; \
+            else \
+                new_capacity *= 2; \
+        } while (new_count > new_capacity); \
 \
         new_items = safe_realloc(safe_state, stack->items, new_capacity); \
         if (!new_items) \
@@ -8776,7 +8767,10 @@ Py_LOCAL_INLINE(BOOL) save_capture(RE_SafeState* safe_state, size_t
         RE_GroupSpan* new_captures;
 
         new_capacity = group->capacity * 2;
-        new_capacity = max_size_t(new_capacity, RE_INIT_CAPTURE_SIZE);
+
+        if (new_capacity == 0)
+            new_capacity = 16;
+
         new_captures = (RE_GroupSpan*)safe_realloc(safe_state, group->captures,
           new_capacity * sizeof(RE_GroupSpan));
         if (!new_captures)
@@ -8817,8 +8811,10 @@ Py_LOCAL_INLINE(BOOL) insert_guard_span(RE_SafeState* safe_state, RE_GuardList*
         RE_GuardSpan* new_spans;
 
         new_capacity = guard_list->capacity * 2;
+
         if (new_capacity == 0)
-            new_capacity = RE_INIT_GUARDS_BLOCK_SIZE;
+            new_capacity = 16;
+
         new_spans = (RE_GuardSpan*)safe_realloc(safe_state, guard_list->spans,
           new_capacity * sizeof(RE_GuardSpan));
         if (!new_spans)
@@ -9994,18 +9990,21 @@ Py_LOCAL_INLINE(BOOL) record_fuzzy(RE_SafeState* safe_state, RE_UINT8
     change_list = &safe_state->re_state->fuzzy_changes;
 
     if (change_list->count >= change_list->capacity) {
+        size_t new_capacity;
         RE_FuzzyChange* new_items;
 
-        change_list->capacity = change_list->capacity == 0 ? 64 :
-          change_list->capacity * 2;
+        new_capacity = change_list->capacity * 2;
+
+        if (new_capacity == 0)
+            new_capacity = 64;
 
         new_items = (RE_FuzzyChange*)safe_realloc(safe_state,
-          change_list->items, (size_t)change_list->capacity *
-          sizeof(RE_FuzzyChange));
+          change_list->items, new_capacity * sizeof(RE_FuzzyChange));
         if (!new_items)
             return FALSE;
 
         change_list->items = new_items;
+        change_list->capacity = new_capacity;
     }
 
     change = &change_list->items[change_list->count++];
@@ -10072,18 +10071,22 @@ Py_LOCAL_INLINE(BOOL) add_best_fuzzy_changes(RE_SafeState* safe_state,
     state = safe_state->re_state;
 
     if (best_changes_list->count >= best_changes_list->capacity) {
+        size_t new_capacity;
         RE_FuzzyChangesList* new_lists;
 
-        best_changes_list->capacity = best_changes_list->capacity == 0 ? 64 :
-          best_changes_list->capacity * 2;
+        new_capacity = best_changes_list->capacity * 2;
+
+        if (new_capacity == 0)
+            new_capacity = 64;
 
         new_lists = (RE_FuzzyChangesList*)safe_realloc(safe_state,
-          best_changes_list->lists, (size_t)best_changes_list->capacity *
+          best_changes_list->lists, new_capacity *
           sizeof(RE_FuzzyChangesList));
         if (!new_lists)
             return FALSE;
 
         best_changes_list->lists = new_lists;
+        best_changes_list->capacity = new_capacity;
     }
 
     size = (size_t)state->fuzzy_changes.count * sizeof(RE_FuzzyChange);
@@ -10119,22 +10122,24 @@ Py_LOCAL_INLINE(BOOL) save_fuzzy_changes(RE_SafeState* safe_state,
   RE_FuzzyChangesList* best_changes_list) {
     if (safe_state->re_state->fuzzy_changes.count >
       best_changes_list->capacity) {
+        size_t new_capacity;
         RE_FuzzyChange* new_items;
 
-        if (best_changes_list->capacity == 0)
-            best_changes_list->capacity = 64;
+        new_capacity = best_changes_list->capacity;
 
-        while (best_changes_list->capacity <
-          safe_state->re_state->fuzzy_changes.count)
-            best_changes_list->capacity *= 2;
+        if (new_capacity == 0)
+            new_capacity = 64;
+
+        while (safe_state->re_state->fuzzy_changes.count > new_capacity)
+            new_capacity *= 2;
 
         new_items = (RE_FuzzyChange*)safe_realloc(safe_state,
-          best_changes_list->items, (size_t)best_changes_list->capacity *
-          sizeof(RE_FuzzyChange));
+          best_changes_list->items, new_capacity * sizeof(RE_FuzzyChange));
         if (!new_items)
             return FALSE;
 
         best_changes_list->items = new_items;
+        best_changes_list->capacity = new_capacity;
     }
 
     Py_MEMCPY(best_changes_list->items,
@@ -17524,16 +17529,21 @@ Py_LOCAL_INLINE(BOOL) add_to_best_list(RE_SafeState* safe_state, RE_BestList*
     RE_BestEntry* entry;
 
     if (best_list->count >= best_list->capacity) {
+        size_t new_capacity;
         RE_BestEntry* new_entries;
 
-        best_list->capacity = best_list->capacity == 0 ? 16 :
-          best_list->capacity * 2;
-        new_entries = safe_realloc(safe_state, best_list->entries,
-          best_list->capacity * sizeof(RE_BestEntry));
+        new_capacity = best_list->capacity * 2;
+
+        if (new_capacity == 0)
+            new_capacity = 16;
+
+        new_entries = safe_realloc(safe_state, best_list->entries, new_capacity
+          * sizeof(RE_BestEntry));
         if (!new_entries)
             return FALSE;
 
         best_list->entries = new_entries;
+        best_list->capacity = new_capacity;
     }
 
     entry = &best_list->entries[best_list->count++];
@@ -23606,6 +23616,7 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_UINT8 op,
     memset(node, 0, sizeof(RE_Node));
 
     node->value_count = value_count;
+
     if (node->value_count > 0) {
         node->values = (RE_CODE*)re_alloc(node->value_count * sizeof(RE_CODE));
         if (!node->values)
@@ -23620,16 +23631,21 @@ Py_LOCAL_INLINE(RE_Node*) create_node(PatternObject* pattern, RE_UINT8 op,
 
     /* Ensure that there's enough storage to record the new node. */
     if (pattern->node_count >= pattern->node_capacity) {
+        size_t new_capacity;
         RE_Node** new_node_list;
 
-        pattern->node_capacity *= 2;
-        if (pattern->node_capacity == 0)
-            pattern->node_capacity = RE_INIT_NODE_LIST_SIZE;
-        new_node_list = (RE_Node**)re_realloc(pattern->node_list,
-          pattern->node_capacity * sizeof(RE_Node*));
+        new_capacity = pattern->node_capacity * 2;
+
+        if (new_capacity == 0)
+            new_capacity = 16;
+
+        new_node_list = (RE_Node**)re_realloc(pattern->node_list, new_capacity
+          * sizeof(RE_Node*));
         if (!new_node_list)
             goto error;
+
         pattern->node_list = new_node_list;
+        pattern->node_capacity = new_capacity;
     }
 
     /* Record the new node. */
@@ -23666,14 +23682,16 @@ Py_LOCAL_INLINE(BOOL) ensure_group(PatternObject* pattern, size_t group) {
      */
     old_capacity = pattern->group_info_capacity;
     new_capacity = pattern->group_info_capacity;
+
     while (group > new_capacity)
-        new_capacity += RE_LIST_SIZE_INC;
+        new_capacity += 16;
 
     if (new_capacity > old_capacity) {
         new_group_info = (RE_GroupInfo*)re_realloc(pattern->group_info,
           new_capacity * sizeof(RE_GroupInfo));
         if (!new_group_info)
             return FALSE;
+
         memset(new_group_info + old_capacity, 0, (new_capacity - old_capacity)
           * sizeof(RE_GroupInfo));
 
@@ -23736,13 +23754,14 @@ Py_LOCAL_INLINE(BOOL) ensure_call_ref(PatternObject* pattern, size_t call_ref)
     old_capacity = pattern->call_ref_info_capacity;
     new_capacity = pattern->call_ref_info_capacity;
     while (call_ref >= new_capacity)
-        new_capacity += RE_LIST_SIZE_INC;
+        new_capacity += 16;
 
     if (new_capacity > old_capacity) {
         new_call_ref_info = (RE_CallRefInfo*)re_realloc(pattern->call_ref_info,
           new_capacity * sizeof(RE_CallRefInfo));
         if (!new_call_ref_info)
             return FALSE;
+
         memset(new_call_ref_info + old_capacity, 0, (new_capacity -
           old_capacity) * sizeof(RE_CallRefInfo));
 
@@ -23801,7 +23820,7 @@ Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, size_t index,
     old_capacity = pattern->repeat_info_capacity;
     new_capacity = pattern->repeat_info_capacity;
     while (index >= new_capacity)
-        new_capacity += RE_LIST_SIZE_INC;
+        new_capacity += 16;
 
     if (new_capacity > old_capacity) {
         RE_RepeatInfo* new_repeat_info;
@@ -23810,6 +23829,7 @@ Py_LOCAL_INLINE(BOOL) record_repeat(PatternObject* pattern, size_t index,
           new_capacity * sizeof(RE_RepeatInfo));
         if (!new_repeat_info)
             return FALSE;
+
         memset(new_repeat_info + old_capacity, 0, (new_capacity - old_capacity)
           * sizeof(RE_RepeatInfo));
 

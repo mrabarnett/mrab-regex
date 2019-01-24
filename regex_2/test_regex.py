@@ -4003,6 +4003,12 @@ thing
         self.assertEqual(m.fuzzy_counts, (0, 1, 0))
         self.assertEqual(m.fuzzy_changes, ([], [1206], []))
 
+        # Hg issue 306: Fuzzy match parameters not respecting quantifier scope
+        self.assertEqual(regex.search(r'(?e)(dogf(((oo){e<1})|((00){e<1}))d){e<2}',
+          'dogfood').fuzzy_counts, (0, 0, 0))
+        self.assertEqual(regex.search(r'(?e)(dogf(((oo){e<1})|((00){e<1}))d){e<2}',
+          'dogfoot').fuzzy_counts, (1, 0, 0))
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
