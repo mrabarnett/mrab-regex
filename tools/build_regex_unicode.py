@@ -2220,7 +2220,7 @@ json_path = splitext(__file__)[0] + '.json'
 COLUMNS = 16
 MAX_CODEPOINT = 0x10FFFF
 NUM_CODEPOINTS = 0x110000
-MAX_STAGES = 5
+MAX_STAGES = 4
 MAX_CASE_STAGES = 4 # Fewer stages for case info because it's used frequently.
 
 # The Unicode data files. The file names are given relative to the website URL.
