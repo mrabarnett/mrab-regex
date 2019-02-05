@@ -2219,6 +2219,13 @@ Py_LOCAL_INLINE(BOOL) ByteStack_push(RE_State* state, ByteStack* stack, BYTE
         if (new_capacity == 0)
             new_capacity = 64;
 
+        if (new_capacity >= RE_MEMORY_LIMIT) {
+            acquire_GIL(state);
+            set_error(RE_ERROR_MEMORY, NULL);
+            release_GIL(state);
+            return FALSE;
+        }
+
         new_storage = safe_realloc(state, stack->storage, new_capacity);
         if (!new_storage)
             return FALSE;
@@ -2257,6 +2264,7 @@ Py_LOCAL_INLINE(BOOL) ByteStack_push_block(RE_State* state, ByteStack* stack,
             release_GIL(state);
             return FALSE;
         }
+
         new_storage = safe_realloc(state, stack->storage, new_capacity);
         if (!new_storage)
             return FALSE;
@@ -12333,8 +12341,6 @@ advance:
 
             if (!push_captures(state, &state->bstack))
                 return RE_ERROR_MEMORY;
-            if (!push_repeats(state, &state->bstack))
-                return RE_ERROR_MEMORY;
             if (!push_fuzzy_counts(state, &state->bstack, state->fuzzy_counts))
                 return RE_ERROR_MEMORY;
             if (!push_size(state, &state->bstack, state->capture_change))
@@ -12346,8 +12352,7 @@ advance:
             if (!push_bstack(state))
                 return RE_ERROR_MEMORY;
 
-            /* bstack: captures repeats fuzzy_counts capture_change sstack
-             * ATOMIC
+            /* bstack: captures fuzzy_counts capture_change sstack ATOMIC
              *
              * pstack: bstack
              */
@@ -12622,8 +12627,7 @@ advance:
 
             /* sstack: ...
              *
-             * bstack: captures repeats fuzzy_counts capture_change sstack
-             * ATOMIC ...
+             * bstack: captures fuzzy_counts capture_change sstack ATOMIC ...
              *
              * pstack: bstack
              */
@@ -12633,8 +12637,7 @@ advance:
 
             /* sstack: ...
              *
-             * bstack: captures repeats fuzzy_counts capture_change sstack
-             * ATOMIC
+             * bstack: captures fuzzy_counts capture_change sstack ATOMIC
              *
              * pstack: -
              */
@@ -12646,7 +12649,7 @@ advance:
 
             /* sstack: -
              *
-             * bstack: captures repeats fuzzy_counts capture_change
+             * bstack: captures fuzzy_counts capture_change
              *
              * pstack: -
              */
@@ -12654,7 +12657,7 @@ advance:
             if (!push_uint8(state, &state->bstack, RE_OP_END_ATOMIC))
                 return RE_ERROR_MEMORY;
 
-            /* bstack: captures repeats fuzzy_counts capture_change END_ATOMIC
+            /* bstack: captures fuzzy_counts capture_change END_ATOMIC
              *
              * pstack: -
              */
@@ -12851,65 +12854,6 @@ advance:
               FALSE))
                 return RE_ERROR_MEMORY;
 
-            if ((node->status & RE_STATUS_ALL_ATOMIC) && rp_data->count >
-              node->values[1]) {
-                /* Discard the body which is all atomic. */
-                RE_UINT8 op;
-
-                for (;;) {
-                    if (!pop_uint8(state, &state->bstack, &op))
-                        return RE_ERROR_MEMORY;
-
-                    switch (op) {
-                    case RE_OP_BODY_END:
-                        /* bstack: count start capture_change index */
-
-                        if (!ByteStack_drop_block(state, &state->bstack,
-                          sizeof(RE_BodyEndStateData)))
-                            return RE_ERROR_MEMORY;
-
-                        break;
-                    case RE_OP_BODY_START:
-                    {
-                        Py_ssize_t text_pos;
-                        RE_CODE index;
-
-                        /* bstack: index text_pos */
-
-                        if (!pop_ssize(state, &state->bstack, &text_pos))
-                            return RE_ERROR_MEMORY;
-                        if (!pop_code(state, &state->bstack, &index))
-                            return RE_ERROR_MEMORY;
-
-                        /* The body may have failed to match at this position.
-                         */
-                        if (!guard_repeat(state, index, text_pos,
-                          RE_STATUS_BODY, TRUE))
-                            return RE_ERROR_MEMORY;
-                        break;
-                    }
-                    case RE_OP_END_ATOMIC:
-                        /* bstack: captures repeats fuzzy_counts capture_change
-                         */
-
-                        if (!drop_size(state, &state->bstack))
-                            return RE_ERROR_MEMORY;
-                        if (!drop_fuzzy_counts(state, &state->bstack))
-                            return RE_ERROR_MEMORY;
-                        if (!drop_repeats(state, &state->bstack))
-                            return RE_ERROR_MEMORY;
-                        if (!drop_captures(state, &state->bstack))
-                            return RE_ERROR_MEMORY;
-                        break;
-                    default:
-                        if (!push_uint8(state, &state->bstack, op))
-                            return RE_ERROR_MEMORY;
-                        goto discarded_body;
-                    }
-                }
-            }
-
-discarded_body:
             ++rp_data->count;
 
             /* Have we advanced through the text or has a capture group change?
@@ -15661,7 +15605,7 @@ backtrack:
 
             /* sstack: ...
              *
-             * bstack: captures repeats fuzzy_counts capture_change sstack
+             * bstack: captures fuzzy_counts capture_change sstack
              *
              * pstack: bstack
              */
@@ -15673,7 +15617,7 @@ backtrack:
 
             /* sstack: -
              *
-             * bstack: captures repeats fuzzy_counts capture_change
+             * bstack: captures fuzzy_counts capture_change
              *
              * pstack: -
              */
@@ -15681,8 +15625,6 @@ backtrack:
             if (!pop_size(state, &state->bstack, &state->capture_change))
                 return RE_ERROR_MEMORY;
             if (!pop_fuzzy_counts(state, &state->bstack, state->fuzzy_counts))
-                return RE_ERROR_MEMORY;
-            if (!pop_repeats(state, &state->bstack))
                 return RE_ERROR_MEMORY;
             if (!pop_captures(state, &state->bstack))
                 return RE_ERROR_MEMORY;
@@ -15859,13 +15801,11 @@ backtrack:
         case RE_OP_END_ATOMIC: /* End of an atomic group. */
             TRACE(("%s\n", re_op_text[op]))
 
-            /* bstack: captures repeats fuzzy_counts capture_change */
+            /* bstack: captures fuzzy_counts capture_change */
 
             if (!pop_size(state, &state->bstack, &state->capture_change))
                 return RE_ERROR_MEMORY;
             if (!pop_fuzzy_counts(state, &state->bstack, state->fuzzy_counts))
-                return RE_ERROR_MEMORY;
-            if (!pop_repeats(state, &state->bstack))
                 return RE_ERROR_MEMORY;
             if (!pop_captures(state, &state->bstack))
                 return RE_ERROR_MEMORY;
@@ -24798,7 +24738,6 @@ Py_LOCAL_INLINE(int) build_GROUP(RE_CompileArgs* args) {
     add_node(start_node, subargs.start);
     add_node(subargs.end, end_node);
     args->end = end_node;
-    args->all_atomic = FALSE;
 
     return RE_ERROR_SUCCESS;
 }
@@ -25405,6 +25344,10 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
                 repeat_node->op = greedy ? RE_OP_GREEDY_REPEAT_ONE :
                   RE_OP_LAZY_REPEAT_ONE;
 
+                if (args->all_atomic && args->code < args->end_code &&
+                  args->code[0] == RE_OP_END && !args->within_fuzzy)
+                    repeat_node->status |= RE_STATUS_ALL_ATOMIC;
+
                 /* Append the new sequence. */
                 add_node(args->end, repeat_node);
                 repeat_node->nonstring.next_2.node = subargs.start;
@@ -25428,7 +25371,8 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
                 if (!end_node)
                     return RE_ERROR_MEMORY;
 
-                if (subargs.all_atomic && !subargs.within_fuzzy)
+                if (args->all_atomic && args->code < args->end_code &&
+                  args->code[0] == RE_OP_END && !args->within_fuzzy)
                     end_repeat_node->status |= RE_STATUS_ALL_ATOMIC;
 
                 /* Append the new sequence. */
@@ -25443,7 +25387,9 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
         }
     }
 
-    args->all_atomic = FALSE;
+    if (!(args->all_atomic && args->code < args->end_code && args->code[0] !=
+      RE_OP_END && !args->within_fuzzy))
+        args->all_atomic = FALSE;
 
     return RE_ERROR_SUCCESS;
 }
