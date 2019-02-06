@@ -2208,10 +2208,12 @@ Py_LOCAL_INLINE(BOOL) safe_check_signals(RE_State* state) {
 }
 
 /* Initialises a stack of bytes. */
-Py_LOCAL_INLINE(void) ByteStack_init(RE_State* state, ByteStack* stack) {
+Py_LOCAL_INLINE(BOOL) ByteStack_init(RE_State* state, ByteStack* stack) {
     stack->capacity = 0;
     stack->count = 0;
     stack->storage = NULL;
+
+    return TRUE;
 }
 
 /* Finalises a stack of bytes. */
@@ -9220,6 +9222,10 @@ Py_LOCAL_INLINE(BOOL) is_guarded(RE_GuardList* guard_list, Py_ssize_t text_pos)
     spans = guard_list->spans;
     count = (Py_ssize_t)guard_list->count;
 
+    if (count == 0 || text_pos < spans[0].low || text_pos > spans[count -
+      1].high)
+        return FALSE;
+
     below = -1;
     above = count;
 
@@ -9254,22 +9260,30 @@ Py_LOCAL_INLINE(BOOL) guard(RE_State* state, RE_GuardList* guard_list,
     spans = guard_list->spans;
     count = (Py_ssize_t)guard_list->count;
 
-    below = -1;
-    above = count;
+    if (count > 0 && text_pos > spans[count - 1].high) {
+        below = count - 1;
+        above = count;
+    } else if (count > 0 && text_pos < spans[0].low) {
+        below = -1;
+        above = 0;
+    } else {
+        below = -1;
+        above = count;
 
-    while (above - below > 1) {
-        Py_ssize_t mid;
-        RE_GuardSpan* span;
+        while (above - below > 1) {
+            Py_ssize_t mid;
+            RE_GuardSpan* span;
 
-        mid = (below + above) / 2;
-        span = &spans[mid];
+            mid = (below + above) / 2;
+            span = &spans[mid];
 
-        if (text_pos < span->low)
-            above = mid;
-        else if (text_pos > span->high)
-            below = mid;
-        else
-            return TRUE;
+            if (text_pos < span->low)
+                above = mid;
+            else if (text_pos > span->high)
+                below = mid;
+            else
+                return TRUE;
+        }
     }
 
     /* Add the position to the guard list. */
@@ -13278,8 +13292,8 @@ advance:
 
             /* sstack: node slice_start slice_end text_pos ...
              *
-             * bstack: captures repeats fuzzy_counts capture_change sstack
-             * LOOKAROUND ...
+             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+             * capture_change sstack LOOKAROUND ...
              *
              * pstack: bstack
              */
@@ -13289,8 +13303,8 @@ advance:
 
             /* sstack: node slice_start slice_end text_pos ...
              *
-             * bstack: captures repeats fuzzy_counts capture_change sstack
-             * LOOKAROUND
+             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+             * capture_change sstack LOOKAROUND
              *
              * pstack: -
              */
@@ -13302,7 +13316,8 @@ advance:
 
             /* sstack: node slice_start slice_end text_pos
              *
-             * bstack: captures repeats fuzzy_counts capture_change
+             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+             * capture_change
              *
              * pstack: -
              */
@@ -13320,7 +13335,8 @@ advance:
 
             /* sstack: -
              *
-             * bstack: captures repeats fuzzy_counts capture_change
+             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+             * capture_change
              *
              * pstack: -
              */
@@ -13332,8 +13348,8 @@ advance:
 
                 /* sstack: -
                  *
-                 * bstack: captures repeats fuzzy_counts capture_change
-                 * END_LOOKAROUND
+                 * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+                 * capture_change END_LOOKAROUND
                  *
                  * pstack: -
                  */
@@ -13341,16 +13357,20 @@ advance:
                 /* Go to the 'true' branch. */
                 node = node->next_1.node;
             } else {
+                BOOL has_groups;
+
                 /* It's a negative lookaround that's succeeded. */
                 if (!pop_size(state, &state->bstack, &state->capture_change))
                     return RE_ERROR_MEMORY;
                 if (!pop_fuzzy_counts(state, &state->bstack,
                   state->fuzzy_counts))
                     return RE_ERROR_MEMORY;
-                if (!pop_repeats(state, &state->bstack))
+                if (!pop_bool(state, &state->bstack, &has_groups))
                     return RE_ERROR_MEMORY;
-                if (!pop_captures(state, &state->bstack))
-                    return RE_ERROR_MEMORY;
+                if (has_groups) {
+                    if (!pop_captures(state, &state->bstack))
+                        return RE_ERROR_MEMORY;
+                }
 
                 /* sstack: -
                  *
@@ -14075,6 +14095,7 @@ advance:
         }
         case RE_OP_LOOKAROUND: /* Start of a lookaround subpattern. */
         {
+            BOOL has_groups;
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
             RE_LookaroundStateData data_l;
@@ -14087,9 +14108,12 @@ advance:
             if (!ByteStack_push_block(state, &state->sstack, (void*)&data_l,
               sizeof(data_l)))
                 return RE_ERROR_MEMORY;
-            if (!push_captures(state, &state->bstack))
-                return RE_ERROR_MEMORY;
-            if (!push_repeats(state, &state->bstack))
+            has_groups = (node->status & RE_STATUS_HAS_GROUPS) != 0;
+            if (has_groups) {
+                if (!push_captures(state, &state->bstack))
+                    return RE_ERROR_MEMORY;
+            }
+            if (!push_bool(state, &state->bstack, has_groups))
                 return RE_ERROR_MEMORY;
             if (!push_fuzzy_counts(state, &state->bstack, state->fuzzy_counts))
                 return RE_ERROR_MEMORY;
@@ -14104,8 +14128,8 @@ advance:
 
             /* sstack: node slice_start slice_end text_pos
              *
-             * bstack: captures repeats fuzzy_counts capture_change sstack
-             * LOOKAROUND
+             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+             * capture_change sstack LOOKAROUND
              *
              * pstack: bstack
              */
@@ -15866,7 +15890,6 @@ backtrack:
                 return RE_ERROR_MEMORY;
             break;
         case RE_OP_END_CONDITIONAL: /* End of a conditional subpattern. */
-        case RE_OP_END_LOOKAROUND: /* End of a lookaround subpattern. */
         {
             TRACE(("%s\n", re_op_text[op]))
 
@@ -16041,6 +16064,38 @@ backtrack:
                 if (!drop_ssize(state, &state->sstack))
                     return RE_ERROR_MEMORY;
             }
+            break;
+        }
+        case RE_OP_END_LOOKAROUND: /* End of a lookaround subpattern. */
+        {
+            BOOL has_groups;
+            TRACE(("%s\n", re_op_text[op]))
+
+            /* sstack: -
+             *
+             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+             * capture_change
+             *
+             * pstack: -
+             */
+
+            if (!pop_size(state, &state->bstack, &state->capture_change))
+                return RE_ERROR_MEMORY;
+            if (!pop_fuzzy_counts(state, &state->bstack, state->fuzzy_counts))
+                return RE_ERROR_MEMORY;
+            if (!pop_bool(state, &state->bstack, &has_groups))
+                return RE_ERROR_MEMORY;
+            if (has_groups) {
+                if (!pop_captures(state, &state->bstack))
+                    return RE_ERROR_MEMORY;
+            }
+
+            /* sstack: -
+             *
+             * bstack: -
+             *
+             * pstack: -
+             */
             break;
         }
         case RE_OP_FAILURE: /* Failure. */
@@ -17472,10 +17527,12 @@ backtrack:
         {
             RE_Node* lookaround;
             TRACE(("%s\n", re_op_text[op]))
+            BOOL has_groups;
 
             /* sstack: node slice_start slice_end text_pos ...
              *
-             * bstack: captures repeats fuzzy_counts capture_change sstack
+             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+             * capture_change sstack
              *
              * pstack: bstack
              */
@@ -17487,7 +17544,8 @@ backtrack:
 
             /* sstack: node slice_start slice_end text_pos
              *
-             * bstack: captures repeats fuzzy_counts capture_change
+             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+             * capture_change
              *
              * pstack: -
              */
@@ -17505,7 +17563,8 @@ backtrack:
 
             /* sstack: -
              *
-             * bstack: captures repeats fuzzy_counts capture_change
+             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
+             * capture_change
              *
              * pstack: -
              */
@@ -17514,10 +17573,12 @@ backtrack:
                 return RE_ERROR_MEMORY;
             if (!pop_fuzzy_counts(state, &state->bstack, state->fuzzy_counts))
                 return RE_ERROR_MEMORY;
-            if (!pop_repeats(state, &state->bstack))
+            if (!pop_bool(state, &state->bstack, &has_groups))
                 return RE_ERROR_MEMORY;
-            if (!pop_captures(state, &state->bstack))
-                return RE_ERROR_MEMORY;
+            if (has_groups) {
+                if (!pop_captures(state, &state->bstack))
+                    return RE_ERROR_MEMORY;
+            }
 
             /* sstack: -
              *
