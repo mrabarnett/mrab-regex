@@ -12533,9 +12533,8 @@ advance:
             break;
         case RE_OP_CONDITIONAL: /* Start of a conditional subpattern. */
         {
-            TRACE(("%s %d\n", re_op_text[node->op], node->match))
-
             RE_LookaroundStateData data_l;
+            TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
             data_l.node = node;
             data_l.slice_start = state->slice_start;
@@ -12681,6 +12680,7 @@ advance:
         case RE_OP_END_CONDITIONAL: /* End of a conditional subpattern. */
         {
             RE_Node* conditional;
+            RE_LookaroundStateData data_l;
             TRACE(("%s\n", re_op_text[node->op]))
 
             /* sstack: node slice_start slice_end text_pos ...
@@ -12713,8 +12713,6 @@ advance:
              *
              * pstack: -
              */
-
-            RE_LookaroundStateData data_l;
 
             if (!ByteStack_pop_block(state, &state->sstack, (void*)&data_l,
               sizeof(data_l)))
@@ -12857,6 +12855,7 @@ advance:
             BOOL try_tail;
             int tail_status;
             RE_Position next_tail_position;
+            RE_BodyEndStateData data_be;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Repeat indexes are 0-based. */
@@ -12931,7 +12930,6 @@ advance:
                 return RE_ERROR_PARTIAL;
 
             /* Record info in case we backtrack into the body. */
-            RE_BodyEndStateData data_be;
 
             data_be.count = rp_data->count - 1;
             data_be.start = rp_data->start;
@@ -12953,10 +12951,9 @@ advance:
                      * then we want to try the tail before backtracking
                      * further.
                      */
-
-                    /* Record backtracking info for matching the tail. */
                     RE_MatchBodyTailStateData data_mbt;
 
+                    /* Record backtracking info for matching the tail. */
                     data_mbt.position = next_tail_position;
                     data_mbt.count = rp_data->count;
                     data_mbt.start = rp_data->start;
@@ -13018,6 +13015,7 @@ advance:
 
             if (capture) {
                 RE_GroupSpan span;
+                RE_GroupStateData data_g;
 
                 /* sstack: start
                  *
@@ -13028,8 +13026,6 @@ advance:
                     return RE_ERROR_MEMORY;
 
                 span.end = state->text_pos;
-
-                RE_GroupStateData data_g;
 
                 data_g.text_pos = span.start;
                 data_g.current = group->current;
@@ -13086,6 +13082,7 @@ advance:
             BOOL try_tail;
             int tail_status;
             RE_Position next_tail_position;
+            RE_BodyEndStateData data_be;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Repeat indexes are 0-based. */
@@ -13153,8 +13150,6 @@ advance:
                 return RE_ERROR_PARTIAL;
 
             /* Record info in case we backtrack into the body. */
-            RE_BodyEndStateData data_be;
-
             data_be.count = rp_data->count - 1;
             data_be.start = rp_data->start;
             data_be.capture_change = rp_data->capture_change;
@@ -13175,9 +13170,9 @@ advance:
                      * then we want to try the body before backtracking
                      * further.
                      */
+                    RE_MatchBodyTailStateData data_mbt;
 
                     /* Record backtracking info for matching the body. */
-                    RE_MatchBodyTailStateData data_mbt;
 
                     data_mbt.position = next_body_position;
                     data_mbt.count = rp_data->count;
@@ -13232,6 +13227,7 @@ advance:
         }
         case RE_OP_END_LOOKAROUND: /* End of a lookaround subpattern. */
         {
+            RE_LookaroundStateData data_l;
             RE_Node* lookaround;
             TRACE(("%s\n", re_op_text[node->op]))
 
@@ -13266,8 +13262,6 @@ advance:
              *
              * pstack: -
              */
-
-            RE_LookaroundStateData data_l;
 
             if (!ByteStack_pop_block(state, &state->sstack, (void*)&data_l,
               sizeof(data_l)))
@@ -13508,6 +13502,7 @@ advance:
             BOOL try_tail;
             int tail_status;
             RE_Position next_tail_position;
+            RE_RepeatStateData data_r;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Repeat indexes are 0-based. */
@@ -13517,7 +13512,6 @@ advance:
             /* We might need to backtrack into the head, so save the current
              * repeat.
              */
-            RE_RepeatStateData data_r;
 
             data_r.count = rp_data->count;
             data_r.start = rp_data->start;
@@ -13577,10 +13571,9 @@ advance:
                      * takes precedence. If the body fails to match then we
                      * want to try the tail before backtracking further.
                      */
-
-                    /* Record backtracking info for matching the tail. */
                     RE_MatchBodyTailStateData data_mbt;
 
+                    /* Record backtracking info for matching the tail. */
                     data_mbt.position = next_tail_position;
                     data_mbt.count = rp_data->count;
                     data_mbt.start = rp_data->start;
@@ -13862,6 +13855,7 @@ advance:
             BOOL try_tail;
             int tail_status;
             RE_Position next_tail_position;
+            RE_RepeatStateData data_r;
             TRACE(("%s %d\n", re_op_text[node->op], node->values[0]))
 
             /* Repeat indexes are 0-based. */
@@ -13874,7 +13868,6 @@ advance:
             /* We might need to backtrack into the head, so save the current
              * repeat.
              */
-            RE_RepeatStateData data_r;
 
             data_r.count = rp_data->count;
             data_r.start = rp_data->start;
@@ -13935,10 +13928,9 @@ advance:
                      * takes precedence. If the tail fails to match then we
                      * want to try the body before backtracking further.
                      */
-
-                    /* Record backtracking info for matching the body. */
                     RE_MatchBodyTailStateData data_mbt;
 
+                    /* Record backtracking info for matching the body. */
                     data_mbt.position = next_body_position;
                     data_mbt.count = rp_data->count;
                     data_mbt.start = rp_data->start;
@@ -14040,10 +14032,9 @@ advance:
         }
         case RE_OP_LOOKAROUND: /* Start of a lookaround subpattern. */
         {
+            RE_LookaroundStateData data_l;
             BOOL has_groups;
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
-
-            RE_LookaroundStateData data_l;
 
             data_l.node = node;
             data_l.slice_start = state->slice_start;
@@ -14884,6 +14875,7 @@ advance:
 
             if (capture) {
                 RE_GroupSpan span;
+                RE_GroupStateData data_g;
 
                 /* sstack: end
                  *
@@ -14894,8 +14886,6 @@ advance:
                     return RE_ERROR_MEMORY;
 
                 span.start = state->text_pos;
-
-                RE_GroupStateData data_g;
 
                 data_g.text_pos = span.end;
                 data_g.current = group->current;
@@ -15655,6 +15645,7 @@ backtrack:
             break;
         case RE_OP_BODY_END:
         {
+            RE_BodyEndStateData data_be;
             size_t capture_change;
             RE_CODE index;
             Py_ssize_t start;
@@ -15662,8 +15653,6 @@ backtrack:
             RE_RepeatData* rp_data;
 
             /* bstack: count start capture_change index */
-
-            RE_BodyEndStateData data_be;
 
             if (!ByteStack_pop_block(state, &state->bstack, (void*)&data_be,
               sizeof(data_be)))
@@ -15754,6 +15743,7 @@ backtrack:
         case RE_OP_CONDITIONAL: /* Conditional subpattern. */
         {
             RE_Node* conditional;
+            RE_LookaroundStateData data_l;
             TRACE(("%s\n", re_op_text[op]))
 
             /* sstack: node slice_start slice_end text_pos ...
@@ -15774,8 +15764,6 @@ backtrack:
              *
              * pstack: -
              */
-
-            RE_LookaroundStateData data_l;
 
             if (!ByteStack_pop_block(state, &state->sstack, (void*)&data_l,
               sizeof(data_l)))
@@ -15979,12 +15967,11 @@ backtrack:
                 return RE_ERROR_MEMORY;
 
             if (capture) {
+                RE_GroupStateData data_g;
                 RE_CODE public_index;
                 RE_CODE private_index;
                 Py_ssize_t start;
                 RE_GroupData* group;
-
-                RE_GroupStateData data_g;
 
                 if (!ByteStack_pop_block(state, &state->bstack, (void*)&data_g,
                   sizeof(data_g)))
@@ -16143,6 +16130,7 @@ backtrack:
         case RE_OP_GREEDY_REPEAT: /* Greedy repeat. */
         case RE_OP_LAZY_REPEAT: /* Lazy repeat. */
         {
+            RE_RepeatStateData data_r;
             Py_ssize_t text_pos;
             RE_CODE index;
             size_t capture_change;
@@ -16152,8 +16140,6 @@ backtrack:
             TRACE(("%s\n", re_op_text[op]))
 
             /* bstack: count start capture_change index text_pos */
-
-            RE_RepeatStateData data_r;
 
             if (!ByteStack_pop_block(state, &state->bstack, (void*)&data_r,
               sizeof(data_r)))
@@ -16180,6 +16166,7 @@ backtrack:
         }
         case RE_OP_GREEDY_REPEAT_ONE: /* Greedy repeat for one character. */
         {
+            RE_RepeatOneStateData data_ro;
             RE_CODE index;
             Py_ssize_t start;
             size_t saved_count;
@@ -16194,8 +16181,6 @@ backtrack:
             TRACE(("%s\n", re_op_text[op]))
 
             /* bstack: count start node index */
-
-            RE_RepeatOneStateData data_ro;
 
             if (!ByteStack_pop_block(state, &state->bstack,
               (void*)&data_ro,sizeof(data_ro)))
@@ -16644,9 +16629,9 @@ backtrack:
                     /* The match is longer than the minimum, so we might need
                      * to backtrack the repeat again to consume less.
                      */
-                    rp_data->count = count;
-
                     RE_RepeatOneStateData data_ro;
+
+                    rp_data->count = count;
 
                     data_ro.count = saved_count;
                     data_ro.start = start;
@@ -16787,6 +16772,7 @@ backtrack:
             break;
         case RE_OP_LAZY_REPEAT_ONE: /* Lazy repeat for one character. */
         {
+            RE_RepeatOneStateData data;
             RE_CODE index;
             Py_ssize_t start;
             size_t saved_count;
@@ -16805,8 +16791,6 @@ backtrack:
             TRACE(("%s\n", re_op_text[op]))
 
             /* bstack: count start node index */
-
-            RE_RepeatOneStateData data;
 
             if (!ByteStack_pop_block(state, &state->bstack, (void*)&data,
               sizeof(data)))
@@ -17424,9 +17408,9 @@ backtrack:
                     /* The match is shorter than the maximum, so we might need
                      * to backtrack the repeat again to consume more.
                      */
-                    rp_data->count = count;
-
                     RE_RepeatOneStateData data_ro;
+
+                    rp_data->count = count;
 
                     data_ro.count = saved_count;
                     data_ro.start = start;
@@ -17471,8 +17455,9 @@ backtrack:
         case RE_OP_LOOKAROUND: /* Lookaround subpattern. */
         {
             RE_Node* lookaround;
-            TRACE(("%s\n", re_op_text[op]))
+            RE_LookaroundStateData data_l;
             BOOL has_groups;
+            TRACE(("%s\n", re_op_text[op]))
 
             /* sstack: node slice_start slice_end text_pos ...
              *
@@ -17494,8 +17479,6 @@ backtrack:
              *
              * pstack: -
              */
-
-            RE_LookaroundStateData data_l;
 
             if (!ByteStack_pop_block(state, &state->sstack, (void*)&data_l,
               sizeof(data_l)))
@@ -17542,6 +17525,7 @@ backtrack:
         }
         case RE_OP_MATCH_BODY:
         {
+            RE_MatchBodyTailStateData data_mbt;
             Py_ssize_t text_pos;
             RE_CODE index;
             size_t capture_change;
@@ -17551,8 +17535,6 @@ backtrack:
             RE_RepeatData* rp_data;
 
             /* bstack: position count start capture_change index text_pos */
-
-            RE_MatchBodyTailStateData data_mbt;
 
             if (!ByteStack_pop_block(state, &state->bstack, (void*)&data_mbt,
               sizeof(data_mbt)))
@@ -17591,6 +17573,7 @@ backtrack:
         }
         case RE_OP_MATCH_TAIL:
         {
+            RE_MatchBodyTailStateData data_mbt;
             RE_CODE index;
             size_t capture_change;
             Py_ssize_t start;
@@ -17599,8 +17582,6 @@ backtrack:
             RE_RepeatData* rp_data;
 
             /* bstack: position count start capture_change index text_pos */
-
-            RE_MatchBodyTailStateData data_mbt;
 
             if (!ByteStack_pop_block(state, &state->bstack, (void*)&data_mbt,
               sizeof(data_mbt)))
@@ -17687,12 +17668,11 @@ backtrack:
                 return RE_ERROR_MEMORY;
 
             if (capture) {
+                RE_GroupStateData data_g;
                 RE_CODE public_index;
                 RE_CODE private_index;
                 Py_ssize_t end;
                 RE_GroupData* group;
-
-                RE_GroupStateData data_g;
 
                 if (!ByteStack_pop_block(state, &state->bstack, (void*)&data_g,
                   sizeof(data_g)))
