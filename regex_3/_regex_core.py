@@ -2946,7 +2946,7 @@ class Group(RegexBase):
     def dump(self, indent, reverse):
         group = self.group
         if group < 0:
-            group = private_groups[group]
+            group = self.info.private_groups[group]
         print("{}GROUP {}".format(INDENT * indent, group))
         self.subpattern.dump(indent + 1, reverse)
 
