@@ -2964,7 +2964,7 @@ class Group(RegexBase):
     def dump(self, indent, reverse):
         group = self.group
         if group < 0:
-            group = self.info.private_groups[group]
+            group = private_groups[group]
         print "%sGROUP %s" % (INDENT * indent, group)
         self.subpattern.dump(indent + 1, reverse)
 
@@ -4432,7 +4432,7 @@ for prop_name, (prop_id, values) in PROPERTIES.items():
 
     for val_name, val_id in values.items():
         prop_values[val_id] = max(prop_values.get(val_id, ""), val_name,
-      key=len)
+          key=len)
 
 # Character escape sequences.
 CHARACTER_ESCAPES = {

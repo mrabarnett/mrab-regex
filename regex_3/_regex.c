@@ -728,11 +728,6 @@ Py_LOCAL_INLINE(size_t) min_size_t(size_t x, size_t y) {
     return x <= y ? x : y;
 }
 
-/* Returns the maximum of 2 'size_t' values. */
-Py_LOCAL_INLINE(size_t) max_size_t(size_t x, size_t y) {
-    return x >= y ? x : y;
-}
-
 /* Returns the 'maximum' of 2 RE_STATUS_T values. */
 Py_LOCAL_INLINE(RE_STATUS_T) max_status_2(RE_STATUS_T x, RE_STATUS_T y) {
     return x >= y ? x : y;
@@ -1874,7 +1869,7 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
 
     /* Do not break within emoji modifier sequences or emoji zwj sequences. */
     /* GB11 */
-    if (left_prop == RE_GBREAK_ZWJ && re_get_extended_pictographic(right_prop))
+    if (left_prop == RE_GBREAK_ZWJ && re_get_extended_pictographic(right_char))
       {
         pos = left_pos - 1;
 
@@ -1882,8 +1877,8 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
           pos)) == RE_GBREAK_EXTEND)
             --pos;
 
-        if (pos >= 0 && re_get_extended_pictographic(char_at(state->text, pos))
-          != 0)
+        if (pos >= 0 && re_get_extended_pictographic(char_at(state->text,
+          pos)))
             return FALSE;
     }
 
@@ -2345,17 +2340,6 @@ Py_LOCAL_INLINE(BOOL) ByteStack_drop_block(RE_State* state, ByteStack* stack,
     return TRUE;
 }
 
-/* Gets the top byte off a stack of bytes. */
-Py_LOCAL_INLINE(BOOL) ByteStack_top(RE_State* state, ByteStack* stack, BYTE*
-  item) {
-    if (stack->count < 1)
-        return FALSE;
-
-    *item = stack->storage[stack->count - 1];
-
-    return TRUE;
-}
-
 /* Gets the top block off a stack of bytes. */
 Py_LOCAL_INLINE(BOOL) ByteStack_top_block(RE_State* state, ByteStack* stack,
   void* block, size_t count) {
@@ -2735,38 +2719,6 @@ Py_LOCAL_INLINE(BOOL) drop_pointer(RE_State* state, ByteStack* stack) {
     return ByteStack_drop_block(state, stack, sizeof(void*));
 }
 
-/* Drops fuzzy counts off a stack of bytes. */
-Py_LOCAL_INLINE(BOOL) drop_fuzzy_counts(RE_State* state, ByteStack* stack) {
-    if (!state->pattern->is_fuzzy)
-        return TRUE;
-
-    return ByteStack_drop_block(state, stack, RE_FUZZY_COUNT * sizeof(size_t));
-}
-
-/* Drops group captures and spans off a stack of bytes. */
-Py_LOCAL_INLINE(BOOL) drop_captures(RE_State* state, ByteStack* stack) {
-    Py_ssize_t group_count;
-    Py_ssize_t g;
-
-    /* stack: group[0] group[1] ...
-     *
-     * group: capture[0] capture[1] ... count current
-     */
-
-    group_count = (Py_ssize_t)state->pattern->true_group_count;
-    if (group_count == 0)
-        return TRUE;
-
-    for (g = group_count - 1; g >= 0; g--) {
-        if (!drop_ssize(state, stack))
-            return FALSE;
-        if (!drop_size(state, stack))
-            return FALSE;
-    }
-
-    return TRUE;
-}
-
 /* Drops the repeat guard data off the stack. */
 Py_LOCAL_INLINE(BOOL) drop_guard_data(RE_State* state, ByteStack* stack) {
     size_t count;
@@ -2775,42 +2727,6 @@ Py_LOCAL_INLINE(BOOL) drop_guard_data(RE_State* state, ByteStack* stack) {
         return FALSE;
     if (!ByteStack_drop_block(state, stack, count * sizeof(RE_GuardSpan)))
         return FALSE;
-
-    return TRUE;
-}
-
-/* Drops the repeat data off the stack. */
-Py_LOCAL_INLINE(BOOL) drop_repeat_data(RE_State* state, ByteStack* stack) {
-    if (!drop_size(state, stack))
-        return FALSE;
-    if (!drop_ssize(state, stack))
-        return FALSE;
-    if (!drop_size(state, stack))
-        return FALSE;
-    if (!drop_guard_data(state, stack))
-        return FALSE;
-    if (!drop_guard_data(state, stack))
-        return FALSE;
-
-    return TRUE;
-}
-
-/* Drops the repeats off the stack. */
-Py_LOCAL_INLINE(BOOL) drop_repeats(RE_State* state, ByteStack* stack) {
-    PatternObject* pattern;
-    Py_ssize_t repeat_count;
-    Py_ssize_t r;
-
-    pattern = state->pattern;
-
-    repeat_count = (Py_ssize_t)pattern->repeat_count;
-    if (repeat_count == 0)
-        return TRUE;
-
-    for (r = repeat_count - 1; r >= 0; r--) {
-        if (!drop_repeat_data(state, stack))
-            return FALSE;
-    }
 
     return TRUE;
 }
@@ -3466,14 +3382,6 @@ Py_LOCAL_INLINE(BOOL) node_matches_one_character(RE_Node* node) {
     }
 }
 
-/* Checks whether the node is a firstset. */
-Py_LOCAL_INLINE(BOOL) is_firstset(RE_Node* node) {
-    if (node->step != 0)
-        return FALSE;
-
-    return node_matches_one_character(node);
-}
-
 /* Locates the start node for testing ahead. */
 Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
     for (;;) {
@@ -3510,7 +3418,7 @@ Py_LOCAL_INLINE(RE_Node*) locate_test_start(RE_Node* node) {
             node = node->nonstring.next_2.node;
             break;
         default:
-            if (is_firstset(node)) {
+            if (node->step == 0 && node_matches_one_character(node)) {
                 switch (node->next_1.node->op) {
                 case RE_OP_END_OF_STRING:
                 case RE_OP_START_OF_STRING:

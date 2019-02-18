@@ -4182,6 +4182,11 @@ thing
         self.assertEqual(regex.search(r'(?e)(dogf(((oo){e<1})|((00){e<1}))d){e<2}',
           'dogfoot').fuzzy_counts, (1, 0, 0))
 
+        # Hg issue 312: \X not matching graphemes with zero-width-joins
+        self.assertEqual(regex.findall(r'\X',
+          '\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466'),
+          ['\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466'])
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
