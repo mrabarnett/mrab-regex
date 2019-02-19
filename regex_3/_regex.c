@@ -100,9 +100,6 @@ typedef RE_UINT32 RE_STATUS_T;
 #define RE_SUBN 0x1
 #define RE_SUBF 0x2
 
-/* The name of this module, minus the leading underscore. */
-#define RE_MODULE "regex"
-
 /* Error codes. */
 #define RE_ERROR_INITIALISING 2 /* Initialising object. */
 #define RE_ERROR_SUCCESS 1 /* Successful match. */
@@ -2064,7 +2061,7 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
         break;
     case RE_ERROR_INVALID_GROUP_REF:
         if (!error_exception)
-            error_exception = get_object("_" RE_MODULE "_core", "error");
+            error_exception = get_object("regex._regex_core", "error");
 
         PyErr_SetString(error_exception, "invalid group reference");
         break;
@@ -2089,7 +2086,7 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
         break;
     case RE_ERROR_REPLACEMENT:
         if (!error_exception)
-            error_exception = get_object("_" RE_MODULE "_core", "error");
+            error_exception = get_object("regex._regex_core", "error");
 
         PyErr_SetString(error_exception, "invalid replacement");
         break;
@@ -20064,7 +20061,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     }
 
     /* Hand the template to the template compiler. */
-    replacement = call(RE_MODULE, "_compile_replacement_helper",
+    replacement = call("regex.regex", "_compile_replacement_helper",
       PyTuple_Pack(2, self->pattern, str_template));
     if (!replacement)
         return NULL;
@@ -20109,7 +20106,7 @@ error:
 
 static PyTypeObject Capture_Type = {
     PyVarObject_HEAD_INIT(NULL,0)
-    "_" RE_MODULE "." "Capture",
+    "_regex.Capture",
     sizeof(MatchObject)
 };
 
@@ -20705,7 +20702,7 @@ static PyMappingMethods match_as_mapping = {
 
 static PyTypeObject Match_Type = {
     PyVarObject_HEAD_INIT(NULL,0)
-    "_" RE_MODULE "." "Match",
+    "_regex.Match",
     sizeof(MatchObject)
 };
 
@@ -21105,7 +21102,7 @@ static PyMemberDef scanner_members[] = {
 
 static PyTypeObject Scanner_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_" RE_MODULE "." "Scanner",
+    "_regex.Scanner",
     sizeof(ScannerObject)
 };
 
@@ -21637,7 +21634,7 @@ static PyMemberDef splitter_members[] = {
 
 static PyTypeObject Splitter_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_" RE_MODULE "." "Splitter",
+    "_regex.Splitter",
     sizeof(SplitterObject)
 };
 
@@ -22002,7 +21999,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             /* It isn't a literal, so hand it over to the template compiler. */
             is_template = TRUE;
 
-            replacement = call(RE_MODULE, "_compile_replacement_helper",
+            replacement = call("regex.regex", "_compile_replacement_helper",
               PyTuple_Pack(2, self, str_template));
             if (!replacement) {
                 release_buffer(&str_info);
@@ -23247,7 +23244,7 @@ static PyMemberDef pattern_members[] = {
 
 static PyTypeObject Pattern_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_" RE_MODULE "." "Pattern",
+    "_regex.Pattern",
     sizeof(PatternObject)
 };
 
@@ -26712,7 +26709,7 @@ error:
 /* The module definition. */
 static struct PyModuleDef remodule = {
     PyModuleDef_HEAD_INIT,
-    "_" RE_MODULE,
+    "_regex",
     NULL,
     -1,
     _functions,
