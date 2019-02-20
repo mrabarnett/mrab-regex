@@ -10,5 +10,5 @@ To build and install regex for your default Python run
     
 To install regex for a specific version run setup.py with that interpreter, e.g.
 
-    python3.4 setup.py install
+    python3.5 setup.py install
 

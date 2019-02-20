@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+from os.path import abspath, dirname, join
 import sys
 
 try:
@@ -9,16 +9,17 @@ except ImportError:
     from distutils.core import setup, Extension
 
 MAJOR, MINOR = sys.version_info[:2]
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = dirname(abspath(__file__))
+print('BASE_DIR is %s' % BASE_DIR)
 
 PKG_BASE = 'regex_%i' % MAJOR
-DOCS_DIR = os.path.join(BASE_DIR, 'docs')
+DOCS_DIR = join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2019.02.19',
+    version='2019.02.20',
     description='Alternative regular expression module, to replace re.',
-    long_description=open(os.path.join(DOCS_DIR, 'Features.rst')).read(),
+    long_description=open(join(DOCS_DIR, 'Features.rst')).read(),
 
     # PyPI does spam protection on email addresses, no need to do it here
     author='Matthew Barnett',
@@ -44,9 +45,9 @@ setup(
         ],
     license='Python Software Foundation License',
 
-    py_modules = ['regex', '_regex_core', 'test_regex'],
+    py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core', 'regex.test.test_regex'],
     package_dir={'': PKG_BASE},
 
-    ext_modules=[Extension('_regex', [os.path.join(PKG_BASE, '_regex.c'),
-      os.path.join(PKG_BASE, '_regex_unicode.c')])],
+    ext_modules=[Extension('regex._regex', [join(PKG_BASE, '_regex.c'),
+      join(PKG_BASE, '_regex_unicode.c')])],
     )
