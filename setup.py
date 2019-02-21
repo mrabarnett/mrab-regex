@@ -17,7 +17,7 @@ DOCS_DIR = join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2019.02.20',
+    version='2019.02.21',
     description='Alternative regular expression module, to replace re.',
     long_description=open(join(DOCS_DIR, 'Features.rst')).read(),
 
@@ -45,7 +45,8 @@ setup(
         ],
     license='Python Software Foundation License',
 
-    py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core', 'regex.test.test_regex'],
+    py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core',
+     'regex.test.__init__', 'regex.test.test_regex'],
     package_dir={'': PKG_BASE},
 
     ext_modules=[Extension('regex._regex', [join(PKG_BASE, '_regex.c'),
