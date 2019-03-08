@@ -3021,6 +3021,12 @@ class LookAround(RegexBase):
     def contains_group(self):
         return self.subpattern.contains_group()
 
+    def get_firstset(self, reverse):
+        if self.behind == reverse:
+            return self.subpattern.get_firstset(reverse)
+
+        return set([None])
+
     def _compile(self, reverse, fuzzy):
         flags = 0
         if self.positive:
@@ -3094,10 +3100,6 @@ class LookAroundConditional(RegexBase):
     def contains_group(self):
         return (self.subpattern.contains_group() or
           self.yes_item.contains_group() or self.no_item.contains_group())
-
-    def get_firstset(self, reverse):
-        return (self.subpattern.get_firstset(reverse) |
-          self.no_item.get_firstset(reverse))
 
     def _compile(self, reverse, fuzzy):
         code = [(OP.CONDITIONAL, int(self.positive), int(not self.behind))]

@@ -507,6 +507,7 @@ typedef struct RE_State {
     BOOL too_few_errors; /* Whether there were too few fuzzy errors. */
     BOOL match_all; /* Whether to match all of the string ('fullmatch'). */
     BOOL found_match; /* Whether a POSIX match has been found. */
+    BOOL is_fuzzy; /* Whether the pattern is fuzzy. */
 } RE_State;
 
 /* The PatternObject created from a regular expression. */
@@ -560,7 +561,6 @@ typedef struct PatternObject {
     RE_Node* req_string; /* The required string. */
     BOOL is_fuzzy; /* Whether it's a fuzzy pattern. */
     BOOL do_search_start; /* Whether to do an initial search. */
-    BOOL recursive; /* Whether the entire pattern is recursive. */
 } PatternObject;
 
 /* The MatchObject created when a match is found. */
@@ -2377,7 +2377,7 @@ Py_LOCAL_INLINE(BOOL) push_pointer(RE_State* state, ByteStack* stack, void*
 /* Pushes fuzzy counts onto a stack of bytes. */
 Py_LOCAL_INLINE(BOOL) push_fuzzy_counts(RE_State* state, ByteStack* stack,
   size_t* fuzzy_counts) {
-    if (!state->pattern->is_fuzzy)
+    if (!state->is_fuzzy)
         return TRUE;
 
     return ByteStack_push_block(state, stack, (void*)fuzzy_counts,
@@ -2549,7 +2549,7 @@ Py_LOCAL_INLINE(BOOL) pop_pointer(RE_State* state, ByteStack* stack, void**
 /* Pops fuzzy counts off a stack of bytes. */
 Py_LOCAL_INLINE(BOOL) pop_fuzzy_counts(RE_State* state, ByteStack* stack,
   size_t* fuzzy_counts) {
-    if (!state->pattern->is_fuzzy)
+    if (!state->is_fuzzy)
         return TRUE;
 
     return ByteStack_pop_block(state, stack, (void*)fuzzy_counts,
@@ -2710,7 +2710,6 @@ Py_LOCAL_INLINE(BOOL) drop_guard_data(RE_State* state, ByteStack* stack) {
 
 /* Drops the bstack count off the pstack. */
 Py_LOCAL_INLINE(BOOL) drop_bstack(RE_State* state) {
-
     return drop_size(state, &state->pstack);
 }
 
@@ -3304,7 +3303,7 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
     reset_guards(state);
 
     /* Clear the counts and cost for matching. */
-    if (state->pattern->is_fuzzy) {
+    if (state->is_fuzzy) {
         memset(state->fuzzy_counts, 0, sizeof(state->fuzzy_counts));
         state->fuzzy_node = NULL;
         state->fuzzy_changes.count = 0;
@@ -8185,7 +8184,7 @@ Py_LOCAL_INLINE(int) search_start(RE_State* state, RE_NextNode* next,
     }
 
 again:
-    if (!state->pattern->is_fuzzy && state->partial_side == RE_PARTIAL_NONE) {
+    if (!state->is_fuzzy && state->partial_side == RE_PARTIAL_NONE) {
         if (state->reverse) {
             if (start_pos - state->min_width < state->slice_start)
                 return RE_ERROR_FAILURE;
@@ -12004,7 +12003,8 @@ start_match:
      */
 
     /* Clear the fuzzy counts. */
-    memset(state->fuzzy_counts, 0, sizeof(state->fuzzy_counts));
+    if (state->is_fuzzy)
+        memset(state->fuzzy_counts, 0, sizeof(state->fuzzy_counts));
 
     /* If we're searching, advance along the string until there could be a
      * match.
@@ -12780,7 +12780,7 @@ advance:
               state->text_pos != rp_data->start;
 
             /* Additional checks are needed if there's fuzzy matching. */
-            if (changed && state->pattern->is_fuzzy && rp_data->count >=
+            if (changed && state->is_fuzzy && rp_data->count >=
               node->values[1])
                 changed = !(node->step == 1 ? state->text_pos >=
                   state->slice_end : state->text_pos <= state->slice_start);
@@ -13007,7 +13007,7 @@ advance:
               state->text_pos != rp_data->start;
 
             /* Additional checks are needed if there's fuzzy matching. */
-            if (changed && state->pattern->is_fuzzy && rp_data->count >=
+            if (changed && state->is_fuzzy && rp_data->count >=
               node->values[1])
                 changed = !(node->step == 1 ? state->text_pos >=
                   state->slice_end : state->text_pos <= state->slice_start);
@@ -13794,9 +13794,9 @@ advance:
             rp_data->capture_change = state->capture_change;
 
             /* Could the body or tail match? */
-            try_body = (changed && state->pattern->is_fuzzy) ||
-              (node->values[2] > 0 && !is_repeat_guarded(state, index,
-              state->text_pos, RE_STATUS_BODY));
+            try_body = (changed && state->is_fuzzy) || (node->values[2] > 0 &&
+              !is_repeat_guarded(state, index, state->text_pos,
+              RE_STATUS_BODY));
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
@@ -18599,6 +18599,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     state->fuzzy_guards = NULL;
     state->group_call_guard_list = NULL;
     state->req_pos = -1;
+    state->is_fuzzy = pattern->is_fuzzy;
 
     /* The call guards used by recursive patterns. */
     if (pattern->call_ref_info_count > 0) {
@@ -26065,7 +26066,6 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
     self->stack_storage = NULL;
     self->stack_capacity = 0;
     self->fuzzy_count = 0;
-    self->recursive = FALSE;
     self->req_offset = req_offset;
     self->required_chars = required_chars;
     self->req_flags = req_flags;
