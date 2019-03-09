@@ -4017,6 +4017,10 @@ thing
               u'\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466'),
               [u'\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466'])
 
+        # Hg issue 320: Abnormal performance
+        self.assertEquals(bool(regex.search(r'(?=a)a', 'a')), True)
+        self.assertEquals(bool(regex.search(r'(?!b)a', 'a')), True)
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')

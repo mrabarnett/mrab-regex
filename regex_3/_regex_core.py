@@ -3004,7 +3004,7 @@ class LookAround(RegexBase):
         return self.subpattern.contains_group()
 
     def get_firstset(self, reverse):
-        if self.behind == reverse:
+        if self.positive and self.behind == reverse:
             return self.subpattern.get_firstset(reverse)
 
         return set([None])
