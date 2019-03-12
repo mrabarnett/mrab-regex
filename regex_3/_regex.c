@@ -86,6 +86,12 @@ typedef RE_UINT32 RE_STATUS_T;
 #define RE_CONC_YES 1
 #define RE_CONC_DEFAULT 2
 
+/* The result of decoding the timeout. Values are in clock ticks. Non-negative
+ * values are valid.
+ */
+#define RE_NO_TIMEOUT -1
+#define RE_BAD_TIMEOUT -2
+
 /* The side that could truncate in a partial match.
  *
  * The values RE_PARTIAL_LEFT and RE_PARTIAL_RIGHT are also used as array
@@ -108,7 +114,7 @@ typedef RE_UINT32 RE_STATUS_T;
 #define RE_ERROR_INTERNAL -2 /* Internal error. */
 #define RE_ERROR_CONCURRENT -3 /* "concurrent" invalid. */
 #define RE_ERROR_MEMORY -4 /* Out of memory. */
-#define RE_ERROR_INTERRUPTED -5 /* Signal handler raised exception. */
+#define RE_ERROR_CANCELLED -5 /* Matching cancelled. */
 #define RE_ERROR_REPLACEMENT -6 /* Invalid replacement string. */
 #define RE_ERROR_INVALID_GROUP_REF -7 /* Invalid group reference. */
 #define RE_ERROR_GROUP_INDEX_TYPE -8 /* Group index type error. */
@@ -118,6 +124,8 @@ typedef RE_UINT32 RE_STATUS_T;
 #define RE_ERROR_NOT_UNICODE -12 /* Not a Unicode string. */
 #define RE_ERROR_PARTIAL -13 /* Partial match. */
 #define RE_ERROR_NOT_BYTES -14 /* Not a bytestring. */
+#define RE_ERROR_BAD_TIMEOUT -15 /* "timeout" invalid. */
+#define RE_ERROR_TIMED_OUT -16 /* matching has timed out. */
 
 /* Node bitflags. */
 #define RE_POSITIVE_OP 0x1
@@ -505,6 +513,8 @@ typedef struct RE_State {
     size_t capture_change; /* Incremented every time a captive group changes. */
     Py_ssize_t req_pos; /* The position where the required string matched. */
     Py_ssize_t req_end; /* The end position where the required string matched. */
+    Py_ssize_t timeout; /* The timeout in clock ticks. */
+    clock_t start_time; /* The clock time when matching started. */
     int partial_side; /* The side that could truncate in a partial match. */
     RE_UINT16 iterations; /* The number of iterations the matching engine has performed since checking for KeyboardInterrupt. */
     BOOL is_unicode; /* Whether the string to be matched is Unicode. */
@@ -2038,6 +2048,12 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
     PyErr_Clear();
 
     switch (status) {
+    case RE_ERROR_BAD_TIMEOUT:
+        PyErr_SetString(PyExc_ValueError, "timeout not float or None");
+        break;
+    case RE_ERROR_CANCELLED:
+        /* An exception has already been raised, so let it fly. */
+        break;
     case RE_ERROR_CONCURRENT:
         PyErr_SetString(PyExc_ValueError, "concurrent not int or None");
         break;
@@ -2055,9 +2071,6 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
         break;
     case RE_ERROR_INDEX:
         PyErr_SetString(PyExc_TypeError, "string indices must be integers");
-        break;
-    case RE_ERROR_INTERRUPTED:
-        /* An exception has already been raised, so let it fly. */
         break;
     case RE_ERROR_INVALID_GROUP_REF:
         if (!error_exception)
@@ -2089,6 +2102,9 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
             error_exception = get_object("regex._regex_core", "error");
 
         PyErr_SetString(error_exception, "invalid replacement");
+        break;
+    case RE_ERROR_TIMED_OUT:
+        PyErr_SetString(PyExc_TimeoutError, "regex timed out");
         break;
     default:
         /* Other error codes indicate compiler/engine bugs. */
@@ -2186,13 +2202,32 @@ Py_LOCAL_INLINE(void) safe_dealloc(RE_State* state, void* ptr) {
     release_GIL(state);
 }
 
-/* Checks for KeyboardInterrupt, holding the GIL during the check. */
-Py_LOCAL_INLINE(BOOL) safe_check_signals(RE_State* state) {
+/* Checks whether matching has timed out. */
+Py_LOCAL_INLINE(BOOL) check_timed_out(RE_State* state) {
+    if (state->timeout < 0)
+        /* No timeout. */
+        return FALSE;
+
+    if (clock() - state->start_time < state->timeout)
+        /* hasn't timed out yet. */
+        return FALSE;
+
+    set_error(RE_ERROR_TIMED_OUT, NULL);
+
+    return TRUE;
+}
+
+/* Checks whether to cancel due to a KeyboardInterrupt or a timeout. */
+Py_LOCAL_INLINE(BOOL) safe_check_cancel(RE_State* state) {
     BOOL result;
 
     acquire_GIL(state);
 
     result = (BOOL)PyErr_CheckSignals();
+
+    if (!result)
+        /* Has it timed out? */
+        result = check_timed_out(state);
 
     release_GIL(state);
 
@@ -12044,7 +12079,9 @@ Py_LOCAL_INLINE(int) basic_match(RE_State* state, BOOL search) {
         do_search_start = FALSE;
 
 start_match:
-    /* Add a backtrack entry for failure. */
+    if (state->iterations == 0 && safe_check_cancel(state))
+        return RE_ERROR_CANCELLED;
+
     if (!push_uint8(state, &state->bstack, RE_OP_FAILURE))
         return RE_ERROR_MEMORY;
     if (!push_bstack(state))
@@ -12180,8 +12217,8 @@ advance:
         /* Should we abort the matching? */
         state->iterations += 0x100U;
 
-        if (state->iterations == 0 && safe_check_signals(state))
-            return RE_ERROR_INTERRUPTED;
+        if (state->iterations == 0 && safe_check_cancel(state))
+            return RE_ERROR_CANCELLED;
 
         switch (node->op) {
         case RE_OP_ANY: /* Any character except a newline. */
@@ -15523,8 +15560,8 @@ backtrack:
         /* Should we abort the matching? */
         state->iterations += 0x100U;
 
-        if (state->iterations == 0 && safe_check_signals(state))
-            return RE_ERROR_INTERRUPTED;
+        if (state->iterations == 0 && safe_check_cancel(state))
+            return RE_ERROR_CANCELLED;
 
         if (!pop_uint8(state, &state->bstack, &op))
             return RE_ERROR_MEMORY;
@@ -18569,7 +18606,7 @@ Py_LOCAL_INLINE(void) dealloc_groups(RE_GroupData* groups, size_t group_count)
 Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
   PyObject* string, RE_StringInfo* str_info, Py_ssize_t start, Py_ssize_t end,
   BOOL overlapped, int concurrent, BOOL partial, BOOL use_lock, BOOL
-  visible_captures, BOOL match_all) {
+  visible_captures, BOOL match_all, Py_ssize_t timeout) {
     Py_ssize_t final_pos;
     int p;
 
@@ -18797,6 +18834,9 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
         break;
     }
 
+    state->timeout = timeout;
+    state->start_time = clock();
+
     /* A state struct can sometimes be shared across threads. In such
      * instances, if multithreading is enabled we need to protect the state
      * with a lock (mutex) during matching.
@@ -18849,7 +18889,7 @@ Py_LOCAL_INLINE(void) release_buffer(RE_StringInfo* str_info) {
 Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
   PyObject* string, Py_ssize_t start, Py_ssize_t end, BOOL overlapped, int
   concurrent, BOOL partial, BOOL use_lock, BOOL visible_captures, BOOL
-  match_all) {
+  match_all, Py_ssize_t timeout) {
     RE_StringInfo str_info;
 
     /* Get the string to search or match. */
@@ -18865,8 +18905,8 @@ Py_LOCAL_INLINE(BOOL) state_init(RE_State* state, PatternObject* pattern,
     }
 
     if (!state_init_2(state, pattern, string, &str_info, start, end,
-      overlapped, concurrent, partial, use_lock, visible_captures, match_all))
-      {
+      overlapped, concurrent, partial, use_lock, visible_captures, match_all,
+      timeout)) {
         release_buffer(&str_info);
         return FALSE;
     }
@@ -21142,6 +21182,22 @@ Py_LOCAL_INLINE(BOOL) decode_partial(PyObject* partial) {
     return value != 0;
 }
 
+/* Decodes a 'timeout' argument. */
+Py_LOCAL_INLINE(Py_ssize_t) decode_timeout(PyObject* timeout) {
+    double value;
+
+    if (timeout == Py_None)
+        return RE_NO_TIMEOUT;
+
+    value = PyFloat_AsDouble(timeout);
+    if (value == -1.0 && PyErr_Occurred()) {
+        set_error(RE_ERROR_BAD_TIMEOUT, NULL);
+        return RE_BAD_TIMEOUT;
+    }
+
+    return value >= 0.0 ? (Py_ssize_t)(value * CLOCKS_PER_SEC) : RE_NO_TIMEOUT;
+}
+
 /* Creates a new ScannerObject. */
 static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
   PyObject* kwargs) {
@@ -21150,6 +21206,7 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
     Py_ssize_t start;
     Py_ssize_t end;
     int conc;
+    Py_ssize_t tim;
     BOOL part;
 
     PyObject* string;
@@ -21157,11 +21214,12 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
     PyObject* endpos = Py_None;
     Py_ssize_t overlapped = FALSE;
     PyObject* concurrent = Py_None;
+    PyObject* timeout = Py_None;
     PyObject* partial = Py_False;
     static char* kwlist[] = { "string", "pos", "endpos", "overlapped",
-      "concurrent", "partial", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOnOO:scanner", kwlist,
-      &string, &pos, &endpos, &overlapped, &concurrent, &partial))
+      "concurrent", "partial", "timeout", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOnOOO:scanner", kwlist,
+      &string, &pos, &endpos, &overlapped, &concurrent, &partial, &timeout))
         return NULL;
 
     start = as_string_index(pos, 0);
@@ -21174,6 +21232,10 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
 
     conc = decode_concurrent(concurrent);
     if (conc < 0)
+        return NULL;
+
+    tim = decode_timeout(timeout);
+    if (tim == RE_BAD_TIMEOUT)
         return NULL;
 
     part = decode_partial(partial);
@@ -21189,7 +21251,7 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
 
     /* The MatchObject, and therefore repeated captures, will be visible. */
     if (!state_init(&self->state, pattern, string, start, end, overlapped != 0,
-      conc, part, TRUE, TRUE, FALSE)) {
+      conc, part, TRUE, TRUE, FALSE, tim)) {
         Py_DECREF(self);
         return NULL;
     }
@@ -21644,18 +21706,25 @@ Py_LOCAL_INLINE(PyObject*) pattern_splitter(PatternObject* pattern, PyObject*
   args, PyObject* kwargs) {
     /* Create split state object. */
     int conc;
+    Py_ssize_t tim;
     SplitterObject* self;
 
     PyObject* string;
     Py_ssize_t maxsplit = 0;
     PyObject* concurrent = Py_None;
-    static char* kwlist[] = { "string", "maxsplit", "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|nO:splitter", kwlist,
-      &string, &maxsplit, &concurrent))
+    PyObject* timeout = Py_None;
+    static char* kwlist[] = { "string", "maxsplit", "concurrent", "timeout",
+      NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|nOO:splitter", kwlist,
+      &string, &maxsplit, &concurrent, &timeout))
         return NULL;
 
     conc = decode_concurrent(concurrent);
     if (conc < 0)
+        return NULL;
+
+    tim = decode_timeout(timeout);
+    if (tim == RE_BAD_TIMEOUT)
         return NULL;
 
     /* Create a splitter object. */
@@ -21673,7 +21742,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_splitter(PatternObject* pattern, PyObject*
     /* The MatchObject, and therefore repeated captures, will not be visible.
      */
     if (!state_init(&self->state, pattern, string, 0, PY_SSIZE_T_MAX, FALSE,
-      conc, FALSE, TRUE, FALSE, FALSE)) {
+      conc, FALSE, TRUE, FALSE, FALSE, tim)) {
         Py_DECREF(self);
         return NULL;
     }
@@ -21694,6 +21763,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_search_or_match(PatternObject* self,
     Py_ssize_t start;
     Py_ssize_t end;
     int conc;
+    Py_ssize_t tim;
     BOOL part;
     RE_State state;
     int status;
@@ -21703,9 +21773,10 @@ Py_LOCAL_INLINE(PyObject*) pattern_search_or_match(PatternObject* self,
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
     PyObject* concurrent = Py_None;
+    PyObject* timeout = Py_None;
     PyObject* partial = Py_False;
     static char* kwlist[] = { "string", "pos", "endpos", "concurrent",
-      "partial", NULL };
+      "partial", "timeout", NULL };
     /* When working with a short string, such as a line from a file, the
      * relative cost of PyArg_ParseTupleAndKeywords can be significant, and
      * it's worth not using it when there are only positional arguments.
@@ -21727,8 +21798,10 @@ Py_LOCAL_INLINE(PyObject*) pattern_search_or_match(PatternObject* self,
             concurrent = PyTuple_GET_ITEM(args, 3);
         if (arg_count >= 5)
             partial = PyTuple_GET_ITEM(args, 4);
+        if (arg_count >= 6)
+            timeout = PyTuple_GET_ITEM(args, 5);
     } else if (!PyArg_ParseTupleAndKeywords(args, kwargs, args_desc, kwlist,
-      &string, &pos, &endpos, &concurrent, &partial))
+      &string, &pos, &endpos, &concurrent, &partial, &timeout))
         return NULL;
 
     start = as_string_index(pos, 0);
@@ -21743,11 +21816,15 @@ Py_LOCAL_INLINE(PyObject*) pattern_search_or_match(PatternObject* self,
     if (conc < 0)
         return NULL;
 
+    tim = decode_timeout(timeout);
+    if (tim == RE_BAD_TIMEOUT)
+        return NULL;
+
     part = decode_partial(partial);
 
     /* The MatchObject, and therefore repeated captures, will be visible. */
     if (!state_init(&state, self, string, start, end, FALSE, conc, part, FALSE,
-      TRUE, match_all))
+      TRUE, match_all, tim))
         return NULL;
 
     status = do_match(&state, search);
@@ -21766,21 +21843,21 @@ Py_LOCAL_INLINE(PyObject*) pattern_search_or_match(PatternObject* self,
 /* PatternObject's 'match' method. */
 static PyObject* pattern_match(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
-    return pattern_search_or_match(self, args, kwargs, "O|OOOO:match", FALSE,
+    return pattern_search_or_match(self, args, kwargs, "O|OOOOO:match", FALSE,
       FALSE);
 }
 
 /* PatternObject's 'fullmatch' method. */
 static PyObject* pattern_fullmatch(PatternObject* self, PyObject* args,
   PyObject* kwargs) {
-    return pattern_search_or_match(self, args, kwargs, "O|OOOO:fullmatch",
+    return pattern_search_or_match(self, args, kwargs, "O|OOOOO:fullmatch",
       FALSE, TRUE);
 }
 
 /* PatternObject's 'search' method. */
 static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
-    return pattern_search_or_match(self, args, kwargs, "O|OOOO:search", TRUE,
+    return pattern_search_or_match(self, args, kwargs, "O|OOOOO:search", TRUE,
       FALSE);
 }
 
@@ -21890,7 +21967,7 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
 /* PatternObject's 'subx' method. */
 Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
   str_template, PyObject* string, Py_ssize_t maxsub, int sub_type, PyObject*
-  pos, PyObject* endpos, int concurrent) {
+  pos, PyObject* endpos, int concurrent, Py_ssize_t timeout) {
     RE_StringInfo str_info;
     Py_ssize_t start;
     Py_ssize_t end;
@@ -22014,7 +22091,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
      */
     if (!state_init_2(&state, self, string, &str_info, start, end, FALSE,
       concurrent, FALSE, FALSE, is_callable || (sub_type & RE_SUBF) != 0,
-      FALSE)) {
+      FALSE, timeout)) {
         release_buffer(&str_info);
         Py_XDECREF(replacement);
         return NULL;
@@ -22270,6 +22347,7 @@ error:
 static PyObject* pattern_sub(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
     int conc;
+    Py_ssize_t tim;
 
     PyObject* replacement;
     PyObject* string;
@@ -22277,24 +22355,30 @@ static PyObject* pattern_sub(PatternObject* self, PyObject* args, PyObject*
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
     PyObject* concurrent = Py_None;
+    PyObject* timeout = Py_None;
     static char* kwlist[] = { "repl", "string", "count", "pos", "endpos",
-      "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|nOOO:sub", kwlist,
-      &replacement, &string, &count, &pos, &endpos, &concurrent))
+      "concurrent", "timeout", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|nOOOO:sub", kwlist,
+      &replacement, &string, &count, &pos, &endpos, &concurrent, &timeout))
         return NULL;
 
     conc = decode_concurrent(concurrent);
     if (conc < 0)
         return NULL;
 
+    tim = decode_timeout(timeout);
+    if (tim == RE_BAD_TIMEOUT)
+        return NULL;
+
     return pattern_subx(self, replacement, string, count, RE_SUB, pos, endpos,
-      conc);
+      conc, tim);
 }
 
 /* PatternObject's 'subf' method. */
 static PyObject* pattern_subf(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
     int conc;
+    Py_ssize_t tim;
 
     PyObject* format;
     PyObject* string;
@@ -22302,24 +22386,30 @@ static PyObject* pattern_subf(PatternObject* self, PyObject* args, PyObject*
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
     PyObject* concurrent = Py_None;
+    PyObject* timeout = Py_None;
     static char* kwlist[] = { "format", "string", "count", "pos", "endpos",
-      "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|nOOO:sub", kwlist,
-      &format, &string, &count, &pos, &endpos, &concurrent))
+      "concurrent", "timeout", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|nOOOO:sub", kwlist,
+      &format, &string, &count, &pos, &endpos, &concurrent, &timeout))
         return NULL;
 
     conc = decode_concurrent(concurrent);
     if (conc < 0)
         return NULL;
 
+    tim = decode_timeout(timeout);
+    if (tim == RE_BAD_TIMEOUT)
+        return NULL;
+
     return pattern_subx(self, format, string, count, RE_SUBF, pos, endpos,
-      conc);
+      conc, tim);
 }
 
 /* PatternObject's 'subn' method. */
 static PyObject* pattern_subn(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
     int conc;
+    Py_ssize_t tim;
 
     PyObject* replacement;
     PyObject* string;
@@ -22327,24 +22417,30 @@ static PyObject* pattern_subn(PatternObject* self, PyObject* args, PyObject*
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
     PyObject* concurrent = Py_None;
+    PyObject* timeout = Py_None;
     static char* kwlist[] = { "repl", "string", "count", "pos", "endpos",
-      "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|nOOO:subn", kwlist,
-      &replacement, &string, &count, &pos, &endpos, &concurrent))
+      "concurrent", "timeout", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|nOOOO:subn", kwlist,
+      &replacement, &string, &count, &pos, &endpos, &concurrent, &timeout))
         return NULL;
 
     conc = decode_concurrent(concurrent);
     if (conc < 0)
         return NULL;
 
+    tim = decode_timeout(timeout);
+    if (tim == RE_BAD_TIMEOUT)
+        return NULL;
+
     return pattern_subx(self, replacement, string, count, RE_SUBN, pos, endpos,
-      conc);
+      conc, tim);
 }
 
 /* PatternObject's 'subfn' method. */
 static PyObject* pattern_subfn(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
     int conc;
+    Py_ssize_t tim;
 
     PyObject* format;
     PyObject* string;
@@ -22352,24 +22448,30 @@ static PyObject* pattern_subfn(PatternObject* self, PyObject* args, PyObject*
     PyObject* pos = Py_None;
     PyObject* endpos = Py_None;
     PyObject* concurrent = Py_None;
+    PyObject* timeout = Py_None;
     static char* kwlist[] = { "format", "string", "count", "pos", "endpos",
-      "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|nOOO:subn", kwlist,
-      &format, &string, &count, &pos, &endpos, &concurrent))
+      "concurrent", "timeout", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|nOOOO:subn", kwlist,
+      &format, &string, &count, &pos, &endpos, &concurrent, &timeout))
         return NULL;
 
     conc = decode_concurrent(concurrent);
     if (conc < 0)
         return NULL;
 
+    tim = decode_timeout(timeout);
+    if (tim == RE_BAD_TIMEOUT)
+        return NULL;
+
     return pattern_subx(self, format, string, count, RE_SUBF | RE_SUBN, pos,
-      endpos, conc);
+      endpos, conc, tim);
 }
 
 /* PatternObject's 'split' method. */
 static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
     int conc;
+    Py_ssize_t tim;
     RE_State state;
     PyObject* list;
     PyObject* item;
@@ -22386,9 +22488,11 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
     PyObject* string;
     Py_ssize_t maxsplit = 0;
     PyObject* concurrent = Py_None;
-    static char* kwlist[] = { "string", "maxsplit", "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|nO:split", kwlist,
-      &string, &maxsplit, &concurrent))
+    PyObject* timeout = Py_None;
+    static char* kwlist[] = { "string", "maxsplit", "concurrent", "timeout",
+      NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|nOO:split", kwlist,
+      &string, &maxsplit, &concurrent, &timeout))
         return NULL;
 
     if (maxsplit == 0)
@@ -22398,10 +22502,14 @@ static PyObject* pattern_split(PatternObject* self, PyObject* args, PyObject*
     if (conc < 0)
         return NULL;
 
+    tim = decode_timeout(timeout);
+    if (tim == RE_BAD_TIMEOUT)
+        return NULL;
+
     /* The MatchObject, and therefore repeated captures, will not be visible.
      */
     if (!state_init(&state, self, string, 0, PY_SSIZE_T_MAX, FALSE, conc,
-      FALSE, FALSE, FALSE, FALSE))
+      FALSE, FALSE, FALSE, FALSE, tim))
         return NULL;
 
     list = PyList_New(0);
@@ -22538,6 +22646,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     Py_ssize_t start;
     Py_ssize_t end;
     int conc;
+    Py_ssize_t tim;
     RE_State state;
     PyObject* list;
     Py_ssize_t step;
@@ -22551,10 +22660,11 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     PyObject* endpos = Py_None;
     Py_ssize_t overlapped = FALSE;
     PyObject* concurrent = Py_None;
+    PyObject* timeout = Py_None;
     static char* kwlist[] = { "string", "pos", "endpos", "overlapped",
-      "concurrent", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOnO:findall", kwlist,
-      &string, &pos, &endpos, &overlapped, &concurrent))
+      "concurrent", "timeout", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOnOO:findall", kwlist,
+      &string, &pos, &endpos, &overlapped, &concurrent, &timeout))
         return NULL;
 
     start = as_string_index(pos, 0);
@@ -22569,10 +22679,14 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     if (conc < 0)
         return NULL;
 
+    tim = decode_timeout(timeout);
+    if (tim == RE_BAD_TIMEOUT)
+        return NULL;
+
     /* The MatchObject, and therefore repeated captures, will not be visible.
      */
     if (!state_init(&state, self, string, start, end, overlapped != 0, conc,
-      FALSE, FALSE, FALSE, FALSE))
+      FALSE, FALSE, FALSE, FALSE, tim))
         return NULL;
 
     list = PyList_New(0);
@@ -22683,63 +22797,63 @@ static PyObject* pattern_deepcopy(PatternObject* self, PyObject* memo) {
 
 /* The documentation of a PatternObject. */
 PyDoc_STRVAR(pattern_match_doc,
-    "match(string, pos=None, endpos=None, concurrent=None) --> MatchObject or None.\n\
+    "match(string, pos=None, endpos=None, concurrent=None, timeout=None) --> MatchObject or None.\n\
     Match zero or more characters at the beginning of the string.");
 
 PyDoc_STRVAR(pattern_fullmatch_doc,
-    "fullmatch(string, pos=None, endpos=None, concurrent=None) --> MatchObject or None.\n\
+    "fullmatch(string, pos=None, endpos=None, concurrent=None, timeout=None) --> MatchObject or None.\n\
     Match zero or more characters against all of the string.");
 
 PyDoc_STRVAR(pattern_search_doc,
-    "search(string, pos=None, endpos=None, concurrent=None) --> MatchObject or None.\n\
+    "search(string, pos=None, endpos=None, concurrent=None, timeout=None) --> MatchObject or None.\n\
     Search through string looking for a match, and return a corresponding\n\
     match object instance.  Return None if no match is found.");
 
 PyDoc_STRVAR(pattern_sub_doc,
-    "sub(repl, string, count=0, flags=0, pos=None, endpos=None, concurrent=None) --> newstring\n\
+    "sub(repl, string, count=0, flags=0, pos=None, endpos=None, concurrent=None, timeout=None) --> newstring\n\
     Return the string obtained by replacing the leftmost (or rightmost with a\n\
     reverse pattern) non-overlapping occurrences of pattern in string by the\n\
     replacement repl.");
 
 PyDoc_STRVAR(pattern_subf_doc,
-    "subf(format, string, count=0, flags=0, pos=None, endpos=None, concurrent=None) --> newstring\n\
+    "subf(format, string, count=0, flags=0, pos=None, endpos=None, concurrent=None, timeout=None) --> newstring\n\
     Return the string obtained by replacing the leftmost (or rightmost with a\n\
     reverse pattern) non-overlapping occurrences of pattern in string by the\n\
     replacement format.");
 
 PyDoc_STRVAR(pattern_subn_doc,
-    "subn(repl, string, count=0, flags=0, pos=None, endpos=None, concurrent=None) --> (newstring, number of subs)\n\
+    "subn(repl, string, count=0, flags=0, pos=None, endpos=None, concurrent=None, timeout=None) --> (newstring, number of subs)\n\
     Return the tuple (new_string, number_of_subs_made) found by replacing the\n\
     leftmost (or rightmost with a reverse pattern) non-overlapping occurrences\n\
     of pattern with the replacement repl.");
 
 PyDoc_STRVAR(pattern_subfn_doc,
-    "subfn(format, string, count=0, flags=0, pos=None, endpos=None, concurrent=None) --> (newstring, number of subs)\n\
+    "subfn(format, string, count=0, flags=0, pos=None, endpos=None, concurrent=None, timeout=None) --> (newstring, number of subs)\n\
     Return the tuple (new_string, number_of_subs_made) found by replacing the\n\
     leftmost (or rightmost with a reverse pattern) non-overlapping occurrences\n\
     of pattern with the replacement format.");
 
 PyDoc_STRVAR(pattern_split_doc,
-    "split(string, string, maxsplit=0, concurrent=None) --> list.\n\
+    "split(string, string, maxsplit=0, concurrent=None, timeout=None) --> list.\n\
     Split string by the occurrences of pattern.");
 
 PyDoc_STRVAR(pattern_splititer_doc,
-    "splititer(string, maxsplit=0, concurrent=None) --> iterator.\n\
+    "splititer(string, maxsplit=0, concurrent=None, timeout=None) --> iterator.\n\
     Return an iterator yielding the parts of a split string.");
 
 PyDoc_STRVAR(pattern_findall_doc,
-    "findall(string, pos=None, endpos=None, overlapped=False, concurrent=None) --> list.\n\
+    "findall(string, pos=None, endpos=None, overlapped=False, concurrent=None, timeout=None) --> list.\n\
     Return a list of all matches of pattern in string.  The matches may be\n\
     overlapped if overlapped is True.");
 
 PyDoc_STRVAR(pattern_finditer_doc,
-    "finditer(string, pos=None, endpos=None, overlapped=False, concurrent=None) --> iterator.\n\
+    "finditer(string, pos=None, endpos=None, overlapped=False, concurrent=None, timeout=None) --> iterator.\n\
     Return an iterator over all matches for the RE pattern in string.  The\n\
     matches may be overlapped if overlapped is True.  For each match, the\n\
     iterator returns a MatchObject.");
 
 PyDoc_STRVAR(pattern_scanner_doc,
-    "scanner(string, pos=None, endpos=None, overlapped=False, concurrent=None) --> scanner.\n\
+    "scanner(string, pos=None, endpos=None, overlapped=False, concurrent=None, timeout=None) --> scanner.\n\
     Return an scanner for the RE pattern in string.  The matches may be overlapped\n\
     if overlapped is True.");
 
@@ -26707,7 +26821,7 @@ error:
 }
 
 /* The module definition. */
-static struct PyModuleDef remodule = {
+static struct PyModuleDef regex_module = {
     PyModuleDef_HEAD_INIT,
     "_regex",
     NULL,
@@ -26789,7 +26903,7 @@ PyMODINIT_FUNC PyInit__regex(void) {
 
     error_exception = NULL;
 
-    m = PyModule_Create(&remodule);
+    m = PyModule_Create(&regex_module);
     if (!m)
         return NULL;
 

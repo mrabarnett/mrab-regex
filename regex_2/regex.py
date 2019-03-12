@@ -239,7 +239,7 @@ __all__ = ["compile", "DEFAULT_VERSION", "escape", "findall", "finditer",
   "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X",
   "VERBOSE", "W", "WORD", "error", "Regex", "__version__"]
 
-__version__ = "2.5.27"
+__version__ = "2.5.28"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -309,7 +309,8 @@ def subfn(pattern, format, string, count=0, flags=0, pos=None, endpos=None,
     return _compile(pattern, flags, kwargs).subfn(format, string, count, pos,
       endpos, concurrent)
 
-def split(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
+def split(pattern, string, maxsplit=0, flags=0, concurrent=None,
+  **kwargs):
     """Split the source string by the occurrences of the pattern, returning a
     list containing the resulting substrings.  If capturing parentheses are used
     in pattern, then the text of all groups in the pattern are also returned as
@@ -318,7 +319,8 @@ def split(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
     the list."""
     return _compile(pattern, flags, kwargs).split(string, maxsplit, concurrent)
 
-def splititer(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
+def splititer(pattern, string, maxsplit=0, flags=0, concurrent=None,
+  **kwargs):
     "Return an iterator yielding the parts of a split string."
     return _compile(pattern, flags, kwargs).splititer(string, maxsplit,
       concurrent)

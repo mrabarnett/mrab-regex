@@ -3,8 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.13.1: http://docutils.sourceforge.net/" />
-<title></title>
+<meta name="generator" content="Docutils 0.14: http://docutils.sourceforge.net/" />
+<title>Features.rst</title>
 <style type="text/css">
 
 /*
@@ -1112,6 +1112,28 @@ ul.auto-toc {
 </li>
 <li><p class="first">Default Unicode word boundary</p>
 <p>The <tt class="docutils literal">WORD</tt> flag changes the definition of a 'word boundary' to that of a default Unicode word boundary. This applies to <tt class="docutils literal">\b</tt> and <tt class="docutils literal">\B</tt>.</p>
+</li>
+<li><p class="first">Timeout (Python 3)</p>
+<p>The matching methods and functions support timeouts. The timeout (in seconds) applies to the entire operation:</p>
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword namespace">from</span> <span class="name namespace">time</span> <span class="keyword namespace">import</span> <span class="name">sleep</span>
+<span class="operator">&gt;&gt;&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">def</span> <span class="name function">fast_replace</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">):</span>
+<span class="operator">...</span>     <span class="keyword">return</span> <span class="literal string single">'X'</span>
+<span class="operator">...</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">def</span> <span class="name function">slow_replace</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">):</span>
+<span class="operator">...</span>     <span class="name">sleep</span><span class="punctuation">(</span><span class="literal number float">0.5</span><span class="punctuation">)</span>
+<span class="operator">...</span>     <span class="keyword">return</span> <span class="literal string single">'X'</span>
+<span class="operator">...</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'[a-z]'</span><span class="punctuation">,</span> <span class="name">fast_replace</span><span class="punctuation">,</span> <span class="literal string single">'abcde'</span><span class="punctuation">,</span> <span class="name">timeout</span><span class="operator">=</span><span class="literal number integer">2</span><span class="punctuation">)</span>
+<span class="literal string single">'XXXXX'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'[a-z]'</span><span class="punctuation">,</span> <span class="name">slow_replace</span><span class="punctuation">,</span> <span class="literal string single">'abcde'</span><span class="punctuation">,</span> <span class="name">timeout</span><span class="operator">=</span><span class="literal number integer">2</span><span class="punctuation">)</span>
+<span class="name">Traceback</span> <span class="punctuation">(</span><span class="name">most</span> <span class="name">recent</span> <span class="name">call</span> <span class="name">last</span><span class="punctuation">):</span>
+  <span class="name">File</span> <span class="literal string double">&quot;&lt;stdin&gt;&quot;</span><span class="punctuation">,</span> <span class="name">line</span> <span class="literal number integer">1</span><span class="punctuation">,</span> <span class="operator word">in</span> <span class="operator">&lt;</span><span class="name">module</span><span class="operator">&gt;</span>
+  <span class="name">File</span> <span class="literal string double">&quot;C:\Python37\lib\site-packages</span><span class="literal string escape">\r</span><span class="literal string double">egex</span><span class="literal string escape">\r</span><span class="literal string double">egex.py&quot;</span><span class="punctuation">,</span> <span class="name">line</span> <span class="literal number integer">276</span><span class="punctuation">,</span> <span class="operator word">in</span> <span class="name">sub</span>
+    <span class="name">endpos</span><span class="punctuation">,</span> <span class="name">concurrent</span><span class="punctuation">,</span> <span class="name">timeout</span><span class="punctuation">)</span>
+<span class="name">TimeoutError</span><span class="punctuation">:</span> <span class="name">regex</span> <span class="name">timed</span> <span class="name">out</span>
+</pre>
 </li>
 </ul>
 </div>

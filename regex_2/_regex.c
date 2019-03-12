@@ -98,7 +98,7 @@ typedef RE_UINT32 RE_STATUS_T;
 #define RE_ERROR_INTERNAL -2 /* Internal error. */
 #define RE_ERROR_CONCURRENT -3 /* "concurrent" invalid. */
 #define RE_ERROR_MEMORY -4 /* Out of memory. */
-#define RE_ERROR_INTERRUPTED -5 /* Signal handler raised exception. */
+#define RE_ERROR_CANCELLED -5 /* Matching cancelled. */
 #define RE_ERROR_REPLACEMENT -6 /* Invalid replacement string. */
 #define RE_ERROR_INVALID_GROUP_REF -7 /* Invalid group reference. */
 #define RE_ERROR_GROUP_INDEX_TYPE -8 /* Group index type error. */
@@ -2023,6 +2023,9 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
     PyErr_Clear();
 
     switch (status) {
+    case RE_ERROR_CANCELLED:
+        /* An exception has already been raised, so let it fly. */
+        break;
     case RE_ERROR_CONCURRENT:
         PyErr_SetString(PyExc_ValueError, "concurrent not int or None");
         break;
@@ -2040,9 +2043,6 @@ Py_LOCAL_INLINE(void) set_error(int status, PyObject* object) {
         break;
     case RE_ERROR_INDEX:
         PyErr_SetString(PyExc_TypeError, "string indices must be integers");
-        break;
-    case RE_ERROR_INTERRUPTED:
-        /* An exception has already been raised, so let it fly. */
         break;
     case RE_ERROR_INVALID_GROUP_REF:
         if (!error_exception)
@@ -2166,8 +2166,8 @@ Py_LOCAL_INLINE(void) safe_dealloc(RE_State* state, void* ptr) {
     release_GIL(state);
 }
 
-/* Checks for KeyboardInterrupt, holding the GIL during the check. */
-Py_LOCAL_INLINE(BOOL) safe_check_signals(RE_State* state) {
+/* Checks whether to cancel due to a KeyboardInterrupt. */
+Py_LOCAL_INLINE(BOOL) safe_check_cancel(RE_State* state) {
     BOOL result;
 
     acquire_GIL(state);
@@ -11989,7 +11989,9 @@ Py_LOCAL_INLINE(int) basic_match(RE_State* state, BOOL search) {
         do_search_start = FALSE;
 
 start_match:
-    /* Add a backtrack entry for failure. */
+    if (state->iterations == 0 && safe_check_cancel(state))
+        return RE_ERROR_CANCELLED;
+
     if (!push_uint8(state, &state->bstack, RE_OP_FAILURE))
         return RE_ERROR_MEMORY;
     if (!push_bstack(state))
@@ -12125,8 +12127,8 @@ advance:
         /* Should we abort the matching? */
         state->iterations += 0x100U;
 
-        if (state->iterations == 0 && safe_check_signals(state))
-            return RE_ERROR_INTERRUPTED;
+        if (state->iterations == 0 && safe_check_cancel(state))
+            return RE_ERROR_CANCELLED;
 
         switch (node->op) {
         case RE_OP_ANY: /* Any character except a newline. */
@@ -15468,8 +15470,8 @@ backtrack:
         /* Should we abort the matching? */
         state->iterations += 0x100U;
 
-        if (state->iterations == 0 && safe_check_signals(state))
-            return RE_ERROR_INTERRUPTED;
+        if (state->iterations == 0 && safe_check_cancel(state))
+            return RE_ERROR_CANCELLED;
 
         if (!pop_uint8(state, &state->bstack, &op))
             return RE_ERROR_MEMORY;
@@ -18800,6 +18802,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
         break;
     }
 
+
     /* A state struct can sometimes be shared across threads. In such
      * instances, if multithreading is enabled we need to protect the state
      * with a lock (mutex) during matching.
@@ -21680,21 +21683,21 @@ Py_LOCAL_INLINE(PyObject*) pattern_search_or_match(PatternObject* self,
 /* PatternObject's 'match' method. */
 static PyObject* pattern_match(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
-    return pattern_search_or_match(self, args, kwargs, "O|OOOO:match", FALSE,
+    return pattern_search_or_match(self, args, kwargs, "O|OOOOO:match", FALSE,
       FALSE);
 }
 
 /* PatternObject's 'fullmatch' method. */
 static PyObject* pattern_fullmatch(PatternObject* self, PyObject* args,
   PyObject* kwargs) {
-    return pattern_search_or_match(self, args, kwargs, "O|OOOO:fullmatch",
+    return pattern_search_or_match(self, args, kwargs, "O|OOOOO:fullmatch",
       FALSE, TRUE);
 }
 
 /* PatternObject's 'search' method. */
 static PyObject* pattern_search(PatternObject* self, PyObject* args, PyObject*
   kwargs) {
-    return pattern_search_or_match(self, args, kwargs, "O|OOOO:search", TRUE,
+    return pattern_search_or_match(self, args, kwargs, "O|OOOOO:search", TRUE,
       FALSE);
 }
 

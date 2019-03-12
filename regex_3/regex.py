@@ -239,54 +239,54 @@ __all__ = ["compile", "DEFAULT_VERSION", "escape", "findall", "finditer",
   "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X",
   "VERBOSE", "W", "WORD", "error", "Regex", "__version__"]
 
-__version__ = "2.5.27"
+__version__ = "2.5.28"
 
 # --------------------------------------------------------------------
 # Public interface.
 
 def match(pattern, string, flags=0, pos=None, endpos=None, partial=False,
-  concurrent=None, **kwargs):
+  concurrent=None, timeout=None, **kwargs):
     """Try to apply the pattern at the start of the string, returning a match
     object, or None if no match was found."""
     return _compile(pattern, flags, kwargs).match(string, pos, endpos,
-      concurrent, partial)
+      concurrent, partial, timeout)
 
 def fullmatch(pattern, string, flags=0, pos=None, endpos=None, partial=False,
-  concurrent=None, **kwargs):
+  concurrent=None, timeout=None, **kwargs):
     """Try to apply the pattern against all of the string, returning a match
     object, or None if no match was found."""
     return _compile(pattern, flags, kwargs).fullmatch(string, pos, endpos,
-      concurrent, partial)
+      concurrent, partial, timeout)
 
 def search(pattern, string, flags=0, pos=None, endpos=None, partial=False,
-  concurrent=None, **kwargs):
+  concurrent=None, timeout=None, **kwargs):
     """Search through string looking for a match to the pattern, returning a
     match object, or None if no match was found."""
     return _compile(pattern, flags, kwargs).search(string, pos, endpos,
-      concurrent, partial)
+      concurrent, partial, timeout)
 
 def sub(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
-  concurrent=None, **kwargs):
+  concurrent=None, timeout=None, **kwargs):
     """Return the string obtained by replacing the leftmost (or rightmost with a
     reverse pattern) non-overlapping occurrences of the pattern in string by the
     replacement repl. repl can be either a string or a callable; if a string,
     backslash escapes in it are processed; if a callable, it's passed the match
     object and must return a replacement string to be used."""
     return _compile(pattern, flags, kwargs).sub(repl, string, count, pos,
-      endpos, concurrent)
+      endpos, concurrent, timeout)
 
 def subf(pattern, format, string, count=0, flags=0, pos=None, endpos=None,
-  concurrent=None, **kwargs):
+  concurrent=None, timeout=None, **kwargs):
     """Return the string obtained by replacing the leftmost (or rightmost with a
     reverse pattern) non-overlapping occurrences of the pattern in string by the
     replacement format. format can be either a string or a callable; if a string,
     it's treated as a format string; if a callable, it's passed the match object
     and must return a replacement string to be used."""
     return _compile(pattern, flags, kwargs).subf(format, string, count, pos,
-      endpos, concurrent)
+      endpos, concurrent, timeout)
 
 def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
-  concurrent=None, **kwargs):
+  concurrent=None, timeout=None, **kwargs):
     """Return a 2-tuple containing (new_string, number). new_string is the string
     obtained by replacing the leftmost (or rightmost with a reverse pattern)
     non-overlapping occurrences of the pattern in the source string by the
@@ -295,10 +295,10 @@ def subn(pattern, repl, string, count=0, flags=0, pos=None, endpos=None,
     are processed; if a callable, it's passed the match object and must return a
     replacement string to be used."""
     return _compile(pattern, flags, kwargs).subn(repl, string, count, pos,
-      endpos, concurrent)
+      endpos, concurrent, timeout)
 
 def subfn(pattern, format, string, count=0, flags=0, pos=None, endpos=None,
-  concurrent=None, **kwargs):
+  concurrent=None, timeout=None, **kwargs):
     """Return a 2-tuple containing (new_string, number). new_string is the string
     obtained by replacing the leftmost (or rightmost with a reverse pattern)
     non-overlapping occurrences of the pattern in the source string by the
@@ -307,38 +307,40 @@ def subfn(pattern, format, string, count=0, flags=0, pos=None, endpos=None,
     string; if a callable, it's passed the match object and must return a
     replacement string to be used."""
     return _compile(pattern, flags, kwargs).subfn(format, string, count, pos,
-      endpos, concurrent)
+      endpos, concurrent, timeout)
 
-def split(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
+def split(pattern, string, maxsplit=0, flags=0, concurrent=None, timeout=None,
+  **kwargs):
     """Split the source string by the occurrences of the pattern, returning a
     list containing the resulting substrings.  If capturing parentheses are used
     in pattern, then the text of all groups in the pattern are also returned as
     part of the resulting list.  If maxsplit is nonzero, at most maxsplit splits
     occur, and the remainder of the string is returned as the final element of
     the list."""
-    return _compile(pattern, flags, kwargs).split(string, maxsplit, concurrent)
+    return _compile(pattern, flags, kwargs).split(string, maxsplit, concurrent, timeout)
 
-def splititer(pattern, string, maxsplit=0, flags=0, concurrent=None, **kwargs):
+def splititer(pattern, string, maxsplit=0, flags=0, concurrent=None, timeout=None,
+  **kwargs):
     "Return an iterator yielding the parts of a split string."
     return _compile(pattern, flags, kwargs).splititer(string, maxsplit,
-      concurrent)
+      concurrent, timeout)
 
 def findall(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
-  concurrent=None, **kwargs):
+  concurrent=None, timeout=None, **kwargs):
     """Return a list of all matches in the string. The matches may be overlapped
     if overlapped is True. If one or more groups are present in the pattern,
     return a list of groups; this will be a list of tuples if the pattern has
     more than one group. Empty matches are included in the result."""
     return _compile(pattern, flags, kwargs).findall(string, pos, endpos,
-      overlapped, concurrent)
+      overlapped, concurrent, timeout)
 
 def finditer(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
-  partial=False, concurrent=None, **kwargs):
+  partial=False, concurrent=None, timeout=None, **kwargs):
     """Return an iterator over all matches in the string. The matches may be
     overlapped if overlapped is True. For each match, the iterator returns a
     match object. Empty matches are included in the result."""
     return _compile(pattern, flags, kwargs).finditer(string, pos, endpos,
-      overlapped, concurrent, partial)
+      overlapped, concurrent, partial, timeout)
 
 def compile(pattern, flags=0, **kwargs):
     "Compile a regular expression pattern, returning a pattern object."

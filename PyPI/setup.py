@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from os.path import abspath, dirname, join
 import sys
 
@@ -17,7 +16,7 @@ DOCS_DIR = join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2019.03.09',
+    version='2019.03.12',
     description='Alternative regular expression module, to replace re.',
     long_description=open(join(DOCS_DIR, 'Features.rst')).read(),
 
