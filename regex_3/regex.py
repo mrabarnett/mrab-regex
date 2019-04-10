@@ -237,9 +237,9 @@ __all__ = ["compile", "DEFAULT_VERSION", "escape", "findall", "finditer",
   "DEBUG", "E", "ENHANCEMATCH", "S", "DOTALL", "F", "FULLCASE", "I",
   "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "P", "POSIX", "R", "REVERSE",
   "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X",
-  "VERBOSE", "W", "WORD", "error", "Regex", "__version__"]
+  "VERBOSE", "W", "WORD", "error", "Regex", "__version__", "__doc__"]
 
-__version__ = "2.5.28"
+__version__ = "2.5.29"
 
 # --------------------------------------------------------------------
 # Public interface.
