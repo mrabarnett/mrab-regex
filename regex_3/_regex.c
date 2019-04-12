@@ -18973,10 +18973,11 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
             BYTE* new_storage;
 
             new_storage = re_realloc(pattern->stack_storage, 0x10000);
-            if (new_storage)
+            if (new_storage) {
                 pattern->stack_storage = new_storage;
                 pattern->stack_capacity = 0x10000;
             }
+        }
     }
 
     /* Clear the stacks. */
