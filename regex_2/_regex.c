@@ -7619,6 +7619,21 @@ Py_LOCAL_INLINE(int) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
     case RE_OP_STRING_REV:
         return try_match_STRING_REV(state, next, test, text_pos,
           next_position);
+    case RE_OP_SUCCESS:
+        if (state->match_all) {
+            /* We want to match all of the slice. */
+            if (state->reverse) {
+                if (text_pos > 0)
+                    return RE_ERROR_FAILURE;
+            } else {
+                if (text_pos < state->text_length)
+                    return RE_ERROR_FAILURE;
+            }
+        }
+
+        next_position->node = next->node;
+        next_position->text_pos = text_pos;
+        return RE_ERROR_SUCCESS;
     default:
         next_position->node = next->node;
         next_position->text_pos = text_pos;
