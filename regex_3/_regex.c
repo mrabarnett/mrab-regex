@@ -16211,7 +16211,7 @@ backtrack:
             state->text_pos = rp_data->start;
 
             count = rp_data->count;
-            step = node->step;
+            step = node->nonstring.next_2.test->step;
             pos = state->text_pos + (Py_ssize_t)count * step;
             limit = state->text_pos + (Py_ssize_t)node->values[1] * step;
 
@@ -16286,7 +16286,6 @@ backtrack:
 
                         if (pos == limit)
                             break;
-
                     }
                     break;
                 }
@@ -16309,7 +16308,6 @@ backtrack:
 
                         if (pos == limit)
                             break;
-
                     }
                     break;
                 }
@@ -16332,7 +16330,6 @@ backtrack:
 
                         if (pos == limit)
                             break;
-
                     }
                     break;
                 }
@@ -16354,7 +16351,6 @@ backtrack:
 
                         if (pos == limit)
                             break;
-
                     }
                     break;
                 }
@@ -16821,7 +16817,7 @@ backtrack:
             state->text_pos = rp_data->start;
             count = rp_data->count;
 
-            step = node->step;
+            step = node->nonstring.next_2.test->step;
             pos = state->text_pos + (Py_ssize_t)count * step;
             available = step > 0 ? state->slice_end - state->text_pos :
               state->text_pos - state->slice_start;

@@ -4024,6 +4024,11 @@ thing
         # Hg issue 327: .fullmatch() causes MemoryError
         self.assertEquals(regex.fullmatch(r'((\d)*?)*?', '123').span(), (0, 3))
 
+        # Hg issue 329: Wrong group matches when question mark quantifier is used within a look behind
+        self.assertEquals(regex.search(r'''(?(DEFINE)(?<mydef>(?<wrong>THIS_SHOULD_NOT_MATCHx?)|(?<right>right))).*(?<=(?&mydef).*)''',
+          'x right').capturesdict(), {'mydef': ['right'], 'wrong': [], 'right':
+          ['right']})
+
     def test_subscripted_captures(self):
         self.assertEqual(regex.match(r'(?P<x>.)+',
           'abc').expandf('{0} {0[0]} {0[-1]}'), 'abc abc abc')
