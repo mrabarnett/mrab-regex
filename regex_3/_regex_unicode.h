@@ -17,7 +17,7 @@ typedef unsigned char BOOL;
 
 #define RE_MAX_CASES 4
 #define RE_MAX_FOLDED 3
-#define RE_MAX_SCX 19
+#define RE_MAX_SCX 21
 
 typedef struct RE_Property {
     RE_UINT16 name;
@@ -194,9 +194,9 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 ch);
 #define RE_LBREAK_EMODIFIER 41
 #define RE_LBREAK_ZWJ 42
 
-extern char* re_strings[1404];
+extern char* re_strings[1425];
 extern RE_Property re_properties[168];
-extern RE_PropertyValue re_property_values[1543];
+extern RE_PropertyValue re_property_values[1568];
 extern RE_UINT16 re_expand_on_folding[104];
 extern RE_GetPropertyFunc re_get_property[94];
 

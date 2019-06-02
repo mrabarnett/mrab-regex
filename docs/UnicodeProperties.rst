@@ -138,7 +138,9 @@ Block [blk]
     Duployan
     Early_Dynastic_Cuneiform
     Egyptian_Hieroglyphs
+    Egyptian_Hieroglyph_Format_Controls
     Elbasan
+    Elymaic
     Emoticons
     Enclosed_Alphanumerics [Enclosed_Alphanum]
     Enclosed_Alphanumeric_Supplement [Enclosed_Alphanum_Sup]
@@ -251,12 +253,14 @@ Block [blk]
     Myanmar_Extended_A [Myanmar_Ext_A]
     Myanmar_Extended_B [Myanmar_Ext_B]
     Nabataean
+    Nandinagari
     Newa
     New_Tai_Lue
     NKo
     No_Block [NB]
     Number_Forms
     Nushu
+    Nyiakeng_Puachue_Hmong
     Ogham
     Old_Hungarian
     Old_Italic
@@ -272,6 +276,7 @@ Block [blk]
     Ornamental_Dingbats
     Osage
     Osmanya
+    Ottoman_Siyaq_Numbers
     Pahawh_Hmong
     Palmyrene
     Pau_Cin_Hau
@@ -295,6 +300,7 @@ Block [blk]
     Sinhala
     Sinhala_Archaic_Numbers
     Small_Form_Variants [Small_Forms]
+    Small_Kana_Extension [Small_Kana_Ext]
     Sogdian
     Sora_Sompeng
     Soyombo
@@ -313,6 +319,7 @@ Block [blk]
     Supplementary_Private_Use_Area_B [Sup_PUA_B]
     Sutton_SignWriting
     Syloti_Nagri
+    Symbols_And_Pictographs_Extended_A [Symbols_And_Pictographs_Ext_A]
     Syriac
     Syriac_Supplement [Syriac_Sup]
     Tagalog
@@ -324,6 +331,7 @@ Block [blk]
     Tai_Xuan_Jing_Symbols [Tai_Xuan_Jing]
     Takri
     Tamil
+    Tamil_Supplement [Tamil_Sup]
     Tangut
     Tangut_Components
     Telugu
@@ -341,6 +349,7 @@ Block [blk]
     Variation_Selectors_Supplement [VS_Sup]
     Vedic_Extensions [Vedic_Ext]
     Vertical_Forms
+    Wancho
     Warang_Citi
     Yijing_Hexagram_Symbols [Yijing]
     Yi_Radicals
@@ -886,12 +895,16 @@ Numeric_Value [nv]
     1/2
     1/20
     1/3
+    1/32
+    1/320
     1/4
     1/40
     1/5
     1/6
+    1/64
     1/7
     1/8
+    1/80
     1/9
     10
     100
@@ -942,6 +955,7 @@ Numeric_Value [nv]
     3/20
     3/4
     3/5
+    3/64
     3/8
     3/80
     30
@@ -1126,6 +1140,7 @@ Script [sc]
     Duployan [Dupl]
     Egyptian_Hieroglyphs [Egyp]
     Elbasan [Elba]
+    Elymaic [Elym]
     Ethiopic [Ethi]
     Georgian [Geor]
     Glagolitic [Glag]
@@ -1184,10 +1199,12 @@ Script [sc]
     Multani [Mult]
     Myanmar [Mymr]
     Nabataean [Nbat]
+    Nandinagari [Nand]
     Newa
     New_Tai_Lue [Talu]
     Nko [Nkoo]
     Nushu [Nshu]
+    Nyiakeng_Puachue_Hmong [Hmnp]
     Ogham [Ogam]
     Old_Hungarian [Hung]
     Old_Italic [Ital]
@@ -1239,6 +1256,7 @@ Script [sc]
     Ugaritic [Ugar]
     Unknown [Zzzz]
     Vai [Vaii]
+    Wancho [Wcho]
     Warang_Citi [Wara]
     Yi [Yiii]
     Zanabazar_Square [Zanb]
@@ -1264,11 +1282,12 @@ Script_Extensions [scx]
     Batak [Batk]
     Beng Cakm Sylo
     Beng Deva
-    Beng Deva Dogr Gong Gran Gujr Guru Knda Limb Mahj Mlym Orya Sind Sinh Sylo Takr Taml Telu Tirh
-    Beng Deva Dogr Gong Gran Gujr Guru Knda Mahj Mlym Orya Sind Sinh Sylo Takr Taml Telu Tirh
+    Beng Deva Dogr Gong Gonm Gran Gujr Guru Knda Limb Mahj Mlym Nand Orya Sind Sinh Sylo Takr Taml Telu Tirh
+    Beng Deva Dogr Gong Gonm Gran Gujr Guru Knda Mahj Mlym Nand Orya Sind Sinh Sylo Takr Taml Telu Tirh
     Beng Deva Gran Gujr Guru Knda Latn Mlym Orya Shrd Taml Telu Tirh
     Beng Deva Gran Gujr Guru Knda Latn Mlym Orya Taml Telu Tirh
     Beng Deva Gran Knda
+    Beng Deva Gran Knda Nand Orya Telu Tirh
     Bengali [Beng]
     Bhaiksuki [Bhks]
     Bopo Hang Hani Hira Kana
@@ -1299,14 +1318,15 @@ Script_Extensions [scx]
     Cyrl Latn
     Cyrl Perm
     Deseret [Dsrt]
-    Deva Dogr Gujr Guru Khoj Knda Kthi Mahj Mlym Modi Sind Takr Tirh
-    Deva Dogr Gujr Guru Khoj Knda Kthi Mahj Modi Sind Takr Tirh
+    Deva Dogr Gujr Guru Khoj Knda Kthi Mahj Mlym Modi Nand Sind Takr Tirh
+    Deva Dogr Gujr Guru Khoj Knda Kthi Mahj Modi Nand Sind Takr Tirh
     Deva Dogr Gujr Guru Khoj Kthi Mahj Modi Sind Takr Tirh
     Deva Dogr Kthi Mahj
     Deva Gran
     Deva Gran Knda
     Deva Gran Latn
     Deva Knda Mlym Orya Taml Telu
+    Deva Nand
     Deva Shrd
     Deva Taml
     Devanagari [Deva]
@@ -1314,6 +1334,7 @@ Script_Extensions [scx]
     Duployan [Dupl]
     Egyptian_Hieroglyphs [Egyp]
     Elbasan [Elba]
+    Elymaic [Elym]
     Ethiopic [Ethi]
     Geor Latn
     Georgian [Geor]
@@ -1350,8 +1371,10 @@ Script_Extensions [scx]
     Khmer [Khmr]
     Khojki [Khoj]
     Khudawadi [Sind]
+    Knda Nand
     Lao [Laoo]
     Latin [Latn]
+    Latn Mong
     Lepcha [Lepc]
     Limbu [Limb]
     Linear_A [Lina]
@@ -1379,10 +1402,12 @@ Script_Extensions [scx]
     Multani [Mult]
     Myanmar [Mymr]
     Nabataean [Nbat]
+    Nandinagari [Nand]
     Newa
     New_Tai_Lue [Talu]
     Nko [Nkoo]
     Nushu [Nshu]
+    Nyiakeng_Puachue_Hmong [Hmnp]
     Ogham [Ogam]
     Old_Hungarian [Hung]
     Old_Italic [Ital]
@@ -1434,6 +1459,7 @@ Script_Extensions [scx]
     Ugaritic [Ugar]
     Unknown [Zzzz]
     Vai [Vaii]
+    Wancho [Wcho]
     Warang_Citi [Wara]
     Yi [Yiii]
     Zanabazar_Square [Zanb]

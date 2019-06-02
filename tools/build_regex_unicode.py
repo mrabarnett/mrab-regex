@@ -11,6 +11,7 @@ from json import dump, load
 from os import remove, rename
 from os.path import dirname, exists, isfile, join, splitext
 from shutil import copy2, move
+from urllib.error import HTTPError
 from urllib.parse import urljoin
 from urllib.request import urlretrieve
 
@@ -1702,12 +1703,13 @@ def store_properties(unicode_version, properties, path):
 def check_unicode_version(unicode_data_files):
     'Checks the Unicode version in the data files.'
 
-    versions = set()
+    versions = defaultdict(set)
 
     # Read the version and filename from the first line of each data file.
     for line in unicode_data_files.splitlines():
         if line and line[0] != '#' and line[0] != '[':
-            path = join(unicode_folder, line.rpartition('/')[-1])
+            name = line.rpartition('/')[-1]
+            path = join(unicode_folder, name)
 
             with open(path, encoding='utf-8') as file:
                 line = file.readline()
@@ -1717,16 +1719,26 @@ def check_unicode_version(unicode_data_files):
                         if line.startswith('# Version:'):
                             ver = line.split()[-1]
                             ver += '.0' * (2 - ver.count('.'))
-                            versions.add(ver)
+                            versions[ver].add(name)
                             break
                 elif line.endswith('.txt\n'):
-                    versions.add(line[ : -5].rpartition('-')[2])
+                    ver = line[ : -5].rpartition('-')[2]
+                    versions[ver].add(name)
 
     if len(versions) != 1:
-        raise ValueError('expected 1 version of Unicode, but found {}: {}'.format(len(versions),
-          versions))
+        if set(versions) == {'12.0.0', '12.1.0'} and versions['12.0.0'] == {'emoji-data.txt'}:
+            # Cannot find emoji-data.txt for version 12.1.0.
+            pass
+        else:
+            for ver, names in versions.items():
+                print(ver, '=>', [name.strip('# \n') for name in names])
 
-    return versions.pop()
+            raise ValueError('expected 1 version of Unicode, but found {}'.format(len(versions)))
+
+    def make_key(ver):
+        return tuple(map(int, ver.split('.')))
+
+    return max(versions, key=make_key)
 
 def download_files(unicode_version, unicode_data_files):
     'Downloads the Unicode data files from the website.'
@@ -1739,7 +1751,11 @@ def download_files(unicode_version, unicode_data_files):
             if not isfile(versioned_path):
                 url = urljoin(unicode_data_base, line)
                 path = join(unicode_folder, line.rpartition('/')[-1])
-                download_unicode_file(url, path)
+
+                try:
+                    download_unicode_file(url, path)
+                except HTTPError:
+                    print('{} not found'.format(url))
 
 def merge_ranges(ranges):
     'Sorts and merges a list of codepoint ranges.'
@@ -2200,7 +2216,8 @@ def smallest_datatype(min_value, max_value):
 
 # Whether to update the Unicode data files from the Unicode website.
 UPDATE = False
-UNICODE_VERSION = '11.0.0'
+#UPDATE = True
+UNICODE_VERSION = '12.1.0'
 
 # Whether to recalculate the best block sizes for the tables.
 RECALC = False
@@ -2209,7 +2226,7 @@ RECALC = False
 unicode_data_base = 'http://www.unicode.org/Public/UNIDATA/'
 
 # The local folder in which the Unicode data files are stored.
-unicode_folder = join(dirname(__file__), 'Unicode')
+unicode_folder = r'D:\projects\Unicode\Data'
 
 # The local folder in which the generated C files should be written.
 code_folder = join(dirname(__file__), 'regex')
@@ -2257,7 +2274,7 @@ PropertyAliases.txt
 PropertyValueAliases.txt
 PropList.txt
 CaseFolding.txt
-UnicodeData.txt
+#UnicodeData.txt
 '''
 
 # Ensure that we have downloaded the Unicode data files for UNICODE_VERSION
