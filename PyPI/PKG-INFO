@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2019.06.02
+Version: 2019.06.05
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -137,7 +137,7 @@ Description: Introduction
         Unicode
         -------
         
-        This module supports Unicode 11.0.
+        This module supports Unicode 12.1.0.
         
         Full Unicode case-folding is supported.
         
@@ -1009,6 +1009,7 @@ Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.5
 Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
 Classifier: Topic :: Scientific/Engineering :: Information Analysis
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Classifier: Topic :: Text Processing
