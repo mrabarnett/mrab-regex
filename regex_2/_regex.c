@@ -9349,15 +9349,12 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_State* state, size_t index,
 Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t start,
   Py_ssize_t end, Py_ssize_t buffer_charsize) {
 #if defined(PYPY_VERSION) && PY_VERSION_HEX < 0x05090000
-#if Py_UNICODE_SIZE != 4
-#error "Needs to be a wide build."
-#endif
     Py_ssize_t len;
-    Py_UCS4* codepoints;
+    Py_UNICODE* codepoints;
     PyObject* result;
 
     len = end - start;
-    codepoints = (Py_UCS4*)re_alloc(len * 4);
+    codepoints = (Py_UCS4*)re_alloc(len * Py_UNICODE_SIZE);
     if (!codepoints)
         return NULL;
 
@@ -9392,6 +9389,7 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t start,
 
         break;
     }
+#if Py_UNICODE_SIZE == 4
     case 4:
     {
         Py_UCS4* from_ptr;
@@ -9407,6 +9405,7 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t start,
 
         break;
     }
+#endif
     default:
     {
         Py_UCS1* from_ptr;
