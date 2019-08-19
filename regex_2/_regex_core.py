@@ -225,6 +225,7 @@ STRING_SET_FLD_REV
 STRING_SET_IGN
 STRING_SET_IGN_REV
 STRING_SET_REV
+FUZZY_EXT
 """
 
 # Define the opcodes in a namespace.
@@ -457,7 +458,7 @@ def parse_sequence(source, info):
                     sequence.append(None)
                 else:
                     # It's not a quantifier. Maybe it's a fuzzy constraint.
-                    constraints = parse_fuzzy(source, ch)
+                    constraints = parse_fuzzy(source, info, ch)
                     if constraints:
                         # It _is_ a fuzzy constraint.
                         apply_constraint(source, info, constraints, case_flags,
@@ -574,7 +575,7 @@ def parse_limited_quantifier(source):
 
     return min_count, max_count
 
-def parse_fuzzy(source, ch):
+def parse_fuzzy(source, info, ch):
     "Parses a fuzzy setting, if present."
     saved_pos = source.pos
 
@@ -589,6 +590,9 @@ def parse_fuzzy(source, ch):
     except ParseError:
         source.pos = saved_pos
         return None
+
+    if source.match(":"):
+        constraints["test"] = parse_fuzzy_test(source, info)
 
     if not source.match("}"):
         raise error("expected }", source.string, source.pos)
@@ -735,6 +739,32 @@ def parse_cost_term(source, cost):
         raise error("repeated fuzzy cost", source.string, source.pos)
 
     cost[ch] = int(coeff or 1)
+
+def parse_fuzzy_test(source, info):
+    saved_pos = source.pos
+    ch = source.get()
+    if ch in SPECIAL_CHARS:
+        if ch == "\\":
+            # An escape sequence outside a set.
+            return parse_escape(source, info, False)
+        elif ch == ".":
+            # Any character.
+            if info.flags & DOTALL:
+                return AnyAll()
+            elif info.flags & WORD:
+                return AnyU()
+            else:
+                return Any()
+        elif ch == "[":
+            # A character set.
+            return parse_set(source, info)
+        else:
+            raise error("expected character set", source.string, saved_pos)
+    elif ch:
+        # A literal.
+        return Character(ord(ch), case_flags=case_flags)
+    else:
+        raise error("expected character set", source.string, saved_pos)
 
 def parse_count(source):
     "Parses a quantifier's count, which can be empty."
@@ -2705,6 +2735,13 @@ class Fuzzy(RegexBase):
         flags = 0
         if reverse:
             flags |= REVERSE_OP
+
+        test = self.constraints.get("test")
+
+        if test:
+            return ([(OP.FUZZY_EXT, flags) + tuple(arguments)] +
+              test.compile(reverse, True) + [(OP.NEXT,)] +
+              self.subpattern.compile(reverse, True) + [(OP.END,)])
 
         return ([(OP.FUZZY, flags) + tuple(arguments)] +
           self.subpattern.compile(reverse, True) + [(OP.END,)])

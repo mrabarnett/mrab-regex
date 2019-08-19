@@ -2715,7 +2715,6 @@ Py_LOCAL_INLINE(BOOL) pop_repeats(RE_State* state, ByteStack* stack) {
 
 /* Pops the bstack count off the pstack. */
 Py_LOCAL_INLINE(BOOL) pop_bstack(RE_State* state) {
-
     if (!pop_size(state, &state->pstack, &state->bstack.count))
         return FALSE;
 
@@ -2724,7 +2723,6 @@ Py_LOCAL_INLINE(BOOL) pop_bstack(RE_State* state) {
 
 /* Pops the sstack count off the bstack. */
 Py_LOCAL_INLINE(BOOL) pop_sstack(RE_State* state) {
-
     if (!pop_size(state, &state->bstack, &state->sstack.count))
         return FALSE;
 
@@ -2751,18 +2749,6 @@ Py_LOCAL_INLINE(BOOL) drop_pointer(RE_State* state, ByteStack* stack) {
     return ByteStack_drop_block(state, stack, sizeof(void*));
 }
 
-/* Drops the repeat guard data off the stack. */
-Py_LOCAL_INLINE(BOOL) drop_guard_data(RE_State* state, ByteStack* stack) {
-    size_t count;
-
-    if (!pop_size(state, stack, &count))
-        return FALSE;
-    if (!ByteStack_drop_block(state, stack, count * sizeof(RE_GuardSpan)))
-        return FALSE;
-
-    return TRUE;
-}
-
 /* Drops the bstack count off the pstack. */
 Py_LOCAL_INLINE(BOOL) drop_bstack(RE_State* state) {
     return drop_size(state, &state->pstack);
@@ -2776,7 +2762,6 @@ Py_LOCAL_INLINE(BOOL) top_size(RE_State* state, ByteStack* stack, size_t* item)
 
 /* Returns the top bstack count off the pstack. */
 Py_LOCAL_INLINE(BOOL) top_bstack(RE_State* state) {
-
     return top_size(state, &state->pstack, &state->bstack.count);
 }
 
@@ -3075,7 +3060,7 @@ Py_LOCAL_INLINE(BOOL) matches_member_ign(RE_EncodingTable* encoding,
         case RE_OP_STRING:
         {
             size_t j;
-            TRACE(("%s %d %d\n", re_op_text[member->op], member->match,
+            TRACE(("%s %d %zd\n", re_op_text[member->op], member->match,
               member->value_count))
 
             for (j = 0; j < member->value_count; j++) {
@@ -10327,7 +10312,6 @@ Py_LOCAL_INLINE(BOOL) this_error_permitted(RE_State* state, RE_UINT8
 /* Checks whether an insertion is permitted. */
 Py_LOCAL_INLINE(BOOL) insertion_permitted(RE_State* state, RE_Node* fuzzy_node,
   size_t* fuzzy_counts) {
-
     RE_CODE* values;
     size_t error_count;
     size_t cost;
@@ -10570,6 +10554,160 @@ Py_LOCAL_INLINE(void) restore_fuzzy_changes(RE_State* state,
     state->fuzzy_changes.count = best_changes_list->count;
 }
 
+/* Does the test of a FUZZY_EXT. */
+Py_LOCAL_INLINE(BOOL) fuzzy_ext_match(RE_State* state, RE_Node* fuzzy_node,
+  Py_ssize_t pos) {
+    RE_Node* test_node;
+
+    test_node = fuzzy_node->nonstring.next_2.node;
+    if (!test_node)
+        return TRUE;
+
+    switch (test_node->op) {
+    case RE_OP_CHARACTER:
+        return pos < state->slice_end && matches_CHARACTER(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos)) ==
+          test_node->match;
+    case RE_OP_CHARACTER_IGN:
+        return pos < state->slice_end && matches_CHARACTER_IGN(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos)) ==
+          test_node->match;
+    case RE_OP_CHARACTER_IGN_REV:
+        return pos > state->slice_start &&
+          matches_CHARACTER_IGN(state->encoding, state->locale_info, test_node,
+          state->char_at(state->text, pos - 1)) == test_node->match;
+    case RE_OP_CHARACTER_REV:
+        return pos > state->slice_start && matches_CHARACTER(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos - 1))
+          == test_node->match;
+    case RE_OP_PROPERTY:
+        return pos < state->slice_end && matches_PROPERTY(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos)) ==
+          test_node->match;
+    case RE_OP_PROPERTY_IGN:
+        return pos < state->slice_end && matches_PROPERTY_IGN(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos)) ==
+          test_node->match;
+    case RE_OP_PROPERTY_IGN_REV:
+        return pos > state->slice_start &&
+          matches_PROPERTY_IGN(state->encoding, state->locale_info, test_node,
+          state->char_at(state->text, pos - 1)) == test_node->match;
+    case RE_OP_PROPERTY_REV:
+        return pos > state->slice_start && matches_PROPERTY(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos - 1))
+          == test_node->match;
+    case RE_OP_RANGE:
+        return pos < state->slice_end && matches_RANGE(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos)) ==
+          test_node->match;
+    case RE_OP_RANGE_IGN:
+        return pos < state->slice_end && matches_RANGE_IGN(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos)) ==
+          test_node->match;
+    case RE_OP_RANGE_IGN_REV:
+        return pos > state->slice_start && matches_RANGE_IGN(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos - 1))
+          == test_node->match;
+    case RE_OP_RANGE_REV:
+        return pos > state->slice_start && matches_RANGE(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos - 1))
+          == test_node->match;
+    }
+
+    return TRUE;
+}
+
+/* Gets the folded character at a certain position. */
+Py_LOCAL_INLINE(Py_UCS4) folded_char_at(RE_State* state, Py_ssize_t pos, int
+  folded_pos) {
+    int (*full_case_fold)(RE_LocaleInfo* locale_info, Py_UCS4 ch, Py_UCS4*
+      folded);
+    int folded_len;
+    Py_UCS4 folded[RE_MAX_FOLDED];
+
+    full_case_fold = state->encoding->full_case_fold;
+
+    folded_len = full_case_fold(state->locale_info, state->char_at(state->text,
+      pos), folded);
+
+    return folded[folded_pos];
+}
+
+/* Does the test of a FUZZY_EXT for a folded group. */
+Py_LOCAL_INLINE(BOOL) fuzzy_ext_match_group_fld(RE_State* state, RE_Node*
+  fuzzy_node, int folded_pos) {
+    RE_Node* test_node;
+
+    test_node = fuzzy_node->nonstring.next_2.node;
+    if (!test_node)
+        return TRUE;
+
+    switch (test_node->op) {
+    case RE_OP_CHARACTER:
+        return state->text_pos < state->slice_end &&
+          matches_CHARACTER(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos, folded_pos)) ==
+          test_node->match;
+    case RE_OP_CHARACTER_IGN:
+        return state->text_pos < state->slice_end &&
+          matches_CHARACTER_IGN(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos, folded_pos)) ==
+          test_node->match;
+    case RE_OP_CHARACTER_IGN_REV:
+        return state->text_pos > state->slice_start &&
+          matches_CHARACTER_IGN(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos - 1, folded_pos - 1)) ==
+          test_node->match;
+    case RE_OP_CHARACTER_REV:
+        return state->text_pos > state->slice_start &&
+          matches_CHARACTER(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos - 1, folded_pos - 1)) ==
+          test_node->match;
+    case RE_OP_PROPERTY:
+        return state->text_pos < state->slice_end &&
+          matches_PROPERTY(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos, folded_pos)) ==
+          test_node->match;
+    case RE_OP_PROPERTY_IGN:
+        return state->text_pos < state->slice_end &&
+          matches_PROPERTY_IGN(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos, folded_pos)) ==
+          test_node->match;
+    case RE_OP_PROPERTY_IGN_REV:
+        return state->text_pos > state->slice_start &&
+          matches_PROPERTY_IGN(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos - 1, folded_pos - 1)) ==
+          test_node->match;
+    case RE_OP_PROPERTY_REV:
+        return state->text_pos > state->slice_start &&
+          matches_PROPERTY(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos - 1, folded_pos - 1)) ==
+          test_node->match;
+    case RE_OP_RANGE:
+        return state->text_pos < state->slice_end &&
+          matches_RANGE(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos, folded_pos)) ==
+          test_node->match;
+    case RE_OP_RANGE_IGN:
+        return state->text_pos < state->slice_end &&
+          matches_RANGE_IGN(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos, folded_pos)) ==
+          test_node->match;
+    case RE_OP_RANGE_IGN_REV:
+        return state->text_pos > state->slice_start &&
+          matches_RANGE_IGN(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos - 1, folded_pos - 1)) ==
+          test_node->match;
+    case RE_OP_RANGE_REV:
+        return state->text_pos > state->slice_start &&
+          matches_RANGE(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos - 1, folded_pos - 1)) ==
+          test_node->match;
+    }
+
+    return TRUE;
+}
+
 /* Checks a fuzzy match of an item. */
 Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
   BOOL is_string, RE_INT8 step) {
@@ -10597,6 +10735,10 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
             else
                 new_pos = data->new_text_pos + step;
             if (state->slice_start <= new_pos && new_pos <= state->slice_end) {
+                if (!fuzzy_ext_match(state, state->fuzzy_node,
+                  data->new_text_pos))
+                    return RE_ERROR_FAILURE;
+
                 data->new_text_pos = new_pos;
                 return RE_ERROR_SUCCESS;
             }
@@ -10609,6 +10751,10 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
 
             new_pos = data->new_text_pos + step;
             if (state->slice_start <= new_pos && new_pos <= state->slice_end) {
+                if (!fuzzy_ext_match(state, state->fuzzy_node,
+                  data->new_text_pos))
+                    return RE_ERROR_FAILURE;
+
                 data->new_text_pos = new_pos;
                 if (is_string)
                     data->new_string_pos += step;
@@ -11025,6 +11171,10 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_string_fld(RE_State* state, RE_FuzzyData*
 
             new_pos = data->new_folded_pos + data->step;
             if (0 <= new_pos && new_pos <= data->folded_len) {
+                if (!fuzzy_ext_match(state, state->fuzzy_node,
+                  data->new_string_pos))
+                    return RE_ERROR_FAILURE;
+
                 data->new_folded_pos = new_pos;
                 return RE_ERROR_SUCCESS;
             }
@@ -11034,6 +11184,10 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_string_fld(RE_State* state, RE_FuzzyData*
             /* Could the character at text_pos have been substituted? */
             new_pos = data->new_folded_pos + data->step;
             if (0 <= new_pos && new_pos <= data->folded_len) {
+                if (!fuzzy_ext_match(state, state->fuzzy_node,
+                  data->new_string_pos))
+                    return RE_ERROR_FAILURE;
+
                 data->new_folded_pos = new_pos;
                 data->new_string_pos += data->step;
                 return RE_ERROR_SUCCESS;
@@ -11244,6 +11398,10 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_group_fld(RE_State* state, RE_FuzzyData*
 
             new_pos = data->new_folded_pos + data->step;
             if (0 <= new_pos && new_pos <= data->folded_len) {
+                if (!fuzzy_ext_match_group_fld(state, state->fuzzy_node,
+                  data->new_folded_pos))
+                    return RE_ERROR_FAILURE;
+
                 data->new_folded_pos = new_pos;
                 return RE_ERROR_SUCCESS;
             }
@@ -11253,6 +11411,10 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_group_fld(RE_State* state, RE_FuzzyData*
             /* Could the character at text_pos have been substituted? */
             new_pos = data->new_folded_pos + data->step;
             if (0 <= new_pos && new_pos <= data->folded_len) {
+                if (!fuzzy_ext_match_group_fld(state, state->fuzzy_node,
+                  data->new_folded_pos))
+                    return RE_ERROR_FAILURE;
+
                 data->new_folded_pos = new_pos;
                 data->new_gfolded_pos += data->step;
                 return RE_ERROR_SUCCESS;
@@ -13244,8 +13406,8 @@ advance:
 
             /* sstack: node slice_start slice_end text_pos ...
              *
-             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-             * capture_change sstack LOOKAROUND ...
+             * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
+             * sstack LOOKAROUND ...
              *
              * pstack: bstack
              */
@@ -13255,8 +13417,8 @@ advance:
 
             /* sstack: node slice_start slice_end text_pos ...
              *
-             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-             * capture_change sstack LOOKAROUND
+             * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
+             * sstack LOOKAROUND
              *
              * pstack: -
              */
@@ -13268,8 +13430,7 @@ advance:
 
             /* sstack: node slice_start slice_end text_pos
              *
-             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-             * capture_change
+             * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
              *
              * pstack: -
              */
@@ -13285,8 +13446,7 @@ advance:
 
             /* sstack: -
              *
-             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-             * capture_change
+             * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
              *
              * pstack: -
              */
@@ -13298,8 +13458,8 @@ advance:
 
                 /* sstack: -
                  *
-                 * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-                 * capture_change END_LOOKAROUND
+                 * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
+                 * END_LOOKAROUND
                  *
                  * pstack: -
                  */
@@ -14075,8 +14235,8 @@ advance:
 
             /* sstack: node slice_start slice_end text_pos
              *
-             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-             * capture_change sstack LOOKAROUND
+             * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
+             * sstack LOOKAROUND
              *
              * pstack: bstack
              */
@@ -14417,9 +14577,7 @@ advance:
                 }
 
                 if (folded_pos < folded_len && same_char_ign(encoding,
-                  locale_info,
-                   gfolded[gfolded_pos],
-                   folded[folded_pos])) {
+                  locale_info, gfolded[gfolded_pos], folded[folded_pos])) {
                     ++folded_pos;
                     ++gfolded_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
@@ -14520,8 +14678,7 @@ advance:
                 }
 
                 if (folded_pos > 0 && same_char_ign(encoding, locale_info,
-                   gfolded[gfolded_pos - 1],
-                   folded[folded_pos - 1])) {
+                  gfolded[gfolded_pos - 1], folded[folded_pos - 1])) {
                     --folded_pos;
                     --gfolded_pos;
                 } else if (node->status & RE_STATUS_FUZZY) {
@@ -15717,7 +15874,7 @@ backtrack:
         case RE_OP_START_OF_LINE_U: /* At the start of a line. */
         case RE_OP_START_OF_STRING: /* At the start of the string. */
         case RE_OP_START_OF_WORD: /* At the start of a word. */
-            TRACE(("%s\n", re_op_text[bt_data->op]))
+            TRACE(("%s\n", re_op_text[op]))
 
             status = retry_fuzzy_match_item(state, op, search,
               &state->text_pos, &node, FALSE);
@@ -15886,7 +16043,8 @@ backtrack:
              * bstack: -
              */
 
-            if (insertion_permitted(state, inner_node, inner_counts)) {
+            if (insertion_permitted(state, inner_node, inner_counts) &&
+              fuzzy_ext_match(state, inner_node, state->text_pos)) {
                 RE_INT8 step;
                 Py_ssize_t limit;
 
@@ -15958,7 +16116,7 @@ backtrack:
         case RE_OP_END_GROUP: /* End of a capture group. */
         {
             BOOL capture;
-            TRACE(("%s %d\n", re_op_text[op], public_index))
+            TRACE(("%s\n", re_op_text[op]))
 
             /* If capturing:
              *
@@ -16016,8 +16174,7 @@ backtrack:
 
             /* sstack: -
              *
-             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-             * capture_change
+             * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
              *
              * pstack: -
              */
@@ -17468,8 +17625,8 @@ backtrack:
 
             /* sstack: node slice_start slice_end text_pos ...
              *
-             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-             * capture_change sstack
+             * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
+             * sstack
              *
              * pstack: bstack
              */
@@ -17481,8 +17638,7 @@ backtrack:
 
             /* sstack: node slice_start slice_end text_pos
              *
-             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-             * capture_change
+             * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
              *
              * pstack: -
              */
@@ -17498,8 +17654,7 @@ backtrack:
 
             /* sstack: -
              *
-             * bstack: [captures TRUE | FALSE] repeats fuzzy_counts
-             * capture_change
+             * bstack: [captures TRUE | FALSE] fuzzy_counts capture_change
              *
              * pstack: -
              */
@@ -17655,7 +17810,7 @@ backtrack:
         case RE_OP_START_GROUP: /* Start of a capture group. */
         {
             BOOL capture;
-            TRACE(("%s %d\n", re_op_text[op], public_index))
+            TRACE(("%s\n", re_op_text[op]))
 
             /* If capturing:
              *
@@ -23681,6 +23836,12 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                 RE_STATUS_T tail_result;
 
                 tail = node->next_1.node;
+
+                if (!tail) {
+                    node->status |= RE_STATUS_VISITED_AG | result;
+                    break;
+                }
+
                 visited_tail = (tail->status & RE_STATUS_VISITED_AG);
 
                 if (visited_tail) {
@@ -24363,6 +24524,7 @@ Py_LOCAL_INLINE(Py_ssize_t) get_step(RE_CODE op) {
     return 0;
 }
 
+Py_LOCAL_INLINE(int) build_charset_equiv(RE_CompileArgs* args);
 Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args);
 
 /* Builds an ANY node. */
@@ -24399,15 +24561,20 @@ Py_LOCAL_INLINE(int) build_ANY(RE_CompileArgs* args) {
 
 /* Builds a FUZZY node. */
 Py_LOCAL_INLINE(int) build_FUZZY(RE_CompileArgs* args) {
+    BOOL is_ext;
     RE_CODE flags;
     RE_Node* start_node;
     RE_Node* end_node;
     RE_CODE index;
     RE_CompileArgs subargs;
+    RE_Node* test_node;
     int status;
 
-    /* codes: opcode, flags, constraints, ..., end. */
-    if (args->code + 13 > args->end_code)
+    /* codes: FUZZY, flags, constraints, ..., end or:    FUZZY_EXT, flags,
+     * constraints, ... next ..., end.
+     */
+    is_ext = args->code[0] == RE_OP_FUZZY_EXT;
+    if (args->code + (is_ext ? 15 : 13) > args->end_code)
         return RE_ERROR_ILLEGAL;
 
     flags = args->code[1];
@@ -24439,6 +24606,19 @@ Py_LOCAL_INLINE(int) build_FUZZY(RE_CompileArgs* args) {
 
     args->code += 14;
 
+    if (is_ext) {
+        subargs = *args;
+        status = build_charset_equiv(&subargs);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
+        args->code = subargs.code;
+        if (args->code >= args->end_code || args->code[0] != RE_OP_NEXT)
+            return RE_ERROR_ILLEGAL;
+        ++args->code;
+        test_node = subargs.start;
+    } else
+        test_node = NULL;
+
     subargs = *args;
     subargs.within_fuzzy = TRUE;
 
@@ -24465,6 +24645,8 @@ Py_LOCAL_INLINE(int) build_FUZZY(RE_CompileArgs* args) {
     /* Append the fuzzy sequence. */
     add_node(args->end, start_node);
     add_node(start_node, subargs.start);
+    if (test_node)
+        add_node(start_node, test_node);
     add_node(subargs.end, end_node);
     args->end = end_node;
     args->all_atomic = FALSE;
@@ -25798,6 +25980,78 @@ Py_LOCAL_INLINE(int) build_zerowidth(RE_CompileArgs* args) {
     return RE_ERROR_SUCCESS;
 }
 
+/* Builds a node that's equivalent to a character set. */
+Py_LOCAL_INLINE(int) build_charset_equiv(RE_CompileArgs* args) {
+    int status;
+
+    /* Guarantee that there's something to attach to. */
+    args->start = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
+    args->end = args->start;
+
+    /* The following code groups opcodes by format, not function. */
+    switch (args->code[0]) {
+        case RE_OP_ANY:
+        case RE_OP_ANY_ALL:
+        case RE_OP_ANY_U:
+        case RE_OP_ANY_REV:
+        case RE_OP_ANY_ALL_REV:
+        case RE_OP_ANY_U_REV:
+        /* A simple opcode with no trailing codewords and width of 1. */
+        status = build_ANY(args);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
+        break;
+        case RE_OP_CHARACTER:
+        case RE_OP_PROPERTY:
+        case RE_OP_CHARACTER_IGN:
+        case RE_OP_PROPERTY_IGN:
+        case RE_OP_CHARACTER_REV:
+        case RE_OP_PROPERTY_REV:
+        case RE_OP_CHARACTER_IGN_REV:
+        case RE_OP_PROPERTY_IGN_REV:
+        /* A character literal or a property. */
+        status = build_CHARACTER_or_PROPERTY(args);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
+        break;
+    case RE_OP_RANGE:
+    case RE_OP_RANGE_IGN:
+    case RE_OP_RANGE_IGN_REV:
+    case RE_OP_RANGE_REV:
+        /* A range. */
+        status = build_RANGE(args);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
+        break;
+    case RE_OP_SET_DIFF:
+    case RE_OP_SET_DIFF_IGN:
+    case RE_OP_SET_DIFF_IGN_REV:
+    case RE_OP_SET_DIFF_REV:
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_INTER_IGN:
+    case RE_OP_SET_INTER_IGN_REV:
+    case RE_OP_SET_INTER_REV:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_SYM_DIFF_IGN:
+    case RE_OP_SET_SYM_DIFF_IGN_REV:
+    case RE_OP_SET_SYM_DIFF_REV:
+    case RE_OP_SET_UNION:
+    case RE_OP_SET_UNION_IGN:
+    case RE_OP_SET_UNION_IGN_REV:
+    case RE_OP_SET_UNION_REV:
+        /* A set. */
+        status = build_SET(args);
+        if (status != RE_ERROR_SUCCESS)
+            return status;
+        break;
+    default:
+        /* We've found an opcode which we don't recognise. */
+        return RE_ERROR_ILLEGAL;
+    }
+
+    return RE_ERROR_SUCCESS;
+}
+
 /* Builds a sequence of nodes from regular expression code. */
 Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
     int status;
@@ -25903,6 +26157,7 @@ Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
                 return status;
             break;
         case RE_OP_FUZZY:
+        case RE_OP_FUZZY_EXT:
             /* A fuzzy sequence. */
             status = build_FUZZY(args);
             if (status != RE_ERROR_SUCCESS)

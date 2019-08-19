@@ -819,6 +819,12 @@ ul.auto-toc {
 <li><tt class="docutils literal"><span class="pre">{i&lt;=1,d&lt;=1,s&lt;=1,2i+2d+1s&lt;=4}</span></tt> at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4</li>
 </ul>
 <p>You can also use &quot;&lt;&quot; instead of &quot;&lt;=&quot; if you want an exclusive minimum or maximum.</p>
+<p>You can add a test to perform on a character that's substituted or inserted.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">{s&lt;=2:[a-z]}</span></tt> at most 2 substitutions, which must be in the character set <tt class="docutils literal"><span class="pre">[a-z]</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">{s&lt;=2,i&lt;=3:\d}</span></tt> at most 2 substitutions, at most 3 insertions, which must be digits.</li>
+</ul>
 <p>By default, fuzzy matching searches for the first match that meets the given constraints. The <tt class="docutils literal">ENHANCEMATCH</tt> flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.</p>
 <p>The <tt class="docutils literal">BESTMATCH</tt> flag will make it search for the best match instead.</p>
 <p>Further examples to note:</p>

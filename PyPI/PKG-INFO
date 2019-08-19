@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: regex
-Version: 2019.06.08
+Version: 2019.08.19
 Summary: Alternative regular expression module, to replace re.
 Home-page: https://bitbucket.org/mrabarnett/mrab-regex
 Author: Matthew Barnett
@@ -583,6 +583,14 @@ Description: Introduction
           * ``{i<=1,d<=1,s<=1,2i+2d+1s<=4}`` at most 1 insertion, at most 1 deletion, at most 1 substitution; each insertion costs 2, each deletion costs 2, each substitution costs 1, the total cost must not exceed 4
         
           You can also use "<" instead of "<=" if you want an exclusive minimum or maximum.
+        
+          You can add a test to perform on a character that's substituted or inserted.
+        
+          Examples:
+        
+          * ``{s<=2:[a-z]}`` at most 2 substitutions, which must be in the character set ``[a-z]``.
+        
+          * ``{s<=2,i<=3:\d}`` at most 2 substitutions, at most 3 insertions, which must be digits.
         
           By default, fuzzy matching searches for the first match that meets the given constraints. The ``ENHANCEMATCH`` flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
         

@@ -16,7 +16,7 @@ DOCS_DIR = join(BASE_DIR, 'docs')
 
 setup(
     name='regex',
-    version='2019.06.08',
+    version='2019.08.19',
     description='Alternative regular expression module, to replace re.',
     long_description=open(join(DOCS_DIR, 'Features.rst')).read(),
 

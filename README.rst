@@ -576,6 +576,14 @@ The issue numbers relate to the Python bug tracker, except where listed as "Hg i
 
   You can also use "<" instead of "<=" if you want an exclusive minimum or maximum.
 
+  You can add a test to perform on a character that's substituted or inserted.
+
+  Examples:
+
+  * ``{s<=2:[a-z]}`` at most 2 substitutions, which must be in the character set ``[a-z]``.
+
+  * ``{s<=2,i<=3:\d}`` at most 2 substitutions, at most 3 insertions, which must be digits.
+
   By default, fuzzy matching searches for the first match that meets the given constraints. The ``ENHANCEMATCH`` flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
 
   The ``BESTMATCH`` flag will make it search for the best match instead.
