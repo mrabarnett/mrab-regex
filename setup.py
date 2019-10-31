@@ -1,33 +1,20 @@
 #!/usr/bin/env python
-from os.path import abspath, dirname, join
-import sys
+from distutils.core import setup
+from os.path import join
 
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
-
-MAJOR, MINOR = sys.version_info[:2]
-BASE_DIR = dirname(abspath(__file__))
-print('BASE_DIR is %s' % BASE_DIR)
-
-PKG_BASE = 'regex_%i' % MAJOR
-DOCS_DIR = join(BASE_DIR, 'docs')
+with open('docs/Features.rst') as file:
+    long_description = file.read()
 
 setup(
     name='regex',
-    version='2019.08.19',
+    version='2019.11.1',
     description='Alternative regular expression module, to replace re.',
-    long_description=open(join(DOCS_DIR, 'Features.rst')).read(),
-
-    # PyPI does spam protection on email addresses, no need to do it here
+    long_description=long_description,
     author='Matthew Barnett',
     author_email='regex@mrabarnett.plus.com',
-
-    maintainer='Matthew Barnett',
-    maintainer_email='regex@mrabarnett.plus.com',
-
     url='https://bitbucket.org/mrabarnett/mrab-regex',
+    license='Python Software Foundation License',
+
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -42,13 +29,10 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Text Processing',
         'Topic :: Text Processing :: General',
-        ],
-    license='Python Software Foundation License',
+    ],
 
+    package_dir={'regex': 'regex'},
     py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core',
-     'regex.test.__init__', 'regex.test.test_regex'],
-    package_dir={'': PKG_BASE},
-
-    ext_modules=[Extension('regex._regex', [join(PKG_BASE, '_regex.c'),
-      join(PKG_BASE, '_regex_unicode.c')])],
-    )
+     'regex.test_regex'],
+    data_files=['regex._regex.pyd'],
+)

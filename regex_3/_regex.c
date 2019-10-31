@@ -20759,6 +20759,8 @@ static PyObject* match_lastgroup(PyObject* self_) {
         PyObject* result;
 
         index = Py_BuildValue("n", self->lastgroup);
+        if (!index)
+            return NULL;
 
         /* PyDict_GetItem returns borrows a reference. */
         result = PyDict_GetItem(self->pattern->indexgroup, index);
