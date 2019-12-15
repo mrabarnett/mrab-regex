@@ -11,10 +11,6 @@ pipelines:
         caches:
           - pip
         script:
-          - pipe: atlassian/pypi-publish:0.2.11
-            variables:
-              PYPI_USERNAME: $PYPI_USER
-              PYPI_PASSWORD: $PYPI_PASS
-              REPOSITORY: 'https://test.pypi.org/legacy/' # Optional.
-              DISTRIBUTIONS: 'bdist bdist_wheel sdist'
-              SKIP_EXISTING: 'true'
+          - pip install twine
+          - python setup.py bdist_wheel sdist
+          - twine upload --skip-existing --reposity-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PASS dist/*
