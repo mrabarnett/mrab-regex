@@ -1,25 +1,21 @@
-definitions:
-  steps:
-    - step: &build-upload
-        caches:
-          - pip
-        script:
-          - pip install twine
-          - python setup.py bdist_wheel sdist
-          - twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PASS dist/*
-
 pipelines:
   default:
     - parallel:
-      - step: 
-          <<: *build-upload
-          image: python:3.7
-          name: Python 3.7 wheels
       - step:
-          <<: *build-upload
-          image: python:3.8
-          name: Python 3.8 wheels
+          image: quay.io/pypa/manylinux2010_x86_64
+          caches:
+            - pip
+          script:
+            - for py in 27 36 37 38; do echo building Python${py} wheel; /opt/python/${py}*/bin/pip wheel .; done
+            - auditwheel repair *.whl -w wheelhouse
+            - pip install twine
+            - twine upload --skip-existing --reposity-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PASS wheelhouse/*
       - step:
-          <<: *build-upload
-          image: python:3.6
-          name: Python 3.6 wheels
+          image: quay.io/pypa/manylinux2010_i686
+          caches:
+            - pip
+          script:
+            - for py in 27 36 37 38; do echo building Python${py} wheel; linux32 /opt/python/${py}*/bin/pip wheel .; done
+            - auditwheel repair *.whl -w wheelhouse
+            - pip install twine
+            - twine upload --skip-existing --reposity-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PASS wheelhouse/*
