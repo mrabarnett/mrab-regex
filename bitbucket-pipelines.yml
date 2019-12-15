@@ -27,4 +27,4 @@ pipelines:
         image: python:3.8
         script:
           - pip install twine
-          - twine upload --skip-existing --reposity-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PASS wheelhouse/*
+          - twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PASS wheelhouse/*
