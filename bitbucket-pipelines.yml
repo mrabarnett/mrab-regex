@@ -11,6 +11,8 @@ pipelines:
         caches:
           - pip
         script:
+          - cp -r PyPI/* .
+          - ln -s regex_3 regex
           - pipe: atlassian/pypi-publish:0.2.11
             variables:
               PYPI_USERNAME: $PYPI_USERNAME
