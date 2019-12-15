@@ -15,8 +15,8 @@ pipelines:
           - ln -s regex_3 regex
           - pipe: atlassian/pypi-publish:0.2.11
             variables:
-              PYPI_USERNAME: $PYPI_USERNAME
-              PYPI_PASSWORD: $PYPI_PASSWORD
+              PYPI_USERNAME: "$PYPI_USERNAME"
+              PYPI_PASSWORD: "$PYPI_PASSWORD"
               REPOSITORY: 'https://test.pypi.org/legacy/' # Optional.
               # DISTRIBUTIONS: '<string>' # Optional.
               # FOLDER: '<string>' # Optional.
