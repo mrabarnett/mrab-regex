@@ -18,6 +18,6 @@ pipelines:
               PYPI_USERNAME: $PYPI_USER
               PYPI_PASSWORD: $PYPI_PASS
               REPOSITORY: 'https://test.pypi.org/legacy/' # Optional.
-              DISTRIBUTIONS: 'bdist sdist' # Optional.
+              DISTRIBUTIONS: 'bdist bdist_wheel sdist' # Optional.
               # FOLDER: '<string>' # Optional.
               # DEBUG: '<boolean>' # Optional.
