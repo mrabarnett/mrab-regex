@@ -1,5 +1,3 @@
-image: python:3.7
-
 definitions:
   steps:
     - step: &build-upload
@@ -8,15 +6,20 @@ definitions:
         script:
           - pip install twine
           - python setup.py bdist_wheel sdist
-          - twine upload --skip-existing --reposity-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PASS dist/*
+          - twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PASS dist/*
 
 pipelines:
   default:
     - parallel:
-      - step: *build-upload
+      - step: 
+          <<: *build-upload
+          image: python:3.7
+          name: Python 3.7 wheels
       - step:
           <<: *build-upload
           image: python:3.8
+          name: Python 3.8 wheels
       - step:
           <<: *build-upload
           image: python:3.6
+          name: Python 3.6 wheels
