@@ -15,7 +15,7 @@ pipelines:
             variables:
               PYPI_USERNAME: $PYPI_USERNAME
               PYPI_PASSWORD: $PYPI_PASSWORD
-              # REPOSITORY: '<string>' # Optional.
+              REPOSITORY: 'https://test.pypi.org/legacy/' # Optional.
               # DISTRIBUTIONS: '<string>' # Optional.
               # FOLDER: '<string>' # Optional.
               # DEBUG: '<boolean>' # Optional.
