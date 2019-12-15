@@ -5,12 +5,23 @@
 # You can specify a custom docker image from Docker Hub as your build environment.
 image: python:3.7
 
-pipelines:
-  default:
-    - step:
+definitions:
+  steps:
+    - step: &build-upload
         caches:
           - pip
         script:
           - pip install twine
           - python setup.py bdist_wheel sdist
           - twine upload --skip-existing --reposity-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PASS dist/*
+
+pipelines:
+  default:
+    - parallel:
+      - step: *build-upload
+      - step:
+        <<: *build-upload
+        image: python:3.8
+      - step:
+        <<: *build-upload
+        image: python:3.6
