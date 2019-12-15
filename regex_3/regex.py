@@ -399,16 +399,16 @@ def escape(pattern, special_only=True, literal_spaces=False):
 # --------------------------------------------------------------------
 # Internals.
 
-import regex._regex_core as _regex_core
-import regex._regex as _regex
+import _regex_core
+import _regex
 from threading import RLock as _RLock
 from locale import getpreferredencoding as _getpreferredencoding
-from regex._regex_core import *
-from regex._regex_core import (_ALL_VERSIONS, _ALL_ENCODINGS, _FirstSetError,
+from _regex_core import *
+from _regex_core import (_ALL_VERSIONS, _ALL_ENCODINGS, _FirstSetError,
   _UnscopedFlagSet, _check_group_features, _compile_firstset,
   _compile_replacement, _flatten_code, _fold_case, _get_required_string,
   _parse_pattern, _shrink_cache)
-from regex._regex_core import (ALNUM as _ALNUM, Info as _Info, OP as _OP, Source
+from _regex_core import (ALNUM as _ALNUM, Info as _Info, OP as _OP, Source
   as _Source, Fuzzy as _Fuzzy)
 
 # Version 0 is the old behaviour, compatible with the original 're' module.
