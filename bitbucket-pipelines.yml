@@ -15,8 +15,8 @@ pipelines:
     - parallel:
       - step: *build-upload
       - step:
-        <<: *build-upload
-        image: python:3.8
+          <<: *build-upload
+          image: python:3.8
       - step:
-        <<: *build-upload
-        image: python:3.6
+          <<: *build-upload
+          image: python:3.6
