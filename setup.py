@@ -1,15 +1,13 @@
 #!/usr/bin/env python
-from setuptools import setup, Extension
+from distutils.core import setup
 from os.path import join
 
 with open('docs/Features.rst') as file:
     long_description = file.read()
 
-src_dir = 'regex_3'
-
 setup(
     name='regex',
-    version='2019.11.1',
+    version='2019.12.9',
     description='Alternative regular expression module, to replace re.',
     long_description=long_description,
     author='Matthew Barnett',
@@ -32,12 +30,9 @@ setup(
         'Topic :: Text Processing',
         'Topic :: Text Processing :: General',
     ],
-    setup_requires=['wheel'],
 
-    package_dir={'': src_dir},
-    py_modules=['__init__', 'regex', '_regex_core',
-     'test_regex'],
-    ext_modules=[Extension('_regex', [
-        "{}/{}".format(src_dir, s) for s in ['_regex.c', '_regex_unicode.c']
-    ])],
+    package_dir={'regex': 'regex'},
+    py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core',
+     'regex.test_regex'],
+    data_files=['regex._regex.pyd'],
 )
