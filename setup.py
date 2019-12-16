@@ -9,7 +9,7 @@ src_dir = 'regex_3'
 
 setup(
     name='regex',
-    version='2019.12.9',
+    version='2019.11.1',
     description='Alternative regular expression module, to replace re.',
     long_description=long_description,
     author='Matthew Barnett',

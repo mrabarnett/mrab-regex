@@ -1854,7 +1854,7 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
         return FALSE;
 
     /* GB8 */
-    if ((left_prop == RE_GBREAK_LVT || left_prop == RE_GBREAK_T) && right_prop
+    if ((left_prop == RE_GBREAK_LVT || left_prop == RE_GBREAK_T) && left_prop
       == RE_GBREAK_T)
         return FALSE;
 
@@ -1895,16 +1895,14 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
      * number of RI characters before the break point.
      */
     /* GB12 and GB13 */
-    if (right_prop == RE_GBREAK_REGIONALINDICATOR) {
-        pos = left_pos;
+    pos = left_pos;
 
-        while (pos >= 0 && re_get_grapheme_cluster_break(char_at(state->text,
-          pos)) == RE_GBREAK_REGIONALINDICATOR)
-            --pos;
+    while (pos >= 0 && re_get_grapheme_cluster_break(char_at(state->text, pos))
+      == RE_WBREAK_REGIONALINDICATOR)
+        --pos;
 
-        if ((left_pos - pos) % 2 == 1)
-            return FALSE;
-    }
+    if ((left_pos - pos) % 2 == 1)
+        return FALSE;
 
     /* Otherwise, break everywhere. */
     /* GB999 */
@@ -19198,7 +19196,7 @@ Py_LOCAL_INLINE(Py_ssize_t) as_string_index(PyObject* obj, Py_ssize_t def) {
         return value;
 
     set_error(RE_ERROR_INDEX, NULL);
-    return -1;
+    return 0;
 }
 
 /* Deallocates a MatchObject. */
