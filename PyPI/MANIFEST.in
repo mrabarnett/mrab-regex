@@ -1,3 +1,0 @@
-include regex/_regex.pyd
-include regex/*.py
-include docs/*.*
