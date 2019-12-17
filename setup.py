@@ -1,8 +1,13 @@
 #!/usr/bin/env python
-from distutils.core import setup
+from setuptools import setup, Extension
 from os.path import join
+import sys
 
-with open('docs/Features.rst') as file:
+MAJOR, MINOR = sys.version_info[:2]
+
+SRC_BASE = 'regex_%i' % MAJOR
+
+with open('README.rst') as file:
     long_description = file.read()
 
 setup(
@@ -31,8 +36,9 @@ setup(
         'Topic :: Text Processing :: General',
     ],
 
-    package_dir={'regex': 'regex'},
+    package_dir={'regex': SRC_BASE},
     py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core',
      'regex.test_regex'],
-    data_files=['regex._regex.pyd'],
+    ext_modules=[Extension('regex._regex', [join(SRC_BASE, '_regex.c'),
+      join(SRC_BASE, '_regex_unicode.c')])],
 )
