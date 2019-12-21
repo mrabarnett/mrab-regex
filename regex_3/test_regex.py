@@ -4199,6 +4199,10 @@ thing
           'x right').capturesdict(), {'mydef': ['right'], 'wrong': [], 'right':
           ['right']})
 
+        # Hg issue 353: fuzzy changes negative indexes
+        self.assertEquals(regex.search(r'(?be)(AGTGTTCCCCGCGCCAGCGGGGATAAACCG){s<=5,i<=5,d<=5,s+i+d<=10}',
+          'TTCCCCGCGCCAGCGGGGATAAACCG').fuzzy_changes, ([], [], [0, 1, 3, 5]))
+
     def test_fuzzy_ext(self):
         self.assertEquals(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

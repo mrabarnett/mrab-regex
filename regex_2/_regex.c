@@ -10625,58 +10625,57 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
   BOOL is_string, RE_INT8 step) {
     Py_ssize_t new_pos;
 
-    if (this_error_permitted(state, data->fuzzy_type)) {
-        switch (data->fuzzy_type) {
-        case RE_FUZZY_DEL:
-            /* Could a character at text_pos have been deleted? */
-            if (step == 0)
+    if (!this_error_permitted(state, data->fuzzy_type))
+        return RE_ERROR_FAILURE;
+
+    switch (data->fuzzy_type) {
+    case RE_FUZZY_DEL:
+        /* Could a character at text_pos have been deleted? */
+        if (step == 0)
+            return RE_ERROR_FAILURE;
+
+        if (is_string)
+            data->new_string_pos += step;
+        else
+            data->new_node = data->new_node->next_1.node;
+        return RE_ERROR_SUCCESS;
+    case RE_FUZZY_INS:
+        /* Could the character at text_pos have been inserted? */
+        if (!data->permit_insertion)
+            return RE_ERROR_FAILURE;
+
+        if (step == 0)
+            new_pos = data->new_text_pos + data->step;
+        else
+            new_pos = data->new_text_pos + step;
+        if (state->slice_start <= new_pos && new_pos <= state->slice_end) {
+            if (!fuzzy_ext_match(state, state->fuzzy_node, data->new_text_pos))
                 return RE_ERROR_FAILURE;
 
+            data->new_text_pos = new_pos;
+            return RE_ERROR_SUCCESS;
+        }
+
+        return check_fuzzy_partial(state, new_pos);
+    case RE_FUZZY_SUB:
+        /* Could the character at text_pos have been substituted? */
+        if (step == 0)
+            return RE_ERROR_FAILURE;
+
+        new_pos = data->new_text_pos + step;
+        if (state->slice_start <= new_pos && new_pos <= state->slice_end) {
+            if (!fuzzy_ext_match(state, state->fuzzy_node, data->new_text_pos))
+                return RE_ERROR_FAILURE;
+
+            data->new_text_pos = new_pos;
             if (is_string)
                 data->new_string_pos += step;
             else
                 data->new_node = data->new_node->next_1.node;
             return RE_ERROR_SUCCESS;
-        case RE_FUZZY_INS:
-            /* Could the character at text_pos have been inserted? */
-            if (!data->permit_insertion)
-                return RE_ERROR_FAILURE;
-
-            if (step == 0)
-                new_pos = data->new_text_pos + data->step;
-            else
-                new_pos = data->new_text_pos + step;
-            if (state->slice_start <= new_pos && new_pos <= state->slice_end) {
-                if (!fuzzy_ext_match(state, state->fuzzy_node,
-                  data->new_text_pos))
-                    return RE_ERROR_FAILURE;
-
-                data->new_text_pos = new_pos;
-                return RE_ERROR_SUCCESS;
-            }
-
-            return check_fuzzy_partial(state, new_pos);
-        case RE_FUZZY_SUB:
-            /* Could the character at text_pos have been substituted? */
-            if (step == 0)
-                return RE_ERROR_FAILURE;
-
-            new_pos = data->new_text_pos + step;
-            if (state->slice_start <= new_pos && new_pos <= state->slice_end) {
-                if (!fuzzy_ext_match(state, state->fuzzy_node,
-                  data->new_text_pos))
-                    return RE_ERROR_FAILURE;
-
-                data->new_text_pos = new_pos;
-                if (is_string)
-                    data->new_string_pos += step;
-                else
-                    data->new_node = data->new_node->next_1.node;
-                return RE_ERROR_SUCCESS;
-            }
-
-            return check_fuzzy_partial(state, new_pos);
         }
+
+        return check_fuzzy_partial(state, new_pos);
     }
 
     return RE_ERROR_FAILURE;
@@ -10741,7 +10740,8 @@ found:
 
     /* bstack: node step text_pos fuzzy_type op */
 
-    if (!record_fuzzy(state, data.fuzzy_type, data.new_text_pos - data.step))
+    if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
+      data.new_text_pos : data.new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -10822,7 +10822,8 @@ found:
 
     /* bstack: node step text_pos fuzzy_type op */
 
-    if (!record_fuzzy(state, data.fuzzy_type, data.new_text_pos - data.step))
+    if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
+      data.new_text_pos : data.new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -10973,7 +10974,8 @@ found:
 
     /* bstack: node step string_pos text_pos fuzzy_type op */
 
-    if (!record_fuzzy(state, data.fuzzy_type, data.new_text_pos - data.step))
+    if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
+      data.new_text_pos : data.new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -11050,7 +11052,8 @@ found:
     if (!push_uint8(state, &state->bstack, op))
         return RE_ERROR_MEMORY;
 
-    if (!record_fuzzy(state, data.fuzzy_type, data.new_text_pos - data.step))
+    if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
+      data.new_text_pos : data.new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     /* bstack: node step string_pos text_pos fuzzy_type op */
@@ -11179,7 +11182,8 @@ found:
      * op
      */
 
-    if (!record_fuzzy(state, data.fuzzy_type, data.new_text_pos - data.step))
+    if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
+      data.new_text_pos : data.new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -11278,7 +11282,8 @@ found:
      * op
      */
 
-    if (!record_fuzzy(state, data.fuzzy_type, data.new_text_pos - data.step))
+    if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
+      data.new_text_pos : data.new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -11412,7 +11417,8 @@ found:
      * folded_len text_pos fuzzy_type op
      */
 
-    if (!record_fuzzy(state, data.fuzzy_type, data.new_text_pos - data.step))
+    if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
+      data.new_text_pos : data.new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -11517,7 +11523,8 @@ found:
      * folded_len text_pos fuzzy_type op
      */
 
-    if (!record_fuzzy(state, data.fuzzy_type, data.new_text_pos - data.step))
+    if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
+      data.new_text_pos : data.new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
