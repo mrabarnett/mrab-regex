@@ -2434,6 +2434,9 @@ class CallGroup(RegexBase):
     def max_width(self):
         return UNLIMITED
 
+    def __del__(self):
+        self.info = None
+
 class CallRef(RegexBase):
     def __init__(self, ref, parsed):
         self.ref = ref
@@ -2602,6 +2605,9 @@ class Conditional(RegexBase):
 
     def max_width(self):
         return max(self.yes_item.max_width(), self.no_item.max_width())
+
+    def __del__(self):
+        self.info = None
 
 class DefaultBoundary(ZeroWidthBase):
     _opcode = OP.DEFAULT_BOUNDARY
@@ -2997,6 +3003,9 @@ class Group(RegexBase):
     def get_required_string(self, reverse):
         return self.subpattern.get_required_string(reverse)
 
+    def __del__(self):
+        self.info = None
+
 class Keep(ZeroWidthBase):
     _opcode = OP.KEEP
     _op_name = "KEEP"
@@ -3346,6 +3355,9 @@ class RefGroup(RegexBase):
     def max_width(self):
         return UNLIMITED
 
+    def __del__(self):
+        self.info = None
+
 class SearchAnchor(ZeroWidthBase):
     _opcode = OP.SEARCH_ANCHOR
     _op_name = "SEARCH_ANCHOR"
@@ -3664,6 +3676,9 @@ class SetBase(RegexBase):
             return 1
 
         return max(len(folded) for folded in seen)
+
+    def __del__(self):
+        self.info = None
 
 class SetDiff(SetBase):
     _opcode = {(NOCASE, False): OP.SET_DIFF, (IGNORECASE, False):
@@ -3998,6 +4013,9 @@ class StringSet(RegexBase):
               self.info.kwargs[self.name])
         else:
             return max(len(i) for i in self.info.kwargs[self.name])
+
+    def __del__(self):
+        self.info = None
 
 class Source:
     "Scanner for the regular expression source string."
