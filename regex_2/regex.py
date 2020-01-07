@@ -541,12 +541,6 @@ def _compile(pattern, flags=0, kwargs={}):
     if flags & DEBUG:
         parsed.dump(indent=0, reverse=reverse)
 
-    # Any unused keyword arguments, possibly resulting from a typo?
-    unused_kwargs = set(kwargs) - set(info.named_lists_used)
-    if unused_kwargs:
-        any_one = next(iter(unused_kwargs))
-        raise ValueError('unused keyword argument %r' % any_one)
-
     # Optimise the parsed pattern.
     parsed = parsed.optimise(info, reverse)
     parsed = parsed.pack_characters(info)
@@ -568,6 +562,12 @@ def _compile(pattern, flags=0, kwargs={}):
         named_lists[name] = values
         named_list_indexes[index] = items
         args_needed.add((name, values))
+
+    # Any unused keyword arguments, possibly resulting from a typo?
+    unused_kwargs = set(kwargs) - set(named_lists)
+    if unused_kwargs:
+        any_one = next(iter(unused_kwargs))
+        raise ValueError('unused keyword argument %r' % any_one)
 
     # Check the features of the groups.
     _check_group_features(info, parsed)
