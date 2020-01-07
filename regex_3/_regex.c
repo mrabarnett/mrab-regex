@@ -27212,5 +27212,3 @@ PyMODINIT_FUNC PyInit__regex(void) {
 
     return m;
 }
-
-/* vim:ts=4:sw=4:et */

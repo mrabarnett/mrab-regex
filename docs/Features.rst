@@ -701,6 +701,22 @@ The order of the items is irrelevant, they are treated as a set. The named lists
   # Python 2
   {'options': frozenset(['fifth', 'fourth', 'second', 'third', 'first'])}
 
+If there are any unused keyword arguments, ``ValueError`` will be raised unless you tell it otherwise:
+
+.. sourcecode:: python
+
+  >>> option_set = ["first", "second", "third", "fourth", "fifth"]
+  >>> p = regex.compile(r"\L<options>", options=option_set, other_options=[])
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "C:\Python37\lib\site-packages\regex\regex.py", line 348, in compile
+      return _compile(pattern, flags, ignore_unused, kwargs)
+    File "C:\Python37\lib\site-packages\regex\regex.py", line 585, in _compile
+      raise ValueError('unused keyword argument {!a}'.format(any_one))
+  ValueError: unused keyword argument 'other_options'
+  >>> p = regex.compile(r"\L<options>", options=option_set, other_options=[], ignore_unused=True)
+  >>>
+
 Start and end of word
 ^^^^^^^^^^^^^^^^^^^^^
 
