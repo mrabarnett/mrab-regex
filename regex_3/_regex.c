@@ -18319,15 +18319,15 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_State* state, BOOL search) {
                 state->text_pos = entry->match_pos;
                 init_match(state);
                 status = basic_match(state, search);
+
+                list = &best_changes_list.lists[0];
+                state->fuzzy_changes.count = list->count;
+                Py_MEMCPY(state->fuzzy_changes.items, list->items,
+                  (size_t)list->count * sizeof(RE_FuzzyChange));
             }
 
             state->slice_start = slice_start;
             state->slice_end = slice_end;
-
-            list = &best_changes_list.lists[0];
-            state->fuzzy_changes.count = list->count;
-            Py_MEMCPY(state->fuzzy_changes.items, list->items,
-              (size_t)list->count * sizeof(RE_FuzzyChange));
         } else
             state->fuzzy_changes.count = 0;
     }

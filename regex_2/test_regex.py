@@ -4033,6 +4033,20 @@ thing
         self.assertEquals(regex.search(r'(?be)(AGTGTTCCCCGCGCCAGCGGGGATAAACCG){s<=5,i<=5,d<=5,s+i+d<=10}',
           'TTCCCCGCGCCAGCGGGGATAAACCG').fuzzy_changes, ([], [], [0, 1, 3, 5]))
 
+        # Git issue 364: Contradictory values in fuzzy_counts and fuzzy_changes
+        self.assertEquals(regex.match(r'(?:bc){e}', 'c').fuzzy_counts, (1, 0,
+          1))
+        self.assertEquals(regex.match(r'(?:bc){e}', 'c').fuzzy_changes, ([0],
+          [], [1]))
+        self.assertEquals(regex.match(r'(?e)(?:bc){e}', 'c').fuzzy_counts, (0,
+          0, 1))
+        self.assertEquals(regex.match(r'(?e)(?:bc){e}', 'c').fuzzy_changes,
+          ([], [], [0]))
+        self.assertEquals(regex.match(r'(?b)(?:bc){e}', 'c').fuzzy_counts, (0,
+          0, 1))
+        self.assertEquals(regex.match(r'(?b)(?:bc){e}', 'c').fuzzy_changes,
+          ([], [], [0]))
+
     def test_fuzzy_ext(self):
         self.assertEquals(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
