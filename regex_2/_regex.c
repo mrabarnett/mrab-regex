@@ -10332,16 +10332,25 @@ Py_LOCAL_INLINE(void) unrecord_fuzzy(RE_State* state) {
     --state->fuzzy_changes.count;
 }
 
-/* Makes a list of lists of fuzzy changes. */
-Py_LOCAL_INLINE(void) make_fuzzy_changes_list(RE_FuzzyChangesList*
+/* Initialises a list of fuzzy changes. */
+Py_LOCAL_INLINE(void) init_fuzzy_changes_list(RE_FuzzyChangesList*
   changes_list) {
     changes_list->capacity = 0;
     changes_list->count = 0;
     changes_list->items = NULL;
 }
 
-/* Makes a list of lists of fuzzy changes. */
-Py_LOCAL_INLINE(void) make_best_changes_list(RE_BestChangesList*
+/* Finalises a list of fuzzy changes. */
+Py_LOCAL_INLINE(void) fini_fuzzy_changes_list(RE_State* state,
+  RE_FuzzyChangesList* changes_list) {
+    safe_dealloc(state, changes_list->items);
+    changes_list->capacity = 0;
+    changes_list->count = 0;
+    changes_list->items = NULL;
+}
+
+/* Initialises a list of lists of fuzzy changes. */
+Py_LOCAL_INLINE(void) init_best_changes_list(RE_BestChangesList*
   best_changes_list) {
     best_changes_list->capacity = 0;
     best_changes_list->count = 0;
@@ -10366,11 +10375,14 @@ Py_LOCAL_INLINE(void) clear_best_fuzzy_changes(RE_State* state,
     best_changes_list->count = 0;
 }
 
-/* Destroys a list of lists of fuzzy changes. */
-Py_LOCAL_INLINE(void) destroy_best_changes_list(RE_State* state,
+/* Finalises a list of lists of fuzzy changes. */
+Py_LOCAL_INLINE(void) fini_best_changes_list(RE_State* state,
   RE_BestChangesList* best_changes_list) {
     clear_best_fuzzy_changes(state, best_changes_list);
     safe_dealloc(state, best_changes_list->lists);
+    best_changes_list->capacity = 0;
+    best_changes_list->count = 0;
+    best_changes_list->lists = NULL;
 }
 
 /* Adds a list of fuzzy changes to a list of best fuzzy changes. */
@@ -10411,20 +10423,6 @@ Py_LOCAL_INLINE(BOOL) add_best_fuzzy_changes(RE_State* state,
     changes->items = items;
 
     return TRUE;
-}
-
-/* Initialises a list of fuzzy changes. */
-Py_LOCAL_INLINE(void) make_changes_list(RE_State* state, RE_FuzzyChangesList*
-  best_changes_list) {
-    best_changes_list->capacity = 0;
-    best_changes_list->count = 0;
-    best_changes_list->items = NULL;
-}
-
-/* Finitialises a list of fuzzy changes. */
-Py_LOCAL_INLINE(void) destroy_changes_list(RE_State* state,
-  RE_FuzzyChangesList* best_changes_list) {
-    safe_dealloc(state, best_changes_list->items);
 }
 
 /* Saves a list of fuzzy changes. */
@@ -17932,8 +17930,17 @@ Py_LOCAL_INLINE(void) restore_fuzzy_counts(RE_State* state, size_t*
     Py_MEMCPY(state->fuzzy_counts, fuzzy_counts, sizeof(state->fuzzy_counts));
 }
 
-/* Makes the list of best matches found so far. */
-Py_LOCAL_INLINE(void) make_best_list(RE_BestList* best_list) {
+/* Initialises the list of best matches found so far. */
+Py_LOCAL_INLINE(void) init_best_list(RE_BestList* best_list) {
+    best_list->capacity = 0;
+    best_list->count = 0;
+    best_list->entries = NULL;
+}
+
+/* Finalises the list of best matches found so far. */
+Py_LOCAL_INLINE(void) fini_best_list(RE_State* state, RE_BestList*
+  best_list) {
+    safe_dealloc(state, best_list->entries);
     best_list->capacity = 0;
     best_list->count = 0;
     best_list->entries = NULL;
@@ -17974,13 +17981,6 @@ Py_LOCAL_INLINE(BOOL) add_to_best_list(RE_State* state, RE_BestList* best_list,
     return TRUE;
 }
 
-/* Destroy the list of best matches found so far. */
-Py_LOCAL_INLINE(void) destroy_best_list(RE_State* state, RE_BestList*
-  best_list) {
-    if (best_list->entries)
-        safe_dealloc(state, best_list->entries);
-}
-
 /* Performs a match or search from the current text position for a best fuzzy
  * match.
  */
@@ -18014,8 +18014,8 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_State* state, BOOL search) {
     must_advance = state->must_advance;
     found_match = FALSE;
 
-    make_best_list(&best_list);
-    make_best_changes_list(&best_changes_list);
+    init_best_list(&best_list);
+    init_best_changes_list(&best_changes_list);
 
     /* Search the text for the best match. */
     start_pos = state->text_pos;
@@ -18108,7 +18108,7 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_State* state, BOOL search) {
                 error_limit = RE_MAX_ERRORS;
 
             best_groups = NULL;
-            make_fuzzy_changes_list(&best_fuzzy_changes);
+            init_fuzzy_changes_list(&best_fuzzy_changes);
 
             /* Look again at the best of the matches that we've seen. */
             for (i = 0; i < best_list.count; i++) {
@@ -18236,20 +18236,22 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_State* state, BOOL search) {
                   (size_t)list->count * sizeof(RE_FuzzyChange));
             }
 
+            fini_fuzzy_changes_list(state, &best_fuzzy_changes);
+
             state->slice_start = slice_start;
             state->slice_end = slice_end;
         } else
             state->fuzzy_changes.count = 0;
     }
 
-    destroy_best_list(state, &best_list);
-    destroy_best_changes_list(state, &best_changes_list);
+    fini_best_list(state, &best_list);
+    fini_best_changes_list(state, &best_changes_list);
 
     return status;
 
 error:
-    destroy_best_list(state, &best_list);
-    destroy_best_changes_list(state, &best_changes_list);
+    fini_best_list(state, &best_list);
+    fini_best_changes_list(state, &best_changes_list);
     return RE_ERROR_MEMORY;
 }
 
@@ -18273,7 +18275,7 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_State* state, BOOL search) {
 
     pattern = state->pattern;
 
-    make_changes_list(state, &best_fuzzy_changes);
+    init_fuzzy_changes_list(&best_fuzzy_changes);
 
     if (state->reverse)
         available = state->text_pos - state->slice_start;
@@ -18409,12 +18411,12 @@ Py_LOCAL_INLINE(int) do_enhanced_fuzzy_match(RE_State* state, BOOL search) {
         restore_fuzzy_changes(state, &best_fuzzy_changes);
     }
 
-    destroy_changes_list(state, &best_fuzzy_changes);
+    fini_fuzzy_changes_list(state, &best_fuzzy_changes);
 
     return status;
 
 error:
-    destroy_changes_list(state, &best_fuzzy_changes);
+    fini_fuzzy_changes_list(state, &best_fuzzy_changes);
     return status;
 }
 
