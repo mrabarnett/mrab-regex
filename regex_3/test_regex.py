@@ -4217,6 +4217,23 @@ thing
         self.assertEquals(regex.match(r'(?b)(?:bc){e}', 'c').fuzzy_changes,
           ([], [], [0]))
 
+        # Git issue #370: Confusions about Fuzzy matching behavior
+        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){e}',
+          '$ 10,112.111.12').fuzzy_counts, (6, 0, 5))
+        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=1}',
+          '$ 10,112.111.12').fuzzy_counts, (1, 0, 0))
+        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=1,i<=1,d<=1}',
+          '$ 10,112.111.12').fuzzy_counts, (1, 0, 0))
+        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=3}',
+          '$ 10,1a2.111.12').fuzzy_counts, (2, 0, 0))
+        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=2}',
+          '$ 10,1a2.111.12').fuzzy_counts, (2, 0, 0))
+
+        self.assertEquals(regex.fullmatch(r'(?e)(?:0?,0(?:,0)?){s<=1,d<=1}',
+          ',0;0').fuzzy_counts, (1, 0, 0))
+        self.assertEquals(regex.fullmatch(r'(?e)(?:0??,0(?:,0)?){s<=1,d<=1}',
+          ',0;0').fuzzy_counts, (1, 0, 0))
+
     def test_fuzzy_ext(self):
         self.assertEquals(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

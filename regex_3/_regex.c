@@ -9375,7 +9375,8 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_State* state, size_t index,
     RE_GuardList* guard_list;
 
     /* Is a guard active here? */
-    if (!(state->pattern->repeat_info[index].status & guard_type))
+    if (!(state->pattern->repeat_info[index].status & guard_type) ||
+      state->fuzzy_node)
         return FALSE;
 
     /* Which guard list? */
@@ -10774,11 +10775,14 @@ Py_LOCAL_INLINE(int) fuzzy_match_item(RE_State* state, BOOL search, Py_ssize_t*
   text_pos, RE_Node** node, RE_INT8 step) {
     size_t* fuzzy_counts;
     RE_FuzzyData data;
+    TRACE(("<<fuzzy_match_item>>\n"))
 
     fuzzy_counts = state->fuzzy_counts;
 
-    if (!any_error_permitted(state))
+    if (!any_error_permitted(state)) {
+        TRACE(("    return RE_ERROR_FAILURE\n"))
         return RE_ERROR_FAILURE;
+    }
 
     data.new_text_pos = *text_pos;
     data.new_node = *node;
@@ -10812,6 +10816,7 @@ Py_LOCAL_INLINE(int) fuzzy_match_item(RE_State* state, BOOL search, Py_ssize_t*
             goto found;
     }
 
+    TRACE(("    return RE_ERROR_FAILURE\n"))
     return RE_ERROR_FAILURE;
 
 found:
@@ -10838,6 +10843,9 @@ found:
     *text_pos = data.new_text_pos;
     *node = data.new_node;
 
+    TRACE(("    fuzzy_counts is (%zd, %zd, %zd)\n", fuzzy_counts[0],
+      fuzzy_counts[1], fuzzy_counts[2]))
+    TRACE(("    return RE_ERROR_SUCCESS\n"))
     return RE_ERROR_SUCCESS;
 }
 
@@ -10849,6 +10857,7 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_item(RE_State* state, RE_UINT8 op, BOOL
     RE_FuzzyData data;
     RE_INT8 step;
     RE_Node* curr_node;
+    TRACE(("<<retry_fuzzy_match_item>>\n"))
 
     fuzzy_counts = state->fuzzy_counts;
 
@@ -10894,6 +10903,7 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_item(RE_State* state, RE_UINT8 op, BOOL
             goto found;
     }
 
+    TRACE(("    return RE_ERROR_FAILURE\n"))
     return RE_ERROR_FAILURE;
 
 found:
@@ -10920,6 +10930,9 @@ found:
     *text_pos = data.new_text_pos;
     *node = data.new_node;
 
+    TRACE(("    fuzzy_counts is (%zd, %zd, %zd)\n", fuzzy_counts[0],
+      fuzzy_counts[1], fuzzy_counts[2]))
+    TRACE(("    return RE_ERROR_SUCCESS\n"))
     return RE_ERROR_SUCCESS;
 }
 
@@ -11016,11 +11029,14 @@ Py_LOCAL_INLINE(int) fuzzy_match_string(RE_State* state, BOOL search,
   Py_ssize_t* text_pos, RE_Node* node, Py_ssize_t* string_pos, RE_INT8 step) {
     size_t* fuzzy_counts;
     RE_FuzzyData data;
+    TRACE(("<<fuzzy_match_string>>\n"))
 
     fuzzy_counts = state->fuzzy_counts;
 
-    if (!any_error_permitted(state))
+    if (!any_error_permitted(state)) {
+        TRACE(("    return RE_ERROR_FAILURE\n"))
         return RE_ERROR_FAILURE;
+    }
 
     data.new_text_pos = *text_pos;
     data.new_string_pos = *string_pos;
@@ -11044,6 +11060,7 @@ Py_LOCAL_INLINE(int) fuzzy_match_string(RE_State* state, BOOL search,
             goto found;
     }
 
+    TRACE(("    return RE_ERROR_FAILURE\n"))
     return RE_ERROR_FAILURE;
 
 found:
@@ -11072,6 +11089,9 @@ found:
     *text_pos = data.new_text_pos;
     *string_pos = data.new_string_pos;
 
+    TRACE(("    fuzzy_counts is (%zd, %zd, %zd)\n", fuzzy_counts[0],
+      fuzzy_counts[1], fuzzy_counts[2]))
+    TRACE(("    return RE_ERROR_SUCCESS\n"))
     return RE_ERROR_SUCCESS;
 }
 
@@ -11083,6 +11103,7 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string(RE_State* state, RE_UINT8 op,
     Py_ssize_t curr_text_pos;
     Py_ssize_t curr_string_pos;
     RE_Node* new_node;
+    TRACE(("<<retry_fuzzy_match_string>>\n"))
 
     fuzzy_counts = state->fuzzy_counts;
 
@@ -11124,6 +11145,7 @@ Py_LOCAL_INLINE(int) retry_fuzzy_match_string(RE_State* state, RE_UINT8 op,
             goto found;
     }
 
+    TRACE(("    return RE_ERROR_FAILURE\n"))
     return RE_ERROR_FAILURE;
 
 found:
@@ -11153,6 +11175,9 @@ found:
     *node = new_node;
     *string_pos = data.new_string_pos;
 
+    TRACE(("    fuzzy_counts is (%zd, %zd, %zd)\n", fuzzy_counts[0],
+      fuzzy_counts[1], fuzzy_counts[2]))
+    TRACE(("    return RE_ERROR_SUCCESS\n"))
     return RE_ERROR_SUCCESS;
 }
 
@@ -13063,7 +13088,7 @@ advance:
             /* The counts are of type size_t, so the format needs to specify
              * that.
              */
-            TRACE(("min is %u, max is %u, count is %" PY_FORMAT_SIZE_T "u\n",
+            TRACE(("    min is %u, max is %u, count is %" PY_FORMAT_SIZE_T "u\n",
               node->values[1], node->values[2], rp_data->count))
 
             /* Could the body or tail match? */
@@ -13290,7 +13315,7 @@ advance:
             /* The counts are of type size_t, so the format needs to specify
              * that.
              */
-            TRACE(("min is %u, max is %u, count is %" PY_FORMAT_SIZE_T "u\n",
+            TRACE(("    min is %u, max is %u, count is %" PY_FORMAT_SIZE_T "u\n",
               node->values[1], node->values[2], rp_data->count))
 
             /* Could the body or tail match? */
@@ -13712,6 +13737,11 @@ advance:
             rp_data->capture_change = state->capture_change;
 
             /* Could the body or tail match? */
+#if defined(VERBOSE)
+            printf("    is_repeat_guarded(..., RE_STATUS_BODY) returns %d\n",
+              is_repeat_guarded(state, index, state->text_pos,
+              RE_STATUS_BODY));
+#endif
             try_body = node->values[2] > 0 && !is_repeat_guarded(state, index,
               state->text_pos, RE_STATUS_BODY);
             if (try_body) {
