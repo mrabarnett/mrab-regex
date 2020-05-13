@@ -4217,7 +4217,7 @@ thing
         self.assertEquals(regex.match(r'(?b)(?:bc){e}', 'c').fuzzy_changes,
           ([], [], [0]))
 
-        # Git issue #370: Confusions about Fuzzy matching behavior
+        # Git issue 370: Confusions about Fuzzy matching behavior
         self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){e}',
           '$ 10,112.111.12').fuzzy_counts, (6, 0, 5))
         self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=1}',
@@ -4233,6 +4233,10 @@ thing
           ',0;0').fuzzy_counts, (1, 0, 0))
         self.assertEquals(regex.fullmatch(r'(?e)(?:0??,0(?:,0)?){s<=1,d<=1}',
           ',0;0').fuzzy_counts, (1, 0, 0))
+
+        # Git issue 371: Specifying character set when fuzzy-matching allows characters not in the set
+        self.assertEquals(regex.search(r"\b(?e)(?:\d{6,20}){i<=5:[\-\\\/]}\b",
+          "cat dog starting at 00:01132.000. hello world"), None)
 
     def test_fuzzy_ext(self):
         self.assertEquals(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),

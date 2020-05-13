@@ -10613,6 +10613,13 @@ Py_LOCAL_INLINE(BOOL) fuzzy_ext_match(RE_State* state, RE_Node* fuzzy_node,
         return pos > state->slice_start && matches_RANGE(state->encoding,
           state->locale_info, test_node, state->char_at(state->text, pos - 1))
           == test_node->match;
+    case RE_OP_SET_DIFF:
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_UNION:
+        return pos < state->slice_end && matches_SET(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos)) ==
+          test_node->match;
     }
 
     return TRUE;
@@ -10704,6 +10711,14 @@ Py_LOCAL_INLINE(BOOL) fuzzy_ext_match_group_fld(RE_State* state, RE_Node*
           matches_RANGE(state->encoding, state->locale_info, test_node,
           folded_char_at(state, state->text_pos - 1, folded_pos - 1)) ==
           test_node->match;
+    case RE_OP_SET_DIFF:
+    case RE_OP_SET_INTER:
+    case RE_OP_SET_SYM_DIFF:
+    case RE_OP_SET_UNION:
+        return state->text_pos < state->slice_end &&
+          matches_SET(state->encoding, state->locale_info, test_node,
+          folded_char_at(state, state->text_pos, folded_pos)) ==
+          test_node->match;
     }
 
     return TRUE;
@@ -10737,6 +10752,7 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
             new_pos = data->new_text_pos + data->step;
         else
             new_pos = data->new_text_pos + step;
+
         if (state->slice_start <= new_pos && new_pos <= state->slice_end) {
             if (!fuzzy_ext_match(state, state->fuzzy_node, data->new_text_pos))
                 return RE_ERROR_FAILURE;
@@ -10757,10 +10773,12 @@ Py_LOCAL_INLINE(int) next_fuzzy_match_item(RE_State* state, RE_FuzzyData* data,
                 return RE_ERROR_FAILURE;
 
             data->new_text_pos = new_pos;
+
             if (is_string)
                 data->new_string_pos += step;
             else
                 data->new_node = data->new_node->next_1.node;
+
             return RE_ERROR_SUCCESS;
         }
 
