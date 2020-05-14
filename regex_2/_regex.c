@@ -9321,7 +9321,7 @@ Py_LOCAL_INLINE(BOOL) is_repeat_guarded(RE_State* state, size_t index,
 
     /* Is a guard active here? */
     if (!(state->pattern->repeat_info[index].status & guard_type) ||
-      state->fuzzy_node)
+      state->is_fuzzy)
         return FALSE;
 
     /* Which guard list? */
