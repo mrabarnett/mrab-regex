@@ -1,11 +1,10 @@
-import regex
-import string
 from weakref import proxy
-import unittest
 import copy
 import pickle
-from test.support import run_unittest
+import regex
+import string
 import sys
+import unittest
 
 # String subclasses for issue 18468.
 class StrSubclass(str):
@@ -4188,142 +4187,142 @@ thing
           ['\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466'])
 
         # Hg issue 320: Abnormal performance
-        self.assertEquals(bool(regex.search(r'(?=a)a', 'a')), True)
-        self.assertEquals(bool(regex.search(r'(?!b)a', 'a')), True)
+        self.assertEqual(bool(regex.search(r'(?=a)a', 'a')), True)
+        self.assertEqual(bool(regex.search(r'(?!b)a', 'a')), True)
 
         # Hg issue 327: .fullmatch() causes MemoryError
-        self.assertEquals(regex.fullmatch(r'((\d)*?)*?', '123').span(), (0, 3))
+        self.assertEqual(regex.fullmatch(r'((\d)*?)*?', '123').span(), (0, 3))
 
         # Hg issue 329: Wrong group matches when question mark quantifier is used within a look behind
-        self.assertEquals(regex.search(r'''(?(DEFINE)(?<mydef>(?<wrong>THIS_SHOULD_NOT_MATCHx?)|(?<right>right))).*(?<=(?&mydef).*)''',
+        self.assertEqual(regex.search(r'''(?(DEFINE)(?<mydef>(?<wrong>THIS_SHOULD_NOT_MATCHx?)|(?<right>right))).*(?<=(?&mydef).*)''',
           'x right').capturesdict(), {'mydef': ['right'], 'wrong': [], 'right':
           ['right']})
 
         # Hg issue 353: fuzzy changes negative indexes
-        self.assertEquals(regex.search(r'(?be)(AGTGTTCCCCGCGCCAGCGGGGATAAACCG){s<=5,i<=5,d<=5,s+i+d<=10}',
+        self.assertEqual(regex.search(r'(?be)(AGTGTTCCCCGCGCCAGCGGGGATAAACCG){s<=5,i<=5,d<=5,s+i+d<=10}',
           'TTCCCCGCGCCAGCGGGGATAAACCG').fuzzy_changes, ([], [], [0, 1, 3, 5]))
 
         # Git issue 364: Contradictory values in fuzzy_counts and fuzzy_changes
-        self.assertEquals(regex.match(r'(?:bc){e}', 'c').fuzzy_counts, (1, 0,
+        self.assertEqual(regex.match(r'(?:bc){e}', 'c').fuzzy_counts, (1, 0,
           1))
-        self.assertEquals(regex.match(r'(?:bc){e}', 'c').fuzzy_changes, ([0],
+        self.assertEqual(regex.match(r'(?:bc){e}', 'c').fuzzy_changes, ([0],
           [], [1]))
-        self.assertEquals(regex.match(r'(?e)(?:bc){e}', 'c').fuzzy_counts, (0,
+        self.assertEqual(regex.match(r'(?e)(?:bc){e}', 'c').fuzzy_counts, (0,
           0, 1))
-        self.assertEquals(regex.match(r'(?e)(?:bc){e}', 'c').fuzzy_changes,
+        self.assertEqual(regex.match(r'(?e)(?:bc){e}', 'c').fuzzy_changes,
           ([], [], [0]))
-        self.assertEquals(regex.match(r'(?b)(?:bc){e}', 'c').fuzzy_counts, (0,
+        self.assertEqual(regex.match(r'(?b)(?:bc){e}', 'c').fuzzy_counts, (0,
           0, 1))
-        self.assertEquals(regex.match(r'(?b)(?:bc){e}', 'c').fuzzy_changes,
+        self.assertEqual(regex.match(r'(?b)(?:bc){e}', 'c').fuzzy_changes,
           ([], [], [0]))
 
         # Git issue 370: Confusions about Fuzzy matching behavior
-        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){e}',
+        self.assertEqual(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){e}',
           '$ 10,112.111.12').fuzzy_counts, (6, 0, 5))
-        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=1}',
+        self.assertEqual(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=1}',
           '$ 10,112.111.12').fuzzy_counts, (1, 0, 0))
-        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=1,i<=1,d<=1}',
+        self.assertEqual(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=1,i<=1,d<=1}',
           '$ 10,112.111.12').fuzzy_counts, (1, 0, 0))
-        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=3}',
+        self.assertEqual(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=3}',
           '$ 10,1a2.111.12').fuzzy_counts, (2, 0, 0))
-        self.assertEquals(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=2}',
+        self.assertEqual(regex.match('(?e)(?:^(\\$ )?\\d{1,3}(,\\d{3})*(\\.\\d{2})$){s<=2}',
           '$ 10,1a2.111.12').fuzzy_counts, (2, 0, 0))
 
-        self.assertEquals(regex.fullmatch(r'(?e)(?:0?,0(?:,0)?){s<=1,d<=1}',
+        self.assertEqual(regex.fullmatch(r'(?e)(?:0?,0(?:,0)?){s<=1,d<=1}',
           ',0;0').fuzzy_counts, (1, 0, 0))
-        self.assertEquals(regex.fullmatch(r'(?e)(?:0??,0(?:,0)?){s<=1,d<=1}',
+        self.assertEqual(regex.fullmatch(r'(?e)(?:0??,0(?:,0)?){s<=1,d<=1}',
           ',0;0').fuzzy_counts, (1, 0, 0))
 
         # Git issue 371: Specifying character set when fuzzy-matching allows characters not in the set
-        self.assertEquals(regex.search(r"\b(?e)(?:\d{6,20}){i<=5:[\-\\\/]}\b",
+        self.assertEqual(regex.search(r"\b(?e)(?:\d{6,20}){i<=5:[\-\\\/]}\b",
           "cat dog starting at 00:01132.000. hello world"), None)
 
     def test_fuzzy_ext(self):
-        self.assertEquals(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
+        self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
-        self.assertEquals(bool(regex.fullmatch(r'(?:a){e<=1:[a-z]}', 'e')),
+        self.assertEqual(bool(regex.fullmatch(r'(?:a){e<=1:[a-z]}', 'e')),
           True)
-        self.assertEquals(bool(regex.fullmatch(r'(?:a){e<=1:[a-z]}', '-')),
+        self.assertEqual(bool(regex.fullmatch(r'(?:a){e<=1:[a-z]}', '-')),
           False)
-        self.assertEquals(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', '-')),
+        self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', '-')),
           False)
 
-        self.assertEquals(bool(regex.fullmatch(r'(?:a){e<=1:[a-z]}', 'ae')),
+        self.assertEqual(bool(regex.fullmatch(r'(?:a){e<=1:[a-z]}', 'ae')),
           True)
-        self.assertEquals(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}',
           'ae')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?:a){e<=1:[a-z]}', 'a-')),
+        self.assertEqual(bool(regex.fullmatch(r'(?:a){e<=1:[a-z]}', 'a-')),
           False)
-        self.assertEquals(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}',
           'a-')), False)
 
-        self.assertEquals(bool(regex.fullmatch(r'(?:ab){e<=1:[a-z]}', 'ae')),
+        self.assertEqual(bool(regex.fullmatch(r'(?:ab){e<=1:[a-z]}', 'ae')),
            True)
-        self.assertEquals(bool(regex.fullmatch(r'(?r)(?:ab){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?r)(?:ab){e<=1:[a-z]}',
            'ae')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?:ab){e<=1:[a-z]}', 'a-')),
+        self.assertEqual(bool(regex.fullmatch(r'(?:ab){e<=1:[a-z]}', 'a-')),
            False)
-        self.assertEquals(bool(regex.fullmatch(r'(?r)(?:ab){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?r)(?:ab){e<=1:[a-z]}',
            'a-')), False)
 
-        self.assertEquals(bool(regex.fullmatch(r'(a)\1{e<=1:[a-z]}', 'ae')),
+        self.assertEqual(bool(regex.fullmatch(r'(a)\1{e<=1:[a-z]}', 'ae')),
            True)
-        self.assertEquals(bool(regex.fullmatch(r'(?r)\1{e<=1:[a-z]}(a)',
+        self.assertEqual(bool(regex.fullmatch(r'(?r)\1{e<=1:[a-z]}(a)',
            'ea')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(a)\1{e<=1:[a-z]}', 'a-')),
+        self.assertEqual(bool(regex.fullmatch(r'(a)\1{e<=1:[a-z]}', 'a-')),
            False)
-        self.assertEquals(bool(regex.fullmatch(r'(?r)\1{e<=1:[a-z]}(a)',
+        self.assertEqual(bool(regex.fullmatch(r'(?r)\1{e<=1:[a-z]}(a)',
            '-a')), False)
 
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
           'ts')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
           'st')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
           'st')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
           'ts')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
           '-s')), False)
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
           's-')), False)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
           's-')), False)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)(?:\N{LATIN SMALL LETTER SHARP S}){e<=1:[a-z]}',
           '-s')), False)
 
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
            'ssst')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
            'ssts')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)\1{e<=1:[a-z]}(\N{LATIN SMALL LETTER SHARP S})',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)\1{e<=1:[a-z]}(\N{LATIN SMALL LETTER SHARP S})',
            'stss')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)\1{e<=1:[a-z]}(\N{LATIN SMALL LETTER SHARP S})',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)\1{e<=1:[a-z]}(\N{LATIN SMALL LETTER SHARP S})',
            'tsss')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
            'ss-s')), False)
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
            'sss-')), False)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
            '-s')), False)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)(\N{LATIN SMALL LETTER SHARP S})\1{e<=1:[a-z]}',
            's-')), False)
 
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(ss)\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(ss)\1{e<=1:[a-z]}',
            '\N{LATIN SMALL LETTER SHARP S}ts')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(ss)\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(ss)\1{e<=1:[a-z]}',
            '\N{LATIN SMALL LETTER SHARP S}st')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)\1{e<=1:[a-z]}(ss)',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)\1{e<=1:[a-z]}(ss)',
            'st\N{LATIN SMALL LETTER SHARP S}')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)\1{e<=1:[a-z]}(ss)',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)\1{e<=1:[a-z]}(ss)',
            'ts\N{LATIN SMALL LETTER SHARP S}')), True)
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(ss)\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(ss)\1{e<=1:[a-z]}',
            '\N{LATIN SMALL LETTER SHARP S}-s')), False)
-        self.assertEquals(bool(regex.fullmatch(r'(?fiu)(ss)\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?fiu)(ss)\1{e<=1:[a-z]}',
            '\N{LATIN SMALL LETTER SHARP S}s-')), False)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)(ss)\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)(ss)\1{e<=1:[a-z]}',
            's-\N{LATIN SMALL LETTER SHARP S}')), False)
-        self.assertEquals(bool(regex.fullmatch(r'(?firu)(ss)\1{e<=1:[a-z]}',
+        self.assertEqual(bool(regex.fullmatch(r'(?firu)(ss)\1{e<=1:[a-z]}',
            '-s\N{LATIN SMALL LETTER SHARP S}')), False)
 
     def test_subscripted_captures(self):
@@ -4362,7 +4361,7 @@ if sys.version_info < (3, 2, 0):
     RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp
 
 def test_main():
-    run_unittest(RegexTests)
+    unittest.main(verbosity=2)
 
 if __name__ == "__main__":
     test_main()

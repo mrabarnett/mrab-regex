@@ -220,12 +220,6 @@ STRING_FLD_REV
 STRING_IGN
 STRING_IGN_REV
 STRING_REV
-STRING_SET
-STRING_SET_FLD
-STRING_SET_FLD_REV
-STRING_SET_IGN
-STRING_SET_IGN_REV
-STRING_SET_REV
 FUZZY_EXT
 """
 
@@ -2015,6 +2009,9 @@ class Branch(RegexBase):
             b.fix_groups(pattern, reverse, fuzzy)
 
     def optimise(self, info, reverse):
+        if not self.branches:
+            return Sequence([])
+
         # Flatten branches within branches.
         branches = Branch._flatten_branches(info, reverse, self.branches)
 
@@ -3917,13 +3914,7 @@ class Literal(String):
         print("{}LITERAL MATCH {}{}".format(INDENT * indent, display,
           CASE_TEXT[self.case_flags]))
 
-class StringSet(RegexBase):
-    _opcode = {(NOCASE, False): OP.STRING_SET, (IGNORECASE, False):
-      OP.STRING_SET_IGN, (FULLCASE, False): OP.STRING_SET, (FULLIGNORECASE,
-      False): OP.STRING_SET_FLD, (NOCASE, True): OP.STRING_SET_REV,
-      (IGNORECASE, True): OP.STRING_SET_IGN_REV, (FULLCASE, True):
-      OP.STRING_SET_REV, (FULLIGNORECASE, True): OP.STRING_SET_FLD_REV}
-
+class StringSet(Branch):
     def __init__(self, info, name, case_flags=NOCASE):
         self.info = info
         self.name = name
@@ -3935,84 +3926,31 @@ class StringSet(RegexBase):
         if self.set_key not in info.named_lists_used:
             info.named_lists_used[self.set_key] = len(info.named_lists_used)
 
-    def _compile(self, reverse, fuzzy):
         index = self.info.named_lists_used[self.set_key]
         items = self.info.kwargs[self.name]
 
         case_flags = self.case_flags
 
-        if not items:
-            return []
-
         encoding = self.info.flags & _ALL_ENCODINGS
         fold_flags = encoding | case_flags
 
-        if True or fuzzy: # Temporary fix. The engine needs work!
-            choices = [self._folded(fold_flags, i) for i in items]
+        choices = []
 
-            # Sort from longest to shortest.
-            choices.sort(key=lambda s: (-len(s), s))
+        for string in items:
+            if isinstance(string, str):
+                string = [ord(c) for c in string]
 
-            branches = []
-            for string in choices:
-                branches.append(Sequence([Character(c, case_flags=case_flags)
-                  for c in string]))
+            choices.append([Character(c, case_flags=case_flags) for c in
+              string])
 
-            if len(branches) > 1:
-                branch = Branch(branches)
-            else:
-                branch = branches[0]
-            branch = branch.optimise(self.info,
-              reverse).pack_characters(self.info)
+        # Sort from longest to shortest.
+        choices.sort(key=len, reverse=True)
 
-            return branch.compile(reverse, fuzzy)
-        else:
-            min_len = min(len(i) for i in items)
-            max_len = max(len(self._folded(fold_flags, i)) for i in items)
-            return [(self._opcode[case_flags, reverse], index, min_len,
-              max_len)]
+        self.branches = [Sequence(choice) for choice in choices]
 
     def dump(self, indent, reverse):
         print("{}STRING_SET {}{}".format(INDENT * indent, self.name,
           CASE_TEXT[self.case_flags]))
-
-    def _folded(self, fold_flags, item):
-        if isinstance(item, str):
-            return [ord(c) for c in _regex.fold_case(fold_flags, item)]
-        else:
-            return list(item)
-
-    def _flatten(self, s):
-        # Flattens the branches.
-        if isinstance(s, Branch):
-            for b in s.branches:
-                self._flatten(b)
-        elif isinstance(s, Sequence) and s.items:
-            seq = s.items
-
-            while isinstance(seq[-1], Sequence):
-                seq[-1 : ] = seq[-1].items
-
-            n = 0
-            while n < len(seq) and isinstance(seq[n], Character):
-                n += 1
-
-            if n > 1:
-                seq[ : n] = [String([c.value for c in seq[ : n]],
-                  case_flags=self.case_flags)]
-
-            self._flatten(seq[-1])
-
-    def max_width(self):
-        if not self.info.kwargs[self.name]:
-            return 0
-
-        if self.case_flags & IGNORECASE:
-            fold_flags = (self.info.flags & _ALL_ENCODINGS) | self.case_flags
-            return max(len(_regex.fold_case(fold_flags, i)) for i in
-              self.info.kwargs[self.name])
-        else:
-            return max(len(i) for i in self.info.kwargs[self.name])
 
     def __del__(self):
         self.info = None
