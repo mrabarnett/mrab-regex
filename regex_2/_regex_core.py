@@ -3964,7 +3964,7 @@ class StringSet(RegexBase):
         encoding = self.info.flags & _ALL_ENCODINGS
         fold_flags = encoding | case_flags
 
-        if fuzzy:
+        if True or fuzzy: # Temporary fix. The engine needs work!
             choices = [self._folded(fold_flags, i) for i in items]
 
             # Sort from longest to shortest.
