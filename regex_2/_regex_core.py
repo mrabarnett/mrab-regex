@@ -4440,6 +4440,7 @@ CHARACTER_ESCAPES = {
 CHARSET_ESCAPES = {
     "d": lookup_property(None, "Digit", True),
     "D": lookup_property(None, "Digit", False),
+    "h": lookup_property(None, "Blank", True),
     "s": lookup_property(None, "Space", True),
     "S": lookup_property(None, "Space", False),
     "w": lookup_property(None, "Word", True),

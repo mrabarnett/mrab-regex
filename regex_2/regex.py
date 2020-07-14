@@ -136,6 +136,7 @@ second character.
     \g<name>        Matches the text matched by the group named name.
     \G              Matches the empty string, but only at the position where
                     the search started.
+    \h              Matches horizontal whitespace.
     \K              Keeps only what follows for the entire match.
     \L<name>        Named list. The list is provided as a keyword argument.
     \m              Matches the empty string, but only at the start of a word.
@@ -239,7 +240,7 @@ __all__ = ["compile", "DEFAULT_VERSION", "escape", "findall", "finditer",
   "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X",
   "VERBOSE", "W", "WORD", "error", "Regex", "__version__", "__doc__"]
 
-__version__ = "2.5.82"
+__version__ = "2.5.83"
 
 # --------------------------------------------------------------------
 # Public interface.

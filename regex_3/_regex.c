@@ -60,11 +60,6 @@
 #endif
 #endif
 
-#if PY_VERSION_HEX < 0x03030000
-typedef unsigned char Py_UCS1;
-typedef unsigned short Py_UCS2;
-
-#endif
 typedef RE_UINT32 RE_CODE;
 typedef unsigned char BYTE;
 
@@ -1503,11 +1498,7 @@ static BOOL unicode_at_word_end(RE_State* state, Py_ssize_t text_pos) {
  * Only a limited number are treated as vowels.
  */
 Py_LOCAL_INLINE(BOOL) is_unicode_vowel(Py_UCS4 ch) {
-#if PY_VERSION_HEX >= 0x03030000
     switch (Py_UNICODE_TOLOWER(ch)) {
-#else
-    switch (Py_UNICODE_TOLOWER((Py_UNICODE)ch)) {
-#endif
     case 'a': case 0xE0: case 0xE1: case 0xE2:
     case 'e': case 0xE8: case 0xE9: case 0xEA:
     case 'i': case 0xEC: case 0xED: case 0xEE:
@@ -9472,7 +9463,6 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t start,
 
     return result;
 #else
-#if PY_VERSION_HEX >= 0x03030000
     Py_ssize_t len;
     int kind;
 
@@ -9495,14 +9485,6 @@ Py_LOCAL_INLINE(PyObject*) build_unicode_value(void* buffer, Py_ssize_t start,
     }
 
     return PyUnicode_FromKindAndData(kind, buffer, len);
-#else
-    Py_ssize_t len;
-
-    buffer = (void*)((RE_UINT8*)buffer + start * buffer_charsize);
-    len = end - start;
-
-    return PyUnicode_FromUnicode(buffer, len);
-#endif
 #endif
 }
 
@@ -17983,18 +17965,12 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
      */
     if (PyUnicode_Check(string)) {
         /* Unicode strings don't always support the buffer interface. */
-#if PY_VERSION_HEX >= 0x03030000
         if (PyUnicode_READY(string) == -1)
             return FALSE;
 
         str_info->characters = (void*)PyUnicode_DATA(string);
         str_info->length = PyUnicode_GET_LENGTH(string);
         str_info->charsize = PyUnicode_KIND(string);
-#else
-        str_info->characters = (void*)PyUnicode_AS_DATA(string);
-        str_info->length = PyUnicode_GET_SIZE(string);
-        str_info->charsize = sizeof(Py_UNICODE);
-#endif
         str_info->is_unicode = TRUE;
         str_info->should_release = FALSE;
         return TRUE;
@@ -18534,21 +18510,12 @@ Py_LOCAL_INLINE(Py_ssize_t) limited_range(Py_ssize_t value, Py_ssize_t lower,
 Py_LOCAL_INLINE(PyObject*) unicode_slice(PyObject* string, Py_ssize_t start,
   Py_ssize_t end) {
     Py_ssize_t length;
-#if PY_VERSION_HEX < 0x03030000
-    Py_UNICODE* buffer;
-#endif
 
-    length = PyUnicode_GET_SIZE(string);
+    length = PyUnicode_GET_LENGTH(string);
     start = limited_range(start, 0, length);
     end = limited_range(end, 0, length);
 
-#if PY_VERSION_HEX >= 0x03030000
     return PyUnicode_Substring(string, start, end);
-#else
-    buffer = PyUnicode_AsUnicode(string);
-
-    return PyUnicode_FromUnicode(buffer + start, end - start);
-#endif
 }
 
 /* Gets a slice from a bytestring. */
@@ -19454,7 +19421,7 @@ Py_LOCAL_INLINE(PyObject*) join_list_info(RE_JoinInfo* join_info) {
 
         if (join_info->is_unicode) {
             /* Concatenate the Unicode strings. */
-            joiner = PyUnicode_FromUnicode(NULL, 0);
+            joiner = PyUnicode_New(0, 0);
             if (!joiner) {
                 clear_join_list(join_info);
                 return NULL;
@@ -19484,7 +19451,7 @@ Py_LOCAL_INLINE(PyObject*) join_list_info(RE_JoinInfo* join_info) {
 
     /* There are no items, so return an empty string. */
     if (join_info->is_unicode)
-        return PyUnicode_FromUnicode(NULL, 0);
+        return PyUnicode_New(0, 0);
     else
         return PyBytes_FromString("");
 }
@@ -19788,14 +19755,8 @@ Py_LOCAL_INLINE(PyObject*) match_get_group_slice(MatchObject* self, PyObject*
     Py_ssize_t step;
     Py_ssize_t slice_length;
 
-#if PY_VERSION_HEX >= 0x03020000
     if (PySlice_GetIndicesEx(slice, (Py_ssize_t)self->group_count + 1, &start,
       &end, &step, &slice_length) < 0)
-#else
-    if (PySlice_GetIndicesEx((PySliceObject*)slice,
-      (Py_ssize_t)self->group_count + 1, &start, &end, &step, &slice_length) <
-      0)
-#endif
         return NULL;
 
     if (slice_length <= 0)
@@ -21001,19 +20962,11 @@ Py_LOCAL_INLINE(Py_ssize_t) index_to_integer(PyObject* item) {
     /* Is the index a string representation of an integer? */
     if (PyUnicode_Check(item)) {
         PyObject* int_obj;
-#if PY_VERSION_HEX < 0x03030000
-        Py_UNICODE* characters;
-        Py_ssize_t length;
-#endif
 
 #if defined(PYPY_VERSION) && PY_VERSION_HEX < 0x05090000
         int_obj = integer_from_unicode(item);
-#elif PY_VERSION_HEX >= 0x03030000
-        int_obj = PyLong_FromUnicodeObject(item, 0);
 #else
-        characters = (Py_UNICODE*)PyUnicode_AS_DATA(item);
-        length = PyUnicode_GET_SIZE(item);
-        int_obj = PyLong_FromUnicode(characters, length, 0);
+        int_obj = PyLong_FromUnicodeObject(item, 0);
 #endif
         if (!int_obj)
             goto error;
@@ -25992,7 +25945,6 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
     else
         encoding = &unicode_encoding;
 
-#if PY_VERSION_HEX >= 0x03030000
     /* Initially assume that the folded string will have the same width as the
      * original string (usually true).
      */
@@ -26003,10 +25955,6 @@ static PyObject* fold_case(PyObject* self_, PyObject* args) {
      */
     if (encoding == &unicode_encoding && str_info.charsize == 1)
         folded_charsize = 2;
-#else
-    /* The folded string will have the same width as the original string. */
-    folded_charsize = str_info.charsize;
-#endif
 
     /* Get the function for writing to the folded string. */
     switch (folded_charsize) {
@@ -26110,11 +26058,7 @@ static PyObject* get_expand_on_folding(PyObject* self, PyObject* unused) {
         return NULL;
 
     for (i = 0; i < count; i++) {
-#if PY_VERSION_HEX >= 0x03030000
         Py_UCS4 codepoint;
-#else
-        Py_UNICODE codepoint;
-#endif
         PyObject* item;
 
         codepoint = re_expand_on_folding[i];

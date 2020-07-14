@@ -1773,8 +1773,8 @@ class RegexTests(unittest.TestCase):
               repr('\a\b\f\n\r\t\v')),
             (r'[\a][\b][\f][\n][\r][\t][\v]', '\a\b\f\n\r\t\v', '0',
               repr('\a\b\f\n\r\t\v')),
-            (r'\c\e\g\h\i\j\k\o\p\q\y\z', 'ceghijkopqyz', '0',
-              repr('ceghijkopqyz')),
+            (r'\c\e\g\i\j\k\o\p\q\y\z', 'cegijkopqyz', '0',
+              repr('cegijkopqyz')),
             (r'\xff', '\377', '0', repr(chr(255))),
 
             # New \x semantics.
