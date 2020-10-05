@@ -7,7 +7,7 @@ pipelines:
           caches:
             - pip
           script:
-            - for py in 36 37 38; do echo building Python${py} wheel; for pip in /opt/python/cp${py}*/bin/pip; do $pip wheel .; done; done
+            - for py in 36 37 38 39; do echo building Python${py} wheel; for pip in /opt/python/cp${py}*/bin/pip; do $pip wheel .; done; done
             - for wheel in *.whl; do auditwheel repair $wheel -w wheelhouse; done
           artifacts:
             - wheelhouse/*
@@ -17,7 +17,7 @@ pipelines:
           caches:
             - pip
           script:
-            - for py in 36 37 38; do echo building Python${py} wheel; for pip in /opt/python/cp${py}*/bin/pip; do linux32 $pip wheel .; done; done
+            - for py in 36 37 38 39; do echo building Python${py} wheel; for pip in /opt/python/cp${py}*/bin/pip; do linux32 $pip wheel .; done; done
             - for wheel in *.whl; do auditwheel repair $wheel -w wheelhouse; done
           artifacts:
             - wheelhouse/*
