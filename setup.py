@@ -12,13 +12,13 @@ with open('README.rst') as file:
 
 setup(
     name='regex',
-    version='2020.9.27',
+    version='2020.10.11',
     description='Alternative regular expression module, to replace re.',
     long_description=long_description,
     author='Matthew Barnett',
     author_email='regex@mrabarnett.plus.com',
     url='https://bitbucket.org/mrabarnett/mrab-regex',
-    license='Python Software Foundation License',
+    license='Apache Software License',
 
     classifiers=[
         'Development Status :: 5 - Production/Stable',

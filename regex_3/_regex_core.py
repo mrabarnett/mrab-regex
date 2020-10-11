@@ -770,11 +770,11 @@ def parse_paren(source, info):
     inline flag.
     """
     saved_pos = source.pos
-    ch = source.get()
+    ch = source.get(True)
     if ch == "?":
         # (?...
         saved_pos_2 = source.pos
-        ch = source.get()
+        ch = source.get(True)
         if ch == "<":
             # (?<...
             saved_pos_3 = source.pos
@@ -895,13 +895,13 @@ def parse_comment(source):
     "Parses a comment."
     while True:
         saved_pos = source.pos
-        c = source.get()
+        c = source.get(True)
 
         if not c or c == ")":
             break
 
         if c == "\\":
-            c = source.get()
+            c = source.get(True)
 
     source.pos = saved_pos
     source.expect(")")
@@ -3969,12 +3969,12 @@ class Source:
         self.ignore_space = False
         self.sep = string[ : 0]
 
-    def get(self):
+    def get(self, override_ignore=False):
         string = self.string
         pos = self.pos
 
         try:
-            if self.ignore_space:
+            if self.ignore_space and not override_ignore:
                 while True:
                     if string[pos].isspace():
                         # Skip over the whitespace.
