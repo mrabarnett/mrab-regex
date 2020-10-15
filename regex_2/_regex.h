@@ -115,6 +115,7 @@
 #define RE_OP_MATCH_BODY 94
 #define RE_OP_MATCH_TAIL 95
 #define RE_OP_START_GROUP 96
+#define RE_OP_TAIL_START 97
 
 char* re_op_text[] = {
     "RE_OP_FAILURE",
@@ -214,6 +215,7 @@ char* re_op_text[] = {
     "RE_OP_MATCH_BODY",
     "RE_OP_MATCH_TAIL",
     "RE_OP_START_GROUP",
+    "RE_OP_TAIL_START"
 };
 
 #define RE_FLAG_ASCII 0x80

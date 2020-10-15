@@ -45,6 +45,8 @@
 #define TRACE(X)
 #endif
 
+#define PY_SSIZE_T_CLEAN
+
 #include "Python.h"
 #include "structmember.h" /* offsetof */
 #include <ctype.h>
@@ -9832,13 +9834,12 @@ Py_LOCAL_INLINE(Py_UCS4) folded_char_at(RE_State* state, Py_ssize_t pos, int
   folded_pos) {
     int (*full_case_fold)(RE_LocaleInfo* locale_info, Py_UCS4 ch, Py_UCS4*
       folded);
-    int folded_len;
     Py_UCS4 folded[RE_MAX_FOLDED];
 
     full_case_fold = state->encoding->full_case_fold;
 
-    folded_len = full_case_fold(state->locale_info, state->char_at(state->text,
-      pos), folded);
+    full_case_fold(state->locale_info, state->char_at(state->text, pos),
+      folded);
 
     return folded[folded_pos];
 }
@@ -10516,7 +10517,7 @@ found:
      */
 
     if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
-      data.new_text_pos : data.new_text_pos - data.step))
+      new_text_pos : new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -10616,7 +10617,7 @@ found:
      */
 
     if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
-      data.new_text_pos : data.new_text_pos - data.step))
+      new_text_pos : new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -10751,7 +10752,7 @@ found:
      */
 
     if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
-      data.new_text_pos : data.new_text_pos - data.step))
+      new_text_pos : new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -10857,7 +10858,7 @@ found:
      */
 
     if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
-      data.new_text_pos : data.new_text_pos - data.step))
+      new_text_pos : new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -12355,7 +12356,6 @@ advance:
                 return RE_ERROR_PARTIAL;
 
             /* Record info in case we backtrack into the body. */
-
             data_be.count = rp_data->count - 1;
             data_be.start = rp_data->start;
             data_be.capture_change = rp_data->capture_change;
@@ -12370,19 +12370,18 @@ advance:
             /* bstack: count start capture_change index BODY_END */
 
             if (try_body) {
-                /* Both the body and the tail could match. */
                 if (try_tail) {
-                    /* The body takes precedence. If the body fails to match
-                     * then we want to try the tail before backtracking
-                     * further.
+                    /* Both the body and the tail could match, but the body
+                     * takes precedence. If the body fails to match then we
+                     * want to try the tail before backtracking further.
                      */
                     RE_MatchBodyTailStateData data_mbt;
 
                     /* Record backtracking info for matching the tail. */
                     data_mbt.position = next_tail_position;
                     data_mbt.count = rp_data->count;
-                    data_mbt.start = rp_data->start;
-                    data_mbt.capture_change = rp_data->capture_change;
+                    data_mbt.start = state->text_pos;
+                    data_mbt.capture_change = state->capture_change;
                     data_mbt.index = index;
                     data_mbt.text_pos = state->text_pos;
 
@@ -12415,6 +12414,16 @@ advance:
                 state->text_pos = next_body_position.text_pos;
             } else {
                 /* Only the tail could match. */
+
+                /* Record backtracking info in case the tail fails to match. */
+                if (!push_code(state, &state->bstack, index))
+                    return RE_ERROR_MEMORY;
+                if (!push_ssize(state, &state->bstack, state->text_pos))
+                    return RE_ERROR_MEMORY;
+                if (!push_uint8(state, &state->bstack, RE_OP_TAIL_START))
+                    return RE_ERROR_MEMORY;
+
+                /* bstack: index text_pos TAIL_START */
 
                 /* Advance into the tail. */
                 node = next_tail_position.node;
@@ -12553,7 +12562,9 @@ advance:
             } else
                 body_status = RE_ERROR_FAILURE;
 
-            try_tail = (!changed || rp_data->count >= node->values[1]);
+            try_tail = (!changed || rp_data->count >= node->values[1]) &&
+              !is_repeat_guarded(state, index, state->text_pos,
+              RE_STATUS_TAIL);
             if (try_tail) {
                 tail_status = try_match(state, &node->nonstring.next_2,
                   state->text_pos, &next_tail_position);
@@ -12588,21 +12599,19 @@ advance:
 
             /* bstack: count start capture_change index BODY_END */
 
-            if (try_body) {
-                /* Both the body and the tail could match. */
-                if (try_tail) {
-                    /* The tail takes precedence. If the tail fails to match
-                     * then we want to try the body before backtracking
-                     * further.
+            if (try_tail) {
+                if (try_body) {
+                    /* Both the body and the tail could match, but The tail
+                     * takes precedence. If the tail fails to match then we
+                     * want to try the body before backtracking further.
                      */
                     RE_MatchBodyTailStateData data_mbt;
 
                     /* Record backtracking info for matching the body. */
-
                     data_mbt.position = next_body_position;
                     data_mbt.count = rp_data->count;
-                    data_mbt.start = rp_data->start;
-                    data_mbt.capture_change = rp_data->capture_change;
+                    data_mbt.start = state->text_pos;
+                    data_mbt.capture_change = state->capture_change;
                     data_mbt.index = index;
                     data_mbt.text_pos = state->text_pos;
 
@@ -12615,38 +12624,42 @@ advance:
                     /* bstack: position count start capture_change index
                      * text_pos MATCH_BODY
                      */
-
-                    /* Advance into the tail. */
-                    node = next_tail_position.node;
-                    state->text_pos = next_tail_position.text_pos;
-                } else {
-                    /* Only the body could match. */
-
-                    /* Record backtracking info in case the body fails to
-                     * match.
-                     */
-                    if (!push_code(state, &state->bstack, index))
-                        return RE_ERROR_MEMORY;
-                    if (!push_ssize(state, &state->bstack, state->text_pos))
-                        return RE_ERROR_MEMORY;
-                    if (!push_uint8(state, &state->bstack, RE_OP_BODY_START))
-                        return RE_ERROR_MEMORY;
-
-                    /* bstack: index text_pos BODY_START */
-
-                    rp_data->capture_change = state->capture_change;
-                    rp_data->start = state->text_pos;
-
-                    /* Advance into the body. */
-                    node = next_body_position.node;
-                    state->text_pos = next_body_position.text_pos;
                 }
-            } else {
-                /* Only the tail could match. */
+
+                /* Record backtracking info in case the tail fails to match. */
+                if (!push_code(state, &state->bstack, index))
+                    return RE_ERROR_MEMORY;
+                if (!push_ssize(state, &state->bstack, state->text_pos))
+                    return RE_ERROR_MEMORY;
+                if (!push_uint8(state, &state->bstack, RE_OP_TAIL_START))
+                    return RE_ERROR_MEMORY;
+
+                /* bstack: index text_pos TAIL_START */
 
                 /* Advance into the tail. */
                 node = next_tail_position.node;
                 state->text_pos = next_tail_position.text_pos;
+            } else {
+                /* Only the body could match. */
+
+                /* Record backtracking info in case the body fails to
+                 * match.
+                 */
+                if (!push_code(state, &state->bstack, index))
+                    return RE_ERROR_MEMORY;
+                if (!push_ssize(state, &state->bstack, state->text_pos))
+                    return RE_ERROR_MEMORY;
+                if (!push_uint8(state, &state->bstack, RE_OP_BODY_START))
+                    return RE_ERROR_MEMORY;
+
+                /* bstack: index text_pos BODY_START */
+
+                rp_data->capture_change = state->capture_change;
+                rp_data->start = state->text_pos;
+
+                /* Advance into the body. */
+                node = next_body_position.node;
+                state->text_pos = next_body_position.text_pos;
             }
             break;
         }
@@ -12935,7 +12948,6 @@ advance:
             /* We might need to backtrack into the head, so save the current
              * repeat.
              */
-
             data_r.count = rp_data->count;
             data_r.start = rp_data->start;
             data_r.capture_change = rp_data->capture_change;
@@ -12986,6 +12998,7 @@ advance:
                     try_tail = FALSE;
             } else
                 tail_status = RE_ERROR_FAILURE;
+
             if (!try_body && !try_tail)
                 /* Neither the body nor the tail could match. */
                 goto backtrack;
@@ -13020,11 +13033,31 @@ advance:
                      */
                 }
 
+                /* Record backtracking info in case the body fails to match. */
+                if (!push_code(state, &state->bstack, index))
+                    return RE_ERROR_MEMORY;
+                if (!push_ssize(state, &state->bstack, state->text_pos))
+                    return RE_ERROR_MEMORY;
+                if (!push_uint8(state, &state->bstack, RE_OP_BODY_START))
+                    return RE_ERROR_MEMORY;
+
+                /* bstack: index text_pos BODY_START */
+
                 /* Advance into the body. */
                 node = next_body_position.node;
                 state->text_pos = next_body_position.text_pos;
             } else {
                 /* Only the tail could match. */
+
+                /* Record backtracking info in case the tail fails to match. */
+                if (!push_code(state, &state->bstack, index))
+                    return RE_ERROR_MEMORY;
+                if (!push_ssize(state, &state->bstack, state->text_pos))
+                    return RE_ERROR_MEMORY;
+                if (!push_uint8(state, &state->bstack, RE_OP_TAIL_START))
+                    return RE_ERROR_MEMORY;
+
+                /* bstack: index text_pos TAIL_START */
 
                 /* Advance into the tail. */
                 node = next_tail_position.node;
@@ -13276,7 +13309,6 @@ advance:
         {
             RE_CODE index;
             RE_RepeatData* rp_data;
-            BOOL changed;
             BOOL try_body;
             int body_status;
             RE_Position next_body_position;
@@ -13290,13 +13322,9 @@ advance:
             index = node->values[0];
             rp_data = &state->repeats[index];
 
-            /* Has a capture group change? */
-            changed = rp_data->capture_change != state->capture_change;
-
             /* We might need to backtrack into the head, so save the current
              * repeat.
              */
-
             data_r.count = rp_data->count;
             data_r.start = rp_data->start;
             data_r.capture_change = rp_data->capture_change;
@@ -13317,9 +13345,13 @@ advance:
             rp_data->capture_change = state->capture_change;
 
             /* Could the body or tail match? */
-            try_body = (changed && state->is_fuzzy) || (node->values[2] > 0 &&
-              !is_repeat_guarded(state, index, state->text_pos,
+#if defined(VERBOSE)
+            printf("    is_repeat_guarded(..., RE_STATUS_BODY) returns %d\n",
+              is_repeat_guarded(state, index, state->text_pos,
               RE_STATUS_BODY));
+#endif
+            try_body = node->values[2] > 0 && !is_repeat_guarded(state, index,
+              state->text_pos, RE_STATUS_BODY);
             if (try_body) {
                 body_status = try_match(state, &node->next_1, state->text_pos,
                   &next_body_position);
@@ -13350,8 +13382,8 @@ advance:
             if (body_status < 0 || (body_status == 0 && tail_status < 0))
                 return RE_ERROR_PARTIAL;
 
-            if (try_body) {
-                if (try_tail) {
+            if (try_tail) {
+                if (try_body) {
                     /* Both the body and the tail could match, but the tail
                      * takes precedence. If the tail fails to match then we
                      * want to try the body before backtracking further.
@@ -13375,21 +13407,37 @@ advance:
                     /* bstack: position count start capture_change index
                      * text_pos MATCH_BODY
                      */
-
-                    /* Advance into the tail. */
-                    node = next_tail_position.node;
-                    state->text_pos = next_tail_position.text_pos;
-                } else {
-                    /* Advance into the body. */
-                    node = next_body_position.node;
-                    state->text_pos = next_body_position.text_pos;
                 }
-            } else {
-                /* Only the tail could match. */
+
+                /* Record backtracking info in case the tail fails to match. */
+                if (!push_code(state, &state->bstack, index))
+                    return RE_ERROR_MEMORY;
+                if (!push_ssize(state, &state->bstack, state->text_pos))
+                    return RE_ERROR_MEMORY;
+                if (!push_uint8(state, &state->bstack, RE_OP_TAIL_START))
+                    return RE_ERROR_MEMORY;
+
+                /* bstack: index text_pos TAIL_START */
 
                 /* Advance into the tail. */
                 node = next_tail_position.node;
                 state->text_pos = next_tail_position.text_pos;
+            } else {
+                /* Only the body could match. */
+
+                /* Record backtracking info in case the body fails to match. */
+                if (!push_code(state, &state->bstack, index))
+                    return RE_ERROR_MEMORY;
+                if (!push_ssize(state, &state->bstack, state->text_pos))
+                    return RE_ERROR_MEMORY;
+                if (!push_uint8(state, &state->bstack, RE_OP_BODY_START))
+                    return RE_ERROR_MEMORY;
+
+                /* bstack: index text_pos BODY_START */
+
+                /* Advance into the body. */
+                node = next_body_position.node;
+                state->text_pos = next_body_position.text_pos;
             }
             break;
         }
@@ -15027,7 +15075,7 @@ backtrack:
             capture_change = data_be.capture_change;
             start = data_be.start;
             count = data_be.count;
-            TRACE(("%s %d\n", re_op_text[op], index))
+            TRACE(("%s %u\n", re_op_text[op], (unsigned int)index))
 
             /* We're backtracking into the body. */
             rp_data = &state->repeats[index];
@@ -15049,7 +15097,7 @@ backtrack:
                 return RE_ERROR_MEMORY;
             if (!pop_code(state, &state->bstack, &index))
                 return RE_ERROR_MEMORY;
-            TRACE(("%s %d\n", re_op_text[op], index))
+            TRACE(("%s %u\n", re_op_text[op], (unsigned int)index))
 
             /* The body may have failed to match at this position. */
             if (!guard_repeat(state, index, text_pos, RE_STATUS_BODY, TRUE))
@@ -16885,7 +16933,6 @@ backtrack:
         case RE_OP_MATCH_BODY:
         {
             RE_MatchBodyTailStateData data_mbt;
-            Py_ssize_t text_pos;
             RE_CODE index;
             size_t capture_change;
             Py_ssize_t start;
@@ -16899,13 +16946,12 @@ backtrack:
               sizeof(data_mbt)))
                 return RE_ERROR_MEMORY;
 
-            text_pos = data_mbt.text_pos;
             index = data_mbt.index;
             capture_change = data_mbt.capture_change;
             start = data_mbt.start;
             count = data_mbt.count;
             position = data_mbt.position;
-            TRACE(("%s %d\n", re_op_text[op], index))
+            TRACE(("%s %u\n", re_op_text[op], (unsigned int)index))
 
             /* We want to match the body. */
             rp_data = &state->repeats[index];
@@ -16918,7 +16964,7 @@ backtrack:
             /* Record backtracking info in case the body fails to match. */
             if (!push_code(state, &state->bstack, index))
                 return RE_ERROR_MEMORY;
-            if (!push_ssize(state, &state->bstack, text_pos))
+            if (!push_ssize(state, &state->bstack, data_mbt.text_pos))
                 return RE_ERROR_MEMORY;
             if (!push_uint8(state, &state->bstack, RE_OP_BODY_START))
                 return RE_ERROR_MEMORY;
@@ -16951,7 +16997,7 @@ backtrack:
             start = data_mbt.start;
             count = data_mbt.count;
             position = data_mbt.position;
-            TRACE(("%s %d\n", re_op_text[op], index))
+            TRACE(("%s %u\n", re_op_text[op], (unsigned int)index))
 
             /* We want to match the tail. */
             rp_data = &state->repeats[index];
@@ -16960,6 +17006,16 @@ backtrack:
             rp_data->count = count;
             rp_data->start = start;
             rp_data->capture_change = capture_change;
+
+            /* Record backtracking info in case the tail fails to match. */
+            if (!push_code(state, &state->bstack, index))
+                return RE_ERROR_MEMORY;
+            if (!push_ssize(state, &state->bstack, data_mbt.text_pos))
+                return RE_ERROR_MEMORY;
+            if (!push_uint8(state, &state->bstack, RE_OP_TAIL_START))
+                return RE_ERROR_MEMORY;
+
+            /* bstack: index text_pos TAIL_START */
 
             /* Advance into the tail. */
             node = position.node;
@@ -17072,6 +17128,24 @@ backtrack:
                 goto advance;
 
             string_pos = -1;
+            break;
+        }
+        case RE_OP_TAIL_START:
+        {
+            Py_ssize_t text_pos;
+            RE_CODE index;
+
+            /* bstack: index text_pos */
+
+            if (!pop_ssize(state, &state->bstack, &text_pos))
+                return RE_ERROR_MEMORY;
+            if (!pop_code(state, &state->bstack, &index))
+                return RE_ERROR_MEMORY;
+            TRACE(("%s %u\n", re_op_text[op], (unsigned int)index))
+
+            /* The tail may have failed to match at this position. */
+            if (!guard_repeat(state, index, text_pos, RE_STATUS_TAIL, TRUE))
+                return RE_ERROR_MEMORY;
             break;
         }
         default:
@@ -23139,6 +23213,21 @@ Py_LOCAL_INLINE(BOOL) mark_named_groups(PatternObject* pattern) {
     return TRUE;
 }
 
+/* Checks whether you can look ahead of this node for testing for a match. */
+Py_LOCAL_INLINE(BOOL) can_test_past(RE_Node* node) {
+    switch (node->op) {
+    case RE_OP_END_GROUP:
+    case RE_OP_END_LAZY_REPEAT:
+    case RE_OP_START_GROUP:
+        return TRUE;
+    case RE_OP_GREEDY_REPEAT:
+    case RE_OP_LAZY_REPEAT:
+        return node->values[1] > 0;
+    default:
+        return FALSE;
+    }
+}
+
 /* Gets the test node.
  *
  * The test node lets the matcher look ahead in the pattern, allowing it to
@@ -23157,7 +23246,7 @@ Py_LOCAL_INLINE(void) set_test_node(RE_NextNode* next) {
         return;
 
     test = node;
-    while (test->op == RE_OP_END_GROUP || test->op == RE_OP_START_GROUP)
+    while (can_test_past(test))
         test = test->next_1.node;
 
     next->test = test;

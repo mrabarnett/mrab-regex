@@ -1074,7 +1074,8 @@ def generate_all_cases(unicode_data, c_file):
     max_columns = max(len(value) for value in others_dict)
 
     max_width = max(len(str(item)) for value in others_dict for item in value)
-    fmt = '    {{' + ', '.join(['{:%d}' % max_width] * max_columns) + '}},\n'
+    fmt = '    {{{:%d}, {{' % max_width + ', '.join(['{:%d}' % max_width] *
+      (max_columns -1)) + '}}}},\n'
 
     lines = []
 
@@ -1245,8 +1246,8 @@ def generate_full_case_folding(unicode_data, c_file):
     max_width = max(len(str(item)) for value in value_dict for item in value)
     rows = [(value + (0, ) * max_folded)[ : max_folded] for value in
       sorted(value_dict, key=value_dict.get)]
-    fmt = ('    {{' + ', '.join(['{:%d}' % max_width] * max_folded) +
-      '}},\n').format
+    fmt = ('    {{{{' + ', '.join(['{:%d}' % max_width] * max_folded) +
+      '}}}},\n').format
     lines = []
 
     for row in rows:

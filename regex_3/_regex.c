@@ -45,6 +45,8 @@
 #define TRACE(X)
 #endif
 
+#define PY_SSIZE_T_CLEAN
+
 #include "Python.h"
 #include "structmember.h" /* offsetof */
 #include <ctype.h>
@@ -9894,13 +9896,12 @@ Py_LOCAL_INLINE(Py_UCS4) folded_char_at(RE_State* state, Py_ssize_t pos, int
   folded_pos) {
     int (*full_case_fold)(RE_LocaleInfo* locale_info, Py_UCS4 ch, Py_UCS4*
       folded);
-    int folded_len;
     Py_UCS4 folded[RE_MAX_FOLDED];
 
     full_case_fold = state->encoding->full_case_fold;
 
-    folded_len = full_case_fold(state->locale_info, state->char_at(state->text,
-      pos), folded);
+    full_case_fold(state->locale_info, state->char_at(state->text, pos),
+      folded);
 
     return folded[folded_pos];
 }
@@ -10578,7 +10579,7 @@ found:
      */
 
     if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
-      data.new_text_pos : data.new_text_pos - data.step))
+      new_text_pos : new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -10678,7 +10679,7 @@ found:
      */
 
     if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
-      data.new_text_pos : data.new_text_pos - data.step))
+      new_text_pos : new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -10813,7 +10814,7 @@ found:
      */
 
     if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
-      data.new_text_pos : data.new_text_pos - data.step))
+      new_text_pos : new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
@@ -10919,7 +10920,7 @@ found:
      */
 
     if (!record_fuzzy(state, data.fuzzy_type, data.fuzzy_type == RE_FUZZY_DEL ?
-      data.new_text_pos : data.new_text_pos - data.step))
+      new_text_pos : new_text_pos - data.step))
         return RE_ERROR_MEMORY;
 
     ++fuzzy_counts[data.fuzzy_type];
