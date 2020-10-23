@@ -232,15 +232,16 @@ This module also defines an exception 'error'.
 """
 
 # Public symbols.
-__all__ = ["compile", "DEFAULT_VERSION", "escape", "findall", "finditer",
-  "fullmatch", "match", "purge", "search", "split", "splititer", "sub", "subf",
-  "subfn", "subn", "template", "Scanner", "A", "ASCII", "B", "BESTMATCH", "D",
-  "DEBUG", "E", "ENHANCEMATCH", "S", "DOTALL", "F", "FULLCASE", "I",
-  "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "P", "POSIX", "R", "REVERSE",
-  "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1", "VERSION1", "X",
-  "VERBOSE", "W", "WORD", "error", "Regex", "__version__", "__doc__"]
+__all__ = ["cache_all", "compile", "DEFAULT_VERSION", "escape", "findall",
+  "finditer", "fullmatch", "match", "purge", "search", "split", "splititer",
+  "sub", "subf", "subfn", "subn", "template", "Scanner", "A", "ASCII", "B",
+  "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH", "S", "DOTALL", "F",
+  "FULLCASE", "I", "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "P", "POSIX",
+  "R", "REVERSE", "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1",
+  "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex", "__version__",
+  "__doc__"]
 
-__version__ = "2.5.87"
+__version__ = "2.5.88"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -347,12 +348,25 @@ def finditer(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
 
 def compile(pattern, flags=0, ignore_unused=False, **kwargs):
     "Compile a regular expression pattern, returning a pattern object."
-    return _compile(pattern, flags, ignore_unused, kwargs, False)
+    return _compile(pattern, flags, ignore_unused, kwargs, _cache_all)
 
 def purge():
     "Clear the regular expression cache"
     _cache.clear()
     _locale_sensitive.clear()
+
+# Whether to cache all patterns.
+_cache_all = True
+
+def cache_all(value=True):
+    """Sets whether to cache all patterns, even those are compiled explicitly.
+    Passing None has no effect, but returns the current setting."""
+    global _cache_all
+
+    if value is None:
+        return _cache_all
+
+    _cache_all = value
 
 def template(pattern, flags=0):
     "Compile a template pattern, returning a pattern object."
