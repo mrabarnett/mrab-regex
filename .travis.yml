@@ -19,7 +19,7 @@ script:
   - python3 setup.py install
 after_success:
   - python3 -m pip install -U twine
-  - python3 -m twine upload --verbose --skip-existing wheelhouse/*.whl
+  - python3 -m twine upload --verbose --skip-existing -u $PYPI_USER -p $PYPI_PASS wheelhouse/*.whl
 
 jobs:
   include:
@@ -40,8 +40,8 @@ jobs:
         - python3 setup.py install
       after_success:
         - python3 -m pip install -U twine
-        - python3 -m twine upload --verbose --skip-existing dist/*.tar.gz
-        - python3 -m twine upload --verbose --skip-existing wheelhouse/*.whl
+        - python3 -m twine upload --verbose --skip-existing -u $PYPI_USER -p $PYPI_PASS dist/*.tar.gz
+        - python3 -m twine upload --verbose --skip-existing -u $PYPI_USER -p $PYPI_PASS wheelhouse/*.whl
 
     # manylinux2010
     - stage: deploy
