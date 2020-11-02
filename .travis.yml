@@ -1,6 +1,6 @@
 ﻿branches:
   only:
-    - master
+    - hg
 
 stages:
   - name: deploy
