@@ -17,7 +17,6 @@ install:
 script:
   - python3 -m cibuildwheel --output-dir wheelhouse
   - python3 setup.py install
-  - python3 build_tools/test_zstd.py
 after_success:
   - python3 -m pip install -U twine
   - python3 -m twine upload --verbose --skip-existing wheelhouse/*.whl
@@ -39,7 +38,6 @@ jobs:
         - python3 setup.py sdist --formats=gztar
         - python3 -m cibuildwheel --output-dir wheelhouse
         - python3 setup.py install
-        - python3 build_tools/test_zstd.py
       after_success:
         - python3 -m pip install -U twine
         - python3 -m twine upload --verbose --skip-existing dist/*.tar.gz
