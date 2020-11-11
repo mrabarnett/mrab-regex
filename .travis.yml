@@ -39,6 +39,7 @@ jobs:
         - python3 setup.py sdist --formats=gztar
         - python3 -m cibuildwheel --output-dir wheelhouse
         - python3 setup.py install
+        - python3 -m unittest -v regex.test_regex
       after_success:
         - python3 -m pip install -U twine
         - python3 -m twine upload --verbose --skip-existing -u $PYPI_USER -p $PYPI_PASS dist/*.tar.gz

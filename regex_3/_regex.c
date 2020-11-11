@@ -122,7 +122,7 @@ typedef RE_UINT32 RE_STATUS_T;
 #define RE_ERROR_PARTIAL -13 /* Partial match. */
 #define RE_ERROR_NOT_BYTES -14 /* Not a bytestring. */
 #define RE_ERROR_BAD_TIMEOUT -15 /* "timeout" invalid. */
-#define RE_ERROR_TIMED_OUT -16 /* matching has timed out. */
+#define RE_ERROR_TIMED_OUT -16 /* Matching has timed out. */
 
 /* Node bitflags. */
 #define RE_POSITIVE_OP 0x1
@@ -2200,12 +2200,12 @@ Py_LOCAL_INLINE(void) safe_dealloc(RE_State* state, void* ptr) {
 
 /* Checks whether matching has timed out. */
 Py_LOCAL_INLINE(BOOL) check_timed_out(RE_State* state) {
-    if (state->timeout < 0)
+    if (state->timeout == RE_NO_TIMEOUT)
         /* No timeout. */
         return FALSE;
 
     if ((Py_ssize_t)(clock() - state->start_time) < state->timeout)
-        /* hasn't timed out yet. */
+        /* Hasn't timed out yet. */
         return FALSE;
 
     set_error(RE_ERROR_TIMED_OUT, NULL);
@@ -18331,7 +18331,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     }
 
     state->timeout = timeout;
-    state->start_time = clock();
+    state->start_time = timeout == RE_NO_TIMEOUT ? 0 : clock();
 
     /* A state struct can sometimes be shared across threads. In such
      * instances, if multithreading is enabled we need to protect the state
