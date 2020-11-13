@@ -9886,6 +9886,13 @@ Py_LOCAL_INLINE(BOOL) fuzzy_ext_match(RE_State* state, RE_Node* fuzzy_node,
         return pos < state->slice_end && matches_SET(state->encoding,
           state->locale_info, test_node, state->char_at(state->text, pos)) ==
           test_node->match;
+    case RE_OP_SET_DIFF_IGN:
+    case RE_OP_SET_INTER_IGN:
+    case RE_OP_SET_SYM_DIFF_IGN:
+    case RE_OP_SET_UNION_IGN:
+        return pos < state->slice_end && matches_SET_IGN(state->encoding,
+          state->locale_info, test_node, state->char_at(state->text, pos)) ==
+          test_node->match;
     }
 
     return TRUE;
