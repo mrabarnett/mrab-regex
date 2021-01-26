@@ -68,6 +68,7 @@ jobs:
     - stage: deploy
       name: macOS wheels
       os: osx
+      osx_image: xcode12u
       language: shell
 
     # Windows
