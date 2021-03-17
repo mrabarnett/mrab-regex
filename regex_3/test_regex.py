@@ -4247,6 +4247,10 @@ thing
         self.assertEqual(regex.findall(r'(?i)(\d+){i<=2:[ab]}', '123X4Y5'),
           ['123', '4', '5'])
 
+        # Git issue 403: Fuzzy matching with wrong distance (unnecessary substitutions)
+        self.assertEqual(regex.match(r'^(test){e<=5}$', 'terstin',
+          flags=regex.B).fuzzy_counts, (0, 3, 0))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
