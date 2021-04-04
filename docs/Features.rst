@@ -8,6 +8,11 @@ Note
 
 The re module's behaviour with zero-width matches changed in Python 3.7, and this module will follow that behaviour when compiled for Python 3.7.
 
+PyPy
+----
+
+This module is targeted at CPython. It expects that all codepoints are the same width, so it won't behave properly with PyPy outside U+0000..U+007F because PyPy stores strings as UTF-8.
+
 Old vs new behaviour
 --------------------
 

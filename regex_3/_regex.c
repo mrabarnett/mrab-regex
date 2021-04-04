@@ -24942,7 +24942,7 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
 
         extracted_min = FALSE;
 
-        if (min_count > 0 && contains_repeat(args->code, args->end_code)) {
+        if (min_count > 0) {
             RE_CODE done_count;
 
             for (done_count = 0; done_count < min_count; done_count++) {

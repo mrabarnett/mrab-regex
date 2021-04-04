@@ -4251,6 +4251,10 @@ thing
         self.assertEqual(regex.match(r'^(test){e<=5}$', 'terstin',
           flags=regex.B).fuzzy_counts, (0, 3, 0))
 
+        # Git issue 408: regex fails with a quantified backreference but succeeds with repeated backref
+        self.assertEqual(bool(regex.match(r"(?:(x*)\1\1\1)*x$", "x" * 5)), True)
+        self.assertEqual(bool(regex.match(r"(?:(x*)\1{3})*x$", "x" * 5)), True)
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
