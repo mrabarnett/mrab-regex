@@ -241,7 +241,7 @@ __all__ = ["cache_all", "compile", "DEFAULT_VERSION", "escape", "findall",
   "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex", "__version__",
   "__doc__"]
 
-__version__ = "2.5.93"
+__version__ = "2.5.94"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -725,6 +725,7 @@ del _pat
 
 # Make Pattern public for typing annotations.
 __all__.append("Pattern")
+__all__.append("Match")
 
 # We'll define an alias for the 'compile' function so that the repr of a
 # pattern object is eval-able.

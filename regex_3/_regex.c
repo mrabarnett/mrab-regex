@@ -19756,7 +19756,7 @@ static PyObject* match_deepcopy(MatchObject* self, PyObject* memo) {
 }
 
 /* MatchObject's 'regs' attribute. */
-static PyObject* match_regs(MatchObject* self) {
+static PyObject* match_regs(MatchObject* self, void* unused) {
     PyObject* regs;
     PyObject* item;
     size_t g;
@@ -20041,7 +20041,7 @@ static PyMethodDef match_methods[] = {
 PyDoc_STRVAR(match_doc, "Match object");
 
 /* MatchObject's 'lastindex' attribute. */
-static PyObject* match_lastindex(PyObject* self_) {
+static PyObject* match_lastindex(PyObject* self_, void* unused) {
     MatchObject* self;
 
     self = (MatchObject*)self_;
@@ -20053,7 +20053,7 @@ static PyObject* match_lastindex(PyObject* self_) {
 }
 
 /* MatchObject's 'lastgroup' attribute. */
-static PyObject* match_lastgroup(PyObject* self_) {
+static PyObject* match_lastgroup(PyObject* self_, void* unused) {
     MatchObject* self;
 
     self = (MatchObject*)self_;
@@ -20080,7 +20080,7 @@ static PyObject* match_lastgroup(PyObject* self_) {
 }
 
 /* MatchObject's 'string' attribute. */
-static PyObject* match_string(PyObject* self_) {
+static PyObject* match_string(PyObject* self_, void* unused) {
     MatchObject* self;
 
     self = (MatchObject*)self_;
@@ -20093,7 +20093,7 @@ static PyObject* match_string(PyObject* self_) {
 }
 
 /* MatchObject's 'fuzzy_counts' attribute. */
-static PyObject* match_fuzzy_counts(PyObject* self_) {
+static PyObject* match_fuzzy_counts(PyObject* self_, void* unused) {
     MatchObject* self;
 
     self = (MatchObject*)self_;
@@ -20103,7 +20103,7 @@ static PyObject* match_fuzzy_counts(PyObject* self_) {
 }
 
 /* MatchObject's 'fuzzy_changes' attribute. */
-static PyObject* match_fuzzy_changes(PyObject* self_) {
+static PyObject* match_fuzzy_changes(PyObject* self_, void* unused) {
     MatchObject* self;
     PyObject* sub_changes;
     PyObject* ins_changes;
@@ -22259,6 +22259,40 @@ static PyObject* pattern_deepcopy(PatternObject* self, PyObject* memo) {
     return make_pattern_copy(self);
 }
 
+/* PatternObject's '__sizeof__' method. */
+static PyObject* pattern_sizeof(PatternObject* self, PyObject* args) {
+    Py_ssize_t size;
+    size_t i;
+    PyObject* result;
+
+    size = sizeof(PatternObject);
+    size += self->node_count * sizeof(RE_Node);
+
+    for (i = 0; i < self->node_count; i++) {
+        RE_Node* node;
+
+        node = self->node_list[i];
+        size += node->value_count * sizeof(RE_CODE);
+    }
+
+    size += self->true_group_count * sizeof(RE_GroupInfo);
+    size += self->repeat_count * sizeof(RE_RepeatInfo);
+
+    result = PyObject_CallMethod(self->packed_code_list, "__sizeof__", NULL);
+    if (!result)
+        return NULL;
+
+    size += PyLong_AsSize_t(result);
+    Py_DECREF(result);
+
+    size += self->call_ref_info_count * sizeof(RE_CallRefInfo);
+
+    if (self->locale_info)
+        size += sizeof(RE_LocaleInfo);
+
+    return PyLong_FromSsize_t(size);
+}
+
 /* The documentation of a PatternObject. */
 PyDoc_STRVAR(pattern_match_doc,
     "match(string, pos=None, endpos=None, concurrent=None, timeout=None) --> MatchObject or None.\n\
@@ -22349,6 +22383,7 @@ static PyMethodDef pattern_methods[] = {
       pattern_scanner_doc},
     {"__copy__", (PyCFunction)pattern_copy, METH_NOARGS},
     {"__deepcopy__", (PyCFunction)pattern_deepcopy, METH_O},
+    {"__sizeof__", (PyCFunction)pattern_sizeof, METH_NOARGS|METH_COEXIST},
     {NULL, NULL}
 };
 
