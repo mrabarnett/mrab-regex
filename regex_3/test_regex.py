@@ -4264,6 +4264,10 @@ thing
         self.assertEqual(regex.match(r't(?:es){i<=1:\d}t', 'teszt'), None)
         self.assertEqual(regex.match(r't(?:es){i<=1:\d}t',
           'tes5t').fuzzy_changes, ([], [3], []))
+        self.assertEqual(regex.match(r't(es){i<=1,0<e<=1}t', 'tes5t').group(),
+          'tes5t')
+        self.assertEqual(regex.match(r't(?:es){i<=1,0<e<=1:\d}t',
+          'tes5t').fuzzy_changes, ([], [3], []))
 
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),

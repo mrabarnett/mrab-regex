@@ -10306,7 +10306,7 @@ Py_LOCAL_INLINE(int) retry_fuzzy_insert(RE_State* state, RE_Node** node) {
 
     /* bstack: step text_pos count node FUZZY_INSERT */
 
-    if (!record_fuzzy(state, RE_FUZZY_INS, state->text_pos))
+    if (!record_fuzzy(state, RE_FUZZY_INS, state->text_pos - step))
         return RE_ERROR_MEMORY;
 
     ++state->fuzzy_counts[RE_FUZZY_INS];
