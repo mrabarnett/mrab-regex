@@ -4086,6 +4086,16 @@ thing
         self.assertEqual(bool(regex.match(r"(?:(x*)\1\1\1)*x$", "x" * 5)), True)
         self.assertEqual(bool(regex.match(r"(?:(x*)\1{3})*x$", "x" * 5)), True)
 
+        # Git issue 415: Fuzzy character restrictions don't apply to insertions at "right edge"
+        self.assertEqual(regex.match(r't(?:es){s<=1:\d}t', 'te5t').group(),
+          'te5t')
+        self.assertEqual(regex.match(r't(?:es){s<=1:\d}t', 'tezt'), None)
+        self.assertEqual(regex.match(r't(?:es){i<=1:\d}t', 'tes5t').group(),
+          'tes5t')
+        self.assertEqual(regex.match(r't(?:es){i<=1:\d}t', 'teszt'), None)
+        self.assertEqual(regex.match(r't(?:es){i<=1:\d}t',
+          'tes5t').fuzzy_changes, ([], [3], []))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

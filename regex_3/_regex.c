@@ -9828,6 +9828,9 @@ Py_LOCAL_INLINE(BOOL) fuzzy_ext_match(RE_State* state, RE_Node* fuzzy_node,
   Py_ssize_t pos) {
     RE_Node* test_node;
 
+    if (!fuzzy_node)
+        return TRUE;
+
     test_node = fuzzy_node->nonstring.next_2.node;
     if (!test_node)
         return TRUE;
@@ -10275,7 +10278,9 @@ Py_LOCAL_INLINE(int) retry_fuzzy_insert(RE_State* state, RE_Node** node) {
     limit = step > 0 ? state->slice_end : state->slice_start;
 
     if (state->text_pos == limit || !insertion_permitted(state,
-      state->fuzzy_node, state->fuzzy_counts)) {
+      state->fuzzy_node, state->fuzzy_counts) ||
+      !fuzzy_ext_match(state, curr_node->nonstring.next_2.node,
+      state->text_pos)) {
         while (count > 0) {
             unrecord_fuzzy(state);
             --state->fuzzy_counts[RE_FUZZY_INS];
@@ -23994,8 +23999,13 @@ Py_LOCAL_INLINE(int) build_FUZZY(RE_CompileArgs* args) {
     /* Append the fuzzy sequence. */
     add_node(args->end, start_node);
     add_node(start_node, subargs.start);
-    if (test_node)
+    if (test_node) {
         add_node(start_node, test_node);
+        /* The END_FUZZY node needs access to the charset, if any, in case of
+           fuzzy insertion at the end.
+        */
+        end_node->nonstring.next_2.node = start_node;
+    }
     add_node(subargs.end, end_node);
     args->end = end_node;
     args->all_atomic = FALSE;
