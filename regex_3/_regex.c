@@ -20040,6 +20040,10 @@ static PyMethodDef match_methods[] = {
     {"__copy__", (PyCFunction)match_copy, METH_NOARGS},
     {"__deepcopy__", (PyCFunction)match_deepcopy, METH_O},
     {"__getitem__", (PyCFunction)match_getitem, METH_O|METH_COEXIST},
+#if PY_VERSION_HEX >= 0x03090000
+    {"__class_getitem__", (PyCFunction)Py_GenericAlias, METH_O|METH_CLASS,
+      PyDoc_STR("See PEP 585")},
+#endif
     {NULL, NULL}
 };
 
@@ -22389,6 +22393,10 @@ static PyMethodDef pattern_methods[] = {
     {"__copy__", (PyCFunction)pattern_copy, METH_NOARGS},
     {"__deepcopy__", (PyCFunction)pattern_deepcopy, METH_O},
     {"__sizeof__", (PyCFunction)pattern_sizeof, METH_NOARGS|METH_COEXIST},
+#if PY_VERSION_HEX >= 0x03090000
+    {"__class_getitem__", (PyCFunction)Py_GenericAlias, METH_O|METH_CLASS,
+      PyDoc_STR("See PEP 585")},
+#endif
     {NULL, NULL}
 };
 
@@ -23423,7 +23431,6 @@ Py_LOCAL_INLINE(BOOL) mark_named_groups(PatternObject* pattern) {
 Py_LOCAL_INLINE(BOOL) can_test_past(RE_Node* node) {
     switch (node->op) {
     case RE_OP_END_GROUP:
-    case RE_OP_END_LAZY_REPEAT:
     case RE_OP_START_GROUP:
         return TRUE;
     case RE_OP_GREEDY_REPEAT:
@@ -24980,12 +24987,9 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
         /* Extract the minimum number of repeats out of a repeat if it contains
          * a repeat.
          */
-        BOOL extracted_min;
         size_t index;
         RE_Node* repeat_node;
         RE_CompileArgs subargs;
-
-        extracted_min = FALSE;
 
         if (min_count > 0) {
             RE_CODE done_count;
@@ -25018,8 +25022,8 @@ Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
                 max_count -= done_count;
         }
 
-        /* We've extract the minimum number of repeats. Are there any left? */
-        if (extracted_min && max_count == 0) {
+        /* We've extracted the minimum number of repeats. Are there any left? */
+        if (min_count > 0 && max_count == 0) {
             /* All done. */
             args->code = subargs.code;
             ++args->code;
