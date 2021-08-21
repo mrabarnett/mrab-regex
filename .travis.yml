@@ -70,6 +70,8 @@ jobs:
       os: osx
       osx_image: xcode12u
       language: shell
+      env:
+          CIBW_ARCHS_MACOS: x86_64 arm64 universal2
 
     # Windows
     - stage: deploy
