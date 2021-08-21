@@ -22124,7 +22124,7 @@ PyDoc_STRVAR(pattern_subfn_doc,
     of pattern with the replacement format.");
 
 PyDoc_STRVAR(pattern_split_doc,
-    "split(string, string, maxsplit=0, concurrent=None) --> list.\n\
+    "split(string, maxsplit=0, concurrent=None) --> list.\n\
     Split string by the occurrences of pattern.");
 
 PyDoc_STRVAR(pattern_splititer_doc,
