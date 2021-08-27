@@ -5991,9 +5991,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
                 if (pos >= length)
                     return text_ptr - (Py_UCS1*)text + length;
 
-                text_ptr += good_suffix_offset[pos];
+                text_ptr -= good_suffix_offset[pos];
             } else
-                text_ptr += bad_character_offset[ch & 0xFF];
+                text_ptr -= bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6020,9 +6020,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
                 if (pos >= length)
                     return text_ptr - (Py_UCS2*)text + length;
 
-                text_ptr += good_suffix_offset[pos];
+                text_ptr -= good_suffix_offset[pos];
             } else
-                text_ptr += bad_character_offset[ch & 0xFF];
+                text_ptr -= bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6049,9 +6049,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
                 if (pos >= length)
                     return text_ptr - (Py_UCS4*)text + length;
 
-                text_ptr += good_suffix_offset[pos];
+                text_ptr -= good_suffix_offset[pos];
             } else
-                text_ptr += bad_character_offset[ch & 0xFF];
+                text_ptr -= bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6101,9 +6101,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
                 if (pos >= length)
                     return text_ptr - (Py_UCS1*)text + length;
 
-                text_ptr += good_suffix_offset[pos];
+                text_ptr -= good_suffix_offset[pos];
             } else
-                text_ptr += bad_character_offset[ch & 0xFF];
+                text_ptr -= bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6129,9 +6129,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
                 if (pos >= length)
                     return text_ptr - (Py_UCS2*)text + length;
 
-                text_ptr += good_suffix_offset[pos];
+                text_ptr -= good_suffix_offset[pos];
             } else
-                text_ptr += bad_character_offset[ch & 0xFF];
+                text_ptr -= bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6157,9 +6157,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
                 if (pos >= length)
                     return text_ptr - (Py_UCS4*)text + length;
 
-                text_ptr += good_suffix_offset[pos];
+                text_ptr -= good_suffix_offset[pos];
             } else
-                text_ptr += bad_character_offset[ch & 0xFF];
+                text_ptr -= bad_character_offset[ch & 0xFF];
         }
         break;
     }
