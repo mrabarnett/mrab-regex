@@ -5945,9 +5945,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
                 if (pos >= length)
                     return text_ptr - (Py_UCS1*)text + length;
 
-                text_ptr -= good_suffix_offset[pos];
+                text_ptr += good_suffix_offset[pos];
             } else
-                text_ptr -= bad_character_offset[ch & 0xFF];
+                text_ptr += bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -5974,9 +5974,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
                 if (pos >= length)
                     return text_ptr - (Py_UCS2*)text + length;
 
-                text_ptr -= good_suffix_offset[pos];
+                text_ptr += good_suffix_offset[pos];
             } else
-                text_ptr -= bad_character_offset[ch & 0xFF];
+                text_ptr += bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6003,9 +6003,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_ign_rev(RE_State* state,
                 if (pos >= length)
                     return text_ptr - (Py_UCS4*)text + length;
 
-                text_ptr -= good_suffix_offset[pos];
+                text_ptr += good_suffix_offset[pos];
             } else
-                text_ptr -= bad_character_offset[ch & 0xFF];
+                text_ptr += bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6055,9 +6055,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
                 if (pos >= length)
                     return text_ptr - (Py_UCS1*)text + length;
 
-                text_ptr -= good_suffix_offset[pos];
+                text_ptr += good_suffix_offset[pos];
             } else
-                text_ptr -= bad_character_offset[ch & 0xFF];
+                text_ptr += bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6083,9 +6083,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
                 if (pos >= length)
                     return text_ptr - (Py_UCS2*)text + length;
 
-                text_ptr -= good_suffix_offset[pos];
+                text_ptr += good_suffix_offset[pos];
             } else
-                text_ptr -= bad_character_offset[ch & 0xFF];
+                text_ptr += bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6111,9 +6111,9 @@ Py_LOCAL_INLINE(Py_ssize_t) fast_string_search_rev(RE_State* state, RE_Node*
                 if (pos >= length)
                     return text_ptr - (Py_UCS4*)text + length;
 
-                text_ptr -= good_suffix_offset[pos];
+                text_ptr += good_suffix_offset[pos];
             } else
-                text_ptr -= bad_character_offset[ch & 0xFF];
+                text_ptr += bad_character_offset[ch & 0xFF];
         }
         break;
     }
@@ -6388,13 +6388,13 @@ Py_LOCAL_INLINE(BOOL) build_fast_tables_rev(RE_State* state, RE_Node* node,
 
 /* Performs a string search. */
 Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_State* state, RE_Node* node,
-  Py_ssize_t text_pos, Py_ssize_t limit, BOOL* is_partial) {
+  Py_ssize_t text_pos, Py_ssize_t limit, BOOL try_fast, BOOL* is_partial) {
     Py_ssize_t found_pos;
 
     *is_partial = FALSE;
 
     /* Has the node been initialised for fast searching, if necessary? */
-    if (!(node->status & RE_STATUS_FAST_INIT)) {
+    if (try_fast && !(node->status & RE_STATUS_FAST_INIT)) {
         /* Ideally the pattern should immutable and shareable across threads.
          * Internally, however, it isn't. For safety we need to hold the GIL.
          */
@@ -6409,7 +6409,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_State* state, RE_Node* node,
         release_GIL(state);
     }
 
-    if (node->string.bad_character_offset) {
+    if (try_fast && node->string.bad_character_offset) {
         /* Start with a fast search. This will find the string if it's complete
          * (i.e. not truncated).
          */
@@ -6576,13 +6576,13 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld_rev(RE_State* state, RE_Node*
 
 /* Performs a string search, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
-  Py_ssize_t text_pos, Py_ssize_t limit, BOOL* is_partial) {
+  Py_ssize_t text_pos, Py_ssize_t limit, BOOL try_fast, BOOL* is_partial) {
     Py_ssize_t found_pos;
 
     *is_partial = FALSE;
 
     /* Has the node been initialised for fast searching, if necessary? */
-    if (!(node->status & RE_STATUS_FAST_INIT)) {
+    if (try_fast && !(node->status & RE_STATUS_FAST_INIT)) {
         /* Ideally the pattern should immutable and shareable across threads.
          * Internally, however, it isn't. For safety we need to hold the GIL.
          */
@@ -6597,7 +6597,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
         release_GIL(state);
     }
 
-    if (node->string.bad_character_offset) {
+    if (try_fast && node->string.bad_character_offset) {
         /* Start with a fast search. This will find the string if it's complete
          * (i.e. not truncated).
          */
@@ -6617,13 +6617,14 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
 
 /* Performs a string search, backwards, ignoring case. */
 Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
-  node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL* is_partial) {
+  node, Py_ssize_t text_pos, Py_ssize_t limit, BOOL try_fast, BOOL* is_partial)
+  {
     Py_ssize_t found_pos;
 
     *is_partial = FALSE;
 
     /* Has the node been initialised for fast searching, if necessary? */
-    if (!(node->status & RE_STATUS_FAST_INIT)) {
+    if (try_fast && !(node->status & RE_STATUS_FAST_INIT)) {
         /* Ideally the pattern should immutable and shareable across threads.
          * Internally, however, it isn't. For safety we need to hold the GIL.
          */
@@ -6638,7 +6639,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
         release_GIL(state);
     }
 
-    if (node->string.bad_character_offset) {
+    if (try_fast && node->string.bad_character_offset) {
         /* Start with a fast search. This will find the string if it's complete
          * (i.e. not truncated).
          */
@@ -6658,13 +6659,13 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
 
 /* Performs a string search, backwards. */
 Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_State* state, RE_Node* node,
-  Py_ssize_t text_pos, Py_ssize_t limit, BOOL* is_partial) {
+  Py_ssize_t text_pos, Py_ssize_t limit, BOOL try_fast, BOOL* is_partial) {
     Py_ssize_t found_pos;
 
     *is_partial = FALSE;
 
     /* Has the node been initialised for fast searching, if necessary? */
-    if (!(node->status & RE_STATUS_FAST_INIT)) {
+    if (try_fast && !(node->status & RE_STATUS_FAST_INIT)) {
         /* Ideally the pattern should immutable and shareable across threads.
          * Internally, however, it isn't. For safety we need to hold the GIL.
          */
@@ -6679,7 +6680,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_State* state, RE_Node* node,
         release_GIL(state);
     }
 
-    if (node->string.bad_character_offset) {
+    if (try_fast && node->string.bad_character_offset) {
         /* Start with a fast search. This will find the string if it's complete
          * (i.e. not truncated).
          */
@@ -8077,7 +8078,8 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_STRING(RE_State* state, RE_Node* node,
     if ((node->status & RE_STATUS_REQUIRED) && text_pos == state->req_pos)
         return text_pos;
 
-    return string_search(state, node, text_pos, state->slice_end, is_partial);
+    return string_search(state, node, text_pos, state->slice_end, TRUE,
+      is_partial);
 }
 
 /* Searches for a string, ignoring case. */
@@ -8116,7 +8118,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_STRING_IGN(RE_State* state, RE_Node*
     if ((node->status & RE_STATUS_REQUIRED) && text_pos == state->req_pos)
         return text_pos;
 
-    return string_search_ign(state, node, text_pos, state->slice_end,
+    return string_search_ign(state, node, text_pos, state->slice_end, TRUE,
       is_partial);
 }
 
@@ -8129,7 +8131,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_STRING_IGN_REV(RE_State* state,
         return text_pos;
 
     return string_search_ign_rev(state, node, text_pos, state->slice_start,
-      is_partial);
+      TRUE, is_partial);
 }
 
 /* Searches for a string, backwards. */
@@ -8140,7 +8142,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_STRING_REV(RE_State* state, RE_Node*
     if ((node->status & RE_STATUS_REQUIRED) && text_pos == state->req_pos)
         return text_pos;
 
-    return string_search_rev(state, node, text_pos, state->slice_start,
+    return string_search_rev(state, node, text_pos, state->slice_start, TRUE,
       is_partial);
 }
 
@@ -10216,9 +10218,8 @@ Py_LOCAL_INLINE(int) retry_fuzzy_insert(RE_State* state, RE_Node** node) {
     limit = step > 0 ? state->slice_end : state->slice_start;
 
     if (state->text_pos == limit || !insertion_permitted(state,
-      state->fuzzy_node, state->fuzzy_counts) ||
-      !fuzzy_ext_match(state, curr_node->nonstring.next_2.node,
-      state->text_pos)) {
+      state->fuzzy_node, state->fuzzy_counts) || !fuzzy_ext_match(state,
+      curr_node->nonstring.next_2.node, state->text_pos)) {
         while (count > 0) {
             unrecord_fuzzy(state);
             --state->fuzzy_counts[RE_FUZZY_INS];
@@ -10940,7 +10941,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_State* state, BOOL
         if (state->req_pos < 0 || state->text_pos > state->req_pos)
             /* First time or already passed it. */
             found_pos = string_search(state, pattern->req_string,
-              state->text_pos, limit, &is_partial);
+              state->text_pos, limit, TRUE, &is_partial);
         else {
             found_pos = state->req_pos;
             end_pos = state->req_end;
@@ -11073,7 +11074,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_State* state, BOOL
         if (state->req_pos < 0 || state->text_pos > state->req_pos)
             /* First time or already passed it. */
             found_pos = string_search_ign(state, pattern->req_string,
-              state->text_pos, limit, &is_partial);
+              state->text_pos, limit, TRUE, &is_partial);
         else {
             found_pos = state->req_pos;
             end_pos = state->req_end;
@@ -11118,7 +11119,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_State* state, BOOL
         if (state->req_pos < 0 || state->text_pos < state->req_pos)
             /* First time or already passed it. */
             found_pos = string_search_ign_rev(state, pattern->req_string,
-              state->text_pos, limit, &is_partial);
+              state->text_pos, limit, TRUE, &is_partial);
         else {
             found_pos = state->req_pos;
             end_pos = state->req_end;
@@ -11163,7 +11164,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_State* state, BOOL
         if (state->req_pos < 0 || state->text_pos < state->req_pos)
             /* First time or already passed it. */
             found_pos = string_search_rev(state, pattern->req_string,
-              state->text_pos, limit, &is_partial);
+              state->text_pos, limit, TRUE, &is_partial);
         else {
             found_pos = state->req_pos;
             end_pos = state->req_end;
@@ -15768,7 +15769,7 @@ backtrack:
                             break;
 
                         found = string_search_rev(state, test, pos + length,
-                          limit, &is_partial);
+                          limit, FALSE, &is_partial);
                         if (is_partial)
                             return RE_ERROR_PARTIAL;
 
@@ -15904,7 +15905,7 @@ backtrack:
                             break;
 
                         found = string_search_ign_rev(state, test, pos +
-                          length, limit, &is_partial);
+                          length, limit, FALSE, &is_partial);
                         if (is_partial)
                             return RE_ERROR_PARTIAL;
 
@@ -15942,7 +15943,7 @@ backtrack:
                             break;
 
                         found = string_search_ign(state, test, pos - length,
-                          limit, &is_partial);
+                          limit, FALSE, &is_partial);
                         if (is_partial)
                             return RE_ERROR_PARTIAL;
 
@@ -15980,7 +15981,7 @@ backtrack:
                             break;
 
                         found = string_search(state, test, pos - length, limit,
-                          &is_partial);
+                          FALSE, &is_partial);
                         if (is_partial)
                             return RE_ERROR_PARTIAL;
 
@@ -16435,7 +16436,7 @@ backtrack:
 
                         /* Look for the tail string. */
                         found = string_search(state, test, pos + 1, limit +
-                          length, &is_partial);
+                          length, TRUE, &is_partial);
                         if (is_partial)
                             return RE_ERROR_PARTIAL;
 
@@ -16613,7 +16614,7 @@ backtrack:
 
                         /* Look for the tail string. */
                         found = string_search_ign(state, test, pos + 1, limit +
-                          length, &is_partial);
+                          length, TRUE, &is_partial);
                         if (is_partial)
                             return RE_ERROR_PARTIAL;
 
@@ -16673,7 +16674,7 @@ backtrack:
 
                         /* Look for the tail string. */
                         found = string_search_ign_rev(state, test, pos - 1,
-                          limit - length, &is_partial);
+                          limit - length, TRUE, &is_partial);
                         if (is_partial)
                             return RE_ERROR_PARTIAL;
 
@@ -16733,7 +16734,7 @@ backtrack:
 
                         /* Look for the tail string. */
                         found = string_search_rev(state, test, pos - 1, limit -
-                          length, &is_partial);
+                          length, TRUE, &is_partial);
                         if (is_partial)
                             return RE_ERROR_PARTIAL;
 

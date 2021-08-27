@@ -4269,6 +4269,20 @@ thing
         self.assertEqual(regex.match(r't(?:es){i<=1,0<e<=1:\d}t',
           'tes5t').fuzzy_changes, ([], [3], []))
 
+        # Git issue 421: Fatal Python error: Segmentation fault
+        self.assertEqual(regex.compile("(\d+ week|\d+ days)").split("7 days"), ['', '7 days', ''])
+        self.assertEqual(regex.compile("(\d+ week|\d+ days)").split("10 days"), ['', '10 days', ''])
+
+        self.assertEqual(regex.compile("[ ]* Name[ ]*\* ").search("  Name *"), None)
+
+        self.assertEqual(regex.compile('a|\\.*pb\\.py').search('.geojs'), None)
+
+        p = regex.compile('(?<=(?:\\A|\\W|_))(\\d+ decades? ago|\\d+ minutes ago|\\d+ seconds ago|in \\d+ decades?|\\d+ months ago|in \\d+ minutes|\\d+ minute ago|in \\d+ seconds|\\d+ second ago|\\d+ years ago|in \\d+ months|\\d+ month ago|\\d+ weeks ago|\\d+ hours ago|in \\d+ minute|in \\d+ second|in \\d+ years|\\d+ year ago|in \\d+ month|in \\d+ weeks|\\d+ week ago|\\d+ days ago|in \\d+ hours|\\d+ hour ago|in \\d+ year|in \\d+ week|in \\d+ days|\\d+ day ago|in \\d+ hour|\\d+ min ago|\\d+ sec ago|\\d+ yr ago|\\d+ mo ago|\\d+ wk ago|in \\d+ day|\\d+ hr ago|in \\d+ min|in \\d+ sec|in \\d+ yr|in \\d+ mo|in \\d+ wk|in \\d+ hr)(?=(?:\\Z|\\W|_))', flags=regex.I | regex.V0)
+        self.assertEqual(p.search('1 month ago').group(), '1 month ago')
+        self.assertEqual(p.search('9 hours 1 minute ago').group(), '1 minute ago')
+        self.assertEqual(p.search('10 months 1 hour ago').group(), '1 hour ago')
+        self.assertEqual(p.search('1 month 10 hours ago').group(), '10 hours ago')
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
