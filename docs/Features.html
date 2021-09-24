@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
 <title>Features.rst</title>
 <style type="text/css">
 
@@ -465,7 +465,7 @@ ul.auto-toc {
 </div>
 <div class="section" id="unicode">
 <h1>Unicode</h1>
-<p>This module supports Unicode 13.0.0.</p>
+<p>This module supports Unicode 14.0.0.</p>
 <p>Full Unicode case-folding is supported.</p>
 </div>
 <div class="section" id="additional-features">
@@ -475,76 +475,48 @@ ul.auto-toc {
 <h2>Added support for lookaround in conditional pattern (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/163">Hg issue 163</a>)</h2>
 <p>The test of a conditional pattern can now be a lookaround.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 153)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.match(r'(?(?=\d)\d+|\w+)', '123abc')
-  &lt;regex.Match object; span=(0, 3), match='123'&gt;
-  &gt;&gt;&gt; regex.match(r'(?(?=\d)\d+|\w+)', 'abc123')
-  &lt;regex.Match object; span=(0, 6), match='abc123'&gt;
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?(?=\d)\d+|\w+)'</span><span class="punctuation">,</span> <span class="literal string single">'123abc'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'123'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?(?=\d)\d+|\w+)'</span><span class="punctuation">,</span> <span class="literal string single">'abc123'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'abc123'</span><span class="operator">&gt;</span>
 </pre>
-</div>
 <p>This is not quite the same as putting a lookaround in the first branch of a pair of alternatives.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 164)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; print(regex.match(r'(?:(?=\d)\d+\b|\w+)', '123abc'))
-  &lt;regex.Match object; span=(0, 6), match='123abc'&gt;
-  &gt;&gt;&gt; print(regex.match(r'(?(?=\d)\d+\b|\w+)', '123abc'))
-  None
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?:(?=\d)\d+\b|\w+)'</span><span class="punctuation">,</span> <span class="literal string single">'123abc'</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'123abc'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?(?=\d)\d+\b|\w+)'</span><span class="punctuation">,</span> <span class="literal string single">'123abc'</span><span class="punctuation">))</span>
+<span class="keyword constant">None</span>
 </pre>
-</div>
 <p>In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was <strong>not</strong> attempted.</p>
 </div>
 <div class="section" id="added-posix-matching-leftmost-longest-hg-issue-150">
 <h2>Added POSIX matching (leftmost longest) (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/150">Hg issue 150</a>)</h2>
 <p>The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the <tt class="docutils literal">POSIX</tt> flag (<tt class="docutils literal"><span class="pre">(?p)</span></tt>).</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 180)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; # Normal matching.
-  &gt;&gt;&gt; regex.search(r'Mr|Mrs', 'Mrs')
-  &lt;regex.Match object; span=(0, 2), match='Mr'&gt;
-  &gt;&gt;&gt; regex.search(r'one(self)?(selfsufficient)?', 'oneselfsufficient')
-  &lt;regex.Match object; span=(0, 7), match='oneself'&gt;
-  &gt;&gt;&gt; # POSIX matching.
-  &gt;&gt;&gt; regex.search(r'(?p)Mr|Mrs', 'Mrs')
-  &lt;regex.Match object; span=(0, 3), match='Mrs'&gt;
-  &gt;&gt;&gt; regex.search(r'(?p)one(self)?(selfsufficient)?', 'oneselfsufficient')
-  &lt;regex.Match object; span=(0, 17), match='oneselfsufficient'&gt;
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Normal matching.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'Mr|Mrs'</span><span class="punctuation">,</span> <span class="literal string single">'Mrs'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">2</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'Mr'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'one(self)?(selfsufficient)?'</span><span class="punctuation">,</span> <span class="literal string single">'oneselfsufficient'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">7</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'oneself'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># POSIX matching.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?p)Mr|Mrs'</span><span class="punctuation">,</span> <span class="literal string single">'Mrs'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'Mrs'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?p)one(self)?(selfsufficient)?'</span><span class="punctuation">,</span> <span class="literal string single">'oneselfsufficient'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">17</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'oneselfsufficient'</span><span class="operator">&gt;</span>
 </pre>
-</div>
 <p>Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.</p>
 </div>
 <div class="section" id="added-define-hg-issue-152">
 <h2>Added <tt class="docutils literal"><span class="pre">(?(DEFINE)...)</span></tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/152">Hg issue 152</a>)</h2>
 <p>If there's no group called &quot;DEFINE&quot;, then ... will be ignored, but any group definitions within it will be available.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 202)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.search(r'(?(DEFINE)(?P&lt;quant&gt;\d+)(?P&lt;item&gt;\w+))(?&amp;quant) (?&amp;item)', '5 elephants')
-  &lt;regex.Match object; span=(0, 11), match='5 elephants'&gt;
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?(DEFINE)(?P&lt;quant&gt;\d+)(?P&lt;item&gt;\w+))(?&amp;quant) (?&amp;item)'</span><span class="punctuation">,</span> <span class="literal string single">'5 elephants'</span><span class="punctuation">)</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">11</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'5 elephants'</span><span class="operator">&gt;</span>
 </pre>
-</div>
 </div>
 <div class="section" id="added-prune-skip-and-fail-hg-issue-153">
 <h2>Added <tt class="docutils literal">(*PRUNE)</tt>, <tt class="docutils literal">(*SKIP)</tt> and <tt class="docutils literal">(*FAIL)</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/153">Hg issue 153</a>)</h2>
@@ -557,55 +529,41 @@ ul.auto-toc {
 <p>Keeps the part of the entire match after the position where <tt class="docutils literal">\K</tt> occurred; the part before it is discarded.</p>
 <p>It does not affect what capture groups return.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 225)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; m = regex.search(r'(\w\w\K\w\w\w)', 'abcdef')
-  &gt;&gt;&gt; m[0]
-  'cde'
-  &gt;&gt;&gt; m[1]
-  'abcde'
-  &gt;&gt;&gt;
-  &gt;&gt;&gt; m = regex.search(r'(?r)(\w\w\K\w\w\w)', 'abcdef')
-  &gt;&gt;&gt; m[0]
-  'bc'
-  &gt;&gt;&gt; m[1]
-  'bcdef'
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(\w\w\K\w\w\w)'</span><span class="punctuation">,</span> <span class="literal string single">'abcdef'</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal number integer">0</span><span class="punctuation">]</span>
+<span class="literal string single">'cde'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal number integer">1</span><span class="punctuation">]</span>
+<span class="literal string single">'abcde'</span>
+<span class="operator">&gt;&gt;&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'(?r)(\w\w\K\w\w\w)'</span><span class="punctuation">,</span> <span class="literal string single">'abcdef'</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal number integer">0</span><span class="punctuation">]</span>
+<span class="literal string single">'bc'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="punctuation">[</span><span class="literal number integer">1</span><span class="punctuation">]</span>
+<span class="literal string single">'bcdef'</span>
 </pre>
-</div>
 </div>
 <div class="section" id="added-capture-subscripting-for-expandf-and-subf-subfn-hg-issue-133">
 <h2>Added capture subscripting for <tt class="docutils literal">expandf</tt> and <tt class="docutils literal">subf</tt>/<tt class="docutils literal">subfn</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/133">Hg issue 133</a>)</h2>
 <p>You can now use subscripting to get the captures of a repeated capture group.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 246)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; m = regex.match(r&quot;(\w)+&quot;, &quot;abc&quot;)
-  &gt;&gt;&gt; m.expandf(&quot;{1}&quot;)
-  'c'
-  &gt;&gt;&gt; m.expandf(&quot;{1[0]} {1[1]} {1[2]}&quot;)
-  'a b c'
-  &gt;&gt;&gt; m.expandf(&quot;{1[-1]} {1[-2]} {1[-3]}&quot;)
-  'c b a'
-  &gt;&gt;&gt;
-  &gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;letter&gt;\w)+&quot;, &quot;abc&quot;)
-  &gt;&gt;&gt; m.expandf(&quot;{letter}&quot;)
-  'c'
-  &gt;&gt;&gt; m.expandf(&quot;{letter[0]} {letter[1]} {letter[2]}&quot;)
-  'a b c'
-  &gt;&gt;&gt; m.expandf(&quot;{letter[-1]} {letter[-2]} {letter[-3]}&quot;)
-  'c b a'
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w)+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;</span><span class="literal string interpol">{1}</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'c'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;</span><span class="literal string interpol">{1[0]}</span><span class="literal string double"> </span><span class="literal string interpol">{1[1]}</span><span class="literal string double"> </span><span class="literal string interpol">{1[2]}</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'a b c'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;</span><span class="literal string interpol">{1[-1]}</span><span class="literal string double"> </span><span class="literal string interpol">{1[-2]}</span><span class="literal string double"> </span><span class="literal string interpol">{1[-3]}</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'c b a'</span>
+<span class="operator">&gt;&gt;&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;letter&gt;\w)+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;</span><span class="literal string interpol">{letter}</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'c'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;</span><span class="literal string interpol">{letter[0]}</span><span class="literal string double"> </span><span class="literal string interpol">{letter[1]}</span><span class="literal string double"> </span><span class="literal string interpol">{letter[2]}</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'a b c'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;</span><span class="literal string interpol">{letter[-1]}</span><span class="literal string double"> </span><span class="literal string interpol">{letter[-2]}</span><span class="literal string double"> </span><span class="literal string interpol">{letter[-3]}</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'c b a'</span>
 </pre>
-</div>
 </div>
 <div class="section" id="added-support-for-referring-to-a-group-by-number-using-p">
 <h2>Added support for referring to a group by number using <tt class="docutils literal"><span class="pre">(?P=...)</span></tt>.</h2>
@@ -621,83 +579,69 @@ ul.auto-toc {
 <p>Partial matches are supported by <tt class="docutils literal">match</tt>, <tt class="docutils literal">search</tt>, <tt class="docutils literal">fullmatch</tt> and <tt class="docutils literal">finditer</tt> with the <tt class="docutils literal">partial</tt> keyword argument.</p>
 <p>Match objects have a <tt class="docutils literal">partial</tt> attribute, which is <tt class="docutils literal">True</tt> if it's a partial match.</p>
 <p>For example, if you wanted a user to enter a 4-digit number and check it character by character as it was being entered:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 285)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">pattern</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'\d</span><span class="literal string interpol">{4}</span><span class="literal string single">'</span><span class="punctuation">)</span>
 
-  &gt;&gt;&gt; pattern = regex.compile(r'\d{4}')
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Initially, nothing has been entered:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">''</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">''</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="operator">&gt;</span>
 
-  &gt;&gt;&gt; # Initially, nothing has been entered:
-  &gt;&gt;&gt; print(pattern.fullmatch('', partial=True))
-  &lt;regex.Match object; span=(0, 0), match='', partial=True&gt;
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># An empty string is OK, but it's only a partial match.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># The user enters a letter:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'a'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">))</span>
+<span class="keyword constant">None</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It'll never match.</span>
 
-  &gt;&gt;&gt; # An empty string is OK, but it's only a partial match.
-  &gt;&gt;&gt; # The user enters a letter:
-  &gt;&gt;&gt; print(pattern.fullmatch('a', partial=True))
-  None
-  &gt;&gt;&gt; # It'll never match.
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># The user deletes that and enters a digit:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'1'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'1'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It matches this far, but it's only a partial match.</span>
 
-  &gt;&gt;&gt; # The user deletes that and enters a digit:
-  &gt;&gt;&gt; print(pattern.fullmatch('1', partial=True))
-  &lt;regex.Match object; span=(0, 1), match='1', partial=True&gt;
-  &gt;&gt;&gt; # It matches this far, but it's only a partial match.
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># The user enters 2 more digits:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It matches this far, but it's only a partial match.</span>
 
-  &gt;&gt;&gt; # The user enters 2 more digits:
-  &gt;&gt;&gt; print(pattern.fullmatch('123', partial=True))
-  &lt;regex.Match object; span=(0, 3), match='123', partial=True&gt;
-  &gt;&gt;&gt; # It matches this far, but it's only a partial match.
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># The user enters another digit:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'1234'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">))</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">4</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'1234'</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It's a complete match.</span>
 
-  &gt;&gt;&gt; # The user enters another digit:
-  &gt;&gt;&gt; print(pattern.fullmatch('1234', partial=True))
-  &lt;regex.Match object; span=(0, 4), match='1234'&gt;
-  &gt;&gt;&gt; # It's a complete match.
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># If the user enters another digit:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">pattern</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string single">'12345'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">))</span>
+<span class="keyword constant">None</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># It's no longer a match.</span>
 
-  &gt;&gt;&gt; # If the user enters another digit:
-  &gt;&gt;&gt; print(pattern.fullmatch('12345', partial=True))
-  None
-  &gt;&gt;&gt; # It's no longer a match.
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># This is a partial match:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">pattern</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">partial</span>
+<span class="keyword constant">True</span>
 
-  &gt;&gt;&gt; # This is a partial match:
-  &gt;&gt;&gt; pattern.match('123', partial=True).partial
-  True
-
-  &gt;&gt;&gt; # This is a complete match:
-  &gt;&gt;&gt; pattern.match('1233', partial=True).partial
-  False
-
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># This is a complete match:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">pattern</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string single">'1233'</span><span class="punctuation">,</span> <span class="name">partial</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">partial</span>
+<span class="keyword constant">False</span>
 </pre>
-</div>
 </div>
 <div class="section" id="operator-not-working-correctly-with-sub-hg-issue-106">
 <h2><tt class="docutils literal">*</tt> operator not working correctly with sub() (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/106">Hg issue 106</a>)</h2>
 <p>Sometimes it's not clear how zero-width matches should be handled. For example, should <tt class="docutils literal">.*</tt> match 0 characters directly after matching &gt;0 characters?</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 334)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
+<pre class="code python literal-block">
+<span class="comment single"># Python 3.7 and later</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'.*'</span><span class="punctuation">,</span> <span class="literal string single">'x'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'xx'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'.*?'</span><span class="punctuation">,</span> <span class="literal string single">'|'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'|||||||||'</span>
 
-  # Python 3.7 and later
-  &gt;&gt;&gt; regex.sub('.*', 'x', 'test')
-  'xx'
-  &gt;&gt;&gt; regex.sub('.*?', '|', 'test')
-  '|||||||||'
-
-  # Python 3.6 and earlier
-  &gt;&gt;&gt; regex.sub('(?V0).*', 'x', 'test')
-  'x'
-  &gt;&gt;&gt; regex.sub('(?V1).*', 'x', 'test')
-  'xx'
-  &gt;&gt;&gt; regex.sub('(?V0).*?', '|', 'test')
-  '|t|e|s|t|'
-  &gt;&gt;&gt; regex.sub('(?V1).*?', '|', 'test')
-  '|||||||||'
-
+<span class="comment single"># Python 3.6 and earlier</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'(?V0).*'</span><span class="punctuation">,</span> <span class="literal string single">'x'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'x'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'(?V1).*'</span><span class="punctuation">,</span> <span class="literal string single">'x'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'xx'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'(?V0).*?'</span><span class="punctuation">,</span> <span class="literal string single">'|'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'|t|e|s|t|'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string single">'(?V1).*?'</span><span class="punctuation">,</span> <span class="literal string single">'|'</span><span class="punctuation">,</span> <span class="literal string single">'test'</span><span class="punctuation">)</span>
+<span class="literal string single">'|||||||||'</span>
 </pre>
-</div>
 </div>
 <div class="section" id="added-capturesdict-hg-issue-86">
 <h2>Added <tt class="docutils literal">capturesdict</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/86">Hg issue 86</a>)</h2>
@@ -706,169 +650,127 @@ ul.auto-toc {
 <p><tt class="docutils literal">captures</tt> returns a list of all the captures of a group</p>
 <p><tt class="docutils literal">capturesdict</tt> returns a dict of the named groups and lists of all the captures of those groups.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 365)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; m = regex.match(r&quot;(?:(?P&lt;word&gt;\w+) (?P&lt;digits&gt;\d+)\n)+&quot;, &quot;one 1\ntwo 2\nthree 3\n&quot;)
-  &gt;&gt;&gt; m.groupdict()
-  {'word': 'three', 'digits': '3'}
-  &gt;&gt;&gt; m.captures(&quot;word&quot;)
-  ['one', 'two', 'three']
-  &gt;&gt;&gt; m.captures(&quot;digits&quot;)
-  ['1', '2', '3']
-  &gt;&gt;&gt; m.capturesdict()
-  {'word': ['one', 'two', 'three'], 'digits': ['1', '2', '3']}
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?:(?P&lt;word&gt;\w+) (?P&lt;digits&gt;\d+)\n)+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;one 1</span><span class="literal string escape">\n</span><span class="literal string double">two 2</span><span class="literal string escape">\n</span><span class="literal string double">three 3</span><span class="literal string escape">\n</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">groupdict</span><span class="punctuation">()</span>
+<span class="punctuation">{</span><span class="literal string single">'word'</span><span class="punctuation">:</span> <span class="literal string single">'three'</span><span class="punctuation">,</span> <span class="literal string single">'digits'</span><span class="punctuation">:</span> <span class="literal string single">'3'</span><span class="punctuation">}</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;word&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'one'</span><span class="punctuation">,</span> <span class="literal string single">'two'</span><span class="punctuation">,</span> <span class="literal string single">'three'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;digits&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'1'</span><span class="punctuation">,</span> <span class="literal string single">'2'</span><span class="punctuation">,</span> <span class="literal string single">'3'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">capturesdict</span><span class="punctuation">()</span>
+<span class="punctuation">{</span><span class="literal string single">'word'</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="literal string single">'one'</span><span class="punctuation">,</span> <span class="literal string single">'two'</span><span class="punctuation">,</span> <span class="literal string single">'three'</span><span class="punctuation">],</span> <span class="literal string single">'digits'</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="literal string single">'1'</span><span class="punctuation">,</span> <span class="literal string single">'2'</span><span class="punctuation">,</span> <span class="literal string single">'3'</span><span class="punctuation">]}</span>
 </pre>
-</div>
 </div>
 <div class="section" id="allow-duplicate-names-of-groups-hg-issue-87">
 <h2>Allow duplicate names of groups (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/87">Hg issue 87</a>)</h2>
 <p>Group names can now be duplicated.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 384)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; # With optional groups:
-  &gt;&gt;&gt;
-  &gt;&gt;&gt; # Both groups capture, the second capture 'overwriting' the first.
-  &gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;, &quot;first or second&quot;)
-  &gt;&gt;&gt; m.group(&quot;item&quot;)
-  'second'
-  &gt;&gt;&gt; m.captures(&quot;item&quot;)
-  ['first', 'second']
-  &gt;&gt;&gt; # Only the second group captures.
-  &gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;, &quot; or second&quot;)
-  &gt;&gt;&gt; m.group(&quot;item&quot;)
-  'second'
-  &gt;&gt;&gt; m.captures(&quot;item&quot;)
-  ['second']
-  &gt;&gt;&gt; # Only the first group captures.
-  &gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;, &quot;first or &quot;)
-  &gt;&gt;&gt; m.group(&quot;item&quot;)
-  'first'
-  &gt;&gt;&gt; m.captures(&quot;item&quot;)
-  ['first']
-  &gt;&gt;&gt;
-  &gt;&gt;&gt; # With mandatory groups:
-  &gt;&gt;&gt;
-  &gt;&gt;&gt; # Both groups capture, the second capture 'overwriting' the first.
-  &gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)?&quot;, &quot;first or second&quot;)
-  &gt;&gt;&gt; m.group(&quot;item&quot;)
-  'second'
-  &gt;&gt;&gt; m.captures(&quot;item&quot;)
-  ['first', 'second']
-  &gt;&gt;&gt; # Again, both groups capture, the second capture 'overwriting' the first.
-  &gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;, &quot; or second&quot;)
-  &gt;&gt;&gt; m.group(&quot;item&quot;)
-  'second'
-  &gt;&gt;&gt; m.captures(&quot;item&quot;)
-  ['', 'second']
-  &gt;&gt;&gt; # And yet again, both groups capture, the second capture 'overwriting' the first.
-  &gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;, &quot;first or &quot;)
-  &gt;&gt;&gt; m.group(&quot;item&quot;)
-  ''
-  &gt;&gt;&gt; m.captures(&quot;item&quot;)
-  ['first', '']
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># With optional groups:</span>
+<span class="operator">&gt;&gt;&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Both groups capture, the second capture 'overwriting' the first.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first or second&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'second'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'first'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Only the second group captures.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot; or second&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'second'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'second'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Only the first group captures.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w+)? or (?P&lt;item&gt;\w+)?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first or &quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'first'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'first'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># With mandatory groups:</span>
+<span class="operator">&gt;&gt;&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Both groups capture, the second capture 'overwriting' the first.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first or second&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'second'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'first'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># Again, both groups capture, the second capture 'overwriting' the first.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot; or second&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'second'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">''</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># And yet again, both groups capture, the second capture 'overwriting' the first.</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;item&gt;\w*) or (?P&lt;item&gt;\w*)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first or &quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">''</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal string double">&quot;item&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'first'</span><span class="punctuation">,</span> <span class="literal string single">''</span><span class="punctuation">]</span>
 </pre>
-</div>
 </div>
 <div class="section" id="added-fullmatch-issue-16203">
 <h2>Added <tt class="docutils literal">fullmatch</tt> (<a class="reference external" href="https://bugs.python.org/issue16203">issue #16203</a>)</h2>
 <p><tt class="docutils literal">fullmatch</tt> behaves like <tt class="docutils literal">match</tt>, except that it must match all of the string.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 435)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;abc&quot;).span())
-  (0, 3)
-  &gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;abcx&quot;))
-  None
-  &gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;abcx&quot;, endpos=3).span())
-  (0, 3)
-  &gt;&gt;&gt; print(regex.fullmatch(r&quot;abc&quot;, &quot;xabcy&quot;, pos=1, endpos=4).span())
-  (1, 4)
-  &gt;&gt;&gt;
-  &gt;&gt;&gt; regex.match(r&quot;a.*?&quot;, &quot;abcd&quot;).group(0)
-  'a'
-  &gt;&gt;&gt; regex.fullmatch(r&quot;a.*?&quot;, &quot;abcd&quot;).group(0)
-  'abcd'
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">())</span>
+<span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcx&quot;</span><span class="punctuation">))</span>
+<span class="keyword constant">None</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcx&quot;</span><span class="punctuation">,</span> <span class="name">endpos</span><span class="operator">=</span><span class="literal number integer">3</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">())</span>
+<span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;abc&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;xabcy&quot;</span><span class="punctuation">,</span> <span class="name">pos</span><span class="operator">=</span><span class="literal number integer">1</span><span class="punctuation">,</span> <span class="name">endpos</span><span class="operator">=</span><span class="literal number integer">4</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">())</span>
+<span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">,</span> <span class="literal number integer">4</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;a.*?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcd&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">)</span>
+<span class="literal string single">'a'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;a.*?&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcd&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">)</span>
+<span class="literal string single">'abcd'</span>
 </pre>
-</div>
 </div>
 <div class="section" id="added-subf-and-subfn">
 <h2>Added <tt class="docutils literal">subf</tt> and <tt class="docutils literal">subfn</tt></h2>
 <p><tt class="docutils literal">subf</tt> and <tt class="docutils literal">subfn</tt> are alternatives to <tt class="docutils literal">sub</tt> and <tt class="docutils literal">subn</tt> respectively. When passed a replacement string, they treat it as a format string.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 458)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.subf(r&quot;(\w+) (\w+)&quot;, &quot;{0} =&gt; {2} {1}&quot;, &quot;foo bar&quot;)
-  'foo bar =&gt; bar foo'
-  &gt;&gt;&gt; regex.subf(r&quot;(?P&lt;word1&gt;\w+) (?P&lt;word2&gt;\w+)&quot;, &quot;{word2} {word1}&quot;, &quot;foo bar&quot;)
-  'bar foo'
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">subf</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w+) (\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;</span><span class="literal string interpol">{0}</span><span class="literal string double"> =&gt; </span><span class="literal string interpol">{2}</span><span class="literal string double"> </span><span class="literal string interpol">{1}</span><span class="literal string double">&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;foo bar&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'foo bar =&gt; bar foo'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">subf</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;word1&gt;\w+) (?P&lt;word2&gt;\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;</span><span class="literal string interpol">{word2}</span><span class="literal string double"> </span><span class="literal string interpol">{word1}</span><span class="literal string double">&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;foo bar&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'bar foo'</span>
 </pre>
-</div>
 </div>
 <div class="section" id="added-expandf-to-match-object">
 <h2>Added <tt class="docutils literal">expandf</tt> to match object</h2>
 <p><tt class="docutils literal">expandf</tt> is an alternative to <tt class="docutils literal">expand</tt>. When passed a replacement string, it treats it as a format string.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 472)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; m = regex.match(r&quot;(\w+) (\w+)&quot;, &quot;foo bar&quot;)
-  &gt;&gt;&gt; m.expandf(&quot;{0} =&gt; {2} {1}&quot;)
-  'foo bar =&gt; bar foo'
-  &gt;&gt;&gt;
-  &gt;&gt;&gt; m = regex.match(r&quot;(?P&lt;word1&gt;\w+) (?P&lt;word2&gt;\w+)&quot;, &quot;foo bar&quot;)
-  &gt;&gt;&gt; m.expandf(&quot;{word2} {word1}&quot;)
-  'bar foo'
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w+) (\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;foo bar&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;</span><span class="literal string interpol">{0}</span><span class="literal string double"> =&gt; </span><span class="literal string interpol">{2}</span><span class="literal string double"> </span><span class="literal string interpol">{1}</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'foo bar =&gt; bar foo'</span>
+<span class="operator">&gt;&gt;&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;word1&gt;\w+) (?P&lt;word2&gt;\w+)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;foo bar&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">expandf</span><span class="punctuation">(</span><span class="literal string double">&quot;</span><span class="literal string interpol">{word2}</span><span class="literal string double"> </span><span class="literal string interpol">{word1}</span><span class="literal string double">&quot;</span><span class="punctuation">)</span>
+<span class="literal string single">'bar foo'</span>
 </pre>
-</div>
 </div>
 <div class="section" id="detach-searched-string">
 <h2>Detach searched string</h2>
 <p>A match object contains a reference to the string that was searched, via its <tt class="docutils literal">string</tt> attribute. The <tt class="docutils literal">detach_string</tt> method will 'detach' that string, making it available for garbage collection, which might save valuable memory if that string is very large.</p>
 <p>Example:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 489)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; m = regex.search(r&quot;\w+&quot;, &quot;Hello world&quot;)
-  &gt;&gt;&gt; print(m.group())
-  Hello
-  &gt;&gt;&gt; print(m.string)
-  Hello world
-  &gt;&gt;&gt; m.detach_string()
-  &gt;&gt;&gt; print(m.group())
-  Hello
-  &gt;&gt;&gt; print(m.string)
-  None
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\w+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;Hello world&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">())</span>
+<span class="name">Hello</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">m</span><span class="operator">.</span><span class="name">string</span><span class="punctuation">)</span>
+<span class="name">Hello</span> <span class="name">world</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">detach_string</span><span class="punctuation">()</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">())</span>
+<span class="name">Hello</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">m</span><span class="operator">.</span><span class="name">string</span><span class="punctuation">)</span>
+<span class="keyword constant">None</span>
 </pre>
-</div>
 </div>
 <div class="section" id="recursive-patterns-hg-issue-27">
 <h2>Recursive patterns (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/27">Hg issue 27</a>)</h2>
@@ -876,23 +778,16 @@ ul.auto-toc {
 <p><tt class="docutils literal"><span class="pre">(?R)</span></tt> or <tt class="docutils literal"><span class="pre">(?0)</span></tt> tries to match the entire regex recursively. <tt class="docutils literal"><span class="pre">(?1)</span></tt>, <tt class="docutils literal"><span class="pre">(?2)</span></tt>, etc, try to match the relevant capture group.</p>
 <p><tt class="docutils literal"><span class="pre">(?&amp;name)</span></tt> tries to match the named capture group.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 513)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(Tarzan|Jane) loves (?1)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;Tarzan loves Jane&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal string single">'Tarzan'</span><span class="punctuation">,)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(Tarzan|Jane) loves (?1)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;Jane loves Tarzan&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal string single">'Jane'</span><span class="punctuation">,)</span>
 
-  &gt;&gt;&gt; regex.match(r&quot;(Tarzan|Jane) loves (?1)&quot;, &quot;Tarzan loves Jane&quot;).groups()
-  ('Tarzan',)
-  &gt;&gt;&gt; regex.match(r&quot;(Tarzan|Jane) loves (?1)&quot;, &quot;Jane loves Tarzan&quot;).groups()
-  ('Jane',)
-
-  &gt;&gt;&gt; m = regex.search(r&quot;(\w)(?:(?R)|(\w?))\1&quot;, &quot;kayak&quot;)
-  &gt;&gt;&gt; m.group(0, 1, 2)
-  ('kayak', 'k', None)
-
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w)(?:(?R)|(\w?))\1&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;kayak&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">,</span> <span class="literal number integer">2</span><span class="punctuation">)</span>
+<span class="punctuation">(</span><span class="literal string single">'kayak'</span><span class="punctuation">,</span> <span class="literal string single">'k'</span><span class="punctuation">,</span> <span class="keyword constant">None</span><span class="punctuation">)</span>
 </pre>
-</div>
 <p>The first two examples show how the subpattern within the capture group is reused, but is _not_ itself a capture group. In other words, <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?1)&quot;</span></tt> is equivalent to <tt class="docutils literal">&quot;(Tarzan|Jane) loves <span class="pre">(?:Tarzan|Jane)&quot;</span></tt>.</p>
 <p>It's possible to backtrack into a recursed or repeated group.</p>
 <p>You can't call a group if there is more than one group with that group name or group number (<tt class="docutils literal">&quot;ambiguous group reference&quot;</tt>).</p>
@@ -902,19 +797,12 @@ ul.auto-toc {
 <h2>Full Unicode case-folding is supported.</h2>
 <p>In version 1 behaviour, the regex module uses full case-folding when performing case-insensitive matches in Unicode.</p>
 <p>Examples (in Python 3):</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 539)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.match(r&quot;(?iV1)strasse&quot;, &quot;stra\N{LATIN SMALL LETTER SHARP S}e&quot;).span()
-  (0, 6)
-  &gt;&gt;&gt; regex.match(r&quot;(?iV1)stra\N{LATIN SMALL LETTER SHARP S}e&quot;, &quot;STRASSE&quot;).span()
-  (0, 7)
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?iV1)strasse&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;stra</span><span class="literal string escape">\N{LATIN SMALL LETTER SHARP S}</span><span class="literal string double">e&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?iV1)stra\N{LATIN SMALL LETTER SHARP S}e&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;STRASSE&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">7</span><span class="punctuation">)</span>
 </pre>
-</div>
 <p>In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.</p>
 </div>
 <div class="section" id="approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109">
@@ -969,151 +857,81 @@ ul.auto-toc {
 </ul>
 <p>In the first two examples there are perfect matches later in the string, but in neither case is it the first possible match.</p>
 <p>The match object has an attribute <tt class="docutils literal">fuzzy_counts</tt> which gives the total number of substitutions, insertions and deletions.</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 627)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># A 'raw' fuzzy match:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?:cats|cat){e&lt;=1}&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;cat&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">fuzzy_counts</span>
+<span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># 0 substitutions, 0 insertions, 1 deletion.</span>
 
-  &gt;&gt;&gt; # A 'raw' fuzzy match:
-  &gt;&gt;&gt; regex.fullmatch(r&quot;(?:cats|cat){e&lt;=1}&quot;, &quot;cat&quot;).fuzzy_counts
-  (0, 0, 1)
-  &gt;&gt;&gt; # 0 substitutions, 0 insertions, 1 deletion.
-
-  &gt;&gt;&gt; # A better match might be possible if the ENHANCEMATCH flag used:
-  &gt;&gt;&gt; regex.fullmatch(r&quot;(?e)(?:cats|cat){e&lt;=1}&quot;, &quot;cat&quot;).fuzzy_counts
-  (0, 0, 0)
-  &gt;&gt;&gt; # 0 substitutions, 0 insertions, 0 deletions.
-
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># A better match might be possible if the ENHANCEMATCH flag used:</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">fullmatch</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?e)(?:cats|cat){e&lt;=1}&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;cat&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">fuzzy_counts</span>
+<span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">0</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="comment single"># 0 substitutions, 0 insertions, 0 deletions.</span>
 </pre>
-</div>
 <p>The match object also has an attribute <tt class="docutils literal">fuzzy_changes</tt> which gives a tuple of the positions of the substitutions, insertions and deletions.</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 641)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; m = regex.search('(fuu){i&lt;=2,d&lt;=2,e&lt;=5}', 'anaconda foo bar')
-  &gt;&gt;&gt; m
-  &lt;regex.Match object; span=(7, 10), match='a f', fuzzy_counts=(0, 2, 2)&gt;
-  &gt;&gt;&gt; m.fuzzy_changes
-  ([], [7, 8], [10, 11])
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string single">'(fuu){i&lt;=2,d&lt;=2,e&lt;=5}'</span><span class="punctuation">,</span> <span class="literal string single">'anaconda foo bar'</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span>
+<span class="operator">&lt;</span><span class="name">regex</span><span class="operator">.</span><span class="name">Match</span> <span class="name builtin">object</span><span class="punctuation">;</span> <span class="name">span</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">7</span><span class="punctuation">,</span> <span class="literal number integer">10</span><span class="punctuation">),</span> <span class="name">match</span><span class="operator">=</span><span class="literal string single">'a f'</span><span class="punctuation">,</span> <span class="name">fuzzy_counts</span><span class="operator">=</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">2</span><span class="punctuation">,</span> <span class="literal number integer">2</span><span class="punctuation">)</span><span class="operator">&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">fuzzy_changes</span>
+<span class="punctuation">([],</span> <span class="punctuation">[</span><span class="literal number integer">7</span><span class="punctuation">,</span> <span class="literal number integer">8</span><span class="punctuation">],</span> <span class="punctuation">[</span><span class="literal number integer">10</span><span class="punctuation">,</span> <span class="literal number integer">11</span><span class="punctuation">])</span>
 </pre>
-</div>
 <p>What this means is that if the matched part of the string had been:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 651)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  'anacondfuuoo bar'
-
+<pre class="code python literal-block">
+<span class="literal string single">'anacondfuuoo bar'</span>
 </pre>
-</div>
 <p>it would've been an exact match.</p>
 <p>However, there were insertions at positions 7 and 8:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 659)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  'anaconda fuuoo bar'
-          ^^
-
+<pre class="code python literal-block">
+<span class="literal string single">'anaconda fuuoo bar'</span>
+        <span class="operator">^^</span>
 </pre>
-</div>
 <p>and deletions at positions 10 and 11:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 666)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  'anaconda f~~oo bar'
-             ^^
-
+<pre class="code python literal-block">
+<span class="literal string single">'anaconda f~~oo bar'</span>
+           <span class="operator">^^</span>
 </pre>
-</div>
 <p>So the actual string was:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 673)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  'anaconda foo bar'
-
+<pre class="code python literal-block">
+<span class="literal string single">'anaconda foo bar'</span>
 </pre>
-</div>
 </div>
 <div class="section" id="named-lists-hg-issue-11">
 <h2>Named lists (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/11">Hg issue 11</a>)</h2>
 <p><tt class="docutils literal">\L&lt;name&gt;</tt></p>
 <p>There are occasions where you may want to include a list (actually, a set) of options in a regex.</p>
 <p>One way is to build the pattern like this:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 686)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; p = regex.compile(r&quot;first|second|third|fourth|fifth&quot;)
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">p</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;first|second|third|fourth|fifth&quot;</span><span class="punctuation">)</span>
 </pre>
-</div>
 <p>but if the list is large, parsing the resulting regex can take considerable time, and care must also be taken that the strings are properly escaped and properly ordered, for example, &quot;cats&quot; before &quot;cat&quot;.</p>
 <p>The new alternative is to use a named list:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 694)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; option_set = [&quot;first&quot;, &quot;second&quot;, &quot;third&quot;, &quot;fourth&quot;, &quot;fifth&quot;]
-  &gt;&gt;&gt; p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set)
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">option_set</span> <span class="operator">=</span> <span class="punctuation">[</span><span class="literal string double">&quot;first&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;second&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;third&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;fourth&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;fifth&quot;</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">p</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\L&lt;options&gt;&quot;</span><span class="punctuation">,</span> <span class="name">options</span><span class="operator">=</span><span class="name">option_set</span><span class="punctuation">)</span>
 </pre>
-</div>
 <p>The order of the items is irrelevant, they are treated as a set. The named lists are available as the <tt class="docutils literal">.named_lists</tt> attribute of the pattern object :</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 701)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; print(p.named_lists)
-  # Python 3
-  {'options': frozenset({'fifth', 'first', 'fourth', 'second', 'third'})}
-  # Python 2
-  {'options': frozenset(['fifth', 'fourth', 'second', 'third', 'first'])}
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">p</span><span class="operator">.</span><span class="name">named_lists</span><span class="punctuation">)</span>
+<span class="comment single"># Python 3</span>
+<span class="punctuation">{</span><span class="literal string single">'options'</span><span class="punctuation">:</span> <span class="name builtin">frozenset</span><span class="punctuation">({</span><span class="literal string single">'fifth'</span><span class="punctuation">,</span> <span class="literal string single">'first'</span><span class="punctuation">,</span> <span class="literal string single">'fourth'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">,</span> <span class="literal string single">'third'</span><span class="punctuation">})}</span>
+<span class="comment single"># Python 2</span>
+<span class="punctuation">{</span><span class="literal string single">'options'</span><span class="punctuation">:</span> <span class="name builtin">frozenset</span><span class="punctuation">([</span><span class="literal string single">'fifth'</span><span class="punctuation">,</span> <span class="literal string single">'fourth'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">,</span> <span class="literal string single">'third'</span><span class="punctuation">,</span> <span class="literal string single">'first'</span><span class="punctuation">])}</span>
 </pre>
-</div>
 <p>If there are any unused keyword arguments, <tt class="docutils literal">ValueError</tt> will be raised unless you tell it otherwise:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 711)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; option_set = [&quot;first&quot;, &quot;second&quot;, &quot;third&quot;, &quot;fourth&quot;, &quot;fifth&quot;]
-  &gt;&gt;&gt; p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set, other_options=[])
-  Traceback (most recent call last):
-    File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
-    File &quot;C:\Python37\lib\site-packages\regex\regex.py&quot;, line 348, in compile
-      return _compile(pattern, flags, ignore_unused, kwargs)
-    File &quot;C:\Python37\lib\site-packages\regex\regex.py&quot;, line 585, in _compile
-      raise ValueError('unused keyword argument {!a}'.format(any_one))
-  ValueError: unused keyword argument 'other_options'
-  &gt;&gt;&gt; p = regex.compile(r&quot;\L&lt;options&gt;&quot;, options=option_set, other_options=[], ignore_unused=True)
-  &gt;&gt;&gt;
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">option_set</span> <span class="operator">=</span> <span class="punctuation">[</span><span class="literal string double">&quot;first&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;second&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;third&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;fourth&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;fifth&quot;</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">p</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\L&lt;options&gt;&quot;</span><span class="punctuation">,</span> <span class="name">options</span><span class="operator">=</span><span class="name">option_set</span><span class="punctuation">,</span> <span class="name">other_options</span><span class="operator">=</span><span class="punctuation">[])</span>
+<span class="name">Traceback</span> <span class="punctuation">(</span><span class="name">most</span> <span class="name">recent</span> <span class="name">call</span> <span class="name">last</span><span class="punctuation">):</span>
+  <span class="name">File</span> <span class="literal string double">&quot;&lt;stdin&gt;&quot;</span><span class="punctuation">,</span> <span class="name">line</span> <span class="literal number integer">1</span><span class="punctuation">,</span> <span class="operator word">in</span> <span class="operator">&lt;</span><span class="name">module</span><span class="operator">&gt;</span>
+  <span class="name">File</span> <span class="literal string double">&quot;C:\Python37\lib\site-packages</span><span class="literal string escape">\r</span><span class="literal string double">egex</span><span class="literal string escape">\r</span><span class="literal string double">egex.py&quot;</span><span class="punctuation">,</span> <span class="name">line</span> <span class="literal number integer">348</span><span class="punctuation">,</span> <span class="operator word">in</span> <span class="name builtin">compile</span>
+    <span class="keyword">return</span> <span class="name">_compile</span><span class="punctuation">(</span><span class="name">pattern</span><span class="punctuation">,</span> <span class="name">flags</span><span class="punctuation">,</span> <span class="name">ignore_unused</span><span class="punctuation">,</span> <span class="name">kwargs</span><span class="punctuation">)</span>
+  <span class="name">File</span> <span class="literal string double">&quot;C:\Python37\lib\site-packages</span><span class="literal string escape">\r</span><span class="literal string double">egex</span><span class="literal string escape">\r</span><span class="literal string double">egex.py&quot;</span><span class="punctuation">,</span> <span class="name">line</span> <span class="literal number integer">585</span><span class="punctuation">,</span> <span class="operator word">in</span> <span class="name">_compile</span>
+    <span class="keyword">raise</span> <span class="name exception">ValueError</span><span class="punctuation">(</span><span class="literal string single">'unused keyword argument </span><span class="literal string interpol">{!a}</span><span class="literal string single">'</span><span class="operator">.</span><span class="name">format</span><span class="punctuation">(</span><span class="name">any_one</span><span class="punctuation">))</span>
+<span class="name exception">ValueError</span><span class="punctuation">:</span> <span class="name">unused</span> <span class="name">keyword</span> <span class="name">argument</span> <span class="literal string single">'other_options'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">p</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">compile</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\L&lt;options&gt;&quot;</span><span class="punctuation">,</span> <span class="name">options</span><span class="operator">=</span><span class="name">option_set</span><span class="punctuation">,</span> <span class="name">other_options</span><span class="operator">=</span><span class="punctuation">[],</span> <span class="name">ignore_unused</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span>
 </pre>
-</div>
 </div>
 <div class="section" id="start-and-end-of-word">
 <h2>Start and end of word</h2>
@@ -1153,37 +971,23 @@ ul.auto-toc {
 <h2>regex.escape (<a class="reference external" href="https://bugs.python.org/issue2650">issue #2650</a>)</h2>
 <p>regex.escape has an additional keyword parameter <tt class="docutils literal">special_only</tt>. When True, only 'special' regex characters, such as '?', are escaped.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 783)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.escape(&quot;foo!?&quot;, special_only=False)
-  'foo\\!\\?'
-  &gt;&gt;&gt; regex.escape(&quot;foo!?&quot;, special_only=True)
-  'foo!\\?'
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo!?&quot;</span><span class="punctuation">,</span> <span class="name">special_only</span><span class="operator">=</span><span class="keyword constant">False</span><span class="punctuation">)</span>
+<span class="literal string single">'foo</span><span class="literal string escape">\\</span><span class="literal string single">!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo!?&quot;</span><span class="punctuation">,</span> <span class="name">special_only</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">)</span>
+<span class="literal string single">'foo!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
 </pre>
-</div>
 </div>
 <div class="section" id="regex-escape-hg-issue-249">
 <h2>regex.escape (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/249">Hg issue 249</a>)</h2>
 <p>regex.escape has an additional keyword parameter <tt class="docutils literal">literal_spaces</tt>. When True, spaces are not escaped.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 797)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.escape(&quot;foo bar!?&quot;, literal_spaces=False)
-  'foo\\ bar!\\?'
-  &gt;&gt;&gt; regex.escape(&quot;foo bar!?&quot;, literal_spaces=True)
-  'foo bar!\\?'
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo bar!?&quot;</span><span class="punctuation">,</span> <span class="name">literal_spaces</span><span class="operator">=</span><span class="keyword constant">False</span><span class="punctuation">)</span>
+<span class="literal string single">'foo</span><span class="literal string escape">\\</span><span class="literal string single"> bar!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">escape</span><span class="punctuation">(</span><span class="literal string double">&quot;foo bar!?&quot;</span><span class="punctuation">,</span> <span class="name">literal_spaces</span><span class="operator">=</span><span class="keyword constant">True</span><span class="punctuation">)</span>
+<span class="literal string single">'foo bar!</span><span class="literal string escape">\\</span><span class="literal string single">?'</span>
 </pre>
-</div>
 </div>
 <div class="section" id="repeated-captures-issue-7132">
 <h2>Repeated captures (<a class="reference external" href="https://bugs.python.org/issue7132">issue #7132</a>)</h2>
@@ -1207,32 +1011,25 @@ ul.auto-toc {
 </li>
 </ul>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 827)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; m = regex.search(r&quot;(\w{3})+&quot;, &quot;123456789&quot;)
-  &gt;&gt;&gt; m.group(1)
-  '789'
-  &gt;&gt;&gt; m.captures(1)
-  ['123', '456', '789']
-  &gt;&gt;&gt; m.start(1)
-  6
-  &gt;&gt;&gt; m.starts(1)
-  [0, 3, 6]
-  &gt;&gt;&gt; m.end(1)
-  9
-  &gt;&gt;&gt; m.ends(1)
-  [3, 6, 9]
-  &gt;&gt;&gt; m.span(1)
-  (6, 9)
-  &gt;&gt;&gt; m.spans(1)
-  [(0, 3), (3, 6), (6, 9)]
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(\w</span><span class="literal string interpol">{3}</span><span class="literal string double">)+&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;123456789&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">group</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="literal string single">'789'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">captures</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="literal string single">'456'</span><span class="punctuation">,</span> <span class="literal string single">'789'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">start</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="literal number integer">6</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">starts</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">end</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="literal number integer">9</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">ends</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal number integer">3</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">,</span> <span class="literal number integer">9</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">span</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="punctuation">(</span><span class="literal number integer">6</span><span class="punctuation">,</span> <span class="literal number integer">9</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span><span class="operator">.</span><span class="name">spans</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">)</span>
+<span class="punctuation">[(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="literal number integer">3</span><span class="punctuation">),</span> <span class="punctuation">(</span><span class="literal number integer">3</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">),</span> <span class="punctuation">(</span><span class="literal number integer">6</span><span class="punctuation">,</span> <span class="literal number integer">9</span><span class="punctuation">)]</span>
 </pre>
-</div>
 </div>
 <div class="section" id="atomic-grouping-issue-433030">
 <h2>Atomic grouping (<a class="reference external" href="https://bugs.python.org/issue433030">issue #433030</a>)</h2>
@@ -1276,22 +1073,15 @@ ul.auto-toc {
 <div class="section" id="subscripting-for-groups">
 <h2>Subscripting for groups</h2>
 <p>A match object accepts access to the captured groups via subscripting and slicing:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 903)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; m = regex.search(r&quot;(?P&lt;before&gt;.*?)(?P&lt;num&gt;\d+)(?P&lt;after&gt;.*)&quot;, &quot;pqr123stu&quot;)
-  &gt;&gt;&gt; print(m[&quot;before&quot;])
-  pqr
-  &gt;&gt;&gt; print(len(m))
-  4
-  &gt;&gt;&gt; print(m[:])
-  ('pqr123stu', 'pqr', '123', 'stu')
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">m</span> <span class="operator">=</span> <span class="name">regex</span><span class="operator">.</span><span class="name">search</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?P&lt;before&gt;.*?)(?P&lt;num&gt;\d+)(?P&lt;after&gt;.*)&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;pqr123stu&quot;</span><span class="punctuation">)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">[</span><span class="literal string double">&quot;before&quot;</span><span class="punctuation">])</span>
+<span class="name">pqr</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name builtin">len</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">))</span>
+<span class="literal number integer">4</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">[:])</span>
+<span class="punctuation">(</span><span class="literal string single">'pqr123stu'</span><span class="punctuation">,</span> <span class="literal string single">'pqr'</span><span class="punctuation">,</span> <span class="literal string single">'123'</span><span class="punctuation">,</span> <span class="literal string single">'stu'</span><span class="punctuation">)</span>
 </pre>
-</div>
 </div>
 <div class="section" id="named-groups">
 <h2>Named groups</h2>
@@ -1340,19 +1130,12 @@ ul.auto-toc {
 <h2>Search anchor</h2>
 <p><tt class="docutils literal">\G</tt></p>
 <p>A search anchor has been added. It matches at the position where each search started/continued and can be used for contiguous matches or in negative variable-length lookbehinds to limit how far back the lookbehind goes:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 979)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.findall(r&quot;\w{2}&quot;, &quot;abcd ef&quot;)
-  ['ab', 'cd', 'ef']
-  &gt;&gt;&gt; regex.findall(r&quot;\G\w{2}&quot;, &quot;abcd ef&quot;)
-  ['ab', 'cd']
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\w</span><span class="literal string interpol">{2}</span><span class="literal string double">&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcd ef&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'ab'</span><span class="punctuation">,</span> <span class="literal string single">'cd'</span><span class="punctuation">,</span> <span class="literal string single">'ef'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;\G\w</span><span class="literal string interpol">{2}</span><span class="literal string double">&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcd ef&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'ab'</span><span class="punctuation">,</span> <span class="literal string single">'cd'</span><span class="punctuation">]</span>
 </pre>
-</div>
 <ul class="simple">
 <li>The search starts at position 0 and matches 2 letters 'ab'.</li>
 <li>The search continues at position 2 and matches 2 letters 'cd'.</li>
@@ -1363,33 +1146,19 @@ ul.auto-toc {
 <div class="section" id="reverse-searching">
 <h2>Reverse searching</h2>
 <p>Searches can now work backwards:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 999)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.findall(r&quot;.&quot;, &quot;abc&quot;)
-  ['a', 'b', 'c']
-  &gt;&gt;&gt; regex.findall(r&quot;(?r).&quot;, &quot;abc&quot;)
-  ['c', 'b', 'a']
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;.&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'a'</span><span class="punctuation">,</span> <span class="literal string single">'b'</span><span class="punctuation">,</span> <span class="literal string single">'c'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?r).&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abc&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'c'</span><span class="punctuation">,</span> <span class="literal string single">'b'</span><span class="punctuation">,</span> <span class="literal string single">'a'</span><span class="punctuation">]</span>
 </pre>
-</div>
 <p>Note: the result of a reverse search is not necessarily the reverse of a forward search:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 1008)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.findall(r&quot;..&quot;, &quot;abcde&quot;)
-  ['ab', 'cd']
-  &gt;&gt;&gt; regex.findall(r&quot;(?r)..&quot;, &quot;abcde&quot;)
-  ['de', 'bc']
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;..&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcde&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'ab'</span><span class="punctuation">,</span> <span class="literal string single">'cd'</span><span class="punctuation">]</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">findall</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?r)..&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;abcde&quot;</span><span class="punctuation">)</span>
+<span class="punctuation">[</span><span class="literal string single">'de'</span><span class="punctuation">,</span> <span class="literal string single">'bc'</span><span class="punctuation">]</span>
 </pre>
-</div>
 </div>
 <div class="section" id="matching-a-single-grapheme">
 <h2>Matching a single grapheme</h2>
@@ -1401,19 +1170,12 @@ ul.auto-toc {
 <p><tt class="docutils literal"><span class="pre">(?|...|...)</span></tt></p>
 <p>Capture group numbers will be reused across the alternatives, but groups with different names will have different group numbers.</p>
 <p>Examples:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 1031)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; regex.match(r&quot;(?|(first)|(second))&quot;, &quot;first&quot;).groups()
-  ('first',)
-  &gt;&gt;&gt; regex.match(r&quot;(?|(first)|(second))&quot;, &quot;second&quot;).groups()
-  ('second',)
-
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?|(first)|(second))&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;first&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal string single">'first'</span><span class="punctuation">,)</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">match</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string double">&quot;(?|(first)|(second))&quot;</span><span class="punctuation">,</span> <span class="literal string double">&quot;second&quot;</span><span class="punctuation">)</span><span class="operator">.</span><span class="name">groups</span><span class="punctuation">()</span>
+<span class="punctuation">(</span><span class="literal string single">'second'</span><span class="punctuation">,)</span>
 </pre>
-</div>
 <p>Note that there is only one group.</p>
 </div>
 <div class="section" id="default-unicode-word-boundary">
@@ -1423,31 +1185,25 @@ ul.auto-toc {
 <div class="section" id="timeout-python-3">
 <h2>Timeout (Python 3)</h2>
 <p>The matching methods and functions support timeouts. The timeout (in seconds) applies to the entire operation:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Projects\mrab-regex-git\docs\Features.rst</tt>, line 1050)</p>
-<p>Cannot analyze code. Pygments package not found.</p>
-<pre class="literal-block">
-.. sourcecode:: python
-
-  &gt;&gt;&gt; from time import sleep
-  &gt;&gt;&gt;
-  &gt;&gt;&gt; def fast_replace(m):
-  ...     return 'X'
-  ...
-  &gt;&gt;&gt; def slow_replace(m):
-  ...     sleep(0.5)
-  ...     return 'X'
-  ...
-  &gt;&gt;&gt; regex.sub(r'[a-z]', fast_replace, 'abcde', timeout=2)
-  'XXXXX'
-  &gt;&gt;&gt; regex.sub(r'[a-z]', slow_replace, 'abcde', timeout=2)
-  Traceback (most recent call last):
-    File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
-    File &quot;C:\Python37\lib\site-packages\regex\regex.py&quot;, line 276, in sub
-      endpos, concurrent, timeout)
-  TimeoutError: regex timed out
+<pre class="code python literal-block">
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword namespace">from</span> <span class="name namespace">time</span> <span class="keyword namespace">import</span> <span class="name">sleep</span>
+<span class="operator">&gt;&gt;&gt;</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">def</span> <span class="name function">fast_replace</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">):</span>
+<span class="operator">...</span>     <span class="keyword">return</span> <span class="literal string single">'X'</span>
+<span class="operator">...</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="keyword">def</span> <span class="name function">slow_replace</span><span class="punctuation">(</span><span class="name">m</span><span class="punctuation">):</span>
+<span class="operator">...</span>     <span class="name">sleep</span><span class="punctuation">(</span><span class="literal number float">0.5</span><span class="punctuation">)</span>
+<span class="operator">...</span>     <span class="keyword">return</span> <span class="literal string single">'X'</span>
+<span class="operator">...</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'[a-z]'</span><span class="punctuation">,</span> <span class="name">fast_replace</span><span class="punctuation">,</span> <span class="literal string single">'abcde'</span><span class="punctuation">,</span> <span class="name">timeout</span><span class="operator">=</span><span class="literal number integer">2</span><span class="punctuation">)</span>
+<span class="literal string single">'XXXXX'</span>
+<span class="operator">&gt;&gt;&gt;</span> <span class="name">regex</span><span class="operator">.</span><span class="name">sub</span><span class="punctuation">(</span><span class="literal string affix">r</span><span class="literal string single">'[a-z]'</span><span class="punctuation">,</span> <span class="name">slow_replace</span><span class="punctuation">,</span> <span class="literal string single">'abcde'</span><span class="punctuation">,</span> <span class="name">timeout</span><span class="operator">=</span><span class="literal number integer">2</span><span class="punctuation">)</span>
+<span class="name">Traceback</span> <span class="punctuation">(</span><span class="name">most</span> <span class="name">recent</span> <span class="name">call</span> <span class="name">last</span><span class="punctuation">):</span>
+  <span class="name">File</span> <span class="literal string double">&quot;&lt;stdin&gt;&quot;</span><span class="punctuation">,</span> <span class="name">line</span> <span class="literal number integer">1</span><span class="punctuation">,</span> <span class="operator word">in</span> <span class="operator">&lt;</span><span class="name">module</span><span class="operator">&gt;</span>
+  <span class="name">File</span> <span class="literal string double">&quot;C:\Python37\lib\site-packages</span><span class="literal string escape">\r</span><span class="literal string double">egex</span><span class="literal string escape">\r</span><span class="literal string double">egex.py&quot;</span><span class="punctuation">,</span> <span class="name">line</span> <span class="literal number integer">276</span><span class="punctuation">,</span> <span class="operator word">in</span> <span class="name">sub</span>
+    <span class="name">endpos</span><span class="punctuation">,</span> <span class="name">concurrent</span><span class="punctuation">,</span> <span class="name">timeout</span><span class="punctuation">)</span>
+<span class="name exception">TimeoutError</span><span class="punctuation">:</span> <span class="name">regex</span> <span class="name">timed</span> <span class="name">out</span>
 </pre>
-</div>
 </div>
 </div>
 </div>

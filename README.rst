@@ -134,7 +134,7 @@ The regex module releases the GIL during matching on instances of the built-in (
 Unicode
 -------
 
-This module supports Unicode 13.0.0.
+This module supports Unicode 14.0.0.
 
 Full Unicode case-folding is supported.
 

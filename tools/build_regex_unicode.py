@@ -1,4 +1,4 @@
-#! python3.8
+#! python3.9
 # -*- coding: utf-8 -*-
 #
 # This Python script parses the Unicode data files and generates the C files
@@ -1700,7 +1700,7 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
         h_file.write('int re_get_full_case_folding(RE_UINT32 codepoint, RE_UINT32* folded);\n')
 
 # Whether to update the Unicode data files from the Unicode website.
-UNICODE_VERSION = '13.0.0'
+UNICODE_VERSION = '14.0.0'
 
 # The URL from which the Unicode data files can be obtained.
 unicode_data_base = 'http://www.unicode.org/Public/UNIDATA/'
