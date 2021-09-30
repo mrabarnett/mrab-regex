@@ -4283,6 +4283,18 @@ thing
         self.assertEqual(p.search('10 months 1 hour ago').group(), '1 hour ago')
         self.assertEqual(p.search('1 month 10 hours ago').group(), '10 hours ago')
 
+        # Git issue 427: Possible bug with BESTMATCH
+        sequence ='TTCAGACGTGTGCTCTTCCGATCTCAATACCGACTCCTCACTGTGTGTCT'
+        pattern = '(?P<insert>.*)(?P<anchor>CTTCC){e<=1}(?P<umi>([ACGT]){4,6})(?P<sid>CAATACCGACTCCTCACTGTGT){e<=2}(?P<end>([ACGT]){0,6}$)'
+
+        m = regex.match(pattern, sequence, flags=regex.BESTMATCH)
+        self.assertEqual(m.span(), (0, 50))
+        self.assertEqual(m.groupdict(), {'insert': 'TTCAGACGTGTGCT', 'anchor': 'CTTCC', 'umi': 'GATCT', 'sid': 'CAATACCGACTCCTCACTGTGT', 'end': 'GTCT'})
+
+        m = regex.match(pattern, sequence, flags=regex.ENHANCEMATCH)
+        self.assertEqual(m.span(), (0, 50))
+        self.assertEqual(m.groupdict(), {'insert': 'TTCAGACGTGTGCT', 'anchor': 'CTTCC', 'umi': 'GATCT', 'sid': 'CAATACCGACTCCTCACTGTGT', 'end': 'GTCT'})
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

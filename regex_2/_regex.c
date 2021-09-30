@@ -17423,11 +17423,6 @@ Py_LOCAL_INLINE(int) do_best_fuzzy_match(RE_State* state, BOOL search) {
         }
 
         start_pos = state->match_pos;
-
-        /* Should we keep searching? */
-        if (!search)
-            break;
-
         state->max_errors = fewest_errors - 1;
     }
 
