@@ -15341,8 +15341,10 @@ backtrack:
              * bstack: -
              */
 
-            if (insertion_permitted(state, inner_node, inner_counts) &&
-              fuzzy_ext_match(state, inner_node, state->text_pos)) {
+            if (insertion_permitted(state, inner_node, inner_counts) && 
+              total_errors(state->fuzzy_counts) + total_errors(inner_counts) < 
+              state->max_errors && fuzzy_ext_match(state, inner_node, 
+              state->text_pos)) {
                 RE_INT8 step;
                 Py_ssize_t limit;
 
