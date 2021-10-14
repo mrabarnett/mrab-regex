@@ -33,8 +33,8 @@ jobs:
       language: python
       python: 3.8
       env:
-        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-        CIBW_MANYLINUX_I686_IMAGE: manylinux2014
+        - CIBW_MANYLINUX_X86_64_IMAGE="manylinux2014"
+        - CIBW_MANYLINUX_I686_IMAGE="manylinux2014"
       script:
         - python3 setup.py sdist --formats=gztar
         - python3 -m cibuildwheel --output-dir wheelhouse
@@ -52,6 +52,8 @@ jobs:
       services: docker
       language: python
       python: 3.8
+      env:
+        - SKIP="*-musllinux*"
 
     # ARMv8 linux
     - stage: deploy
@@ -62,7 +64,7 @@ jobs:
       language: python
       python: 3.8
       env:
-        CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux2014_aarch64:latest 
+        - CIBW_MANYLINUX_AARCH64_IMAGE="quay.io/pypa/manylinux2014_aarch64:latest"
 
     # macOS
     - stage: deploy
@@ -71,7 +73,7 @@ jobs:
       osx_image: xcode12u
       language: shell
       env:
-          CIBW_ARCHS_MACOS: x86_64 arm64 universal2
+        - CIBW_ARCHS_MACOS="x86_64 arm64 universal2"
 
     # Windows
     - stage: deploy
