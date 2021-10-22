@@ -9593,7 +9593,7 @@ Py_LOCAL_INLINE(int) check_fuzzy_partial(RE_State* state, Py_ssize_t text_pos)
     return RE_ERROR_FAILURE;
 }
 
-/* Records a change in a fuzzy change. */
+/* Records a fuzzy change. */
 Py_LOCAL_INLINE(BOOL) record_fuzzy(RE_State* state, RE_UINT8 fuzzy_type,
   Py_ssize_t text_pos) {
     RE_FuzzyChangesList* change_list;
@@ -15279,9 +15279,9 @@ backtrack:
              * bstack: -
              */
 
-            if (insertion_permitted(state, inner_node, inner_counts) && 
-              total_errors(state->fuzzy_counts) + total_errors(inner_counts) < 
-              state->max_errors && fuzzy_ext_match(state, inner_node, 
+            if (insertion_permitted(state, inner_node, inner_counts) &&
+              total_errors(state->fuzzy_counts) + total_errors(inner_counts) <
+              state->max_errors && fuzzy_ext_match(state, inner_node,
               state->text_pos)) {
                 RE_INT8 step;
                 Py_ssize_t limit;
@@ -15348,6 +15348,10 @@ backtrack:
              */
 
             inner_counts[RE_FUZZY_INS] -= insertions;
+            while (insertions > 0) {
+                unrecord_fuzzy(state);
+                --insertions;
+            }
 
             /* Restore the inner fuzzy info. */
             Py_MEMCPY(state->fuzzy_counts, inner_counts,
