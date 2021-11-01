@@ -1,0 +1,146 @@
+# Automatically build binary wheels and source packages.
+name: cibuildwheel
+
+# Build on every branch push, tag push, and pull request change.
+on: [push, pull_request]
+
+env:
+  CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp39-* cp310-*
+  CIBW_SKIP: "*musllinux*"
+  CIBW_TEST_COMMAND: python -m unittest regex.test_regex
+
+jobs:
+  # Run test on Ubuntu/macOS/Windows for every commit.
+  run_test:
+    name: Run test on ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform }}
+
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+
+      - name: Run test
+        run: |
+          python setup.py install
+          python -m unittest -v regex.test_regex
+
+  # Build Linux/macOS/Windows wheels.
+  build_wheels:
+    name: Build ${{ matrix.platform }} wheels
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '<release>')
+    runs-on: ${{ matrix.platform }}
+
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+
+    env:
+      # generate manylinux2014_x86_64 wheels
+      CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+      # generate manylinux1_i686 wheels
+      CIBW_MANYLINUX_I686_IMAGE: manylinux2014
+      # macOS archs
+      CIBW_ARCHS_MACOS: "x86_64 arm64"
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+
+      - name: Install cibuildwheel & build wheels
+        run: |
+          python -m pip install -U cibuildwheel
+          python -m cibuildwheel --output-dir wheelhouse
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: regex-files
+          path: wheelhouse/*.whl
+
+  # Build the source distribution & manylinux1_x86_64 wheels.
+  build_in_manylinux2010:
+    name: Build in manylinux2010 environment
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '<release>')
+    runs-on: ubuntu-latest
+
+    env:
+      # generate manylinux1_x86_64 wheels
+      CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
+      CIBW_ARCHS_LINUX: x86_64
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+
+      - name: Build source distribution & wheels
+        run: |
+          python setup.py sdist --formats=gztar
+          python -m pip install -U cibuildwheel
+          python -m cibuildwheel --output-dir wheelhouse
+
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v2
+        with:
+          name: regex-files
+          path: dist/*.tar.gz
+
+      - name: Upload manylinux1_x86_64 wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: regex-files
+          path: wheelhouse/*.whl
+
+  # Build and upload aarch64/ppc64le/s390x wheels.
+  build_arch_wheels:
+    name: Build ${{ matrix.arch }} Linux wheels
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '<release>')
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        arch: [aarch64, ppc64le, s390x]
+
+    env:
+      CIBW_ARCHS: ${{ matrix.arch }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Install cibuildwheel & build wheels
+        run: |
+          python -m pip install -U cibuildwheel
+          python -m cibuildwheel --output-dir wheelhouse
+
+      - name: Upload ${{ matrix.arch }} wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: regex-files
+          path: wheelhouse/*.whl
+
+  # Upload to PyPI
+  upload_pypi:
+    name: Publish to PyPI
+    needs: [build_wheels, build_in_manylinux2010, build_arch_wheels]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: regex-files
+          path: dist
+
+      - name: Upload to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          skip_existing: true
+          verbose: true
