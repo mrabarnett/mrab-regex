@@ -12,12 +12,12 @@ with open('README.rst') as file:
 
 setup(
     name='regex',
-    version='2021.10.23',
+    version='2021.11.1',
     description='Alternative regular expression module, to replace re.',
     long_description=long_description,
     author='Matthew Barnett',
     author_email='regex@mrabarnett.plus.com',
-    url='https://bitbucket.org/mrabarnett/mrab-regex',
+    url='https://github.com/mrabarnett/mrab-regex',
     license='Apache Software License',
 
     classifiers=[

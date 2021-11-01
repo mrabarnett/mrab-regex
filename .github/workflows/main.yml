@@ -31,7 +31,7 @@ jobs:
   # Build Linux/macOS/Windows wheels.
   build_wheels:
     name: Build ${{ matrix.platform }} wheels
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, '<release>')
+    if: github.event_name == 'push'
     runs-on: ${{ matrix.platform }}
 
     strategy:
@@ -64,7 +64,7 @@ jobs:
   # Build the source distribution & manylinux1_x86_64 wheels.
   build_in_manylinux2010:
     name: Build in manylinux2010 environment
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, '<release>')
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     env:
@@ -97,7 +97,7 @@ jobs:
   # Build and upload aarch64/ppc64le/s390x wheels.
   build_arch_wheels:
     name: Build ${{ matrix.arch }} Linux wheels
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, '<release>')
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     strategy:

@@ -143,8 +143,8 @@ Additional features
 
 The issue numbers relate to the Python bug tracker, except where listed as "Hg issue".
 
-Added support for lookaround in conditional pattern (`Hg issue 163 <https://bitbucket.org/mrabarnett/mrab-regex/issues/163>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added support for lookaround in conditional pattern (`Hg issue 163 <https://github.com/mrabarnett/mrab-regex/issues/163>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The test of a conditional pattern can now be a lookaround.
 
@@ -170,8 +170,8 @@ Examples:
 
 In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was **not** attempted.
 
-Added POSIX matching (leftmost longest) (`Hg issue 150 <https://bitbucket.org/mrabarnett/mrab-regex/issues/150>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added POSIX matching (leftmost longest) (`Hg issue 150 <https://github.com/mrabarnett/mrab-regex/issues/150>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the ``POSIX`` flag (``(?p)``).
 
@@ -192,8 +192,8 @@ Examples:
 
 Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.
 
-Added ``(?(DEFINE)...)`` (`Hg issue 152 <https://bitbucket.org/mrabarnett/mrab-regex/issues/152>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added ``(?(DEFINE)...)`` (`Hg issue 152 <https://github.com/mrabarnett/mrab-regex/issues/152>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If there's no group called "DEFINE", then ... will be ignored, but any group definitions within it will be available.
 
@@ -204,8 +204,8 @@ Examples:
   >>> regex.search(r'(?(DEFINE)(?P<quant>\d+)(?P<item>\w+))(?&quant) (?&item)', '5 elephants')
   <regex.Match object; span=(0, 11), match='5 elephants'>
 
-Added ``(*PRUNE)``, ``(*SKIP)`` and ``(*FAIL)`` (`Hg issue 153 <https://bitbucket.org/mrabarnett/mrab-regex/issues/153>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added ``(*PRUNE)``, ``(*SKIP)`` and ``(*FAIL)`` (`Hg issue 153 <https://github.com/mrabarnett/mrab-regex/issues/153>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``(*PRUNE)`` discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.
 
@@ -213,8 +213,8 @@ Added ``(*PRUNE)``, ``(*SKIP)`` and ``(*FAIL)`` (`Hg issue 153 <https://bitbucke
 
 ``(*FAIL)`` causes immediate backtracking. ``(*F)`` is a permitted abbreviation.
 
-Added ``\K`` (`Hg issue 151 <https://bitbucket.org/mrabarnett/mrab-regex/issues/151>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added ``\K`` (`Hg issue 151 <https://github.com/mrabarnett/mrab-regex/issues/151>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Keeps the part of the entire match after the position where ``\K`` occurred; the part before it is discarded.
 
@@ -236,8 +236,8 @@ Examples:
   >>> m[1]
   'bcdef'
 
-Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (`Hg issue 133 <https://bitbucket.org/mrabarnett/mrab-regex/issues/133>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added capture subscripting for ``expandf`` and ``subf``/``subfn`` (`Hg issue 133 <https://github.com/mrabarnett/mrab-regex/issues/133>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can now use subscripting to get the captures of a repeated capture group.
 
@@ -271,8 +271,8 @@ Fixed the handling of locale-sensitive regexes.
 
 The ``LOCALE`` flag is intended for legacy code and has limited support. You're still recommended to use Unicode instead.
 
-Added partial matches (`Hg issue 102 <https://bitbucket.org/mrabarnett/mrab-regex/issues/102>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added partial matches (`Hg issue 102 <https://github.com/mrabarnett/mrab-regex/issues/102>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.
 
@@ -324,8 +324,8 @@ For example, if you wanted a user to enter a 4-digit number and check it charact
   >>> pattern.match('1233', partial=True).partial
   False
 
-``*`` operator not working correctly with sub() (`Hg issue 106 <https://bitbucket.org/mrabarnett/mrab-regex/issues/106>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``*`` operator not working correctly with sub() (`Hg issue 106 <https://github.com/mrabarnett/mrab-regex/issues/106>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes it's not clear how zero-width matches should be handled. For example, should ``.*`` match 0 characters directly after matching >0 characters?
 
@@ -349,8 +349,8 @@ Examples:
   >>> regex.sub('(?V1).*?', '|', 'test')
   '|||||||||'
 
-Added ``capturesdict`` (`Hg issue 86 <https://bitbucket.org/mrabarnett/mrab-regex/issues/86>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added ``capturesdict`` (`Hg issue 86 <https://github.com/mrabarnett/mrab-regex/issues/86>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``capturesdict`` is a combination of ``groupdict`` and ``captures``:
 
@@ -374,8 +374,8 @@ Examples:
   >>> m.capturesdict()
   {'word': ['one', 'two', 'three'], 'digits': ['1', '2', '3']}
 
-Allow duplicate names of groups (`Hg issue 87 <https://bitbucket.org/mrabarnett/mrab-regex/issues/87>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Allow duplicate names of groups (`Hg issue 87 <https://github.com/mrabarnett/mrab-regex/issues/87>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Group names can now be duplicated.
 
@@ -499,8 +499,8 @@ Example:
   >>> print(m.string)
   None
 
-Recursive patterns (`Hg issue 27 <https://bitbucket.org/mrabarnett/mrab-regex/issues/27>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Recursive patterns (`Hg issue 27 <https://github.com/mrabarnett/mrab-regex/issues/27>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Recursive and repeated patterns are supported.
 
@@ -545,8 +545,8 @@ Examples (in Python 3):
 
 In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.
 
-Approximate "fuzzy" matching (`Hg issue 12 <https://bitbucket.org/mrabarnett/mrab-regex/issues/12>`_, `Hg issue 41 <https://bitbucket.org/mrabarnett/mrab-regex/issues/41>`_, `Hg issue 109 <https://bitbucket.org/mrabarnett/mrab-regex/issues/109>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Approximate "fuzzy" matching (`Hg issue 12 <https://github.com/mrabarnett/mrab-regex/issues/12>`_, `Hg issue 41 <https://github.com/mrabarnett/mrab-regex/issues/41>`_, `Hg issue 109 <https://github.com/mrabarnett/mrab-regex/issues/109>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Regex usually attempts an exact match, but sometimes an approximate, or "fuzzy", match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.
 
@@ -674,8 +674,8 @@ So the actual string was:
 
   'anaconda foo bar'
 
-Named lists (`Hg issue 11 <https://bitbucket.org/mrabarnett/mrab-regex/issues/11>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Named lists (`Hg issue 11 <https://github.com/mrabarnett/mrab-regex/issues/11>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``\L<name>``
 
@@ -787,8 +787,8 @@ Examples:
   >>> regex.escape("foo!?", special_only=True)
   'foo!\\?'
 
-regex.escape (`Hg issue 249 <https://bitbucket.org/mrabarnett/mrab-regex/issues/249>`_)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+regex.escape (`Hg issue 249 <https://github.com/mrabarnett/mrab-regex/issues/249>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 regex.escape has an additional keyword parameter ``literal_spaces``. When True, spaces are not escaped.
 

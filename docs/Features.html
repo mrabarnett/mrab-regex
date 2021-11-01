@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <title>Features.rst</title>
 <style type="text/css">
 
@@ -472,7 +472,7 @@ ul.auto-toc {
 <h1>Additional features</h1>
 <p>The issue numbers relate to the Python bug tracker, except where listed as &quot;Hg issue&quot;.</p>
 <div class="section" id="added-support-for-lookaround-in-conditional-pattern-hg-issue-163">
-<h2>Added support for lookaround in conditional pattern (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/163">Hg issue 163</a>)</h2>
+<h2>Added support for lookaround in conditional pattern (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/163">Hg issue 163</a>)</h2>
 <p>The test of a conditional pattern can now be a lookaround.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -492,7 +492,7 @@ ul.auto-toc {
 <p>In the first example, the lookaround matched, but the remainder of the first branch failed to match, and so the second branch was attempted, whereas in the second example, the lookaround matched, and the first branch failed to match, but the second branch was <strong>not</strong> attempted.</p>
 </div>
 <div class="section" id="added-posix-matching-leftmost-longest-hg-issue-150">
-<h2>Added POSIX matching (leftmost longest) (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/150">Hg issue 150</a>)</h2>
+<h2>Added POSIX matching (leftmost longest) (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/150">Hg issue 150</a>)</h2>
 <p>The POSIX standard for regex is to return the leftmost longest match. This can be turned on using the <tt class="docutils literal">POSIX</tt> flag (<tt class="docutils literal"><span class="pre">(?p)</span></tt>).</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -510,7 +510,7 @@ ul.auto-toc {
 <p>Note that it will take longer to find matches because when it finds a match at a certain position, it won't return that immediately, but will keep looking to see if there's another longer match there.</p>
 </div>
 <div class="section" id="added-define-hg-issue-152">
-<h2>Added <tt class="docutils literal"><span class="pre">(?(DEFINE)...)</span></tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/152">Hg issue 152</a>)</h2>
+<h2>Added <tt class="docutils literal"><span class="pre">(?(DEFINE)...)</span></tt> (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/152">Hg issue 152</a>)</h2>
 <p>If there's no group called &quot;DEFINE&quot;, then ... will be ignored, but any group definitions within it will be available.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -519,13 +519,13 @@ ul.auto-toc {
 </pre>
 </div>
 <div class="section" id="added-prune-skip-and-fail-hg-issue-153">
-<h2>Added <tt class="docutils literal">(*PRUNE)</tt>, <tt class="docutils literal">(*SKIP)</tt> and <tt class="docutils literal">(*FAIL)</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/153">Hg issue 153</a>)</h2>
+<h2>Added <tt class="docutils literal">(*PRUNE)</tt>, <tt class="docutils literal">(*SKIP)</tt> and <tt class="docutils literal">(*FAIL)</tt> (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/153">Hg issue 153</a>)</h2>
 <p><tt class="docutils literal">(*PRUNE)</tt> discards the backtracking info up to that point. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.</p>
 <p><tt class="docutils literal">(*SKIP)</tt> is similar to <tt class="docutils literal">(*PRUNE)</tt>, except that it also sets where in the text the next attempt to match will start. When used in an atomic group or a lookaround, it won't affect the enclosing pattern.</p>
 <p><tt class="docutils literal">(*FAIL)</tt> causes immediate backtracking. <tt class="docutils literal">(*F)</tt> is a permitted abbreviation.</p>
 </div>
 <div class="section" id="added-k-hg-issue-151">
-<h2>Added <tt class="docutils literal">\K</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/151">Hg issue 151</a>)</h2>
+<h2>Added <tt class="docutils literal">\K</tt> (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/151">Hg issue 151</a>)</h2>
 <p>Keeps the part of the entire match after the position where <tt class="docutils literal">\K</tt> occurred; the part before it is discarded.</p>
 <p>It does not affect what capture groups return.</p>
 <p>Examples:</p>
@@ -544,7 +544,7 @@ ul.auto-toc {
 </pre>
 </div>
 <div class="section" id="added-capture-subscripting-for-expandf-and-subf-subfn-hg-issue-133">
-<h2>Added capture subscripting for <tt class="docutils literal">expandf</tt> and <tt class="docutils literal">subf</tt>/<tt class="docutils literal">subfn</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/133">Hg issue 133</a>)</h2>
+<h2>Added capture subscripting for <tt class="docutils literal">expandf</tt> and <tt class="docutils literal">subf</tt>/<tt class="docutils literal">subfn</tt> (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/133">Hg issue 133</a>)</h2>
 <p>You can now use subscripting to get the captures of a repeated capture group.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -574,7 +574,7 @@ ul.auto-toc {
 <p>The <tt class="docutils literal">LOCALE</tt> flag is intended for legacy code and has limited support. You're still recommended to use Unicode instead.</p>
 </div>
 <div class="section" id="added-partial-matches-hg-issue-102">
-<h2>Added partial matches (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/102">Hg issue 102</a>)</h2>
+<h2>Added partial matches (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/102">Hg issue 102</a>)</h2>
 <p>A partial match is one that matches up to the end of string, but that string has been truncated and you want to know whether a complete match could be possible if the string had not been truncated.</p>
 <p>Partial matches are supported by <tt class="docutils literal">match</tt>, <tt class="docutils literal">search</tt>, <tt class="docutils literal">fullmatch</tt> and <tt class="docutils literal">finditer</tt> with the <tt class="docutils literal">partial</tt> keyword argument.</p>
 <p>Match objects have a <tt class="docutils literal">partial</tt> attribute, which is <tt class="docutils literal">True</tt> if it's a partial match.</p>
@@ -622,7 +622,7 @@ ul.auto-toc {
 </pre>
 </div>
 <div class="section" id="operator-not-working-correctly-with-sub-hg-issue-106">
-<h2><tt class="docutils literal">*</tt> operator not working correctly with sub() (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/106">Hg issue 106</a>)</h2>
+<h2><tt class="docutils literal">*</tt> operator not working correctly with sub() (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/106">Hg issue 106</a>)</h2>
 <p>Sometimes it's not clear how zero-width matches should be handled. For example, should <tt class="docutils literal">.*</tt> match 0 characters directly after matching &gt;0 characters?</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -644,7 +644,7 @@ ul.auto-toc {
 </pre>
 </div>
 <div class="section" id="added-capturesdict-hg-issue-86">
-<h2>Added <tt class="docutils literal">capturesdict</tt> (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/86">Hg issue 86</a>)</h2>
+<h2>Added <tt class="docutils literal">capturesdict</tt> (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/86">Hg issue 86</a>)</h2>
 <p><tt class="docutils literal">capturesdict</tt> is a combination of <tt class="docutils literal">groupdict</tt> and <tt class="docutils literal">captures</tt>:</p>
 <p><tt class="docutils literal">groupdict</tt> returns a dict of the named groups and the last capture of those groups.</p>
 <p><tt class="docutils literal">captures</tt> returns a list of all the captures of a group</p>
@@ -663,7 +663,7 @@ ul.auto-toc {
 </pre>
 </div>
 <div class="section" id="allow-duplicate-names-of-groups-hg-issue-87">
-<h2>Allow duplicate names of groups (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/87">Hg issue 87</a>)</h2>
+<h2>Allow duplicate names of groups (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/87">Hg issue 87</a>)</h2>
 <p>Group names can now be duplicated.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
@@ -773,7 +773,7 @@ ul.auto-toc {
 </pre>
 </div>
 <div class="section" id="recursive-patterns-hg-issue-27">
-<h2>Recursive patterns (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/27">Hg issue 27</a>)</h2>
+<h2>Recursive patterns (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/27">Hg issue 27</a>)</h2>
 <p>Recursive and repeated patterns are supported.</p>
 <p><tt class="docutils literal"><span class="pre">(?R)</span></tt> or <tt class="docutils literal"><span class="pre">(?0)</span></tt> tries to match the entire regex recursively. <tt class="docutils literal"><span class="pre">(?1)</span></tt>, <tt class="docutils literal"><span class="pre">(?2)</span></tt>, etc, try to match the relevant capture group.</p>
 <p><tt class="docutils literal"><span class="pre">(?&amp;name)</span></tt> tries to match the named capture group.</p>
@@ -806,7 +806,7 @@ ul.auto-toc {
 <p>In version 0 behaviour, it uses simple case-folding for backward compatibility with the re module.</p>
 </div>
 <div class="section" id="approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109">
-<h2>Approximate &quot;fuzzy&quot; matching (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/12">Hg issue 12</a>, <a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/41">Hg issue 41</a>, <a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/109">Hg issue 109</a>)</h2>
+<h2>Approximate &quot;fuzzy&quot; matching (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/12">Hg issue 12</a>, <a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/41">Hg issue 41</a>, <a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/109">Hg issue 109</a>)</h2>
 <p>Regex usually attempts an exact match, but sometimes an approximate, or &quot;fuzzy&quot;, match is needed, for those cases where the text being searched may contain errors in the form of inserted, deleted or substituted characters.</p>
 <p>A fuzzy regex specifies which types of errors are permitted, and, optionally, either the minimum and maximum or only the maximum permitted number of each type. (You cannot specify only a minimum.)</p>
 <p>The 3 types of error are:</p>
@@ -897,7 +897,7 @@ ul.auto-toc {
 </pre>
 </div>
 <div class="section" id="named-lists-hg-issue-11">
-<h2>Named lists (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/11">Hg issue 11</a>)</h2>
+<h2>Named lists (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/11">Hg issue 11</a>)</h2>
 <p><tt class="docutils literal">\L&lt;name&gt;</tt></p>
 <p>There are occasions where you may want to include a list (actually, a set) of options in a regex.</p>
 <p>One way is to build the pattern like this:</p>
@@ -979,7 +979,7 @@ ul.auto-toc {
 </pre>
 </div>
 <div class="section" id="regex-escape-hg-issue-249">
-<h2>regex.escape (<a class="reference external" href="https://bitbucket.org/mrabarnett/mrab-regex/issues/249">Hg issue 249</a>)</h2>
+<h2>regex.escape (<a class="reference external" href="https://github.com/mrabarnett/mrab-regex/issues/249">Hg issue 249</a>)</h2>
 <p>regex.escape has an additional keyword parameter <tt class="docutils literal">literal_spaces</tt>. When True, spaces are not escaped.</p>
 <p>Examples:</p>
 <pre class="code python literal-block">
