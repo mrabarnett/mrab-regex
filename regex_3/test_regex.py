@@ -4308,6 +4308,12 @@ thing
         self.assertEqual(m.fuzzy_counts, (2, 0, 0))
         self.assertEqual(m.fuzzy_changes, ([24, 25], [], []))
 
+        # Git issue 435: Unmatched groups: sub vs subf
+        self.assertEqual(regex.sub(r'(test1)|(test2)', r'matched: \1\2', 'test1'), 'matched: test1')
+        self.assertEqual(regex.subf(r'(test1)|(test2)', r'matched: {1}{2}', 'test1'), 'matched: test1')
+        self.assertEqual(regex.search(r'(test1)|(test2)', 'matched: test1').expand(r'matched: \1\2'), 'matched: test1'),
+        self.assertEqual(regex.search(r'(test1)|(test2)', 'matched: test1').expandf(r'matched: {1}{2}'), 'matched: test1')
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

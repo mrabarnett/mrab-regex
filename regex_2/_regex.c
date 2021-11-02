@@ -21063,11 +21063,17 @@ static void capture_dealloc(PyObject* self_) {
 static PyObject* capture_str(PyObject* self_) {
     CaptureObject* self;
     MatchObject* match;
+    PyObject* default_value;
+    PyObject* result;
 
     self = (CaptureObject*)self_;
     match = *self->match_indirect;
 
-    return match_get_group_by_index(match, self->group_index, Py_None);
+    default_value = PySequence_GetSlice(match->string, 0, 0);
+    result = match_get_group_by_index(match, self->group_index, default_value);
+    Py_DECREF(default_value);
+
+    return result;
 }
 
 static PyMemberDef splitter_members[] = {
