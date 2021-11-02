@@ -24936,11 +24936,6 @@ Py_LOCAL_INLINE(BOOL) section_contains_repeat(RE_CODE** code, RE_CODE*
     return FALSE;
 }
 
-/* Checks whether a section of code contains a repeat. */
-Py_LOCAL_INLINE(BOOL) contains_repeat(RE_CODE* code, RE_CODE* end_code) {
-    return section_contains_repeat(&code, end_code);
-}
-
 /* Builds a REPEAT node. */
 Py_LOCAL_INLINE(int) build_REPEAT(RE_CompileArgs* args) {
     BOOL greedy;
