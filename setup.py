@@ -15,6 +15,7 @@ setup(
     version='2021.11.1',
     description='Alternative regular expression module, to replace re.',
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     author='Matthew Barnett',
     author_email='regex@mrabarnett.plus.com',
     url='https://github.com/mrabarnett/mrab-regex',

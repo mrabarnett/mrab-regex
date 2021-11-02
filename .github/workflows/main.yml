@@ -2,7 +2,7 @@
 name: cibuildwheel
 
 # Build on every branch push, tag push, and pull request change.
-on: [push, pull_request]
+on: [push]
 
 env:
   CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp39-* cp310-*
