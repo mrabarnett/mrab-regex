@@ -4145,6 +4145,10 @@ thing
         self.assertEqual(regex.search(r'(test1)|(test2)', 'matched: test1').expand(r'matched: \1\2'), 'matched: test1'),
         self.assertEqual(regex.search(r'(test1)|(test2)', 'matched: test1').expandf(r'matched: {1}{2}'), 'matched: test1')
 
+        # Git issue 442: Fuzzy regex matching doesn't seem to test insertions correctly
+        self.assertEqual(regex.search(r"(?:\bha\b){i:[ ]}", "having"), None)
+        self.assertEqual(regex.search(r"(?:\bha\b){i:[ ]}", "having", flags=regex.I), None)
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

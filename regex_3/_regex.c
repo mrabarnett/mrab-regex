@@ -10281,7 +10281,7 @@ Py_LOCAL_INLINE(int) retry_fuzzy_insert(RE_State* state, RE_Node** node) {
 
     if (state->text_pos == limit || !insertion_permitted(state,
       state->fuzzy_node, state->fuzzy_counts) || !fuzzy_ext_match(state,
-      curr_node->nonstring.next_2.node, state->text_pos)) {
+      state->fuzzy_node, state->text_pos)) {
         while (count > 0) {
             unrecord_fuzzy(state);
             --state->fuzzy_counts[RE_FUZZY_INS];

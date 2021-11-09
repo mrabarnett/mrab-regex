@@ -452,7 +452,7 @@ def parse_sequence(source, info):
                     sequence.append(None)
                 else:
                     # It's not a quantifier. Maybe it's a fuzzy constraint.
-                    constraints = parse_fuzzy(source, info, ch)
+                    constraints = parse_fuzzy(source, info, ch, case_flags)
                     if constraints:
                         # It _is_ a fuzzy constraint.
                         apply_constraint(source, info, constraints, case_flags,
@@ -569,7 +569,7 @@ def parse_limited_quantifier(source):
 
     return min_count, max_count
 
-def parse_fuzzy(source, info, ch):
+def parse_fuzzy(source, info, ch, case_flags):
     "Parses a fuzzy setting, if present."
     saved_pos = source.pos
 
@@ -586,7 +586,7 @@ def parse_fuzzy(source, info, ch):
         return None
 
     if source.match(":"):
-        constraints["test"] = parse_fuzzy_test(source, info)
+        constraints["test"] = parse_fuzzy_test(source, info, case_flags)
 
     if not source.match("}"):
         raise error("expected }", source.string, source.pos)
@@ -734,7 +734,7 @@ def parse_cost_term(source, cost):
 
     cost[ch] = int(coeff or 1)
 
-def parse_fuzzy_test(source, info):
+def parse_fuzzy_test(source, info, case_flags):
     saved_pos = source.pos
     ch = source.get()
     if ch in SPECIAL_CHARS:
