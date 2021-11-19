@@ -128,7 +128,7 @@ jobs:
   # Upload to PyPI
   upload_pypi:
     name: Publish to PyPI
-    needs: [build_wheels, build_in_manylinux2010, build_arch_wheels]
+    needs: [run_test, build_wheels, build_in_manylinux2010, build_arch_wheels]
     runs-on: ubuntu-latest
 
     steps:
