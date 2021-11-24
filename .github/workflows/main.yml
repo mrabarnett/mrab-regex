@@ -5,8 +5,7 @@ name: cibuildwheel
 on: [push]
 
 env:
-  CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp39-* cp310-*
-  CIBW_SKIP: "*musllinux*"
+  CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-*
   CIBW_TEST_COMMAND: python -m unittest regex.test_regex
 
 jobs:
