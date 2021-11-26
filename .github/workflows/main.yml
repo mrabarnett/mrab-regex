@@ -102,9 +102,11 @@ jobs:
     strategy:
       matrix:
         arch: [aarch64, ppc64le, s390x]
+        skip_image: ["*musllinux*", "*manylinux*"]
 
     env:
       CIBW_ARCHS: ${{ matrix.arch }}
+      CIBW_SKIP:  ${{ matrix.skip_image }}
 
     steps:
       - uses: actions/checkout@v2
