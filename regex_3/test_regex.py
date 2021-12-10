@@ -4274,10 +4274,10 @@ thing
           'tes5t').fuzzy_changes, ([], [3], []))
 
         # Git issue 421: Fatal Python error: Segmentation fault
-        self.assertEqual(regex.compile("(\d+ week|\d+ days)").split("7 days"), ['', '7 days', ''])
-        self.assertEqual(regex.compile("(\d+ week|\d+ days)").split("10 days"), ['', '10 days', ''])
+        self.assertEqual(regex.compile(r"(\d+ week|\d+ days)").split("7 days"), ['', '7 days', ''])
+        self.assertEqual(regex.compile(r"(\d+ week|\d+ days)").split("10 days"), ['', '10 days', ''])
 
-        self.assertEqual(regex.compile("[ ]* Name[ ]*\* ").search("  Name *"), None)
+        self.assertEqual(regex.compile(r"[ ]* Name[ ]*\* ").search("  Name *"), None)
 
         self.assertEqual(regex.compile('a|\\.*pb\\.py').search('.geojs'), None)
 
