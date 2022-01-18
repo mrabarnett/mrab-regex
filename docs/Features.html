@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<title>Features.rst</title>
+<title>README.rst</title>
 <style type="text/css">
 
 /*
@@ -913,10 +913,7 @@ ul.auto-toc {
 <p>The order of the items is irrelevant, they are treated as a set. The named lists are available as the <tt class="docutils literal">.named_lists</tt> attribute of the pattern object :</p>
 <pre class="code python literal-block">
 <span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">print</span><span class="punctuation">(</span><span class="name">p</span><span class="operator">.</span><span class="name">named_lists</span><span class="punctuation">)</span>
-<span class="comment single"># Python 3</span>
 <span class="punctuation">{</span><span class="literal string single">'options'</span><span class="punctuation">:</span> <span class="name builtin">frozenset</span><span class="punctuation">({</span><span class="literal string single">'fifth'</span><span class="punctuation">,</span> <span class="literal string single">'first'</span><span class="punctuation">,</span> <span class="literal string single">'fourth'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">,</span> <span class="literal string single">'third'</span><span class="punctuation">})}</span>
-<span class="comment single"># Python 2</span>
-<span class="punctuation">{</span><span class="literal string single">'options'</span><span class="punctuation">:</span> <span class="name builtin">frozenset</span><span class="punctuation">([</span><span class="literal string single">'fifth'</span><span class="punctuation">,</span> <span class="literal string single">'fourth'</span><span class="punctuation">,</span> <span class="literal string single">'second'</span><span class="punctuation">,</span> <span class="literal string single">'third'</span><span class="punctuation">,</span> <span class="literal string single">'first'</span><span class="punctuation">])}</span>
 </pre>
 <p>If there are any unused keyword arguments, <tt class="docutils literal">ValueError</tt> will be raised unless you tell it otherwise:</p>
 <pre class="code python literal-block">
