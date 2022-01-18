@@ -1,6 +1,3 @@
-include regex_2/*.c
-include regex_2/*.h
-include regex_2/*.py
 include regex_3/*.c
 include regex_3/*.h
 include regex_3/*.py

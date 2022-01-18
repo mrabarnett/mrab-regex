@@ -701,10 +701,7 @@ The order of the items is irrelevant, they are treated as a set. The named lists
 .. sourcecode:: python
 
   >>> print(p.named_lists)
-  # Python 3
   {'options': frozenset({'fifth', 'first', 'fourth', 'second', 'third'})}
-  # Python 2
-  {'options': frozenset(['fifth', 'fourth', 'second', 'third', 'first'])}
 
 If there are any unused keyword arguments, ``ValueError`` will be raised unless you tell it otherwise:
 

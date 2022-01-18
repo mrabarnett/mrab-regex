@@ -2479,10 +2479,9 @@ xyzabc
                             group_list.append(group)
 
                 if excval is not None:
-                    if (sys.version_info.major, sys.version_info.minor) >= (3, 4):
-                        with self.subTest(pattern=pattern, string=string):
-                            self.assertRaisesRegex(expected, excval, regex.search,
-                              pattern, string)
+                    with self.subTest(pattern=pattern, string=string):
+                        self.assertRaisesRegex(expected, excval, regex.search,
+                          pattern, string)
                 else:
                     m = regex.search(pattern, string)
                     if m:
@@ -2975,10 +2974,6 @@ xyzabc
           endpos=4)), True)
 
     def test_issue_18468(self):
-        # Applies only after Python 3.4 for compatibility with re.
-        if (sys.version_info.major, sys.version_info.minor) < (3, 4):
-            return
-
         self.assertTypedEqual(regex.sub('y', 'a', 'xyz'), 'xaz')
         self.assertTypedEqual(regex.sub('y', StrSubclass('a'),
           StrSubclass('xyz')), 'xaz')
@@ -4440,10 +4435,6 @@ thing
               'a::bc')], [(0, 0), (1, 1), (1, 3), (3, 3), (5, 5)])
             self.assertEqual([m.span() for m in regex.finditer(r'(?m)^\s*?$',
               'foo\n\n\nbar')], [(4, 4), (4, 5), (5, 5)])
-
-if sys.version_info < (3, 2, 0):
-    # In Python 3.1 it's called assertRaisesRegexp.
-    RegexTests.assertRaisesRegex = RegexTests.assertRaisesRegexp
 
 def test_main():
     unittest.main(verbosity=2)

@@ -14,7 +14,6 @@
 # 2010-01-16 mrab Python front-end re-written and extended
 
 import string
-import sys
 import unicodedata
 from collections import defaultdict
 

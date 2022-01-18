@@ -18542,7 +18542,6 @@ static void match_dealloc(PyObject* self_) {
     PyObject_DEL(self);
 }
 
-#if PY_VERSION_HEX >= 0x03040000
 /* Ensures that the string is the immutable Unicode string or bytestring.
  * DECREFs the original string if a copy is returned.
  */
@@ -18562,7 +18561,6 @@ Py_LOCAL_INLINE(PyObject*) ensure_immutable(PyObject* string) {
     return new_string;
 }
 
-#endif
 /* Restricts a value to a range. */
 Py_LOCAL_INLINE(Py_ssize_t) limited_range(Py_ssize_t value, Py_ssize_t lower,
   Py_ssize_t upper) {
@@ -18613,11 +18611,7 @@ Py_LOCAL_INLINE(PyObject*) get_slice(PyObject* string, Py_ssize_t start,
     if (PyBytes_Check(string))
         return bytes_slice(string, start, end);
 
-#if PY_VERSION_HEX >= 0x03040000
     return ensure_immutable(PySequence_GetSlice(string, start, end));
-#else
-    return PySequence_GetSlice(string, start, end);
-#endif
 }
 
 /* Gets a MatchObject's group by integer index. */
@@ -19336,7 +19330,6 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
 
     if (PyUnicode_Check(item) || PyBytes_Check(item)) {
         /* It's a literal, which can be added directly to the list. */
-#if PY_VERSION_HEX >= 0x03040000
 
         /* ensure_immutable will DECREF the original item if it has to make an
          * immutable copy, but that original item might have a borrowed
@@ -19345,9 +19338,6 @@ Py_LOCAL_INLINE(PyObject*) get_match_replacement(MatchObject* self, PyObject*
          */
         Py_INCREF(item);
         item = ensure_immutable(item);
-#else
-        Py_INCREF(item);
-#endif
         return item;
     }
 
@@ -19400,11 +19390,7 @@ Py_LOCAL_INLINE(int) add_to_join_list(RE_JoinInfo* join_info, PyObject* item) {
     int status;
 
     if (join_info->is_unicode) {
-#if PY_VERSION_HEX >= 0x03040000
         if (PyUnicode_CheckExact(item)) {
-#else
-        if (PyUnicode_Check(item)) {
-#endif
             new_item = item;
             Py_INCREF(new_item);
         } else {
@@ -19415,11 +19401,7 @@ Py_LOCAL_INLINE(int) add_to_join_list(RE_JoinInfo* join_info, PyObject* item) {
             }
         }
     } else {
-#if PY_VERSION_HEX >= 0x03040000
         if (PyBytes_CheckExact(item)) {
-#else
-        if (PyBytes_Check(item)) {
-#endif
             new_item = item;
             Py_INCREF(new_item);
         } else {
@@ -21389,7 +21371,6 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
 
     if (PyUnicode_CheckExact(item) || PyBytes_CheckExact(item)) {
         /* It's a literal, which can be added directly to the list. */
-#if PY_VERSION_HEX >= 0x03040000
 
         /* ensure_immutable will DECREF the original item if it has to make an
          * immutable copy, but that original item might have a borrowed
@@ -21398,9 +21379,6 @@ Py_LOCAL_INLINE(PyObject*) get_sub_replacement(PyObject* item, PyObject*
          */
         Py_INCREF(item);
         item = ensure_immutable(item);
-#else
-        Py_INCREF(item);
-#endif
         return item;
     }
 

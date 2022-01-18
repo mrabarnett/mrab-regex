@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 from setuptools import setup, Extension
 from os.path import join
-import sys
-
-MAJOR, MINOR = sys.version_info[:2]
-
-SRC_BASE = 'regex_%i' % MAJOR
 
 with open('README.rst') as file:
     long_description = file.read()
@@ -37,9 +32,9 @@ setup(
         'Topic :: Text Processing :: General',
     ],
 
-    package_dir={'regex': SRC_BASE},
+    package_dir={'regex': 'regex_3'},
     py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core',
      'regex.test_regex'],
-    ext_modules=[Extension('regex._regex', [join(SRC_BASE, '_regex.c'),
-      join(SRC_BASE, '_regex_unicode.c')])],
+    ext_modules=[Extension('regex._regex', [join('regex_3', '_regex.c'),
+      join('regex_3', '_regex_unicode.c')])],
 )
