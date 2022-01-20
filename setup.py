@@ -31,6 +31,7 @@ setup(
         'Topic :: Text Processing',
         'Topic :: Text Processing :: General',
     ],
+    python_requires='>=3.6',
 
     package_dir={'regex': 'regex_3'},
     py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core',
