@@ -13,6 +13,7 @@
 #
 # 2010-01-16 mrab Python front-end re-written and extended
 
+import enum
 import string
 import unicodedata
 from collections import defaultdict
@@ -23,7 +24,7 @@ __all__ = ["A", "ASCII", "B", "BESTMATCH", "D", "DEBUG", "E", "ENHANCEMATCH",
   "F", "FULLCASE", "I", "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "P",
   "POSIX", "R", "REVERSE", "S", "DOTALL", "T", "TEMPLATE", "U", "UNICODE",
   "V0", "VERSION0", "V1", "VERSION1", "W", "WORD", "X", "VERBOSE", "error",
-  "Scanner"]
+  "Scanner", "RegexFlag"]
 
 # The regex exception.
 class error(Exception):
@@ -69,24 +70,58 @@ class _FirstSetError(Exception):
     pass
 
 # Flags.
-A = ASCII = 0x80          # Assume ASCII locale.
-B = BESTMATCH = 0x1000    # Best fuzzy match.
-D = DEBUG = 0x200         # Print parsed pattern.
-E = ENHANCEMATCH = 0x8000 # Attempt to improve the fit after finding the first
-                          # fuzzy match.
-F = FULLCASE = 0x4000     # Unicode full case-folding.
-I = IGNORECASE = 0x2      # Ignore case.
-L = LOCALE = 0x4          # Assume current 8-bit locale.
-M = MULTILINE = 0x8       # Make anchors look for newline.
-P = POSIX = 0x10000       # POSIX-style matching (leftmost longest).
-R = REVERSE = 0x400       # Search backwards.
-S = DOTALL = 0x10         # Make dot match newline.
-U = UNICODE = 0x20        # Assume Unicode locale.
-V0 = VERSION0 = 0x2000    # Old legacy behaviour.
-V1 = VERSION1 = 0x100     # New enhanced behaviour.
-W = WORD = 0x800          # Default Unicode word breaks.
-X = VERBOSE = 0x40        # Ignore whitespace and comments.
-T = TEMPLATE = 0x1        # Template (present because re module has it).
+class RegexFlag(enum.IntFlag):
+    A = ASCII = 0x80          # Assume ASCII locale.
+    B = BESTMATCH = 0x1000    # Best fuzzy match.
+    D = DEBUG = 0x200         # Print parsed pattern.
+    E = ENHANCEMATCH = 0x8000 # Attempt to improve the fit after finding the first
+                              # fuzzy match.
+    F = FULLCASE = 0x4000     # Unicode full case-folding.
+    I = IGNORECASE = 0x2      # Ignore case.
+    L = LOCALE = 0x4          # Assume current 8-bit locale.
+    M = MULTILINE = 0x8       # Make anchors look for newline.
+    P = POSIX = 0x10000       # POSIX-style matching (leftmost longest).
+    R = REVERSE = 0x400       # Search backwards.
+    S = DOTALL = 0x10         # Make dot match newline.
+    U = UNICODE = 0x20        # Assume Unicode locale.
+    V0 = VERSION0 = 0x2000    # Old legacy behaviour.
+    V1 = VERSION1 = 0x100     # New enhanced behaviour.
+    W = WORD = 0x800          # Default Unicode word breaks.
+    X = VERBOSE = 0x40        # Ignore whitespace and comments.
+    T = TEMPLATE = 0x1        # Template (present because re module has it).
+
+    def __repr__(self):
+        if self._name_ is not None:
+            return 'regex.%s' % self._name_
+
+        value = self._value_
+        members = []
+        negative = value < 0
+
+        if negative:
+            value = ~value
+
+        for m in self.__class__:
+            if value & m._value_:
+                value &= ~m._value_
+                members.append('regex.%s' % m._name_)
+
+        if value:
+            members.append(hex(value))
+
+        res = '|'.join(members)
+
+        if negative:
+            if len(members) > 1:
+                res = '~(%s)' % res
+            else:
+                res = '~%s' % res
+
+        return res
+
+    __str__ = object.__str__
+
+globals().update(RegexFlag.__members__)
 
 DEFAULT_VERSION = VERSION1
 

@@ -8,6 +8,11 @@ Note
 
 The re module's behaviour with zero-width matches changed in Python 3.7, and this module will follow that behaviour when compiled for Python 3.7.
 
+Python 2
+--------
+
+Python 2 is no longer supported. The last release that supported Python 2 was 2021.11.10.
+
 PyPy
 ----
 

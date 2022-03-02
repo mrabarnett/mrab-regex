@@ -239,9 +239,9 @@ __all__ = ["cache_all", "compile", "DEFAULT_VERSION", "escape", "findall",
   "FULLCASE", "I", "IGNORECASE", "L", "LOCALE", "M", "MULTILINE", "P", "POSIX",
   "R", "REVERSE", "T", "TEMPLATE", "U", "UNICODE", "V0", "VERSION0", "V1",
   "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex", "__version__",
-  "__doc__"]
+  "__doc__", "RegexFlag"]
 
-__version__ = "2.5.110"
+__version__ = "2.5.111"
 
 # --------------------------------------------------------------------
 # Public interface.
