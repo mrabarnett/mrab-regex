@@ -21721,7 +21721,9 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                 goto error;
 
             /* Add the result to the list. */
-            status = add_to_join_list(&join_info, item);
+            if (item != Py_None)
+                status = add_to_join_list(&join_info, item);
+
             Py_DECREF(item);
             if (status < 0)
                 goto error;

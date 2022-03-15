@@ -1255,7 +1255,7 @@ def parse_escape(source, info, in_set):
         if value:
             return Character(ord(value))
 
-        return make_character(info, ord(ch), in_set)
+        raise error("bad escape \\%s" % ch, source.string, source.pos)
     elif ch in DIGITS:
         # A numeric escape sequence.
         return parse_numeric_escape(source, info, ch, in_set)
@@ -1733,7 +1733,7 @@ def _compile_replacement(source, pattern, is_unicode):
             if value is not None:
                 return False, [value]
 
-        return False, [ord("\\"), ord(ch)]
+        raise error("bad escape \\%s" % ch, source.string, source.pos)
 
     if isinstance(source.sep, bytes):
         octal_mask = 0xFF

@@ -95,8 +95,7 @@ class RegexTests(unittest.TestCase):
           'xxxx')
         self.assertEqual(regex.sub('(?P<unk>x)', r'\g<1>\g<1>', 'xx'), 'xxxx')
 
-        self.assertEqual(regex.sub('a', r'\t\n\v\r\f\a\b\B\Z\a\A\w\W\s\S\d\D',
-          'a'), "\t\n\v\r\f\a\b\\B\\Z\a\\A\\w\\W\\s\\S\\d\\D")
+        self.assertEqual(regex.sub('a', r'\t\n\v\r\f\a\b', 'a'), "\t\n\v\r\f\a\b")
         self.assertEqual(regex.sub('a', '\t\n\v\r\f\a', 'a'), "\t\n\v\r\f\a")
         self.assertEqual(regex.sub('a', '\t\n\v\r\f\a', 'a'), chr(9) + chr(10)
           + chr(11) + chr(13) + chr(12) + chr(7))
@@ -110,11 +109,6 @@ class RegexTests(unittest.TestCase):
           "x"), "A")
 
         self.assertEqual(regex.sub(br"x", br"\x0A", b"x"), b"\n")
-        self.assertEqual(regex.sub(br"x", br"\u000A", b"x"), b"\\u000A")
-        self.assertEqual(regex.sub(br"x", br"\U0000000A", b"x"),
-          b"\\U0000000A")
-        self.assertEqual(regex.sub(br"x", br"\N{LATIN CAPITAL LETTER A}",
-          b"x"), b"\\N{LATIN CAPITAL LETTER A}")
 
     def test_bug_449964(self):
         # Fails for group followed by other escape.
@@ -1801,8 +1795,6 @@ class RegexTests(unittest.TestCase):
               ascii('\a\b\f\n\r\t\v')),
             (r'[\a][\b][\f][\n][\r][\t][\v]', '\a\b\f\n\r\t\v', '0',
               ascii('\a\b\f\n\r\t\v')),
-            (r'\c\e\g\i\j\k\o\p\q\y\z', 'cegijkopqyz', '0',
-              ascii('cegijkopqyz')),
             (r'\xff', '\377', '0', ascii(chr(255))),
 
             # New \x semantics.
@@ -2495,8 +2487,8 @@ xyzabc
                     self.assertEqual(actual, expected)
 
     def test_replacement(self):
-        self.assertEqual(regex.sub(r"test\?", "result\\?\\.\a\\q\\m\n", "test?"),
-          "result\\?\\.\a\\q\\m\n")
+        self.assertEqual(regex.sub(r"test\?", "result\\?\\.\a\n", "test?"),
+          "result\\?\\.\a\n")
 
         self.assertEqual(regex.sub('(.)', r"\1\1", 'x'), 'xx')
         self.assertEqual(regex.sub('(.)', regex.escape(r"\1\1"), 'x'), r"\1\1")
