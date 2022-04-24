@@ -98,9 +98,9 @@ Flags
 
 There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.
 
-The scoped flags are: ``FULLCASE``, ``IGNORECASE``, ``MULTILINE``, ``DOTALL``, ``VERBOSE``, ``WORD``.
+The scoped flags are: ``ASCII``, ``FULLCASE``, ``IGNORECASE``, ``LOCALE``, ``MULTILINE``, ``DOTALL``, ``UNICODE``, ``VERBOSE``, ``WORD``.
 
-The global flags are: ``ASCII``, ``BESTMATCH``, ``ENHANCEMATCH``, ``LOCALE``, ``POSIX``, ``REVERSE``, ``UNICODE``, ``VERSION0``, ``VERSION1``.
+The global flags are: ``BESTMATCH``, ``ENHANCEMATCH``, ``POSIX``, ``REVERSE``, ``VERSION0``, ``VERSION1``.
 
 If neither the ``ASCII``, ``LOCALE`` nor ``UNICODE`` flag is specified, it will default to ``UNICODE`` if the regex pattern is a Unicode string and ``ASCII`` if it's a bytestring.
 
@@ -613,9 +613,9 @@ Examples:
 
 * ``{s<=2,i<=3:\d}`` at most 2 substitutions, at most 3 insertions, which must be digits.
 
-By default, fuzzy matching searches for the first match that meets the given constraints. The ``ENHANCEMATCH`` flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
+By default, fuzzy matching searches for the first match that meets the given constraints. The ``ENHANCEMATCH`` flag (``(?e)`` in the pattern) will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.
 
-The ``BESTMATCH`` flag will make it search for the best match instead.
+The ``BESTMATCH`` flag (``(?b)`` in the pattern) will make it search for the best match instead.
 
 Further examples to note:
 

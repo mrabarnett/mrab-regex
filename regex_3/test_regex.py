@@ -4309,6 +4309,10 @@ thing
         self.assertEqual(regex.search(r"(?:\bha\b){i:[ ]}", "having"), None)
         self.assertEqual(regex.search(r"(?:\bha\b){i:[ ]}", "having", flags=regex.I), None)
 
+        # Git issue 467: Scoped inline flags 'a', 'u' and 'L' affect global flags
+        self.assertEqual(regex.match(r'(?a:\w)\w', 'd\N{CYRILLIC SMALL LETTER ZHE}').span(), (0, 2))
+        self.assertEqual(regex.match(r'(?a:\w)(?u:\w)', 'd\N{CYRILLIC SMALL LETTER ZHE}').span(), (0, 2))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

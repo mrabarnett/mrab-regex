@@ -442,8 +442,8 @@ ul.auto-toc {
 <div class="section" id="flags">
 <h1>Flags</h1>
 <p>There are 2 kinds of flag: scoped and global. Scoped flags can apply to only part of a pattern and can be turned on or off; global flags apply to the entire pattern and can only be turned on.</p>
-<p>The scoped flags are: <tt class="docutils literal">FULLCASE</tt>, <tt class="docutils literal">IGNORECASE</tt>, <tt class="docutils literal">MULTILINE</tt>, <tt class="docutils literal">DOTALL</tt>, <tt class="docutils literal">VERBOSE</tt>, <tt class="docutils literal">WORD</tt>.</p>
-<p>The global flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">BESTMATCH</tt>, <tt class="docutils literal">ENHANCEMATCH</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">POSIX</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">VERSION0</tt>, <tt class="docutils literal">VERSION1</tt>.</p>
+<p>The scoped flags are: <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">FULLCASE</tt>, <tt class="docutils literal">IGNORECASE</tt>, <tt class="docutils literal">LOCALE</tt>, <tt class="docutils literal">MULTILINE</tt>, <tt class="docutils literal">DOTALL</tt>, <tt class="docutils literal">UNICODE</tt>, <tt class="docutils literal">VERBOSE</tt>, <tt class="docutils literal">WORD</tt>.</p>
+<p>The global flags are: <tt class="docutils literal">BESTMATCH</tt>, <tt class="docutils literal">ENHANCEMATCH</tt>, <tt class="docutils literal">POSIX</tt>, <tt class="docutils literal">REVERSE</tt>, <tt class="docutils literal">VERSION0</tt>, <tt class="docutils literal">VERSION1</tt>.</p>
 <p>If neither the <tt class="docutils literal">ASCII</tt>, <tt class="docutils literal">LOCALE</tt> nor <tt class="docutils literal">UNICODE</tt> flag is specified, it will default to <tt class="docutils literal">UNICODE</tt> if the regex pattern is a Unicode string and <tt class="docutils literal">ASCII</tt> if it's a bytestring.</p>
 <p>The <tt class="docutils literal">ENHANCEMATCH</tt> flag makes fuzzy matching attempt to improve the fit of the next match that it finds.</p>
 <p>The <tt class="docutils literal">BESTMATCH</tt> flag makes fuzzy matching search for the best match instead of the next match.</p>
@@ -851,8 +851,8 @@ ul.auto-toc {
 <li><tt class="docutils literal"><span class="pre">{s&lt;=2:[a-z]}</span></tt> at most 2 substitutions, which must be in the character set <tt class="docutils literal"><span class="pre">[a-z]</span></tt>.</li>
 <li><tt class="docutils literal"><span class="pre">{s&lt;=2,i&lt;=3:\d}</span></tt> at most 2 substitutions, at most 3 insertions, which must be digits.</li>
 </ul>
-<p>By default, fuzzy matching searches for the first match that meets the given constraints. The <tt class="docutils literal">ENHANCEMATCH</tt> flag will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.</p>
-<p>The <tt class="docutils literal">BESTMATCH</tt> flag will make it search for the best match instead.</p>
+<p>By default, fuzzy matching searches for the first match that meets the given constraints. The <tt class="docutils literal">ENHANCEMATCH</tt> flag (<tt class="docutils literal"><span class="pre">(?e)</span></tt> in the pattern) will cause it to attempt to improve the fit (i.e. reduce the number of errors) of the match that it has found.</p>
+<p>The <tt class="docutils literal">BESTMATCH</tt> flag (<tt class="docutils literal"><span class="pre">(?b)</span></tt> in the pattern) will make it search for the best match instead.</p>
 <p>Further examples to note:</p>
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">regex.search(&quot;(dog){e}&quot;,</span> &quot;cat and <span class="pre">dog&quot;)[1]</span></tt> returns <tt class="docutils literal">&quot;cat&quot;</tt> because that matches <tt class="docutils literal">&quot;dog&quot;</tt> with 3 errors (an unlimited number of errors is permitted).</li>
