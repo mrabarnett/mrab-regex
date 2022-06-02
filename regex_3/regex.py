@@ -241,7 +241,7 @@ __all__ = ["cache_all", "compile", "DEFAULT_VERSION", "escape", "findall",
   "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex", "__version__",
   "__doc__", "RegexFlag"]
 
-__version__ = "2.5.114"
+__version__ = "2.5.115"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -346,9 +346,11 @@ def finditer(pattern, string, flags=0, pos=None, endpos=None, overlapped=False,
     return pat.finditer(string, pos, endpos, overlapped, concurrent, partial,
       timeout)
 
-def compile(pattern, flags=0, ignore_unused=False, **kwargs):
+def compile(pattern, flags=0, ignore_unused=False, cache_pattern=None, **kwargs):
     "Compile a regular expression pattern, returning a pattern object."
-    return _compile(pattern, flags, ignore_unused, kwargs, _cache_all)
+    if cache_pattern is None:
+        cache_pattern = _cache_all
+    return _compile(pattern, flags, ignore_unused, kwargs, cache_pattern)
 
 def purge():
     "Clear the regular expression cache"
