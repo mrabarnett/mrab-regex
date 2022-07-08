@@ -4313,6 +4313,10 @@ thing
         self.assertEqual(regex.match(r'(?a:\w)\w', 'd\N{CYRILLIC SMALL LETTER ZHE}').span(), (0, 2))
         self.assertEqual(regex.match(r'(?a:\w)(?u:\w)', 'd\N{CYRILLIC SMALL LETTER ZHE}').span(), (0, 2))
 
+        # Git issue 473: Emoji classified as letter
+        self.assertEqual(regex.match(r'^\p{LC}+$', '\N{SMILING CAT FACE WITH OPEN MOUTH}'), None)
+        self.assertEqual(regex.match(r'^\p{So}+$', '\N{SMILING CAT FACE WITH OPEN MOUTH}').span(), (0, 1))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

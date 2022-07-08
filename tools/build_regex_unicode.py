@@ -1398,7 +1398,7 @@ def generate_code(unicode_data, tools_folder):
             val_list = list(unique(property['values'].values(), key=id))
 
             for value in sorted(val_list, key=lambda val: val['id']):
-                valueset.append(tuple(value['names']))
+                valueset.append((value['id'], tuple(value['names'])))
 
             valueset_id = valueset_dict.setdefault(tuple(valueset),
               len(valueset_dict))
@@ -1477,10 +1477,10 @@ RE_PropertyValue re_property_values[] = {
 
         for valset, valset_id in sorted(valueset_dict.items(), key=lambda pair:
           pair[1]):
-            if valset_id == gc_valset_id:
-                valset = sorted(valset, key=make_key)
+            for val_id, names in valset:
+                if valset_id == gc_valset_id:
+                    names = sorted(names, key=make_key)
 
-            for val_id, names in enumerate(valset):
                 for name in names:
                     c_file.write('''    {{{:4}, {:2}, {:3}}}, /* {} */\n'''.format(strings_dict[munge(name)],
                       valset_id, val_id, munge(name)))

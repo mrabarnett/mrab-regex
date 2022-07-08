@@ -2451,9 +2451,9 @@ RE_PropertyValue re_property_values[] = {
     {1226,  6,  36}, /* SEPARATOR */
     {1455,  6,  36}, /* Z */
     {1456,  6,  36}, /* Z& */
-    { 317,  6,  37}, /* CASEDLETTER */
-    { 820,  6,  37}, /* LC */
-    { 224,  6,  38}, /* ASSIGNED */
+    { 224,  6,  37}, /* ASSIGNED */
+    { 317,  6,  38}, /* CASEDLETTER */
+    { 820,  6,  38}, /* LC */
     {1092,  7,   0}, /* OTHER */
     {1439,  7,   0}, /* XX */
     { 445,  7,   1}, /* CONTROL */
