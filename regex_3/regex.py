@@ -241,7 +241,7 @@ __all__ = ["cache_all", "compile", "DEFAULT_VERSION", "escape", "findall",
   "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex", "__version__",
   "__doc__", "RegexFlag"]
 
-__version__ = "2.5.116"
+__version__ = "2.5.117"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -472,6 +472,16 @@ def _compile(pattern, flags, ignore_unused, kwargs, cache_it):
         # This pattern is definitely not locale-sensitive.
         pattern_locale = None
 
+    def complain_unused_args():
+        if ignore_unused:
+            return
+
+        # Complain about any unused keyword arguments, possibly resulting from a typo.
+        unused_kwargs = set(kwargs) - {k for k, v in args_needed}
+        if unused_kwargs:
+            any_one = next(iter(unused_kwargs))
+            raise ValueError('unused keyword argument {!a}'.format(any_one))
+
     if cache_it:
         try:
             # Do we know what keyword arguments are needed?
@@ -486,6 +496,8 @@ def _compile(pattern, flags, ignore_unused, kwargs, cache_it):
                         args_supplied.add((k, frozenset(kwargs[k])))
                     except KeyError:
                         raise error("missing named list: {!r}".format(k))
+
+            complain_unused_args()
 
             args_supplied = frozenset(args_supplied)
 
@@ -597,11 +609,7 @@ def _compile(pattern, flags, ignore_unused, kwargs, cache_it):
         named_list_indexes[index] = items
         args_needed.add((name, values))
 
-    # Any unused keyword arguments, possibly resulting from a typo?
-    unused_kwargs = set(kwargs) - set(named_lists)
-    if unused_kwargs and not ignore_unused:
-        any_one = next(iter(unused_kwargs))
-        raise ValueError('unused keyword argument {!a}'.format(any_one))
+    complain_unused_args()
 
     # Check the features of the groups.
     _check_group_features(info, parsed)

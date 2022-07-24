@@ -4317,6 +4317,10 @@ thing
         self.assertEqual(regex.match(r'^\p{LC}+$', '\N{SMILING CAT FACE WITH OPEN MOUTH}'), None)
         self.assertEqual(regex.match(r'^\p{So}+$', '\N{SMILING CAT FACE WITH OPEN MOUTH}').span(), (0, 1))
 
+        # Git issue 474: regex has no equivalent to `re.Match.groups()` for captures
+        self.assertEqual(regex.match(r'(.)+', 'abc').allcaptures(), (['abc'], ['a', 'b', 'c']))
+        self.assertEqual(regex.match(r'(.)+', 'abc').allspans(), ([(0, 3)], [(0, 1), (1, 2), (2, 3)]))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

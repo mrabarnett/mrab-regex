@@ -379,6 +379,23 @@ Examples:
   >>> m.capturesdict()
   {'word': ['one', 'two', 'three'], 'digits': ['1', '2', '3']}
 
+Added ``allcaptures`` and ``allspans`` (`Git issue 474 <https://github.com/mrabarnett/mrab-regex/issues/474>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``allcaptures`` returns a list of all the captures of all the groups.
+
+``allspans`` returns a list of all the spans of the all captures of all the groups.
+
+Examples:
+
+.. sourcecode:: python
+
+  >>> m = regex.match(r"(?:(?P<word>\w+) (?P<digits>\d+)\n)+", "one 1\ntwo 2\nthree 3\n")
+  >>> m.allcaptures()
+  (['one 1\ntwo 2\nthree 3\n'], ['one', 'two', 'three'], ['1', '2', '3'])
+  >>> m.allspans()
+  ([(0, 20)], [(0, 3), (6, 9), (12, 17)], [(4, 5), (10, 11), (18, 19)])
+
 Allow duplicate names of groups (`Hg issue 87 <https://github.com/mrabarnett/mrab-regex/issues/87>`_)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -706,7 +723,7 @@ The order of the items is irrelevant, they are treated as a set. The named lists
 .. sourcecode:: python
 
   >>> print(p.named_lists)
-  {'options': frozenset({'fifth', 'first', 'fourth', 'second', 'third'})}
+  {'options': frozenset({'third', 'first', 'fifth', 'fourth', 'second'})}
 
 If there are any unused keyword arguments, ``ValueError`` will be raised unless you tell it otherwise:
 
@@ -716,12 +733,24 @@ If there are any unused keyword arguments, ``ValueError`` will be raised unless 
   >>> p = regex.compile(r"\L<options>", options=option_set, other_options=[])
   Traceback (most recent call last):
     File "<stdin>", line 1, in <module>
-    File "C:\Python37\lib\site-packages\regex\regex.py", line 348, in compile
-      return _compile(pattern, flags, ignore_unused, kwargs)
-    File "C:\Python37\lib\site-packages\regex\regex.py", line 585, in _compile
+    File "C:\Python310\lib\site-packages\regex\regex.py", line 353, in compile
+      return _compile(pattern, flags, ignore_unused, kwargs, cache_pattern)
+    File "C:\Python310\lib\site-packages\regex\regex.py", line 500, in _compile
+      complain_unused_args()
+    File "C:\Python310\lib\site-packages\regex\regex.py", line 483, in complain_unused_args
       raise ValueError('unused keyword argument {!a}'.format(any_one))
   ValueError: unused keyword argument 'other_options'
   >>> p = regex.compile(r"\L<options>", options=option_set, other_options=[], ignore_unused=True)
+  >>> p = regex.compile(r"\L<options>", options=option_set, other_options=[], ignore_unused=False)
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "C:\Python310\lib\site-packages\regex\regex.py", line 353, in compile
+      return _compile(pattern, flags, ignore_unused, kwargs, cache_pattern)
+    File "C:\Python310\lib\site-packages\regex\regex.py", line 500, in _compile
+      complain_unused_args()
+    File "C:\Python310\lib\site-packages\regex\regex.py", line 483, in complain_unused_args
+      raise ValueError('unused keyword argument {!a}'.format(any_one))
+  ValueError: unused keyword argument 'other_options'
   >>>
 
 Start and end of word
@@ -1065,6 +1094,6 @@ The matching methods and functions support timeouts. The timeout (in seconds) ap
   >>> regex.sub(r'[a-z]', slow_replace, 'abcde', timeout=2)
   Traceback (most recent call last):
     File "<stdin>", line 1, in <module>
-    File "C:\Python37\lib\site-packages\regex\regex.py", line 276, in sub
-      endpos, concurrent, timeout)
+    File "C:\Python310\lib\site-packages\regex\regex.py", line 278, in sub
+      return pat.sub(repl, string, count, pos, endpos, concurrent, timeout)
   TimeoutError: regex timed out

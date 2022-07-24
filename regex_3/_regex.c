@@ -19146,9 +19146,77 @@ static PyObject* match_spans(MatchObject* self, PyObject* args) {
     return get_from_match(self, args, match_get_spans_by_index);
 }
 
+/* MatchObject's 'allspans' method. */
+static PyObject* match_allspans(MatchObject* self) {
+    PyObject* list;
+    size_t i;
+    PyObject* result;
+
+    list = PyList_New(0);
+    if (!list)
+        return NULL;
+
+    /* Include all the groups, including group 0 (the whole match). */
+    for (i = 0; i <= self->group_count; i++) {
+        PyObject* span;
+        int status;
+
+        span = match_get_spans_by_index(self, i);
+        if (!span)
+            goto error;
+
+        status = PyList_Append(list, span);
+        Py_DECREF(span);
+        if (status < 0)
+            goto error;
+    }
+
+    result = PyList_AsTuple(list);
+    Py_DECREF(list);
+    return result;
+
+error:
+    Py_DECREF(list);
+    return NULL;
+}
+
 /* MatchObject's 'captures' method. */
 static PyObject* match_captures(MatchObject* self, PyObject* args) {
     return get_from_match(self, args, match_get_captures_by_index);
+}
+
+/* MatchObject's 'allcaptures' method. */
+static PyObject* match_allcaptures(MatchObject* self) {
+    PyObject* list;
+    size_t i;
+    PyObject* result;
+
+    list = PyList_New(0);
+    if (!list)
+        return NULL;
+
+    /* Include all the groups, including group 0 (the whole match). */
+    for (i = 0; i <= self->group_count; i++) {
+        PyObject* span;
+        int status;
+
+        span = match_get_captures_by_index(self, i);
+        if (!span)
+            goto error;
+
+        status = PyList_Append(list, span);
+        Py_DECREF(span);
+        if (status < 0)
+            goto error;
+    }
+
+    result = PyList_AsTuple(list);
+    Py_DECREF(list);
+    return result;
+
+error:
+    Py_DECREF(list);
+    return NULL;
 }
 
 /* MatchObject's 'groups' method. */
@@ -19970,6 +20038,10 @@ PyDoc_STRVAR(match_captures_doc,
     there are no arguments, the captures of the whole match is returned.  Group\n\
     0 is the whole match.");
 
+PyDoc_STRVAR(match_allcaptures_doc,
+    "allcaptures() --> list of strings or tuple of list of strings.\n\
+    Return the captures of all the groups of the match and the whole match.");
+
 PyDoc_STRVAR(match_starts_doc,
     "starts([group1, ...]) --> list of ints or tuple of list of ints.\n\
     Return the indices of the starts of the captures of one or more subgroups of\n\
@@ -19995,6 +20067,11 @@ PyDoc_STRVAR(match_spans_doc,
     arguments, the spans of the captures of the whole match is returned.  Group\n\
     0 is the whole match.");
 
+PyDoc_STRVAR(match_allspans_doc,
+    "allspans() --> list of 2-tuple of ints or tuple of list of 2-tuple of ints.\n\
+    Return the spans (a 2-tuple of the indices of the start and end) of all the\n\
+    captures of all the groups of the match and the whole match.");
+
 PyDoc_STRVAR(match_detach_string_doc,
     "detach_string()\n\
     Detaches the target string from the match object. The 'string' attribute\n\
@@ -20016,9 +20093,12 @@ static PyMethodDef match_methods[] = {
     {"expandf", (PyCFunction)match_expandf, METH_O, match_expandf_doc},
     {"captures", (PyCFunction)match_captures, METH_VARARGS,
       match_captures_doc},
+    {"allcaptures", (PyCFunction)match_allcaptures, METH_NOARGS,
+      match_allcaptures_doc},
     {"starts", (PyCFunction)match_starts, METH_VARARGS, match_starts_doc},
     {"ends", (PyCFunction)match_ends, METH_VARARGS, match_ends_doc},
     {"spans", (PyCFunction)match_spans, METH_VARARGS, match_spans_doc},
+    {"allspans", (PyCFunction)match_allspans, METH_NOARGS, match_allspans_doc},
     {"detach_string", (PyCFunction)match_detach_string, METH_NOARGS,
       match_detach_string_doc},
     {"__copy__", (PyCFunction)match_copy, METH_NOARGS},
