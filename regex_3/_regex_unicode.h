@@ -34,9 +34,9 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
 
 #define RE_PROP_GC 0x1E
 #define RE_PROP_CASED 0xA
-#define RE_PROP_UPPERCASE 0x56
-#define RE_PROP_LOWERCASE 0x33
-#define RE_PROP_SCX 0x50
+#define RE_PROP_UPPERCASE 0x57
+#define RE_PROP_LOWERCASE 0x34
+#define RE_PROP_SCX 0x51
 
 #define RE_PROP_C 30
 #define RE_PROP_L 31
@@ -95,16 +95,16 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
 #define RE_PROP_CNTRL 0x1E0001
 #define RE_PROP_DIGIT 0x1E0009
 #define RE_PROP_GRAPH 0x1F0001
-#define RE_PROP_LOWER 0x330001
-#define RE_PROP_PRINT 0x4B0001
-#define RE_PROP_SPACE 0x580001
-#define RE_PROP_UPPER 0x560001
-#define RE_PROP_WORD 0x590001
-#define RE_PROP_XDIGIT 0x5B0001
-#define RE_PROP_POSIX_ALNUM 0x460001
-#define RE_PROP_POSIX_DIGIT 0x470001
-#define RE_PROP_POSIX_PUNCT 0x480001
-#define RE_PROP_POSIX_XDIGIT 0x490001
+#define RE_PROP_LOWER 0x340001
+#define RE_PROP_PRINT 0x4C0001
+#define RE_PROP_SPACE 0x5A0001
+#define RE_PROP_UPPER 0x570001
+#define RE_PROP_WORD 0x5B0001
+#define RE_PROP_XDIGIT 0x5D0001
+#define RE_PROP_POSIX_ALNUM 0x470001
+#define RE_PROP_POSIX_DIGIT 0x480001
+#define RE_PROP_POSIX_PUNCT 0x490001
+#define RE_PROP_POSIX_XDIGIT 0x4A0001
 
 #define RE_WBREAK_OTHER 0
 #define RE_WBREAK_LF 1
@@ -193,11 +193,11 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
 #define RE_LBREAK_REGIONALINDICATOR 41
 #define RE_LBREAK_EMODIFIER 42
 
-extern char* re_strings[1472];
-extern RE_Property re_properties[173];
+extern char* re_strings[1474];
+extern RE_Property re_properties[177];
 extern RE_PropertyValue re_property_values[1619];
 extern RE_UINT16 re_expand_on_folding[104];
-extern RE_GetPropertyFunc re_get_property[94];
+extern RE_GetPropertyFunc re_get_property[96];
 
 RE_UINT32 re_get_alphabetic(RE_UINT32 codepoint);
 RE_UINT32 re_get_alphanumeric(RE_UINT32 codepoint);
@@ -237,6 +237,7 @@ RE_UINT32 re_get_grapheme_extend(RE_UINT32 codepoint);
 RE_UINT32 re_get_grapheme_link(RE_UINT32 codepoint);
 RE_UINT32 re_get_hangul_syllable_type(RE_UINT32 codepoint);
 RE_UINT32 re_get_hex_digit(RE_UINT32 codepoint);
+RE_UINT32 re_get_horiz_space(RE_UINT32 codepoint);
 RE_UINT32 re_get_hyphen(RE_UINT32 codepoint);
 RE_UINT32 re_get_id_continue(RE_UINT32 codepoint);
 RE_UINT32 re_get_ideographic(RE_UINT32 codepoint);
@@ -287,6 +288,7 @@ RE_UINT32 re_get_terminal_punctuation(RE_UINT32 codepoint);
 RE_UINT32 re_get_unified_ideograph(RE_UINT32 codepoint);
 RE_UINT32 re_get_uppercase(RE_UINT32 codepoint);
 RE_UINT32 re_get_variation_selector(RE_UINT32 codepoint);
+RE_UINT32 re_get_vert_space(RE_UINT32 codepoint);
 RE_UINT32 re_get_white_space(RE_UINT32 codepoint);
 RE_UINT32 re_get_word(RE_UINT32 codepoint);
 RE_UINT32 re_get_word_break(RE_UINT32 codepoint);

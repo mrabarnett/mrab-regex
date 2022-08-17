@@ -4321,6 +4321,10 @@ thing
         self.assertEqual(regex.match(r'(.)+', 'abc').allcaptures(), (['abc'], ['a', 'b', 'c']))
         self.assertEqual(regex.match(r'(.)+', 'abc').allspans(), ([(0, 3)], [(0, 1), (1, 2), (2, 3)]))
 
+        # Git issue 477: \v for vertical spacing
+        self.assertEqual(bool(regex.fullmatch(r'\p{HorizSpace}+', '\t \xA0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000')), True)
+        self.assertEqual(bool(regex.fullmatch(r'\p{VertSpace}+', '\n\v\f\r\x85\u2028\u2029')), True)
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

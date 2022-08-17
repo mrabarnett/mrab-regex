@@ -511,6 +511,9 @@ def make_binary_property(properties, names, codepoints):
     for name in names:
         properties[munge(name)] = property
 
+def make_ranges(*values):
+    return Ranges((value, value) for value in values)
+
 def make_additional_properties(unicode_data):
 
     def get_values(prop_name):
@@ -615,6 +618,16 @@ def make_additional_properties(unicode_data):
       (ord('a'), ord('f'))])
 
     make_binary_property(properties, ['Posix_XDigit'], posix_xdigit)
+
+    # Make the 'Horiz_Space' property.
+    horiz_space = make_ranges(0x09, 0x20, 0xA0, 0x1680, 0x180E) | Ranges([(0x2000, 0x200A)]) | make_ranges(0x202F, 0x205F, 0x3000)
+
+    make_binary_property(properties, ['Horiz_Space', 'H'], horiz_space)
+
+    # Make the 'Vert_Space' property.
+    vert_space = Ranges([(0x0A, 0x0D)]) | make_ranges(0x85, 0x2028, 0x2029)
+
+    make_binary_property(properties, ['Vert_Space', 'V'], vert_space)
 
 def preferred(d):
     return munge(d['names'][0])
@@ -1310,7 +1323,7 @@ def generate_code(unicode_data, tools_folder):
     prop_list = list(unique(properties.values(), key=id))
     prop_list.sort(key=preferred)
 
-    unicode_data['property_tablee_count'] = len(properties)
+    unicode_data['property_table_count'] = len(properties)
     unicode_data['property_count'] = len(prop_list)
 
     no_yes_maybe = {
@@ -1680,7 +1693,7 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
         h_file.write('\n')
 
         h_file.write('extern char* re_strings[{}];\n'.format(unicode_data['string_count']))
-        h_file.write('extern RE_Property re_properties[{}];\n'.format(unicode_data['property_tablee_count']))
+        h_file.write('extern RE_Property re_properties[{}];\n'.format(unicode_data['property_table_count']))
         h_file.write('extern RE_PropertyValue re_property_values[{}];\n'.format(unicode_data['valueset_table_count']))
         h_file.write('extern RE_UINT16 re_expand_on_folding[{}];\n'.format(unicode_data['expanded_count']))
         h_file.write('extern RE_GetPropertyFunc re_get_property[{}];\n'.format(unicode_data['property_count']))
