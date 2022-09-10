@@ -5,6 +5,7 @@ name: cibuildwheel
 on: [push]
 
 env:
+  PYTHON_VER: '3.10'  # Python to run test/cibuildwheel
   CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-*
   CIBW_TEST_COMMAND: python -m unittest regex.test_regex
 
@@ -19,8 +20,10 @@ jobs:
         platform: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
 
       - name: Run test
         run: |
@@ -46,8 +49,10 @@ jobs:
       CIBW_ARCHS_MACOS: "x86_64 arm64"
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
 
       - name: Install cibuildwheel & build wheels
         run: |
@@ -55,7 +60,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: regex-files
           path: wheelhouse/*.whl
@@ -72,8 +77,10 @@ jobs:
       CIBW_ARCHS_LINUX: x86_64
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
 
       - name: Build source distribution & wheels
         run: |
@@ -82,13 +89,13 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
 
       - name: Upload source distribution
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: regex-files
           path: dist/*.tar.gz
 
       - name: Upload manylinux1_x86_64 wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: regex-files
           path: wheelhouse/*.whl
@@ -109,11 +116,13 @@ jobs:
       CIBW_SKIP:  ${{ matrix.skip_image }}
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Install cibuildwheel & build wheels
         run: |
@@ -121,7 +130,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
 
       - name: Upload ${{ matrix.arch }} wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: regex-files
           path: wheelhouse/*.whl
@@ -133,7 +142,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: regex-files
           path: dist
@@ -145,3 +154,4 @@ jobs:
           password: ${{ secrets.PYPI_TOKEN }}
           skip_existing: true
           verbose: true
+          print_hash: true
