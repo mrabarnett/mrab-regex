@@ -12273,7 +12273,7 @@ advance:
                  */
 
                 /* Go to the 'false' branch. */
-                node = node->nonstring.next_2.node;
+                node = conditional->nonstring.next_2.node;
             }
             break;
         }

@@ -4325,6 +4325,10 @@ thing
         self.assertEqual(bool(regex.fullmatch(r'\p{HorizSpace}+', '\t \xA0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000')), True)
         self.assertEqual(bool(regex.fullmatch(r'\p{VertSpace}+', '\n\v\f\r\x85\u2028\u2029')), True)
 
+        # Git issue 479: Segmentation fault when using conditional pattern
+        self.assertEqual(regex.match(r'(?(?<=A)|(?(?![^B])C|D))', 'A'), None)
+        self.assertEqual(regex.search(r'(?(?<=A)|(?(?![^B])C|D))', 'A').span(), (1, 1))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
