@@ -5,7 +5,8 @@ name: cibuildwheel
 on: [push]
 
 env:
-  CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-*
+  PYTHON_VER: '3.10'  # Python to run test/cibuildwheel
+  CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-* cp311-*
   CIBW_TEST_COMMAND: python -m unittest regex.test_regex
 
 jobs:
@@ -19,8 +20,10 @@ jobs:
         platform: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
 
       - name: Run test
         run: |
@@ -38,16 +41,14 @@ jobs:
         platform: [ubuntu-latest, macos-latest, windows-latest]
 
     env:
-      # generate manylinux2014_x86_64 wheels
-      CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-      # generate manylinux1_i686 wheels
-      CIBW_MANYLINUX_I686_IMAGE: manylinux2014
       # macOS archs
       CIBW_ARCHS_MACOS: "x86_64 arm64"
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
 
       - name: Install cibuildwheel & build wheels
         run: |
@@ -55,25 +56,41 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: regex-files
           path: wheelhouse/*.whl
 
-  # Build the source distribution & manylinux1_x86_64 wheels.
+  # Build source distribution & manylinux1_x86_64 wheels
+  # These two jobs build:
+  #   1, build_wheels (above): manylinux1_i686 / manylinux2014_x86_64
+  #   2, build_in_manylinux2010 (this): manylinux1_x86_64
+  # manylinux2014_x86_64 wheels use a new memcpy() function
+  # (memcpy@GLIBC_2.14), so the wheels are not compatible with
+  # manylinux1_x86_64 environment. In order to be compatible as
+  # much as possible, this job builds manylinux1_x86_64 wheels.
   build_in_manylinux2010:
     name: Build in manylinux2010 environment
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     env:
-      # generate manylinux1_x86_64 wheels
+      # Generate manylinux1_x86_64 wheels.
+      #     tag         pip      CPython with the pip      glibc
+      # manylinux1     >=8.1.0  3.5.2+, 3.6.0+            2.5  (2006-09-29)
+      # manylinux2010  >=19.0   3.7.3+, 3.8.0+            2.12 (2010-05-03)
+      # manylinux2014  >=19.3   3.7.8+, 3.8.4+, 3.9.0+    2.17 (2012-12-25)
+      # manylinux_x_y  >=20.3   3.8.10+, 3.9.5+, 3.10.0+  x.y
+      # manylinux2010 images EOL on 2022-08-01, it doesn't support cp311.
+      CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-*
       CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
       CIBW_ARCHS_LINUX: x86_64
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
 
       - name: Build source distribution & wheels
         run: |
@@ -82,13 +99,13 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
 
       - name: Upload source distribution
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: regex-files
           path: dist/*.tar.gz
 
       - name: Upload manylinux1_x86_64 wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: regex-files
           path: wheelhouse/*.whl
@@ -102,6 +119,7 @@ jobs:
     strategy:
       matrix:
         arch: [aarch64, ppc64le, s390x]
+        # Building in QEMU is very slow, so parallelize the tasks.
         skip_image: ["*musllinux*", "*manylinux*"]
 
     env:
@@ -109,11 +127,13 @@ jobs:
       CIBW_SKIP:  ${{ matrix.skip_image }}
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Install cibuildwheel & build wheels
         run: |
@@ -121,7 +141,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
 
       - name: Upload ${{ matrix.arch }} wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: regex-files
           path: wheelhouse/*.whl
@@ -133,15 +153,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: regex-files
           path: dist
 
       - name: Upload to PyPI
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
           skip_existing: true
           verbose: true
+          print_hash: true
