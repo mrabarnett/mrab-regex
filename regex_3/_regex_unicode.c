@@ -1,4 +1,4 @@
-/* For Unicode version 14.0.0 */
+/* For Unicode version 15.0.0 */
 
 #include "_regex_unicode.h"
 
@@ -227,8 +227,10 @@ char* re_strings[] = {
     "ARABIC",
     "ARABICEXTA",
     "ARABICEXTB",
+    "ARABICEXTC",
     "ARABICEXTENDEDA",
     "ARABICEXTENDEDB",
+    "ARABICEXTENDEDC",
     "ARABICLETTER",
     "ARABICMATH",
     "ARABICMATHEMATICALALPHABETICSYMBOLS",
@@ -415,6 +417,7 @@ char* re_strings[] = {
     "CJKEXTE",
     "CJKEXTF",
     "CJKEXTG",
+    "CJKEXTH",
     "CJKRADICALSSUP",
     "CJKRADICALSSUPPLEMENT",
     "CJKSTROKES",
@@ -428,6 +431,7 @@ char* re_strings[] = {
     "CJKUNIFIEDIDEOGRAPHSEXTENSIONE",
     "CJKUNIFIEDIDEOGRAPHSEXTENSIONF",
     "CJKUNIFIEDIDEOGRAPHSEXTENSIONG",
+    "CJKUNIFIEDIDEOGRAPHSEXTENSIONH",
     "CL",
     "CLOSE",
     "CLOSEPARENTHESIS",
@@ -495,9 +499,11 @@ char* re_strings[] = {
     "CYRILLICEXTA",
     "CYRILLICEXTB",
     "CYRILLICEXTC",
+    "CYRILLICEXTD",
     "CYRILLICEXTENDEDA",
     "CYRILLICEXTENDEDB",
     "CYRILLICEXTENDEDC",
+    "CYRILLICEXTENDEDD",
     "CYRILLICSUP",
     "CYRILLICSUPPLEMENT",
     "CYRILLICSUPPLEMENTARY",
@@ -520,7 +526,9 @@ char* re_strings[] = {
     "DEVA",
     "DEVANAGARI",
     "DEVANAGARIEXT",
+    "DEVANAGARIEXTA",
     "DEVANAGARIEXTENDED",
+    "DEVANAGARIEXTENDEDA",
     "DI",
     "DIA",
     "DIACRITIC",
@@ -779,6 +787,7 @@ char* re_strings[] = {
     "KA",
     "KAF",
     "KAITHI",
+    "KAKTOVIKNUMERALS",
     "KALI",
     "KANA",
     "KANAEXTA",
@@ -797,6 +806,7 @@ char* re_strings[] = {
     "KATAKANAEXT",
     "KATAKANAORHIRAGANA",
     "KATAKANAPHONETICEXTENSIONS",
+    "KAWI",
     "KAYAHLI",
     "KHAPH",
     "KHAR",
@@ -1022,6 +1032,8 @@ char* re_strings[] = {
     "N&",
     "NA",
     "NABATAEAN",
+    "NAGM",
+    "NAGMUNDARI",
     "NAN",
     "NAND",
     "NANDINAGARI",
@@ -1504,1270 +1516,1281 @@ RE_Property re_properties[] = {
     { 192,  1,  0}, /* ALPHANUMERIC */
     { 187,  1,  0}, /* ALNUM */
     { 200,  2,  0}, /* ANY */
-    { 223,  3,  0}, /* ASCIIHEXDIGIT */
+    { 225,  3,  0}, /* ASCIIHEXDIGIT */
     { 177,  3,  0}, /* AHEX */
-    { 264,  4,  1}, /* BIDICLASS */
-    { 253,  4,  1}, /* BC */
-    { 265,  5,  0}, /* BIDICONTROL */
-    { 263,  5,  0}, /* BIDIC */
-    { 267,  6,  0}, /* BIDIMIRRORED */
-    { 266,  6,  0}, /* BIDIM */
-    { 271,  7,  0}, /* BLANK */
-    { 273,  8,  2}, /* BLOCK */
-    { 272,  8,  2}, /* BLK */
-    { 310,  9,  3}, /* CANONICALCOMBININGCLASS */
-    { 322,  9,  3}, /* CCC */
-    { 316, 10,  0}, /* CASED */
-    { 318, 11,  0}, /* CASEIGNORABLE */
-    { 375, 11,  0}, /* CI */
-    { 363, 12,  0}, /* CHANGESWHENCASEFOLDED */
-    { 462, 12,  0}, /* CWCF */
-    { 364, 13,  0}, /* CHANGESWHENCASEMAPPED */
-    { 463, 13,  0}, /* CWCM */
-    { 365, 14,  0}, /* CHANGESWHENLOWERCASED */
-    { 464, 14,  0}, /* CWL */
-    { 366, 15,  0}, /* CHANGESWHENTITLECASED */
-    { 465, 15,  0}, /* CWT */
-    { 367, 16,  0}, /* CHANGESWHENUPPERCASED */
-    { 466, 16,  0}, /* CWU */
-    { 485, 17,  0}, /* DASH */
-    { 491, 18,  4}, /* DECOMPOSITIONTYPE */
-    { 520, 18,  4}, /* DT */
-    { 492, 19,  0}, /* DEFAULTIGNORABLECODEPOINT */
-    { 500, 19,  0}, /* DI */
-    { 494, 20,  0}, /* DEPRECATED */
-    { 493, 20,  0}, /* DEP */
-    { 502, 21,  0}, /* DIACRITIC */
-    { 501, 21,  0}, /* DIA */
-    { 527, 22,  5}, /* EASTASIANWIDTH */
-    { 525, 22,  5}, /* EA */
-    { 543, 23,  0}, /* EMOJI */
-    { 544, 24,  0}, /* EMOJICOMPONENT */
-    { 532, 24,  0}, /* ECOMP */
-    { 545, 25,  0}, /* EMOJIMODIFIER */
-    { 541, 25,  0}, /* EMOD */
-    { 546, 26,  0}, /* EMOJIMODIFIERBASE */
-    { 529, 26,  0}, /* EBASE */
-    { 547, 27,  0}, /* EMOJIPRESENTATION */
-    { 560, 27,  0}, /* EPRES */
-    { 580, 28,  0}, /* EXTENDEDPICTOGRAPHIC */
-    { 583, 28,  0}, /* EXTPICT */
-    { 581, 29,  0}, /* EXTENDER */
-    { 578, 29,  0}, /* EXT */
-    { 607, 30,  6}, /* GENERALCATEGORY */
-    { 604, 30,  6}, /* GC */
-    { 631, 31,  0}, /* GRAPH */
-    { 632, 32,  0}, /* GRAPHEMEBASE */
-    { 636, 32,  0}, /* GRBASE */
-    { 633, 33,  7}, /* GRAPHEMECLUSTERBREAK */
-    { 605, 33,  7}, /* GCB */
-    { 634, 34,  0}, /* GRAPHEMEEXTEND */
-    { 642, 34,  0}, /* GREXT */
-    { 635, 35,  0}, /* GRAPHEMELINK */
-    { 643, 35,  0}, /* GRLINK */
-    { 666, 36,  8}, /* HANGULSYLLABLETYPE */
-    { 697, 36,  8}, /* HST */
-    { 685, 37,  0}, /* HEXDIGIT */
-    { 684, 37,  0}, /* HEX */
-    { 695, 38,  0}, /* HORIZSPACE */
-    { 649, 38,  0}, /* H */
-    { 700, 39,  0}, /* HYPHEN */
-    { 703, 40,  0}, /* IDCONTINUE */
-    { 702, 40,  0}, /* IDC */
-    { 705, 41,  0}, /* IDEOGRAPHIC */
-    { 704, 41,  0}, /* IDEO */
-    { 711, 42,  0}, /* IDSBINARYOPERATOR */
-    { 710, 42,  0}, /* IDSB */
-    { 713, 43,  0}, /* IDSTART */
-    { 709, 43,  0}, /* IDS */
-    { 714, 44,  0}, /* IDSTRINARYOPERATOR */
-    { 712, 44,  0}, /* IDST */
-    { 718, 45,  9}, /* INDICPOSITIONALCATEGORY */
-    { 726, 45,  9}, /* INPC */
-    { 720, 46, 10}, /* INDICSYLLABICCATEGORY */
-    { 727, 46, 10}, /* INSC */
-    { 749, 47,  0}, /* JOINCONTROL */
-    { 747, 47,  0}, /* JOINC */
-    { 751, 48, 11}, /* JOININGGROUP */
-    { 745, 48, 11}, /* JG */
-    { 752, 49, 12}, /* JOININGTYPE */
-    { 753, 49, 12}, /* JT */
-    { 845, 50, 13}, /* LINEBREAK */
-    { 820, 50, 13}, /* LB */
-    { 855, 51,  0}, /* LOGICALORDEREXCEPTION */
-    { 854, 51,  0}, /* LOE */
-    { 857, 52,  0}, /* LOWERCASE */
-    { 856, 52,  0}, /* LOWER */
-    { 929, 53,  0}, /* MATH */
-    {1017, 54, 14}, /* NFCQUICKCHECK */
-    {1016, 54, 14}, /* NFCQC */
-    {1019, 55, 15}, /* NFDQUICKCHECK */
-    {1018, 55, 15}, /* NFDQC */
-    {1021, 56, 14}, /* NFKCQUICKCHECK */
-    {1020, 56, 14}, /* NFKCQC */
-    {1023, 57, 15}, /* NFKDQUICKCHECK */
-    {1022, 57, 15}, /* NFKDQC */
-    {1032, 58,  0}, /* NONCHARACTERCODEPOINT */
-    {1009, 58,  0}, /* NCHAR */
-    {1052, 59, 16}, /* NUMERICTYPE */
-    {1045, 59, 16}, /* NT */
-    {1053, 60, 17}, /* NUMERICVALUE */
-    {1056, 60, 17}, /* NV */
-    {1094, 61,  0}, /* OTHERALPHABETIC */
-    {1059, 61,  0}, /* OALPHA */
-    {1095, 62,  0}, /* OTHERDEFAULTIGNORABLECODEPOINT */
-    {1061, 62,  0}, /* ODI */
-    {1096, 63,  0}, /* OTHERGRAPHEMEEXTEND */
-    {1064, 63,  0}, /* OGREXT */
-    {1097, 64,  0}, /* OTHERIDCONTINUE */
-    {1065, 64,  0}, /* OIDC */
-    {1098, 65,  0}, /* OTHERIDSTART */
-    {1066, 65,  0}, /* OIDS */
-    {1100, 66,  0}, /* OTHERLOWERCASE */
-    {1079, 66,  0}, /* OLOWER */
-    {1101, 67,  0}, /* OTHERMATH */
-    {1080, 67,  0}, /* OMATH */
-    {1106, 68,  0}, /* OTHERUPPERCASE */
-    {1109, 68,  0}, /* OUPPER */
-    {1120, 69,  0}, /* PATTERNSYNTAX */
-    {1119, 69,  0}, /* PATSYN */
-    {1121, 70,  0}, /* PATTERNWHITESPACE */
-    {1122, 70,  0}, /* PATWS */
-    {1151, 71,  0}, /* POSIXALNUM */
-    {1152, 72,  0}, /* POSIXDIGIT */
-    {1153, 73,  0}, /* POSIXPUNCT */
-    {1154, 74,  0}, /* POSIXXDIGIT */
-    {1160, 75,  0}, /* PREPENDEDCONCATENATIONMARK */
-    {1126, 75,  0}, /* PCM */
-    {1161, 76,  0}, /* PRINT */
-    {1178, 77,  0}, /* QUOTATIONMARK */
-    {1175, 77,  0}, /* QMARK */
-    {1180, 78,  0}, /* RADICAL */
-    {1181, 79,  0}, /* REGIONALINDICATOR */
-    {1186, 79,  0}, /* RI */
-    {1216, 80, 18}, /* SCRIPT */
-    {1214, 80, 18}, /* SC */
-    {1217, 81, 18}, /* SCRIPTEXTENSIONS */
-    {1218, 81, 18}, /* SCX */
-    {1224, 82, 19}, /* SENTENCEBREAK */
-    {1213, 82, 19}, /* SB */
-    {1225, 83,  0}, /* SENTENCETERMINAL */
-    {1271, 83,  0}, /* STERM */
-    {1253, 84,  0}, /* SOFTDOTTED */
-    {1219, 84,  0}, /* SD */
-    {1346, 85,  0}, /* TERMINALPUNCTUATION */
-    {1345, 85,  0}, /* TERM */
-    {1387, 86,  0}, /* UNIFIEDIDEOGRAPH */
-    {1382, 86,  0}, /* UIDEO */
-    {1391, 87,  0}, /* UPPERCASE */
-    {1390, 87,  0}, /* UPPER */
-    {1396, 88,  0}, /* VARIATIONSELECTOR */
-    {1416, 88,  0}, /* VS */
-    {1405, 89,  0}, /* VERTSPACE */
-    {1393, 89,  0}, /* V */
-    {1425, 90,  0}, /* WHITESPACE */
-    {1433, 90,  0}, /* WSPACE */
-    {1262, 90,  0}, /* SPACE */
-    {1428, 91,  0}, /* WORD */
-    {1429, 92, 20}, /* WORDBREAK */
-    {1423, 92, 20}, /* WB */
-    {1434, 93,  0}, /* XDIGIT */
-    {1436, 94,  0}, /* XIDCONTINUE */
-    {1435, 94,  0}, /* XIDC */
-    {1438, 95,  0}, /* XIDSTART */
-    {1437, 95,  0}, /* XIDS */
+    { 266,  4,  1}, /* BIDICLASS */
+    { 255,  4,  1}, /* BC */
+    { 267,  5,  0}, /* BIDICONTROL */
+    { 265,  5,  0}, /* BIDIC */
+    { 269,  6,  0}, /* BIDIMIRRORED */
+    { 268,  6,  0}, /* BIDIM */
+    { 273,  7,  0}, /* BLANK */
+    { 275,  8,  2}, /* BLOCK */
+    { 274,  8,  2}, /* BLK */
+    { 312,  9,  3}, /* CANONICALCOMBININGCLASS */
+    { 324,  9,  3}, /* CCC */
+    { 318, 10,  0}, /* CASED */
+    { 320, 11,  0}, /* CASEIGNORABLE */
+    { 377, 11,  0}, /* CI */
+    { 365, 12,  0}, /* CHANGESWHENCASEFOLDED */
+    { 466, 12,  0}, /* CWCF */
+    { 366, 13,  0}, /* CHANGESWHENCASEMAPPED */
+    { 467, 13,  0}, /* CWCM */
+    { 367, 14,  0}, /* CHANGESWHENLOWERCASED */
+    { 468, 14,  0}, /* CWL */
+    { 368, 15,  0}, /* CHANGESWHENTITLECASED */
+    { 469, 15,  0}, /* CWT */
+    { 369, 16,  0}, /* CHANGESWHENUPPERCASED */
+    { 470, 16,  0}, /* CWU */
+    { 491, 17,  0}, /* DASH */
+    { 497, 18,  4}, /* DECOMPOSITIONTYPE */
+    { 528, 18,  4}, /* DT */
+    { 498, 19,  0}, /* DEFAULTIGNORABLECODEPOINT */
+    { 508, 19,  0}, /* DI */
+    { 500, 20,  0}, /* DEPRECATED */
+    { 499, 20,  0}, /* DEP */
+    { 510, 21,  0}, /* DIACRITIC */
+    { 509, 21,  0}, /* DIA */
+    { 535, 22,  5}, /* EASTASIANWIDTH */
+    { 533, 22,  5}, /* EA */
+    { 551, 23,  0}, /* EMOJI */
+    { 552, 24,  0}, /* EMOJICOMPONENT */
+    { 540, 24,  0}, /* ECOMP */
+    { 553, 25,  0}, /* EMOJIMODIFIER */
+    { 549, 25,  0}, /* EMOD */
+    { 554, 26,  0}, /* EMOJIMODIFIERBASE */
+    { 537, 26,  0}, /* EBASE */
+    { 555, 27,  0}, /* EMOJIPRESENTATION */
+    { 568, 27,  0}, /* EPRES */
+    { 588, 28,  0}, /* EXTENDEDPICTOGRAPHIC */
+    { 591, 28,  0}, /* EXTPICT */
+    { 589, 29,  0}, /* EXTENDER */
+    { 586, 29,  0}, /* EXT */
+    { 615, 30,  6}, /* GENERALCATEGORY */
+    { 612, 30,  6}, /* GC */
+    { 639, 31,  0}, /* GRAPH */
+    { 640, 32,  0}, /* GRAPHEMEBASE */
+    { 644, 32,  0}, /* GRBASE */
+    { 641, 33,  7}, /* GRAPHEMECLUSTERBREAK */
+    { 613, 33,  7}, /* GCB */
+    { 642, 34,  0}, /* GRAPHEMEEXTEND */
+    { 650, 34,  0}, /* GREXT */
+    { 643, 35,  0}, /* GRAPHEMELINK */
+    { 651, 35,  0}, /* GRLINK */
+    { 674, 36,  8}, /* HANGULSYLLABLETYPE */
+    { 705, 36,  8}, /* HST */
+    { 693, 37,  0}, /* HEXDIGIT */
+    { 692, 37,  0}, /* HEX */
+    { 703, 38,  0}, /* HORIZSPACE */
+    { 657, 38,  0}, /* H */
+    { 708, 39,  0}, /* HYPHEN */
+    { 711, 40,  0}, /* IDCONTINUE */
+    { 710, 40,  0}, /* IDC */
+    { 713, 41,  0}, /* IDEOGRAPHIC */
+    { 712, 41,  0}, /* IDEO */
+    { 719, 42,  0}, /* IDSBINARYOPERATOR */
+    { 718, 42,  0}, /* IDSB */
+    { 721, 43,  0}, /* IDSTART */
+    { 717, 43,  0}, /* IDS */
+    { 722, 44,  0}, /* IDSTRINARYOPERATOR */
+    { 720, 44,  0}, /* IDST */
+    { 726, 45,  9}, /* INDICPOSITIONALCATEGORY */
+    { 734, 45,  9}, /* INPC */
+    { 728, 46, 10}, /* INDICSYLLABICCATEGORY */
+    { 735, 46, 10}, /* INSC */
+    { 757, 47,  0}, /* JOINCONTROL */
+    { 755, 47,  0}, /* JOINC */
+    { 759, 48, 11}, /* JOININGGROUP */
+    { 753, 48, 11}, /* JG */
+    { 760, 49, 12}, /* JOININGTYPE */
+    { 761, 49, 12}, /* JT */
+    { 855, 50, 13}, /* LINEBREAK */
+    { 830, 50, 13}, /* LB */
+    { 865, 51,  0}, /* LOGICALORDEREXCEPTION */
+    { 864, 51,  0}, /* LOE */
+    { 867, 52,  0}, /* LOWERCASE */
+    { 866, 52,  0}, /* LOWER */
+    { 939, 53,  0}, /* MATH */
+    {1029, 54, 14}, /* NFCQUICKCHECK */
+    {1028, 54, 14}, /* NFCQC */
+    {1031, 55, 15}, /* NFDQUICKCHECK */
+    {1030, 55, 15}, /* NFDQC */
+    {1033, 56, 14}, /* NFKCQUICKCHECK */
+    {1032, 56, 14}, /* NFKCQC */
+    {1035, 57, 15}, /* NFKDQUICKCHECK */
+    {1034, 57, 15}, /* NFKDQC */
+    {1044, 58,  0}, /* NONCHARACTERCODEPOINT */
+    {1021, 58,  0}, /* NCHAR */
+    {1064, 59, 16}, /* NUMERICTYPE */
+    {1057, 59, 16}, /* NT */
+    {1065, 60, 17}, /* NUMERICVALUE */
+    {1068, 60, 17}, /* NV */
+    {1106, 61,  0}, /* OTHERALPHABETIC */
+    {1071, 61,  0}, /* OALPHA */
+    {1107, 62,  0}, /* OTHERDEFAULTIGNORABLECODEPOINT */
+    {1073, 62,  0}, /* ODI */
+    {1108, 63,  0}, /* OTHERGRAPHEMEEXTEND */
+    {1076, 63,  0}, /* OGREXT */
+    {1109, 64,  0}, /* OTHERIDCONTINUE */
+    {1077, 64,  0}, /* OIDC */
+    {1110, 65,  0}, /* OTHERIDSTART */
+    {1078, 65,  0}, /* OIDS */
+    {1112, 66,  0}, /* OTHERLOWERCASE */
+    {1091, 66,  0}, /* OLOWER */
+    {1113, 67,  0}, /* OTHERMATH */
+    {1092, 67,  0}, /* OMATH */
+    {1118, 68,  0}, /* OTHERUPPERCASE */
+    {1121, 68,  0}, /* OUPPER */
+    {1132, 69,  0}, /* PATTERNSYNTAX */
+    {1131, 69,  0}, /* PATSYN */
+    {1133, 70,  0}, /* PATTERNWHITESPACE */
+    {1134, 70,  0}, /* PATWS */
+    {1163, 71,  0}, /* POSIXALNUM */
+    {1164, 72,  0}, /* POSIXDIGIT */
+    {1165, 73,  0}, /* POSIXPUNCT */
+    {1166, 74,  0}, /* POSIXXDIGIT */
+    {1172, 75,  0}, /* PREPENDEDCONCATENATIONMARK */
+    {1138, 75,  0}, /* PCM */
+    {1173, 76,  0}, /* PRINT */
+    {1190, 77,  0}, /* QUOTATIONMARK */
+    {1187, 77,  0}, /* QMARK */
+    {1192, 78,  0}, /* RADICAL */
+    {1193, 79,  0}, /* REGIONALINDICATOR */
+    {1198, 79,  0}, /* RI */
+    {1228, 80, 18}, /* SCRIPT */
+    {1226, 80, 18}, /* SC */
+    {1229, 81, 18}, /* SCRIPTEXTENSIONS */
+    {1230, 81, 18}, /* SCX */
+    {1236, 82, 19}, /* SENTENCEBREAK */
+    {1225, 82, 19}, /* SB */
+    {1237, 83,  0}, /* SENTENCETERMINAL */
+    {1283, 83,  0}, /* STERM */
+    {1265, 84,  0}, /* SOFTDOTTED */
+    {1231, 84,  0}, /* SD */
+    {1358, 85,  0}, /* TERMINALPUNCTUATION */
+    {1357, 85,  0}, /* TERM */
+    {1399, 86,  0}, /* UNIFIEDIDEOGRAPH */
+    {1394, 86,  0}, /* UIDEO */
+    {1403, 87,  0}, /* UPPERCASE */
+    {1402, 87,  0}, /* UPPER */
+    {1408, 88,  0}, /* VARIATIONSELECTOR */
+    {1428, 88,  0}, /* VS */
+    {1417, 89,  0}, /* VERTSPACE */
+    {1405, 89,  0}, /* V */
+    {1437, 90,  0}, /* WHITESPACE */
+    {1445, 90,  0}, /* WSPACE */
+    {1274, 90,  0}, /* SPACE */
+    {1440, 91,  0}, /* WORD */
+    {1441, 92, 20}, /* WORDBREAK */
+    {1435, 92, 20}, /* WB */
+    {1446, 93,  0}, /* XDIGIT */
+    {1448, 94,  0}, /* XIDCONTINUE */
+    {1447, 94,  0}, /* XIDC */
+    {1450, 95,  0}, /* XIDSTART */
+    {1449, 95,  0}, /* XIDS */
 };
 
 /* Property values. */
 RE_PropertyValue re_property_values[] = {
-    {1028,  0,   0}, /* NO */
-    { 997,  0,   0}, /* N */
-    { 584,  0,   0}, /* F */
-    { 585,  0,   0}, /* FALSE */
-    {1446,  0,   1}, /* YES */
-    {1442,  0,   1}, /* Y */
-    {1314,  0,   1}, /* T */
-    {1375,  0,   1}, /* TRUE */
-    { 827,  1,   0}, /* LEFTTORIGHT */
-    { 792,  1,   0}, /* L */
-    { 283,  1,   1}, /* BOUNDARYNEUTRAL */
-    { 275,  1,   1}, /* BN */
-    {1222,  1,   2}, /* SEGMENTSEPARATOR */
-    {1203,  1,   2}, /* S */
-    {1118,  1,   3}, /* PARAGRAPHSEPARATOR */
-    { 238,  1,   3}, /* B */
-    {1425,  1,   4}, /* WHITESPACE */
-    {1431,  1,   4}, /* WS */
-    {1102,  1,   5}, /* OTHERNEUTRAL */
-    {1081,  1,   5}, /* ON */
-    { 575,  1,   6}, /* EUROPEANTERMINATOR */
-    { 562,  1,   6}, /* ET */
-    { 574,  1,   7}, /* EUROPEANSEPARATOR */
-    { 561,  1,   7}, /* ES */
-    { 425,  1,   8}, /* COMMONSEPARATOR */
-    { 456,  1,   8}, /* CS */
-    { 573,  1,   9}, /* EUROPEANNUMBER */
-    { 549,  1,   9}, /* EN */
-    {1036,  1,  10}, /* NONSPACINGMARK */
-    {1044,  1,  10}, /* NSM */
-    {1189,  1,  11}, /* RIGHTTOLEFT */
-    {1179,  1,  11}, /* R */
-    { 211,  1,  12}, /* ARABICNUMBER */
+    {1040,  0,   0}, /* NO */
+    {1007,  0,   0}, /* N */
+    { 592,  0,   0}, /* F */
+    { 593,  0,   0}, /* FALSE */
+    {1458,  0,   1}, /* YES */
+    {1454,  0,   1}, /* Y */
+    {1326,  0,   1}, /* T */
+    {1387,  0,   1}, /* TRUE */
+    {1201,  1,   0}, /* RIGHTTOLEFT */
+    {1191,  1,   0}, /* R */
+    { 285,  1,   1}, /* BOUNDARYNEUTRAL */
+    { 277,  1,   1}, /* BN */
+    {1234,  1,   2}, /* SEGMENTSEPARATOR */
+    {1215,  1,   2}, /* S */
+    {1130,  1,   3}, /* PARAGRAPHSEPARATOR */
+    { 240,  1,   3}, /* B */
+    {1437,  1,   4}, /* WHITESPACE */
+    {1443,  1,   4}, /* WS */
+    {1114,  1,   5}, /* OTHERNEUTRAL */
+    {1093,  1,   5}, /* ON */
+    { 583,  1,   6}, /* EUROPEANTERMINATOR */
+    { 570,  1,   6}, /* ET */
+    { 582,  1,   7}, /* EUROPEANSEPARATOR */
+    { 569,  1,   7}, /* ES */
+    { 429,  1,   8}, /* COMMONSEPARATOR */
+    { 460,  1,   8}, /* CS */
+    { 581,  1,   9}, /* EUROPEANNUMBER */
+    { 557,  1,   9}, /* EN */
+    { 837,  1,  10}, /* LEFTTORIGHT */
+    { 802,  1,  10}, /* L */
+    {1048,  1,  11}, /* NONSPACINGMARK */
+    {1056,  1,  11}, /* NSM */
+    { 213,  1,  12}, /* ARABICNUMBER */
     { 194,  1,  12}, /* AN */
-    { 208,  1,  13}, /* ARABICLETTER */
+    { 210,  1,  13}, /* ARABICLETTER */
     { 181,  1,  13}, /* AL */
-    { 828,  1,  14}, /* LEFTTORIGHTEMBEDDING */
-    { 860,  1,  14}, /* LRE */
-    {1190,  1,  15}, /* RIGHTTOLEFTEMBEDDING */
-    {1194,  1,  15}, /* RLE */
-    {1149,  1,  16}, /* POPDIRECTIONALFORMAT */
-    {1128,  1,  16}, /* PDF */
-    { 830,  1,  17}, /* LEFTTORIGHTOVERRIDE */
-    { 862,  1,  17}, /* LRO */
-    {1192,  1,  18}, /* RIGHTTOLEFTOVERRIDE */
-    {1196,  1,  18}, /* RLO */
-    { 829,  1,  19}, /* LEFTTORIGHTISOLATE */
-    { 861,  1,  19}, /* LRI */
-    {1191,  1,  20}, /* RIGHTTOLEFTISOLATE */
-    {1195,  1,  20}, /* RLI */
-    { 593,  1,  21}, /* FIRSTSTRONGISOLATE */
-    { 599,  1,  21}, /* FSI */
-    {1150,  1,  22}, /* POPDIRECTIONALISOLATE */
-    {1129,  1,  22}, /* PDI */
-    {1029,  2,   0}, /* NOBLOCK */
-    {1007,  2,   0}, /* NB */
-    { 247,  2,   1}, /* BASICLATIN */
-    { 222,  2,   1}, /* ASCII */
-    { 802,  2,   2}, /* LATIN1SUPPLEMENT */
-    { 801,  2,   2}, /* LATIN1SUP */
-    { 800,  2,   2}, /* LATIN1 */
-    { 809,  2,   3}, /* LATINEXTENDEDA */
-    { 803,  2,   3}, /* LATINEXTA */
-    { 811,  2,   4}, /* LATINEXTENDEDB */
-    { 805,  2,   4}, /* LATINEXTB */
-    { 735,  2,   5}, /* IPAEXTENSIONS */
-    { 734,  2,   5}, /* IPAEXT */
-    {1265,  2,   6}, /* SPACINGMODIFIERLETTERS */
-    { 976,  2,   6}, /* MODIFIERLETTERS */
-    { 416,  2,   7}, /* COMBININGDIACRITICALMARKS */
-    { 503,  2,   7}, /* DIACRITICALS */
-    { 638,  2,   8}, /* GREEKANDCOPTIC */
-    { 637,  2,   8}, /* GREEK */
-    { 470,  2,   9}, /* CYRILLIC */
-    { 478,  2,  10}, /* CYRILLICSUPPLEMENT */
-    { 477,  2,  10}, /* CYRILLICSUP */
-    { 479,  2,  10}, /* CYRILLICSUPPLEMENTARY */
-    { 218,  2,  11}, /* ARMENIAN */
-    { 679,  2,  12}, /* HEBREW */
+    { 838,  1,  14}, /* LEFTTORIGHTEMBEDDING */
+    { 870,  1,  14}, /* LRE */
+    {1202,  1,  15}, /* RIGHTTOLEFTEMBEDDING */
+    {1206,  1,  15}, /* RLE */
+    {1161,  1,  16}, /* POPDIRECTIONALFORMAT */
+    {1140,  1,  16}, /* PDF */
+    { 840,  1,  17}, /* LEFTTORIGHTOVERRIDE */
+    { 872,  1,  17}, /* LRO */
+    {1204,  1,  18}, /* RIGHTTOLEFTOVERRIDE */
+    {1208,  1,  18}, /* RLO */
+    { 839,  1,  19}, /* LEFTTORIGHTISOLATE */
+    { 871,  1,  19}, /* LRI */
+    {1203,  1,  20}, /* RIGHTTOLEFTISOLATE */
+    {1207,  1,  20}, /* RLI */
+    { 601,  1,  21}, /* FIRSTSTRONGISOLATE */
+    { 607,  1,  21}, /* FSI */
+    {1162,  1,  22}, /* POPDIRECTIONALISOLATE */
+    {1141,  1,  22}, /* PDI */
+    {1041,  2,   0}, /* NOBLOCK */
+    {1019,  2,   0}, /* NB */
+    { 249,  2,   1}, /* BASICLATIN */
+    { 224,  2,   1}, /* ASCII */
+    { 812,  2,   2}, /* LATIN1SUPPLEMENT */
+    { 811,  2,   2}, /* LATIN1SUP */
+    { 810,  2,   2}, /* LATIN1 */
+    { 819,  2,   3}, /* LATINEXTENDEDA */
+    { 813,  2,   3}, /* LATINEXTA */
+    { 821,  2,   4}, /* LATINEXTENDEDB */
+    { 815,  2,   4}, /* LATINEXTB */
+    { 743,  2,   5}, /* IPAEXTENSIONS */
+    { 742,  2,   5}, /* IPAEXT */
+    {1277,  2,   6}, /* SPACINGMODIFIERLETTERS */
+    { 986,  2,   6}, /* MODIFIERLETTERS */
+    { 420,  2,   7}, /* COMBININGDIACRITICALMARKS */
+    { 511,  2,   7}, /* DIACRITICALS */
+    { 646,  2,   8}, /* GREEKANDCOPTIC */
+    { 645,  2,   8}, /* GREEK */
+    { 474,  2,   9}, /* CYRILLIC */
+    { 484,  2,  10}, /* CYRILLICSUPPLEMENT */
+    { 483,  2,  10}, /* CYRILLICSUP */
+    { 485,  2,  10}, /* CYRILLICSUPPLEMENTARY */
+    { 220,  2,  11}, /* ARMENIAN */
+    { 687,  2,  12}, /* HEBREW */
     { 203,  2,  13}, /* ARABIC */
-    {1310,  2,  14}, /* SYRIAC */
-    { 217,  2,  15}, /* ARABICSUPPLEMENT */
-    { 216,  2,  15}, /* ARABICSUP */
-    {1351,  2,  16}, /* THAANA */
-    {1025,  2,  17}, /* NKO */
-    {1208,  2,  18}, /* SAMARITAN */
-    { 894,  2,  19}, /* MANDAIC */
-    {1312,  2,  20}, /* SYRIACSUPPLEMENT */
-    {1311,  2,  20}, /* SYRIACSUP */
-    { 207,  2,  21}, /* ARABICEXTENDEDB */
+    {1322,  2,  14}, /* SYRIAC */
+    { 219,  2,  15}, /* ARABICSUPPLEMENT */
+    { 218,  2,  15}, /* ARABICSUP */
+    {1363,  2,  16}, /* THAANA */
+    {1037,  2,  17}, /* NKO */
+    {1220,  2,  18}, /* SAMARITAN */
+    { 904,  2,  19}, /* MANDAIC */
+    {1324,  2,  20}, /* SYRIACSUPPLEMENT */
+    {1323,  2,  20}, /* SYRIACSUP */
+    { 208,  2,  21}, /* ARABICEXTENDEDB */
     { 205,  2,  21}, /* ARABICEXTB */
-    { 206,  2,  22}, /* ARABICEXTENDEDA */
+    { 207,  2,  22}, /* ARABICEXTENDEDA */
     { 204,  2,  22}, /* ARABICEXTA */
-    { 497,  2,  23}, /* DEVANAGARI */
-    { 259,  2,  24}, /* BENGALI */
-    { 647,  2,  25}, /* GURMUKHI */
-    { 644,  2,  26}, /* GUJARATI */
-    {1085,  2,  27}, /* ORIYA */
-    {1329,  2,  28}, /* TAMIL */
-    {1344,  2,  29}, /* TELUGU */
-    { 770,  2,  30}, /* KANNADA */
-    { 881,  2,  31}, /* MALAYALAM */
-    {1242,  2,  32}, /* SINHALA */
-    {1352,  2,  33}, /* THAI */
-    { 797,  2,  34}, /* LAO */
-    {1354,  2,  35}, /* TIBETAN */
-    { 991,  2,  36}, /* MYANMAR */
-    { 613,  2,  37}, /* GEORGIAN */
-    { 662,  2,  38}, /* HANGULJAMO */
-    { 740,  2,  38}, /* JAMO */
-    { 564,  2,  39}, /* ETHIOPIC */
-    { 572,  2,  40}, /* ETHIOPICSUPPLEMENT */
-    { 571,  2,  40}, /* ETHIOPICSUP */
-    { 369,  2,  41}, /* CHEROKEE */
-    {1384,  2,  42}, /* UNIFIEDCANADIANABORIGINALSYLLABICS */
-    {1377,  2,  42}, /* UCAS */
-    { 308,  2,  42}, /* CANADIANSYLLABICS */
-    {1063,  2,  43}, /* OGHAM */
-    {1201,  2,  44}, /* RUNIC */
-    {1315,  2,  45}, /* TAGALOG */
-    { 674,  2,  46}, /* HANUNOO */
-    { 299,  2,  47}, /* BUHID */
-    {1317,  2,  48}, /* TAGBANWA */
-    { 781,  2,  49}, /* KHMER */
-    { 981,  2,  50}, /* MONGOLIAN */
-    {1385,  2,  51}, /* UNIFIEDCANADIANABORIGINALSYLLABICSEXTENDED */
-    {1378,  2,  51}, /* UCASEXT */
-    { 838,  2,  52}, /* LIMBU */
-    {1320,  2,  53}, /* TAILE */
-    {1014,  2,  54}, /* NEWTAILUE */
-    { 782,  2,  55}, /* KHMERSYMBOLS */
-    { 297,  2,  56}, /* BUGINESE */
-    {1321,  2,  57}, /* TAITHAM */
-    { 417,  2,  58}, /* COMBININGDIACRITICALMARKSEXTENDED */
-    { 504,  2,  58}, /* DIACRITICALSEXT */
-    { 242,  2,  59}, /* BALINESE */
-    {1275,  2,  60}, /* SUNDANESE */
-    { 250,  2,  61}, /* BATAK */
-    { 832,  2,  62}, /* LEPCHA */
-    {1067,  2,  63}, /* OLCHIKI */
-    { 476,  2,  64}, /* CYRILLICEXTENDEDC */
-    { 473,  2,  64}, /* CYRILLICEXTC */
-    { 615,  2,  65}, /* GEORGIANEXTENDED */
-    { 614,  2,  65}, /* GEORGIANEXT */
-    {1277,  2,  66}, /* SUNDANESESUPPLEMENT */
-    {1276,  2,  66}, /* SUNDANESESUP */
-    {1400,  2,  67}, /* VEDICEXTENSIONS */
-    {1399,  2,  67}, /* VEDICEXT */
-    {1142,  2,  68}, /* PHONETICEXTENSIONS */
-    {1141,  2,  68}, /* PHONETICEXT */
-    {1143,  2,  69}, /* PHONETICEXTENSIONSSUPPLEMENT */
-    {1144,  2,  69}, /* PHONETICEXTSUP */
-    { 419,  2,  70}, /* COMBININGDIACRITICALMARKSSUPPLEMENT */
-    { 506,  2,  70}, /* DIACRITICALSSUP */
-    { 810,  2,  71}, /* LATINEXTENDEDADDITIONAL */
-    { 804,  2,  71}, /* LATINEXTADDITIONAL */
-    { 640,  2,  72}, /* GREEKEXTENDED */
-    { 639,  2,  72}, /* GREEKEXT */
-    { 608,  2,  73}, /* GENERALPUNCTUATION */
-    {1169,  2,  73}, /* PUNCTUATION */
-    {1284,  2,  74}, /* SUPERSCRIPTSANDSUBSCRIPTS */
-    {1283,  2,  74}, /* SUPERANDSUB */
-    { 461,  2,  75}, /* CURRENCYSYMBOLS */
-    { 418,  2,  76}, /* COMBININGDIACRITICALMARKSFORSYMBOLS */
-    { 505,  2,  76}, /* DIACRITICALSFORSYMBOLS */
-    { 422,  2,  76}, /* COMBININGMARKSFORSYMBOLS */
-    { 834,  2,  77}, /* LETTERLIKESYMBOLS */
-    {1049,  2,  78}, /* NUMBERFORMS */
-    { 221,  2,  79}, /* ARROWS */
-    { 932,  2,  80}, /* MATHEMATICALOPERATORS */
-    { 933,  2,  80}, /* MATHOPERATORS */
-    { 965,  2,  81}, /* MISCELLANEOUSTECHNICAL */
-    { 970,  2,  81}, /* MISCTECHNICAL */
-    { 446,  2,  82}, /* CONTROLPICTURES */
-    {1084,  2,  83}, /* OPTICALCHARACTERRECOGNITION */
-    {1060,  2,  83}, /* OCR */
-    { 552,  2,  84}, /* ENCLOSEDALPHANUMERICS */
-    { 551,  2,  84}, /* ENCLOSEDALPHANUM */
-    { 284,  2,  85}, /* BOXDRAWING */
-    { 274,  2,  86}, /* BLOCKELEMENTS */
-    { 609,  2,  87}, /* GEOMETRICSHAPES */
-    { 962,  2,  88}, /* MISCELLANEOUSSYMBOLS */
-    { 969,  2,  88}, /* MISCSYMBOLS */
-    { 509,  2,  89}, /* DINGBATS */
-    { 960,  2,  90}, /* MISCELLANEOUSMATHEMATICALSYMBOLSA */
-    { 966,  2,  90}, /* MISCMATHSYMBOLSA */
-    {1286,  2,  91}, /* SUPPLEMENTALARROWSA */
-    {1279,  2,  91}, /* SUPARROWSA */
-    { 291,  2,  92}, /* BRAILLEPATTERNS */
-    { 290,  2,  92}, /* BRAILLE */
-    {1287,  2,  93}, /* SUPPLEMENTALARROWSB */
-    {1280,  2,  93}, /* SUPARROWSB */
-    { 961,  2,  94}, /* MISCELLANEOUSMATHEMATICALSYMBOLSB */
-    { 967,  2,  94}, /* MISCMATHSYMBOLSB */
-    {1289,  2,  95}, /* SUPPLEMENTALMATHEMATICALOPERATORS */
-    {1285,  2,  95}, /* SUPMATHOPERATORS */
-    { 963,  2,  96}, /* MISCELLANEOUSSYMBOLSANDARROWS */
-    { 959,  2,  96}, /* MISCARROWS */
-    { 620,  2,  97}, /* GLAGOLITIC */
-    { 812,  2,  98}, /* LATINEXTENDEDC */
-    { 806,  2,  98}, /* LATINEXTC */
-    { 448,  2,  99}, /* COPTIC */
-    { 617,  2, 100}, /* GEORGIANSUPPLEMENT */
-    { 616,  2, 100}, /* GEORGIANSUP */
-    {1356,  2, 101}, /* TIFINAGH */
-    { 568,  2, 102}, /* ETHIOPICEXTENDED */
-    { 565,  2, 102}, /* ETHIOPICEXT */
-    { 474,  2, 103}, /* CYRILLICEXTENDEDA */
-    { 471,  2, 103}, /* CYRILLICEXTA */
-    {1290,  2, 104}, /* SUPPLEMENTALPUNCTUATION */
-    {1296,  2, 104}, /* SUPPUNCTUATION */
-    { 395,  2, 105}, /* CJKRADICALSSUPPLEMENT */
-    { 394,  2, 105}, /* CJKRADICALSSUP */
-    { 769,  2, 106}, /* KANGXIRADICALS */
-    { 768,  2, 106}, /* KANGXI */
-    { 706,  2, 107}, /* IDEOGRAPHICDESCRIPTIONCHARACTERS */
-    { 702,  2, 107}, /* IDC */
-    { 398,  2, 108}, /* CJKSYMBOLSANDPUNCTUATION */
-    { 397,  2, 108}, /* CJKSYMBOLS */
-    { 690,  2, 109}, /* HIRAGANA */
-    { 772,  2, 110}, /* KATAKANA */
-    { 277,  2, 111}, /* BOPOMOFO */
-    { 661,  2, 112}, /* HANGULCOMPATIBILITYJAMO */
-    { 427,  2, 112}, /* COMPATJAMO */
-    { 767,  2, 113}, /* KANBUN */
-    { 279,  2, 114}, /* BOPOMOFOEXTENDED */
-    { 278,  2, 114}, /* BOPOMOFOEXT */
-    { 396,  2, 115}, /* CJKSTROKES */
-    { 775,  2, 116}, /* KATAKANAPHONETICEXTENSIONS */
-    { 773,  2, 116}, /* KATAKANAEXT */
-    { 556,  2, 117}, /* ENCLOSEDCJKLETTERSANDMONTHS */
-    { 555,  2, 117}, /* ENCLOSEDCJK */
-    { 381,  2, 118}, /* CJKCOMPATIBILITY */
-    { 379,  2, 118}, /* CJKCOMPAT */
-    { 400,  2, 119}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONA */
-    { 387,  2, 119}, /* CJKEXTA */
-    {1452,  2, 120}, /* YIJINGHEXAGRAMSYMBOLS */
-    {1451,  2, 120}, /* YIJING */
-    { 399,  2, 121}, /* CJKUNIFIEDIDEOGRAPHS */
-    { 378,  2, 121}, /* CJK */
-    {1454,  2, 122}, /* YISYLLABLES */
-    {1453,  2, 123}, /* YIRADICALS */
-    { 848,  2, 124}, /* LISU */
-    {1394,  2, 125}, /* VAI */
-    { 475,  2, 126}, /* CYRILLICEXTENDEDB */
-    { 472,  2, 126}, /* CYRILLICEXTB */
-    { 244,  2, 127}, /* BAMUM */
-    { 978,  2, 128}, /* MODIFIERTONELETTERS */
-    { 813,  2, 129}, /* LATINEXTENDEDD */
-    { 807,  2, 129}, /* LATINEXTD */
-    {1304,  2, 130}, /* SYLOTINAGRI */
-    { 424,  2, 131}, /* COMMONINDICNUMBERFORMS */
-    { 717,  2, 131}, /* INDICNUMBERFORMS */
-    {1134,  2, 132}, /* PHAGSPA */
-    {1212,  2, 133}, /* SAURASHTRA */
-    { 499,  2, 134}, /* DEVANAGARIEXTENDED */
-    { 498,  2, 134}, /* DEVANAGARIEXT */
-    { 776,  2, 135}, /* KAYAHLI */
-    {1184,  2, 136}, /* REJANG */
-    { 663,  2, 137}, /* HANGULJAMOEXTENDEDA */
-    { 741,  2, 137}, /* JAMOEXTA */
-    { 744,  2, 138}, /* JAVANESE */
-    { 995,  2, 139}, /* MYANMAREXTENDEDB */
-    { 993,  2, 139}, /* MYANMAREXTB */
-    { 362,  2, 140}, /* CHAM */
-    { 994,  2, 141}, /* MYANMAREXTENDEDA */
-    { 992,  2, 141}, /* MYANMAREXTA */
-    {1322,  2, 142}, /* TAIVIET */
-    { 947,  2, 143}, /* MEETEIMAYEKEXTENSIONS */
-    { 946,  2, 143}, /* MEETEIMAYEKEXT */
-    { 569,  2, 144}, /* ETHIOPICEXTENDEDA */
-    { 566,  2, 144}, /* ETHIOPICEXTA */
-    { 814,  2, 145}, /* LATINEXTENDEDE */
-    { 808,  2, 145}, /* LATINEXTE */
-    { 371,  2, 146}, /* CHEROKEESUPPLEMENT */
-    { 370,  2, 146}, /* CHEROKEESUP */
-    { 945,  2, 147}, /* MEETEIMAYEK */
-    { 665,  2, 148}, /* HANGULSYLLABLES */
-    { 660,  2, 148}, /* HANGUL */
-    { 664,  2, 149}, /* HANGULJAMOEXTENDEDB */
-    { 742,  2, 149}, /* JAMOEXTB */
-    { 688,  2, 150}, /* HIGHSURROGATES */
-    { 686,  2, 151}, /* HIGHPRIVATEUSESURROGATES */
-    { 687,  2, 151}, /* HIGHPUSURROGATES */
-    { 859,  2, 152}, /* LOWSURROGATES */
-    {1163,  2, 153}, /* PRIVATEUSEAREA */
-    {1167,  2, 153}, /* PUA */
-    {1162,  2, 153}, /* PRIVATEUSE */
-    { 383,  2, 154}, /* CJKCOMPATIBILITYIDEOGRAPHS */
-    { 385,  2, 154}, /* CJKCOMPATIDEOGRAPHS */
+    { 503,  2,  23}, /* DEVANAGARI */
+    { 261,  2,  24}, /* BENGALI */
+    { 655,  2,  25}, /* GURMUKHI */
+    { 652,  2,  26}, /* GUJARATI */
+    {1097,  2,  27}, /* ORIYA */
+    {1341,  2,  28}, /* TAMIL */
+    {1356,  2,  29}, /* TELUGU */
+    { 779,  2,  30}, /* KANNADA */
+    { 891,  2,  31}, /* MALAYALAM */
+    {1254,  2,  32}, /* SINHALA */
+    {1364,  2,  33}, /* THAI */
+    { 807,  2,  34}, /* LAO */
+    {1366,  2,  35}, /* TIBETAN */
+    {1001,  2,  36}, /* MYANMAR */
+    { 621,  2,  37}, /* GEORGIAN */
+    { 670,  2,  38}, /* HANGULJAMO */
+    { 748,  2,  38}, /* JAMO */
+    { 572,  2,  39}, /* ETHIOPIC */
+    { 580,  2,  40}, /* ETHIOPICSUPPLEMENT */
+    { 579,  2,  40}, /* ETHIOPICSUP */
+    { 371,  2,  41}, /* CHEROKEE */
+    {1396,  2,  42}, /* UNIFIEDCANADIANABORIGINALSYLLABICS */
+    {1389,  2,  42}, /* UCAS */
+    { 310,  2,  42}, /* CANADIANSYLLABICS */
+    {1075,  2,  43}, /* OGHAM */
+    {1213,  2,  44}, /* RUNIC */
+    {1327,  2,  45}, /* TAGALOG */
+    { 682,  2,  46}, /* HANUNOO */
+    { 301,  2,  47}, /* BUHID */
+    {1329,  2,  48}, /* TAGBANWA */
+    { 791,  2,  49}, /* KHMER */
+    { 991,  2,  50}, /* MONGOLIAN */
+    {1397,  2,  51}, /* UNIFIEDCANADIANABORIGINALSYLLABICSEXTENDED */
+    {1390,  2,  51}, /* UCASEXT */
+    { 848,  2,  52}, /* LIMBU */
+    {1332,  2,  53}, /* TAILE */
+    {1026,  2,  54}, /* NEWTAILUE */
+    { 792,  2,  55}, /* KHMERSYMBOLS */
+    { 299,  2,  56}, /* BUGINESE */
+    {1333,  2,  57}, /* TAITHAM */
+    { 421,  2,  58}, /* COMBININGDIACRITICALMARKSEXTENDED */
+    { 512,  2,  58}, /* DIACRITICALSEXT */
+    { 244,  2,  59}, /* BALINESE */
+    {1287,  2,  60}, /* SUNDANESE */
+    { 252,  2,  61}, /* BATAK */
+    { 842,  2,  62}, /* LEPCHA */
+    {1079,  2,  63}, /* OLCHIKI */
+    { 481,  2,  64}, /* CYRILLICEXTENDEDC */
+    { 477,  2,  64}, /* CYRILLICEXTC */
+    { 623,  2,  65}, /* GEORGIANEXTENDED */
+    { 622,  2,  65}, /* GEORGIANEXT */
+    {1289,  2,  66}, /* SUNDANESESUPPLEMENT */
+    {1288,  2,  66}, /* SUNDANESESUP */
+    {1412,  2,  67}, /* VEDICEXTENSIONS */
+    {1411,  2,  67}, /* VEDICEXT */
+    {1154,  2,  68}, /* PHONETICEXTENSIONS */
+    {1153,  2,  68}, /* PHONETICEXT */
+    {1155,  2,  69}, /* PHONETICEXTENSIONSSUPPLEMENT */
+    {1156,  2,  69}, /* PHONETICEXTSUP */
+    { 423,  2,  70}, /* COMBININGDIACRITICALMARKSSUPPLEMENT */
+    { 514,  2,  70}, /* DIACRITICALSSUP */
+    { 820,  2,  71}, /* LATINEXTENDEDADDITIONAL */
+    { 814,  2,  71}, /* LATINEXTADDITIONAL */
+    { 648,  2,  72}, /* GREEKEXTENDED */
+    { 647,  2,  72}, /* GREEKEXT */
+    { 616,  2,  73}, /* GENERALPUNCTUATION */
+    {1181,  2,  73}, /* PUNCTUATION */
+    {1296,  2,  74}, /* SUPERSCRIPTSANDSUBSCRIPTS */
+    {1295,  2,  74}, /* SUPERANDSUB */
+    { 465,  2,  75}, /* CURRENCYSYMBOLS */
+    { 422,  2,  76}, /* COMBININGDIACRITICALMARKSFORSYMBOLS */
+    { 513,  2,  76}, /* DIACRITICALSFORSYMBOLS */
+    { 426,  2,  76}, /* COMBININGMARKSFORSYMBOLS */
+    { 844,  2,  77}, /* LETTERLIKESYMBOLS */
+    {1061,  2,  78}, /* NUMBERFORMS */
+    { 223,  2,  79}, /* ARROWS */
+    { 942,  2,  80}, /* MATHEMATICALOPERATORS */
+    { 943,  2,  80}, /* MATHOPERATORS */
+    { 975,  2,  81}, /* MISCELLANEOUSTECHNICAL */
+    { 980,  2,  81}, /* MISCTECHNICAL */
+    { 450,  2,  82}, /* CONTROLPICTURES */
+    {1096,  2,  83}, /* OPTICALCHARACTERRECOGNITION */
+    {1072,  2,  83}, /* OCR */
+    { 560,  2,  84}, /* ENCLOSEDALPHANUMERICS */
+    { 559,  2,  84}, /* ENCLOSEDALPHANUM */
+    { 286,  2,  85}, /* BOXDRAWING */
+    { 276,  2,  86}, /* BLOCKELEMENTS */
+    { 617,  2,  87}, /* GEOMETRICSHAPES */
+    { 972,  2,  88}, /* MISCELLANEOUSSYMBOLS */
+    { 979,  2,  88}, /* MISCSYMBOLS */
+    { 517,  2,  89}, /* DINGBATS */
+    { 970,  2,  90}, /* MISCELLANEOUSMATHEMATICALSYMBOLSA */
+    { 976,  2,  90}, /* MISCMATHSYMBOLSA */
+    {1298,  2,  91}, /* SUPPLEMENTALARROWSA */
+    {1291,  2,  91}, /* SUPARROWSA */
+    { 293,  2,  92}, /* BRAILLEPATTERNS */
+    { 292,  2,  92}, /* BRAILLE */
+    {1299,  2,  93}, /* SUPPLEMENTALARROWSB */
+    {1292,  2,  93}, /* SUPARROWSB */
+    { 971,  2,  94}, /* MISCELLANEOUSMATHEMATICALSYMBOLSB */
+    { 977,  2,  94}, /* MISCMATHSYMBOLSB */
+    {1301,  2,  95}, /* SUPPLEMENTALMATHEMATICALOPERATORS */
+    {1297,  2,  95}, /* SUPMATHOPERATORS */
+    { 973,  2,  96}, /* MISCELLANEOUSSYMBOLSANDARROWS */
+    { 969,  2,  96}, /* MISCARROWS */
+    { 628,  2,  97}, /* GLAGOLITIC */
+    { 822,  2,  98}, /* LATINEXTENDEDC */
+    { 816,  2,  98}, /* LATINEXTC */
+    { 452,  2,  99}, /* COPTIC */
+    { 625,  2, 100}, /* GEORGIANSUPPLEMENT */
+    { 624,  2, 100}, /* GEORGIANSUP */
+    {1368,  2, 101}, /* TIFINAGH */
+    { 576,  2, 102}, /* ETHIOPICEXTENDED */
+    { 573,  2, 102}, /* ETHIOPICEXT */
+    { 479,  2, 103}, /* CYRILLICEXTENDEDA */
+    { 475,  2, 103}, /* CYRILLICEXTA */
+    {1302,  2, 104}, /* SUPPLEMENTALPUNCTUATION */
+    {1308,  2, 104}, /* SUPPUNCTUATION */
+    { 398,  2, 105}, /* CJKRADICALSSUPPLEMENT */
+    { 397,  2, 105}, /* CJKRADICALSSUP */
+    { 778,  2, 106}, /* KANGXIRADICALS */
+    { 777,  2, 106}, /* KANGXI */
+    { 714,  2, 107}, /* IDEOGRAPHICDESCRIPTIONCHARACTERS */
+    { 710,  2, 107}, /* IDC */
+    { 401,  2, 108}, /* CJKSYMBOLSANDPUNCTUATION */
+    { 400,  2, 108}, /* CJKSYMBOLS */
+    { 698,  2, 109}, /* HIRAGANA */
+    { 781,  2, 110}, /* KATAKANA */
+    { 279,  2, 111}, /* BOPOMOFO */
+    { 669,  2, 112}, /* HANGULCOMPATIBILITYJAMO */
+    { 431,  2, 112}, /* COMPATJAMO */
+    { 776,  2, 113}, /* KANBUN */
+    { 281,  2, 114}, /* BOPOMOFOEXTENDED */
+    { 280,  2, 114}, /* BOPOMOFOEXT */
+    { 399,  2, 115}, /* CJKSTROKES */
+    { 784,  2, 116}, /* KATAKANAPHONETICEXTENSIONS */
+    { 782,  2, 116}, /* KATAKANAEXT */
+    { 564,  2, 117}, /* ENCLOSEDCJKLETTERSANDMONTHS */
+    { 563,  2, 117}, /* ENCLOSEDCJK */
+    { 383,  2, 118}, /* CJKCOMPATIBILITY */
+    { 381,  2, 118}, /* CJKCOMPAT */
+    { 403,  2, 119}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONA */
+    { 389,  2, 119}, /* CJKEXTA */
+    {1464,  2, 120}, /* YIJINGHEXAGRAMSYMBOLS */
+    {1463,  2, 120}, /* YIJING */
+    { 402,  2, 121}, /* CJKUNIFIEDIDEOGRAPHS */
+    { 380,  2, 121}, /* CJK */
+    {1466,  2, 122}, /* YISYLLABLES */
+    {1465,  2, 123}, /* YIRADICALS */
+    { 858,  2, 124}, /* LISU */
+    {1406,  2, 125}, /* VAI */
+    { 480,  2, 126}, /* CYRILLICEXTENDEDB */
+    { 476,  2, 126}, /* CYRILLICEXTB */
+    { 246,  2, 127}, /* BAMUM */
+    { 988,  2, 128}, /* MODIFIERTONELETTERS */
+    { 823,  2, 129}, /* LATINEXTENDEDD */
+    { 817,  2, 129}, /* LATINEXTD */
+    {1316,  2, 130}, /* SYLOTINAGRI */
+    { 428,  2, 131}, /* COMMONINDICNUMBERFORMS */
+    { 725,  2, 131}, /* INDICNUMBERFORMS */
+    {1146,  2, 132}, /* PHAGSPA */
+    {1224,  2, 133}, /* SAURASHTRA */
+    { 506,  2, 134}, /* DEVANAGARIEXTENDED */
+    { 504,  2, 134}, /* DEVANAGARIEXT */
+    { 786,  2, 135}, /* KAYAHLI */
+    {1196,  2, 136}, /* REJANG */
+    { 671,  2, 137}, /* HANGULJAMOEXTENDEDA */
+    { 749,  2, 137}, /* JAMOEXTA */
+    { 752,  2, 138}, /* JAVANESE */
+    {1005,  2, 139}, /* MYANMAREXTENDEDB */
+    {1003,  2, 139}, /* MYANMAREXTB */
+    { 364,  2, 140}, /* CHAM */
+    {1004,  2, 141}, /* MYANMAREXTENDEDA */
+    {1002,  2, 141}, /* MYANMAREXTA */
+    {1334,  2, 142}, /* TAIVIET */
+    { 957,  2, 143}, /* MEETEIMAYEKEXTENSIONS */
+    { 956,  2, 143}, /* MEETEIMAYEKEXT */
+    { 577,  2, 144}, /* ETHIOPICEXTENDEDA */
+    { 574,  2, 144}, /* ETHIOPICEXTA */
+    { 824,  2, 145}, /* LATINEXTENDEDE */
+    { 818,  2, 145}, /* LATINEXTE */
+    { 373,  2, 146}, /* CHEROKEESUPPLEMENT */
+    { 372,  2, 146}, /* CHEROKEESUP */
+    { 955,  2, 147}, /* MEETEIMAYEK */
+    { 673,  2, 148}, /* HANGULSYLLABLES */
+    { 668,  2, 148}, /* HANGUL */
+    { 672,  2, 149}, /* HANGULJAMOEXTENDEDB */
+    { 750,  2, 149}, /* JAMOEXTB */
+    { 696,  2, 150}, /* HIGHSURROGATES */
+    { 694,  2, 151}, /* HIGHPRIVATEUSESURROGATES */
+    { 695,  2, 151}, /* HIGHPUSURROGATES */
+    { 869,  2, 152}, /* LOWSURROGATES */
+    {1175,  2, 153}, /* PRIVATEUSEAREA */
+    {1179,  2, 153}, /* PUA */
+    {1174,  2, 153}, /* PRIVATEUSE */
+    { 385,  2, 154}, /* CJKCOMPATIBILITYIDEOGRAPHS */
+    { 387,  2, 154}, /* CJKCOMPATIDEOGRAPHS */
     { 191,  2, 155}, /* ALPHABETICPRESENTATIONFORMS */
     { 190,  2, 155}, /* ALPHABETICPF */
-    { 214,  2, 156}, /* ARABICPRESENTATIONFORMSA */
-    { 212,  2, 156}, /* ARABICPFA */
-    {1397,  2, 157}, /* VARIATIONSELECTORS */
-    {1416,  2, 157}, /* VS */
-    {1403,  2, 158}, /* VERTICALFORMS */
-    { 420,  2, 159}, /* COMBININGHALFMARKS */
-    { 654,  2, 159}, /* HALFMARKS */
-    { 382,  2, 160}, /* CJKCOMPATIBILITYFORMS */
-    { 380,  2, 160}, /* CJKCOMPATFORMS */
-    {1248,  2, 161}, /* SMALLFORMVARIANTS */
-    {1247,  2, 161}, /* SMALLFORMS */
-    { 215,  2, 162}, /* ARABICPRESENTATIONFORMSB */
-    { 213,  2, 162}, /* ARABICPFB */
-    { 656,  2, 163}, /* HALFWIDTHANDFULLWIDTHFORMS */
-    { 653,  2, 163}, /* HALFANDFULLFORMS */
-    {1266,  2, 164}, /* SPECIALS */
-    { 844,  2, 165}, /* LINEARBSYLLABARY */
-    { 843,  2, 166}, /* LINEARBIDEOGRAMS */
+    { 216,  2, 156}, /* ARABICPRESENTATIONFORMSA */
+    { 214,  2, 156}, /* ARABICPFA */
+    {1409,  2, 157}, /* VARIATIONSELECTORS */
+    {1428,  2, 157}, /* VS */
+    {1415,  2, 158}, /* VERTICALFORMS */
+    { 424,  2, 159}, /* COMBININGHALFMARKS */
+    { 662,  2, 159}, /* HALFMARKS */
+    { 384,  2, 160}, /* CJKCOMPATIBILITYFORMS */
+    { 382,  2, 160}, /* CJKCOMPATFORMS */
+    {1260,  2, 161}, /* SMALLFORMVARIANTS */
+    {1259,  2, 161}, /* SMALLFORMS */
+    { 217,  2, 162}, /* ARABICPRESENTATIONFORMSB */
+    { 215,  2, 162}, /* ARABICPFB */
+    { 664,  2, 163}, /* HALFWIDTHANDFULLWIDTHFORMS */
+    { 661,  2, 163}, /* HALFANDFULLFORMS */
+    {1278,  2, 164}, /* SPECIALS */
+    { 854,  2, 165}, /* LINEARBSYLLABARY */
+    { 853,  2, 166}, /* LINEARBIDEOGRAMS */
     { 172,  2, 167}, /* AEGEANNUMBERS */
     { 198,  2, 168}, /* ANCIENTGREEKNUMBERS */
     { 199,  2, 169}, /* ANCIENTSYMBOLS */
-    {1136,  2, 170}, /* PHAISTOSDISC */
-    {1135,  2, 170}, /* PHAISTOS */
-    { 870,  2, 171}, /* LYCIAN */
-    { 314,  2, 172}, /* CARIAN */
-    { 449,  2, 173}, /* COPTICEPACTNUMBERS */
-    {1070,  2, 174}, /* OLDITALIC */
-    { 628,  2, 175}, /* GOTHIC */
-    {1072,  2, 176}, /* OLDPERMIC */
-    {1381,  2, 177}, /* UGARITIC */
-    {1073,  2, 178}, /* OLDPERSIAN */
-    { 495,  2, 179}, /* DESERET */
-    {1231,  2, 180}, /* SHAVIAN */
-    {1092,  2, 181}, /* OSMANYA */
-    {1089,  2, 182}, /* OSAGE */
-    { 537,  2, 183}, /* ELBASAN */
-    { 319,  2, 184}, /* CAUCASIANALBANIAN */
-    {1410,  2, 185}, /* VITHKUQI */
-    { 841,  2, 186}, /* LINEARA */
-    { 815,  2, 187}, /* LATINEXTENDEDF */
-    { 817,  2, 187}, /* LATINEXTF */
-    { 468,  2, 188}, /* CYPRIOTSYLLABARY */
-    { 715,  2, 189}, /* IMPERIALARAMAIC */
-    {1117,  2, 190}, /* PALMYRENE */
-    {1000,  2, 191}, /* NABATAEAN */
-    { 676,  2, 192}, /* HATRAN */
-    {1140,  2, 193}, /* PHOENICIAN */
-    { 872,  2, 194}, /* LYDIAN */
-    { 953,  2, 195}, /* MEROITICHIEROGLYPHS */
-    { 952,  2, 196}, /* MEROITICCURSIVE */
-    { 779,  2, 197}, /* KHAROSHTHI */
-    {1075,  2, 198}, /* OLDSOUTHARABIAN */
-    {1071,  2, 199}, /* OLDNORTHARABIAN */
-    { 897,  2, 200}, /* MANICHAEAN */
-    { 236,  2, 201}, /* AVESTAN */
-    { 729,  2, 202}, /* INSCRIPTIONALPARTHIAN */
-    { 728,  2, 203}, /* INSCRIPTIONALPAHLAVI */
-    {1166,  2, 204}, /* PSALTERPAHLAVI */
-    {1076,  2, 205}, /* OLDTURKIC */
-    {1069,  2, 206}, /* OLDHUNGARIAN */
-    { 668,  2, 207}, /* HANIFIROHINGYA */
-    {1200,  2, 208}, /* RUMINUMERALSYMBOLS */
-    {1199,  2, 208}, /* RUMI */
-    {1448,  2, 209}, /* YEZIDI */
-    {1074,  2, 210}, /* OLDSOGDIAN */
-    {1255,  2, 211}, /* SOGDIAN */
-    {1077,  2, 212}, /* OLDUYGHUR */
-    { 373,  2, 213}, /* CHORASMIAN */
-    { 539,  2, 214}, /* ELYMAIC */
-    { 287,  2, 215}, /* BRAHMI */
-    { 757,  2, 216}, /* KAITHI */
-    {1258,  2, 217}, /* SORASOMPENG */
-    { 361,  2, 218}, /* CHAKMA */
-    { 875,  2, 219}, /* MAHAJANI */
-    {1230,  2, 220}, /* SHARADA */
-    {1243,  2, 221}, /* SINHALAARCHAICNUMBERS */
-    { 785,  2, 222}, /* KHOJKI */
-    { 988,  2, 223}, /* MULTANI */
-    { 786,  2, 224}, /* KHUDAWADI */
-    { 630,  2, 225}, /* GRANTHA */
-    {1012,  2, 226}, /* NEWA */
-    {1358,  2, 227}, /* TIRHUTA */
-    {1237,  2, 228}, /* SIDDHAM */
-    { 974,  2, 229}, /* MODI */
-    { 983,  2, 230}, /* MONGOLIANSUPPLEMENT */
-    { 982,  2, 230}, /* MONGOLIANSUP */
-    {1326,  2, 231}, /* TAKRI */
-    { 178,  2, 232}, /* AHOM */
-    { 512,  2, 233}, /* DOGRA */
-    {1421,  2, 234}, /* WARANGCITI */
-    { 510,  2, 235}, /* DIVESAKURU */
-    {1003,  2, 236}, /* NANDINAGARI */
-    {1460,  2, 237}, /* ZANABAZARSQUARE */
-    {1260,  2, 238}, /* SOYOMBO */
-    {1386,  2, 239}, /* UNIFIEDCANADIANABORIGINALSYLLABICSEXTENDEDA */
-    {1379,  2, 239}, /* UCASEXTA */
-    {1124,  2, 240}, /* PAUCINHAU */
-    { 261,  2, 241}, /* BHAIKSUKI */
-    { 926,  2, 242}, /* MARCHEN */
-    { 928,  2, 243}, /* MASARAMGONDI */
-    { 646,  2, 244}, /* GUNJALAGONDI */
-    { 880,  2, 245}, /* MAKASAR */
-    { 850,  2, 246}, /* LISUSUPPLEMENT */
-    { 849,  2, 246}, /* LISUSUP */
-    {1331,  2, 247}, /* TAMILSUPPLEMENT */
-    {1330,  2, 247}, /* TAMILSUP */
-    { 457,  2, 248}, /* CUNEIFORM */
-    { 459,  2, 249}, /* CUNEIFORMNUMBERSANDPUNCTUATION */
-    { 458,  2, 249}, /* CUNEIFORMNUMBERS */
-    { 526,  2, 250}, /* EARLYDYNASTICCUNEIFORM */
-    { 469,  2, 251}, /* CYPROMINOAN */
-    { 535,  2, 252}, /* EGYPTIANHIEROGLYPHS */
-    { 534,  2, 253}, /* EGYPTIANHIEROGLYPHFORMATCONTROLS */
-    { 195,  2, 254}, /* ANATOLIANHIEROGLYPHS */
-    { 246,  2, 255}, /* BAMUMSUPPLEMENT */
-    { 245,  2, 255}, /* BAMUMSUP */
-    { 984,  2, 256}, /* MRO */
-    {1334,  2, 257}, /* TANGSA */
-    { 249,  2, 258}, /* BASSAVAH */
-    {1115,  2, 259}, /* PAHAWHHMONG */
-    { 941,  2, 260}, /* MEDEFAIDRIN */
-    { 954,  2, 261}, /* MIAO */
-    { 708,  2, 262}, /* IDEOGRAPHICSYMBOLSANDPUNCTUATION */
-    { 707,  2, 262}, /* IDEOGRAPHICSYMBOLS */
-    {1335,  2, 263}, /* TANGUT */
-    {1336,  2, 264}, /* TANGUTCOMPONENTS */
-    { 780,  2, 265}, /* KHITANSMALLSCRIPT */
-    {1338,  2, 266}, /* TANGUTSUPPLEMENT */
-    {1337,  2, 266}, /* TANGUTSUP */
-    { 763,  2, 267}, /* KANAEXTENDEDB */
-    { 761,  2, 267}, /* KANAEXTB */
-    { 765,  2, 268}, /* KANASUPPLEMENT */
-    { 764,  2, 268}, /* KANASUP */
-    { 762,  2, 269}, /* KANAEXTENDEDA */
-    { 760,  2, 269}, /* KANAEXTA */
-    {1250,  2, 270}, /* SMALLKANAEXTENSION */
-    {1249,  2, 270}, /* SMALLKANAEXT */
-    {1055,  2, 271}, /* NUSHU */
-    { 523,  2, 272}, /* DUPLOYAN */
-    {1234,  2, 273}, /* SHORTHANDFORMATCONTROLS */
-    {1466,  2, 274}, /* ZNAMENNYMUSICALNOTATION */
-    {1465,  2, 274}, /* ZNAMENNYMUSIC */
-    { 302,  2, 275}, /* BYZANTINEMUSICALSYMBOLS */
-    { 301,  2, 275}, /* BYZANTINEMUSIC */
-    { 990,  2, 276}, /* MUSICALSYMBOLS */
-    { 989,  2, 276}, /* MUSIC */
-    { 197,  2, 277}, /* ANCIENTGREEKMUSICALNOTATION */
-    { 196,  2, 277}, /* ANCIENTGREEKMUSIC */
-    { 935,  2, 278}, /* MAYANNUMERALS */
-    {1324,  2, 279}, /* TAIXUANJINGSYMBOLS */
-    {1323,  2, 279}, /* TAIXUANJING */
-    { 451,  2, 280}, /* COUNTINGRODNUMERALS */
-    { 450,  2, 280}, /* COUNTINGROD */
-    { 931,  2, 281}, /* MATHEMATICALALPHANUMERICSYMBOLS */
-    { 930,  2, 281}, /* MATHALPHANUM */
-    {1299,  2, 282}, /* SUTTONSIGNWRITING */
-    { 816,  2, 283}, /* LATINEXTENDEDG */
-    { 818,  2, 283}, /* LATINEXTG */
-    { 622,  2, 284}, /* GLAGOLITICSUPPLEMENT */
-    { 621,  2, 284}, /* GLAGOLITICSUP */
-    {1058,  2, 285}, /* NYIAKENGPUACHUEHMONG */
-    {1370,  2, 286}, /* TOTO */
-    {1419,  2, 287}, /* WANCHO */
-    { 570,  2, 288}, /* ETHIOPICEXTENDEDB */
-    { 567,  2, 288}, /* ETHIOPICEXTB */
-    { 949,  2, 289}, /* MENDEKIKAKUI */
-    { 170,  2, 290}, /* ADLAM */
-    { 719,  2, 291}, /* INDICSIYAQNUMBERS */
-    {1107,  2, 292}, /* OTTOMANSIYAQNUMBERS */
-    { 210,  2, 293}, /* ARABICMATHEMATICALALPHABETICSYMBOLS */
-    { 209,  2, 293}, /* ARABICMATH */
-    { 878,  2, 294}, /* MAHJONGTILES */
-    { 877,  2, 294}, /* MAHJONG */
-    { 514,  2, 295}, /* DOMINOTILES */
-    { 513,  2, 295}, /* DOMINO */
-    {1146,  2, 296}, /* PLAYINGCARDS */
-    { 553,  2, 297}, /* ENCLOSEDALPHANUMERICSUPPLEMENT */
-    { 554,  2, 297}, /* ENCLOSEDALPHANUMSUP */
-    { 558,  2, 298}, /* ENCLOSEDIDEOGRAPHICSUPPLEMENT */
-    { 557,  2, 298}, /* ENCLOSEDIDEOGRAPHICSUP */
-    { 964,  2, 299}, /* MISCELLANEOUSSYMBOLSANDPICTOGRAPHS */
-    { 968,  2, 299}, /* MISCPICTOGRAPHS */
-    { 548,  2, 300}, /* EMOTICONS */
-    {1087,  2, 301}, /* ORNAMENTALDINGBATS */
-    {1374,  2, 302}, /* TRANSPORTANDMAPSYMBOLS */
-    {1373,  2, 302}, /* TRANSPORTANDMAP */
-    { 184,  2, 303}, /* ALCHEMICALSYMBOLS */
-    { 183,  2, 303}, /* ALCHEMICAL */
-    { 611,  2, 304}, /* GEOMETRICSHAPESEXTENDED */
-    { 610,  2, 304}, /* GEOMETRICSHAPESEXT */
-    {1288,  2, 305}, /* SUPPLEMENTALARROWSC */
-    {1281,  2, 305}, /* SUPARROWSC */
-    {1291,  2, 306}, /* SUPPLEMENTALSYMBOLSANDPICTOGRAPHS */
-    {1297,  2, 306}, /* SUPSYMBOLSANDPICTOGRAPHS */
-    { 372,  2, 307}, /* CHESSSYMBOLS */
-    {1307,  2, 308}, /* SYMBOLSANDPICTOGRAPHSEXTENDEDA */
-    {1306,  2, 308}, /* SYMBOLSANDPICTOGRAPHSEXTA */
-    {1308,  2, 309}, /* SYMBOLSFORLEGACYCOMPUTING */
-    { 401,  2, 310}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONB */
-    { 388,  2, 310}, /* CJKEXTB */
-    { 402,  2, 311}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONC */
-    { 389,  2, 311}, /* CJKEXTC */
-    { 403,  2, 312}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIOND */
-    { 390,  2, 312}, /* CJKEXTD */
-    { 404,  2, 313}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONE */
-    { 391,  2, 313}, /* CJKEXTE */
-    { 405,  2, 314}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONF */
-    { 392,  2, 314}, /* CJKEXTF */
-    { 384,  2, 315}, /* CJKCOMPATIBILITYIDEOGRAPHSSUPPLEMENT */
-    { 386,  2, 315}, /* CJKCOMPATIDEOGRAPHSSUP */
-    { 406,  2, 316}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONG */
-    { 393,  2, 316}, /* CJKEXTG */
-    {1318,  2, 317}, /* TAGS */
-    {1398,  2, 318}, /* VARIATIONSELECTORSSUPPLEMENT */
-    {1417,  2, 318}, /* VSSUP */
-    {1292,  2, 319}, /* SUPPLEMENTARYPRIVATEUSEAREAA */
-    {1294,  2, 319}, /* SUPPUAA */
-    {1293,  2, 320}, /* SUPPLEMENTARYPRIVATEUSEAREAB */
-    {1295,  2, 320}, /* SUPPUAB */
-    {1040,  3,   0}, /* NOTREORDERED */
+    {1148,  2, 170}, /* PHAISTOSDISC */
+    {1147,  2, 170}, /* PHAISTOS */
+    { 880,  2, 171}, /* LYCIAN */
+    { 316,  2, 172}, /* CARIAN */
+    { 453,  2, 173}, /* COPTICEPACTNUMBERS */
+    {1082,  2, 174}, /* OLDITALIC */
+    { 636,  2, 175}, /* GOTHIC */
+    {1084,  2, 176}, /* OLDPERMIC */
+    {1393,  2, 177}, /* UGARITIC */
+    {1085,  2, 178}, /* OLDPERSIAN */
+    { 501,  2, 179}, /* DESERET */
+    {1243,  2, 180}, /* SHAVIAN */
+    {1104,  2, 181}, /* OSMANYA */
+    {1101,  2, 182}, /* OSAGE */
+    { 545,  2, 183}, /* ELBASAN */
+    { 321,  2, 184}, /* CAUCASIANALBANIAN */
+    {1422,  2, 185}, /* VITHKUQI */
+    { 851,  2, 186}, /* LINEARA */
+    { 825,  2, 187}, /* LATINEXTENDEDF */
+    { 827,  2, 187}, /* LATINEXTF */
+    { 472,  2, 188}, /* CYPRIOTSYLLABARY */
+    { 723,  2, 189}, /* IMPERIALARAMAIC */
+    {1129,  2, 190}, /* PALMYRENE */
+    {1010,  2, 191}, /* NABATAEAN */
+    { 684,  2, 192}, /* HATRAN */
+    {1152,  2, 193}, /* PHOENICIAN */
+    { 882,  2, 194}, /* LYDIAN */
+    { 963,  2, 195}, /* MEROITICHIEROGLYPHS */
+    { 962,  2, 196}, /* MEROITICCURSIVE */
+    { 789,  2, 197}, /* KHAROSHTHI */
+    {1087,  2, 198}, /* OLDSOUTHARABIAN */
+    {1083,  2, 199}, /* OLDNORTHARABIAN */
+    { 907,  2, 200}, /* MANICHAEAN */
+    { 238,  2, 201}, /* AVESTAN */
+    { 737,  2, 202}, /* INSCRIPTIONALPARTHIAN */
+    { 736,  2, 203}, /* INSCRIPTIONALPAHLAVI */
+    {1178,  2, 204}, /* PSALTERPAHLAVI */
+    {1088,  2, 205}, /* OLDTURKIC */
+    {1081,  2, 206}, /* OLDHUNGARIAN */
+    { 676,  2, 207}, /* HANIFIROHINGYA */
+    {1212,  2, 208}, /* RUMINUMERALSYMBOLS */
+    {1211,  2, 208}, /* RUMI */
+    {1460,  2, 209}, /* YEZIDI */
+    { 209,  2, 210}, /* ARABICEXTENDEDC */
+    { 206,  2, 210}, /* ARABICEXTC */
+    {1086,  2, 211}, /* OLDSOGDIAN */
+    {1267,  2, 212}, /* SOGDIAN */
+    {1089,  2, 213}, /* OLDUYGHUR */
+    { 375,  2, 214}, /* CHORASMIAN */
+    { 547,  2, 215}, /* ELYMAIC */
+    { 289,  2, 216}, /* BRAHMI */
+    { 765,  2, 217}, /* KAITHI */
+    {1270,  2, 218}, /* SORASOMPENG */
+    { 363,  2, 219}, /* CHAKMA */
+    { 885,  2, 220}, /* MAHAJANI */
+    {1242,  2, 221}, /* SHARADA */
+    {1255,  2, 222}, /* SINHALAARCHAICNUMBERS */
+    { 795,  2, 223}, /* KHOJKI */
+    { 998,  2, 224}, /* MULTANI */
+    { 796,  2, 225}, /* KHUDAWADI */
+    { 638,  2, 226}, /* GRANTHA */
+    {1024,  2, 227}, /* NEWA */
+    {1370,  2, 228}, /* TIRHUTA */
+    {1249,  2, 229}, /* SIDDHAM */
+    { 984,  2, 230}, /* MODI */
+    { 993,  2, 231}, /* MONGOLIANSUPPLEMENT */
+    { 992,  2, 231}, /* MONGOLIANSUP */
+    {1338,  2, 232}, /* TAKRI */
+    { 178,  2, 233}, /* AHOM */
+    { 520,  2, 234}, /* DOGRA */
+    {1433,  2, 235}, /* WARANGCITI */
+    { 518,  2, 236}, /* DIVESAKURU */
+    {1015,  2, 237}, /* NANDINAGARI */
+    {1472,  2, 238}, /* ZANABAZARSQUARE */
+    {1272,  2, 239}, /* SOYOMBO */
+    {1398,  2, 240}, /* UNIFIEDCANADIANABORIGINALSYLLABICSEXTENDEDA */
+    {1391,  2, 240}, /* UCASEXTA */
+    {1136,  2, 241}, /* PAUCINHAU */
+    { 507,  2, 242}, /* DEVANAGARIEXTENDEDA */
+    { 505,  2, 242}, /* DEVANAGARIEXTA */
+    { 263,  2, 243}, /* BHAIKSUKI */
+    { 936,  2, 244}, /* MARCHEN */
+    { 938,  2, 245}, /* MASARAMGONDI */
+    { 654,  2, 246}, /* GUNJALAGONDI */
+    { 890,  2, 247}, /* MAKASAR */
+    { 785,  2, 248}, /* KAWI */
+    { 860,  2, 249}, /* LISUSUPPLEMENT */
+    { 859,  2, 249}, /* LISUSUP */
+    {1343,  2, 250}, /* TAMILSUPPLEMENT */
+    {1342,  2, 250}, /* TAMILSUP */
+    { 461,  2, 251}, /* CUNEIFORM */
+    { 463,  2, 252}, /* CUNEIFORMNUMBERSANDPUNCTUATION */
+    { 462,  2, 252}, /* CUNEIFORMNUMBERS */
+    { 534,  2, 253}, /* EARLYDYNASTICCUNEIFORM */
+    { 473,  2, 254}, /* CYPROMINOAN */
+    { 543,  2, 255}, /* EGYPTIANHIEROGLYPHS */
+    { 542,  2, 256}, /* EGYPTIANHIEROGLYPHFORMATCONTROLS */
+    { 195,  2, 257}, /* ANATOLIANHIEROGLYPHS */
+    { 248,  2, 258}, /* BAMUMSUPPLEMENT */
+    { 247,  2, 258}, /* BAMUMSUP */
+    { 994,  2, 259}, /* MRO */
+    {1346,  2, 260}, /* TANGSA */
+    { 251,  2, 261}, /* BASSAVAH */
+    {1127,  2, 262}, /* PAHAWHHMONG */
+    { 951,  2, 263}, /* MEDEFAIDRIN */
+    { 964,  2, 264}, /* MIAO */
+    { 716,  2, 265}, /* IDEOGRAPHICSYMBOLSANDPUNCTUATION */
+    { 715,  2, 265}, /* IDEOGRAPHICSYMBOLS */
+    {1347,  2, 266}, /* TANGUT */
+    {1348,  2, 267}, /* TANGUTCOMPONENTS */
+    { 790,  2, 268}, /* KHITANSMALLSCRIPT */
+    {1350,  2, 269}, /* TANGUTSUPPLEMENT */
+    {1349,  2, 269}, /* TANGUTSUP */
+    { 772,  2, 270}, /* KANAEXTENDEDB */
+    { 770,  2, 270}, /* KANAEXTB */
+    { 774,  2, 271}, /* KANASUPPLEMENT */
+    { 773,  2, 271}, /* KANASUP */
+    { 771,  2, 272}, /* KANAEXTENDEDA */
+    { 769,  2, 272}, /* KANAEXTA */
+    {1262,  2, 273}, /* SMALLKANAEXTENSION */
+    {1261,  2, 273}, /* SMALLKANAEXT */
+    {1067,  2, 274}, /* NUSHU */
+    { 531,  2, 275}, /* DUPLOYAN */
+    {1246,  2, 276}, /* SHORTHANDFORMATCONTROLS */
+    {1478,  2, 277}, /* ZNAMENNYMUSICALNOTATION */
+    {1477,  2, 277}, /* ZNAMENNYMUSIC */
+    { 304,  2, 278}, /* BYZANTINEMUSICALSYMBOLS */
+    { 303,  2, 278}, /* BYZANTINEMUSIC */
+    {1000,  2, 279}, /* MUSICALSYMBOLS */
+    { 999,  2, 279}, /* MUSIC */
+    { 197,  2, 280}, /* ANCIENTGREEKMUSICALNOTATION */
+    { 196,  2, 280}, /* ANCIENTGREEKMUSIC */
+    { 766,  2, 281}, /* KAKTOVIKNUMERALS */
+    { 945,  2, 282}, /* MAYANNUMERALS */
+    {1336,  2, 283}, /* TAIXUANJINGSYMBOLS */
+    {1335,  2, 283}, /* TAIXUANJING */
+    { 455,  2, 284}, /* COUNTINGRODNUMERALS */
+    { 454,  2, 284}, /* COUNTINGROD */
+    { 941,  2, 285}, /* MATHEMATICALALPHANUMERICSYMBOLS */
+    { 940,  2, 285}, /* MATHALPHANUM */
+    {1311,  2, 286}, /* SUTTONSIGNWRITING */
+    { 826,  2, 287}, /* LATINEXTENDEDG */
+    { 828,  2, 287}, /* LATINEXTG */
+    { 630,  2, 288}, /* GLAGOLITICSUPPLEMENT */
+    { 629,  2, 288}, /* GLAGOLITICSUP */
+    { 482,  2, 289}, /* CYRILLICEXTENDEDD */
+    { 478,  2, 289}, /* CYRILLICEXTD */
+    {1070,  2, 290}, /* NYIAKENGPUACHUEHMONG */
+    {1382,  2, 291}, /* TOTO */
+    {1431,  2, 292}, /* WANCHO */
+    {1012,  2, 293}, /* NAGMUNDARI */
+    { 578,  2, 294}, /* ETHIOPICEXTENDEDB */
+    { 575,  2, 294}, /* ETHIOPICEXTB */
+    { 959,  2, 295}, /* MENDEKIKAKUI */
+    { 170,  2, 296}, /* ADLAM */
+    { 727,  2, 297}, /* INDICSIYAQNUMBERS */
+    {1119,  2, 298}, /* OTTOMANSIYAQNUMBERS */
+    { 212,  2, 299}, /* ARABICMATHEMATICALALPHABETICSYMBOLS */
+    { 211,  2, 299}, /* ARABICMATH */
+    { 888,  2, 300}, /* MAHJONGTILES */
+    { 887,  2, 300}, /* MAHJONG */
+    { 522,  2, 301}, /* DOMINOTILES */
+    { 521,  2, 301}, /* DOMINO */
+    {1158,  2, 302}, /* PLAYINGCARDS */
+    { 561,  2, 303}, /* ENCLOSEDALPHANUMERICSUPPLEMENT */
+    { 562,  2, 303}, /* ENCLOSEDALPHANUMSUP */
+    { 566,  2, 304}, /* ENCLOSEDIDEOGRAPHICSUPPLEMENT */
+    { 565,  2, 304}, /* ENCLOSEDIDEOGRAPHICSUP */
+    { 974,  2, 305}, /* MISCELLANEOUSSYMBOLSANDPICTOGRAPHS */
+    { 978,  2, 305}, /* MISCPICTOGRAPHS */
+    { 556,  2, 306}, /* EMOTICONS */
+    {1099,  2, 307}, /* ORNAMENTALDINGBATS */
+    {1386,  2, 308}, /* TRANSPORTANDMAPSYMBOLS */
+    {1385,  2, 308}, /* TRANSPORTANDMAP */
+    { 184,  2, 309}, /* ALCHEMICALSYMBOLS */
+    { 183,  2, 309}, /* ALCHEMICAL */
+    { 619,  2, 310}, /* GEOMETRICSHAPESEXTENDED */
+    { 618,  2, 310}, /* GEOMETRICSHAPESEXT */
+    {1300,  2, 311}, /* SUPPLEMENTALARROWSC */
+    {1293,  2, 311}, /* SUPARROWSC */
+    {1303,  2, 312}, /* SUPPLEMENTALSYMBOLSANDPICTOGRAPHS */
+    {1309,  2, 312}, /* SUPSYMBOLSANDPICTOGRAPHS */
+    { 374,  2, 313}, /* CHESSSYMBOLS */
+    {1319,  2, 314}, /* SYMBOLSANDPICTOGRAPHSEXTENDEDA */
+    {1318,  2, 314}, /* SYMBOLSANDPICTOGRAPHSEXTA */
+    {1320,  2, 315}, /* SYMBOLSFORLEGACYCOMPUTING */
+    { 404,  2, 316}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONB */
+    { 390,  2, 316}, /* CJKEXTB */
+    { 405,  2, 317}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONC */
+    { 391,  2, 317}, /* CJKEXTC */
+    { 406,  2, 318}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIOND */
+    { 392,  2, 318}, /* CJKEXTD */
+    { 407,  2, 319}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONE */
+    { 393,  2, 319}, /* CJKEXTE */
+    { 408,  2, 320}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONF */
+    { 394,  2, 320}, /* CJKEXTF */
+    { 386,  2, 321}, /* CJKCOMPATIBILITYIDEOGRAPHSSUPPLEMENT */
+    { 388,  2, 321}, /* CJKCOMPATIDEOGRAPHSSUP */
+    { 409,  2, 322}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONG */
+    { 395,  2, 322}, /* CJKEXTG */
+    { 410,  2, 323}, /* CJKUNIFIEDIDEOGRAPHSEXTENSIONH */
+    { 396,  2, 323}, /* CJKEXTH */
+    {1330,  2, 324}, /* TAGS */
+    {1410,  2, 325}, /* VARIATIONSELECTORSSUPPLEMENT */
+    {1429,  2, 325}, /* VSSUP */
+    {1304,  2, 326}, /* SUPPLEMENTARYPRIVATEUSEAREAA */
+    {1306,  2, 326}, /* SUPPUAA */
+    {1305,  2, 327}, /* SUPPLEMENTARYPRIVATEUSEAREAB */
+    {1307,  2, 327}, /* SUPPUAB */
+    {1052,  3,   0}, /* NOTREORDERED */
     {   1,  3,   0}, /* 0 */
-    {1041,  3,   0}, /* NR */
+    {1053,  3,   0}, /* NR */
     { 167,  3,   1}, /* ABOVE */
     {  75,  3,   1}, /* 230 */
     { 166,  3,   1}, /* A */
     { 169,  3,   2}, /* ABOVERIGHT */
     {  76,  3,   2}, /* 232 */
     { 201,  3,   2}, /* AR */
-    { 255,  3,   3}, /* BELOW */
+    { 257,  3,   3}, /* BELOW */
     {  69,  3,   3}, /* 220 */
-    { 238,  3,   3}, /* B */
-    { 232,  3,   4}, /* ATTACHEDABOVERIGHT */
+    { 240,  3,   3}, /* B */
+    { 234,  3,   4}, /* ATTACHEDABOVERIGHT */
     {  65,  3,   4}, /* 216 */
-    { 227,  3,   4}, /* ATAR */
-    { 233,  3,   5}, /* ATTACHEDBELOW */
+    { 229,  3,   4}, /* ATAR */
+    { 235,  3,   5}, /* ATTACHEDBELOW */
     {  62,  3,   5}, /* 202 */
-    { 228,  3,   5}, /* ATB */
-    {1111,  3,   6}, /* OVERLAY */
+    { 230,  3,   5}, /* ATB */
+    {1123,  3,   6}, /* OVERLAY */
     {   2,  3,   6}, /* 1 */
-    {1110,  3,   6}, /* OV */
-    { 733,  3,   7}, /* IOTASUBSCRIPT */
+    {1122,  3,   6}, /* OV */
+    { 741,  3,   7}, /* IOTASUBSCRIPT */
     {  80,  3,   7}, /* 240 */
-    { 736,  3,   7}, /* IS */
-    { 516,  3,   8}, /* DOUBLEBELOW */
+    { 744,  3,   7}, /* IS */
+    { 524,  3,   8}, /* DOUBLEBELOW */
     {  77,  3,   8}, /* 233 */
-    { 487,  3,   8}, /* DB */
-    { 515,  3,   9}, /* DOUBLEABOVE */
+    { 493,  3,   8}, /* DB */
+    { 523,  3,   9}, /* DOUBLEABOVE */
     {  78,  3,   9}, /* 234 */
-    { 482,  3,   9}, /* DA */
-    { 257,  3,  10}, /* BELOWRIGHT */
+    { 488,  3,   9}, /* DA */
+    { 259,  3,  10}, /* BELOWRIGHT */
     {  70,  3,  10}, /* 222 */
-    { 285,  3,  10}, /* BR */
+    { 287,  3,  10}, /* BR */
     { 168,  3,  11}, /* ABOVELEFT */
     {  73,  3,  11}, /* 228 */
     { 181,  3,  11}, /* AL */
-    { 323,  3,  12}, /* CCC10 */
+    { 325,  3,  12}, /* CCC10 */
     {  21,  3,  12}, /* 10 */
-    { 326,  3,  13}, /* CCC11 */
+    { 328,  3,  13}, /* CCC11 */
     {  33,  3,  13}, /* 11 */
-    { 328,  3,  14}, /* CCC12 */
+    { 330,  3,  14}, /* CCC12 */
     {  37,  3,  14}, /* 12 */
-    { 331,  3,  15}, /* CCC13 */
+    { 333,  3,  15}, /* CCC13 */
     {  40,  3,  15}, /* 13 */
-    { 335,  3,  16}, /* CCC14 */
+    { 337,  3,  16}, /* CCC14 */
     {  45,  3,  16}, /* 14 */
-    { 336,  3,  17}, /* CCC15 */
+    { 338,  3,  17}, /* CCC15 */
     {  46,  3,  17}, /* 15 */
-    { 337,  3,  18}, /* CCC16 */
+    { 339,  3,  18}, /* CCC16 */
     {  48,  3,  18}, /* 16 */
-    { 338,  3,  19}, /* CCC17 */
+    { 340,  3,  19}, /* CCC17 */
     {  49,  3,  19}, /* 17 */
-    { 339,  3,  20}, /* CCC18 */
+    { 341,  3,  20}, /* CCC18 */
     {  51,  3,  20}, /* 18 */
-    { 340,  3,  21}, /* CCC19 */
+    { 342,  3,  21}, /* CCC19 */
     {  52,  3,  21}, /* 19 */
-    { 341,  3,  22}, /* CCC20 */
+    { 343,  3,  22}, /* CCC20 */
     {  56,  3,  22}, /* 20 */
-    { 342,  3,  23}, /* CCC21 */
+    { 344,  3,  23}, /* CCC21 */
     {  63,  3,  23}, /* 21 */
-    { 343,  3,  24}, /* CCC22 */
+    { 345,  3,  24}, /* CCC22 */
     {  68,  3,  24}, /* 22 */
-    { 344,  3,  25}, /* CCC23 */
+    { 346,  3,  25}, /* CCC23 */
     {  74,  3,  25}, /* 23 */
-    { 345,  3,  26}, /* CCC24 */
+    { 347,  3,  26}, /* CCC24 */
     {  79,  3,  26}, /* 24 */
-    { 346,  3,  27}, /* CCC25 */
+    { 348,  3,  27}, /* CCC25 */
     {  81,  3,  27}, /* 25 */
-    { 351,  3,  28}, /* CCC30 */
+    { 353,  3,  28}, /* CCC30 */
     {  95,  3,  28}, /* 30 */
-    { 352,  3,  29}, /* CCC31 */
+    { 354,  3,  29}, /* CCC31 */
     { 100,  3,  29}, /* 31 */
-    { 353,  3,  30}, /* CCC32 */
+    { 355,  3,  30}, /* CCC32 */
     { 101,  3,  30}, /* 32 */
-    { 348,  3,  31}, /* CCC27 */
+    { 350,  3,  31}, /* CCC27 */
     {  83,  3,  31}, /* 27 */
-    { 349,  3,  32}, /* CCC28 */
+    { 351,  3,  32}, /* CCC28 */
     {  84,  3,  32}, /* 28 */
-    { 350,  3,  33}, /* CCC29 */
+    { 352,  3,  33}, /* CCC29 */
     {  85,  3,  33}, /* 29 */
-    { 354,  3,  34}, /* CCC33 */
+    { 356,  3,  34}, /* CCC33 */
     { 102,  3,  34}, /* 33 */
-    { 355,  3,  35}, /* CCC34 */
+    { 357,  3,  35}, /* CCC34 */
     { 103,  3,  35}, /* 34 */
-    { 356,  3,  36}, /* CCC35 */
+    { 358,  3,  36}, /* CCC35 */
     { 104,  3,  36}, /* 35 */
-    { 357,  3,  37}, /* CCC36 */
+    { 359,  3,  37}, /* CCC36 */
     { 105,  3,  37}, /* 36 */
-    {1047,  3,  38}, /* NUKTA */
+    {1059,  3,  38}, /* NUKTA */
     { 142,  3,  38}, /* 7 */
-    {1024,  3,  38}, /* NK */
-    {1406,  3,  39}, /* VIRAMA */
+    {1036,  3,  38}, /* NK */
+    {1418,  3,  39}, /* VIRAMA */
     { 158,  3,  39}, /* 9 */
-    {1415,  3,  39}, /* VR */
-    { 358,  3,  40}, /* CCC84 */
+    {1427,  3,  39}, /* VR */
+    { 360,  3,  40}, /* CCC84 */
     { 157,  3,  40}, /* 84 */
-    { 359,  3,  41}, /* CCC91 */
+    { 361,  3,  41}, /* CCC91 */
     { 165,  3,  41}, /* 91 */
-    { 324,  3,  42}, /* CCC103 */
+    { 326,  3,  42}, /* CCC103 */
     {  31,  3,  42}, /* 103 */
-    { 325,  3,  43}, /* CCC107 */
+    { 327,  3,  43}, /* CCC107 */
     {  32,  3,  43}, /* 107 */
-    { 327,  3,  44}, /* CCC118 */
+    { 329,  3,  44}, /* CCC118 */
     {  36,  3,  44}, /* 118 */
-    { 329,  3,  45}, /* CCC122 */
+    { 331,  3,  45}, /* CCC122 */
     {  38,  3,  45}, /* 122 */
-    { 330,  3,  46}, /* CCC129 */
+    { 332,  3,  46}, /* CCC129 */
     {  39,  3,  46}, /* 129 */
-    { 332,  3,  47}, /* CCC130 */
+    { 334,  3,  47}, /* CCC130 */
     {  42,  3,  47}, /* 130 */
-    { 333,  3,  48}, /* CCC132 */
+    { 335,  3,  48}, /* CCC132 */
     {  43,  3,  48}, /* 132 */
-    { 231,  3,  49}, /* ATTACHEDABOVE */
+    { 233,  3,  49}, /* ATTACHEDABOVE */
     {  64,  3,  49}, /* 214 */
-    { 226,  3,  49}, /* ATA */
-    { 256,  3,  50}, /* BELOWLEFT */
+    { 228,  3,  49}, /* ATA */
+    { 258,  3,  50}, /* BELOWLEFT */
     {  67,  3,  50}, /* 218 */
-    { 270,  3,  50}, /* BL */
-    { 824,  3,  51}, /* LEFT */
+    { 272,  3,  50}, /* BL */
+    { 834,  3,  51}, /* LEFT */
     {  71,  3,  51}, /* 224 */
-    { 792,  3,  51}, /* L */
-    { 766,  3,  52}, /* KANAVOICING */
+    { 802,  3,  51}, /* L */
+    { 775,  3,  52}, /* KANAVOICING */
     { 151,  3,  52}, /* 8 */
-    { 791,  3,  52}, /* KV */
-    { 347,  3,  53}, /* CCC26 */
+    { 801,  3,  52}, /* KV */
+    { 349,  3,  53}, /* CCC26 */
     {  82,  3,  53}, /* 26 */
-    { 673,  3,  54}, /* HANREADING */
+    { 681,  3,  54}, /* HANREADING */
     { 136,  3,  54}, /* 6 */
-    { 672,  3,  54}, /* HANR */
-    {1187,  3,  55}, /* RIGHT */
+    { 680,  3,  54}, /* HANR */
+    {1199,  3,  55}, /* RIGHT */
     {  72,  3,  55}, /* 226 */
-    {1179,  3,  55}, /* R */
-    { 334,  3,  56}, /* CCC133 */
+    {1191,  3,  55}, /* R */
+    { 336,  3,  56}, /* CCC133 */
     {  44,  3,  56}, /* 133 */
-    { 234,  3,  57}, /* ATTACHEDBELOWLEFT */
+    { 236,  3,  57}, /* ATTACHEDBELOWLEFT */
     {  57,  3,  57}, /* 200 */
-    { 229,  3,  57}, /* ATBL */
-    {1033,  4,   0}, /* NONE */
-    {1030,  4,   1}, /* NOBREAK */
-    {1007,  4,   1}, /* NB */
-    { 426,  4,   2}, /* COMPAT */
-    { 415,  4,   2}, /* COM */
-    {1282,  4,   3}, /* SUPER */
-    {1278,  4,   3}, /* SUP */
-    { 598,  4,   4}, /* FRACTION */
-    { 597,  4,   4}, /* FRA */
-    { 309,  4,   5}, /* CANONICAL */
-    { 306,  4,   5}, /* CAN */
-    {1273,  4,   6}, /* SUB */
-    { 595,  4,   7}, /* FONT */
-    { 376,  4,   8}, /* CIRCLE */
-    { 550,  4,   8}, /* ENC */
-    {1426,  4,   9}, /* WIDE */
-    {1402,  4,  10}, /* VERTICAL */
-    {1401,  4,  10}, /* VERT */
-    {1269,  4,  11}, /* SQUARE */
-    {1268,  4,  11}, /* SQR */
-    { 738,  4,  12}, /* ISOLATED */
-    { 737,  4,  12}, /* ISO */
-    { 590,  4,  13}, /* FINAL */
-    { 589,  4,  13}, /* FIN */
-    { 724,  4,  14}, /* INITIAL */
-    { 723,  4,  14}, /* INIT */
-    { 943,  4,  15}, /* MEDIAL */
-    { 940,  4,  15}, /* MED */
-    {1246,  4,  16}, /* SMALL */
-    {1251,  4,  16}, /* SML */
-    {1006,  4,  17}, /* NARROW */
-    {1004,  4,  17}, /* NAR */
-    {1011,  5,   0}, /* NEUTRAL */
-    { 997,  5,   0}, /* N */
-    {1006,  5,   1}, /* NARROW */
-    { 999,  5,   1}, /* NA */
-    { 193,  5,   2}, /* AMBIGUOUS */
-    { 166,  5,   2}, /* A */
-    {1426,  5,   3}, /* WIDE */
-    {1418,  5,   3}, /* W */
-    { 655,  5,   4}, /* HALFWIDTH */
-    { 649,  5,   4}, /* H */
-    { 600,  5,   5}, /* FULLWIDTH */
-    { 584,  5,   5}, /* F */
-    {1383,  6,   0}, /* UNASSIGNED */
-    { 412,  6,   0}, /* CN */
-    { 445,  6,   1}, /* CONTROL */
-    { 321,  6,   1}, /* CC */
-    { 413,  6,   1}, /* CNTRL */
-    {1263,  6,   2}, /* SPACESEPARATOR */
-    {1468,  6,   2}, /* ZS */
-    {1104,  6,   3}, /* OTHERPUNCTUATION */
-    {1148,  6,   3}, /* PO */
-    { 460,  6,   4}, /* CURRENCYSYMBOL */
-    {1214,  6,   4}, /* SC */
-    {1083,  6,   5}, /* OPENPUNCTUATION */
-    {1165,  6,   5}, /* PS */
-    { 410,  6,   6}, /* CLOSEPUNCTUATION */
-    {1130,  6,   6}, /* PE */
-    { 934,  6,   7}, /* MATHSYMBOL */
-    {1245,  6,   7}, /* SM */
-    { 486,  6,   8}, /* DASHPUNCTUATION */
-    {1127,  6,   8}, /* PD */
-    { 490,  6,   9}, /* DECIMALNUMBER */
-    {1010,  6,   9}, /* ND */
-    { 508,  6,   9}, /* DIGIT */
-    {1392,  6,  10}, /* UPPERCASELETTER */
-    { 864,  6,  10}, /* LU */
-    { 977,  6,  11}, /* MODIFIERSYMBOL */
-    {1244,  6,  11}, /* SK */
-    { 430,  6,  12}, /* CONNECTORPUNCTUATION */
-    {1125,  6,  12}, /* PC */
-    { 858,  6,  13}, /* LOWERCASELETTER */
-    { 851,  6,  13}, /* LL */
-    {1105,  6,  14}, /* OTHERSYMBOL */
-    {1252,  6,  14}, /* SO */
-    {1099,  6,  15}, /* OTHERLETTER */
-    { 853,  6,  15}, /* LO */
-    { 725,  6,  16}, /* INITIALPUNCTUATION */
-    {1145,  6,  16}, /* PI */
-    { 596,  6,  17}, /* FORMAT */
-    { 360,  6,  17}, /* CF */
-    {1103,  6,  18}, /* OTHERNUMBER */
-    {1028,  6,  18}, /* NO */
-    { 591,  6,  19}, /* FINALPUNCTUATION */
-    {1132,  6,  19}, /* PF */
-    {1359,  6,  20}, /* TITLECASELETTER */
-    { 863,  6,  20}, /* LT */
-    { 975,  6,  21}, /* MODIFIERLETTER */
-    { 852,  6,  21}, /* LM */
-    {1036,  6,  22}, /* NONSPACINGMARK */
-    { 973,  6,  22}, /* MN */
-    { 559,  6,  23}, /* ENCLOSINGMARK */
-    { 939,  6,  23}, /* ME */
-    {1264,  6,  24}, /* SPACINGMARK */
-    { 938,  6,  24}, /* MC */
-    { 835,  6,  25}, /* LETTERNUMBER */
-    {1027,  6,  25}, /* NL */
-    { 847,  6,  26}, /* LINESEPARATOR */
-    {1464,  6,  26}, /* ZL */
-    {1118,  6,  27}, /* PARAGRAPHSEPARATOR */
-    {1467,  6,  27}, /* ZP */
-    {1298,  6,  28}, /* SURROGATE */
-    { 456,  6,  28}, /* CS */
-    {1162,  6,  29}, /* PRIVATEUSE */
-    { 414,  6,  29}, /* CO */
-    {1093,  6,  30}, /* OTHER */
-    { 303,  6,  30}, /* C */
-    { 304,  6,  30}, /* C& */
-    { 833,  6,  31}, /* LETTER */
-    { 792,  6,  31}, /* L */
-    { 793,  6,  31}, /* L& */
-    { 927,  6,  32}, /* MARK */
-    { 873,  6,  32}, /* M */
-    { 421,  6,  32}, /* COMBININGMARK */
-    { 874,  6,  32}, /* M& */
-    {1048,  6,  33}, /* NUMBER */
-    { 997,  6,  33}, /* N */
-    { 998,  6,  33}, /* N& */
-    {1169,  6,  34}, /* PUNCTUATION */
-    {1113,  6,  34}, /* P */
-    {1168,  6,  34}, /* PUNCT */
-    {1114,  6,  34}, /* P& */
-    {1305,  6,  35}, /* SYMBOL */
-    {1203,  6,  35}, /* S */
-    {1204,  6,  35}, /* S& */
-    {1227,  6,  36}, /* SEPARATOR */
-    {1457,  6,  36}, /* Z */
-    {1458,  6,  36}, /* Z& */
-    { 224,  6,  37}, /* ASSIGNED */
-    { 317,  6,  38}, /* CASEDLETTER */
-    { 821,  6,  38}, /* LC */
-    {1093,  7,   0}, /* OTHER */
-    {1441,  7,   0}, /* XX */
-    { 445,  7,   1}, /* CONTROL */
-    { 412,  7,   1}, /* CN */
-    { 836,  7,   2}, /* LF */
-    { 455,  7,   3}, /* CR */
-    { 579,  7,   4}, /* EXTEND */
-    { 576,  7,   4}, /* EX */
-    {1159,  7,   5}, /* PREPEND */
-    {1156,  7,   5}, /* PP */
-    {1264,  7,   6}, /* SPACINGMARK */
-    {1245,  7,   6}, /* SM */
-    { 792,  7,   7}, /* L */
-    {1393,  7,   8}, /* V */
-    {1314,  7,   9}, /* T */
-    {1470,  7,  10}, /* ZWJ */
-    { 865,  7,  11}, /* LV */
-    { 867,  7,  12}, /* LVT */
-    {1181,  7,  13}, /* REGIONALINDICATOR */
-    {1186,  7,  13}, /* RI */
-    { 529,  7,  14}, /* EBASE */
-    { 528,  7,  14}, /* EB */
-    { 530,  7,  15}, /* EBASEGAZ */
-    { 531,  7,  15}, /* EBG */
-    { 542,  7,  16}, /* EMODIFIER */
-    { 540,  7,  16}, /* EM */
-    { 624,  7,  17}, /* GLUEAFTERZWJ */
-    { 603,  7,  17}, /* GAZ */
-    {1039,  8,   0}, /* NOTAPPLICABLE */
-    { 999,  8,   0}, /* NA */
-    { 823,  8,   1}, /* LEADINGJAMO */
-    { 792,  8,   1}, /* L */
-    {1414,  8,   2}, /* VOWELJAMO */
-    {1393,  8,   2}, /* V */
-    {1371,  8,   3}, /* TRAILINGJAMO */
-    {1314,  8,   3}, /* T */
-    { 866,  8,   4}, /* LVSYLLABLE */
-    { 865,  8,   4}, /* LV */
-    { 868,  8,   5}, /* LVTSYLLABLE */
-    { 867,  8,   5}, /* LVT */
-    { 999,  9,   0}, /* NA */
-    {1363,  9,   1}, /* TOP */
-    {1187,  9,   2}, /* RIGHT */
-    { 280,  9,   3}, /* BOTTOM */
-    { 824,  9,   4}, /* LEFT */
-    { 825,  9,   5}, /* LEFTANDRIGHT */
-    {1369,  9,   6}, /* TOPANDRIGHT */
-    {1367,  9,   7}, /* TOPANDLEFT */
-    {1368,  9,   8}, /* TOPANDLEFTANDRIGHT */
-    {1364,  9,   9}, /* TOPANDBOTTOM */
-    {1408,  9,  10}, /* VISUALORDERLEFT */
-    {1365,  9,  11}, /* TOPANDBOTTOMANDLEFT */
-    { 282,  9,  12}, /* BOTTOMANDRIGHT */
-    {1366,  9,  13}, /* TOPANDBOTTOMANDRIGHT */
-    {1112,  9,  14}, /* OVERSTRUCK */
-    { 281,  9,  15}, /* BOTTOMANDLEFT */
-    {1093, 10,   0}, /* OTHER */
-    { 438, 10,   1}, /* CONSONANTPLACEHOLDER */
-    {1048, 10,   2}, /* NUMBER */
-    {1302, 10,   3}, /* SYLLABLEMODIFIER */
-    { 268, 10,   4}, /* BINDU */
-    {1407, 10,   5}, /* VISARGA */
-    {1413, 10,   6}, /* VOWELINDEPENDENT */
-    { 431, 10,   7}, /* CONSONANT */
-    {1412, 10,   8}, /* VOWELDEPENDENT */
-    {1047, 10,   9}, /* NUKTA */
-    { 235, 10,  10}, /* AVAGRAHA */
-    {1406, 10,  11}, /* VIRAMA */
-    { 312, 10,  12}, /* CANTILLATIONMARK */
-    { 432, 10,  13}, /* CONSONANTDEAD */
-    { 606, 10,  14}, /* GEMINATIONMARK */
-    { 437, 10,  15}, /* CONSONANTMEDIAL */
-    { 979, 10,  16}, /* MODIFYINGLETTER */
-    { 443, 10,  17}, /* CONSONANTWITHSTACKER */
-    {1170, 10,  18}, /* PUREKILLER */
-    { 439, 10,  19}, /* CONSONANTPRECEDINGREPHA */
-    {1362, 10,  20}, /* TONEMARK */
-    { 436, 10,  21}, /* CONSONANTKILLER */
-    { 434, 10,  22}, /* CONSONANTHEADLETTER */
-    { 441, 10,  23}, /* CONSONANTSUBJOINED */
-    { 732, 10,  24}, /* INVISIBLESTACKER */
-    {1182, 10,  25}, /* REGISTERSHIFTER */
-    { 442, 10,  26}, /* CONSONANTSUCCEEDINGREPHA */
-    { 433, 10,  27}, /* CONSONANTFINAL */
-    {1411, 10,  28}, /* VOWEL */
-    {1361, 10,  29}, /* TONELETTER */
-    { 435, 10,  30}, /* CONSONANTINITIALPOSTFIXED */
-    {1034, 10,  31}, /* NONJOINER */
-    { 750, 10,  32}, /* JOINER */
-    { 288, 10,  33}, /* BRAHMIJOININGNUMBER */
-    {1050, 10,  34}, /* NUMBERJOINER */
-    { 440, 10,  35}, /* CONSONANTPREFIXED */
-    {1031, 11,   0}, /* NOJOININGGROUP */
-    {1443, 11,   1}, /* YEH */
+    { 231,  3,  57}, /* ATBL */
+    {1045,  4,   0}, /* NONE */
+    {1042,  4,   1}, /* NOBREAK */
+    {1019,  4,   1}, /* NB */
+    { 430,  4,   2}, /* COMPAT */
+    { 419,  4,   2}, /* COM */
+    {1294,  4,   3}, /* SUPER */
+    {1290,  4,   3}, /* SUP */
+    { 606,  4,   4}, /* FRACTION */
+    { 605,  4,   4}, /* FRA */
+    { 311,  4,   5}, /* CANONICAL */
+    { 308,  4,   5}, /* CAN */
+    {1285,  4,   6}, /* SUB */
+    { 603,  4,   7}, /* FONT */
+    { 378,  4,   8}, /* CIRCLE */
+    { 558,  4,   8}, /* ENC */
+    {1438,  4,   9}, /* WIDE */
+    {1414,  4,  10}, /* VERTICAL */
+    {1413,  4,  10}, /* VERT */
+    {1281,  4,  11}, /* SQUARE */
+    {1280,  4,  11}, /* SQR */
+    { 746,  4,  12}, /* ISOLATED */
+    { 745,  4,  12}, /* ISO */
+    { 598,  4,  13}, /* FINAL */
+    { 597,  4,  13}, /* FIN */
+    { 732,  4,  14}, /* INITIAL */
+    { 731,  4,  14}, /* INIT */
+    { 953,  4,  15}, /* MEDIAL */
+    { 950,  4,  15}, /* MED */
+    {1258,  4,  16}, /* SMALL */
+    {1263,  4,  16}, /* SML */
+    {1018,  4,  17}, /* NARROW */
+    {1016,  4,  17}, /* NAR */
+    {1438,  5,   0}, /* WIDE */
+    {1430,  5,   0}, /* W */
+    {1023,  5,   1}, /* NEUTRAL */
+    {1007,  5,   1}, /* N */
+    {1018,  5,   2}, /* NARROW */
+    {1009,  5,   2}, /* NA */
+    { 193,  5,   3}, /* AMBIGUOUS */
+    { 166,  5,   3}, /* A */
+    { 663,  5,   4}, /* HALFWIDTH */
+    { 657,  5,   4}, /* H */
+    { 608,  5,   5}, /* FULLWIDTH */
+    { 592,  5,   5}, /* F */
+    {1395,  6,   0}, /* UNASSIGNED */
+    { 416,  6,   0}, /* CN */
+    { 449,  6,   1}, /* CONTROL */
+    { 323,  6,   1}, /* CC */
+    { 417,  6,   1}, /* CNTRL */
+    {1275,  6,   2}, /* SPACESEPARATOR */
+    {1480,  6,   2}, /* ZS */
+    {1116,  6,   3}, /* OTHERPUNCTUATION */
+    {1160,  6,   3}, /* PO */
+    { 464,  6,   4}, /* CURRENCYSYMBOL */
+    {1226,  6,   4}, /* SC */
+    {1095,  6,   5}, /* OPENPUNCTUATION */
+    {1177,  6,   5}, /* PS */
+    { 414,  6,   6}, /* CLOSEPUNCTUATION */
+    {1142,  6,   6}, /* PE */
+    { 944,  6,   7}, /* MATHSYMBOL */
+    {1257,  6,   7}, /* SM */
+    { 492,  6,   8}, /* DASHPUNCTUATION */
+    {1139,  6,   8}, /* PD */
+    { 496,  6,   9}, /* DECIMALNUMBER */
+    {1022,  6,   9}, /* ND */
+    { 516,  6,   9}, /* DIGIT */
+    {1404,  6,  10}, /* UPPERCASELETTER */
+    { 874,  6,  10}, /* LU */
+    { 987,  6,  11}, /* MODIFIERSYMBOL */
+    {1256,  6,  11}, /* SK */
+    { 434,  6,  12}, /* CONNECTORPUNCTUATION */
+    {1137,  6,  12}, /* PC */
+    { 868,  6,  13}, /* LOWERCASELETTER */
+    { 861,  6,  13}, /* LL */
+    {1117,  6,  14}, /* OTHERSYMBOL */
+    {1264,  6,  14}, /* SO */
+    {1111,  6,  15}, /* OTHERLETTER */
+    { 863,  6,  15}, /* LO */
+    { 733,  6,  16}, /* INITIALPUNCTUATION */
+    {1157,  6,  16}, /* PI */
+    { 604,  6,  17}, /* FORMAT */
+    { 362,  6,  17}, /* CF */
+    {1115,  6,  18}, /* OTHERNUMBER */
+    {1040,  6,  18}, /* NO */
+    { 599,  6,  19}, /* FINALPUNCTUATION */
+    {1144,  6,  19}, /* PF */
+    {1371,  6,  20}, /* TITLECASELETTER */
+    { 873,  6,  20}, /* LT */
+    { 985,  6,  21}, /* MODIFIERLETTER */
+    { 862,  6,  21}, /* LM */
+    {1048,  6,  22}, /* NONSPACINGMARK */
+    { 983,  6,  22}, /* MN */
+    { 567,  6,  23}, /* ENCLOSINGMARK */
+    { 949,  6,  23}, /* ME */
+    {1276,  6,  24}, /* SPACINGMARK */
+    { 948,  6,  24}, /* MC */
+    { 845,  6,  25}, /* LETTERNUMBER */
+    {1039,  6,  25}, /* NL */
+    { 857,  6,  26}, /* LINESEPARATOR */
+    {1476,  6,  26}, /* ZL */
+    {1130,  6,  27}, /* PARAGRAPHSEPARATOR */
+    {1479,  6,  27}, /* ZP */
+    {1310,  6,  28}, /* SURROGATE */
+    { 460,  6,  28}, /* CS */
+    {1174,  6,  29}, /* PRIVATEUSE */
+    { 418,  6,  29}, /* CO */
+    {1105,  6,  30}, /* OTHER */
+    { 305,  6,  30}, /* C */
+    { 306,  6,  30}, /* C& */
+    { 843,  6,  31}, /* LETTER */
+    { 802,  6,  31}, /* L */
+    { 803,  6,  31}, /* L& */
+    { 937,  6,  32}, /* MARK */
+    { 883,  6,  32}, /* M */
+    { 425,  6,  32}, /* COMBININGMARK */
+    { 884,  6,  32}, /* M& */
+    {1060,  6,  33}, /* NUMBER */
+    {1007,  6,  33}, /* N */
+    {1008,  6,  33}, /* N& */
+    {1181,  6,  34}, /* PUNCTUATION */
+    {1125,  6,  34}, /* P */
+    {1180,  6,  34}, /* PUNCT */
+    {1126,  6,  34}, /* P& */
+    {1317,  6,  35}, /* SYMBOL */
+    {1215,  6,  35}, /* S */
+    {1216,  6,  35}, /* S& */
+    {1239,  6,  36}, /* SEPARATOR */
+    {1469,  6,  36}, /* Z */
+    {1470,  6,  36}, /* Z& */
+    { 226,  6,  37}, /* ASSIGNED */
+    { 319,  6,  38}, /* CASEDLETTER */
+    { 831,  6,  38}, /* LC */
+    {1105,  7,   0}, /* OTHER */
+    {1453,  7,   0}, /* XX */
+    { 449,  7,   1}, /* CONTROL */
+    { 416,  7,   1}, /* CN */
+    { 846,  7,   2}, /* LF */
+    { 459,  7,   3}, /* CR */
+    { 587,  7,   4}, /* EXTEND */
+    { 584,  7,   4}, /* EX */
+    {1171,  7,   5}, /* PREPEND */
+    {1168,  7,   5}, /* PP */
+    {1276,  7,   6}, /* SPACINGMARK */
+    {1257,  7,   6}, /* SM */
+    { 802,  7,   7}, /* L */
+    {1405,  7,   8}, /* V */
+    {1326,  7,   9}, /* T */
+    {1482,  7,  10}, /* ZWJ */
+    { 875,  7,  11}, /* LV */
+    { 877,  7,  12}, /* LVT */
+    {1193,  7,  13}, /* REGIONALINDICATOR */
+    {1198,  7,  13}, /* RI */
+    { 537,  7,  14}, /* EBASE */
+    { 536,  7,  14}, /* EB */
+    { 538,  7,  15}, /* EBASEGAZ */
+    { 539,  7,  15}, /* EBG */
+    { 550,  7,  16}, /* EMODIFIER */
+    { 548,  7,  16}, /* EM */
+    { 632,  7,  17}, /* GLUEAFTERZWJ */
+    { 611,  7,  17}, /* GAZ */
+    {1051,  8,   0}, /* NOTAPPLICABLE */
+    {1009,  8,   0}, /* NA */
+    { 833,  8,   1}, /* LEADINGJAMO */
+    { 802,  8,   1}, /* L */
+    {1426,  8,   2}, /* VOWELJAMO */
+    {1405,  8,   2}, /* V */
+    {1383,  8,   3}, /* TRAILINGJAMO */
+    {1326,  8,   3}, /* T */
+    { 876,  8,   4}, /* LVSYLLABLE */
+    { 875,  8,   4}, /* LV */
+    { 878,  8,   5}, /* LVTSYLLABLE */
+    { 877,  8,   5}, /* LVT */
+    {1009,  9,   0}, /* NA */
+    {1375,  9,   1}, /* TOP */
+    {1199,  9,   2}, /* RIGHT */
+    { 282,  9,   3}, /* BOTTOM */
+    { 834,  9,   4}, /* LEFT */
+    { 835,  9,   5}, /* LEFTANDRIGHT */
+    {1381,  9,   6}, /* TOPANDRIGHT */
+    {1379,  9,   7}, /* TOPANDLEFT */
+    {1380,  9,   8}, /* TOPANDLEFTANDRIGHT */
+    {1376,  9,   9}, /* TOPANDBOTTOM */
+    {1420,  9,  10}, /* VISUALORDERLEFT */
+    {1377,  9,  11}, /* TOPANDBOTTOMANDLEFT */
+    { 284,  9,  12}, /* BOTTOMANDRIGHT */
+    {1378,  9,  13}, /* TOPANDBOTTOMANDRIGHT */
+    {1124,  9,  14}, /* OVERSTRUCK */
+    { 283,  9,  15}, /* BOTTOMANDLEFT */
+    {1105, 10,   0}, /* OTHER */
+    { 442, 10,   1}, /* CONSONANTPLACEHOLDER */
+    {1060, 10,   2}, /* NUMBER */
+    {1314, 10,   3}, /* SYLLABLEMODIFIER */
+    { 270, 10,   4}, /* BINDU */
+    {1419, 10,   5}, /* VISARGA */
+    {1425, 10,   6}, /* VOWELINDEPENDENT */
+    { 435, 10,   7}, /* CONSONANT */
+    {1424, 10,   8}, /* VOWELDEPENDENT */
+    {1059, 10,   9}, /* NUKTA */
+    { 237, 10,  10}, /* AVAGRAHA */
+    {1418, 10,  11}, /* VIRAMA */
+    { 314, 10,  12}, /* CANTILLATIONMARK */
+    { 436, 10,  13}, /* CONSONANTDEAD */
+    { 614, 10,  14}, /* GEMINATIONMARK */
+    { 441, 10,  15}, /* CONSONANTMEDIAL */
+    { 989, 10,  16}, /* MODIFYINGLETTER */
+    { 447, 10,  17}, /* CONSONANTWITHSTACKER */
+    {1182, 10,  18}, /* PUREKILLER */
+    { 443, 10,  19}, /* CONSONANTPRECEDINGREPHA */
+    {1374, 10,  20}, /* TONEMARK */
+    { 440, 10,  21}, /* CONSONANTKILLER */
+    { 438, 10,  22}, /* CONSONANTHEADLETTER */
+    { 445, 10,  23}, /* CONSONANTSUBJOINED */
+    { 740, 10,  24}, /* INVISIBLESTACKER */
+    {1194, 10,  25}, /* REGISTERSHIFTER */
+    { 446, 10,  26}, /* CONSONANTSUCCEEDINGREPHA */
+    { 437, 10,  27}, /* CONSONANTFINAL */
+    {1423, 10,  28}, /* VOWEL */
+    {1373, 10,  29}, /* TONELETTER */
+    { 439, 10,  30}, /* CONSONANTINITIALPOSTFIXED */
+    {1046, 10,  31}, /* NONJOINER */
+    { 758, 10,  32}, /* JOINER */
+    { 290, 10,  33}, /* BRAHMIJOININGNUMBER */
+    {1062, 10,  34}, /* NUMBERJOINER */
+    { 444, 10,  35}, /* CONSONANTPREFIXED */
+    {1043, 11,   0}, /* NOJOININGGROUP */
+    {1455, 11,   1}, /* YEH */
     { 185, 11,   2}, /* ALEF */
-    {1422, 11,   3}, /* WAW */
-    { 254, 11,   4}, /* BEH */
-    {1341, 11,   5}, /* TEHMARBUTA */
-    { 652, 11,   6}, /* HAH */
-    { 483, 11,   7}, /* DAL */
-    {1183, 11,   8}, /* REH */
-    {1221, 11,   9}, /* SEEN */
-    {1206, 11,  10}, /* SAD */
-    {1319, 11,  11}, /* TAH */
+    {1434, 11,   3}, /* WAW */
+    { 256, 11,   4}, /* BEH */
+    {1353, 11,   5}, /* TEHMARBUTA */
+    { 660, 11,   6}, /* HAH */
+    { 489, 11,   7}, /* DAL */
+    {1195, 11,   8}, /* REH */
+    {1233, 11,   9}, /* SEEN */
+    {1218, 11,  10}, /* SAD */
+    {1331, 11,  11}, /* TAH */
     { 180, 11,  12}, /* AIN */
-    { 601, 11,  13}, /* GAF */
-    { 586, 11,  14}, /* FARSIYEH */
-    { 588, 11,  15}, /* FEH */
-    {1173, 11,  16}, /* QAF */
-    { 756, 11,  17}, /* KAF */
-    { 794, 11,  18}, /* LAM */
-    { 944, 11,  19}, /* MEEM */
-    {1038, 11,  20}, /* NOON */
-    { 681, 11,  21}, /* HEH */
-    {1300, 11,  22}, /* SWASHKAF */
-    {1057, 11,  23}, /* NYA */
-    { 789, 11,  24}, /* KNOTTEDHEH */
-    { 682, 11,  25}, /* HEHGOAL */
-    { 657, 11,  26}, /* HAMZAONHEHGOAL */
-    {1342, 11,  26}, /* TEHMARBUTAGOAL */
-    {1445, 11,  27}, /* YEHWITHTAIL */
-    {1444, 11,  28}, /* YEHBARREE */
+    { 609, 11,  13}, /* GAF */
+    { 594, 11,  14}, /* FARSIYEH */
+    { 596, 11,  15}, /* FEH */
+    {1185, 11,  16}, /* QAF */
+    { 764, 11,  17}, /* KAF */
+    { 804, 11,  18}, /* LAM */
+    { 954, 11,  19}, /* MEEM */
+    {1050, 11,  20}, /* NOON */
+    { 689, 11,  21}, /* HEH */
+    {1312, 11,  22}, /* SWASHKAF */
+    {1069, 11,  23}, /* NYA */
+    { 799, 11,  24}, /* KNOTTEDHEH */
+    { 690, 11,  25}, /* HEHGOAL */
+    { 665, 11,  26}, /* HAMZAONHEHGOAL */
+    {1354, 11,  26}, /* TEHMARBUTAGOAL */
+    {1457, 11,  27}, /* YEHWITHTAIL */
+    {1456, 11,  28}, /* YEHBARREE */
     { 182, 11,  29}, /* ALAPH */
-    { 260, 11,  30}, /* BETH */
-    { 602, 11,  31}, /* GAMAL */
-    { 484, 11,  32}, /* DALATHRISH */
-    { 677, 11,  33}, /* HE */
-    {1313, 11,  34}, /* SYRIACWAW */
-    {1459, 11,  35}, /* ZAIN */
-    { 683, 11,  36}, /* HETH */
-    {1347, 11,  37}, /* TETH */
-    {1455, 11,  38}, /* YUDH */
-    {1456, 11,  39}, /* YUDHHE */
-    { 771, 11,  40}, /* KAPH */
-    { 795, 11,  41}, /* LAMADH */
-    { 958, 11,  42}, /* MIM */
-    {1054, 11,  43}, /* NUN */
-    {1223, 11,  44}, /* SEMKATH */
-    { 592, 11,  45}, /* FINALSEMKATH */
-    { 524, 11,  46}, /* E */
-    {1130, 11,  47}, /* PE */
-    {1185, 11,  48}, /* REVERSEDPE */
-    {1207, 11,  49}, /* SADHE */
-    {1174, 11,  50}, /* QAPH */
-    {1233, 11,  51}, /* SHIN */
-    {1340, 11,  52}, /* TAW */
-    {1462, 11,  53}, /* ZHAIN */
-    { 777, 11,  54}, /* KHAPH */
-    { 587, 11,  55}, /* FE */
-    { 300, 11,  56}, /* BURUSHASKIYEHBARREE */
-    { 886, 11,  57}, /* MALAYALAMNGA */
-    { 883, 11,  58}, /* MALAYALAMJA */
-    { 889, 11,  59}, /* MALAYALAMNYA */
-    { 892, 11,  60}, /* MALAYALAMTTA */
-    { 887, 11,  61}, /* MALAYALAMNNA */
-    { 888, 11,  62}, /* MALAYALAMNNNA */
-    { 882, 11,  63}, /* MALAYALAMBHA */
-    { 890, 11,  64}, /* MALAYALAMRA */
-    { 884, 11,  65}, /* MALAYALAMLLA */
-    { 885, 11,  66}, /* MALAYALAMLLLA */
-    { 891, 11,  67}, /* MALAYALAMSSA */
-    {1353, 11,  68}, /* THINYEH */
-    {1404, 11,  69}, /* VERTICALTAIL */
-    {1198, 11,  70}, /* ROHINGYAYEH */
-    {1272, 11,  71}, /* STRAIGHTWAW */
+    { 262, 11,  30}, /* BETH */
+    { 610, 11,  31}, /* GAMAL */
+    { 490, 11,  32}, /* DALATHRISH */
+    { 685, 11,  33}, /* HE */
+    {1325, 11,  34}, /* SYRIACWAW */
+    {1471, 11,  35}, /* ZAIN */
+    { 691, 11,  36}, /* HETH */
+    {1359, 11,  37}, /* TETH */
+    {1467, 11,  38}, /* YUDH */
+    {1468, 11,  39}, /* YUDHHE */
+    { 780, 11,  40}, /* KAPH */
+    { 805, 11,  41}, /* LAMADH */
+    { 968, 11,  42}, /* MIM */
+    {1066, 11,  43}, /* NUN */
+    {1235, 11,  44}, /* SEMKATH */
+    { 600, 11,  45}, /* FINALSEMKATH */
+    { 532, 11,  46}, /* E */
+    {1142, 11,  47}, /* PE */
+    {1197, 11,  48}, /* REVERSEDPE */
+    {1219, 11,  49}, /* SADHE */
+    {1186, 11,  50}, /* QAPH */
+    {1245, 11,  51}, /* SHIN */
+    {1352, 11,  52}, /* TAW */
+    {1474, 11,  53}, /* ZHAIN */
+    { 787, 11,  54}, /* KHAPH */
+    { 595, 11,  55}, /* FE */
+    { 302, 11,  56}, /* BURUSHASKIYEHBARREE */
+    { 896, 11,  57}, /* MALAYALAMNGA */
+    { 893, 11,  58}, /* MALAYALAMJA */
+    { 899, 11,  59}, /* MALAYALAMNYA */
+    { 902, 11,  60}, /* MALAYALAMTTA */
+    { 897, 11,  61}, /* MALAYALAMNNA */
+    { 898, 11,  62}, /* MALAYALAMNNNA */
+    { 892, 11,  63}, /* MALAYALAMBHA */
+    { 900, 11,  64}, /* MALAYALAMRA */
+    { 894, 11,  65}, /* MALAYALAMLLA */
+    { 895, 11,  66}, /* MALAYALAMLLLA */
+    { 901, 11,  67}, /* MALAYALAMSSA */
+    {1365, 11,  68}, /* THINYEH */
+    {1416, 11,  69}, /* VERTICALTAIL */
+    {1210, 11,  70}, /* ROHINGYAYEH */
+    {1284, 11,  71}, /* STRAIGHTWAW */
     { 173, 11,  72}, /* AFRICANFEH */
     { 175, 11,  73}, /* AFRICANQAF */
     { 174, 11,  74}, /* AFRICANNOON */
-    { 898, 11,  75}, /* MANICHAEANALEPH */
-    { 900, 11,  76}, /* MANICHAEANBETH */
-    { 904, 11,  77}, /* MANICHAEANGIMEL */
-    { 901, 11,  78}, /* MANICHAEANDALETH */
-    { 922, 11,  79}, /* MANICHAEANWAW */
-    { 924, 11,  80}, /* MANICHAEANZAYIN */
-    { 905, 11,  81}, /* MANICHAEANHETH */
-    { 919, 11,  82}, /* MANICHAEANTETH */
-    { 923, 11,  83}, /* MANICHAEANYODH */
-    { 907, 11,  84}, /* MANICHAEANKAPH */
-    { 908, 11,  85}, /* MANICHAEANLAMEDH */
-    { 902, 11,  86}, /* MANICHAEANDHAMEDH */
-    { 920, 11,  87}, /* MANICHAEANTHAMEDH */
-    { 909, 11,  88}, /* MANICHAEANMEM */
-    { 910, 11,  89}, /* MANICHAEANNUN */
-    { 916, 11,  90}, /* MANICHAEANSAMEKH */
-    { 899, 11,  91}, /* MANICHAEANAYIN */
-    { 912, 11,  92}, /* MANICHAEANPE */
-    { 915, 11,  93}, /* MANICHAEANSADHE */
-    { 913, 11,  94}, /* MANICHAEANQOPH */
-    { 914, 11,  95}, /* MANICHAEANRESH */
-    { 917, 11,  96}, /* MANICHAEANTAW */
-    { 911, 11,  97}, /* MANICHAEANONE */
-    { 903, 11,  98}, /* MANICHAEANFIVE */
-    { 918, 11,  99}, /* MANICHAEANTEN */
-    { 921, 11, 100}, /* MANICHAEANTWENTY */
-    { 906, 11, 101}, /* MANICHAEANHUNDRED */
-    { 670, 11, 102}, /* HANIFIROHINGYAPA */
-    { 669, 11, 103}, /* HANIFIROHINGYAKINNAYA */
-    {1035, 12,   0}, /* NONJOINING */
-    {1376, 12,   0}, /* U */
-    {1372, 12,   1}, /* TRANSPARENT */
-    {1314, 12,   1}, /* T */
-    { 521, 12,   2}, /* DUALJOINING */
-    { 481, 12,   2}, /* D */
-    {1188, 12,   3}, /* RIGHTJOINING */
-    {1179, 12,   3}, /* R */
-    { 748, 12,   4}, /* JOINCAUSING */
-    { 303, 12,   4}, /* C */
-    { 826, 12,   5}, /* LEFTJOINING */
-    { 792, 12,   5}, /* L */
-    {1388, 13,   0}, /* UNKNOWN */
-    {1441, 13,   0}, /* XX */
-    { 421, 13,   1}, /* COMBININGMARK */
-    { 411, 13,   1}, /* CM */
-    { 292, 13,   2}, /* BREAKAFTER */
-    { 240, 13,   2}, /* BA */
-    { 846, 13,   3}, /* LINEFEED */
-    { 836, 13,   3}, /* LF */
-    { 895, 13,   4}, /* MANDATORYBREAK */
-    { 269, 13,   4}, /* BK */
-    { 315, 13,   5}, /* CARRIAGERETURN */
-    { 455, 13,   5}, /* CR */
-    {1262, 13,   6}, /* SPACE */
-    {1261, 13,   6}, /* SP */
-    { 577, 13,   7}, /* EXCLAMATION */
-    { 576, 13,   7}, /* EX */
-    {1177, 13,   8}, /* QUOTATION */
-    {1176, 13,   8}, /* QU */
+    { 908, 11,  75}, /* MANICHAEANALEPH */
+    { 910, 11,  76}, /* MANICHAEANBETH */
+    { 914, 11,  77}, /* MANICHAEANGIMEL */
+    { 911, 11,  78}, /* MANICHAEANDALETH */
+    { 932, 11,  79}, /* MANICHAEANWAW */
+    { 934, 11,  80}, /* MANICHAEANZAYIN */
+    { 915, 11,  81}, /* MANICHAEANHETH */
+    { 929, 11,  82}, /* MANICHAEANTETH */
+    { 933, 11,  83}, /* MANICHAEANYODH */
+    { 917, 11,  84}, /* MANICHAEANKAPH */
+    { 918, 11,  85}, /* MANICHAEANLAMEDH */
+    { 912, 11,  86}, /* MANICHAEANDHAMEDH */
+    { 930, 11,  87}, /* MANICHAEANTHAMEDH */
+    { 919, 11,  88}, /* MANICHAEANMEM */
+    { 920, 11,  89}, /* MANICHAEANNUN */
+    { 926, 11,  90}, /* MANICHAEANSAMEKH */
+    { 909, 11,  91}, /* MANICHAEANAYIN */
+    { 922, 11,  92}, /* MANICHAEANPE */
+    { 925, 11,  93}, /* MANICHAEANSADHE */
+    { 923, 11,  94}, /* MANICHAEANQOPH */
+    { 924, 11,  95}, /* MANICHAEANRESH */
+    { 927, 11,  96}, /* MANICHAEANTAW */
+    { 921, 11,  97}, /* MANICHAEANONE */
+    { 913, 11,  98}, /* MANICHAEANFIVE */
+    { 928, 11,  99}, /* MANICHAEANTEN */
+    { 931, 11, 100}, /* MANICHAEANTWENTY */
+    { 916, 11, 101}, /* MANICHAEANHUNDRED */
+    { 678, 11, 102}, /* HANIFIROHINGYAPA */
+    { 677, 11, 103}, /* HANIFIROHINGYAKINNAYA */
+    {1047, 12,   0}, /* NONJOINING */
+    {1388, 12,   0}, /* U */
+    {1384, 12,   1}, /* TRANSPARENT */
+    {1326, 12,   1}, /* T */
+    { 529, 12,   2}, /* DUALJOINING */
+    { 487, 12,   2}, /* D */
+    {1200, 12,   3}, /* RIGHTJOINING */
+    {1191, 12,   3}, /* R */
+    { 756, 12,   4}, /* JOINCAUSING */
+    { 305, 12,   4}, /* C */
+    { 836, 12,   5}, /* LEFTJOINING */
+    { 802, 12,   5}, /* L */
+    {1400, 13,   0}, /* UNKNOWN */
+    {1453, 13,   0}, /* XX */
+    { 425, 13,   1}, /* COMBININGMARK */
+    { 415, 13,   1}, /* CM */
+    { 294, 13,   2}, /* BREAKAFTER */
+    { 242, 13,   2}, /* BA */
+    { 856, 13,   3}, /* LINEFEED */
+    { 846, 13,   3}, /* LF */
+    { 905, 13,   4}, /* MANDATORYBREAK */
+    { 271, 13,   4}, /* BK */
+    { 317, 13,   5}, /* CARRIAGERETURN */
+    { 459, 13,   5}, /* CR */
+    {1274, 13,   6}, /* SPACE */
+    {1273, 13,   6}, /* SP */
+    { 585, 13,   7}, /* EXCLAMATION */
+    { 584, 13,   7}, /* EX */
+    {1189, 13,   8}, /* QUOTATION */
+    {1188, 13,   8}, /* QU */
     { 189, 13,   9}, /* ALPHABETIC */
     { 181, 13,   9}, /* AL */
-    {1158, 13,  10}, /* PREFIXNUMERIC */
-    {1157, 13,  10}, /* PR */
-    {1155, 13,  11}, /* POSTFIXNUMERIC */
-    {1148, 13,  11}, /* PO */
-    {1083, 13,  12}, /* OPENPUNCTUATION */
-    {1082, 13,  12}, /* OP */
-    { 409, 13,  13}, /* CLOSEPARENTHESIS */
-    { 452, 13,  13}, /* CP */
-    { 721, 13,  14}, /* INFIXNUMERIC */
-    { 736, 13,  14}, /* IS */
-    { 700, 13,  15}, /* HYPHEN */
-    { 699, 13,  15}, /* HY */
-    { 295, 13,  16}, /* BREAKSYMBOLS */
-    {1301, 13,  16}, /* SY */
-    {1051, 13,  17}, /* NUMERIC */
-    {1046, 13,  17}, /* NU */
-    { 410, 13,  18}, /* CLOSEPUNCTUATION */
-    { 407, 13,  18}, /* CL */
-    {1015, 13,  19}, /* NEXTLINE */
-    {1027, 13,  19}, /* NL */
-    { 623, 13,  20}, /* GLUE */
-    { 618, 13,  20}, /* GL */
+    {1170, 13,  10}, /* PREFIXNUMERIC */
+    {1169, 13,  10}, /* PR */
+    {1167, 13,  11}, /* POSTFIXNUMERIC */
+    {1160, 13,  11}, /* PO */
+    {1095, 13,  12}, /* OPENPUNCTUATION */
+    {1094, 13,  12}, /* OP */
+    { 413, 13,  13}, /* CLOSEPARENTHESIS */
+    { 456, 13,  13}, /* CP */
+    { 729, 13,  14}, /* INFIXNUMERIC */
+    { 744, 13,  14}, /* IS */
+    { 708, 13,  15}, /* HYPHEN */
+    { 707, 13,  15}, /* HY */
+    { 297, 13,  16}, /* BREAKSYMBOLS */
+    {1313, 13,  16}, /* SY */
+    {1063, 13,  17}, /* NUMERIC */
+    {1058, 13,  17}, /* NU */
+    { 414, 13,  18}, /* CLOSEPUNCTUATION */
+    { 411, 13,  18}, /* CL */
+    {1027, 13,  19}, /* NEXTLINE */
+    {1039, 13,  19}, /* NL */
+    { 631, 13,  20}, /* GLUE */
+    { 626, 13,  20}, /* GL */
     { 193, 13,  21}, /* AMBIGUOUS */
     { 179, 13,  21}, /* AI */
-    { 293, 13,  22}, /* BREAKBEFORE */
-    { 252, 13,  22}, /* BB */
-    { 680, 13,  23}, /* HEBREWLETTER */
-    { 691, 13,  23}, /* HL */
-    { 428, 13,  24}, /* COMPLEXCONTEXT */
-    {1205, 13,  24}, /* SA */
-    { 746, 13,  25}, /* JL */
-    { 754, 13,  26}, /* JV */
-    { 753, 13,  27}, /* JT */
-    {1037, 13,  28}, /* NONSTARTER */
-    {1042, 13,  28}, /* NS */
-    {1471, 13,  29}, /* ZWSPACE */
-    {1469, 13,  29}, /* ZW */
-    {1470, 13,  30}, /* ZWJ */
-    { 294, 13,  31}, /* BREAKBOTH */
-    { 239, 13,  31}, /* B2 */
-    { 730, 13,  32}, /* INSEPARABLE */
-    { 716, 13,  32}, /* IN */
-    { 731, 13,  32}, /* INSEPERABLE */
-    {1430, 13,  33}, /* WORDJOINER */
-    {1427, 13,  33}, /* WJ */
-    { 705, 13,  34}, /* IDEOGRAPHIC */
-    { 701, 13,  34}, /* ID */
-    { 529, 13,  35}, /* EBASE */
-    { 528, 13,  35}, /* EB */
-    { 429, 13,  36}, /* CONDITIONALJAPANESESTARTER */
-    { 377, 13,  36}, /* CJ */
-    { 650, 13,  37}, /* H2 */
-    { 651, 13,  38}, /* H3 */
-    {1298, 13,  39}, /* SURROGATE */
-    {1228, 13,  39}, /* SG */
-    { 444, 13,  40}, /* CONTINGENTBREAK */
-    { 320, 13,  40}, /* CB */
-    {1181, 13,  41}, /* REGIONALINDICATOR */
-    {1186, 13,  41}, /* RI */
-    { 542, 13,  42}, /* EMODIFIER */
-    { 540, 13,  42}, /* EM */
-    {1028, 14,   0}, /* NO */
-    { 997, 14,   0}, /* N */
-    {1446, 14,   1}, /* YES */
-    {1442, 14,   1}, /* Y */
-    { 936, 14,   2}, /* MAYBE */
-    { 873, 14,   2}, /* M */
-    {1028, 15,   0}, /* NO */
-    { 997, 15,   0}, /* N */
-    {1446, 15,   1}, /* YES */
-    {1442, 15,   1}, /* Y */
-    {1033, 16,   0}, /* NONE */
-    { 489, 16,   1}, /* DECIMAL */
-    { 488, 16,   1}, /* DE */
-    { 508, 16,   2}, /* DIGIT */
-    { 500, 16,   2}, /* DI */
-    {1051, 16,   3}, /* NUMERIC */
-    {1046, 16,   3}, /* NU */
-    {1001, 17,   0}, /* NAN */
+    { 295, 13,  22}, /* BREAKBEFORE */
+    { 254, 13,  22}, /* BB */
+    { 688, 13,  23}, /* HEBREWLETTER */
+    { 699, 13,  23}, /* HL */
+    { 432, 13,  24}, /* COMPLEXCONTEXT */
+    {1217, 13,  24}, /* SA */
+    { 754, 13,  25}, /* JL */
+    { 762, 13,  26}, /* JV */
+    { 761, 13,  27}, /* JT */
+    {1049, 13,  28}, /* NONSTARTER */
+    {1054, 13,  28}, /* NS */
+    {1483, 13,  29}, /* ZWSPACE */
+    {1481, 13,  29}, /* ZW */
+    {1482, 13,  30}, /* ZWJ */
+    { 296, 13,  31}, /* BREAKBOTH */
+    { 241, 13,  31}, /* B2 */
+    { 738, 13,  32}, /* INSEPARABLE */
+    { 724, 13,  32}, /* IN */
+    { 739, 13,  32}, /* INSEPERABLE */
+    {1442, 13,  33}, /* WORDJOINER */
+    {1439, 13,  33}, /* WJ */
+    { 713, 13,  34}, /* IDEOGRAPHIC */
+    { 709, 13,  34}, /* ID */
+    { 537, 13,  35}, /* EBASE */
+    { 536, 13,  35}, /* EB */
+    { 433, 13,  36}, /* CONDITIONALJAPANESESTARTER */
+    { 379, 13,  36}, /* CJ */
+    { 658, 13,  37}, /* H2 */
+    { 659, 13,  38}, /* H3 */
+    {1310, 13,  39}, /* SURROGATE */
+    {1240, 13,  39}, /* SG */
+    { 448, 13,  40}, /* CONTINGENTBREAK */
+    { 322, 13,  40}, /* CB */
+    {1193, 13,  41}, /* REGIONALINDICATOR */
+    {1198, 13,  41}, /* RI */
+    { 550, 13,  42}, /* EMODIFIER */
+    { 548, 13,  42}, /* EM */
+    {1040, 14,   0}, /* NO */
+    {1007, 14,   0}, /* N */
+    {1458, 14,   1}, /* YES */
+    {1454, 14,   1}, /* Y */
+    { 946, 14,   2}, /* MAYBE */
+    { 883, 14,   2}, /* M */
+    {1040, 15,   0}, /* NO */
+    {1007, 15,   0}, /* N */
+    {1458, 15,   1}, /* YES */
+    {1454, 15,   1}, /* Y */
+    {1045, 16,   0}, /* NONE */
+    { 495, 16,   1}, /* DECIMAL */
+    { 494, 16,   1}, /* DE */
+    { 516, 16,   2}, /* DIGIT */
+    { 508, 16,   2}, /* DI */
+    {1063, 16,   3}, /* NUMERIC */
+    {1058, 16,   3}, /* NU */
+    {1013, 17,   0}, /* NAN */
     {   1, 17,   1}, /* 0 */
     {   2, 17,   2}, /* 1 */
     {  53, 17,   3}, /* 2 */
@@ -2910,395 +2933,398 @@ RE_PropertyValue re_property_values[] = {
     {  29, 17, 140}, /* 10000000000 */
     {  27, 17, 141}, /* 10000000 */
     {  61, 17, 142}, /* 20000000 */
-    {1388, 18,   0}, /* UNKNOWN */
-    {1473, 18,   0}, /* ZZZZ */
-    { 423, 18,   1}, /* COMMON */
-    {1472, 18,   1}, /* ZYYY */
-    { 799, 18,   2}, /* LATIN */
-    { 819, 18,   2}, /* LATN */
-    { 277, 18,   3}, /* BOPOMOFO */
-    { 276, 18,   3}, /* BOPO */
-    { 722, 18,   4}, /* INHERITED */
-    {1463, 18,   4}, /* ZINH */
-    {1172, 18,   4}, /* QAAI */
-    { 637, 18,   5}, /* GREEK */
-    { 641, 18,   5}, /* GREK */
-    { 448, 18,   6}, /* COPTIC */
-    { 447, 18,   6}, /* COPT */
-    {1171, 18,   6}, /* QAAC */
-    { 470, 18,   7}, /* CYRILLIC */
-    { 480, 18,   7}, /* CYRL */
-    { 218, 18,   8}, /* ARMENIAN */
-    { 220, 18,   8}, /* ARMN */
-    { 679, 18,   9}, /* HEBREW */
-    { 678, 18,   9}, /* HEBR */
+    {1400, 18,   0}, /* UNKNOWN */
+    {1485, 18,   0}, /* ZZZZ */
+    { 427, 18,   1}, /* COMMON */
+    {1484, 18,   1}, /* ZYYY */
+    { 809, 18,   2}, /* LATIN */
+    { 829, 18,   2}, /* LATN */
+    { 279, 18,   3}, /* BOPOMOFO */
+    { 278, 18,   3}, /* BOPO */
+    { 730, 18,   4}, /* INHERITED */
+    {1475, 18,   4}, /* ZINH */
+    {1184, 18,   4}, /* QAAI */
+    { 645, 18,   5}, /* GREEK */
+    { 649, 18,   5}, /* GREK */
+    { 452, 18,   6}, /* COPTIC */
+    { 451, 18,   6}, /* COPT */
+    {1183, 18,   6}, /* QAAC */
+    { 474, 18,   7}, /* CYRILLIC */
+    { 486, 18,   7}, /* CYRL */
+    { 220, 18,   8}, /* ARMENIAN */
+    { 222, 18,   8}, /* ARMN */
+    { 687, 18,   9}, /* HEBREW */
+    { 686, 18,   9}, /* HEBR */
     { 203, 18,  10}, /* ARABIC */
     { 202, 18,  10}, /* ARAB */
-    {1310, 18,  11}, /* SYRIAC */
-    {1309, 18,  11}, /* SYRC */
-    {1351, 18,  12}, /* THAANA */
-    {1350, 18,  12}, /* THAA */
-    {1025, 18,  13}, /* NKO */
-    {1026, 18,  13}, /* NKOO */
-    {1208, 18,  14}, /* SAMARITAN */
-    {1209, 18,  14}, /* SAMR */
-    { 894, 18,  15}, /* MANDAIC */
-    { 893, 18,  15}, /* MAND */
-    { 497, 18,  16}, /* DEVANAGARI */
-    { 496, 18,  16}, /* DEVA */
-    { 259, 18,  17}, /* BENGALI */
-    { 258, 18,  17}, /* BENG */
-    { 647, 18,  18}, /* GURMUKHI */
-    { 648, 18,  18}, /* GURU */
-    { 644, 18,  19}, /* GUJARATI */
-    { 645, 18,  19}, /* GUJR */
-    {1085, 18,  20}, /* ORIYA */
-    {1088, 18,  20}, /* ORYA */
-    {1329, 18,  21}, /* TAMIL */
-    {1332, 18,  21}, /* TAML */
-    {1344, 18,  22}, /* TELUGU */
-    {1343, 18,  22}, /* TELU */
-    { 770, 18,  23}, /* KANNADA */
-    { 788, 18,  23}, /* KNDA */
-    { 881, 18,  24}, /* MALAYALAM */
-    { 972, 18,  24}, /* MLYM */
-    {1242, 18,  25}, /* SINHALA */
-    {1241, 18,  25}, /* SINH */
-    {1352, 18,  26}, /* THAI */
-    { 797, 18,  27}, /* LAO */
-    { 798, 18,  27}, /* LAOO */
-    {1354, 18,  28}, /* TIBETAN */
-    {1355, 18,  28}, /* TIBT */
-    { 991, 18,  29}, /* MYANMAR */
-    { 996, 18,  29}, /* MYMR */
-    { 613, 18,  30}, /* GEORGIAN */
-    { 612, 18,  30}, /* GEOR */
-    { 660, 18,  31}, /* HANGUL */
-    { 659, 18,  31}, /* HANG */
-    { 564, 18,  32}, /* ETHIOPIC */
-    { 563, 18,  32}, /* ETHI */
-    { 369, 18,  33}, /* CHEROKEE */
-    { 368, 18,  33}, /* CHER */
-    { 307, 18,  34}, /* CANADIANABORIGINAL */
-    { 311, 18,  34}, /* CANS */
-    {1063, 18,  35}, /* OGHAM */
-    {1062, 18,  35}, /* OGAM */
-    {1201, 18,  36}, /* RUNIC */
-    {1202, 18,  36}, /* RUNR */
-    {1315, 18,  37}, /* TAGALOG */
-    {1349, 18,  37}, /* TGLG */
-    { 674, 18,  38}, /* HANUNOO */
-    { 671, 18,  38}, /* HANO */
-    { 299, 18,  39}, /* BUHID */
-    { 298, 18,  39}, /* BUHD */
-    {1317, 18,  40}, /* TAGBANWA */
-    {1316, 18,  40}, /* TAGB */
-    { 781, 18,  41}, /* KHMER */
-    { 783, 18,  41}, /* KHMR */
-    { 981, 18,  42}, /* MONGOLIAN */
-    { 980, 18,  42}, /* MONG */
-    { 838, 18,  43}, /* LIMBU */
-    { 837, 18,  43}, /* LIMB */
-    {1320, 18,  44}, /* TAILE */
-    {1327, 18,  44}, /* TALE */
-    {1014, 18,  45}, /* NEWTAILUE */
-    {1328, 18,  45}, /* TALU */
-    { 297, 18,  46}, /* BUGINESE */
-    { 296, 18,  46}, /* BUGI */
-    {1321, 18,  47}, /* TAITHAM */
-    { 796, 18,  47}, /* LANA */
-    { 242, 18,  48}, /* BALINESE */
-    { 241, 18,  48}, /* BALI */
-    {1275, 18,  49}, /* SUNDANESE */
-    {1274, 18,  49}, /* SUND */
-    { 250, 18,  50}, /* BATAK */
-    { 251, 18,  50}, /* BATK */
-    { 832, 18,  51}, /* LEPCHA */
-    { 831, 18,  51}, /* LEPC */
-    {1067, 18,  52}, /* OLCHIKI */
-    {1068, 18,  52}, /* OLCK */
-    { 290, 18,  53}, /* BRAILLE */
-    { 289, 18,  53}, /* BRAI */
-    { 620, 18,  54}, /* GLAGOLITIC */
-    { 619, 18,  54}, /* GLAG */
-    {1356, 18,  55}, /* TIFINAGH */
-    {1348, 18,  55}, /* TFNG */
-    { 658, 18,  56}, /* HAN */
-    { 667, 18,  56}, /* HANI */
-    { 690, 18,  57}, /* HIRAGANA */
-    { 689, 18,  57}, /* HIRA */
-    { 772, 18,  58}, /* KATAKANA */
-    { 759, 18,  58}, /* KANA */
-    {1449, 18,  59}, /* YI */
-    {1450, 18,  59}, /* YIII */
-    { 848, 18,  60}, /* LISU */
-    {1394, 18,  61}, /* VAI */
-    {1395, 18,  61}, /* VAII */
-    { 244, 18,  62}, /* BAMUM */
-    { 243, 18,  62}, /* BAMU */
-    {1304, 18,  63}, /* SYLOTINAGRI */
-    {1303, 18,  63}, /* SYLO */
-    {1134, 18,  64}, /* PHAGSPA */
-    {1133, 18,  64}, /* PHAG */
-    {1212, 18,  65}, /* SAURASHTRA */
-    {1211, 18,  65}, /* SAUR */
-    { 776, 18,  66}, /* KAYAHLI */
-    { 758, 18,  66}, /* KALI */
-    {1184, 18,  67}, /* REJANG */
-    {1193, 18,  67}, /* RJNG */
-    { 744, 18,  68}, /* JAVANESE */
-    { 743, 18,  68}, /* JAVA */
-    { 362, 18,  69}, /* CHAM */
-    {1322, 18,  70}, /* TAIVIET */
-    {1339, 18,  70}, /* TAVT */
-    { 945, 18,  71}, /* MEETEIMAYEK */
-    { 986, 18,  71}, /* MTEI */
-    { 842, 18,  72}, /* LINEARB */
-    { 840, 18,  72}, /* LINB */
-    { 870, 18,  73}, /* LYCIAN */
-    { 869, 18,  73}, /* LYCI */
-    { 314, 18,  74}, /* CARIAN */
-    { 313, 18,  74}, /* CARI */
-    {1070, 18,  75}, /* OLDITALIC */
-    { 739, 18,  75}, /* ITAL */
-    { 628, 18,  76}, /* GOTHIC */
-    { 627, 18,  76}, /* GOTH */
-    {1072, 18,  77}, /* OLDPERMIC */
-    {1131, 18,  77}, /* PERM */
-    {1381, 18,  78}, /* UGARITIC */
-    {1380, 18,  78}, /* UGAR */
-    {1073, 18,  79}, /* OLDPERSIAN */
-    {1439, 18,  79}, /* XPEO */
-    { 495, 18,  80}, /* DESERET */
-    { 519, 18,  80}, /* DSRT */
-    {1231, 18,  81}, /* SHAVIAN */
-    {1232, 18,  81}, /* SHAW */
-    {1092, 18,  82}, /* OSMANYA */
-    {1091, 18,  82}, /* OSMA */
-    {1089, 18,  83}, /* OSAGE */
-    {1090, 18,  83}, /* OSGE */
-    { 537, 18,  84}, /* ELBASAN */
-    { 536, 18,  84}, /* ELBA */
-    { 319, 18,  85}, /* CAUCASIANALBANIAN */
+    {1322, 18,  11}, /* SYRIAC */
+    {1321, 18,  11}, /* SYRC */
+    {1363, 18,  12}, /* THAANA */
+    {1362, 18,  12}, /* THAA */
+    {1037, 18,  13}, /* NKO */
+    {1038, 18,  13}, /* NKOO */
+    {1220, 18,  14}, /* SAMARITAN */
+    {1221, 18,  14}, /* SAMR */
+    { 904, 18,  15}, /* MANDAIC */
+    { 903, 18,  15}, /* MAND */
+    { 503, 18,  16}, /* DEVANAGARI */
+    { 502, 18,  16}, /* DEVA */
+    { 261, 18,  17}, /* BENGALI */
+    { 260, 18,  17}, /* BENG */
+    { 655, 18,  18}, /* GURMUKHI */
+    { 656, 18,  18}, /* GURU */
+    { 652, 18,  19}, /* GUJARATI */
+    { 653, 18,  19}, /* GUJR */
+    {1097, 18,  20}, /* ORIYA */
+    {1100, 18,  20}, /* ORYA */
+    {1341, 18,  21}, /* TAMIL */
+    {1344, 18,  21}, /* TAML */
+    {1356, 18,  22}, /* TELUGU */
+    {1355, 18,  22}, /* TELU */
+    { 779, 18,  23}, /* KANNADA */
+    { 798, 18,  23}, /* KNDA */
+    { 891, 18,  24}, /* MALAYALAM */
+    { 982, 18,  24}, /* MLYM */
+    {1254, 18,  25}, /* SINHALA */
+    {1253, 18,  25}, /* SINH */
+    {1364, 18,  26}, /* THAI */
+    { 807, 18,  27}, /* LAO */
+    { 808, 18,  27}, /* LAOO */
+    {1366, 18,  28}, /* TIBETAN */
+    {1367, 18,  28}, /* TIBT */
+    {1001, 18,  29}, /* MYANMAR */
+    {1006, 18,  29}, /* MYMR */
+    { 621, 18,  30}, /* GEORGIAN */
+    { 620, 18,  30}, /* GEOR */
+    { 668, 18,  31}, /* HANGUL */
+    { 667, 18,  31}, /* HANG */
+    { 572, 18,  32}, /* ETHIOPIC */
+    { 571, 18,  32}, /* ETHI */
+    { 371, 18,  33}, /* CHEROKEE */
+    { 370, 18,  33}, /* CHER */
+    { 309, 18,  34}, /* CANADIANABORIGINAL */
+    { 313, 18,  34}, /* CANS */
+    {1075, 18,  35}, /* OGHAM */
+    {1074, 18,  35}, /* OGAM */
+    {1213, 18,  36}, /* RUNIC */
+    {1214, 18,  36}, /* RUNR */
+    {1327, 18,  37}, /* TAGALOG */
+    {1361, 18,  37}, /* TGLG */
+    { 682, 18,  38}, /* HANUNOO */
+    { 679, 18,  38}, /* HANO */
+    { 301, 18,  39}, /* BUHID */
+    { 300, 18,  39}, /* BUHD */
+    {1329, 18,  40}, /* TAGBANWA */
+    {1328, 18,  40}, /* TAGB */
+    { 791, 18,  41}, /* KHMER */
+    { 793, 18,  41}, /* KHMR */
+    { 991, 18,  42}, /* MONGOLIAN */
+    { 990, 18,  42}, /* MONG */
+    { 848, 18,  43}, /* LIMBU */
+    { 847, 18,  43}, /* LIMB */
+    {1332, 18,  44}, /* TAILE */
+    {1339, 18,  44}, /* TALE */
+    {1026, 18,  45}, /* NEWTAILUE */
+    {1340, 18,  45}, /* TALU */
+    { 299, 18,  46}, /* BUGINESE */
+    { 298, 18,  46}, /* BUGI */
+    {1333, 18,  47}, /* TAITHAM */
+    { 806, 18,  47}, /* LANA */
+    { 244, 18,  48}, /* BALINESE */
+    { 243, 18,  48}, /* BALI */
+    {1287, 18,  49}, /* SUNDANESE */
+    {1286, 18,  49}, /* SUND */
+    { 252, 18,  50}, /* BATAK */
+    { 253, 18,  50}, /* BATK */
+    { 842, 18,  51}, /* LEPCHA */
+    { 841, 18,  51}, /* LEPC */
+    {1079, 18,  52}, /* OLCHIKI */
+    {1080, 18,  52}, /* OLCK */
+    { 292, 18,  53}, /* BRAILLE */
+    { 291, 18,  53}, /* BRAI */
+    { 628, 18,  54}, /* GLAGOLITIC */
+    { 627, 18,  54}, /* GLAG */
+    {1368, 18,  55}, /* TIFINAGH */
+    {1360, 18,  55}, /* TFNG */
+    { 666, 18,  56}, /* HAN */
+    { 675, 18,  56}, /* HANI */
+    { 698, 18,  57}, /* HIRAGANA */
+    { 697, 18,  57}, /* HIRA */
+    { 781, 18,  58}, /* KATAKANA */
+    { 768, 18,  58}, /* KANA */
+    {1461, 18,  59}, /* YI */
+    {1462, 18,  59}, /* YIII */
+    { 858, 18,  60}, /* LISU */
+    {1406, 18,  61}, /* VAI */
+    {1407, 18,  61}, /* VAII */
+    { 246, 18,  62}, /* BAMUM */
+    { 245, 18,  62}, /* BAMU */
+    {1316, 18,  63}, /* SYLOTINAGRI */
+    {1315, 18,  63}, /* SYLO */
+    {1146, 18,  64}, /* PHAGSPA */
+    {1145, 18,  64}, /* PHAG */
+    {1224, 18,  65}, /* SAURASHTRA */
+    {1223, 18,  65}, /* SAUR */
+    { 786, 18,  66}, /* KAYAHLI */
+    { 767, 18,  66}, /* KALI */
+    {1196, 18,  67}, /* REJANG */
+    {1205, 18,  67}, /* RJNG */
+    { 752, 18,  68}, /* JAVANESE */
+    { 751, 18,  68}, /* JAVA */
+    { 364, 18,  69}, /* CHAM */
+    {1334, 18,  70}, /* TAIVIET */
+    {1351, 18,  70}, /* TAVT */
+    { 955, 18,  71}, /* MEETEIMAYEK */
+    { 996, 18,  71}, /* MTEI */
+    { 852, 18,  72}, /* LINEARB */
+    { 850, 18,  72}, /* LINB */
+    { 880, 18,  73}, /* LYCIAN */
+    { 879, 18,  73}, /* LYCI */
+    { 316, 18,  74}, /* CARIAN */
+    { 315, 18,  74}, /* CARI */
+    {1082, 18,  75}, /* OLDITALIC */
+    { 747, 18,  75}, /* ITAL */
+    { 636, 18,  76}, /* GOTHIC */
+    { 635, 18,  76}, /* GOTH */
+    {1084, 18,  77}, /* OLDPERMIC */
+    {1143, 18,  77}, /* PERM */
+    {1393, 18,  78}, /* UGARITIC */
+    {1392, 18,  78}, /* UGAR */
+    {1085, 18,  79}, /* OLDPERSIAN */
+    {1451, 18,  79}, /* XPEO */
+    { 501, 18,  80}, /* DESERET */
+    { 527, 18,  80}, /* DSRT */
+    {1243, 18,  81}, /* SHAVIAN */
+    {1244, 18,  81}, /* SHAW */
+    {1104, 18,  82}, /* OSMANYA */
+    {1103, 18,  82}, /* OSMA */
+    {1101, 18,  83}, /* OSAGE */
+    {1102, 18,  83}, /* OSGE */
+    { 545, 18,  84}, /* ELBASAN */
+    { 544, 18,  84}, /* ELBA */
+    { 321, 18,  85}, /* CAUCASIANALBANIAN */
     { 176, 18,  85}, /* AGHB */
-    {1410, 18,  86}, /* VITHKUQI */
-    {1409, 18,  86}, /* VITH */
-    { 841, 18,  87}, /* LINEARA */
-    { 839, 18,  87}, /* LINA */
-    { 467, 18,  88}, /* CYPRIOT */
-    { 454, 18,  88}, /* CPRT */
-    { 715, 18,  89}, /* IMPERIALARAMAIC */
-    { 219, 18,  89}, /* ARMI */
-    {1117, 18,  90}, /* PALMYRENE */
-    {1116, 18,  90}, /* PALM */
-    {1000, 18,  91}, /* NABATAEAN */
-    {1008, 18,  91}, /* NBAT */
-    { 676, 18,  92}, /* HATRAN */
-    { 675, 18,  92}, /* HATR */
-    {1140, 18,  93}, /* PHOENICIAN */
-    {1139, 18,  93}, /* PHNX */
-    { 872, 18,  94}, /* LYDIAN */
-    { 871, 18,  94}, /* LYDI */
-    { 953, 18,  95}, /* MEROITICHIEROGLYPHS */
-    { 951, 18,  95}, /* MERO */
-    { 952, 18,  96}, /* MEROITICCURSIVE */
-    { 950, 18,  96}, /* MERC */
-    { 779, 18,  97}, /* KHAROSHTHI */
-    { 778, 18,  97}, /* KHAR */
-    {1075, 18,  98}, /* OLDSOUTHARABIAN */
-    {1210, 18,  98}, /* SARB */
-    {1071, 18,  99}, /* OLDNORTHARABIAN */
-    {1005, 18,  99}, /* NARB */
-    { 897, 18, 100}, /* MANICHAEAN */
-    { 896, 18, 100}, /* MANI */
-    { 236, 18, 101}, /* AVESTAN */
-    { 237, 18, 101}, /* AVST */
-    { 729, 18, 102}, /* INSCRIPTIONALPARTHIAN */
-    {1164, 18, 102}, /* PRTI */
-    { 728, 18, 103}, /* INSCRIPTIONALPAHLAVI */
-    {1137, 18, 103}, /* PHLI */
-    {1166, 18, 104}, /* PSALTERPAHLAVI */
-    {1138, 18, 104}, /* PHLP */
-    {1076, 18, 105}, /* OLDTURKIC */
-    {1086, 18, 105}, /* ORKH */
-    {1069, 18, 106}, /* OLDHUNGARIAN */
-    { 698, 18, 106}, /* HUNG */
-    { 668, 18, 107}, /* HANIFIROHINGYA */
-    {1197, 18, 107}, /* ROHG */
-    {1448, 18, 108}, /* YEZIDI */
-    {1447, 18, 108}, /* YEZI */
-    {1074, 18, 109}, /* OLDSOGDIAN */
-    {1256, 18, 109}, /* SOGO */
-    {1255, 18, 110}, /* SOGDIAN */
-    {1254, 18, 110}, /* SOGD */
-    {1077, 18, 111}, /* OLDUYGHUR */
-    {1108, 18, 111}, /* OUGR */
-    { 373, 18, 112}, /* CHORASMIAN */
-    { 374, 18, 112}, /* CHRS */
-    { 539, 18, 113}, /* ELYMAIC */
-    { 538, 18, 113}, /* ELYM */
-    { 287, 18, 114}, /* BRAHMI */
-    { 286, 18, 114}, /* BRAH */
-    { 757, 18, 115}, /* KAITHI */
-    { 790, 18, 115}, /* KTHI */
-    {1258, 18, 116}, /* SORASOMPENG */
-    {1257, 18, 116}, /* SORA */
-    { 361, 18, 117}, /* CHAKMA */
-    { 305, 18, 117}, /* CAKM */
-    { 875, 18, 118}, /* MAHAJANI */
-    { 876, 18, 118}, /* MAHJ */
-    {1230, 18, 119}, /* SHARADA */
-    {1235, 18, 119}, /* SHRD */
-    { 785, 18, 120}, /* KHOJKI */
-    { 784, 18, 120}, /* KHOJ */
-    { 988, 18, 121}, /* MULTANI */
-    { 987, 18, 121}, /* MULT */
-    { 786, 18, 122}, /* KHUDAWADI */
-    {1239, 18, 122}, /* SIND */
-    { 630, 18, 123}, /* GRANTHA */
-    { 629, 18, 123}, /* GRAN */
-    {1012, 18, 124}, /* NEWA */
-    {1358, 18, 125}, /* TIRHUTA */
-    {1357, 18, 125}, /* TIRH */
-    {1237, 18, 126}, /* SIDDHAM */
-    {1236, 18, 126}, /* SIDD */
-    { 974, 18, 127}, /* MODI */
-    {1326, 18, 128}, /* TAKRI */
-    {1325, 18, 128}, /* TAKR */
+    {1422, 18,  86}, /* VITHKUQI */
+    {1421, 18,  86}, /* VITH */
+    { 851, 18,  87}, /* LINEARA */
+    { 849, 18,  87}, /* LINA */
+    { 471, 18,  88}, /* CYPRIOT */
+    { 458, 18,  88}, /* CPRT */
+    { 723, 18,  89}, /* IMPERIALARAMAIC */
+    { 221, 18,  89}, /* ARMI */
+    {1129, 18,  90}, /* PALMYRENE */
+    {1128, 18,  90}, /* PALM */
+    {1010, 18,  91}, /* NABATAEAN */
+    {1020, 18,  91}, /* NBAT */
+    { 684, 18,  92}, /* HATRAN */
+    { 683, 18,  92}, /* HATR */
+    {1152, 18,  93}, /* PHOENICIAN */
+    {1151, 18,  93}, /* PHNX */
+    { 882, 18,  94}, /* LYDIAN */
+    { 881, 18,  94}, /* LYDI */
+    { 963, 18,  95}, /* MEROITICHIEROGLYPHS */
+    { 961, 18,  95}, /* MERO */
+    { 962, 18,  96}, /* MEROITICCURSIVE */
+    { 960, 18,  96}, /* MERC */
+    { 789, 18,  97}, /* KHAROSHTHI */
+    { 788, 18,  97}, /* KHAR */
+    {1087, 18,  98}, /* OLDSOUTHARABIAN */
+    {1222, 18,  98}, /* SARB */
+    {1083, 18,  99}, /* OLDNORTHARABIAN */
+    {1017, 18,  99}, /* NARB */
+    { 907, 18, 100}, /* MANICHAEAN */
+    { 906, 18, 100}, /* MANI */
+    { 238, 18, 101}, /* AVESTAN */
+    { 239, 18, 101}, /* AVST */
+    { 737, 18, 102}, /* INSCRIPTIONALPARTHIAN */
+    {1176, 18, 102}, /* PRTI */
+    { 736, 18, 103}, /* INSCRIPTIONALPAHLAVI */
+    {1149, 18, 103}, /* PHLI */
+    {1178, 18, 104}, /* PSALTERPAHLAVI */
+    {1150, 18, 104}, /* PHLP */
+    {1088, 18, 105}, /* OLDTURKIC */
+    {1098, 18, 105}, /* ORKH */
+    {1081, 18, 106}, /* OLDHUNGARIAN */
+    { 706, 18, 106}, /* HUNG */
+    { 676, 18, 107}, /* HANIFIROHINGYA */
+    {1209, 18, 107}, /* ROHG */
+    {1460, 18, 108}, /* YEZIDI */
+    {1459, 18, 108}, /* YEZI */
+    {1086, 18, 109}, /* OLDSOGDIAN */
+    {1268, 18, 109}, /* SOGO */
+    {1267, 18, 110}, /* SOGDIAN */
+    {1266, 18, 110}, /* SOGD */
+    {1089, 18, 111}, /* OLDUYGHUR */
+    {1120, 18, 111}, /* OUGR */
+    { 375, 18, 112}, /* CHORASMIAN */
+    { 376, 18, 112}, /* CHRS */
+    { 547, 18, 113}, /* ELYMAIC */
+    { 546, 18, 113}, /* ELYM */
+    { 289, 18, 114}, /* BRAHMI */
+    { 288, 18, 114}, /* BRAH */
+    { 765, 18, 115}, /* KAITHI */
+    { 800, 18, 115}, /* KTHI */
+    {1270, 18, 116}, /* SORASOMPENG */
+    {1269, 18, 116}, /* SORA */
+    { 363, 18, 117}, /* CHAKMA */
+    { 307, 18, 117}, /* CAKM */
+    { 885, 18, 118}, /* MAHAJANI */
+    { 886, 18, 118}, /* MAHJ */
+    {1242, 18, 119}, /* SHARADA */
+    {1247, 18, 119}, /* SHRD */
+    { 795, 18, 120}, /* KHOJKI */
+    { 794, 18, 120}, /* KHOJ */
+    { 998, 18, 121}, /* MULTANI */
+    { 997, 18, 121}, /* MULT */
+    { 796, 18, 122}, /* KHUDAWADI */
+    {1251, 18, 122}, /* SIND */
+    { 638, 18, 123}, /* GRANTHA */
+    { 637, 18, 123}, /* GRAN */
+    {1024, 18, 124}, /* NEWA */
+    {1370, 18, 125}, /* TIRHUTA */
+    {1369, 18, 125}, /* TIRH */
+    {1249, 18, 126}, /* SIDDHAM */
+    {1248, 18, 126}, /* SIDD */
+    { 984, 18, 127}, /* MODI */
+    {1338, 18, 128}, /* TAKRI */
+    {1337, 18, 128}, /* TAKR */
     { 178, 18, 129}, /* AHOM */
-    { 512, 18, 130}, /* DOGRA */
-    { 511, 18, 130}, /* DOGR */
-    {1421, 18, 131}, /* WARANGCITI */
-    {1420, 18, 131}, /* WARA */
-    { 510, 18, 132}, /* DIVESAKURU */
-    { 507, 18, 132}, /* DIAK */
-    {1003, 18, 133}, /* NANDINAGARI */
-    {1002, 18, 133}, /* NAND */
-    {1460, 18, 134}, /* ZANABAZARSQUARE */
-    {1461, 18, 134}, /* ZANB */
-    {1260, 18, 135}, /* SOYOMBO */
-    {1259, 18, 135}, /* SOYO */
-    {1124, 18, 136}, /* PAUCINHAU */
-    {1123, 18, 136}, /* PAUC */
-    { 261, 18, 137}, /* BHAIKSUKI */
-    { 262, 18, 137}, /* BHKS */
-    { 926, 18, 138}, /* MARCHEN */
-    { 925, 18, 138}, /* MARC */
-    { 928, 18, 139}, /* MASARAMGONDI */
-    { 626, 18, 139}, /* GONM */
-    { 646, 18, 140}, /* GUNJALAGONDI */
-    { 625, 18, 140}, /* GONG */
-    { 880, 18, 141}, /* MAKASAR */
-    { 879, 18, 141}, /* MAKA */
-    { 457, 18, 142}, /* CUNEIFORM */
-    {1440, 18, 142}, /* XSUX */
-    { 469, 18, 143}, /* CYPROMINOAN */
-    { 453, 18, 143}, /* CPMN */
-    { 535, 18, 144}, /* EGYPTIANHIEROGLYPHS */
-    { 533, 18, 144}, /* EGYP */
-    { 195, 18, 145}, /* ANATOLIANHIEROGLYPHS */
-    { 692, 18, 145}, /* HLUW */
-    { 984, 18, 146}, /* MRO */
-    { 985, 18, 146}, /* MROO */
-    {1334, 18, 147}, /* TANGSA */
-    {1360, 18, 147}, /* TNSA */
-    { 249, 18, 148}, /* BASSAVAH */
-    { 248, 18, 148}, /* BASS */
-    {1115, 18, 149}, /* PAHAWHHMONG */
-    { 693, 18, 149}, /* HMNG */
-    { 941, 18, 150}, /* MEDEFAIDRIN */
-    { 942, 18, 150}, /* MEDF */
-    { 954, 18, 151}, /* MIAO */
-    {1147, 18, 151}, /* PLRD */
-    {1335, 18, 152}, /* TANGUT */
-    {1333, 18, 152}, /* TANG */
-    {1055, 18, 153}, /* NUSHU */
-    {1043, 18, 153}, /* NSHU */
-    { 780, 18, 154}, /* KHITANSMALLSCRIPT */
-    { 787, 18, 154}, /* KITS */
-    { 523, 18, 155}, /* DUPLOYAN */
-    { 522, 18, 155}, /* DUPL */
-    {1238, 18, 156}, /* SIGNWRITING */
-    {1229, 18, 156}, /* SGNW */
-    {1058, 18, 157}, /* NYIAKENGPUACHUEHMONG */
-    { 694, 18, 157}, /* HMNP */
-    {1370, 18, 158}, /* TOTO */
-    {1419, 18, 159}, /* WANCHO */
-    {1424, 18, 159}, /* WCHO */
-    { 949, 18, 160}, /* MENDEKIKAKUI */
-    { 948, 18, 160}, /* MEND */
-    { 170, 18, 161}, /* ADLAM */
-    { 171, 18, 161}, /* ADLM */
-    { 774, 18, 162}, /* KATAKANAORHIRAGANA */
-    { 696, 18, 162}, /* HRKT */
-    {1093, 19,   0}, /* OTHER */
-    {1441, 19,   0}, /* XX */
-    {1261, 19,   1}, /* SP */
-    { 836, 19,   2}, /* LF */
-    { 455, 19,   3}, /* CR */
-    {1271, 19,   4}, /* STERM */
-    {1270, 19,   4}, /* ST */
-    { 408, 19,   5}, /* CLOSE */
-    { 407, 19,   5}, /* CL */
-    {1215, 19,   6}, /* SCONTINUE */
-    {1214, 19,   6}, /* SC */
-    { 230, 19,   7}, /* ATERM */
-    { 225, 19,   7}, /* AT */
-    {1051, 19,   8}, /* NUMERIC */
-    {1046, 19,   8}, /* NU */
-    {1390, 19,   9}, /* UPPER */
-    {1389, 19,   9}, /* UP */
-    { 856, 19,  10}, /* LOWER */
-    { 853, 19,  10}, /* LO */
-    {1226, 19,  11}, /* SEP */
-    {1220, 19,  11}, /* SE */
-    { 596, 19,  12}, /* FORMAT */
-    { 594, 19,  12}, /* FO */
-    {1078, 19,  13}, /* OLETTER */
-    { 822, 19,  13}, /* LE */
-    { 579, 19,  14}, /* EXTEND */
-    { 576, 19,  14}, /* EX */
-    {1093, 20,   0}, /* OTHER */
-    {1441, 20,   0}, /* XX */
-    { 836, 20,   1}, /* LF */
-    {1013, 20,   2}, /* NEWLINE */
-    {1027, 20,   2}, /* NL */
-    { 455, 20,   3}, /* CR */
-    {1432, 20,   4}, /* WSEGSPACE */
-    { 517, 20,   5}, /* DOUBLEQUOTE */
-    { 518, 20,   5}, /* DQ */
-    {1240, 20,   6}, /* SINGLEQUOTE */
-    {1267, 20,   6}, /* SQ */
-    { 956, 20,   7}, /* MIDNUM */
-    { 973, 20,   7}, /* MN */
-    { 957, 20,   8}, /* MIDNUMLET */
-    { 937, 20,   8}, /* MB */
-    {1051, 20,   9}, /* NUMERIC */
-    {1046, 20,   9}, /* NU */
-    { 955, 20,  10}, /* MIDLETTER */
-    { 971, 20,  10}, /* ML */
+    { 520, 18, 130}, /* DOGRA */
+    { 519, 18, 130}, /* DOGR */
+    {1433, 18, 131}, /* WARANGCITI */
+    {1432, 18, 131}, /* WARA */
+    { 518, 18, 132}, /* DIVESAKURU */
+    { 515, 18, 132}, /* DIAK */
+    {1015, 18, 133}, /* NANDINAGARI */
+    {1014, 18, 133}, /* NAND */
+    {1472, 18, 134}, /* ZANABAZARSQUARE */
+    {1473, 18, 134}, /* ZANB */
+    {1272, 18, 135}, /* SOYOMBO */
+    {1271, 18, 135}, /* SOYO */
+    {1136, 18, 136}, /* PAUCINHAU */
+    {1135, 18, 136}, /* PAUC */
+    { 263, 18, 137}, /* BHAIKSUKI */
+    { 264, 18, 137}, /* BHKS */
+    { 936, 18, 138}, /* MARCHEN */
+    { 935, 18, 138}, /* MARC */
+    { 938, 18, 139}, /* MASARAMGONDI */
+    { 634, 18, 139}, /* GONM */
+    { 654, 18, 140}, /* GUNJALAGONDI */
+    { 633, 18, 140}, /* GONG */
+    { 890, 18, 141}, /* MAKASAR */
+    { 889, 18, 141}, /* MAKA */
+    { 785, 18, 142}, /* KAWI */
+    { 461, 18, 143}, /* CUNEIFORM */
+    {1452, 18, 143}, /* XSUX */
+    { 473, 18, 144}, /* CYPROMINOAN */
+    { 457, 18, 144}, /* CPMN */
+    { 543, 18, 145}, /* EGYPTIANHIEROGLYPHS */
+    { 541, 18, 145}, /* EGYP */
+    { 195, 18, 146}, /* ANATOLIANHIEROGLYPHS */
+    { 700, 18, 146}, /* HLUW */
+    { 994, 18, 147}, /* MRO */
+    { 995, 18, 147}, /* MROO */
+    {1346, 18, 148}, /* TANGSA */
+    {1372, 18, 148}, /* TNSA */
+    { 251, 18, 149}, /* BASSAVAH */
+    { 250, 18, 149}, /* BASS */
+    {1127, 18, 150}, /* PAHAWHHMONG */
+    { 701, 18, 150}, /* HMNG */
+    { 951, 18, 151}, /* MEDEFAIDRIN */
+    { 952, 18, 151}, /* MEDF */
+    { 964, 18, 152}, /* MIAO */
+    {1159, 18, 152}, /* PLRD */
+    {1347, 18, 153}, /* TANGUT */
+    {1345, 18, 153}, /* TANG */
+    {1067, 18, 154}, /* NUSHU */
+    {1055, 18, 154}, /* NSHU */
+    { 790, 18, 155}, /* KHITANSMALLSCRIPT */
+    { 797, 18, 155}, /* KITS */
+    { 531, 18, 156}, /* DUPLOYAN */
+    { 530, 18, 156}, /* DUPL */
+    {1250, 18, 157}, /* SIGNWRITING */
+    {1241, 18, 157}, /* SGNW */
+    {1070, 18, 158}, /* NYIAKENGPUACHUEHMONG */
+    { 702, 18, 158}, /* HMNP */
+    {1382, 18, 159}, /* TOTO */
+    {1431, 18, 160}, /* WANCHO */
+    {1436, 18, 160}, /* WCHO */
+    {1012, 18, 161}, /* NAGMUNDARI */
+    {1011, 18, 161}, /* NAGM */
+    { 959, 18, 162}, /* MENDEKIKAKUI */
+    { 958, 18, 162}, /* MEND */
+    { 170, 18, 163}, /* ADLAM */
+    { 171, 18, 163}, /* ADLM */
+    { 783, 18, 164}, /* KATAKANAORHIRAGANA */
+    { 704, 18, 164}, /* HRKT */
+    {1105, 19,   0}, /* OTHER */
+    {1453, 19,   0}, /* XX */
+    {1273, 19,   1}, /* SP */
+    { 846, 19,   2}, /* LF */
+    { 459, 19,   3}, /* CR */
+    {1283, 19,   4}, /* STERM */
+    {1282, 19,   4}, /* ST */
+    { 412, 19,   5}, /* CLOSE */
+    { 411, 19,   5}, /* CL */
+    {1227, 19,   6}, /* SCONTINUE */
+    {1226, 19,   6}, /* SC */
+    { 232, 19,   7}, /* ATERM */
+    { 227, 19,   7}, /* AT */
+    {1063, 19,   8}, /* NUMERIC */
+    {1058, 19,   8}, /* NU */
+    {1402, 19,   9}, /* UPPER */
+    {1401, 19,   9}, /* UP */
+    { 866, 19,  10}, /* LOWER */
+    { 863, 19,  10}, /* LO */
+    {1238, 19,  11}, /* SEP */
+    {1232, 19,  11}, /* SE */
+    { 604, 19,  12}, /* FORMAT */
+    { 602, 19,  12}, /* FO */
+    {1090, 19,  13}, /* OLETTER */
+    { 832, 19,  13}, /* LE */
+    { 587, 19,  14}, /* EXTEND */
+    { 584, 19,  14}, /* EX */
+    {1105, 20,   0}, /* OTHER */
+    {1453, 20,   0}, /* XX */
+    { 846, 20,   1}, /* LF */
+    {1025, 20,   2}, /* NEWLINE */
+    {1039, 20,   2}, /* NL */
+    { 459, 20,   3}, /* CR */
+    {1444, 20,   4}, /* WSEGSPACE */
+    { 525, 20,   5}, /* DOUBLEQUOTE */
+    { 526, 20,   5}, /* DQ */
+    {1252, 20,   6}, /* SINGLEQUOTE */
+    {1279, 20,   6}, /* SQ */
+    { 966, 20,   7}, /* MIDNUM */
+    { 983, 20,   7}, /* MN */
+    { 967, 20,   8}, /* MIDNUMLET */
+    { 947, 20,   8}, /* MB */
+    {1063, 20,   9}, /* NUMERIC */
+    {1058, 20,   9}, /* NU */
+    { 965, 20,  10}, /* MIDLETTER */
+    { 981, 20,  10}, /* ML */
     { 186, 20,  11}, /* ALETTER */
-    { 822, 20,  11}, /* LE */
-    { 582, 20,  12}, /* EXTENDNUMLET */
-    { 576, 20,  12}, /* EX */
-    { 596, 20,  13}, /* FORMAT */
-    { 594, 20,  13}, /* FO */
-    { 579, 20,  14}, /* EXTEND */
-    { 680, 20,  15}, /* HEBREWLETTER */
-    { 691, 20,  15}, /* HL */
-    {1470, 20,  16}, /* ZWJ */
-    { 772, 20,  17}, /* KATAKANA */
-    { 755, 20,  17}, /* KA */
-    {1181, 20,  18}, /* REGIONALINDICATOR */
-    {1186, 20,  18}, /* RI */
-    { 529, 20,  19}, /* EBASE */
-    { 528, 20,  19}, /* EB */
-    { 530, 20,  20}, /* EBASEGAZ */
-    { 531, 20,  20}, /* EBG */
-    { 542, 20,  21}, /* EMODIFIER */
-    { 540, 20,  21}, /* EM */
-    { 624, 20,  22}, /* GLUEAFTERZWJ */
-    { 603, 20,  22}, /* GAZ */
+    { 832, 20,  11}, /* LE */
+    { 590, 20,  12}, /* EXTENDNUMLET */
+    { 584, 20,  12}, /* EX */
+    { 604, 20,  13}, /* FORMAT */
+    { 602, 20,  13}, /* FO */
+    { 587, 20,  14}, /* EXTEND */
+    { 688, 20,  15}, /* HEBREWLETTER */
+    { 699, 20,  15}, /* HL */
+    {1482, 20,  16}, /* ZWJ */
+    { 781, 20,  17}, /* KATAKANA */
+    { 763, 20,  17}, /* KA */
+    {1193, 20,  18}, /* REGIONALINDICATOR */
+    {1198, 20,  18}, /* RI */
+    { 537, 20,  19}, /* EBASE */
+    { 536, 20,  19}, /* EB */
+    { 538, 20,  20}, /* EBASEGAZ */
+    { 539, 20,  20}, /* EBG */
+    { 550, 20,  21}, /* EMODIFIER */
+    { 548, 20,  21}, /* EM */
+    { 632, 20,  22}, /* GLUEAFTERZWJ */
+    { 611, 20,  22}, /* GAZ */
 };
 
 /* Codepoints which expand on full case-folding. */
@@ -3332,7 +3358,7 @@ static RE_UINT8 re_alphabetic_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 47, 13, 13, 13, 48, 49, 13,
     13, 13, 13, 50, 13, 13, 13, 13, 13, 13, 51, 10, 10, 10, 52, 10,
-    13, 13, 13, 13, 53, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    13, 13, 13, 13, 53, 13, 13, 13, 54, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
@@ -3397,7 +3423,7 @@ static RE_UINT16 re_alphabetic_table_2[] = {
      19,   4,  20,  21,   4,   4,  22,  23,  24,   4,  25,   4,   4,  26,  27,  28,
      29,  30,  31,  32,  33,   4,  34,  35,   4,  36,  37,  38,  39,  40,  41,  42,
      43,  44,  45,  46,  47,  48,  49,  50,  51,  48,  52,  53,  54,  55,  56,   0,
-     57,  58,  59,  60,  57,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,
+     57,  58,  59,  60,  61,  62,  63,  64,  57,  65,  66,  67,  68,  69,  70,  71,
      72,  73,  74,   0,  75,  76,  77,   0,  78,   0,  79,  80,  81,  82,   0,   0,
       4,  83,  24,   4,  84,   4,  85,  86,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,  87,   4,  88,  89,  90,   4,  91,   4,  73,   0,  92,   4,   4,  93,
@@ -3439,66 +3465,68 @@ static RE_UINT16 re_alphabetic_table_2[] = {
     192, 101,   0,  82,  82,   0,  79, 193,   4, 101, 101, 152,  26,   0,   0,   0,
       4,   4,  15,   0,   4, 152,   4, 152,   4, 149,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   4, 194,   0,   0,  82, 195, 196,  24, 197,  24, 193, 115,
-      4,   4, 196, 198, 144,  31, 199,  15,   4, 152, 200, 201,   4,   4, 202,   0,
-    203, 204,   0,   0, 205, 118,   4,  15,  39,  48, 206,  60,   0,   0,   0,   0,
+      4,   4, 196, 198,   4,  31, 199,  15,   4, 152, 200, 201,   4,   4, 202,   0,
+    203, 204, 197,   0, 205, 118,   4,  15,  39,  48, 206,  60,   0,   0,   0,   0,
       4,   4, 207, 197,   4,   4, 208,   0,   0,   0,   0,   0,   4, 209, 210,   0,
       4, 102, 211,   0,   4, 212,   0,   0,  65, 162, 213,   0,   0,   0,   0,   0,
       4,  31,   0,   0,   0,   4,   4, 214, 215, 216, 217,   0,   0, 218,  29, 219,
       4, 220,  24,   4, 221,  24,   4,  31,   0,   0,   0,   0,   0,   0,   0,   0,
     222, 223,  78, 147, 171, 224,   0,   0, 225, 226, 227, 228, 229,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 115,   0,   0,   0,   0,   0, 230,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 115, 230, 231,  78,   0,   0, 232,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 166,   0,   0,   0,
       4,   4,   4, 139,   4,   4,   4,   4,   4,   4,  60,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  24,   4,   4, 180,
-      4, 139,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      4,  92, 233,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4, 213,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,  31, 102,  24,   4, 102,  24, 155,   4,  92,  60, 231,  92,   0,   0,   0,
+      4,  31, 102,  24,   4, 102,  24, 155,   4,  92,  60, 234,  92,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   4,   4,   0,   0,   0,   0,   4,   4, 232,   4, 233,   0,   0, 234,
+      0,   0,   4,   4,   0,   0,   0,   0,   4,   4, 235,   4, 236,   0,   0, 237,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 235,
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 238,
       4,   4,   4,   4,   4,   4, 101,   0,  15,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 236,
-      4,   4,   4,   4,   4,   4,   4,   4,   4, 217, 237, 200,   4,   4,   4,   4,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 239,
+      4,   4,   4,   4,   4,   4,   4,   4,   4, 240, 241, 200,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4, 107,   0,   0,   0,   0,   0,   0,   0,   0,
-      4,   4,   4, 238, 239,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      4,   4,   4, 242, 243,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      4,   4, 240,   4, 241, 242, 243,   4, 244, 245, 246,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4, 247, 248,  86, 240, 240, 249, 249, 222, 222, 250,   0,
+      4,   4, 244,   4, 245, 246, 247,   4, 248, 249, 250,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4, 251, 252,  86, 244, 244, 253, 253, 222, 222, 254,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 102,   0,   0,   0,   0,   0,   0,   0,
-    251, 252,   0,   0,   0,   0,   0,   0,   4, 253, 254,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,  24, 155,   4, 255,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 102, 255,   0,   0,   0,   0,   0,   0,
+    256, 257,   4, 155, 134,   0,   0,   0,   4, 258, 259,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,  24, 155,   4, 260,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,  24, 260,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 261,
+      4,   4,   4,   4,   4,   4, 193,   0,   4,   4, 262,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 256,
-      4,   4,   4,   4,   4,   4, 193,   0,   4,   4, 257,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    243, 258, 259, 260, 261, 262,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    247, 263, 264, 265, 266, 267,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,  24, 161, 161, 106,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   0,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4,   4,   4,   4,   4,  31,   4,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4,   4, 166,   4,   4,   4,   4,   4,   4,
     117,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4, 263,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4, 268,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  78,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
     117,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 162,   0,   0,   0,   0,   0
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  32,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  92,   0,   0
 };
 
 static RE_UINT8 re_alphabetic_table_3[] = {
@@ -3516,13 +3544,13 @@ static RE_UINT8 re_alphabetic_table_3[] = {
     255, 253, 109, 195, 135,  25,   2,  94,   0,   0,  63,   0, 238, 191, 251, 255,
     255, 253, 237, 227, 191,  27,   1,   0,  15,   0,   0,  30, 238, 159, 249, 255,
     159,  25, 192, 176,  15,   0,   2,   0, 236, 199,  61, 214,  24, 199, 255, 195,
-    199,  29, 129,   0, 239, 223, 253, 255, 255, 253, 255, 227, 223,  29,  96,  39,
-     15,   0,   0,   0, 255, 253, 239, 227, 223,  29,  96,  96,  15,   0,   6,   0,
-    255, 223, 253, 255, 255, 255, 255, 231, 223,  93, 240, 128,  15,   0,   0, 252,
+    199,  29, 129,   0, 255, 223, 253, 255, 255, 253, 255, 227, 223,  29,  96,  39,
+     15,   0,   0,   0, 239, 223, 253, 255, 255, 253, 239, 227, 223,  29,  96,  96,
+     15,   0,  14,   0, 255, 255, 255, 231, 223,  93, 240, 128,  15,   0,   0, 252,
     238, 255, 127, 252, 255, 255, 251,  47, 127, 128,  95, 255,   0,   0,  12,   0,
     254, 255, 255, 255, 255, 255, 255,   7, 127,  32,   0,   0, 214, 247, 255, 255,
     175, 255, 255,  59,  95,  32,   0, 240,   1,   0,   0,   0, 255, 254, 255, 255,
-    255,  31, 254, 255,   3, 255, 255, 254, 255, 255, 255,  31, 255, 255, 127, 249,
+    255,  31, 254, 255,  15, 255, 255, 254, 255, 255, 255,  31, 255, 255, 127, 249,
     255, 255,   0,  60, 191,  32, 255, 255, 255, 255, 255, 247, 255,  61, 127,  61,
     255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 255, 255,  61, 255,
     255, 255,   0,   0, 255, 255,  63,  63, 255, 159, 255, 255, 255, 199, 255,   1,
@@ -3553,21 +3581,23 @@ static RE_UINT8 re_alphabetic_table_3[] = {
     111, 240, 239, 254,  31,   0,   0,   0, 255,  27,   3,   0, 128,   0, 255, 255,
      63,   0,   0,   0,   3,   0,   0,   0,   0,   0,  62,   0,   4,   0, 255, 255,
     240,   0, 255, 255, 255, 255,  71,   0,  30, 192,   0,  20, 255, 255, 251, 255,
-    255, 255, 159,  64, 127, 189, 255, 191, 159,  25, 129, 224, 187,   7,   0, 128,
+    255, 255, 159, 192, 127, 189, 255, 191, 159,  25, 129, 224, 187,   7,   0, 128,
     179,   0,   0,   0, 255, 255,  63, 127,   0,   0,   0,  63,  17,   0,   0,   0,
     255, 255,  63,   1, 127,   0,   0,   0,   0,   0,   0, 128, 127, 242, 111, 255,
     255, 255, 191, 153,   7,   0,   0,   0, 255, 252, 255, 255,  26,   0,   0,   0,
     255, 255, 231, 127, 255, 255, 255,  32, 255, 253, 255, 255, 255, 255, 127, 127,
     255, 254, 127,   0, 127, 251, 255, 255, 255, 255, 127, 180, 203,   0,   0,   0,
-    191, 253, 255, 255, 255, 127, 123,   1,   0,   0,   1,   0, 248, 255, 255, 224,
-    255, 135, 255, 255, 255, 128, 255, 255,  11,   0,   3,   0, 255, 255, 255,   0,
-      0,   0, 239, 111,   0,   0,   7,   0, 255,   7, 255,  31, 255,   1, 255,  67,
+    191, 253, 255, 255, 255, 127, 123,   1, 255, 255, 253, 255, 255, 255, 255, 199,
+      0,   0,   1,   0, 126,   0,   0,   0, 248, 255, 255, 224, 255, 135, 255, 255,
+    255, 128, 255, 255,  11,   0,   3,   0, 255, 255, 255,   0,   0,   0, 239, 111,
+      7,   0,   4,   0,   0,   0,  39,   0, 255,   7, 255,  31, 255,   1, 255,  67,
     255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255,
     191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255,
-    253, 255, 255, 247, 255, 127, 255, 255, 247,  15,   0,   0, 127, 255, 255, 249,
-    219,   7,   0,   0, 255,  31, 128,  63,   0,  64,   0,   0, 255,  15,   0,   0,
-    127, 111, 255, 127, 143,   8,   0,   0, 150, 254, 247,  10, 132, 234, 150, 170,
-    150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,   3,   0, 255, 255
+    253, 255, 255, 247, 255, 127, 255, 255, 247,  15,   0,   0, 224,   7,   0,   0,
+    127, 255, 255, 249, 219,   7, 255, 255, 255,  31, 128,  63,   0,  64,   0,   0,
+    255,  15,   0,   0, 127, 111, 255, 127, 143,   8,   0,   0, 150, 254, 247,  10,
+    132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,
+      3,   0, 255, 255
 };
 
 RE_UINT32 re_get_alphabetic(RE_UINT32 codepoint) {
@@ -3603,7 +3633,7 @@ static RE_UINT8 re_alphanumeric_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 48, 13, 13, 13, 49, 50, 13,
     13, 13, 13, 51, 13, 13, 13, 13, 13, 13, 52, 10, 10, 10, 53, 10,
-    13, 13, 13, 13, 54, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    13, 13, 13, 13, 54, 13, 13, 13, 55, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
@@ -3668,7 +3698,7 @@ static RE_UINT16 re_alphanumeric_table_2[] = {
      20,   5,  21,  22,   5,   5,  23,  24,  25,   5,  26,   5,   5,  27,   5,  28,
      29,  30,  31,  32,  33,   5,  34,  35,   5,  36,  37,  38,  39,  40,  41,  42,
      43,  44,  45,  46,  47,  48,  49,  50,  51,  48,  52,  53,  54,  55,  56,  57,
-     58,  59,  60,  61,  58,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,
+     58,  59,  60,  61,  62,  63,  64,  65,  58,  66,  67,  68,  69,  70,  71,  72,
      73,  74,  75,   0,  76,  77,  78,   0,  79,  80,  81,  82,  83,  84,   0,   0,
       5,  85,  86,   5,  87,   5,  88,  89,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,  90,   5,  91,  92,  93,   5,  94,   5,  74,   0,  95,   5,   5,  96,
@@ -3710,50 +3740,50 @@ static RE_UINT16 re_alphanumeric_table_2[] = {
     193, 104,   0,  84,  84,   0,  81, 194,   5, 104, 104, 155,  27,   0,   0,   0,
       5,   5,  16,   0,   5, 155,   5, 155,   5, 195,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   5, 196,   0,   0,  84, 197, 198,  25, 199,  25, 194, 119,
-      5,   5, 198, 200, 147,  31, 201, 202,   5, 203, 204, 205,   5,   5, 206,   0,
-    207, 208,   0,   0, 209, 121,   5, 202,  39,  48, 210, 211,   0,   0,   0,   0,
+      5,   5, 198, 200,   5,  31, 201, 202,   5, 203, 204, 205,   5,   5, 206,   0,
+    207, 208, 199,   0, 209, 121,   5, 202,  39,  48, 210, 211,   0,   0,   0,   0,
       5,   5, 212, 199,   5,   5, 213,   0,   0,   0,   0,   0,   5, 214, 215,   0,
       5, 105, 216,   0,   5, 217,  80,   0,  66, 164, 218,   0,   0,   0,   0,   0,
       5,  31,   0,   0,   0,   5,   5, 219, 220, 221, 222,   0,   0, 223,  29, 224,
       5, 225,  25,   5, 226,  25,   5,  31,   0,   0,   0,   0,   0,   0,   0,   0,
     227, 228, 229, 150, 173, 230,   0,   0, 231, 232, 233, 234, 235,  80,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 119,   0,   0,   0,   0,   0, 236,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 119, 236, 237, 229,   0,   0, 238,   0,   0,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 168,   0,   0,   0,
       5,   5,   5, 142,   5,   5,   5,   5,   5,   5, 211,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  25,   5,   5, 181,
-      5, 142,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      5,  95, 239,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5, 218,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,  31, 105,  86,   5, 105,  86, 237,   5,  95, 238, 239,  95,   0,   0,   0,
+      5,  31, 105,  86,   5, 105,  86, 240,   5,  95, 241, 242,  95,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   5,   5,   0,   0,   0,   0,   5,   5, 240,   5, 241,   0,   0, 242,
+      0,   0,   5,   5,   0,   0,   0,   0,   5,   5, 243,   5, 244,   0,   0, 245,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 243,
+      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 246,
       5,   5,   5,   5,   5,   5, 104,   0,  16,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 244,
-      5,   5,   5,   5,   5,   5,   5,   5,   5, 245, 246, 204,   5,   5,   5,   5,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 247,
+      5,   5,   5,   5,   5,   5,   5,   5,   5, 248, 249, 204,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5, 111,   0,   0,   0,   0,   0,   0,   0,   0,
-      5,   5,   5, 247, 248,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      5,   5,   5, 250, 251,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      5,   5, 249,   5, 250, 251, 252,   5, 253, 254, 255,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5, 256, 257,  89, 249, 249, 258, 258, 227, 227, 259,   5,
+      5,   5, 252,   5, 253, 254, 255,   5, 256, 257, 258,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5, 259, 260,  89, 252, 252, 261, 261, 227, 227, 262,   5,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 105,   0,   0,   0,   0,   0,   0,   0,
-    260, 261,   0,   0,   0,   0,   0,   0,   5, 262, 263,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,  25, 237,   5, 264,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 105, 263,   0,   0,   0,   0,   0,   0,
+    264, 265,   5, 240, 137,   0,   0,   0,   5, 266, 267,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,  25, 240,   5, 268,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,  25, 268,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 269,
+      5,   5,   5,   5,   5,   5, 194,   0,   5,   5, 270,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 265,
-      5,   5,   5,   5,   5,   5, 194,   0,   5,   5, 266,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    252, 267, 268, 269, 270, 271,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    255, 271, 272, 273, 274, 275,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,  25,  86,  86,  80,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -3761,17 +3791,19 @@ static RE_UINT16 re_alphanumeric_table_2[] = {
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   0,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5,   5,   5,   5,   5,  31,   5,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5,   5,   5,   5,   5, 168,   5,   5,   5,   5,   5,   5,
      87,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5, 272,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5, 276,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,  79,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
      87,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 273,   0,   0,   0,   0,   0
+      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,  32,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,  95,   0,   0
 };
 
 static RE_UINT8 re_alphanumeric_table_3[] = {
@@ -3789,13 +3821,13 @@ static RE_UINT8 re_alphanumeric_table_3[] = {
     255, 253, 109, 195, 135,  25,   2,  94, 192, 255,  63,   0, 238, 191, 251, 255,
     255, 253, 237, 227, 191,  27,   1,   0, 207, 255,   0,  30, 238, 159, 249, 255,
     159,  25, 192, 176, 207, 255,   2,   0, 236, 199,  61, 214,  24, 199, 255, 195,
-    199,  29, 129,   0, 192, 255,   0,   0, 239, 223, 253, 255, 255, 253, 255, 227,
-    223,  29,  96,  39, 207, 255,   0,   0, 255, 253, 239, 227, 223,  29,  96,  96,
-    207, 255,   6,   0, 255, 223, 253, 255, 255, 255, 255, 231, 223,  93, 240, 128,
+    199,  29, 129,   0, 192, 255,   0,   0, 255, 223, 253, 255, 255, 253, 255, 227,
+    223,  29,  96,  39, 207, 255,   0,   0, 239, 223, 253, 255, 255, 253, 239, 227,
+    223,  29,  96,  96, 207, 255,  14,   0, 255, 255, 255, 231, 223,  93, 240, 128,
     207, 255,   0, 252, 238, 255, 127, 252, 255, 255, 251,  47, 127, 128,  95, 255,
     192, 255,  12,   0, 254, 255, 255, 255, 255, 255, 255,   7, 127,  32, 255,   3,
     214, 247, 255, 255, 175, 255, 255,  59,  95,  32, 255, 243,   1,   0,   0,   0,
-    255,   3,   0,   0, 255, 254, 255, 255, 255,  31, 254, 255,   3, 255, 255, 254,
+    255,   3,   0,   0, 255, 254, 255, 255, 255,  31, 254, 255,  15, 255, 255, 254,
     255, 255, 255,  31, 255, 255, 127, 249, 255,   3, 255, 255, 255, 255, 255,  63,
     191,  32, 255, 255, 255, 255, 255, 247, 255,  61, 127,  61, 255,  61, 255, 255,
     255, 255,  61, 127,  61, 255, 127, 255, 255, 255,  61, 255, 255, 255,   0,   0,
@@ -3827,23 +3859,24 @@ static RE_UINT8 re_alphanumeric_table_3[] = {
     255,  27,   3,   0, 128,   0, 255, 255,  63,   0,   0,   0,   3,   0,   0,   0,
     192, 255,  62,   0,   4,   0, 255, 255, 255,   1, 255,   3, 255, 255, 199, 255,
     240,   0, 255, 255, 255, 255,  71,   0,  30, 192, 255,  23, 255, 255, 251, 255,
-    255, 255, 159,  64, 127, 189, 255, 191, 159,  25, 129, 224,  15,   0,   0,   0,
+    255, 255, 159, 192, 127, 189, 255, 191, 159,  25, 129, 224,  15,   0,   0,   0,
     187,   7, 255, 131, 179,   0, 255,   3, 255, 255,  63, 127,   0,   0,   0,  63,
      17,   0, 255,   3, 255, 255,  63,   1, 127,   0,   0,   0, 255,   3,   0, 128,
     127, 242, 111, 255, 255, 255, 191, 153,   7,   0, 255,   3, 255, 252, 255, 255,
      26,   0,   0,   0, 255, 255, 231, 127, 255, 255, 255,  32, 255, 253, 255, 255,
     255, 255, 127, 127,   1,   0, 255,   3, 255, 254, 127,   0, 127, 251, 255, 255,
     255, 255, 127, 180, 203,   0, 255,   3, 191, 253, 255, 255, 255, 127, 123,   1,
-      0,   0,   1,   0, 255,  63,   0,   0,  15,   0, 255,   3, 248, 255, 255, 224,
-    255, 135, 255, 255, 255, 128, 255, 255,  11,   0,   3,   0, 255, 255, 255,   0,
-      0,   0, 239, 111,   7,   0,   0,   0,   0,   0,   7,   0, 255,   7, 255,  31,
-    255,   1, 255,  67, 255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235,
-    239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,
-     63, 255, 255, 255, 253, 255, 255, 247, 255, 127, 255, 255, 247, 207, 255, 255,
-    127, 255, 255, 249, 219,   7,   0,   0, 255,  31, 128,  63, 255,  67,   0,   0,
+    255, 255, 253, 255, 255, 255, 255, 199,   0,   0,   1,   0, 126,   0,   0,   0,
+    255,  63,   0,   0,  15,   0, 255,   3, 248, 255, 255, 224, 255, 135, 255, 255,
+    255, 128, 255, 255,  11,   0,   3,   0, 255, 255, 255,   0,   0,   0, 239, 111,
+      7,   0,   4,   0,   0,   0,  39,   0, 255,   7, 255,  31, 255,   1, 255,  67,
+    255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255,
+    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255,
+    253, 255, 255, 247, 255, 127, 255, 255, 247, 207, 255, 255, 224,   7,   0,   0,
+    127, 255, 255, 249, 219,   7, 255, 255, 255,  31, 128,  63, 255,  67,   0,   0,
     255,  15, 255,   3, 127, 111, 255, 127, 143,   8, 255,   3, 150, 254, 247,  10,
     132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,
-      3,   0, 255, 255, 255,   7,   0,   0
+      3,   0, 255, 255
 };
 
 RE_UINT32 re_get_alphanumeric(RE_UINT32 codepoint) {
@@ -3887,158 +3920,204 @@ static RE_UINT8 re_bidi_class_table_1[] = {
      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 13, 13,
     13, 13, 13, 14, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 15, 16, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 17, 18,
-    19, 13, 20, 21, 22, 23, 24, 25, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 26, 27, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 28,
-    13, 13, 13, 29, 30, 31, 32, 13, 33, 13, 34, 35, 36, 37, 38, 39,
+    13, 13, 13, 13, 13, 17, 18, 18, 13, 13, 13, 13, 13, 13, 19, 20,
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 18, 31, 13, 32, 18, 18,
+    18, 33, 18, 18, 18, 18, 18, 18, 18, 18, 34, 35, 13, 13, 13, 13,
+    13, 36, 13, 37, 18, 18, 18, 18, 18, 18, 18, 38, 39, 18, 18, 40,
+    18, 18, 18, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 54, 13, 13, 13, 55, 56, 13,
+    13, 13, 13, 57, 13, 13, 13, 13, 13, 13, 58, 18, 18, 18, 59, 53,
+    13, 13, 13, 13, 60, 13, 13, 13, 61, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
+    62, 63, 63, 63, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 53,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 64,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    40, 41, 41, 41, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 39
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 64
 };
 
 static RE_UINT16 re_bidi_class_table_2[] = {
       0,   1,   2,   3,   4,   5,   6,   6,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   8,   9,  10,  11,  11,  11,  12,  13,   7,   7,  14,
-      7,   7,   7,   7,  15,   7,   7,   7,   7,   7,   7,   7,  16,  17,  18,  19,
-     20,  21,  22,  23,  21,  21,  24,  25,  26,  27,  28,  21,  21,  29,  19,  30,
-     31,  32,  33,  21,  34,  21,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,
-     45,  42,  46,  47,  45,  42,  48,  49,  41,  50,  51,  40,  52,   7,  53,  54,
-     55,  56,  57,  58,  41,  42,  59,  40,  60,  61,  43,  40,  41,   7,  62,   7,
-      7,  63,  64,   7,   7,  65,  66,   7,  67,  68,   7,  69,  70,  71,  72,   7,
-      7,  73,  74,  75,  76,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,  77,   7,  78,   7,   7,   7,
-     79,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,  80,   7,   7,   7,  81,  82,  82,  82,   7,  83,  84,  78,
-     85,   7,   7,   7,  86,  87,   7,   7,   7,  88,  89,   7,   7,   7,  90,  91,
-     92,   7,  93,  94,   7,  95,  96,   7,  97,  98,  52,  99,  60, 100,   7, 101,
-      7, 102,   7,   7,   7,   7, 103, 104,   7,   7,   7,   7,   7,   7,  11,  11,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 105, 106, 107,
-    108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118,   7, 119,  91,  91,  91,
-    120,  91,  91,  91,  91,  91,  91,  91,  91, 121,   7, 122, 123,  91,  91,  91,
-     91, 124, 125,  91, 126,   7,   7, 127,  91,  91,  91,  91,  91,  91,  91,  91,
-     91,  91,  91,  91,  91, 128,  91,  91,  91,  91,  91,  91,  91,  91,  91,  91,
-      7,   7,   7,   7,   7,   7,   7,   7,  91,  91,  91,  91,  91,  91,  91,  91,
-     91,  91,  91,  91,  91,  91,  91,  91,  91,  91,  91, 129, 130,  91,  91,  91,
-      7,   7,   7,   7,   7,   7,   7, 131,   7,   7,   7, 132,   7,   7,   7,  11,
-     91,  91, 133,   7, 134,  91,  91, 135,  91,  91,  91,  91,  91,  91, 121, 136,
-    137, 138,   7,   7, 139,  79,   7, 140,   7,   7,   7,   7,   7,   7,  91, 141,
-    142,   7, 143, 144,   7, 145, 146,   7,   7,   7,   7, 147,   7,   7,  90, 148,
+      7,   7,   7,   7,   7,   8,   9,  10,  11,  11,  11,  12,  13,  14,   7,  15,
+      7,   7,   7,   7,  16,   7,   7,   7,   7,  17,  18,   7,  19,  20,  21,  22,
+     23,  24,  25,  26,  24,  24,  27,  28,  29,  30,  31,  24,  24,  32,  22,  33,
+     34,  35,  36,  37,  38,  24,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,
+     49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,
+     65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,
+     81,  82,  83,  22,  84,  85,  86,  22,  87,  88,  89,  90,  91,  92,  93,  22,
+      7,  94,  95,  96,  97,   7,  98,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,  99,   7, 100, 101, 102,   7, 103,   7, 104, 105, 106,   7,   7, 107,
+    108,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7, 109,   7,   7, 110, 111, 112, 113, 114,   7, 115, 116, 117,
+    118,   7,   7, 110, 119, 120,   7, 121, 122, 123, 124, 125,   7, 126, 127, 128,
+    129,   7, 130, 131, 132, 133, 134,  22, 135, 136, 137, 138, 139, 140,   7, 141,
+      7, 142, 143,   7, 144, 145, 146, 147,   7,   7,   7,   7,   7,   7,  11,  11,
+      7,   7,   7,   7,   7,   7,   7,   7, 107,   7, 148, 149,   7, 150, 151, 152,
+    153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,   7, 164, 128, 128, 128,
+    165, 128, 128, 128, 128, 128, 128, 128, 128, 166,   7, 167, 168, 128, 128, 128,
+    128, 169, 170, 128, 171,   7,   7, 172, 128, 128, 128, 128, 128, 128, 128, 128,
+    128, 128, 128, 128, 128, 173, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+      7,   7,   7,   7,   7,   7,   7,   7, 128, 128, 128, 128, 128, 128, 128, 128,
+    128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 174, 175, 128, 128, 128,
+      7,   7,   7,   7,   7,   7,   7, 176,   7,  98,   7, 177, 178, 179, 179,  11,
+    128, 128, 180,  22, 181, 128, 128, 182, 128, 128, 128, 128, 128, 128, 183, 184,
+    185, 186,  81,   7, 187, 108,   7, 188, 189,  17,   7,   7, 190,   7, 128, 191,
+    192,   7, 193, 194,   7, 195, 196,   7,   7,   7,   7, 197,   7,   7, 198, 199,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,  91,  91,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 128, 128,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7, 143,  91, 124,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-    149,   7,   7, 150, 151,   7,   7, 152,  91, 153,   7,   7, 154,   7,   7,   7,
-    155, 156,   7, 157,   7,   7, 158, 159,   7, 160, 161,   7,  37, 162,   7, 163,
-      7, 164, 165,  42,   7, 166,  41, 167,   7,   7,   7, 168,   7,   7,   7, 169,
+      7,   7,   7,   7, 200, 128, 201,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+    202, 203,   7, 204, 205,   7,   7, 206, 128, 207,   7,   7, 208,   7, 209, 210,
+    211, 212,   7, 213,   7,   7, 214, 215,   7, 216, 217, 105,  41, 218, 219, 220,
+      7, 221, 222, 223,   7, 224, 225, 226, 227, 228,   7, 229,   7,   7,   7, 230,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7,   7, 170, 171, 172,  21,  21,  21,  21,  21,
-     21,  21,  21,  21,  21,  21,  21,  21,  21, 173, 174,  21,  21,  21, 175, 176,
-    177, 178, 179, 180,  21,  21,  21, 181, 182,   2,   2, 183,   7,   7,   7, 184,
-      7,   7,   7,   7,   7,   7,   7,   7, 185,   7,  91,  91, 186,  79,   7, 187,
-      7,   7,   7,   7,   7,   7,   7, 188,   7,   7,   7, 189,   7,   7,   7,   7,
-     19,  19,  19,  19,  19,  19,  19,  19, 190,  19,  19,  19,  19,  19,  19,  19,
-    191, 192,  19,  19,  19,  19,  19, 193,  19, 194,  19,  19,  19,  19,  19,  19,
-     19,  19,  19,  19,  19,  19,  19,  19,  21, 195,  19,  19,  19,  19,  19,  19,
-     19,  19,  19, 196,  19, 197,  19,  19,  19, 172,  29, 198, 199,  19,  19,  19,
-     41, 200, 201, 202,  60, 203,  52,   7,  37, 204,   7, 205,  60, 206, 207,   7,
-      7, 208,   7,   7,   7,   7, 132, 209,  60,  61, 210, 211,   7,   7,   7,   7,
-      7, 200, 212,   7,   7, 213, 214,   7,   7,   7,   7,   7,   7, 215, 216,   7,
-      7, 217, 210, 218,   7, 219,   7,   7,  77, 220,   7,   7,   7,   7,   7,   7,
-      7, 221,   7,   7,   7,   7,   7,   7,   7, 222, 223,   7,   7,   7, 224, 210,
-    225, 226, 227,   7, 228,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7, 229,   7,   7, 230, 231,   7,   7,   7, 232, 233,   7, 234,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7, 235,   7,   7,   7,   7,   7,   7, 236, 237,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 231, 232, 233,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7, 238,   7, 239,   7,   7,   7,   7,   7,   7,
+      7,   7,   7, 234,   7,   7, 235,  22, 236, 237, 238,  24,  24,  24, 239,  24,
+     24,  24,  24,  24,  24,  24,  24,  24,  24, 240, 241,  24, 242,  24, 243, 244,
+    245, 246, 247, 248,  24,  24,  24, 249, 250,   2,   2, 251,   7, 122, 252, 253,
+    254, 255, 256,  22,   7,   7,   7, 257, 258, 259, 128, 128, 260, 261, 262, 263,
+     22,  22,  22,  22, 105,   7, 264, 265,   7, 266, 267, 268, 269,   7, 270,  22,
+      7,   7,   7,   7, 149, 271, 272, 233,   7, 273,   7, 274, 275, 276,  22,  22,
+      7,   7,   7,   7,   7,   7,   7,   7,   7, 178, 121, 277, 278, 279,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22, 280,  22,  22,  22,  22,  22,  22,  22,
+    281, 282,  22,  22,  22,  22,  22, 283,  22, 284,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  24, 285,  22,  22,  22,  22,  22,  22,
+     22,  22,  22, 286,  22, 287,  22, 288,  22, 238, 289,  22, 290,  22,  22,  22,
+    291, 292, 293, 294, 139, 295, 296, 297,  41, 298, 273, 299, 139, 300, 301, 302,
+    303, 304, 305,  22, 306, 271, 307, 308, 309, 310, 311, 312,  22,  22,  22,  22,
+      7, 292, 313, 314,   7, 315, 316,  22,  22,  22,  22,  22,   7, 317, 318,  22,
+      7, 319, 320, 321,   7, 322, 323,  22, 104, 324, 325,  22,  22,  22,  22,  22,
+      7, 326,  22,  22,  22,   7,   7, 327, 328, 329, 330,  22,  22, 331, 332, 333,
+    334, 335, 336,   7, 337, 338,   7, 110, 323,  22,  22,  22,  22,  22,  22,  22,
+    339, 340, 341, 342, 343, 344,  22,  22, 345, 346, 347, 348, 349, 323,  22,  22,
+     22,  22,  22,  22,  22,  22,  22, 350, 351, 352, 353,  22,  22, 354, 355, 356,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 240,   7, 241,   7,   7, 242,
-      7,   7,   7,   7, 243, 244,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 235,  22,  22,  22,
+      7,   7,   7, 357,   7,   7,   7,   7,   7,   7, 358,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 262,   7,   7, 359,
+      7,   7, 360,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7, 325,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7, 110, 122, 361,   7, 122, 271, 362,   7, 363, 364, 365, 366,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,   7,   7, 257,  22,  22,  22,   7,   7, 367,   7, 368,  22,  22, 369,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 370,
+      7,   7,   7,   7,   7,   7, 121,  22, 371,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 372,
+      7,   7,   7,   7,   7,   7,   7,   7,   7, 373, 374, 375,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7, 233,  22,  22,  22,  22,  22,  22,  22,  22,
+      7,   7,   7, 376, 377, 378,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  11, 379, 380,   7,   7,   7, 358,  22,
+      7,   7,   7,   7,   7,   7,   7, 121,   7, 381,   7, 382, 383, 384,   7, 385,
+    128, 128, 386,  22,  22,  22, 387, 387, 128, 128, 388, 110,  22,  22,  22,  22,
+      7,   7, 389,   7, 390, 391, 392,   7, 393, 394, 395,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7, 396, 188,   7, 397,   7, 398,   7, 399,   7, 400, 401,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+     11, 402,  11, 403, 404, 405,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22, 122, 406,  22,  22,  22,  22,  22,  22,
+    407, 408,   7, 409, 410,  22,  22,  22,   7, 411, 412,  22,  22,  22,  22,  22,
+     22,  22,  22,  22, 262, 413,   7, 414,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22, 262, 415,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 416,
+     22,  22,  22,  22,  22,  22, 417,  22,  22,  22, 418,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22, 419,  24, 420,  22,  22, 421, 422,  22,  22,  22,  22,  22,  22,
+    423, 424, 425, 426, 427, 428,  22, 429,  22,  22,  22,  22,  22,  22,  22,  22,
+    128, 430, 128, 128, 182, 431, 432, 183, 433, 398,   7, 434,   7, 435,  22, 436,
+    338, 233, 437, 438,  22,  22,  22,  22, 128, 128, 128, 128, 128, 128, 128, 128,
+    128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+    128, 128, 128, 128, 128, 128, 439, 440, 128, 128, 128, 441, 128, 128, 442, 443,
+    430, 128, 444, 128, 445, 446,  22,  22, 128, 128, 128, 128, 128, 128, 128, 128,
+    128, 128, 182, 447, 448, 449, 450, 451, 128, 128, 128, 128, 452, 128, 170, 453,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
+     22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22, 454,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,  22,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7, 235,   7,   7,   7,   7,   7,   7,
+    149,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7,   7,  11, 245, 246,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 247, 248, 249,   7, 250,
-     91,  91, 251,   7,   7,   7,   7,   7,  91,  91, 252,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7, 455,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7, 140,   7, 253,   7, 254,   7, 255,   7, 256, 257,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 456,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-     11, 258,  11, 259, 260, 261,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-    262, 263,   7,   7,   7,   7,   7,   7,   7, 239,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7, 264,   7, 265,   7,   7,   7,   7,   7,   7,   7,   7,
-     19,  19,  19,  19,  19,  19, 266,  19,  19,  19, 267,  19,  19,  19,  19,  19,
-     19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,
-     19,  19,  19, 172,  21,  21,  19,  19,  21,  21, 198,  19,  19,  19,  19,  19,
-     21,  21,  21,  21,  21,  21,  21, 268,  19,  19,  19,  19,  19,  19,  19,  19,
-     91, 269,  91,  91, 135, 270, 271, 121, 272, 254,   7, 273,   7, 274,   7,   7,
-      7,   7,   7, 183,   7,   7,   7,   7,  91,  91,  91,  91,  91,  91,  91,  91,
-     91,  91,  91,  91,  91,  91,  91,  91,  91,  91,  91,  91,  91,  91,  91,  91,
-     91,  91,  91,  91,  91,  91, 275, 186,  91,  91,  91, 135,  91,  91, 276, 277,
-    269,  91, 278,  91, 279, 280,   7,   7,  91,  91,  91,  91,  91,  91,  91,  91,
-     91,  91, 135, 281, 282, 283, 284, 285,  91,  91,  91,  91, 286,  91, 125, 287,
+    149,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 288,
-    289, 289, 289, 289, 289, 289, 289, 289,  11,  11,  11,  11,  11,  11,  11, 290,
-    289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289,
-    289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289,
-    289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 267,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 366,  22,  22,
+    457, 457, 457, 457, 457, 457, 457, 457,  11,  11,  11,  11,  11,  11,  11, 458,
+    457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457,
+    457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457,
+    457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 459
 };
 
 static RE_UINT8 re_bidi_class_table_3[] = {
@@ -4046,540 +4125,862 @@ static RE_UINT8 re_bidi_class_table_3[] = {
      1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  3,  3,  3,  2,
      4,  5,  5,  6,  6,  6,  5,  5,  5,  5,  5,  7,  8,  7,  8,  8,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  8,  5,  5,  5,  5,  5,
-     5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  5,
-     5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  1,
+     5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,  5,  5,
+     5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,  5,  1,
      1,  1,  1,  1,  1,  3,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
      1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
-     8,  5,  6,  6,  6,  6,  5,  5,  5,  5,  0,  5,  5,  1,  5,  5,
-     6,  6,  9,  9,  5,  0,  5,  5,  5,  9,  0,  5,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,
-     0,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     0,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  5,
+     8,  5,  6,  6,  6,  6,  5,  5,  5,  5, 10,  5,  5,  1,  5,  5,
+     6,  6,  9,  9,  5, 10,  5,  5,  5,  9, 10,  5,  5,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10,  5, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5, 10, 10, 10, 10, 10,
+    10, 10,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+    10, 10,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+    10, 10, 10, 10, 10,  5,  5,  5,  5,  5,  5,  5,  5,  5, 10,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-     0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  5,  0,
-     0,  0,  0,  0,  5,  5,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  5,  5,  6,
-    11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10,
-    11, 10, 10, 11, 10, 10, 11, 10, 11, 11, 11, 11, 11, 11, 11, 11,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    10, 10, 10, 10,  5,  5, 10, 10,  0,  0, 10, 10, 10, 10,  5, 10,
+     0,  0,  0,  0,  5,  5, 10,  5, 10, 10, 10,  0, 10,  0, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10,  5, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  0,  0,  5,  5,  6,
+     0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0, 11,
+     0, 11, 11,  0, 11, 11,  0, 11,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     12, 12, 12, 12, 12, 12,  5,  5, 13,  6,  6, 13,  8, 13,  5,  5,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 13, 13, 13, 13, 13,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
     12, 12, 12, 12, 12, 12, 12, 12, 12, 12,  6, 12, 12, 13, 13, 13,
-    10, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    11, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 10, 10, 10, 10, 10, 10, 10, 12,  5, 10,
-    10, 10, 10, 10, 10, 13, 13, 10, 10,  5, 10, 10, 10, 10, 13, 13,
+    13, 13, 13, 13, 13, 13, 11, 11, 11, 11, 11, 11, 11, 12,  5, 11,
+    11, 11, 11, 11, 11, 13, 13, 11, 11,  5, 11, 11, 11, 11, 13, 13,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 13,
+    13, 11, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 10, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 11, 11,  5,  5,  5,  5, 11, 11, 11, 10, 11, 11,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 11, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 11, 10, 10, 10, 11, 10, 10, 10, 10, 10, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    12, 12, 13, 13, 13, 13, 13, 13, 10, 10, 10, 10, 10, 10, 10, 10,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 10, 10, 10, 10, 10, 10,
+    13, 13, 13, 13, 13, 13, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 11, 11, 11, 11,
+    11, 11, 11, 11,  0,  0,  5,  5,  5,  5,  0,  0,  0, 11,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0, 11, 11, 11, 11,  0, 11, 11, 11, 11, 11,
+    11, 11, 11, 11,  0, 11, 11, 11,  0, 11, 11, 11, 11, 11,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 11, 11,  0,  0,  0,  0,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0,  0,  0,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,
+    12, 12,  0,  0,  0,  0,  0,  0, 11, 11, 11, 11, 11, 11, 11, 11,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 12, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 12, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0, 10,  0,  0,  0,
-     0, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10,  0,  0,
-     0, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,
-     0, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  6,  6,  0,  0,  0,  0,  0,  0,  0,  6,  0,  0, 10,  0,
-     0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0, 10, 10,  0,  0,  0,  0, 10, 10,  0,  0, 10, 10, 10,  0,  0,
-     0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0, 10, 10, 10, 10, 10,  0, 10, 10,  0,  0,  0,  0, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  6,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0, 10,
-     0, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,
-     0,  0,  0,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  5,  5,  5,  5,  5,  5,  6,  5,  0,  0,  0,  0,  0,
-    10,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0, 10, 10,
-    10,  0,  0,  0,  0,  0, 10, 10, 10,  0, 10, 10, 10, 10,  0,  0,
-     0,  0,  0,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,  5,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,
-     0,  0, 10, 10, 10,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  6,
-     0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0, 10,  0, 10,  0, 10,  5,  5,  5,  5,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
-    10, 10, 10, 10, 10,  0, 10, 10,  0,  0,  0,  0,  0, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10, 11, 10, 10, 10,
+    10, 11, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 11, 10, 10,
+    10, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 11, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10,
+    10,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10,
+    10,  0, 10,  0,  0,  0, 10, 10, 10, 10,  0,  0, 11, 10, 10, 10,
+    10, 11, 11, 11, 11,  0,  0, 10, 10,  0,  0, 10, 10, 11, 10,  0,
+     0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0, 10, 10,  0, 10,
+    10, 10, 11, 11,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10,  6,  6, 10, 10, 10, 10, 10, 10, 10,  6, 10, 10, 11,  0,
+     0, 11, 11, 10,  0, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10,
+    10,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10,
+    10,  0, 10, 10,  0, 10, 10,  0, 10, 10,  0,  0, 11,  0, 10, 10,
+    10, 11, 11,  0,  0,  0,  0, 11, 11,  0,  0, 11, 11, 11,  0,  0,
+     0, 11,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10,  0, 10,  0,
+     0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 11, 10, 10, 10, 11, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 11, 11, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10,
+    10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10,
+    10,  0, 10, 10,  0, 10, 10, 10, 10, 10,  0,  0, 11, 10, 10, 10,
+    10, 11, 11, 11, 11, 11,  0, 11, 11, 10,  0, 10, 10, 11,  0,  0,
+    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 11, 11,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10,  6,  0,  0,  0,  0,  0,  0,  0, 10, 11, 11, 11, 11, 11, 11,
+     0, 11, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10,
+    10,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10,
+    10,  0, 10, 10,  0, 10, 10, 10, 10, 10,  0,  0, 11, 10, 10, 11,
+    10, 11, 11, 11, 11,  0,  0, 10, 10,  0,  0, 10, 10, 11,  0,  0,
+     0,  0,  0,  0,  0, 11, 11, 10,  0,  0,  0,  0, 10, 10,  0, 10,
+    10, 10, 11, 11,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0, 11, 10,  0, 10, 10, 10, 10, 10, 10,  0,  0,  0, 10, 10,
+    10,  0, 10, 10, 10, 10,  0,  0,  0, 10, 10,  0, 10,  0, 10, 10,
+     0,  0,  0, 10, 10,  0,  0,  0, 10, 10, 10,  0,  0,  0, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10, 10,
+    11, 10, 10,  0,  0,  0, 10, 10, 10,  0, 10, 10, 10, 11,  0,  0,
+    10,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10,  5,  5,  5,  5,  5,  5,  6,  5,  0,  0,  0,  0,  0,
+    11, 10, 10, 10, 11, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,
+    10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 11, 10, 11, 11,
+    11, 10, 10, 10, 10,  0, 11, 11, 11,  0, 11, 11, 11, 11,  0,  0,
+     0,  0,  0,  0,  0, 11, 11,  0, 10, 10, 10,  0,  0, 10,  0,  0,
+    10, 10, 11, 11,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     0,  0,  0,  0,  0,  0,  0, 10,  5,  5,  5,  5,  5,  5,  5, 10,
+    10, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,
+    10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10,  0, 10, 10, 10, 10, 10,  0,  0, 11, 10, 10, 10,
+    10, 10, 10, 10, 10,  0, 10, 10, 10,  0, 10, 10, 11, 11,  0,  0,
+     0,  0,  0,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0, 10, 10,  0,
+    10, 10, 11, 11,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     0, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,
+    10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10,
+    10, 11, 11, 11, 11,  0, 10, 10, 10,  0, 10, 10, 10, 11, 10, 10,
+     0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 11, 11,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     0, 11, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10,  0,  0,  0, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10,  0,  0,  0, 11,  0,  0,  0,  0, 10,
+    10, 10, 11, 11, 11,  0, 11,  0, 10, 10, 10, 10, 10, 10, 10, 10,
+     0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     0,  0, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 11, 10, 10, 11, 11, 11, 11, 11, 11, 11,  0,  0,  0,  0,  6,
+    10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,
+     0, 10, 10,  0, 10,  0, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10,  0, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 11, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 10,  0,  0,
+    10, 10, 10, 10, 10,  0, 10,  0, 11, 11, 11, 11, 11, 11, 11,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 11, 10, 11, 10, 11,  5,  5,  5,  5, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
-     0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10,
-    10,  0, 10, 10, 10, 10, 10, 10,  0, 10, 10,  0,  0, 10, 10,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 10, 10,  0,  0,  0,  0, 10, 10,
-    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 10,
+    11, 11, 11, 11, 11, 10, 11, 11, 10, 10, 10, 10, 10, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11,  0, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0, 10, 10,
+    10, 10, 10, 10, 10, 10, 11, 10, 10, 10, 10, 10, 10,  0, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11,
+    11, 10, 11, 11, 11, 11, 11, 11, 10, 11, 11, 10, 10, 11, 11, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 11, 11,
+    11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 11, 10, 10, 11, 11, 10, 10, 10, 10, 10, 10, 11, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10, 10,
+    10, 10, 10, 10, 10, 10,  0, 10,  0,  0,  0,  0,  0, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10,  0, 10,  0, 10, 10, 10, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10,  0, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10,  0,
+    10,  0, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10,  0, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 11, 11, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
-     5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  0,  0,
-     0,  0,  0,  0,  0,  0, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  6,  0, 10,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 10, 10, 10,  1, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10, 10,  0,  0,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10,  0,  0,  0,  0,  0,  0, 10, 10, 10,  0,  0,  0,  0,
-     5,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0, 10, 10,  0,  0, 10,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0, 10,  0, 10, 10, 10, 10, 10, 10, 10,  0,
-    10,  0, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
-     0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10,  0,  0,
+     5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     4, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 11, 11, 11, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 11, 11, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,
+    10,  0, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 11, 11, 10, 11, 11, 11, 11, 11, 11, 11, 10, 10,
+    10, 10, 10, 10, 10, 10, 11, 10, 10, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10,  6, 10, 11,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 11, 11, 11,  1, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
+    11, 11, 11, 10, 10, 10, 10, 11, 11, 10, 10, 10,  0,  0,  0,  0,
+    10, 10, 11, 10, 10, 10, 10, 10, 10, 11, 11, 11,  0,  0,  0,  0,
+     5,  0,  0,  0,  5,  5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+    10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 11,  0,  0, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 11, 10, 11, 11, 11, 11, 11, 11, 11,  0,
+    11, 10, 11, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10,
+    10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0, 10,  0, 10, 10, 10, 10, 10,  0, 10,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10,
-    10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10, 10, 10,  0,  0, 10, 10,  0, 10, 10, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0, 10,  0, 10, 10,  0,  0,  0, 10,  0, 10,
-    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10,
-    10, 10, 10, 10,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10,  0, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10,  0,  0,
-     0,  0,  0,  0, 10,  0,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  5,
-     5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,
-     4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  1,  1,  1,  0, 11,
+    11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 11, 10, 11, 11, 11, 11, 11, 10, 11, 10, 10, 10,
+    10, 10, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
+    11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 11, 11, 11, 11, 10, 10, 11, 11, 10, 11, 11, 11, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 11, 10, 11, 11, 10, 10, 10, 11, 10, 11,
+    11, 11, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11,
+    11, 11, 11, 11, 10, 10, 11, 11,  0,  0,  0, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
+    11, 11, 11, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 10, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 11, 10, 10,
+    10, 10, 10, 10, 11, 10, 10, 10, 11, 11, 10,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10,  0, 10,  0, 10,  0, 10,  0, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  5, 10,  5,
+     5,  5, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,
+    10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10,  0,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,
+     0,  0, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  5,  5,  0,
+     4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  1,  1,  1, 10,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  4,  3, 14, 15, 16, 17, 18,  8,
      6,  6,  6,  6,  6,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  8,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  4,
      1,  1,  1,  1,  1,  1, 19, 20, 21, 22,  1,  1,  1,  1,  1,  1,
-     9,  0,  0,  0,  9,  9,  9,  9,  9,  9,  7,  7,  5,  5,  5,  0,
+     9, 10,  0,  0,  9,  9,  9,  9,  9,  9,  7,  7,  5,  5,  5, 10,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  7,  7,  5,  5,  5,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
      6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
      6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
-     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     5,  5,  0,  5,  5,  5,  5,  0,  5,  5,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  5,  0,  5,  5,  5,  0,  0,  0,  0,  0,  5,  5,
-     5,  5,  5,  5,  0,  5,  0,  5,  0,  5,  0,  0,  0,  0,  6,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,
-     5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  5,  5,  5,  5,  0,  0,
+     6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     5,  5, 10,  5,  5,  5,  5, 10,  5,  5, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10,  5, 10,  5,  5,  5, 10, 10, 10, 10, 10,  5,  5,
+     5,  5,  5,  5, 10,  5, 10,  5, 10,  5, 10, 10, 10, 10,  6, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5, 10, 10, 10, 10,
+     5,  5,  5,  5,  5, 10, 10, 10, 10, 10,  5,  5,  5,  5, 10, 10,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  7,  6,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5, 10,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 10,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  0,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0, 10,
-    10, 10,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
+    10, 10, 10, 10, 10,  5,  5,  5,  5,  5,  5, 10, 10, 10, 10, 11,
+    11, 11, 10, 10,  0,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0, 10,
+    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  0,
+    10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,
-     4,  5,  5,  5,  5,  0,  0,  0,  5,  5,  5,  5,  5,  5,  5,  5,
+     4,  5,  5,  5,  5, 10, 10, 10,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10,  0,  0,
-     5,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10,  5,  5,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,
-     5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
-    10, 10, 10,  5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10,  0,  0,  0, 10,  0,  0,  0,  0, 10,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0, 10, 10,  0,  5,  5,  5,  5, 10,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  6,  6,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 10, 10,
+     5, 10, 10, 10, 10, 10,  5,  5, 10, 10, 10, 10, 10,  5,  5,  5,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
-     0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10,  0,  0, 11, 11,  5,  5, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5, 10, 10, 10, 10,
+     0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10,  5,  5,  5,  5, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11,
+    11, 11, 11,  5, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 11, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
+     5,  5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10,  5, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
+    10, 10,  0, 10,  0, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 10,  0,  0, 10, 10, 10, 10,  0,  0, 10, 10,  0,  0,
-     0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10,  0,
-     0, 10, 10,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10,  0, 10, 10, 10,  0,  0, 10, 10,  0,  0,  0,  0,  0, 10, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10,  0,  0,
-     0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0, 10,  0,  0, 10,  0,  0,  0,  0, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 10, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11,  7, 11, 11, 11, 11, 11, 11,
+     0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 11, 10, 10, 10, 11, 10, 10, 10, 10, 11, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 11, 11, 10,  5,  5,  5,  5, 11,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10,  6,  6,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11,
+    10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 11, 10, 10, 11, 11, 11, 11, 10, 10, 11, 11, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10, 10,
+    10, 10, 10, 10, 10, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 10,
+    10, 11, 11, 10, 10, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 11, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 10, 11, 11, 11, 10, 10, 11, 11, 10, 10, 10, 10, 10, 11, 11,
+    10, 11, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10,
+    10, 10, 10, 10, 10, 10, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10,  0,
+     0, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 11, 10, 10, 11, 10, 10, 10, 10, 11,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0, 11,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  5,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+     0,  0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0,  0,  0,  0,  0,  5,
      1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
      1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  5,  5,  5,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      8,  5,  8,  0,  5,  8,  5,  5,  5,  5,  5,  5,  5,  5,  5,  6,
      5,  5,  7,  7,  5,  5,  5,  0,  5,  6,  6,  5,  0,  0,  0,  0,
+    13, 13, 13, 13, 13,  0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  1,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  1,
      0,  5,  5,  6,  6,  6,  5,  5,  5,  5,  5,  7,  8,  7,  8,  8,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  8,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     0,  0, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10,
+     0,  0, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10,  0,  0,  0,
      6,  6,  5,  5,  5,  6,  6,  0,  5,  5,  5,  5,  5,  5,  5,  0,
      1,  1,  1,  1,  1,  1,  1,  1,  1,  5,  5,  5,  5,  5,  1,  1,
-     0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,
-    10,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  5,
-    11, 10, 10, 10, 11, 10, 10, 11, 11, 11, 11, 11, 10, 10, 10, 10,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 11, 11, 11, 11, 10,
-    11, 11, 11, 11, 11, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11,  5,  5,  5,  5,  5,  5,  5,
-    13, 13, 13, 13, 10, 10, 10, 10, 13, 13, 13, 13, 13, 13, 13, 13,
-    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 13, 13, 13, 13, 13,
-    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
-    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 10, 10, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 10, 10, 10, 10,  0,  0, 10, 10,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10,  0, 10, 10, 10,
-    10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10,  0,  0, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
-    10, 10,  0,  0, 10,  0, 10, 10,  0,  0,  0,  0,  0,  0, 10,  0,
-     0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
-    10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10, 10,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 10, 10, 10, 10, 10, 10,  0, 10,  0,  0,  0,  0, 10,
-    10,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0, 10, 10,  0, 10,
-    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10,  0, 10,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0, 10,  0,  0,
-    10, 10, 10, 10, 10, 10,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
-    10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10,  0, 10,  0,
-     0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0, 10, 10, 10, 10,  0,  0, 10, 10,  0,  0,  0,  0,
-     0, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10,  0,
-     0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,
-     0, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10,  0, 10, 10,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10,
-    10,  0, 10, 10,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0, 10, 10, 10, 10, 10, 10,  0,  0,  0, 10,  0, 10, 10,  0, 10,
-    10, 10, 10, 10, 10, 10,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10,  0,  0,  0, 10,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,  5,  5,  6,  6,  6,
-     6,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
-    10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  5,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10,  0,
-     1,  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,  0, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
+    10,  5, 10,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 10, 10,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,
+     5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    11,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,
+    10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10,
+    10, 10, 10, 10,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10,
+    10, 10, 10,  0, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,
+     0, 11, 11, 11,  0, 11, 11,  0,  0,  0,  0,  0, 11, 11, 11, 11,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0, 11, 11, 11,  0,  0,  0,  0, 11,
+     0,  0,  0,  0,  0, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,  5,
+    13, 13, 13, 13, 11, 11, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 12,  0,  0,  0,  0,  0,  0,
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 11,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 11, 11,
+    13, 13, 13, 13, 13, 13, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0,  0,  0,  0,
+     0,  0, 11, 11, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+     0,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 10, 10, 11, 11, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 11, 11, 11, 11, 10, 10, 11, 11, 10, 10, 10, 10, 10,
+    10, 10, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 10, 11, 11, 11,
+    11, 11, 11, 11, 11,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 11, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 10, 10, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11,
+    11, 11, 10, 10, 11, 10, 11, 11, 10, 10, 10, 10, 10, 10, 11, 10,
+    10, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10,  0, 10,  0, 10, 10, 10, 10,  0, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11,
+    10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    11, 11, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10,
+    10,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10,
+    10,  0, 10, 10,  0, 10, 10, 10, 10, 10,  0, 11, 11, 10, 10, 10,
+    11, 10, 10, 10, 10,  0,  0, 10, 10,  0,  0, 10, 10, 10,  0,  0,
+    10,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0, 10, 10, 10,
+    10, 10, 10, 10,  0,  0, 11, 11, 11, 11, 11, 11, 11,  0,  0,  0,
+    11, 11, 11, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 11, 11, 11, 10, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 11, 10,
+    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 11, 11, 11, 11, 11, 11, 10, 11, 10, 10, 10, 10, 11,
+    11, 10, 11, 11, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 11, 11, 11, 11,  0,  0, 10, 10, 10, 10, 11, 11, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 10, 10, 11, 10, 11,
+    11, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 10, 11, 10, 10,
+    11, 11, 11, 11, 11, 11, 10, 11, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 11, 11, 11, 11, 10, 11, 11, 11, 11, 11,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0, 10, 10, 10,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1, 10, 10, 10, 10, 10,
-    10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 10, 11, 11, 10,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
+    10, 10, 10, 10, 10, 10, 10,  0,  0, 10,  0,  0, 10, 10, 10, 10,
+    10, 10, 10, 10,  0, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10,  0, 10, 10,  0,  0, 11, 11, 10, 11, 10,
+    10, 10, 10, 11, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 11, 11, 11, 11,  0,  0, 11, 11, 10, 10, 10, 10,
+    11, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10,  0,  0,
+    10, 11, 11, 11, 11, 11, 11, 10, 10, 11, 11, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 11, 11, 11, 11, 11, 11, 10, 10, 11, 11, 11, 11, 10,
+    10, 10, 10, 10, 10, 10, 10, 11,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 11, 11, 11, 11, 11, 11, 10, 10, 11, 11, 11, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 10, 11, 11, 10, 10, 10, 10, 10, 10,
+    10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 11, 11, 11, 11, 11, 11,  0, 11, 11, 11, 11, 11, 11, 10, 10,
+    10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+     0,  0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11,  0, 10, 11, 11, 11, 11, 11, 11,
+    11, 10, 11, 11, 10, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10,  0, 10, 10,  0, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 11, 11, 11, 11, 11, 11,  0,  0,  0, 11,  0, 11, 11,  0, 11,
+    11, 11, 11, 11, 11, 11, 10, 11,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10,  0, 10, 10,  0, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
+    11, 11,  0, 10, 10, 11, 10, 11, 10,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 11, 11, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,
+    11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11,  0,  0,  0, 10, 10,
+    11, 10, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,
+    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10,  5,  5,  5,  5,  5,  5,  5,  5,  6,  6,  6,
+     6,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
+    10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     5,  5, 10, 10, 10,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    11, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+    11, 11, 11, 11, 11, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10,
+    10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0, 11,
+    11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10,  5, 10, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,  0,
+    10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 11, 11, 10,
+     1,  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 10, 10, 10, 10, 10, 10,
+    10, 10, 10,  1,  1,  1,  1,  1,  1,  1,  1, 11, 11, 11, 11, 11,
+    11, 11, 11, 10, 10, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     5,  5, 11, 11, 11,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,
+     0,  0, 10,  0,  0, 10, 10,  0,  0, 10, 10, 10, 10,  0, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10,  0, 10, 10, 10,
+    10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10,  0,  0, 10, 10, 10,
+    10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10,  0,
+    10, 10, 10, 10, 10,  0, 10,  0,  0,  0, 10, 10, 10, 10, 10, 10,
+    10,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10,  5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  5, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10,  5, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  9,  9,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10,
+    10, 10, 10, 10, 10, 11, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 11, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 11, 11, 11, 11,
+     0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    11, 11, 11, 11, 11, 11, 11,  0, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0, 11, 11, 11, 11, 11,
+    11, 11,  0, 11, 11,  0, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,
-     0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10,
-     0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0, 10, 10,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0, 10, 10, 10, 10, 10,
-    10, 10,  0, 10, 10,  0, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  6,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10,  0, 10, 10,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 10, 10, 10,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  6,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0, 11, 11, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-     5,  5, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,
+    13, 13, 13, 13,  0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+     0, 13, 13,  0, 13,  0,  0, 13,  0, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13,  0, 13, 13, 13, 13,  0, 13,  0, 13,  0,  0,  0,  0,
+     0,  0, 13,  0,  0,  0,  0, 13,  0, 13,  0, 13,  0, 13, 13, 13,
+     0, 13, 13,  0, 13,  0,  0, 13,  0, 13,  0, 13,  0, 13,  0, 13,
+     0, 13, 13,  0, 13,  0,  0, 13, 13, 13, 13,  0, 13, 13, 13, 13,
+    13, 13, 13,  0, 13, 13, 13, 13,  0, 13, 13, 13, 13,  0, 13,  0,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0,  0,
+     0, 13, 13, 13,  0, 13, 13, 13, 13, 13,  0, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,
@@ -4587,15 +4988,25 @@ static RE_UINT8 re_bidi_class_table_3[] = {
      0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  5,  5,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  5,  5,  5,  5,  5,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  5,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  5,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,
+     0,  0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,  0,
+    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,
      5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -4605,25 +5016,31 @@ static RE_UINT8 re_bidi_class_table_3[] = {
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,
      5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,
-     5,  5,  5,  5,  5,  0,  0,  0,  5,  5,  5,  5,  5,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-     5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  5,
+     5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,  5,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,  0,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,
+    10, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
      1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  1,  1
 };
 
 RE_UINT32 re_get_bidi_class(RE_UINT32 codepoint) {
@@ -4825,7 +5242,7 @@ static RE_UINT8 re_block_table_1[] = {
     61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61,
     61, 61, 61, 61, 61, 61, 61, 61, 61, 62, 63, 63, 63, 64, 65, 66,
     66, 66, 66, 67, 68, 68, 68, 68, 68, 68, 69, 36, 36, 36, 70, 36,
-    71, 71, 71, 71, 72, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
+    71, 71, 71, 71, 72, 73, 73, 73, 74, 36, 36, 36, 36, 36, 36, 36,
     36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
     36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
     36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
@@ -4869,18 +5286,18 @@ static RE_UINT8 re_block_table_1[] = {
     36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
     36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
     36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
-    73, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
+    75, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
     36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
     36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
     36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
-    74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74,
-    74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74,
-    74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74,
-    74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74,
-    75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75,
-    75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75,
-    75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75,
-    75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75, 75
+    76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76,
+    76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76,
+    76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76,
+    76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76, 76,
+    77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+    77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+    77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+    77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77, 77
 };
 
 static RE_UINT16 re_block_table_2[] = {
@@ -4943,99 +5360,103 @@ static RE_UINT16 re_block_table_2[] = {
     217, 217, 218, 219, 220, 221, 194, 222, 223, 224, 194, 194, 225, 226, 226, 226,
     227, 227, 227, 228, 229, 194, 230, 230, 231, 231, 232, 233, 234, 235, 194, 194,
     236, 236, 237, 194, 238, 238, 238, 238, 239, 239, 194, 194, 194, 194, 194, 194,
-    194, 194, 194, 240, 241, 241, 194, 194, 242, 243, 244, 245, 246, 247, 248, 249,
-    250, 250, 250, 250, 251, 251, 252, 253, 254, 254, 255, 256, 257, 257, 257, 258,
-    259, 259, 260, 194, 261, 262, 263, 263, 264, 264, 264, 264, 194, 194, 194, 194,
-    265, 265, 265, 265, 266, 266, 266, 194, 194, 194, 194, 194, 267, 267, 267, 267,
-    268, 268, 268, 269, 270, 270, 271, 194, 272, 272, 273, 194, 194, 194, 194, 194,
-    274, 274, 275, 194, 194, 276, 276, 276, 277, 277, 277, 194, 194, 278, 278, 278,
-    279, 279, 280, 281, 281, 282, 283, 283, 194, 194, 194, 194, 194, 194, 194, 194,
-    284, 284, 284, 285, 286, 286, 194, 194, 287, 287, 287, 288, 288, 289, 194, 194,
-    194, 194, 194, 194, 194, 194, 194, 290, 194, 194, 194, 194, 194, 291, 292, 292,
-    293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293,
-    293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293,
-    294, 294, 294, 294, 295, 295, 295, 295, 295, 295, 296, 194, 194, 194, 194, 194,
+    194, 194, 194, 240, 241, 241, 242, 242, 243, 244, 245, 246, 247, 248, 249, 250,
+    251, 251, 251, 251, 252, 252, 253, 254, 255, 255, 256, 257, 258, 258, 258, 259,
+    260, 260, 261, 194, 262, 263, 264, 264, 265, 265, 265, 265, 194, 194, 194, 194,
+    266, 266, 266, 266, 267, 267, 267, 194, 194, 194, 194, 194, 268, 268, 268, 268,
+    269, 269, 269, 270, 271, 271, 272, 194, 273, 273, 274, 194, 194, 194, 194, 194,
+    275, 275, 276, 194, 194, 277, 277, 277, 278, 278, 278, 194, 194, 279, 279, 279,
+    280, 280, 281, 282, 282, 283, 284, 284, 285, 285, 285, 194, 194, 194, 194, 194,
+    286, 286, 286, 287, 288, 288, 194, 194, 289, 289, 289, 290, 290, 291, 194, 194,
+    194, 194, 194, 194, 194, 194, 194, 292, 293, 293, 293, 194, 194, 294, 295, 295,
+    296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296,
+    296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296,
+    297, 297, 297, 297, 298, 298, 298, 298, 298, 298, 299, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 297, 298, 298, 298,
-    299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299,
-    299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299,
-    299, 300, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    301, 301, 301, 301, 301, 301, 301, 301, 301, 301, 301, 301, 301, 301, 301, 301,
-    301, 301, 301, 301, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
+    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 300, 301, 301, 301,
     302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302,
-    302, 302, 303, 304, 305, 305, 306, 307, 308, 308, 308, 308, 309, 194, 194, 194,
+    302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302, 302,
+    302, 303, 304, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    194, 194, 310, 310, 310, 194, 194, 194, 311, 311, 311, 311, 311, 194, 194, 312,
-    313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313,
-    313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313, 313,
-    314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314,
-    314, 314, 314, 314, 314, 314, 314, 314, 315, 315, 315, 315, 315, 315, 315, 315,
-    315, 315, 315, 315, 315, 315, 315, 315, 316, 316, 316, 316, 194, 194, 194, 194,
+    305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305,
+    305, 305, 305, 305, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
+    306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306,
+    306, 306, 307, 308, 309, 309, 310, 311, 312, 312, 312, 312, 313, 194, 194, 194,
+    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
+    194, 194, 314, 314, 314, 194, 194, 194, 315, 315, 315, 315, 315, 194, 194, 316,
+    317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317,
+    317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317,
+    318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318,
+    318, 318, 318, 318, 318, 318, 318, 318, 319, 319, 319, 319, 319, 319, 319, 319,
+    319, 319, 319, 319, 319, 319, 319, 319, 320, 320, 320, 320, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 317,
-    318, 318, 318, 318, 318, 318, 318, 318, 319, 320, 321, 322, 323, 323, 323, 323,
-    323, 323, 323, 323, 323, 323, 323, 323, 194, 194, 194, 194, 194, 194, 194, 194,
-    324, 324, 324, 324, 324, 325, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
+    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 321,
+    322, 322, 322, 322, 322, 322, 322, 322, 323, 324, 325, 326, 327, 327, 327, 327,
+    327, 327, 327, 327, 327, 327, 327, 327, 194, 194, 194, 194, 194, 194, 194, 194,
+    328, 328, 328, 328, 328, 329, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    194, 194, 194, 194, 194, 194, 194, 194, 326, 326, 326, 326, 326, 326, 327, 194,
-    328, 328, 328, 328, 328, 328, 328, 328, 329, 329, 329, 329, 329, 329, 329, 329,
-    330, 330, 331, 194, 194, 194, 194, 332, 333, 333, 333, 334, 194, 194, 194, 194,
-    335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335,
-    335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335, 335,
-    336, 336, 336, 336, 336, 336, 336, 336, 336, 336, 336, 336, 336, 336, 336, 336,
-    336, 336, 336, 336, 336, 337, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
+    194, 194, 194, 194, 194, 194, 194, 194, 330, 330, 330, 330, 330, 330, 331, 194,
+    332, 332, 332, 332, 332, 332, 332, 332, 333, 333, 333, 333, 333, 333, 333, 333,
+    334, 334, 335, 194, 194, 194, 336, 337, 338, 338, 338, 339, 194, 194, 194, 194,
+    340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340,
+    340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340,
+    341, 341, 341, 341, 341, 341, 341, 341, 341, 341, 341, 341, 341, 341, 341, 341,
+    341, 341, 341, 341, 341, 342, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    194, 194, 194, 194, 194, 194, 194, 194, 338, 338, 338, 338, 338, 338, 338, 338,
-    339, 340, 194, 194, 194, 194, 194, 194, 341, 341, 342, 194, 194, 194, 194, 194,
-    194, 194, 194, 194, 343, 344, 345, 345, 194, 194, 194, 194, 194, 194, 194, 194,
+    194, 194, 194, 194, 194, 194, 194, 194, 343, 343, 343, 343, 343, 343, 343, 343,
+    344, 345, 346, 346, 347, 194, 194, 194, 348, 348, 349, 194, 194, 194, 194, 194,
+    194, 194, 194, 194, 350, 351, 352, 352, 194, 194, 194, 194, 194, 194, 194, 194,
+    194, 194, 194, 194, 194, 194, 353, 354, 194, 194, 194, 194, 194, 194, 194, 194,
+    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 355,
+    356, 356, 356, 356, 356, 356, 356, 194, 357, 357, 357, 194, 194, 194, 194, 194,
     194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 346,
-    347, 347, 347, 347, 347, 347, 347, 194, 348, 348, 348, 194, 194, 194, 194, 194,
-    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    194, 194, 194, 349, 350, 350, 194, 194, 351, 351, 352, 194, 194, 194, 194, 194,
-    353, 353, 353, 353, 353, 353, 353, 353, 194, 194, 194, 194, 194, 194, 194, 194,
-    354, 355, 356, 356, 356, 357, 357, 357, 358, 358, 358, 358, 358, 358, 358, 358,
-    359, 359, 359, 359, 359, 359, 359, 359, 360, 360, 360, 360, 360, 360, 360, 360,
-    360, 360, 360, 360, 360, 360, 360, 360, 360, 360, 360, 360, 360, 360, 360, 360,
-    361, 361, 362, 363, 364, 364, 364, 364, 365, 365, 365, 365, 366, 366, 366, 366,
-    367, 367, 367, 367, 367, 367, 367, 367, 368, 368, 368, 368, 368, 368, 368, 368,
-    369, 369, 369, 370, 371, 371, 371, 371, 372, 372, 372, 372, 372, 372, 372, 372,
-    373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373,
-    373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373,
-    373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373,
-    373, 373, 373, 373, 373, 373, 373, 194, 374, 374, 374, 374, 374, 374, 374, 374,
-    374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374,
-    374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374,
-    374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374,
-    374, 374, 374, 374, 374, 374, 374, 374, 374, 374, 375, 375, 375, 375, 375, 375,
-    375, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376,
-    376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376,
-    376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376,
-    376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376,
-    376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 376,
-    376, 376, 376, 376, 376, 377, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378,
-    378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378,
-    378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378,
-    378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378,
-    378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 378, 379,
-    380, 380, 380, 380, 380, 380, 380, 380, 380, 380, 380, 380, 380, 380, 380, 380,
-    380, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381,
-    381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381,
-    381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 381,
-    381, 381, 381, 381, 381, 381, 381, 381, 381, 381, 382, 194, 194, 194, 194, 194,
-    383, 383, 383, 383, 194, 194, 194, 194, 384, 384, 384, 384, 384, 384, 384, 385,
-    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
-    386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386,
-    386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386, 386,
+    194, 194, 194, 358, 359, 359, 194, 194, 360, 360, 361, 194, 194, 194, 194, 194,
+    362, 362, 362, 362, 362, 362, 362, 362, 194, 194, 194, 194, 194, 194, 194, 194,
+    363, 364, 365, 365, 365, 366, 366, 366, 367, 367, 367, 367, 367, 367, 367, 367,
+    368, 368, 368, 368, 368, 368, 368, 368, 369, 369, 369, 369, 369, 369, 369, 369,
+    369, 369, 369, 369, 369, 369, 369, 369, 369, 369, 369, 369, 369, 369, 369, 369,
+    370, 370, 371, 372, 373, 373, 373, 373, 374, 374, 374, 374, 375, 375, 375, 375,
+    376, 376, 376, 376, 376, 376, 376, 376, 377, 377, 377, 377, 377, 377, 377, 377,
+    378, 378, 378, 379, 380, 380, 380, 380, 381, 381, 381, 381, 381, 381, 381, 381,
+    382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382,
+    382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382,
+    382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382, 382,
+    382, 382, 382, 382, 382, 382, 382, 194, 383, 383, 383, 383, 383, 383, 383, 383,
+    383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383,
+    383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383,
+    383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 383,
+    383, 383, 383, 383, 383, 383, 383, 383, 383, 383, 384, 384, 384, 384, 384, 384,
+    384, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385,
+    385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385,
+    385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385,
+    385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385,
+    385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385, 385,
+    385, 385, 385, 385, 385, 386, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387,
     387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387,
-    387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387
+    387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387,
+    387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387,
+    387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 387, 388,
+    389, 389, 389, 389, 389, 389, 389, 389, 389, 389, 389, 389, 389, 389, 389, 389,
+    389, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
+    390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390,
+    390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390,
+    390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 390,
+    390, 390, 390, 390, 390, 390, 390, 390, 390, 390, 391, 392, 392, 392, 392, 392,
+    392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392,
+    392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392,
+    392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392,
+    392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 392, 393, 194, 194,
+    394, 394, 394, 394, 194, 194, 194, 194, 395, 395, 395, 395, 395, 395, 395, 396,
+    194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194, 194,
+    397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397,
+    397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397, 397,
+    398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398,
+    398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398, 398
 };
 
 static RE_UINT16 re_block_table_3[] = {
@@ -5525,8 +5946,6 @@ static RE_UINT16 re_block_table_3[] = {
     209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209,
     210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210,
     210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210,
-    210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210,
-    211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211,
     211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211,
     211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211,
     211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211, 211,
@@ -5534,14 +5953,15 @@ static RE_UINT16 re_block_table_3[] = {
     212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212,
     212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212,
     212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212, 212,
+    213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213,
     213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213,
     213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213,
     213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213,
     214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214,
     214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214,
+    214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214, 214,
     215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215,
     215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215, 215,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
     216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
     216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
     217, 217, 217, 217, 217, 217, 217, 217, 217, 217, 217, 217, 217, 217, 217, 217,
@@ -5555,18 +5975,19 @@ static RE_UINT16 re_block_table_3[] = {
     219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219, 219,
     220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220,
     220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220,
+    220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220,
     221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221,
     221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221,
     222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222,
     222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222,
-    222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222,
+    223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223,
+    223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223,
+    223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223,
-    223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223,
-    223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223,
     224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224,
     224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224,
     224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224,
+    225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225,
     225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225,
     225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225, 225,
     226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226, 226,
@@ -5581,8 +6002,6 @@ static RE_UINT16 re_block_table_3[] = {
     230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230,
     231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231,
     231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231,
-    231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231, 231,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232,
     232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232,
     232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232, 232,
@@ -5593,78 +6012,82 @@ static RE_UINT16 re_block_table_3[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234,
     234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234,
+    234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234, 234,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235,
     235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235,
     236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236,
     236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236, 236,
     237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237,
     237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237,
-    237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237,
-    238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238,
     238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238,
     238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238,
     238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238, 238,
     239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239,
+    239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239,
+    239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239,
+    239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239, 239,
     240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240,
-    240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240,
     241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241,
     241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241,
-    241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241, 241,
-    242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242,
     242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242,
     242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242, 242,
     243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243,
     243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243,
+    243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243, 243,
     244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244,
     244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244,
     244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244, 244,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245,
     245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245, 245,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246,
+    246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246,
+    246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246, 246,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247,
     247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247, 247,
     248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248,
     248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248, 248,
-    249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249,
-    249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249,
-    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
-    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
-    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249, 249,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
     251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251,
     251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251,
-    251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251,
-    252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252,
     252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252,
     252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252,
     253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253,
-    254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254,
-    254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
-    256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
-    256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
-    257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257,
-    257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257,
-    257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257,
-    257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257,
-    258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258,
-    258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258,
-    258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258,
-    259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259,
-    259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259,
-    259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259,
+    253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253,
+    253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254,
+    254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254,
+    254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
+    256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
+    256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
+    257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257,
+    257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257, 257,
+    258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258,
+    258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258, 258,
+    259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259,
+    259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259,
+    259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259, 259,
+    260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260,
+    260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260,
     260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260,
     260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260, 260,
     261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261,
     261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261,
+    261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261, 261,
     262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262,
     262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262,
+    262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262, 262,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263,
     263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263, 263,
     264, 264, 264, 264, 264, 264, 264, 264, 264, 264, 264, 264, 264, 264, 264, 264,
@@ -5673,32 +6096,30 @@ static RE_UINT16 re_block_table_3[] = {
     265, 265, 265, 265, 265, 265, 265, 265, 265, 265, 265, 265, 265, 265, 265, 265,
     266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266,
     266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266, 266,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267,
     267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267, 267,
     268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268,
     268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268, 268,
     269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269,
     269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269,
-    269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269, 269,
-    270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270,
-    270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270,
-    270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270, 270,
     271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271,
     271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271,
-    271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271, 271,
+    272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272,
     272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272,
     272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272, 272,
     273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273,
+    273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273,
+    273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273,
     274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274,
     274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274,
     274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274, 274,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275,
     275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275,
     276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276,
-    276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276, 276,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277,
     277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277,
     277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277, 277,
@@ -5709,56 +6130,60 @@ static RE_UINT16 re_block_table_3[] = {
     279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279, 279,
     280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280,
     280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280,
+    280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281,
     281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281, 281,
     282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282,
     282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282,
-    282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282, 282,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283,
     283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283,
     284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284,
     284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284,
-    284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284, 284,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285,
     285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285,
-    285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285, 285,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286,
     286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286,
     286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286, 286,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287,
     287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287, 287,
     288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288,
     288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288,
+    288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288, 288,
     289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289,
     289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289,
+    289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289,
+    289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289, 289,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290,
     290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290,
+    290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290, 290,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291,
     291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291,
     291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291, 291,
-    292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292,
     292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292,
     292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292, 292,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293,
     293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293,
+    293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293, 293,
     294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294,
     294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294,
-    294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294, 294,
-    295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295,
     295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295,
     295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295,
     296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296,
     296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296, 296,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297,
     297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297,
     297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297,
     298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298,
     298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298,
+    298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298, 298,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299,
     299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299, 299,
     300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300,
@@ -5777,10 +6202,10 @@ static RE_UINT16 re_block_table_3[] = {
     305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305, 305,
     306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306,
     306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306,
+    306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306, 306,
     307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307,
     307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307,
     307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307, 307,
-    308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308,
     308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308,
     308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308, 308,
     309, 309, 309, 309, 309, 309, 309, 309, 309, 309, 309, 309, 309, 309, 309, 309,
@@ -5797,24 +6222,42 @@ static RE_UINT16 re_block_table_3[] = {
     314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314,
     314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314,
     314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314,
-    314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314, 314,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315,
     315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315, 315,
     316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316,
     316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316,
-    316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316, 316,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317,
     317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317, 317,
     318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318,
     318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318,
-    318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318, 318,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319,
     319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319,
     319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319, 319,
     320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320,
-    320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320
+    320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320,
+    320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320,
+    320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320, 320,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321,
+    321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321, 321,
+    322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322,
+    322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322,
+    322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322, 322,
+    323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323,
+    323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323,
+    323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323,
+    323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323, 323,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324,
+    324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324, 324,
+    325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325,
+    325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325,
+    325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325, 325,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326,
+    326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326, 326,
+    327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327,
+    327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327, 327
 };
 
 RE_UINT32 re_get_block(RE_UINT32 codepoint) {
@@ -5843,7 +6286,7 @@ static RE_UINT8 re_canonical_combining_class_table_1[] = {
     16,  9, 17, 18, 19, 20, 21, 22,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 23, 24,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 25,
-     9,  9,  9,  9, 26,  9,  9,  9, 27,  9, 28,  9,  9,  9,  9,  9,
+     9,  9,  9,  9, 26,  9,  9,  9, 27, 28, 29,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -5944,26 +6387,28 @@ static RE_UINT8 re_canonical_combining_class_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      87,  88,   0,   0,   0,   0,   0,  89,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,  90,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,  91,   0,   0,   0,   0,  92,   0,  93,   0,   0,   0,
-      0,   0,  72,  94,   0,  95,   0,   0,  96,  97,   0,  77,   0,   0,  98,   0,
-      0,  99,   0,   0,   0,   0,   0, 100,   0, 101,  26, 102,   0,   0,   0,   0,
-      0,   0, 103,   0,   0,   0, 104,   0,   0,   0,   0,   0,   0,  65, 105,   0,
-      0,  65,   0,   0,   0, 106,   0,   0,   0, 107,   0,   0,   0,   0,   0,   0,
-      0,  95,   0,   0,   0,   0,   0,   0,   0, 108, 109,   0,   0,   0,   0,  78,
-      0,  44, 110,   0, 111,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,  65,   0,   0,   0,   0,   0,   0,   0,   0, 112,   0, 113,   0,   0,   0,
+      0,   0,   0,   0,   0,  91,   0,  92,   0,   0,  93,   0,  94,   0,   0,   0,
+      0,   0,  72,  95,   0,  96,   0,   0,  97,  98,   0,  77,   0,   0,  99,   0,
+      0, 100,   0,   0,   0,   0,   0, 101,   0, 102,  26, 103,   0,   0,   0,   0,
+      0,   0, 104,   0,   0,   0, 105,   0,   0,   0,   0,   0,   0,  65, 106,   0,
+      0,  65,   0,   0,   0, 107,   0,   0,   0, 108,   0,   0,   0,   0,   0,   0,
+      0,  96,   0,   0,   0,   0,   0,   0,   0, 109, 110,   0,   0,   0,   0,  78,
+      0,  44, 111,   0, 112,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,  65,   0,   0,   0,   0,   0,   0,   0,   0, 113,   0, 114,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 115,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 116,   0, 117,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 114,   0, 115,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 118,
+      0,   0,   0,   0, 119,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 116,
-      0,   0,   0,   0, 117,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 120, 121, 122,   0,   0,
+      0,   0, 123,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    124, 125,   0,   0, 126,   0,   0,   0,   0, 117,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0, 127,   0, 128,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 129,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 118, 119, 120,   0,   0,
-      0,   0, 121,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    122, 123,   0,   0,   0,   0,   0,   0,   0, 115,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 124,   0, 125,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0, 126,   0,   0,   0, 127,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 130,   0,   0,   0, 131,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
 
@@ -6152,6 +6597,8 @@ static RE_UINT8 re_canonical_combining_class_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  3,  3,
      0,  0,  0,  0,  0,  0,  3,  3,  1,  1,  1,  3,  1,  3,  3,  3,
      3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  1,  3,  1,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -6196,6 +6643,8 @@ static RE_UINT8 re_canonical_combining_class_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0, 39,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 39, 39,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      6,  6,  6,  6,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -6216,9 +6665,13 @@ static RE_UINT8 re_canonical_combining_class_table_3[] = {
      1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  1,  1,  1,  1,  1,
      1,  1,  0,  1,  1,  0,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  2,  3,  1,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      3,  3,  3,  3,  3,  3,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -6252,7 +6705,7 @@ static RE_UINT8 re_cased_table_1[] = {
      2, 12,  2, 13,  2,  2, 14,  2,  2,  2,  2,  2,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 15,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2, 16,  2, 17,  2,  2, 18,  2, 19,  2,  2,  2,
+     2,  2,  2,  2,  2, 16,  2, 17, 18,  2, 19,  2, 20,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
@@ -6322,10 +6775,10 @@ static RE_UINT8 re_cased_table_2[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  4, 20, 21,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  4, 22,
-     0,  0,  0,  0, 23, 21,  0,  0,  4,  4,  4,  4,  4,  4,  0,  0,
-     4,  4,  4,  4,  4,  4,  4,  4, 22,  4, 24, 25,  4, 26, 27, 28,
+     0,  0,  0,  0,  0,  4, 20,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  4, 21,
+     0,  0,  0,  0, 22, 23,  0,  0,  4,  4,  4,  4,  4,  4,  0,  0,
+     4,  4,  4,  4,  4,  4,  4,  4, 21,  4, 24, 25,  4, 26, 27, 28,
      0,  0,  0, 29, 30,  0,  0,  0, 31, 32, 33,  4, 34,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0, 35,  4, 36,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -6335,26 +6788,28 @@ static RE_UINT8 re_cased_table_2[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  4, 39, 25,  0,  0,  0,  0, 40,  4,  4, 41,  4, 42, 43,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 44,  5, 23,  4,  4,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0, 44,  5, 45,  4,  4,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 45,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0, 46,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  0,  0,  0,  0,  0,
-     4,  4, 46,  0,  0, 44, 47, 48,  0,  0,  0, 49, 50, 51,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 52, 53,  0,  0,
-     0,  0,  0,  0,  4, 54,  4, 54,  0,  0,  0,  0,  0,  0,  0,  0,
+     4,  4, 47,  0,  0, 44, 48, 49,  0,  0,  0, 50, 51, 52,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 53, 54,  0,  0,
+     0,  0,  0,  0,  4, 55,  4, 55,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     4,  4, 55,  4, 56, 57, 58,  4, 59, 60, 61,  4,  4,  4,  4,  4,
-     4,  4,  4,  4,  4, 62, 63,  5, 55, 55, 64, 64, 65, 65, 66,  0,
+     4,  4, 56,  4, 57, 58, 59,  4, 60, 61, 62,  4,  4,  4,  4,  4,
+     4,  4,  4,  4,  4, 63, 64,  5, 56, 56, 65, 65, 66, 66, 67,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 67,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  4,  4, 68,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0, 68, 69,  0,  0,  0,  0,  0,  0,
+     0, 44,  4, 39,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 44, 69, 69, 36,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  4,  4, 70,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0, 44, 45, 45, 36,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
@@ -6364,19 +6819,19 @@ static RE_UINT8 re_cased_table_3[] = {
     255, 255, 255,   1,   3,   0,   0,   0,  31,   0,   0,   0,  32,   0,   0,   0,
       0,   0, 207, 188,  64, 215, 255, 255, 251, 255, 255, 255, 255, 255, 191, 255,
       3, 252, 255, 255, 255, 255, 254, 255, 255, 255, 127,   0, 255,   1,   0,   0,
-    191,  32, 255, 255, 255, 255, 255, 231, 255, 255,  63,  63, 255,   1, 255, 255,
+    191,  32, 255, 255, 255, 255,  63,  63, 255,   1, 255, 255, 255, 255, 255, 231,
      63,  63, 255, 170, 255, 255, 255,  63, 255, 255, 223,  95, 220,  31, 207,  15,
     255,  31, 220,  31,   0,   0,   2, 128,   0,   0, 255,  31, 132, 252,  47,  62,
      80, 189,  31, 242, 224,  67,   0,   0,  24,   0,   0,   0,   0,   0, 192, 255,
     255,   3,   0,   0,  31, 120,  12,   0, 191,  32,   0,   0, 255,  63,   0,   0,
-    252, 255, 255, 255, 255, 120, 255, 255, 255,   7, 235,   3,   0,   0,  96,   7,
-      0,   0, 255, 255, 127,   0, 248,   0, 255, 255,   0,   0, 255, 255,  15, 255,
-    255, 255, 255,  15,   0,   0, 255, 247, 255, 247, 183, 255, 251, 255, 251,  27,
-    185, 255, 255, 255, 255, 255, 253,   7, 255, 255,   7,   0, 255, 255, 223, 255,
-    255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223,
-    255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247,
-    255, 127, 255, 255, 255, 253, 255, 255, 247,  15,   0,   0, 255, 251, 255, 127,
-     15,   0,   0,   0, 255,   3, 255, 255
+    252, 255, 255, 255, 255, 120, 255, 255, 255,   7, 235,   3,   0,   0, 124,   7,
+      0,   0, 255, 255, 255,   3, 255, 255, 127,   0, 248,   0, 255, 255,   0,   0,
+    255, 255,  15, 255, 255, 255, 255,  15,   0,   0, 255, 247, 255, 247, 183, 255,
+    251, 255, 251,  27, 185, 255, 255, 255, 255, 255, 253,   7, 255, 255,   7,   0,
+    255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255,
+    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255,
+    253, 255, 255, 247, 255, 127, 255, 255, 255, 253, 255, 255, 247,  15,   0,   0,
+    255, 251, 255, 127, 224,   7,   0,   0,  15,   0,   0,   0
 };
 
 RE_UINT32 re_get_cased(RE_UINT32 codepoint) {
@@ -6407,7 +6862,7 @@ static RE_UINT8 re_case_ignorable_table_1[] = {
     17, 18, 19, 20, 21, 22, 23, 24,  9,  9,  9,  9,  9, 25,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 26, 27,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 28,  9,  9,  9, 29,
-     9,  9,  9, 30, 31,  9, 32,  9, 33,  9, 34,  9, 35,  9,  9,  9,
+     9,  9,  9, 30, 31,  9, 32,  9, 33, 34, 35,  9, 36,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -6456,7 +6911,7 @@ static RE_UINT8 re_case_ignorable_table_1[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-    36,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    37,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -6512,34 +6967,36 @@ static RE_UINT8 re_case_ignorable_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     144, 145,   0,   0,   0,   0,   0,  75,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0, 146,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 147,   0,   0,   0,   0,  22,   0, 148,   0,   0,   0,
+      0,   0,   0,   0,   0, 147,   0,  68,   0,   0,  22,   0, 148,   0,   0,   0,
      33, 149, 150, 151,  51, 152, 153,   0,  29, 154,   0, 155,  51, 156, 157,   0,
-      0, 158,   0,   0,   0,   0, 137, 159,  51,  52,   3, 160,   0,   0,   0,   0,
+      0, 158,  33,   0,   0,   0, 137, 159,  51,  52,   3, 160,   0,   0,   0,   0,
       0, 149, 161,   0,   0, 162, 163,   0,   0,   0,   0,   0,   0, 164, 165,   0,
       0, 166,   3,   0,   0, 167,   0,   0,  68, 168,   0,   0,   0,   0,   0,   0,
       0, 169,   0,   0,   0,   0,   0,   0,   0, 170,  74,   0,   0,   0, 171,   3,
     172, 173, 174,   0, 175,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0, 176,   0,   0, 133, 177,   0,   0,   0, 178, 179,   0, 180,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 181,   0,   0,   0,   0,   0,   0,   0,   0,
-      0, 182,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 181,  51, 141, 182,   0,   0,   0,   0,   0,
+      0,   5, 183,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 183,   0, 184,  83,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 184,   0, 185,  83,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 106,   0, 185,   0,   0, 186,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 106,   0, 186,   0,   0, 187,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 187,
-      0,   0,   0,   0, 188,  83,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 188,
+      0,   0,   0,   0, 189,  83,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   6, 189, 150,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 190, 191, 192,   0,   0,
-      0,   0, 193,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   6, 190, 150,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 191, 192, 193,   0,   0,
+      0,   0, 194,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      6, 194,   6, 195, 196, 197,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    198, 199,   0,   0,   0,   0,   0,   0,   0, 200,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 201,   0, 202,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0, 184,   0,   0,   0, 203,   0,   0,   0,   0,   0,
+      6, 195,   6, 196, 197, 198,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    199, 200,   6,  25, 106,   0,   0,   0,   0, 201,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0, 202,   0, 203,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,  73,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 185,   0,   0,   0, 204,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  94,
@@ -6562,7 +7019,7 @@ static RE_UINT8 re_case_ignorable_table_3[] = {
      12,   0,   0,   0,   4,   0,   0,   0,   1,  32,   0,   0,  17,   0,   0,   0,
       0,   0,   0, 208, 193,  61,  96,   0,  64,  48,   0,   0,   3,   0,   0,   0,
       0,   0,   0,  24,   0,   4,  92,   0,   0,   0, 242,   7, 192, 127,   0,   0,
-      0,   0, 242,  31,  64,  63,   0,   0,   0,   0,   0,   3,   0,   0, 160,   2,
+      0,   0, 242,  31,  64, 127,   0,   0,   0,   0,   0,   3,   0,   0, 160,   2,
       0,   0, 254, 127, 223, 224, 255, 254, 255, 255, 255,  31,  64,   0,   0,   0,
       0, 224, 253, 102,   0,   0,   0, 195,   1,   0,  30,   0, 100,  32,   0,  32,
       0,   0,   0, 224,   0,   0,  28,   0,   0,   0,  12,   0,   0,   0, 176,  63,
@@ -6593,12 +7050,13 @@ static RE_UINT8 re_case_ignorable_table_3[] = {
     188,  15,   0,   0,   0, 128, 255,   6,   0,   0,   0,  88,   0,   0, 240,  12,
     254,   7,   0,   0,   0,   0, 248, 121, 128,   0, 126,  14,   0, 252, 127,   3,
       0,   0, 127, 191, 255, 252, 109,   0,   0,   0, 126, 180, 191,   0,   0,   0,
-      0,   0, 163,   0,   0,   0,  24,   0,   0,   0, 255,   1,   0,   0,  31,   0,
-      0,   0, 127,   0,   0, 128, 255, 255,  27,   0,   0,   0,   0,   0, 239, 111,
-      0,   0,   0,  96, 255,  63, 255, 255, 128,   3, 248, 255, 231,  15,   0,   0,
-      0,  60,   0,   0,  28,   0,   0,   0, 255, 255, 127, 248, 255,  31,  32,   0,
-     16,   0,   0, 248, 254, 255,   0,   0, 127, 255, 255, 249, 219,   7,   0,   0,
-      0,   0, 255,  63,   0,  64,   0,   0,   0, 240,   0,   0, 240,  15,   0,   0
+      0,   0, 163,   0,   0,   0,  24,   0,   5,   0,   0,   0, 129, 255,  63,   0,
+      0,   0,  31,   0,   0,   0, 127,   0,   0, 128, 255, 255,  27,   0,   0,   0,
+      0,   0, 239, 111,   0,   0,   0,  96, 255,  63, 255, 255, 128,   3, 248, 255,
+    231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0, 255, 255, 127, 248,
+    255,  31,  32,   0,  16,   0,   0, 248, 254, 255,   0,   0, 127, 255, 255, 249,
+    219,   7, 255, 255,   0,   0, 255,  63,   0,  64,   0,   0,   0, 240,   0,   0,
+    240,  15,   0,   0
 };
 
 RE_UINT32 re_get_case_ignorable(RE_UINT32 codepoint) {
@@ -7481,11 +7939,11 @@ static RE_UINT8 re_decomposition_type_table_1[] = {
      5, 19,  5,  5, 20, 21, 22,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5, 23, 24,  5,  5,  5,  5,  5, 25, 26,  5, 27,  5,
+     5,  5,  5,  5, 23, 24,  5,  5, 25,  5,  5, 26, 27,  5, 28,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 28,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 29,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
@@ -7595,12 +8053,14 @@ static RE_UINT8 re_decomposition_type_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     177, 177, 178, 177, 179, 180, 181, 177, 182, 183, 184, 177, 177, 177, 177, 177,
     177, 177, 177, 177, 177, 185, 177, 177, 177, 177, 177, 177, 177, 177, 186, 177,
+      0, 187, 188, 189,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    181, 187, 188, 189, 190, 191,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 192, 193, 194, 195, 196,   0,   0,   0,
-    197, 198, 199,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 200,
+    181, 190, 191, 192, 193, 194,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 195, 196, 197, 198, 199,   0,   0,   0,
+    200, 201, 202,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 203,
      60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,
      65,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
@@ -7980,6 +8440,12 @@ static RE_UINT8 re_decomposition_type_table_3[] = {
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  0,  0,  7,  7,
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+     3,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
+     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  3,  3,  3,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  7,  7,  0,  7,  0,  0,  7,  0,  7,  7,  7,  7,  7,  7,  7,
      7,  7,  7,  0,  7,  7,  7,  7,  0,  7,  0,  7,  0,  0,  0,  0,
      0,  0,  7,  0,  0,  0,  0,  7,  0,  7,  0,  7,  0,  7,  7,  7,
@@ -8180,10 +8646,10 @@ static RE_UINT8 re_diacritic_table_1[] = {
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8, 11, 12,  8,  8,  8,  8,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 13, 14,
-    15, 16, 17, 18, 19, 20, 21, 22,  8,  8,  8,  8,  8,  8,  8,  8,
-     8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 23, 24,  8,  8,  8,  8,
-     8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 25,  8,  8,  8,  8,
-     8,  8,  8, 26, 27,  8,  8,  8, 28,  8, 29,  8,  8,  8,  8,  8,
+    15, 16, 17, 18, 19, 20, 21, 22,  8,  8,  8,  8,  8, 23,  8,  8,
+     8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 24, 25,  8,  8,  8,  8,
+     8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 26,  8,  8,  8,  8,
+     8,  8,  8, 27, 28,  8,  8,  8, 29,  8, 30,  8,  8,  8,  8,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
@@ -8284,7 +8750,7 @@ static RE_UINT8 re_diacritic_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,  85,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,  86,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  18,   0,  87,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,  28,   0,   0,  18,   0,  87,   0,   0,   0,
       0,   0,  37,  80,   0,  88,   0,   0,   0,  89,   0,  71,   0,   0,  90,   0,
       0,  91,   0,   0,   0,   0,   0,  92,   0,  24,  27,  93,   0,   0,   0,   0,
       0,   0,  94,   0,   0,   0,  95,   0,   0,   0,   0,   0,   0,  15,   2,   0,
@@ -8293,19 +8759,21 @@ static RE_UINT8 re_diacritic_table_2[] = {
       0,  47,  98,   0,  10,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,  15,   0,   0,   0,   0,   0,   0,   0,   0,  99,   0, 100,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0, 101,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 101,   0, 102,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 103,   0,   0,  66,
+      0,   0,   0,   0,   0,   0,   0, 102,   0, 103,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 104,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 104,   0,   0,  66,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   5, 105, 106,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 107, 108, 109,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 105,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0, 102,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 110,   0, 111,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0, 102,   0,   0,   0, 112,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   5, 106, 107,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 108, 109, 110,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   4,   5, 111,   0,   0,   0,   0,   0, 103,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0, 112,   0, 113,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 103,   0,   0,   0, 114,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
 
@@ -8335,10 +8803,10 @@ static RE_UINT8 re_diacritic_table_3[] = {
       0,   0,   0,   6,   0,   0,  24,   0,   1,  28,   0,   0,   0,   0,  96,   0,
       0,   6,   0,   0, 192,  31,  31,   0,  68,   0,   0,   0,  12,   0,   0,   0,
       0,   8,   0,   0,   0,   0,   0,  96, 128,   0,   0,   0,  52,   0,   0,   0,
-      0,   0, 128,   0,   0,   0,  31,   0,   0,   0, 127,   0,   0, 128, 255, 255,
-      0,   0, 239, 111, 255,  63, 255, 255, 127,   0,   0,   0, 128, 227,   7, 248,
-    231,  15,   0,   0,   0,  60,   0,   0,   0,  64,   0,   0,   0, 240,   0,   0,
-    112,   7,   0,   0
+      0,   0, 128,   0, 128, 255,  63,   0,   0,   0,  31,   0,   0,   0, 127,   0,
+      0, 128, 255, 255,   0,   0, 239, 111, 255,  63, 255, 255, 127,   0,   0,   0,
+    128, 227,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0, 255,  63,   0,   0,
+      0,  64,   0,   0,   0, 240,   0,   0, 112,   7,   0,   0
 };
 
 RE_UINT32 re_get_diacritic(RE_UINT32 codepoint) {
@@ -8362,314 +8830,576 @@ RE_UINT32 re_get_diacritic(RE_UINT32 codepoint) {
 
 /* East_Asian_Width. */
 static RE_UINT8 re_east_asian_width_table_1[] = {
-     0,  1,  2,  2,  3,  2,  2,  2,  4,  5,  6,  7,  8,  9,  9,  9,
-     9,  9,  9, 10,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9, 11, 12,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9, 13,  2,  2, 14, 14, 14, 14, 14, 14, 15, 16,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 17,  9,  9,  9,  9,
-     9, 18,  9, 19,  2,  2,  2,  2,  2,  2,  2, 20, 21,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 22, 23, 24,  2,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 25,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 25,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-    26,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 27,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 27
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 13, 13,
+    13, 13, 13, 14, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 15, 16, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 17, 13, 13, 18, 18, 18, 18, 18, 18, 19, 20,
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 13, 31, 32, 33, 13, 13,
+    13, 34, 13, 13, 13, 13, 13, 13, 13, 13, 35, 36, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 37,
+    13, 13, 13, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    50, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 51,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 51
 };
 
-static RE_UINT8 re_east_asian_width_table_2[] = {
+static RE_UINT16 re_east_asian_width_table_2[] = {
       0,   1,   1,   2,   0,   3,   4,   5,   6,   7,   8,   9,   0,   0,  10,   0,
       0,   0,  11,  12,   0,   0,  13,   0,  14,  14,  14,  15,  16,  17,  18,   0,
-     19,  14,  20,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     19,  14,  20,   0,   0,   0,   0,   0,   0,  21,  22,   0,  23,   0,  24,  25,
+      0,   0,   0,   0,   0,   0,   0,   0,  26,   0,  27,   0,   0,  28,   0,  29,
+      0,  30,  31,  32,  33,   0,   0,   0,   0,   0,   0,   0,  34,  35,  36,  37,
+     38,  39,  40,  41,  42,  43,  44,  45,  46,  43,  47,  48,  49,  50,  51,  52,
+     53,  54,  55,  56,  53,  57,  58,  59,  53,   0,  60,  61,  62,  63,  64,  65,
+     66,  67,  68,  69,  70,  71,  72,  69,   0,   0,  73,  74,  75,  76,  77,  69,
+      0,   0,   0,   0,   0,   0,  78,   0,  69,  69,  69,   0,   0,   0,   0,   0,
+      0,   0,  79,   0,  80,  81,  82,   0,  83,   0,  29,  84,  85,   0,   0,  86,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,  21,  21,  21,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     22,  23,   0,  24,  25,  26,   0,   0,  27,  28,  29,  30,  31,  32,  33,  34,
-     35,  36,  37,  38,  39,  40,   0,   0,  41,  42,   0,   0,   0,   0,   0,  43,
-      0,   0,   0,  14,  14,  14,  14,  44,  14,  14,  45,  46,  47,  48,  49,  50,
-     51,   0,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,   0,  64,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  65,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,  66,   0,  67,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,  68,  21,  21,  69,  21,  21,  21,  21,  21,  21,  70,  71,
-     72,  73,  74,  21,  75,  21,  21,  21,  76,  77,  21,  21,  78,  21,  21,  79,
-     73,  21,  80,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,   0,   0,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
-     21,  21,  21,  21,  81,  21,  82,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  83,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  84,   0,   0,
+      0,   0,   0,   0,  84,   0,   0,  87,  88,  89,  90,  91,   0,   0,  92,  93,
+     85,   0,   0,  87,   0,  32,   0,  94,  95,  96,  97,  98,   0,  99, 100,   0,
+    101,   0,  95, 102,  93, 103, 104,  69,   0,   0, 105,  95,   0,   0,   0, 106,
+      0, 107, 108,   0, 109,  29,  24, 110,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,  86,   0, 111,  92,   0, 112, 113, 114,
+    115, 116,   0, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129,
+    130, 131, 132, 133, 134, 135,   0,   0, 136, 137,   0,   0,   0,   0,   0, 138,
+      0, 139, 140,  14,  14,  14,  14, 141,  14,  14, 142, 143, 144, 145, 146, 147,
+    148,   0, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160,   0, 161,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 162,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,  29,   0, 163, 164, 165,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 166,   0,  78,   0, 167,  89, 168, 168,   0,
+      0,   0,  92,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+    169, 170,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69, 171,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,   0,   0,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69, 172,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0, 173,   0,   0,   0,   0,   0, 174,   0,   0,   0,   0,   0,   0, 175, 176,
+      0, 177,   0, 174,   0,   0, 178,   0,   0,   0, 179,  69,   0,   0, 180,  95,
+      0,  89, 181,   0,   0,   0, 182,  89, 183, 184,   0,  99,   0,   0,   0, 185,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 172, 186,  68,
      14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,
      14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,
-     14,  14,  14,  14,  14,  14,  14,  14,  21,  21,  21,  21,  21,  21,  21,  21,
-     21,  21,  21,  21,  21,  21,  21,  21,   0,   0,   0,   0,   0,   0,   0,   0,
+     14,  14,  14,  14,  14,  14,  14,  14,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69, 187, 188, 189,   0,   0,   0, 190,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 191,   0, 192, 172,
+    193, 194,  69, 195,   0,   0,   0, 102, 196, 197, 197, 198, 199, 200, 201, 202,
+    203, 204, 205,  69,   0,   0,   0, 110, 206, 207,   0,   0, 208, 209, 172,  92,
+     69,  69,  69,  69,  84,   0, 121,  68,   0, 210,  32, 110, 211,   0, 212,  69,
+      0,   0,   0,   0,  92, 213, 214,  68,   0,  24,   0, 215, 216, 217,  69,  69,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,  89,  94, 218, 219, 220,  69,  69,
+    221, 222, 165,   0,  95, 223,  69, 224, 225, 226,  69,  69,   0, 227, 191,   0,
+    228, 229, 230,   0,   0,  69,   0, 231,   0, 232, 233, 234, 235, 236,  69,  69,
+      0,   0, 237,  69,   0, 238,   0, 239,   0, 240,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  95,   0, 241,  69, 242,   0,  24,  85, 172, 243, 172, 173,  89,
+      0,   0, 244,  88,   0,   0, 245, 246,   0, 112,  24,  89,   0,   0,   0, 247,
+    248,   0, 249,  69, 250, 213,   0, 251,  34, 252, 253, 254,  69,  69,  69,  69,
+      0,   0, 255, 249,   0,   0, 240,  69,  69,  69,  69,  69,   0, 233,  92,  69,
+      0,   0, 256, 257,   0,  85, 243,  69,  29,  99, 139,  69,  69,  69,  69,  69,
+      0,  68,  69,  69,  69,   0,   0, 258, 259, 260, 261,  69,  69, 262, 263, 264,
+      0,   0,  24,   0,   0, 265,   0,  87, 243,  69,  69,  69,  69,  69,  69,  69,
+    266, 267, 268, 105, 191, 269,  69,  69, 270, 271, 240, 272, 273, 243,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  87, 274, 275,  85,  69,  69, 276,   0, 277,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     85,  86,  87,  88,   0,   0,   0,   0,  89,  90,  90,  91,  92,  93,  94,  95,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  85,  69,  69,  69,
+      0,   0,   0, 278,   0,   0,   0,   0,   0,   0, 279,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 172,   0,   0, 238,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  96,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  97,
-     21,  21,  21,  21,  21,  21,  70,   0,  98,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,  94,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  99,
-     21,  21,  21,  21,  21,  21,  21,  21,  21, 100, 101, 102,  21,  21,  21,  21,
-     21,  21,  21,  21,  21,  21,  21, 103,   0,   0,   0,   0,   0,   0,   0,   0,
-    104,   0,   0,   0,   0,   0, 105,   0, 106, 107,  14, 108, 109, 110,   0,   0,
-    111, 103, 112, 113,   0,   0,   0,   0,  21, 114,  21, 115,  69,  21, 116, 117,
-     21,  73, 118,  21,  21,  21,  21, 119,  21, 120, 121, 122, 123, 104,   0, 124,
-     21,  21, 125,   0,  21,  21, 126, 127,   0,   0,   0,   0,   0,   0,   0, 128,
-      0,   0,   0,   0,   0,   0,   0,   0, 129, 130, 131,  21,  21,  21,  21,  21,
-      0,   0,   0, 132, 133, 134, 135, 136,   0,   0,   0,   0,   0,   0,   0,   0,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
-     21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21, 120,
-      0,   0,   0,   0,   0,   0,   0,   0,  14,  14,  14,  14,  14,  14,  14,  15,
+      0,   0, 139,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,  87,  95, 280,   0,  95, 213, 281,   0,   0, 282, 283, 194,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,   0,   0, 110,  69,  69,  69,   0,   0, 284,   0, 285,  69,  69,  69,
+      0,   0,   0, 286, 287, 279,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,   0, 103, 288,   0,   0,   0, 279,  69,
+      0,   0,   0,   0,   0,   0,   0,  94,   0, 289,   0,   0,   0,   0,   0, 140,
+      0,   0, 290,  69,  69,  69,  90,  90,   0,   0,  89,  87,  69,  69,  69,  69,
+      0,   0, 112,   0,  76, 291, 292,   0, 293, 294, 295,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0, 296,   0,   0,   0,   0,   0,   0,   0,   0, 297,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0, 298, 299,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  95, 300,  69,  69,  69,  69,  69,  69,
+    301, 302,   0, 303, 304,  69,  69,  69,   0, 305, 306,  69,  69,  69,  69,  69,
+     69,  69,  69,  69, 172, 104,   0, 226,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69, 172,  85,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69, 307,
+      0,   0,   0,   0,   0,   0, 308,  69,   0,   0, 309,  69,  69,  69,  69,  69,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
+     69,  69,  69, 310,   0, 311,  69,  69,  66,  92,  69,  69,  69,  69,  69,  69,
+    292, 312, 313, 314, 315, 316,  69, 317,  69,  69,  69,  69,  69,  69,  69,  69,
+    292,  99,   0,   0,  90, 318, 319,  94, 320, 321,  14, 322, 323, 324,  69, 325,
+     69,  69,  69,  69,  69,  69,  69,  69,  69, 326,  69, 327, 328,  69, 329, 330,
+     69, 170, 331,  69,  69,  69,  69, 332,  69, 333, 334, 335, 336, 292,   0, 110,
+     69,  69, 172,   0,  69,  69, 337, 338,   0,   0,   0, 339,   0,   0,  85,  69,
+     99,   0, 240,   0,  24, 340,  69,  69, 173, 341, 342,  69,  69,  69,  69,  69,
+      0,   0,  90, 303,  69,  69,  69,  69,   0,   0,   0,   0, 343,   0, 140, 344,
+    331,   0,   0,   0,  69,  69,  69,  69,  14,  14,  14,  14,  14,  14,  14, 193,
+     69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,  69,
      14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,
-     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 137
+     14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14,  14, 345
 };
 
 static RE_UINT8 re_east_asian_width_table_3[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+    1, 3, 2, 2, 3, 2, 2, 3, 3, 1, 3, 1, 2, 3, 3, 2,
+    3, 3, 3, 3, 3, 1, 3, 3, 3, 3, 3, 1, 3, 3, 3, 3,
+    1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 3, 3,
+    3, 3, 1, 1, 1, 1, 3, 1, 3, 3, 3, 1, 3, 3, 1, 1,
+    3, 1, 3, 3, 1, 1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 1,
+    1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 3, 1, 3, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 3, 1, 1, 1, 1,
+    1, 3, 3, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 3,
+    3, 3, 3, 1, 3, 1, 1, 1, 3, 3, 3, 3, 1, 3, 1, 1,
+    1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 3, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1,
+    3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 3, 1, 1, 3, 1, 3, 3, 3, 1, 3, 1, 1,
+    3, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 1, 3, 1, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1,
+    1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1,
+    1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-    0, 2, 1, 1, 2, 1, 1, 2, 2, 0, 2, 0, 1, 2, 2, 1,
-    2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2,
-    0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 2, 2,
-    2, 2, 0, 0, 0, 0, 2, 0, 2, 2, 2, 0, 2, 2, 0, 0,
-    2, 0, 2, 2, 0, 0, 0, 2, 2, 2, 2, 0, 2, 0, 2, 0,
-    0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 0, 0, 0, 0,
-    0, 2, 2, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2,
-    2, 2, 2, 0, 2, 0, 0, 0, 2, 2, 2, 2, 0, 2, 0, 0,
-    0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 0, 0, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1,
+    1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+    1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0,
+    0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+    1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+    1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1,
+    1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+    0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0,
+    0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1,
+    1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+    1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1,
+    1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
+    1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1,
+    0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1,
+    1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
+    1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0,
-    2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
+    1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 2, 0, 0, 2, 0, 2, 2, 2, 0, 2, 0, 0,
-    2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 2, 0, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 1, 1, 3, 3, 3, 3, 1, 3, 3, 1, 1, 3, 3, 1, 1,
+    3, 3, 3, 1, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 1, 3, 3, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 3, 1,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3,
+    1, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 3, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 3, 1, 3, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 3, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 3, 3, 1, 1, 1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 1,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 0, 0, 0, 0,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 3, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 1, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 1, 3,
+    1, 3, 1, 1, 1, 3, 1, 1, 1, 1, 3, 1, 1, 3, 3, 3,
+    3, 1, 1, 3, 1, 3, 1, 3, 3, 3, 3, 3, 3, 1, 3, 1,
+    1, 1, 1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 3, 3, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 1,
+    1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 3, 1, 1, 3, 3, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
+    0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,
-    0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 0, 0, 2, 2, 2, 2, 0, 2, 2, 0, 0, 2, 2, 0, 0,
-    2, 2, 2, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 0, 2, 2, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-    0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 2, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 2, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 2, 2, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 0, 2, 2, 0, 0, 0, 2, 2, 0, 0, 2, 0, 0, 0, 2,
-    0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 2, 2, 2,
-    2, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 2, 0, 2, 0,
-    0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 2, 2, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0,
-    0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 0, 0, 0,
-    3, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,
-    0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 0, 0, 2, 2, 0, 0,
-    2, 2, 0, 0, 0, 0, 2, 2, 2, 0, 0, 2, 0, 0, 2, 2,
-    2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0,
-    0, 0, 0, 0, 0, 2, 2, 0, 0, 2, 0, 0, 0, 0, 2, 2,
-    0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0,
-    2, 0, 2, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 0, 2, 2, 2, 0, 2, 2, 2, 2, 0, 2, 2, 0, 2,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2,
-    0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2,
-    0, 0, 0, 0, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2,
-    2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 0, 2, 0, 0, 0, 0, 2, 2, 3, 2, 2, 2, 2, 2,
-    2, 2, 3, 3, 2, 3, 2, 2, 2, 2, 3, 2, 2, 3, 2, 2,
-    0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 3, 0,
-    0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
-    0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 3, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,
+    3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 3, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1,
+    1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 1, 1, 3, 3, 1, 1,
+    3, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 1, 1, 3, 3,
+    3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1,
+    1, 1, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 1, 1, 3, 3,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 3, 1, 3, 1,
+    3, 1, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 3, 1, 3, 3, 3, 1, 3, 3, 3, 3, 1, 3, 3, 1, 3,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3,
+    1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 3,
+    1, 1, 1, 1, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3,
+    3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 1, 3, 1, 1, 1, 1, 3, 3, 0, 3, 3, 3, 3, 3,
+    3, 3, 0, 0, 3, 0, 3, 3, 3, 3, 0, 3, 3, 0, 3, 3,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1,
+    1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 1, 0, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
+    5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0,
-    5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0,
-    0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 0, 0, 3, 3, 3, 3, 3, 3, 3,
-    0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0,
+    0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
+    1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0,
-    3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
     5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
     5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -8683,91 +9413,293 @@ static RE_UINT8 re_east_asian_width_table_3[] = {
     0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 4, 4, 4, 4, 4, 4,
     0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 4, 4, 4, 0, 0, 0,
     5, 5, 5, 5, 5, 5, 5, 0, 4, 4, 4, 4, 4, 4, 4, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,
-    3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 3, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1,
+    1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+    1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1,
+    0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+    1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1,
+    1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+    1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1,
+    1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+    1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1,
+    1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0,
+    0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1,
+    0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+    0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+    1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0,
+    0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 0,
-    3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0,
-    0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2,
-    2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 3,
-    3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0,
-    3, 3, 3, 0, 0, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0,
-    0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 0, 0, 0, 3, 3, 3, 3, 3, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0
 };
 
 RE_UINT32 re_get_east_asian_width(RE_UINT32 codepoint) {
@@ -8877,7 +9809,7 @@ static RE_UINT8 re_emoji_table_2[] = {
     42, 42, 42, 42, 42, 42, 42, 46, 42, 47, 48, 49, 50, 51, 52, 53,
     42, 42, 54,  0, 42, 42, 55, 56,  0,  0,  0,  0,  0,  0,  0, 57,
      0,  0,  0,  0,  0,  0,  0,  0, 58, 59, 60, 42, 42, 42, 42, 42,
-     0,  0,  0, 61, 62, 63, 64, 65,  0,  0,  0,  0,  0,  0,  0,  0
+     0,  0,  0, 61, 62, 46, 63, 64,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
 static RE_UINT8 re_emoji_table_3[] = {
@@ -8894,10 +9826,10 @@ static RE_UINT8 re_emoji_table_3[] = {
       0, 128, 252,   7,   0,   0,   3,   0, 255, 255, 255, 255, 243, 255, 255, 255,
     255, 255, 207, 206, 255, 255, 185, 255, 255, 255, 255, 191, 255, 255, 255,  63,
       0, 126, 255, 255, 255, 128, 249,   7, 128,  60,  97,   0,  48,   1,   6,  16,
-     28,   0,  14, 112,  10, 129,   8, 252, 255, 255,   0,   0,  63, 248, 231, 224,
+     28,   0,  14, 112,  10, 129,   8, 252, 255, 255,   0,   0,  63, 248, 231, 240,
      63,  26, 249,  31, 255,  15,   1,   0,   0, 240, 255, 255, 255, 255, 255, 247,
-    191, 255, 255, 255,   0,   0,  31,  31, 127,   0, 255, 255, 255,  31, 255,   7,
-     63,   0, 255,   3, 255,   0, 127,   0
+    191, 255, 255, 255,   0,   0, 255,  31, 255,   1, 255, 255,  63, 192, 255,  15,
+    255,   1, 255,   1
 };
 
 RE_UINT32 re_get_emoji(RE_UINT32 codepoint) {
@@ -9132,7 +10064,7 @@ static RE_UINT8 re_emoji_modifier_base_table_3[] = {
     238, 128,   2,   0,   0,   4,   0,   0,   0,   0,  48,   4,   0,   0,  97,   0,
     224, 248,   0,   0,   8,   0, 112,   0,   1,  16,   0,   0,   0, 144,   0, 255,
      64,   0, 255, 115,   0,   0, 128,   0,   0,   0,  96,  11,   0, 224, 254,  63,
-     56,   0,   0,   0,   0,   0, 127,   0
+     56,   0,   0,   0,   0,   0, 255,   1
 };
 
 RE_UINT32 re_get_emoji_modifier_base(RE_UINT32 codepoint) {
@@ -9254,9 +10186,9 @@ static RE_UINT8 re_emoji_presentation_table_3[] = {
     255, 255,  15,   0, 255, 135,  15,   0, 255, 255,  17, 255, 255, 255, 255, 127,
     253, 255, 255, 255, 255, 255, 255, 159, 255, 255, 255,  63,   0, 120, 255, 255,
     255,   0,   0,   4,   0,   0,  96,   0,   0,   0,   0, 248, 255, 255,   0,   0,
-     63,  16, 231, 224,   0,  24, 240,  31, 255,  15,   1,   0,   0, 240, 255, 255,
-    255, 255, 255, 247, 191, 255, 255, 255,   0,   0,  31,  31, 127,   0, 255, 255,
-    255,  31, 255,   7,  63,   0, 255,   3, 255,   0, 127,   0
+     63,  16, 231, 240,   0,  24, 240,  31, 255,  15,   1,   0,   0, 240, 255, 255,
+    255, 255, 255, 247, 191, 255, 255, 255,   0,   0, 255,  31, 255,   1, 255, 255,
+    255, 255, 255, 191,  63, 192, 255,  15, 255,   1, 255,   1
 };
 
 RE_UINT32 re_get_emoji_presentation(RE_UINT32 codepoint) {
@@ -9566,7 +10498,7 @@ static RE_UINT8 re_general_category_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 56, 13, 13, 13, 57, 58, 13,
     13, 13, 13, 59, 13, 13, 13, 13, 13, 13, 60, 33, 33, 33, 61, 33,
-    13, 13, 13, 13, 62, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+    13, 13, 13, 13, 62, 13, 13, 13, 63, 33, 33, 33, 33, 33, 33, 33,
     33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
     33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
     33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
@@ -9610,18 +10542,18 @@ static RE_UINT8 re_general_category_table_1[] = {
     33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
     33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
     33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
-    63, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
+    64, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
     33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
     33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
     33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 64,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 65,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 64
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 65
 };
 
 static RE_UINT16 re_general_category_table_2[] = {
@@ -9678,83 +10610,85 @@ static RE_UINT16 re_general_category_table_2[] = {
     350, 351, 352, 353, 143, 354, 100, 355, 356, 357, 100, 100,  39, 358, 359, 209,
     360, 361, 362, 363, 364, 100, 365, 366,  39, 367, 368, 369, 370, 371, 100, 100,
      39,  39, 372, 100,  28, 373,  17, 374,  39, 375, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 376,  39, 377, 100, 100, 364, 378, 379, 380, 381, 380, 382, 231,
-    383, 384, 385, 386, 160, 387, 388, 389, 390, 391, 392, 393, 160, 394, 395, 396,
-    397, 398, 100, 100, 399, 400, 401, 402, 403, 404, 405, 406, 100, 100, 100, 100,
-     39, 407, 408, 409,  39, 410, 411, 100, 100, 100, 100, 100,  39, 412, 413, 100,
-     39, 414, 415, 416,  39, 417, 418, 100, 122, 419, 420, 100, 100, 100, 100, 100,
-     39, 421, 100, 100, 100,  28,  17, 422, 423, 424, 425, 100, 100, 426, 427, 428,
-    429, 430, 431,  39, 432, 433,  39, 139, 100, 100, 100, 100, 100, 100, 100, 100,
-    434, 435, 436, 437, 438, 439, 100, 100, 440, 441, 442, 443, 444, 418, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 445, 100, 100, 100, 100, 100, 446, 447, 448,
+    100, 100, 100, 376,  39, 377, 100, 378, 364, 379, 380, 381, 382, 381, 383, 231,
+    384, 385, 386, 387, 160, 388, 389, 390, 391, 392, 393, 394, 160, 395, 396, 397,
+    398, 399, 400, 100, 401, 402, 403, 404, 405, 406, 407, 408, 100, 100, 100, 100,
+     39, 409, 410, 411,  39, 412, 413, 100, 100, 100, 100, 100,  39, 414, 415, 100,
+     39, 416, 417, 418,  39, 419, 420, 100, 122, 421, 422, 100, 100, 100, 100, 100,
+     39, 423, 100, 100, 100,  28,  17, 424, 425, 426, 427, 100, 100, 428, 429, 430,
+    431, 432, 433,  39, 434, 435,  39, 139, 436, 100, 100, 100, 100, 100, 100, 100,
+    437, 438, 439, 440, 441, 442, 100, 100, 443, 444, 445, 446, 447, 420, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 448, 449, 450, 451, 100, 100, 452, 453, 454,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 297, 100, 100, 100,
-    194, 194, 194, 449,  39,  39,  39,  39,  39,  39, 450, 100, 100, 100, 100, 100,
+    194, 194, 194, 455,  39,  39,  39,  39,  39,  39, 456, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 380,  39,  39, 451,
-     39, 452, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 381,  39,  39, 457,
+     39, 458, 459, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
-     39,  39, 420, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+     39,  39, 422, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
-     39, 139, 143, 453,  39, 143, 454, 455,  39, 456, 457, 458, 459, 100, 100, 100,
+     39, 139, 143, 460,  39, 143, 461, 462,  39, 463, 464, 465, 466, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100,  28,  17, 460, 100, 100, 100,  39,  39, 461, 462, 463, 100, 100, 464,
+    100, 100,  28,  17, 467, 100, 100, 100,  39,  39, 468, 469, 470, 100, 100, 471,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
-     39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 465,
+     39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 472,
      39,  39,  39,  39,  39,  39, 142, 100, 372, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 466,
-     39,  39,  39,  39,  39,  39,  39,  39,  39, 467, 468, 469,  39,  39,  39,  39,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 473,
+     39,  39,  39,  39,  39,  39,  39,  39,  39, 474, 475, 476,  39,  39,  39,  39,
      39,  39,  39,  39,  39,  39,  39, 293, 100, 100, 100, 100, 100, 100, 100, 100,
-     39,  39,  39, 470, 471, 472, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+     39,  39,  39, 477, 478, 479, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100,  22, 473, 474, 149, 149, 149, 475, 100,
-    149, 149, 149, 149, 149, 149, 149, 238, 149, 476, 149, 477, 478, 479, 149, 208,
-    149, 149, 480, 100, 100, 100, 100, 481, 149, 149, 482, 483, 100, 100, 100, 100,
-    484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 484, 485, 497,
-    487, 498, 499, 500, 491, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511,
+    100, 100, 100, 100, 100, 100, 100, 100,  22, 480, 481, 149, 149, 149, 482, 100,
+    149, 149, 149, 149, 149, 149, 149, 238, 149, 483, 149, 484, 485, 486, 149, 208,
+    149, 149, 487, 100, 100, 100, 488, 488, 149, 149, 489, 490, 100, 100, 100, 100,
+    491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 491, 492, 504,
+    494, 505, 506, 507, 498, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518,
     149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
-     22, 512,  22, 513, 514, 515, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+     22, 519,  22, 520, 521, 522, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 516, 100, 100, 100, 100, 100, 100, 100,
-    517, 518, 100, 100, 100, 100, 100, 100,  39, 519, 520, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 380, 521,  39, 522, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 523, 524, 100, 100, 100, 100, 100, 100,
+    525, 526, 171, 527, 528, 100, 100, 100,  39, 529, 530, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 381, 531,  39, 532, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 381, 533, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 534,
+     39,  39,  39,  39,  39,  39, 535, 100,  28, 536, 537, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 523,
-     39,  39,  39,  39,  39,  39, 524, 100,  28, 525, 526, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 527, 209, 528, 100, 100, 529, 530, 100, 100, 100, 100, 100, 100,
-    531, 532, 533, 534, 535, 536, 100, 537, 100, 100, 100, 100, 100, 100, 100, 100,
-    149, 538, 149, 149, 237, 539, 540, 238, 541, 149, 149, 149, 149, 542, 100, 543,
-    544, 545, 546, 547, 100, 100, 100, 100, 149, 149, 149, 149, 149, 149, 149, 548,
+    100, 100, 100, 538, 209, 539, 100, 100, 540, 541, 100, 100, 100, 100, 100, 100,
+    542, 543, 544, 545, 546, 547, 100, 548, 100, 100, 100, 100, 100, 100, 100, 100,
+    149, 549, 149, 149, 237, 550, 551, 238, 552, 149, 149, 149, 149, 553, 100, 554,
+    555, 556, 557, 558, 100, 100, 100, 100, 149, 149, 149, 149, 149, 149, 149, 559,
     149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
-    149, 149, 149, 149, 149, 149, 549, 550, 149, 149, 149, 237, 149, 149, 551, 552,
-    538, 149, 553, 149, 554, 555, 100, 100, 149, 149, 149, 149, 149, 149, 149, 149,
-    149, 149, 237, 556, 557, 558, 559, 560, 149, 149, 149, 149, 561, 149, 208, 562,
+    149, 149, 149, 149, 149, 149, 560, 561, 149, 149, 149, 562, 149, 149, 563, 564,
+    549, 149, 565, 149, 566, 567, 100, 100, 149, 149, 149, 149, 149, 149, 149, 149,
+    149, 149, 237, 568, 569, 570, 571, 572, 149, 149, 149, 149, 573, 149, 208, 574,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
      39,  39,  39,  39,  39,  39,  39, 100,  39,  39,  39,  39,  39,  39,  39,  39,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
-     39,  39,  39,  39,  39,  39,  39,  39,  39, 139,  39,  39,  39,  39,  39,  39,
+     39,  39,  39,  39,  39,  39,  39,  39,  39, 297,  39,  39,  39,  39,  39,  39,
     339,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
-     39,  39,  39,  39,  39, 563,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
+     39,  39,  39,  39,  39, 575,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
-     39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 564,
+     39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 576,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
     339, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
-     39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 565, 100, 100, 100, 100, 100,
-    566, 567, 567, 567, 100, 100, 100, 100,  22,  22,  22,  22,  22,  22,  22, 568,
+     39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  53,  39,  39,  39,  39,  39,
+     39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
+     39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39, 466, 100, 100,
+    577, 578, 578, 578, 100, 100, 100, 100,  22,  22,  22,  22,  22,  22,  22, 579,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295,
-    295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 569
+    295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 295, 580
 };
 
 static RE_UINT8 re_general_category_table_3[] = {
@@ -9935,7 +10869,7 @@ static RE_UINT8 re_general_category_table_3[] = {
     24, 24, 24, 24, 24,  0, 22, 24, 24,  0, 24, 24, 22, 22,  0,  0,
      0,  0,  0,  0,  0, 24, 24,  0,  0,  0,  0,  0,  0, 15, 15,  0,
     15, 15, 22, 22,  0,  0,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     0, 15, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 15, 15, 24,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     22, 22, 24, 24, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0, 15, 15,
     15,  0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
@@ -9964,7 +10898,7 @@ static RE_UINT8 re_general_category_table_3[] = {
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15, 15, 15, 15,  0, 15,  0, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15, 22, 15, 15, 22, 22, 22, 22, 22, 22, 22, 22, 22, 15,  0,  0,
-    15, 15, 15, 15, 15,  0, 21,  0, 22, 22, 22, 22, 22, 22,  0,  0,
+    15, 15, 15, 15, 15,  0, 21,  0, 22, 22, 22, 22, 22, 22, 22,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0, 15, 15, 15, 15,
     15, 14, 14, 14,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
      3,  3,  3, 14,  3, 14, 14, 14, 22, 22, 14, 14, 14, 14, 14, 14,
@@ -10514,6 +11448,8 @@ static RE_UINT8 re_general_category_table_3[] = {
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0, 22, 22,  8,  0,  0,
     15, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 22, 22, 22,
     18, 18, 18, 18, 18, 18, 18, 15,  0,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15, 15, 15, 15, 15, 15, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
@@ -10555,7 +11491,9 @@ static RE_UINT8 re_general_category_table_3[] = {
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15, 15,  0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 24, 24, 24, 22,
-    22, 22, 24, 24, 22, 24, 22, 22,  3,  3,  3,  3,  3,  3, 22,  0,
+    22, 22, 24, 24, 22, 24, 22, 22,  3,  3,  3,  3,  3,  3, 22, 15,
+    15, 22,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15,  0, 15,  0, 15, 15, 15, 15,  0, 15,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0, 15,
     15, 15, 15, 15, 15, 15, 15, 15, 15,  3,  0,  0,  0,  0,  0,  0,
@@ -10626,6 +11564,8 @@ static RE_UINT8 re_general_category_table_3[] = {
     22, 22, 22, 22, 22, 22, 22, 24, 22, 22,  3,  3,  3, 15,  3,  3,
      3,  3,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15,  0, 15, 15, 15, 15, 15, 15,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 24,
@@ -10650,6 +11590,12 @@ static RE_UINT8 re_general_category_table_3[] = {
     22, 22,  0, 24, 24, 22, 24, 22, 15,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15, 15, 15, 22, 22, 24, 24,  3,  3,  0,  0,  0,  0,  0,  0,  0,
+    22, 22, 15, 24, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15,  0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 24, 24, 22, 22, 22, 22, 22,  0,  0,  0, 24, 24,
+    22, 24, 22,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
@@ -10662,8 +11608,10 @@ static RE_UINT8 re_general_category_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15,  3,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0,
-    17, 17, 17, 17, 17, 17, 17, 17, 17,  0,  0,  0,  0,  0,  0,  0,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+    22, 15, 15, 15, 15, 15, 15, 22, 22, 22, 22, 22, 22, 22, 22, 22,
+    22, 22, 22, 22, 22, 22,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  3,  3,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
@@ -10693,9 +11641,9 @@ static RE_UINT8 re_general_category_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     21, 21, 21, 21,  0, 21, 21, 21, 21, 21, 21, 21,  0, 21, 21,  0,
     15, 15, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    15, 15, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    15, 15, 15,  0,  0, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0, 15, 15, 15, 15,  0,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0,  0,  0,  0,  0,
@@ -10792,9 +11740,15 @@ static RE_UINT8 re_general_category_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 15, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,
+     0,  0,  0,  0,  0, 13, 13, 13, 13, 13, 13,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     22, 22, 22, 22, 22, 22, 22,  0, 22, 22, 22, 22, 22, 22, 22, 22,
     22, 22, 22, 22, 22, 22, 22, 22, 22,  0,  0, 22, 22, 22, 22, 22,
     22, 22,  0, 22, 22,  0, 22, 22, 22, 22, 22,  0,  0,  0,  0,  0,
+    21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+    21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 22,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0,  0,  0,
     22, 22, 22, 22, 22, 22, 22, 21, 21, 21, 21, 21, 21, 21,  0,  0,
@@ -10804,6 +11758,8 @@ static RE_UINT8 re_general_category_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 22, 22, 22, 22,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  4,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 21, 22, 22, 22, 22,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15,  0, 15, 15, 15, 15,  0, 15, 15,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0,
     15, 15, 15, 15, 15,  0,  0, 18, 18, 18, 18, 18, 18, 18, 18, 18,
@@ -10857,11 +11813,13 @@ static RE_UINT8 re_general_category_table_3[] = {
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 11, 11, 11, 11, 11,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0, 14, 14, 14,
+    14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0, 14, 14, 14, 14,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,
+    14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0, 14, 14, 14, 14, 14,
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,
     14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -10871,15 +11829,15 @@ static RE_UINT8 re_general_category_table_3[] = {
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,
     14, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,
-    14, 14, 14, 14, 14,  0,  0,  0, 14, 14, 14, 14, 14,  0,  0,  0,
-    14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,
-    14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,
-    14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0,
-    14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0, 14,
+    14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0, 14, 14,
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,
+    14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,
+    14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
     14, 14, 14,  0, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -10887,8 +11845,6 @@ static RE_UINT8 re_general_category_table_3[] = {
     15, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
     15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0, 17,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -10931,7 +11887,7 @@ static RE_UINT8 re_graph_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 52, 13, 13, 13, 53, 54, 13,
     13, 13, 13, 55, 13, 13, 13, 13, 13, 13, 56, 17, 17, 17, 57, 17,
-    13, 13, 13, 13, 58, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+    13, 13, 13, 13, 58, 13, 13, 13, 59, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
@@ -10975,18 +11931,18 @@ static RE_UINT8 re_graph_table_1[] = {
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-    59, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+    60, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 60,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 61,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 60
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 61
 };
 
 static RE_UINT16 re_graph_table_2[] = {
@@ -11037,78 +11993,80 @@ static RE_UINT16 re_graph_table_2[] = {
     160, 161, 108,   2,   3, 162,   0, 163, 164, 165,   0,   0,   2, 166, 136,   2,
     167, 168, 169,   2,   2,   0,   2, 170,   2, 171, 172, 173, 174, 175,   0,   0,
       2,   2, 176,   0,   2, 177,   2, 178,   2, 179,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   3,   2, 180,   0,   0,   2,  10,  69, 138, 181, 138, 118,  74,
-      2,   2, 182,  73,   2,   2, 183, 184,   2,  96,  10,  74,   2,   2,   2, 185,
-    186,   3,   0,   0, 187, 152,   2, 188,  20, 189, 190, 191,   0,   0,   0,   0,
-      2,   2, 192, 193,   2,   2, 179,   0,   0,   0,   0,   0,   2, 172,  77,   0,
-      2,   2, 194, 195,   2,  69, 181,   0,  15,  83, 105,   0,   0,   0,   0,   0,
-      2,  53,   0,   0,   0,   2,   2, 196, 197, 198, 199,   0,   0, 200,   4, 201,
-      2,   2,  10,   2,   2, 202,   2,  72,   0,   0,   0,   0,   0,   0,   0,   0,
-    203, 204, 205,  89, 136, 206,   0,   0, 207, 208, 179, 209, 210, 181,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,  72,   0,   0,   0,   0,   0, 211,   2, 212,
+      0,   0,   0,   3,   2, 180,   0, 181,   2,  10,  69, 138, 182, 138, 118,  74,
+      2,   2, 183,  73,   2,   2, 184, 185,   2,  96,  10,  74,   2,   2,   2, 186,
+    187,   2, 188,   0, 189, 152,   2, 190,  20, 191, 192, 193,   0,   0,   0,   0,
+      2,   2, 194, 188,   2,   2, 179,   0,   0,   0,   0,   0,   2, 172,  77,   0,
+      2,   2, 195, 196,   2,  69, 182,   0,  15,  83, 105,   0,   0,   0,   0,   0,
+      2,  53,   0,   0,   0,   2,   2, 197, 198, 199, 200,   0,   0, 201,   4, 202,
+      2,   2,  10,   2,   2, 203,   2,  72, 182,   0,   0,   0,   0,   0,   0,   0,
+    204, 205, 206,  89, 136, 207,   0,   0, 208, 209, 179, 210, 211, 182,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,  72, 212, 213,  69,   0,   0, 214,   2, 215,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  69,   0,   0,   0,
-      2,   2,   2, 213,   2,   2,   2,   2,   2,   2, 214,   0,   0,   0,   0,   0,
+      2,   2,   2, 216,   2,   2,   2,   2,   2,   2, 217,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 138,   2,   2, 177,
-      2, 215,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      2,   2,  79,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2, 105,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
-      2,  72,   3, 216,   2,   3, 152, 217,   2,   2, 218, 219, 220,   0,   0,   0,
+      2,  72,   3, 218,   2,   3, 152, 219,   2,   2, 220, 221, 222,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   2,   2,  94,   0,   0,   0,   2,   2, 221,   2, 222,   0,   0, 223,
+      0,   0,   2,   2,  94,   0,   0,   0,   2,   2, 223,   2, 224,   0,   0, 225,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 119,
       2,   2,   2,   2,   2,   2,  79,   0, 176,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 224,
-      2,   2,   2,   2,   2,   2,   2,   2,   2, 225, 226, 227,   2,   2,   2,   2,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 226,
+      2,   2,   2,   2,   2,   2,   2,   2,   2, 227, 228, 229,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,  53,   0,   0,   0,   0,   0,   0,   0,   0,
-      2,   2,   2, 228, 229, 214,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      2,   2,   2, 230, 231, 217,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   2,  87, 117,   2,   2,   2, 214,   0,
-      2,   2,   2,   2,   2,   2,   2,  79,   2, 230,   2,   2,   2,   2,   2, 106,
-      2,   2, 231,   0,   0,   0,   0,  75,   2,   2,  74,  72,   0,   0,   0,   0,
-      2,   2,  96,   2,  60, 232, 233,   2, 234, 235, 236,   2,   2,   2,   2,   2,
-      2,   2,   2,   2,   2, 237,   2,   2,   2,   2,   2,   2,   2,   2, 238,   2,
+      0,   0,   0,   0,   0,   0,   0,   0,   2,  87, 117,   2,   2,   2, 217,   0,
+      2,   2,   2,   2,   2,   2,   2,  79,   2, 232,   2,   2,   2,   2,   2, 106,
+      2,   2, 233,   0,   0,   0,  75,  75,   2,   2,  74,  72,   0,   0,   0,   0,
+      2,   2,  96,   2,  60, 234, 235,   2, 236, 237, 238,   2,   2,   2,   2,   2,
+      2,   2,   2,   2,   2, 239,   2,   2,   2,   2,   2,   2,   2,   2, 240,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
-      2,   2,   2,   2, 239, 240,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      2,   2,   2,   2, 241, 242,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0,   0,   0,   0,   0,
-    241, 242,   0,   0,   0,   0,   0,   0,   2, 243, 244,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   3, 243,   0,   0,   0,   0,   0,   0,
+    244, 245,   2, 246, 247,   0,   0,   0,   2, 248, 249,   0,   0,   0,   0,   0,
       0,   0,   0,   0, 138,  88,   2, 165,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 138,  69,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 250,
+      2,   2,   2,   2,   2,   2, 251,   0,   2,   2, 252,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 245,
-      2,   2,   2,   2,   2,   2, 246,   0,   2,   2, 247,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0, 248,   2, 249,   0,   0,   1,  77,   0,   0,   0,   0,   0,   0,
-    233, 250, 251, 252, 253, 254,   0, 255,   0,   0,   0,   0,   0,   0,   0,   0,
-      2,  83,   2,   2,  75, 256, 257,  79,   2,   2,   2,   2,   2, 258,   0, 259,
-    202,  53, 260, 231,   0,   0,   0,   0,   2,   2,   2,   2,   2,   2,   2,   2,
+      0,   0,   0, 253,   2, 254,   0,   0,   1,  77,   0,   0,   0,   0,   0,   0,
+    235, 255, 256, 257, 258, 259,   0, 260,   0,   0,   0,   0,   0,   0,   0,   0,
+      2,  83,   2,   2,  75, 261, 262,  79,   2,   2,   2,   2,   2, 246,   0, 263,
+    203,  53, 264, 233,   0,   0,   0,   0,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
-      2,   2,   2,   2,   2,   2, 261, 262,   2,   2,   2,  75,   2,   2,  72, 263,
-     83,   2, 179,   2,  10, 264,   0,   0,   2,   2,   2,   2,   2,   2,   2,   2,
-      2,   2,  75, 265, 117, 266, 267, 268,   2,   2,   2,   2, 139,   2, 106, 269,
+      2,   2,   2,   2,   2,   2, 166, 265,   2,   2,   2, 266,   2,   2,  69, 267,
+     83,   2, 179,   2,  10, 268,   0,   0,   2,   2,   2,   2,   2,   2,   2,   2,
+      2,   2,  75, 269,  93, 150, 270, 169,   2,   2,   2,   2, 139,   2, 106, 271,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   0,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
-      2,   2,   2,   2,   2,   2,   2,   2,   2,  72,   2,   2,   2,   2,   2,   2,
+      2,   2,   2,   2,   2,   2,   2,   2,   2,  69,   2,   2,   2,   2,   2,   2,
      77,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
-      2,   2,   2,   2,   2, 270,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+      2,   2,   2,   2,   2, 272,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 148,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
      77,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
-      2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 106,   0,   0,   0,   0,   0,
-    271,   2,   2,   2,   0,   0,   0,   0,   2,   2,   2,   2,   2,   2,   2, 220,
+      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  18,   2,   2,   2,   2,   2,
+      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+      2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2, 222,   0,   0,
+    273,   2,   2,   2,   0,   0,   0,   0,   2,   2,   2,   2,   2,   2,   2, 222,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  77
@@ -11126,10 +12084,10 @@ static RE_UINT8 re_graph_table_3[] = {
     238, 159, 249, 255, 159,  57, 224, 176, 207, 255, 255,   0, 236, 199,  61, 214,
      24, 199, 255, 195, 199,  61, 129,   0, 192, 255, 255,   7, 255, 223, 253, 255,
     255, 253, 255, 243, 223,  61,  96,  39, 207, 255, 128, 255, 255, 253, 239, 243,
-    223,  61,  96,  96, 207, 255,   6,   0, 223, 253, 240, 255, 207, 255, 255, 255,
+    223,  61,  96,  96, 207, 255,  14,   0, 223, 253, 240, 255, 207, 255, 255, 255,
     238, 255, 127, 252, 255, 255, 251,  47, 127, 132,  95, 255, 192, 255,  28,   0,
     255, 255, 255, 135, 255, 255, 255,  15, 214, 247, 255, 255, 175, 255, 255,  63,
-     95,  63, 255, 243, 255, 254, 255, 255, 255,  31, 254, 255, 255, 255, 255, 254,
+     95, 127, 255, 243, 255, 254, 255, 255, 255,  31, 254, 255, 255, 255, 255, 254,
     255, 255, 255, 223, 255, 223, 255,   7, 191,  32, 255, 255, 255,  61, 127,  61,
     255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 255, 255,  61, 255,
     255, 255, 255,  31, 255, 255, 255,   3, 255, 255,  63,  63, 254, 255, 255,  31,
@@ -11160,29 +12118,30 @@ static RE_UINT8 re_graph_table_3[] = {
     255, 255,  63, 135, 255,   1, 255,   1, 127, 248, 127,   0, 255, 255,  63, 254,
     255, 255,  63, 255, 255, 255,   7, 255, 255, 255,   3,  30,   0, 254,   0,   0,
     255,   1,   0,   0, 255, 255,   7,   0, 255, 255,   7, 252, 255,   0, 255,   3,
-    255,  59,   3,   0, 255,   3,   0,   0, 255,  63, 252, 255,   7,  32, 255, 255,
-    255,   1, 255,   3, 254, 255,  31,   0, 255, 255, 251, 255, 127, 189, 255, 191,
-    255,   7, 255,   3, 255, 253, 237, 251, 159,  57, 129, 224, 207,  31,  31,   0,
-    255, 255, 255, 239,   3,   0,   0,   0,  31,   0, 255,   3, 255,  31,   0,   0,
-    255, 255,   7, 128, 127, 242, 111, 255, 255, 255, 191, 249, 127,   0, 255,   3,
-    255, 252, 255, 255,  31,   0,   0,   0,   7,   0, 255, 255, 255, 253, 255, 255,
-    255, 255, 127, 255,  63,   0, 255, 255, 255, 254, 127,   0, 127, 251, 255, 255,
-    255, 255, 127, 180, 191, 253, 255, 255, 255, 127, 251,   1,   0,   0,   1,   0,
-    255, 255,   3, 128, 255, 127,  31,   0,  15,   0,   0,   0, 255, 127, 255,   1,
-    255, 195, 255, 255, 255,  63,  63,   0,  63,   0, 255, 251, 251, 255, 255, 224,
-    255, 255,   0,   0, 255, 135, 255, 255, 255, 128, 255, 255,  31,   0,   3,   0,
-      0,   0, 239, 111,   7,   0,   0,   0,   0,   0,   7,   0, 240,   0, 255, 255,
-    255,   7, 255,  31, 255,   1, 255, 243, 127, 254, 255, 255,  63,   0,   0,   0,
-    100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,
-     95, 252, 253, 255,  63, 255, 255, 255, 255, 207, 255, 255, 255,  15,   0, 248,
-    254, 255,   0,   0, 127, 255, 255, 249, 219,   7,   0,   0, 255,  31, 255,  63,
-    255, 195,   0,   0, 127, 111, 255, 127, 159, 255, 127,   0, 255,  15, 255, 195,
-      0,   0, 254, 255, 255, 255,  31,   0, 150, 254, 247,  10, 132, 234, 150, 170,
-    150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,   0,   0,   3,   0,
-    255, 127, 254, 255, 254, 255, 254, 255, 255,  63,   0,   0, 192, 255, 255, 255,
-    255,   1,   3,   0, 255, 255, 255, 224, 255,  31, 255,  31, 255,  15,   1,   0,
-    255,  63,   3,   0, 255,  63,  31,  31, 255,  31, 255,   7,  63,   0, 255,   3,
-    255,   0, 127,   0,   0,   0, 255,   3,   3,   0, 255, 255,   2,   0,   0,   0
+    255,  59,   3,   0,   0,   0,   0, 224, 255,   3,   0,   0, 255,  63, 252, 255,
+      7,  32, 255, 255, 255,   1, 255,   3, 254, 255,  31,   0, 255, 255, 251, 255,
+      3,   0,   0,   0, 127, 189, 255, 191, 255,   7, 255,   3, 255, 253, 237, 251,
+    159,  57, 129, 224, 207,  31,  31,   0, 255, 255, 255, 239,  31,   0, 255,   3,
+    255,  31,   0,   0, 255, 255,   7, 128, 127, 242, 111, 255, 255, 255, 191, 249,
+    127,   0, 255,   3, 255, 252, 255, 255,  31,   0,   0,   0,   7,   0, 255, 255,
+    255, 253, 255, 255, 255, 255, 127, 255,  63,   0, 255, 255, 255, 254, 127,   0,
+    127, 251, 255, 255, 255, 255, 127, 180, 191, 253, 255, 255, 255, 127, 251,   1,
+    255, 255, 253, 255, 255, 255, 255, 199,   0,   0,   1,   0, 255, 255,   3, 128,
+    255, 127,  31,   0,  15,   0,   0,   0, 255, 195, 255, 255, 255,  63,  63,   0,
+     63,   0, 255, 251, 251, 255, 255, 224, 255, 255,   0,   0, 255, 135, 255, 255,
+    255, 128, 255, 255,  31,   0,   3,   0,   0,   0, 239, 111,   7,   0,   4,   0,
+      0,   0,  39,   0, 240,   0, 255, 255, 255,   7, 255,  31, 255,   1, 255, 243,
+    127, 254, 255, 255,  63,   0,   0,   0, 100, 222, 255, 235, 239, 255, 255, 255,
+    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255,
+    255, 207, 255, 255, 255,  15,   0, 248, 254, 255,   0,   0, 224,   7,   0,   0,
+    127, 255, 255, 249, 219,   7, 255, 255, 255,  63,   0,   0,   0, 128,   0,   0,
+    255,  31, 255,  63, 255, 195,   0,   0, 127, 111, 255, 127, 159, 255, 127,   0,
+    255,  15, 255, 195,   0,   0, 254, 255, 255, 255,  31,   0, 150, 254, 247,  10,
+    132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,
+      0,   0,   3,   0, 255, 127, 254, 255, 254, 255, 254, 255, 192, 255, 255, 255,
+    255,   1,   3,   0, 255,  31, 255,  31, 255, 255, 127, 248, 255,  15,   1,   0,
+    255,  63,   3,   0, 255,  63, 255,  31,  63, 192, 255,  15,   0,   0, 255,   3,
+      3,   0, 255, 255,   2,   0,   0,   0
 };
 
 RE_UINT32 re_get_graph(RE_UINT32 codepoint) {
@@ -11218,7 +12177,7 @@ static RE_UINT8 re_grapheme_base_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 52, 13, 13, 13, 53, 54, 13,
     13, 13, 13, 55, 13, 13, 13, 13, 13, 13, 56, 17, 17, 17, 57, 17,
-    13, 13, 13, 13, 58, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+    13, 13, 13, 13, 58, 13, 13, 13, 59, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
@@ -11326,65 +12285,65 @@ static RE_UINT16 re_grapheme_base_table_2[] = {
       1,   1, 228,   0,   1, 229,   1, 230,   1, 231,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   2,   1, 232,   0,   0,   1, 206, 233, 189, 234, 189, 156, 144,
     235, 163, 236, 237, 121, 238, 239, 240,  29, 241, 206, 242, 121, 243, 244, 245,
-    246, 247,   0,   0, 248, 149,   2, 249,  45, 250, 251, 252,   0,   0,   0,   0,
+    246, 247, 138,   0, 248, 149,   2, 249,  45, 250, 251, 252,   0,   0,   0,   0,
       1, 163, 253, 254,   1, 255, 256,   0,   0,   0,   0,   0,   1, 257, 201,   0,
       1, 258, 259, 260,   1, 261,  28,   0,  92, 262, 139,   0,   0,   0,   0,   0,
       1, 263,   0,   0,   0,   1,   1, 264, 265, 266, 267,   0,   0, 268, 269, 270,
-    271, 272, 273,   1, 274, 275,   1,  96,   0,   0,   0,   0,   0,   0,   0,   0,
+    271, 272, 273,   1, 274, 275,   1,  96,  28,   0,   0,   0,   0,   0,   0,   0,
     276, 277, 278, 154,  19, 279,   0,   0, 280, 200, 281, 282, 283,  28,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 284,   0,   0,   0,   0,   0, 285,   1, 286,
+      0,   0,   0,   0,   0,   0,   0, 284, 285, 286, 287,   0,   0, 288,   1, 289,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  94,   0,   0,   0,
-      1,   1,   1, 287,   1,   1,   1,   1,   1,   1, 252,   0,   0,   0,   0,   0,
+      1,   1,   1, 290,   1,   1,   1,   1,   1,   1, 252,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 189,   1,   1, 229,
-      1,  27,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      1,  19, 291,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1, 139,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,  96,   2, 288,   1,   2, 149, 289,   1, 290, 291, 292,  19,   0,   0,   0,
+      1,  96,   2, 292,   1,   2, 149, 293,   1, 294, 295, 296,  19,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   1,   1,  92,   0,   0,   0,   1,   1,  26,   1, 293,   0,   0, 294,
+      0,   0,   1,   1,  92,   0,   0,   0,   1,   1,  26,   1, 297,   0,   0, 298,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 163,
       1,   1,   1,   1,   1,   1, 107,   0, 228,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 295,
-      1,   1,   1,   1,   1,   1,   1,   1,   1, 296, 297, 298,   1,   1,   1,   1,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 299,
+      1,   1,   1,   1,   1,   1,   1,   1,   1, 300, 301, 302,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1, 181,   0,   0,   0,   0,   0,   0,   0,   0,
-      1,   1,   1, 299, 300,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1, 303, 304,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 189,   1,   1,   1, 252,   0,
-      1,   1,   1,   1,   1,   1,   1, 107,   1, 301,   1, 302, 303, 288,   1,  15,
-      1,   1, 304,   0,   0,   0,   0, 147,   1,   1, 144,  96,   0,   0,   0,   0,
-      1,   1, 132,   1, 305, 306, 307,   1, 308, 309, 310,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1, 311,   1,   1,   1,   1,   1,   1,   1,   1, 312,   1,
+      1,   1,   1,   1,   1,   1,   1, 107,   1, 305,   1, 306, 307, 292,   1,  15,
+      1,   1, 308,   0,   0,   0, 147, 147,   1,   1, 144,  96,   0,   0,   0,   0,
+      1,   1, 132,   1, 309, 310, 311,   1, 312, 313, 314,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1, 315,   1,   1,   1,   1,   1,   1,   1,   1, 316,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      0, 313,   0, 314, 315,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0, 317,   0, 318, 319,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   1, 316, 317,   0,   0,   0,   0,   0,
-      0,   0,   0,   0, 189, 116,   1, 318,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   2, 320,   0,   0,   0,   0,   0,   0,
+      0, 189,   1, 116,   0,   0,   0,   0,   1, 321, 322,   0,   0,   0,   0,   0,
+      0,   0,   0,   0, 189, 116,   1, 323,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 189, 324,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 325,
+      1,   1,   1,   1,   1,   1, 326,   0,   1,   1, 327,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 319,
-      1,   1,   1,   1,   1,   1, 320,   0,   1,   1, 321,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0, 322,   1, 323,   0,   0,  69, 131,   0,   0,   0,   0,   0,   0,
-    307, 324, 325, 326, 327, 328,   0, 329,   0,   0,   0,   0,   0,   0,   0,   0,
-      1, 111,   1,   1, 147, 330, 331, 107,   1,   1,   1,   1,   1, 116,   0, 332,
-    275, 181, 333, 334,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,
+      0,   0,   0, 328,   1, 329,   0,   0,  69, 131,   0,   0,   0,   0,   0,   0,
+    311, 330, 331, 332, 333, 334,   0, 335,   0,   0,   0,   0,   0,   0,   0,   0,
+      1, 111,   1,   1, 147, 336, 337, 107,   1,   1,   1,   1,   1, 116,   0, 338,
+    275, 181, 339, 340,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1, 335, 336,   1,   1,   1, 147,   1,   1,  96, 337,
-    111,   1, 338,   1, 206, 339,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1, 147, 340, 155, 341, 342, 343,   1,   1,   1,   1, 191,   1,  15, 190,
+      1,   1,   1,   1,   1,   1, 219, 341,   1,   1,   1, 150,   1,   1,  94, 342,
+    111,   1, 343,   1, 206, 344,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1, 147, 345, 126, 203, 346, 221,   1,   1,   1,   1, 191,   1,  15, 190,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   0,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,  96,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,  94,   1,   1,   1,   1,   1,   1,
     131,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
@@ -11394,7 +12353,9 @@ static RE_UINT16 re_grapheme_base_table_2[] = {
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
     131,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  15,   0,   0,   0,   0,   0
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  26,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  19,   0,   0
 };
 
 static RE_UINT8 re_grapheme_base_table_3[] = {
@@ -11413,7 +12374,7 @@ static RE_UINT8 re_grapheme_base_table_3[] = {
     195, 255, 255,   0, 232, 199,  61, 214,  24, 199, 255, 131, 198,  29,   1,   0,
     192, 255, 255,   7, 238, 223, 253, 255, 255, 253, 255,  35,  30,   0,   0,  39,
     195, 255, 128, 255, 253, 223, 253, 255, 255, 253, 239,  99, 155,  13,   0,  96,
-    195, 255,   6,   0, 252, 223, 253, 255, 255, 255, 255, 167, 193, 221, 112, 255,
+    195, 255,  14,   0, 252, 223, 253, 255, 255, 255, 255, 167, 193, 221, 112, 255,
     195, 255, 255, 255, 236, 255, 127, 252, 255, 255, 251,  47, 127,   0,   3, 127,
     192, 255,  28,   0, 254, 255, 255, 255, 255, 255,  13, 128, 127, 128, 255,  15,
     214, 247, 255, 255, 175, 255,  13,  32,  95,   0, 255, 243, 255, 255, 255, 252,
@@ -11459,7 +12420,7 @@ static RE_UINT8 re_grapheme_base_table_3[] = {
     255,  35,   3,   0,  63,   0, 254,   3, 195,   3,   0,   0, 253, 255, 255, 255,
     128,  63, 252, 255, 255, 255,  38,   0, 255, 255, 135, 217,   3,   0, 255, 255,
     255,   1, 255,   3, 127,  16, 192, 255, 255, 255, 119,   0, 255, 255,  63, 128,
-    255,  97, 255, 255, 254, 255,  31,   0, 255, 255, 251, 255, 255, 127,  44,  63,
+    255,  97, 255, 255, 254, 255,  31,   0, 255, 255, 251, 255, 255, 127,  44, 191,
     127, 189, 255, 191,   7,   0, 255,   3, 255, 253, 237, 163, 158,  57,   1, 224,
      15,   0,   0,   0, 163, 255, 255, 175,   3,   0,   0,   0, 255, 255,   6,  90,
     242,   0, 255,   3, 255, 127,   3,  79, 255, 255,   7,  88,  30,   0, 255,   3,
@@ -11469,21 +12430,22 @@ static RE_UINT8 re_grapheme_base_table_3[] = {
     255, 255,   7, 134, 127,   0, 129, 241, 255,   3, 128, 252,   7,   0, 255, 255,
     255, 253, 255, 255, 255, 255,   0,  64,  63,   0, 255, 255,   0,   2,  18,   0,
     127, 251, 255, 255,  64,   0, 255,   3, 191, 253, 255, 255, 255, 127,  88,   1,
-    255, 255, 231,   1,   0,   0,   1,   0, 255, 255,   3, 128, 255, 127,  31,   0,
+    255, 255, 231,   1, 252, 255, 253, 255, 255, 255,  63, 192, 250, 255, 255,   3,
+      0,   0,   1,   0, 255, 255,   3, 128, 255, 127,  31,   0, 126,   0,   0,   0,
     255, 195, 255, 255, 255,  63,  32,   0, 255, 255, 128, 255,  63,   0, 255, 251,
     251, 255, 255, 224, 255,   0, 248, 255,  15,   0,   3,   0,   0,   0, 239, 111,
-      7,   0,   0,   0,   0,   0,   7,   0, 240,   0, 255, 255, 255,   7, 255,  31,
+      7,   0,   4,   0,   0,   0,  39,   0, 240,   0, 255, 255, 255,   7, 255,  31,
     255,   1, 255, 147, 127, 254, 255, 255,  95,  60,   0,   0,  24, 240, 255, 255,
      35,   0,   0,   0, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255,
     191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255,
     255, 207, 255, 255,   0,   0, 128,   7,   0, 224, 223, 255, 239,  15,   0,   0,
-    255,  31, 128,  63, 255, 195,   0,   0, 255,  15, 255, 131, 127, 111, 255, 127,
-    159, 255,   0,   0,  15,   8, 255, 195,   0,   0, 254, 255, 255, 255,  31,   0,
-    150, 254, 247,  10, 132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15,
-    238, 251, 255,  15,   0,   0,   3,   0, 255, 127, 254, 255, 254, 255, 254, 255,
-    192, 255, 255, 255, 255,   1,   3,   0,  63,   0,   0,   0, 255, 255, 255, 224,
-    255,  31, 255,  31, 255,  15,   1,   0, 255,   0, 255,   3, 255,  63,   3,   0,
-    255,  63,  31,  31, 255,  31, 255,   7,  63,   0, 255,   3, 255,   0, 127,   0
+    224,   7,   0,   0, 255,  31, 128,  63, 255, 195,   0,   0, 255,  15, 255, 131,
+    255,  15, 255,   3, 127, 111, 255, 127, 159, 255,   0,   0,  15,   8, 255, 195,
+      0,   0, 254, 255, 255, 255,  31,   0, 150, 254, 247,  10, 132, 234, 150, 170,
+    150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,   0,   0,   3,   0,
+    255, 127, 254, 255, 254, 255, 254, 255, 192, 255, 255, 255, 255,   1,   3,   0,
+     63,   0,   0,   0, 255,  31, 255,  31, 255,  15,   1,   0, 255,   0, 255,   3,
+    255,  63,   3,   0, 255,  63, 255,  31,  63, 192, 255,  15
 };
 
 RE_UINT32 re_get_grapheme_base(RE_UINT32 codepoint) {
@@ -11514,7 +12476,7 @@ static RE_UINT8 re_grapheme_cluster_break_table_1[] = {
     24,  9, 25, 26, 27, 28, 29, 30,  9,  9,  9,  9,  9, 31,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 32, 33,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 34,
-     9,  9,  9, 35, 36,  9, 37,  9, 38,  9, 39,  9, 40,  9,  9,  9,
+     9,  9,  9, 35, 36,  9, 37,  9, 38, 39, 40,  9, 41,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -11563,7 +12525,7 @@ static RE_UINT8 re_grapheme_cluster_break_table_1[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-    41, 42, 42, 42,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    42, 43, 43, 43,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -11584,83 +12546,85 @@ static RE_UINT8 re_grapheme_cluster_break_table_2[] = {
      11,   1,  12,  13,   1,   1,  14,  15,  16,  17,  18,   1,   1,  19,   1,  20,
      21,  22,  23,   1,  24,   1,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,
      35,  36,  37,  38,  35,  36,  39,  40,  31,  41,  42,  30,  43,  44,  45,   1,
-     46,  41,  47,  30,  31,  48,  49,  30,  50,  51,  52,  30,  31,   1,  53,  54,
-      1,  55,  56,   1,   1,  57,  58,   1,  59,  60,   1,  61,  62,  63,  64,   1,
-      1,  65,  66,  67,  68,   1,   1,   1,  69,  69,  69,  70,  70,  71,  72,  72,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  73,   1,   1,   1,   1,   1,
+     46,  41,  47,  30,  31,  48,  49,  50,  51,  52,  53,  30,  31,   1,  54,  55,
+      1,  56,  57,   1,   1,  58,  59,   1,  60,  61,   1,  62,  63,  64,  65,   1,
+      1,  66,  67,  68,  69,   1,   1,   1,  70,  70,  70,  71,  71,  72,  73,  73,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  74,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,  74,  75,  76,  76,   1,  77,  78,   1,
-     79,   1,   1,   1,  80,  81,   1,   1,   1,  82,   1,   1,   1,   1,   1,   1,
-     83,   1,  84,  85,   1,  17,  86,   1,  87,  88,  89,  90,  91,  92,   1,  93,
-      1,  94,   1,   1,   1,   1,  95,  96,   1,   1,   1,   1,   1,   1,   5,   5,
+      1,   1,   1,   1,   1,   1,   1,   1,  75,  76,  77,  77,   1,  78,  79,   1,
+     80,   1,   1,   1,  81,  82,   1,   1,   1,  83,   1,   1,   1,   1,   1,   1,
+     84,   1,  85,  86,   1,  17,  87,   1,  88,  89,  90,  91,  92,  93,   1,  94,
+      1,  95,   1,   1,   1,   1,  96,  97,   1,   1,   1,   1,   1,   1,   5,   5,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-     97,  98,   1,  99,   1,   1,  17, 100,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1, 101,   1,   1,   1, 102,   1,   1,   1,   5,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1, 103,   1,   1, 104,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+     98,  99,   1, 100,   1,   1,  17, 101,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1, 105, 106,   1,   1, 107,   1,   1,   1,   1,   1,   1,   1,   1,
-    108, 109,   1,   1, 110, 111, 112, 113,   1, 114, 115, 116,  27, 117, 118, 119,
-      1, 120, 121, 122,   1, 123, 124, 125,   1,   1,   1,   1,   1,   1,   1, 126,
-    127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128,
-    129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130,
-    131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132,
-    133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127,
-    128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129,
-    130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131,
-    132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133,
-    127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128,
-    129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130,
-    131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132,
-    133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127,
-    128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129,
-    130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131,
-    132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133,
-    132, 133, 127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 133,
-    127, 128, 129, 130, 131, 132, 133, 127, 128, 129, 130, 131, 132, 134, 135, 136,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1, 137,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1, 102,   1,   1,   1, 103,   1,   1,   1,   5,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      6,   6,   1,   1,   1,   1,   1,   2,   1,   1,   1,   1, 106,   1,   1, 138,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 139,
-      1,   1,   1,   1,   1,   1,   1, 140,   1,   1,   1, 141,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    142, 143,   1,   1,   1,   1,   1,  80,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1, 144,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1, 145,   1,   1,   1,   1,  19,   1, 146,   1,   1,   1,
-    147, 148, 149, 150,  91, 151, 152,   1, 153, 154, 155, 156,  91, 157, 158,   1,
-      1, 159,   1,   1,   1,   1, 102, 160,  50,  51, 161, 162,   1,   1,   1,   1,
-      1, 163, 164,   1,   1, 165, 166,   1,   1,   1,   1,   1,   1, 167, 168,   1,
-      1, 169, 140,   1,   1, 170,   1,   1,  73, 171,   1,   1,   1,   1,   1,   1,
-      1, 172,   1,   1,   1,   1,   1,   1,   1, 173, 174,   1,   1,   1, 175, 176,
-    177, 178, 179,   1, 180,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1, 181,   1,   1, 182, 183,   1,   1,   1, 184, 185,   1, 186,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1, 187,   1,   1,   1,   1,   1,   1,   1,   1,
-      1, 188,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1, 104,   1,   1, 105,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1, 189,   1, 190,   1,   1,   1,   1,   1,   1,
+      1,   1,   1, 106, 107,   1,   1, 108,   1,   1,   1,   1,   1,   1,   1,   1,
+    109, 110,   1,   1, 111, 112, 113, 114,   1, 115, 116, 117,  27, 118, 119, 120,
+      1, 121, 122, 123,   1, 124, 125, 126,   1,   1,   1,   1,   1,   1,   1, 127,
+    128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129,
+    130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131,
+    132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133,
+    134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128,
+    129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130,
+    131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132,
+    133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134,
+    128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129,
+    130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131,
+    132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133,
+    134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128,
+    129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130,
+    131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132,
+    133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134,
+    133, 134, 128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 134,
+    128, 129, 130, 131, 132, 133, 134, 128, 129, 130, 131, 132, 133, 135, 136, 137,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 191, 192, 193,   1,   1, 194,
-      1,   1,   1,   1, 195, 196,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1, 138,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      6,   6,   1,   1,   1,   1,   1,   2,   1,   1,   1,   1, 107,   1,   1, 139,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 140,
+      1,   1,   1,   1,   1,   1,   1, 141,   1,   1,   1, 142,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+    143, 144,   1,   1,   1,   1,   1,  81,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1, 145,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1, 146,   1,  74,   1,   1,  19,   1, 147,   1,   1,   1,
+    148, 149, 150, 151,  92, 152, 153,   1, 154, 155, 156, 157,  92, 158, 159,   1,
+      1, 160, 125,   1,   1,   1, 103, 161,  51,  52, 162, 163,   1,   1,   1,   1,
+      1, 164, 165,   1,   1, 166, 167,   1,   1,   1,   1,   1,   1, 168, 169,   1,
+      1, 170, 141,   1,   1, 171,   1,   1,  74, 172,   1,   1,   1,   1,   1,   1,
+      1, 173,   1,   1,   1,   1,   1,   1,   1, 174, 175,   1,   1,   1, 176, 177,
+    178, 179, 180,   1, 181,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1, 182,   1,   1, 183, 184,   1,   1,   1, 185, 186,   1, 187,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1, 188, 189, 190, 191,   1,   1,   1,   1,   1,
+      1, 192, 193,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   5, 197, 149,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 198, 199, 200,   1,   1,
-      1,   1, 201,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1, 194,   1, 195,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      5, 202,   5, 203, 204, 205,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    206, 207,   1,   1,   1,   1,   1,   1,   1, 190,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1, 208,   1, 209,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1, 190,   1,   1,   1, 210,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 196, 197, 198,   1,   1, 199,
+      1,   1,   1,   1, 200, 201,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 211,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 212,
-      3,   5,   5,   5,   3,   3,   3,   3,   5,   5,   5,   5,   5,   5,   5, 213,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   5, 202, 150,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 203, 204, 205,   1,   1,
+      1,   1, 206,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      5, 207,   5, 208, 209, 210,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+    211, 212,   1,   1, 213,   1,   1,   1,   1, 195,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1, 214,   1, 215,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1, 215,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1, 195,   1,   1,   1, 216,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 217,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 218,
+      3,   5,   5,   5,   3,   3,   3,   3,   5,   5,   5,   5,   5,   5,   5, 219,
       3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,
       3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,
       3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3
@@ -11767,6 +12731,8 @@ static RE_UINT8 re_grapheme_cluster_break_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  0,  6,  4,
      6,  6,  4,  6,  6,  0,  4,  6,  6,  0,  6,  6,  4,  4,  0,  0,
      0,  0,  0,  0,  0,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      4,  4,  6,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -11783,7 +12749,7 @@ static RE_UINT8 re_grapheme_cluster_break_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  4,  0,  6,  4,  4,  4,  4,  4,  4,  4,  4,  4,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  4,  4,  4,  4,  4,  4,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  4,  4,  4,  4,  4,  4,  4,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  4,  4,  0,  0,  0,  0,  0,  0,
@@ -12043,8 +13009,16 @@ static RE_UINT8 re_grapheme_cluster_break_table_3[] = {
      4,  4,  0,  6,  6,  4,  6,  4,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  4,  4,  6,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     4,  4,  5,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  6,  6,  4,  4,  4,  4,  4,  0,  0,  0,  6,  6,
+     4,  6,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     4,  0,  0,  0,  0,  0,  0,  4,  4,  4,  4,  4,  4,  4,  4,  4,
+     4,  4,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      4,  4,  4,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -12083,6 +13057,8 @@ static RE_UINT8 re_grapheme_cluster_break_table_3[] = {
      4,  4,  4,  4,  4,  4,  4,  4,  4,  0,  0,  4,  4,  4,  4,  4,
      4,  4,  0,  4,  4,  0,  4,  4,  4,  4,  4,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  4,  4,  4,
@@ -12120,10 +13096,10 @@ static RE_UINT8 re_grapheme_extend_table_1[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9, 12, 13,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 14, 15,
-    16,  9, 17, 18, 19, 20, 21, 22,  9,  9,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 23, 24,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 25,
-     9,  9,  9, 26, 27,  9, 28,  9, 29,  9, 30,  9,  9,  9,  9,  9,
+    16,  9, 17, 18, 19, 20, 21, 22,  9,  9,  9,  9,  9, 23,  9,  9,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 24, 25,  9,  9,  9,  9,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 26,
+     9,  9,  9, 27, 28,  9, 29,  9, 30, 31, 32,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -12172,7 +13148,7 @@ static RE_UINT8 re_grapheme_extend_table_1[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-    31,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    33,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -12224,30 +13200,34 @@ static RE_UINT8 re_grapheme_extend_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     109, 110,   0,   0,   0,   0,   0,  69,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0, 111,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 112,   0,   0,   0,   0,  15,   0, 113,   0,   0,   0,
+      0,   0,   0,   0,   0, 112,   0,  63,   0,   0,  15,   0, 113,   0,   0,   0,
      27,  20, 114, 115,  46, 116,  39,   0,  23, 117,   0, 118,  46, 119, 120,   0,
-      0, 121,   0,   0,   0,   0,  87, 122,  46,  47, 123, 124,   0,   0,   0,   0,
+      0, 121,  27,   0,   0,   0,  87, 122,  46,  47, 123, 124,   0,   0,   0,   0,
       0,  20, 125,   0,   0, 126, 127,   0,   0,   0,   0,   0,   0, 128, 129,   0,
       0, 130, 107,   0,   0, 131,   0,   0,  63, 132,   0,   0,   0,   0,   0,   0,
       0, 133,   0,   0,   0,   0,   0,   0,   0, 134, 135,   0,   0,   0, 136, 107,
     137, 138, 139,   0, 140,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0, 141,   0,   0, 142, 143,   0,   0,   0, 144, 145,   0, 146,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 147,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 148,   0, 149,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 150,   0, 151,   0,   0, 152,
-      0,   0,   0,   0, 153,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 147,  46, 108, 148,   0,   0,   0,   0,   0,
+      0,   0, 149,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   1, 154, 114,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 155, 156, 157,   0,   0,
-      0,   0, 158,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 150,   0, 151,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      1, 159,   1, 160, 161, 162,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    163, 164,   0,   0,   0,   0,   0,   0,   0, 149,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 165,   0, 166,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0, 149,   0,   0,   0, 167,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 152,   0, 153,   0,   0, 154,
+      0,   0,   0,   0, 155,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   1, 156, 114,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 157, 158, 159,   0,   0,
+      0,   0, 160,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      1, 161,   1, 162, 163, 164,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    165, 166,   0,   0, 152,   0,   0,   0,   0, 151,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0, 167,   0, 168,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 168,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 151,   0,   0,   0, 169,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   1,   1,   1,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   2,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
@@ -12267,7 +13247,7 @@ static RE_UINT8 re_grapheme_extend_table_3[] = {
       0,   0,   0,  64,   1,  32, 128,   0,  17,   0,   0,   0, 193,  61,  96,   0,
       0,   0,   0, 144,  68,  48,  96,   0,   3,   0,   0,   0,   0,   0,   0,  88,
       0, 132,  92, 128,   0,   0, 242,   7, 128, 127,   0,   0,   0,   0, 242,  31,
-      0,  63,   0,   0,   0,   0,   0,   3,   0,   0, 160,   2,   0,   0, 254, 127,
+      0, 127,   0,   0,   0,   0,   0,   3,   0,   0, 160,   2,   0,   0, 254, 127,
     223, 224, 255, 254, 255, 255, 255,  31,  64,   0,   0,   0,   0, 224, 253, 102,
       0,   0,   0, 195,   1,   0,  30,   0, 100,  32,   0,  32,   0,   0,   0, 224,
       0,   0,  28,   0,   0,   0,  12,   0,   0,   0, 176,  63,  64, 254,  15,  32,
@@ -12291,11 +13271,12 @@ static RE_UINT8 re_grapheme_extend_table_3[] = {
       0,   0, 240,  12, 254,   7,   0,   0,   0,   0, 248, 121, 128,   0, 126,  14,
       0, 252, 127,   3,   0,   0, 127, 191,   0,   0, 252, 255, 255, 252, 109,   0,
       0,   0, 126, 180, 191,   0,   0,   0,   0,   0, 163,   0,   0,   0,  24,   0,
-      0,   0,  31,   0,   0,   0, 127,   0,   0, 128,   0,   0,   0, 128,   7,   0,
-     16,   0,   0,   0,   0,   0,   0,  96, 255,  63, 255, 255, 160, 195,   7, 248,
-    231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0, 255, 255, 127, 248,
-    255,  31,  32,   0,  16,   0,   0, 248, 254, 255,   0,   0, 127, 255, 255, 249,
-    219,   7,   0,   0,   0,  64,   0,   0,   0, 240,   0,   0, 240,   7,   0,   0
+      5,   0,   0,   0, 129, 255,  63,   0,   0,   0,  31,   0,   0,   0, 127,   0,
+      0, 128,   0,   0,   0, 128,   7,   0,  16,   0,   0,   0,   0,   0,   0,  96,
+    255,  63, 255, 255, 160, 195,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0,
+     28,   0,   0,   0, 255, 255, 127, 248, 255,  31,  32,   0,  16,   0,   0, 248,
+    254, 255,   0,   0, 127, 255, 255, 249, 219,   7,   0,   0,   0,  64,   0,   0,
+      0, 240,   0,   0, 240,   7,   0,   0
 };
 
 RE_UINT32 re_get_grapheme_extend(RE_UINT32 codepoint) {
@@ -12415,7 +13396,7 @@ static RE_UINT8 re_grapheme_link_table_2[] = {
      0, 19,  0,  0,  0,  0,  0,  0,  0, 24,  0,  0,  0,  0,  0, 10,
      0,  8, 25,  0, 19,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0, 13,  0,  0,  0,  0,  0,  0,  0,  0, 26,  0, 27,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 28,  0,  0,  0,  0,  0
 };
 
 static RE_UINT8 re_grapheme_link_table_3[] = {
@@ -12425,7 +13406,8 @@ static RE_UINT8 re_grapheme_link_table_3[] = {
       0,   0,  12,   0,   0,   0,   0, 128,  64,   0,   0,   0,   0,  16,   0,   0,
       0,   0,   8,   0,   0,   0,  64,   0,   0,   0,   1, 128,   0,   0,   0,   2,
       0,   0,  24,   0,   0,   0,  32,   0,   4,   0,   0,   0,   0,   8,   0,   0,
-      0,   0,   0,  96, 128,   0,   0,   0,  48,   0,   0,   0,   0,   0, 128,   0
+      0,   0,   0,  96, 128,   0,   0,   0,  48,   0,   0,   0,   0,   0, 128,   0,
+      6,   0,   0,   0
 };
 
 RE_UINT32 re_get_grapheme_link(RE_UINT32 codepoint) {
@@ -12855,7 +13837,7 @@ static RE_UINT8 re_id_continue_table_1[] = {
     12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
     12, 12, 12, 12, 12, 12, 12, 12, 12, 49, 12, 12, 12, 50, 51, 12,
     12, 12, 12, 52, 12, 12, 12, 12, 12, 12, 53,  9,  9,  9, 54,  9,
-    12, 12, 12, 12, 55,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    12, 12, 12, 12, 55, 12, 12, 12, 56,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -12899,7 +13881,7 @@ static RE_UINT8 re_id_continue_table_1[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-    56,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    57,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -12959,73 +13941,75 @@ static RE_UINT16 re_id_continue_table_2[] = {
     190, 191, 102, 134, 103,   0,   0, 192, 102, 163,   0,   0,   6, 193,   0,   0,
     194, 195,   0,  77,  77,   0,  74, 196,   6, 102, 102, 197,  26,   0,   0,   0,
       6,   6, 131,   0,   6, 197,   6, 197,   6, 198,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   6, 199,   0,   0,  77, 200, 179,  24, 201,  24, 202, 134,
-      6,   6, 196, 203,   6,  67, 204, 205,   6, 206, 207, 208,   6,   6, 209,   0,
-    210, 211,   0,   0, 212, 117,   6, 213,  33, 214, 215, 216,   0,   0,   0,   0,
-      6,   6, 217, 218,   6,   6, 219,   0,   0,   0,   0,   0,   6, 220, 221,   0,
+      0,   0,   0,   0,   6, 199,   0, 200,  77, 201, 179,  24, 202,  24, 203, 134,
+      6,   6, 196, 204,   6,  67, 205, 206,   6, 207, 208, 209,   6,   6, 210,   0,
+    211, 193, 212,   0, 213, 117,   6, 214,  33, 215, 216, 217,   0,   0,   0,   0,
+      6,   6, 218, 212,   6,   6, 219,   0,   0,   0,   0,   0,   6, 220, 221,   0,
       6,   6, 222,   0,   6, 101,  99,   0,  88, 223, 196,   0,   0,   0,   0,   0,
       6,  67,   0,   0,   0,   6,   6, 224, 225, 226, 227,   0,   0, 228, 229, 230,
-      6, 103, 200,   6, 231,  24,   6, 101,   0,   0,   0,   0,   0,   0,   0,   0,
+      6, 103, 201,   6, 231,  24,   6, 101,   0,   0,   0,   0,   0,   0,   0,   0,
     232,   5, 233, 148, 168, 234,   0,   0, 235, 236, 198, 237, 238,  99,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 134,   0,   0,   0,   0,   0, 239,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 134, 239, 240, 241,   0,   0, 242,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 163,   0,   0,   0,
-      6,   6,   6, 112,   6,   6,   6,   6,   6,   6, 240,   0,   0,   0,   0,   0,
+      6,   6,   6, 112,   6,   6,   6,   6,   6,   6, 243,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  24,   6,   6, 179,
-      6, 112,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6,  90, 102,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6, 196,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6, 101, 103,  79,   6, 103,  79, 106,   6, 134, 227, 241,  90,   0,   0,   0,
+      6, 101, 103,  79,   6, 103,  79, 106,   6, 134, 227, 244,  90,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   6,   6,   0,   0,   0,   0,   6,   6, 242,   6, 243,   0,   0, 244,
+      0,   0,   6,   6,   0,   0,   0,   0,   6,   6, 245,   6, 246,   0,   0, 247,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 115,
       6,   6,   6,   6,   6,   6, 102,   0, 131,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 245,
-      6,   6,   6,   6,   6,   6,   6,   6,   6, 246, 247, 207,   6,   6,   6,   6,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 248,
+      6,   6,   6,   6,   6,   6,   6,   6,   6, 249, 250, 208,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,  29,   0,   0,   0,   0,   0,   0,   0,   0,
-      6,   6,   6, 248, 249,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6,   6,   6, 251, 252,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   6, 152, 196,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 250, 251, 252,   0,   0,
-      0,   0, 253,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      6,   6, 206,   6, 254, 255, 256,   6, 257, 258, 259,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6, 260, 261,  82, 206, 206, 262, 262, 232, 232, 263,   6,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 253, 254, 255,   0,   0,
+      0,   0, 256,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6,   6, 207,   6, 257, 258, 259,   6, 260, 261, 262,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6, 263, 264,  82, 207, 207, 265, 265, 232, 232, 266,   6,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      6, 264,   6, 265, 266, 267,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6, 267,   6, 268, 269, 270,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 103,   0,   0,   0,   0,   0,   0,   0,
-    268, 269,   0,   0,   0,   0,   0,   0,   6, 270, 271,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 103, 271,   0,   0,   0,   0,   0,   0,
+    272, 273,   6,  28, 274,   0,   0,   0,   6, 275, 276,   0,   0,   0,   0,   0,
       0,   0,   0,   0,  24, 112,   6, 163,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,  24, 163,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 277,
+      6,   6,   6,   6,   6,   6, 278,   0,   6,   6, 223,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 272,
-      6,   6,   6,   6,   6,   6, 273,   0,   6,   6, 223,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    256, 274, 275, 276, 277, 278,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    259, 279, 280, 281, 282, 283,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   0,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6,   6,   6,   6,   6, 101,   6,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6,   6,   6,   6,   6, 163,   6,   6,   6,   6,   6,   6,
      80,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6, 279,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6, 284,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 180,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
      80,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 280,   0,   0,   0,   0,   0,
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  30,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  90,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   6,   6,   6,   6,  90,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
@@ -13045,10 +14029,10 @@ static RE_UINT8 re_id_continue_table_3[] = {
     207, 255,   0, 254, 238, 159, 249, 255, 159,  57, 224, 176, 207, 255,   2,   0,
     236, 199,  61, 214,  24, 199, 255, 195, 199,  61, 129,   0, 192, 255,   0,   0,
     255, 223, 253, 255, 255, 253, 255, 243, 223,  61,  96,  39, 207, 255,   0,   0,
-    239, 223, 253, 255, 255, 253, 239, 243, 223,  61,  96,  96, 207, 255,   6,   0,
+    239, 223, 253, 255, 255, 253, 239, 243, 223,  61,  96,  96, 207, 255,  14,   0,
     223, 125, 240, 128, 207, 255,   0, 252, 238, 255, 127, 252, 255, 255, 251,  47,
     127, 132,  95, 255, 192, 255,  12,   0, 254, 255, 255, 255, 255, 255, 255,   7,
-    255, 127, 255,   3, 214, 247, 255, 255, 175, 255, 255,  63,  95,  63, 255, 243,
+    255, 127, 255,   3, 214, 247, 255, 255, 175, 255, 255,  63,  95, 127, 255, 243,
       1,   0,   0,   3, 255,   3, 160, 194, 255, 254, 255, 255, 255,  31, 254, 255,
     223, 255, 255, 254, 255, 255, 255,  31,  64,   0,   0,   0, 255,   3, 255, 255,
     255, 255, 255,  63, 191,  32, 255, 255, 255, 255, 255, 247, 255,  61, 127,  61,
@@ -13081,27 +14065,28 @@ static RE_UINT8 re_id_continue_table_3[] = {
     191, 255, 255, 255, 255, 255, 253,   7,  63, 253, 255, 255, 255, 255, 191, 145,
     255, 255,  55,   0, 255, 255, 255, 192, 111, 240, 239, 254, 255, 255,  63, 135,
     127,   0,   0,   0, 255, 255,   7,   0, 255,   0, 255,   3, 255,  27,   3,   0,
-    128,   0, 255, 255,  63,   0,   0,   0,  31,   0,   0,   0, 192, 255,  63, 128,
-      4,   0, 255, 255, 255,   1, 255,   3, 255, 255, 223, 255, 240,   0, 255, 255,
-    255, 255,  79,   0,  31, 222, 255,  23, 255, 255, 251, 255, 255, 255, 255,  64,
-    127, 189, 255, 191, 255,   7, 255,   3, 255, 253, 237, 251, 159,  57, 129, 224,
-    207,  31,  31,   0, 255,   7, 255, 195,   3,   0,   0,   0, 191,   0, 255,   3,
+      0,   0,   0, 224, 128,   0, 255, 255,  63,   0,   0,   0,  31,   0,   0,   0,
+    192, 255,  63, 128,   4,   0, 255, 255, 255,   1, 255,   3, 255, 255, 223, 255,
+    240,   0, 255, 255, 255, 255,  79,   0,  31, 222, 255,  23, 255, 255, 251, 255,
+      3,   0,   0,   0, 127, 189, 255, 191, 255,   7, 255,   3, 255, 253, 237, 251,
+    159,  57, 129, 224, 207,  31,  31,   0, 255,   7, 255, 195, 191,   0, 255,   3,
     255, 255,  63, 255,   1,   0,   0,  63,  17,   0, 255,   3, 255,  15, 255,   3,
     255,   3,   0, 128, 127, 242, 111, 255, 255, 255, 191, 249,  15,   0, 255,   3,
     255, 252, 255, 255, 255, 255, 255, 252,  27,   0,   0,   0, 255, 255, 255,  35,
     255, 253, 255, 255,   1,   0, 255,   3, 255, 254, 127,   0, 127, 251, 255, 255,
-    255, 255, 127, 180, 191, 253, 255, 255, 255, 127, 251,   1,   0,   0,   1,   0,
-     15,   0,   0,   0, 248, 255, 255, 224, 255, 135, 255, 255, 255, 128, 255, 255,
-     27,   0,   3,   0,   0,   0, 239, 111,   7,   0,   0,   0,   0,   0,   7,   0,
-    255,   7, 255,  31, 255,   1, 255,  99, 224, 227,   7, 248, 231,  15,   0,   0,
-      0,  60,   0,   0,  28,   0,   0,   0, 255, 255, 255, 223, 100, 222, 255, 235,
-    239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,
-     63, 255, 255, 255, 253, 255, 255, 247, 255, 127, 255, 255, 247, 207, 255, 255,
-    255, 255, 127, 248, 255,  31,  32,   0,  16,   0,   0, 248, 254, 255,   0,   0,
-    127, 255, 255, 249, 219,   7,   0,   0, 255,  31, 255,  63, 255,  67,   0,   0,
-    127, 111, 255, 127,  31,   0, 127,   0, 150, 254, 247,  10, 132, 234, 150, 170,
-    150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,   3,   0, 255, 255,
-    255,   7,   0,   0
+    255, 255, 127, 180, 191, 253, 255, 255, 255, 127, 251,   1, 255, 255, 253, 255,
+    255, 255, 255, 199,   7,   0, 255,   3,   0,   0,   1,   0,  15,   0,   0,   0,
+    248, 255, 255, 224, 255, 135, 255, 255, 255, 128, 255, 255,  27,   0,   3,   0,
+      0,   0, 239, 111,   7,   0,   4,   0,   0,   0,  39,   0, 255,   7, 255,  31,
+    255,   1, 255,  99, 224, 227,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0,
+     28,   0,   0,   0, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255,
+    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255,
+    253, 255, 255, 247, 255, 127, 255, 255, 247, 207, 255, 255, 255, 255, 127, 248,
+    255,  31,  32,   0,  16,   0,   0, 248, 254, 255,   0,   0, 224,   7,   0,   0,
+    127, 255, 255, 249, 219,   7, 255, 255,   0, 128,   0,   0, 255,  31, 255,  63,
+    255,  67,   0,   0, 127, 111, 255, 127,  31,   0, 127,   0, 150, 254, 247,  10,
+    132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,
+      3,   0, 255, 255
 };
 
 RE_UINT32 re_get_id_continue(RE_UINT32 codepoint) {
@@ -13137,7 +14122,7 @@ static RE_UINT8 re_ideographic_table_1[] = {
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  9,  2,  2,  2, 10, 11,  2,
      2,  2,  2, 12,  2,  2,  2,  2,  2,  2, 13,  0,  0,  0, 14,  0,
-     2,  2,  2,  2, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     2,  2,  2,  2, 15,  2,  2,  2, 16,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -13217,25 +14202,27 @@ static RE_UINT8 re_ideographic_table_2[] = {
      3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
      3,  3,  3,  3,  3,  3,  3,  0,  3,  3,  3,  3,  3,  3,  3,  3,
      3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
-     3,  3,  3,  3,  3,  3,  3,  3,  3, 12,  3,  3,  3,  3,  3,  3,
-    13,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  5,  3,  3,  3,  3,  3,  3,
+    12,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
      3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
      3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
-     3,  3,  3,  3,  3, 14,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+     3,  3,  3,  3,  3, 13,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
      3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 15,
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 14,
      3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
-    13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
-     3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 16,  0,  0,  0,  0,  0
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 15,  3,  3,  3,  3,  3,
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 16,  0,  0
 };
 
 static RE_UINT8 re_ideographic_table_3[] = {
       0,   0,   0,   0, 192,   0,   0,   0, 254,   3,   0,   7, 255, 255, 255, 255,
     255,  63, 255, 255, 255, 255, 255,   3,  16,   0,   0,   0, 255, 255, 255,   0,
     255, 255,  63,   0, 255,   1,   0,   0,   0,   0, 255, 255, 255, 255, 255,  15,
-    255, 255, 255,   1, 255, 255, 255,  63,   3,   0, 255, 255,   1,   0,   0,   0,
-    255,   7,   0,   0
+    255, 255, 255,  63,   3,   0, 255, 255,   1,   0,   0,   0, 255,   7, 255, 255,
+    255, 255,   0,   0
 };
 
 RE_UINT32 re_get_ideographic(RE_UINT32 codepoint) {
@@ -13281,7 +14268,7 @@ static RE_UINT8 re_id_start_table_1[] = {
     12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
     12, 12, 12, 12, 12, 12, 12, 12, 12, 45, 12, 12, 12, 46, 47, 12,
     12, 12, 12, 48, 12, 12, 12, 12, 12, 12, 49,  9,  9,  9, 50,  9,
-    12, 12, 12, 12, 51,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    12, 12, 12, 12, 51, 12, 12, 12, 52,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -13387,63 +14374,65 @@ static RE_UINT8 re_id_start_table_2[] = {
       4,   4,  14,   0,   4, 146,   4, 146,   4, 111,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   4, 190,   0,   0, 145, 191, 110,  15,  57,  15, 189, 103,
     108, 192,   0, 193, 108,  22,  15,  14, 108,  68, 194, 195, 108, 146, 196,   0,
-    197, 198,   0,   0, 199, 114, 100,   0,  49,  46, 200,  57,   0,   0,   0,   0,
+    197, 198,  74,   0, 199, 114, 100,   0,  49,  46, 200,  57,   0,   0,   0,   0,
       4, 104, 201,  57,   4,  22, 202,   0,   0,   0,   0,   0,   4, 132, 203,   0,
       4,  22, 204,   0,   4, 205,   0,   0,  89,   0,  68,   0,   0,   0,   0,   0,
-      4, 198,   0,   0,   0,   4,   4, 206, 207, 208, 209,   0,   0, 210, 175, 211,
-    212, 213, 214,   4, 215,  15,   4,  29,   0,   0,   0,   0,   0,   0,   0,   0,
-    216, 132,  74, 140,  22,   0,   0,   0, 217, 175, 218, 219, 220,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 146,   0,   0,   0,   0,   0,  47,   0,   0,
+      4, 206,   0,   0,   0,   4,   4, 207, 208, 209, 210,   0,   0, 211, 175, 212,
+    213, 214, 215,   4, 216,  15,   4,  29,   0,   0,   0,   0,   0,   0,   0,   0,
+    217, 132,  74, 140,  22,   0,   0,   0, 218, 175, 219, 220, 221,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 146, 222,  96,   0,   0,   0,  47,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 161,   0,   0,   0,
       4,   4,   4, 132,   4,   4,   4,   4,   4,   4, 111,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  15,   4,   4, 175,
-      4, 132,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      4,  22, 223,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,  68,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,  29, 100,  15,   4, 100,  15, 221,   4,  22, 111, 222,  22,   0,   0,   0,
+      4,  29, 100,  15,   4, 100,  15, 224,   4,  22, 111, 225,  22,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   4,   4,   0,   0,   0,   0,   4,   4, 223,   0, 165,   0,   0, 224,
+      0,   0,   4,   4,   0,   0,   0,   0,   4,   4, 226,   0, 165,   0,   0, 227,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 192,
       4,   4,   4,   4,   4,   4,  99,   0,  14,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 225,
-      4,   4,   4,   4,   4,   4,   4,   4,   4, 142, 226, 227,   4,   4,   4,   4,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 228,
+      4,   4,   4,   4,   4,   4,   4,   4,   4, 229, 230, 231,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4, 159,   0,   0,   0,   0,   0,   0,   0,   0,
-      4,   4,   4, 228, 229,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      4,   4,   4, 232, 233,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      4,   4, 230,   4, 231, 232, 233,   4, 234, 235, 236,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4, 237, 238,  83, 230, 230, 239, 239, 216, 216, 149,   0,
+      4,   4, 234,   4, 235, 236, 237,   4, 238, 239, 240,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4, 241, 242,  83, 234, 234, 243, 243, 217, 217, 149,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 100,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   4, 240, 241,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,  15, 221,   4, 198,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 100, 244,   0,   0,   0,   0,   0,   0,
+      0,  15,   4, 224,   0,   0,   0,   0,   4, 245, 246,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,  15, 224,   4, 206,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,  15, 206,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 247,
+      4,   4,   4,   4,   4,   4, 189,   0,   4,   4, 248,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 242,
-      4,   4,   4,   4,   4,   4, 189,   0,   4,   4, 243,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    233, 244, 245, 246, 247, 248,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    237, 249, 250, 251, 252, 253,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   0,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4,   4,   4,   4,   4,  29,   4,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4,   4, 161,   4,   4,   4,   4,   4,   4,
     113,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4, 249,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4, 254,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  74,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
     113,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  17,   0,   0,   0,   0,   0
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  30,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  22,   0,   0
 };
 
 static RE_UINT8 re_id_start_table_3[] = {
@@ -13496,20 +14485,21 @@ static RE_UINT8 re_id_start_table_3[] = {
      63, 253, 255, 255, 255, 255, 191, 145, 255, 255,  55,   0, 255, 255, 255, 192,
       1,   0, 239, 254,  31,   0,   0,   0, 255,   3,   3,   0, 128,   0, 255, 255,
     255, 255, 255,   0,   0,   0,  38,   0, 144,   0, 255, 255, 255, 255,  71,   0,
-     30,   0,   0,  20, 255, 255, 251, 255, 255,  15,   0,   0, 127, 189, 255, 191,
+     30,   0,   0,  20, 255, 255, 251, 255, 255,  15,   0, 128, 127, 189, 255, 191,
       0,   0,   1, 224, 128,   7,   0, 128, 176,   0,   0,   0,   0,   0,   0,  15,
-     16,   0,   0,   0, 255,   7,   0,   1,   0,   0,   0, 128, 127, 242, 111, 255,
-    255, 255,   0, 128,   2,   0,   0,   0, 255, 252, 255, 255,  10,   0,   0,   0,
-      1, 248, 255, 255, 255, 255,   7,   4,   0,   0,   1, 240, 255,   3,   0,  32,
-    255, 253, 255, 255, 127, 251, 255, 255,  64,   0,   0,   0, 191, 253, 255, 255,
-    255,   3,   0,   1, 255,  63,   0,   0, 248, 255, 255, 224, 255,   7,   1,   0,
-     11,   0,   0,   0,   0,   0, 239, 111,   0,   0,   7,   0, 240,   0, 255, 255,
+     16,   0,   0,   0, 255,   7,   0,   1, 255,  15,   0,   0,   0,   0,   0, 128,
+    127, 242, 111, 255, 255, 255,   0, 128,   2,   0,   0,   0, 255, 252, 255, 255,
+     10,   0,   0,   0,   1, 248, 255, 255, 255, 255,   7,   4,   0,   0,   1, 240,
+    255,   3,   0,  32, 255, 253, 255, 255, 127, 251, 255, 255,  64,   0,   0,   0,
+    191, 253, 255, 255, 255,   3,   0,   1, 244, 255, 253, 255, 126,   0,   0,   0,
+    255,  63,   0,   0, 248, 255, 255, 224, 255,   7,   1,   0,  11,   0,   0,   0,
+      0,   0, 239, 111,   7,   0,   4,   0,   0,   0,  39,   0, 240,   0, 255, 255,
     255,   7, 255,  31, 255,   1, 255,   3, 255, 255, 223, 255, 255, 255, 255, 223,
     100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,
      95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247, 255, 127, 255, 255,
-    255,  31, 128,  63,   0,  64,   0,   0, 127, 111, 255, 127,  15,   8,   0,   0,
-    150, 254, 247,  10, 132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15,
-    238, 251, 255,  15,   3,   0, 255, 255
+    224,   7,   0,   0, 255,  31, 128,  63,   0,  64,   0,   0, 127, 111, 255, 127,
+     15,   8,   0,   0, 150, 254, 247,  10, 132, 234, 150, 170, 150, 247, 247,  94,
+    255, 251, 255,  15, 238, 251, 255,  15,   3,   0, 255, 255
 };
 
 RE_UINT32 re_get_id_start(RE_UINT32 codepoint) {
@@ -13616,30 +14606,30 @@ static RE_UINT8 re_indic_positional_category_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   1,   2,   3,   4,   5,   6,   7,   8,
       9,   6,  10,  11,   9,   6,  12,  13,   5,  14,  15,   4,  16,  17,  18,   0,
-     19,  20,  21,   4,   5,  14,  22,   4,  23,  24,  25,   4,   5,   0,  26,  27,
-      0,  28,  29,   0,   0,  30,  31,   0,  32,  33,   0,  34,  35,  36,  37,   0,
-      0,  38,  39,  40,  41,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     19,  20,  21,   4,   5,  14,  22,  23,  24,  25,  26,   4,   5,   0,  27,  28,
+      0,  29,  30,   0,   0,  31,  32,   0,  33,  34,   0,  35,  36,  37,  38,   0,
+      0,  39,  40,  41,  42,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,  42,  43,  44,  44,   0,  45,  46,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,  47,   0,   0,   0,  48,  49,   0,
-     50,   0,  51,  52,   0,   0,   0,   0,  53,  54,  55,  56,  57,  58,   0,  59,
-      0,  60,   0,   0,   0,   0,  61,  62,   0,   0,   0,   0,   0,   0,   0,  63,
+      0,   0,   0,   0,   0,   0,   0,   0,  43,  44,  45,  45,   0,  46,  47,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,  48,   0,   0,   0,  49,  50,   0,
+     51,   0,  52,  53,   0,   0,   0,   0,  54,  55,  56,  57,  58,  59,   0,  60,
+      0,  61,   0,   0,   0,   0,  62,  63,   0,   0,   0,   0,   0,   0,   0,  64,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,  64,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,  65,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     65,  66,   0,   0,  67,  68,  69,  70,   0,  71,  72,   0,   1,  73,  74,  75,
-      0,  76,  77,  78,   0,  79,  80,  81,   0,   0,   0,   0,   0,   0,   0,  82,
+     66,  67,   0,   0,  68,  69,  70,  71,   0,  72,  73,   0,   1,  74,  75,  76,
+      0,  77,  78,  79,   0,  80,  81,  82,   0,   0,   0,   0,   0,   0,   0,  83,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     83,  84,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     85,  86,  87,  88,  57,  89,  90,   0,  91,  92,  93,  94,  57,  95,  96,   0,
-      0,  97,   0,   0,   0,   0,  98,  99,  23, 100, 101, 102,   0,   0,   0,   0,
-      0, 103, 104,   0,   0, 105, 106,   0,   0,   0,   0,   0,   0, 107, 108,   0,
-      0, 109, 110,   0,   0, 111,   0,   0, 112, 113,   0,   0,   0,   0,   0,   0,
-      0, 114,   0,   0,   0,   0,   0,   0,   0, 115, 116,   0,   0,   0, 117, 118,
-    119, 120, 121,   0, 122,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0, 123,   0,   0, 124, 125,   0,   0,   0, 126, 127,   0, 128,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 129,   0,   0,   0,   0,   0,   0,   0,   0
+     84,  85,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     86,  87,  88,  89,  58,  90,  91,   0,  92,  93,  94,  95,  58,  96,  97,   0,
+      0,  98,  99,   0,   0,   0, 100, 101,  24, 102, 103, 104,   0,   0,   0,   0,
+      0, 105, 106,   0,   0, 107, 108,   0,   0,   0,   0,   0,   0, 109, 110,   0,
+      0, 111, 112,   0,   0, 113,   0,   0, 114, 115,   0,   0,   0,   0,   0,   0,
+      0, 116,   0,   0,   0,   0,   0,   0,   0, 117, 118,   0,   0,   0, 119, 120,
+    121, 122, 123,   0, 124,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0, 125,   0,   0, 126, 127,   0,   0,   0, 128, 129,   0, 130,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 131,   1, 132, 133,   0,   0,   0,   0,   0
 };
 
 static RE_UINT8 re_indic_positional_category_table_3[] = {
@@ -13650,7 +14640,7 @@ static RE_UINT8 re_indic_positional_category_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  0,  2,  4,
      2,  3,  3,  3,  3,  1,  1,  1,  1,  2,  2,  2,  2,  3,  4,  2,
-     0,  1,  3,  1,  1,  1,  3,  3,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  1,  3,  0,  0,  1,  3,  3,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  3,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  1,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -13689,6 +14679,8 @@ static RE_UINT8 re_indic_positional_category_table_3[] = {
      0,  0,  0,  0,  0,  1,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      6,  2,  2,  2,  2,  0,  1,  6,  6,  0,  6,  6,  1,  1,  0,  0,
      0,  0,  0,  0,  0,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  3,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      1,  1,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -13705,7 +14697,7 @@ static RE_UINT8 re_indic_positional_category_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      2,  1,  2,  2,  1,  1,  1,  1,  3,  3,  3,  1,  3,  0,  0,  0,
-    10, 10, 10, 10, 10,  0,  0,  0,  1,  1,  1,  1,  1,  1,  0,  0,
+    10, 10, 10, 10, 10,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  3,  3,  0,  0,  0,  0,  0,  0,
@@ -13785,7 +14777,7 @@ static RE_UINT8 re_indic_positional_category_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
      1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  3,  3,  0,  0,
+     0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  3,  3,  3,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  3,  3,  3,  1,  3,  3,  3,  3,  1,
      1,  1,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -13839,6 +14831,8 @@ static RE_UINT8 re_indic_positional_category_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  2,  2,  3,
      1,  1,  6,  6,  1,  2,  1,  1,  0,  0,  0,  0,  0,  0,  1,  0,
+     0,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,
      2,  4,  2,  3,  3,  1,  1,  1,  1,  3,  3,  0,  0,  0,  0,  0,
@@ -13902,7 +14896,11 @@ static RE_UINT8 re_indic_positional_category_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  2,  2,  2,  2,  0,
      1,  1,  0,  2,  2,  1,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  1,  3,  4,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0
+     0,  0,  0,  1,  3,  4,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  2,  2,  1,  1,  3,  3,  3,  0,  0,  0,  4,  4,
+     1,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
 RE_UINT32 re_get_indic_positional_category(RE_UINT32 codepoint) {
@@ -14020,13 +15018,13 @@ static RE_UINT8 re_indic_syllabic_category_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     116, 117, 118,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     119, 120, 121, 122, 123, 124, 125,   0, 126, 127, 128, 129, 130, 131, 132, 133,
-    134, 135,   0,   0, 136, 137, 138, 139, 140, 141, 142, 143,   0,   0,   0,   0,
-    144, 145, 146, 147, 148, 149, 150,   0,   0,   0,   0,   0, 144, 151, 152,   0,
-    144, 153, 154,   0, 155, 156,  65,   0, 157, 158, 159,   0,   0,   0,   0,   0,
-    155, 160,   0,   0,   0,   0,   0,   0, 161, 162, 163,   0,   0, 164, 165, 166,
-    167, 168, 169,  54, 170,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    171, 172, 173, 174, 175, 176,   0,   0, 177, 178, 179, 180, 181,  65,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 182,   0,   0,   0,   0,   0,   0,   0,   0
+    134, 135, 136,   0, 137, 138, 139, 140, 141, 142, 143, 144,   0,   0,   0,   0,
+    145, 146, 147, 148, 149, 150, 151,   0,   0,   0,   0,   0, 145, 152, 153,   0,
+    145, 154, 155,   0, 156, 157,  65,   0, 158, 159, 160,   0,   0,   0,   0,   0,
+    156, 161,   0,   0,   0,   0,   0,   0, 162, 163, 164,   0,   0, 165, 166, 167,
+    168, 169, 170,  54, 171,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    172, 173, 174, 175, 176, 177,   0,   0, 178, 179, 180, 181, 182,  65,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 183, 184, 185, 186,   0,   0,   0,   0,   0
 };
 
 static RE_UINT8 re_indic_syllabic_category_table_3[] = {
@@ -14069,7 +15067,7 @@ static RE_UINT8 re_indic_syllabic_category_table_3[] = {
      8,  8,  8,  8,  8,  8,  0,  8,  8,  8,  0,  8,  8, 11,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      6,  6,  8,  8,  0,  0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  7, 12, 12, 12,  9,  9,  9,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  7, 12, 14, 12,  9,  9,  9,
      0,  4,  4,  5,  0,  6,  6,  6,  6,  6,  6,  6,  6,  0,  0,  6,
      6,  0,  0,  6,  6,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
      8,  8,  8,  8,  8,  0,  0,  8,  8,  0,  0,  8,  8, 11,  0,  0,
@@ -14099,7 +15097,7 @@ static RE_UINT8 re_indic_syllabic_category_table_3[] = {
      8,  8,  8,  8,  8,  0,  8,  8,  8,  0,  8,  8,  8, 11,  0,  0,
      0,  0,  0,  0,  0,  8,  8,  0,  0,  0,  0,  0,  0, 13,  7,  0,
      6,  6,  8,  8,  0,  0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     0, 17, 17,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 17, 17,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 18, 18, 10,  8,  8,
      8,  8,  8,  8,  8,  0,  8,  8,  8,  0,  8,  8,  8, 11, 19,  0,
@@ -14124,7 +15122,7 @@ static RE_UINT8 re_indic_syllabic_category_table_3[] = {
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
      7,  7,  7,  7,  0,  7,  0,  7,  7,  7,  7,  7,  7,  7,  7,  0,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 18,  8, 15, 15,  0,  0,
-     8,  8,  8,  8,  8,  0,  0,  0, 20, 20, 20, 20,  0,  4,  0,  0,
+     8,  8,  8,  8,  8,  0,  0,  0, 20, 20, 20, 20,  0,  4,  3,  0,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  7,  7,  7,  7,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
      2,  2,  2,  2,  0,  3,  0,  3,  0,  9,  0,  0,  0,  0,  0,  0,
@@ -14301,7 +15299,9 @@ static RE_UINT8 re_indic_syllabic_category_table_3[] = {
      6,  6,  6,  6,  6,  6,  6,  6,  7,  7,  7,  7,  7,  7,  7,  7,
      7,  7,  0,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  8,  8,  8,  8,
-     8,  8,  8,  8,  4, 11,  9, 14,  0,  0,  0,  0,  0,  0, 12,  0,
+     8,  8,  8,  8,  4, 11,  9, 14,  0,  0,  0,  0,  0,  0, 12,  7,
+     6,  8,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      6,  6,  6,  6,  7,  7,  7,  0,  7,  0,  7,  7,  7,  7,  0,  7,
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  0,  7,
      7,  7,  7,  7,  7,  7,  7,  7,  7,  0,  0,  0,  0,  0,  0,  0,
@@ -14395,7 +15395,13 @@ static RE_UINT8 re_indic_syllabic_category_table_3[] = {
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  8,  8,  8,  8,  8,  0,
      8,  8,  0,  8,  8,  4,  5, 24,  0,  0,  0,  0,  0,  0,  0,  0,
      7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
-     7,  7,  1,  8,  8,  8,  8,  0,  0,  0,  0,  0,  0,  0,  0,  0
+     7,  7,  1,  8,  8,  8,  8,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     4,  4, 19,  5,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
+     6,  0,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
+     7,  7,  7,  7,  8,  8,  8,  8,  8,  8,  8,  0,  0,  0,  8,  8,
+     8, 18, 24,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  0,  0,  0,  0
 };
 
 RE_UINT32 re_get_indic_syllabic_category(RE_UINT32 codepoint) {
@@ -14577,7 +15583,7 @@ static RE_UINT8 re_joining_type_table_1[] = {
     16,  9, 17, 18, 19, 20, 21, 22,  9,  9,  9,  9,  9, 23,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 24, 25,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 26,
-     9,  9,  9, 27, 28,  9, 29,  9, 30,  9, 31,  9,  9,  9,  9,  9,
+     9,  9,  9, 27, 28,  9, 29,  9, 30, 31, 32,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -14626,7 +15632,7 @@ static RE_UINT8 re_joining_type_table_1[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-    32,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    33,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -14678,32 +15684,34 @@ static RE_UINT8 re_joining_type_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     122, 123,   0,   0,   0,   0, 124, 125,   0,   0,   0,   0, 126, 127,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0, 128, 129,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 130,   0,   0,   0, 131, 132, 133, 134, 135, 136,   0,
+      0,   0,   0,   0,   0, 130,   0,  69,   0, 131, 132, 133, 134, 135, 136,   0,
      35, 137, 138, 139,  52, 140,  46,   0,  31, 141,   0, 142,  52, 143, 144,   0,
-      0, 145,   0,   0,   0,   0,  97, 146,  52,  53, 120, 147,   0,   0,   0,   0,
+      0, 145,  35,   0,   0,   0,  97, 146,  52,  53, 120, 147,   0,   0,   0,   0,
       0, 137, 148,   0,   0, 149, 150,   0,   0,   0,   0,   0,   0, 151, 152,   0,
       0, 153, 120,   0,   0, 154,   0,   0,  69, 155,   0,   0,   0,   0,   0,   0,
       0, 156,   0,   0,   0,   0,   0,   0,   0, 157, 158,   0,   0,   0, 159, 120,
     160, 161, 162,   0, 163,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0, 164,   0,   0, 165, 166,   0,   0,   0, 167, 168,   0, 169,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 170,   0,   0,   0,   0,   0,   0,   0,   0,
-      0, 171,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 170,  52, 121, 171,   0,   0,   0,   0,   0,
+      0,  82, 172,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 172,   0, 173,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 173,   0, 174,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 174,   0, 175,   0,   0, 176,
-      0,   0,   0,   0, 177,  84,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 175,   0, 176,   0,   0, 177,
+      0,   0,   0,   0, 178,  84,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   2, 178, 138,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 179, 180,  98,   0,   0,
-      0,   0, 181,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   2, 179, 138,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 180, 181,  98,   0,   0,
+      0,   0, 182,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      2, 182,   2, 183, 184, 185,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    186, 187,   0,   0,   0,   0,   0,   0,   0, 173,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 188,   0, 189,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0, 173,   0,  13,  13, 190,   0,   0,   0,   0,   0,
+      2, 183,   2, 184, 185, 186,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    187, 188,   0,   0, 175,   0,   0,   0,   0, 174,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0, 189,   0, 190,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 190,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 174,   0,  13,  13, 191,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      35,   2,   2,   2,   0,   0,   0,   0,   2,   2,   2,   2,   2,   2,   2,   3,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
@@ -14826,7 +15834,7 @@ static RE_UINT8 re_joining_type_table_3[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,
@@ -15052,8 +16060,10 @@ static RE_UINT8 re_joining_type_table_3[] = {
     1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -15198,123 +16208,123 @@ static RE_UINT16 re_line_break_table_2[] = {
       7,   7,   7,   7, 110,   7,   7, 111, 112, 113, 114, 115,  92,  92, 116, 117,
     118,   7,   7, 119, 120, 121,   7, 122, 123, 124, 125, 126,  92, 127, 128,   7,
     129,  92, 130, 131, 132, 133, 134,  81, 135, 136, 137, 138, 139, 140,   7, 141,
-      7, 142, 143, 144, 145, 146, 147, 148,   7,   7,   7,   7,   7,   7,   9,   9,
-      7,   7,   7,   7,   7,   7,   7,   7, 108,   7, 149, 150,   7, 151, 152, 153,
-    154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166,   7, 167,   7,
-    168, 169, 170, 171, 172, 173,   7, 174, 175, 176,   7,   7,   7,   7,   7, 177,
-      7, 178, 179, 180, 180, 180, 180, 181, 180, 180, 182, 183, 184, 185, 186, 187,
-    188, 189, 190, 191, 192, 193, 194, 195, 196,   7, 197, 198, 199,   7, 200, 201,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 202,   7, 203, 204,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 205, 206, 207,   7,   7,   7,
-      7,   7,   7,   7,   7,   7,   7, 208,   7,  95,   7, 209, 210, 211, 211,   9,
-    212, 213, 214,  81, 215, 216, 216, 217, 216, 216, 216, 216, 216, 216, 218, 219,
-    220, 221, 222, 223, 224, 225, 223, 226, 227, 228, 216, 216, 229, 216, 216, 230,
-    231, 216, 232, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,   7,   7,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
-    233, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
-    216, 216, 216, 216, 234, 216, 235, 144,   7,   7,   7,   7,   7,   7,   7,   7,
-    236, 237,   7, 238, 239,   7,   7, 240,   7,   7,   7,   7,   7,   7, 241, 242,
-    243, 244,   7, 245, 246, 136, 247, 248,  30, 249, 250, 251,  39, 252, 253, 254,
-      7, 255, 256,  92,  92,  92, 257, 258, 259, 260,   7, 261,   7,   7,   7, 262,
-    263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264,
-    265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266,
-    267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268,
-    269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263,
-    264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265,
-    266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267,
-    268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269,
-    263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264,
-    265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266,
-    267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268,
-    269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263,
-    264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265,
-    266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267,
-    268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269,
-    268, 269, 263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 269,
-    263, 264, 265, 266, 267, 268, 269, 263, 264, 265, 266, 267, 268, 270, 271, 272,
-    273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273,
-    273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273, 273,
+      7, 142, 143, 144, 145, 146, 147, 148,   7,   7,   7,   7,   7,   7, 149, 150,
+      7,   7,   7,   7,   7,   7,   7,   7, 108,   7, 151, 152,   7, 153, 154, 155,
+    156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168,   7, 169,   7,
+    170, 171, 172, 173, 174, 175,   7, 176, 177, 178,   7,   7,   7,   7,   7, 179,
+      7, 180, 181, 182, 182, 182, 182, 183, 182, 182, 184, 185, 186, 187, 188, 189,
+    190, 191, 192, 193, 194, 195, 196, 197, 198,   7, 199, 200, 201,   7, 202, 203,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 204,   7, 205, 206,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 207, 208, 209,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7, 210,   7,  95,   7, 211, 212, 213, 213,   9,
+    214, 215, 216,  81, 217, 218, 218, 219, 218, 218, 218, 218, 218, 218, 220, 221,
+    222, 223, 224, 225, 226, 227, 225, 228, 229, 230, 218, 218, 231, 218, 218, 232,
+    233, 218, 234, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,   7,   7,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,
+    235, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,
+    218, 218, 218, 218, 236, 218, 237, 144,   7,   7,   7,   7,   7,   7,   7,   7,
+    238, 239,   7, 240, 241,   7,   7, 242,   7,   7,   7,   7,   7,   7, 243, 244,
+    245, 246,   7, 247, 248, 136, 249, 250,  30, 251, 252, 253,  39, 254, 255, 256,
+      7, 257, 258,  92,  92,  92, 259, 260, 261, 262,   7, 263,   7,   7,   7, 264,
+    265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266,
+    267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268,
+    269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270,
+    271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265,
+    266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267,
+    268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269,
+    270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271,
+    265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266,
+    267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268,
+    269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270,
+    271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265,
+    266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267,
+    268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269,
+    270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271,
+    270, 271, 265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 271,
+    265, 266, 267, 268, 269, 270, 271, 265, 266, 267, 268, 269, 270, 272, 273, 274,
+    275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275,
+    275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275, 275,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,  81,  81,  81,  81,  81,  81, 216, 216, 216, 216, 216, 216, 216, 216,
-    216, 216, 216, 216, 216, 216, 216, 216, 274, 275, 276,   7,   7,   7, 277,   7,
-      7,   7,   7,   7,   7,   7,   7,   7,   7, 278,   7,   7, 279,   7, 280, 281,
-    282, 283, 284, 285,   7,   7,   7, 286, 287, 288, 289, 290, 291, 231, 292, 293,
-    294, 295, 296,  81,   7,   7,   7, 297, 298, 299,   7,   7, 300, 301, 302, 303,
-     81,  81,  81,  81, 304,   7, 305, 306,   7, 307,  35, 308, 309,   7, 310,  81,
-      7,   7,   7,   7, 150, 311, 312, 313,   7, 314,   7, 315, 316, 317,  81,  81,
-      7,   7,   7,   7,   7,   7,   7,   7,   7, 210, 122, 318, 319, 320,  81,  81,
-    321, 322, 323,   7, 123, 324,  81, 325, 326, 327,  81,  81,   7, 328, 279,   7,
-    329, 330, 331,   7,   7,  81,   7, 332,   7, 333, 334, 335, 336, 337,  81,  81,
-      7,   7, 338,  81,   7, 339,   7, 340,   7, 341,  81,  81,  81,  81,  81,  81,
-     81,  81,  81, 123,   7, 342,  81,  81,   7, 314, 343, 302, 344, 302, 345, 210,
-    139, 346, 347, 348, 139, 349, 350, 351, 139, 352, 353, 354, 139, 252, 355, 356,
-    357, 358,  81,  81, 359, 360, 361, 362, 363, 364, 365, 366,  81,  81,  81,  81,
-      7, 367, 368, 369,   7,  27, 370,  81,  81,  81,  81,  81,   7, 371, 372,  81,
-      7,  27, 373, 374,   7, 375, 376,  81, 377, 378, 379,  81,  81,  81,  81,  81,
-      7, 380,  81,  81,  81,   7,   7, 381, 382, 383, 384,  81,  81, 385, 386, 387,
-    388, 389, 390,   7, 391, 392,   7, 119,  81,  81,  81,  81,  81,  81,  81,  81,
-    393, 394, 395, 396, 397, 398,  81,  81, 399, 400, 401, 402, 403, 376,  81,  81,
-     81,  81,  81,  81,  81,  81,  81, 404,  81,  81,  81,  81,  81, 405, 406, 407,
+     81,  81,  81,  81,  81,  81,  81,  81, 218, 218, 218, 218, 218, 218, 218, 218,
+    218, 218, 218, 218, 218, 218, 218, 218, 276, 277, 278,   7,   7,   7, 279,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7, 280,   7,   7, 281,   7, 282, 283,
+    284, 285, 286, 287,   7,   7,   7, 288, 289, 290, 291, 292, 293, 233, 294, 295,
+    296, 297, 298,  81,   7,   7,   7, 299, 300, 301,   7,   7, 302, 303, 304, 305,
+     81,  81,  81,  81, 306,   7, 307, 308,   7, 309,  35, 310, 311,   7, 312,  81,
+      7,   7,   7,   7, 152, 313, 314, 315,   7, 316,   7, 317, 318, 319,  81,  81,
+      7,   7,   7,   7,   7,   7,   7,   7,   7, 212, 122, 320, 321, 322,  81,  81,
+    323, 324, 325,   7, 123, 326,  81, 327, 328, 329,  81,  81,   7, 330, 281,   7,
+    331, 332, 333,   7,   7,  81,   7, 334,   7, 335, 336, 337, 338, 339,  81,  81,
+      7,   7, 340,  81,   7, 341,   7, 342,   7, 343,  81,  81,  81,  81,  81,  81,
+     81,  81,  81, 123,   7, 344,  81, 345,   7, 316, 346, 304, 347, 304, 348, 212,
+    139, 349, 350, 351, 139, 352, 353, 354, 139, 355, 356, 357, 139, 254, 358, 359,
+    360, 361, 362,  81, 363, 364, 365, 366, 367, 368, 369, 370,  81,  81,  81,  81,
+      7, 371, 372, 373,   7,  27, 374,  81,  81,  81,  81,  81,   7, 375, 376,  81,
+      7,  27, 377, 378,   7, 379, 380,  81, 381, 382, 383,  81,  81,  81,  81,  81,
+      7, 384,  81,  81,  81,   7,   7, 385, 386, 387, 388,  81,  81, 389, 390, 391,
+    392, 393, 394,   7, 395, 396,   7, 119, 397,  81,  81,  81,  81,  81,  81,  81,
+    398, 399, 400, 401, 402, 403,  81,  81, 404, 405, 406, 407, 408, 380,  81,  81,
+     81,  81,  81,  81,  81,  81,  81, 409, 410, 411, 412,  81,  81, 413, 414, 415,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 107,  81,  81,  81,
-      7,   7,   7, 408,   7,   7,   7,   7,   7,   7, 409,  81,  81,  81,  81,  81,
+      7,   7,   7, 416,   7,   7,   7,   7,   7,   7, 417,  81,  81,  81,  81,  81,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81, 302,   7,   7, 339,
+     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81, 304,   7,   7, 341,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7, 410,   7, 411,   7,   7,   7,   7,   7,   7, 412,   7,   7,   7,   7,
-      7, 413,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
+      7,   7, 418,   7, 419,   7,   7,   7,   7,   7,   7, 420,   7,   7,   7,   7,
+      7, 421, 422,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 414,   7,
-      7,   7, 178,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 423,   7,
+      7,   7, 180,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7, 119, 123, 415,   7, 123, 311, 416,   7, 417, 418, 419, 420,  81,  81,  81,
+      7, 119, 123, 424,   7, 123, 313, 425,   7, 426, 427, 428, 429,  81,  81,  81,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,   7,   7, 421,  81,  81,  81,   7,   7, 422,   9, 423,  81,  81, 424,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 425,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
-    216, 216, 216, 216, 216, 216, 216, 216,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7,   7, 122,  81, 426,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81, 427,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 428, 429, 430, 216, 216, 216, 216,
-    216, 216, 216, 216, 216, 216, 216, 431,  81,  81,  81,  81,  81,  81,  81,  81,
-      7,   7,   7, 432, 433, 434,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
+     81,  81,   7,   7, 430,  81,  81,  81,   7,   7, 431,   9, 432,  81,  81, 433,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 434,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,
+    218, 218, 218, 218, 218, 218, 218, 218,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7, 122,  81, 435,  81,  81,  81,  81,  81,  81,  81,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,  81,  81,  81,  81,  81,  81,   9, 435, 436,   7,   7,   7, 409,  81,
-      7,   7,   7,   7,   7,   7,   7, 122,   7, 437,   7, 438, 439, 440,   7, 179,
-      7,   7, 441,  81,  81,  81,  81, 442,   7,   7, 210, 119,  81,  81,  81,  81,
-      7,   7, 151,   7, 443, 444, 445,   7, 446, 447, 448,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7, 449,   7,   7,   7,   7,   7,   7,   7,   7, 450, 451,
+     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81, 436,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 437, 438, 439, 218, 218, 218, 218,
+    218, 218, 218, 218, 218, 218, 218, 440,  81,  81,  81,  81,  81,  81,  81,  81,
+      7,   7,   7, 441, 442, 443,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
+     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
+     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
+     81,  81,  81,  81,  81,  81,  81,  81,   9, 444, 445,   7,   7,   7, 417,  81,
+      7,   7,   7,   7,   7,   7,   7, 122,   7, 446,   7, 447, 448, 449,   7, 181,
+      7,   7, 450,  81,  81,  81, 451, 451,   7,   7, 212, 119,  81,  81,  81,  81,
+      7,   7, 153,   7, 452, 453, 454,   7, 455, 456, 457,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7, 458,   7,   7,   7,   7,   7,   7,   7,   7, 459, 460,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      9, 452,   9, 453, 454, 455,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
+      9, 461,   9, 462, 463, 464,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,  81,  81,  81,  81,  81,  81, 123,  81,  81,  81,  81,  81,  81,  81,
-    456, 457,  81,  81,  81,  81,  81,  81,   7, 458, 459,  81,  81,  81,  81,  81,
-     81,  81,  81,  81, 302, 460,   7, 461,  81,  81,  81,  81,  81,  81,  81,  81,
+     81,  81,  81,  81,  81,  81,  81,  81, 123, 465,  81,  81,  81,  81,  81,  81,
+    466, 467,   7, 468, 469,  81,  81,  81,   7, 470, 471,  81,  81,  81,  81,  81,
+     81,  81,  81,  81, 304, 472,   7, 473,  81,  81,  81,  81,  81,  81,  81,  81,
+     81,  81,  81,  81,  81,  81, 304, 474,  81,  81,  81,  81,  81,  81,  81,  81,
+     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81, 475,
+      7,   7,   7,   7,   7,   7, 476,  81,   7,   7, 477,  81,  81,  81,  81,  81,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81, 462,
-      7,   7,   7,   7,   7,   7, 463,  81,   7,   7, 464,  81,  81,  81,  81,  81,
-     81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,
-     81,  81,  81, 465,   7, 466,  81,  81, 467, 150,  81,  81,  81,  81,  81,  81,
-    445, 468, 469, 470, 471, 472,  81, 473,  81,  81,  81,  81,  81,  81,  81,  81,
-    216, 216, 216, 216, 216, 216, 216, 216, 474, 475, 180, 476, 180, 477, 216, 478,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 479, 480, 481, 482,
-    216, 216, 483, 484, 485, 486, 216, 216, 487, 488, 489, 490, 491, 216, 492, 493,
-    216, 216, 494, 495, 216, 496, 497, 216,   7,   7,   7, 498,   7,   7, 499, 216,
-    500,   7, 501,   7, 502, 503, 216, 216, 504, 505, 216, 506, 216, 507, 508, 216,
-      7,   7, 498, 216, 216, 216, 509, 510,   7,   7,   7,   7, 511,   7, 179, 512,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216,
-    216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 513,
-    514,   9,   9,   9,  81,  81,  81,  81,   9,   9,   9,   9,   9,   9,   9, 515,
+     81,  81,  81, 478,   7, 479,  81,  81, 480, 152,  81,  81,  81,  81,  81,  81,
+    454, 481, 482, 483, 484, 485,  81, 486,  81,  81,  81,  81,  81,  81,  81,  81,
+    218, 218, 218, 218, 218, 218, 218, 218, 487, 488, 182, 489, 182, 490, 218, 491,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 492, 493, 494, 495,
+    218, 218, 496, 497, 498, 499, 218, 218, 500, 501, 502, 503, 504, 218, 505, 506,
+    218, 218, 507, 508, 218, 509, 510, 218,   7,   7,   7, 511,   7,   7, 512, 218,
+    513,   7, 514,   7, 515, 516, 218, 218, 517, 518, 218, 519, 218, 520, 521, 218,
+      7,   7, 511, 218, 218, 218, 522, 523,   7,   7,   7,   7, 524,   7, 181, 525,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218,
+    218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 526,
+    527,   9,   9,   9,  81,  81,  81,  81,   9,   9,   9,   9,   9,   9,   9, 528,
      81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81,  81
 };
 
@@ -15458,7 +16468,7 @@ static RE_UINT8 re_line_break_table_3[] = {
      1,  1,  1,  1,  1,  0,  1,  1,  1,  0,  1,  1,  1,  1,  0,  0,
      0,  0,  0,  0,  0,  1,  1,  0,  0,  0,  0,  0,  0,  9,  9,  0,
      9,  9,  1,  1,  0,  0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-     0,  9,  9,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  9,  9,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      1,  1,  1,  1,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  9,  9,
      9,  0,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -15487,7 +16497,7 @@ static RE_UINT8 re_line_break_table_3[] = {
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
     24, 24, 24, 24,  0, 24,  0, 24, 24, 24, 24, 24, 24, 24, 24, 24,
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,  0,  0,
-    24, 24, 24, 24, 24,  0, 24,  0, 24, 24, 24, 24, 24, 24,  0,  0,
+    24, 24, 24, 24, 24,  0, 24,  0, 24, 24, 24, 24, 24, 24, 24,  0,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17,  0,  0, 24, 24, 24, 24,
      9, 22, 22, 22, 22,  9, 22, 22, 20, 22, 22,  2, 20,  7,  7,  7,
      7,  7, 20,  9,  7,  9,  9,  9,  1,  1,  9,  9,  9,  9,  9,  9,
@@ -15617,6 +16627,10 @@ static RE_UINT8 re_line_break_table_3[] = {
      1,  1,  1,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
      1,  1,  1,  1,  1,  1,  1,  1,  1,  9,  9,  9,  9,  1,  9,  9,
      9,  9,  9,  9,  1,  9,  9,  1,  1,  1,  9,  0,  0,  0,  0,  0,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  1,  1,  1,
      9,  9,  9,  9,  9,  9,  0,  0,  9,  9,  9,  9,  9,  9,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  0,  9,  0,  9,  0,  9,  0,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -15632,7 +16646,7 @@ static RE_UINT8 re_line_break_table_3[] = {
     21, 21,  9,  9, 32, 32, 32,  2,  4,  4,  1,  1,  1,  1,  1, 20,
     11, 11, 11, 11, 11, 11, 11, 11,  9,  8,  8, 21, 28, 28,  9,  9,
      9,  9,  9,  9, 14, 12, 18, 28, 28, 28,  9,  9,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  2,  9,  2,  2,  2,  2,  9,  2,  2,  2,
+     9,  9,  9,  9,  9,  9,  2, 11,  2,  2,  2,  2,  9,  2,  2,  2,
     33,  9,  9,  9,  9,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
      9,  9,  0,  0, 21,  9,  9,  9,  9,  9,  9,  9,  9, 12, 18, 21,
      9, 21, 21, 21, 21,  9,  9,  9,  9,  9,  9,  9,  9, 12, 18,  0,
@@ -16005,6 +17019,8 @@ static RE_UINT8 re_line_break_table_3[] = {
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  1,  1,  2,  0,  0,
      9,  9,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,
      9,  9,  9,  9,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
      1,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
      9,  9,  1,  1,  1,  1,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
@@ -16036,7 +17052,9 @@ static RE_UINT8 re_line_break_table_3[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  0,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  1,  1,  1,  1,
-     1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  9,  2,  2,  9,  1,  0,
+     1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  9,  2,  2,  9,  1,  9,
+     9,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  0,  9,  0,  9,  9,  9,  9,  0,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  2,  0,  0,  0,  0,  0,  0,
@@ -16105,6 +17123,8 @@ static RE_UINT8 re_line_break_table_3[] = {
      1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  9, 22, 22,
     22,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    22, 22, 22, 22, 22, 22, 22, 22, 22, 22,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  1,
@@ -16129,6 +17149,12 @@ static RE_UINT8 re_line_break_table_3[] = {
      1,  1,  0,  1,  1,  1,  1,  1,  9,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  1,  1,  1,  1,  9,  9,  0,  0,  0,  0,  0,  0,  0,
+     1,  1,  9,  1,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+     9,  0,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+     9,  9,  9,  9,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  1,  1,
+     1,  1,  1,  2,  2, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -16145,8 +17171,10 @@ static RE_UINT8 re_line_break_table_3[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9, 12, 18, 18,  9,  9,  9,  9,
-     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,
-    20, 20, 20, 20, 20, 20, 20, 12, 18,  0,  0,  0,  0,  0,  0,  0,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    20, 20, 20, 20, 20, 20, 20, 12, 18, 20, 20, 20, 12, 18, 12, 18,
+     1,  9,  9,  9,  9,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 12, 18,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17,  0,  0,  0,  0,  2,  2,
@@ -16176,9 +17204,9 @@ static RE_UINT8 re_line_break_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  0,  9,  9,  9,  9,  9,  9,  9,  0,  9,  9,  0,
     34, 34, 34,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0, 36,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    36, 36, 36,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    36, 36, 36,  0,  0, 36,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0, 36, 36, 36, 36,  0,  0,  0,  0,  0,  0,  0,  0,
     34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
     34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
@@ -16231,9 +17259,15 @@ static RE_UINT8 re_line_break_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,
      0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      1,  1,  1,  1,  1,  1,  1,  0,  1,  1,  1,  1,  1,  1,  1,  1,
      1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  1,  1,  1,  1,  1,
      1,  1,  0,  1,  1,  0,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,
      1,  1,  1,  1,  1,  1,  1,  9,  9,  9,  9,  9,  9,  9,  0,  0,
@@ -16243,6 +17277,8 @@ static RE_UINT8 re_line_break_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  1,  1,  1,  1,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17,  0,  0,  0,  0,  0, 10,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  1,  1,  1,  1,
+    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,  0,  0,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  0,  9,  9,  9,  9,  0,  9,  9,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,
      9,  9,  9,  9,  9,  0,  0,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -16340,7 +17376,7 @@ static RE_UINT8 re_line_break_table_3[] = {
     34, 34, 34, 35, 35, 35, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
     34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
     34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
-    35, 35, 35, 35, 35, 35, 35, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+    35, 35, 35, 35, 35, 35, 35, 35, 35, 34, 34, 34, 34, 34, 34, 34,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  0,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -16399,7 +17435,7 @@ static RE_UINT8 re_lowercase_table_1[] = {
      2, 12,  2, 13,  2,  2, 14,  2,  2,  2,  2,  2,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 15,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
-     2,  2,  2,  2,  2, 16,  2, 17,  2,  2, 18,  2,  2,  2,  2,  2,
+     2,  2,  2,  2,  2, 16,  2, 17, 18,  2, 19,  2,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
      2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
@@ -16482,24 +17518,26 @@ static RE_UINT8 re_lowercase_table_2[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  5, 51, 52,  0,  0,  0,  0, 53,  5, 54, 55, 56, 57, 58,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 26, 59, 60, 15, 15,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0, 26, 31, 59, 15, 15,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 61,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0, 60,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,
-     0, 62, 63,  0,  0,  0, 64, 65,  0,  0,  0,  0, 66, 67,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 68, 69,  0,  0,
-     0,  0,  0,  0,  0,  0, 15, 70,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 61, 62,  0,  0,  0, 63, 64,  0,  0,  0,  0, 65, 66,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 67, 68,  0,  0,
+     0,  0,  0,  0,  0,  0, 15, 69,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 71, 72, 84,
-    74, 75, 85, 63, 78, 86, 87, 88, 89, 85, 90, 26, 91, 78, 92,  0,
+    70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 70, 71, 83,
+    73, 74, 84, 62, 77, 85, 86, 87, 88, 84, 89, 26, 90, 77, 91,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 93,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0, 94, 95,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0, 92, 93,  0,  0,  0,  0,  0,  0,
+     0, 26, 15, 94,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0, 95, 96,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
@@ -16511,23 +17549,24 @@ static RE_UINT8 re_lowercase_table_3[] = {
     255, 255, 239, 255, 255, 255, 255,   1,   3,   0,   0,   0,  31,   0,   0,   0,
      32,   0,   0,   0,   0,   0, 138,  60,   0,   0,   1,   0,   0, 240, 255, 255,
     255, 127, 227, 170, 170, 170,  47,  25,   0,   0, 255, 255,   2, 168, 170, 170,
-     84, 213, 170, 170, 170, 170,   0,   0, 255,   1,   0,   0, 255, 255, 255, 231,
+     84, 213, 170, 170, 170, 170,   0,   0, 255,   1,   0,   0, 255, 255, 255, 247,
       0,   0,   0,  63, 170, 170, 234, 191, 255,   0,  63,   0, 255,   0, 255,   0,
      63,   0, 255,   0, 255,   0, 255,  63, 255,   0, 223,  64, 220,   0, 207,   0,
     255,   0, 220,   0,   0,   0,   2, 128,   0,   0, 255,  31,   0, 196,   8,   0,
       0, 128,  16,  50, 192,  67,   0,   0,  16,   0,   0,   0, 255,   3,   0,   0,
      98,  21, 218,  63,  26,  80,   8,   0, 191,  32,   0,   0, 170,  42,   0,   0,
     170, 170, 170,  58, 168, 170, 171, 170, 170, 170, 255, 149, 170,  80, 186, 170,
-    170, 130, 160, 170,  10,   5, 170,   2,   0,   0,  64,   7, 255, 255, 255, 247,
-    255,   1, 255, 255, 127,   0, 248,   0,   0, 255, 255, 255, 255, 255,   0,   0,
-      0,   0,   0, 255, 255, 255, 255,  15,   0,   0, 128, 255, 251, 255, 251,  27,
-    185, 255, 255, 255, 255, 255, 253,   7, 255, 255,   7,   0,   0,   0,   0, 252,
-    255, 255,  15,   0,   0, 192, 223, 255, 255,   0,   0,   0, 252, 255, 255,  15,
-      0,   0, 192, 235, 239, 255,   0,   0,   0, 252, 255, 255,  15,   0,   0, 192,
-    255, 255, 255,   0,   0,   0, 252, 255, 255,  15,   0,   0, 192, 255, 255, 255,
-      0, 192, 255, 255,   0,   0, 192, 255,  63,   0,   0,   0, 252, 255, 255, 247,
-      3,   0,   0, 240, 255, 255, 223,  15, 255, 127,  63,   0, 255, 253,   0,   0,
-    247,  11,   0,   0, 255, 251, 255, 127, 252, 255, 255, 255,  15,   0,   0,   0
+    170, 130, 160, 170,  10,   5, 170,   2,   0,   0,  92,   7, 255,   3, 255, 255,
+    127,   0, 248,   0,   0, 255, 255, 255, 255, 255,   0,   0,   0,   0,   0, 255,
+    255, 255, 255,  15,   0,   0, 128, 255, 251, 255, 251,  27, 185, 255, 255, 255,
+    255, 255, 253,   7, 255, 255,   7,   0,   0,   0,   0, 252, 255, 255,  15,   0,
+      0, 192, 223, 255, 255,   0,   0,   0, 252, 255, 255,  15,   0,   0, 192, 235,
+    239, 255,   0,   0,   0, 252, 255, 255,  15,   0,   0, 192, 255, 255, 255,   0,
+      0,   0, 252, 255, 255,  15,   0,   0, 192, 255, 255, 255,   0, 192, 255, 255,
+      0,   0, 192, 255,  63,   0,   0,   0, 252, 255, 255, 247,   3,   0,   0, 240,
+    255, 255, 223,  15, 255, 127,  63,   0, 255, 253,   0,   0, 247,  11,   0,   0,
+    255, 251, 255, 127, 224,   7,   0,   0, 255,  63,   0,   0, 252, 255, 255, 255,
+     15,   0,   0,   0
 };
 
 RE_UINT32 re_get_lowercase(RE_UINT32 codepoint) {
@@ -17083,11 +18122,11 @@ static RE_UINT8 re_nfkc_quick_check_table_1[] = {
      5, 17,  5,  5, 18, 19, 20,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5, 21, 22,  5,  5,  5,  5,  5, 23, 24,  5, 25,  5,
+     5,  5,  5,  5, 21, 22,  5,  5, 23,  5,  5, 24, 25,  5, 26,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 26,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 27,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
@@ -17193,10 +18232,12 @@ static RE_UINT8 re_nfkc_quick_check_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      48,  48, 109,  48, 110, 111, 112,  48, 113, 114, 115,  48,  48,  48,  48,  48,
      48,  48,  48,  48,  48, 116,  48,  48,  48,  48,  48,  48,  48,  48, 117,  48,
+      0,  90,  48, 118,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    112, 118, 119, 120, 121, 122,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 123, 124, 125, 126,  77,   0,   0,   0,
-    127, 128, 129,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    112, 119, 120, 121, 122, 123,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 124, 125, 126, 127,  77,   0,   0,   0,
+    128, 129, 130,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  94,
      48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,
@@ -17440,6 +18481,8 @@ static RE_UINT8 re_nfkc_quick_check_table_3[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1,
     1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0,
@@ -17492,11 +18535,11 @@ static RE_UINT8 re_nfkd_quick_check_table_1[] = {
      5, 19,  5,  5, 20, 21, 22,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5, 23, 24,  5,  5,  5,  5,  5, 25, 26,  5, 27,  5,
+     5,  5,  5,  5, 23, 24,  5,  5, 25,  5,  5, 26, 27,  5, 28,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
-     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 28,  5,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 29,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
@@ -17606,10 +18649,12 @@ static RE_UINT8 re_nfkd_quick_check_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      59,  59,  65,  59, 135, 136, 137,  59, 138, 139, 140,  59,  59,  59,  59,  59,
      59,  59,  59,  59,  59,   7,  59,  59,  59,  59,  59,  59,  59,  59, 141,  59,
+      0, 115,  59, 142,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    137, 142, 143, 144, 145, 146,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 147, 148, 149,  39, 102,   0,   0,   0,
-    150,  60, 151,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    137, 143, 144, 145, 146, 147,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 148, 149, 150,  39, 102,   0,   0,   0,
+    151,  60, 152,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 118,
      59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,
@@ -17652,9 +18697,10 @@ static RE_UINT8 re_nfkd_quick_check_table_3[] = {
     255, 247, 255, 255, 255,  63, 255, 255, 255, 231, 255, 255, 255, 255, 255, 167,
     255, 255, 255, 243, 255, 255, 255, 254, 255, 255, 255,  63,   0,   0,   0,  32,
     155,  33,   0,  20,  16,   0,   0,   0,  64,  24,  32,  32,   0,   0,   0, 132,
-    160,   3,   2,   0,   0,  48,   0,   0, 105,   1,   8, 245, 123,  21, 105,  85,
-    105,   8,   8, 161,   0,   4,   0, 240,  17,   4,   0, 240,   0, 248,   0,   0,
-      0, 128,   0,   0,   0,   0, 255, 255, 248, 255,   0,   0,   0, 254, 252, 255
+    160,   3,   2,   0,   0,  48,   0,   0,   0, 192, 255, 255, 105,   1,   8, 245,
+    123,  21, 105,  85, 105,   8,   8, 161,   0,   4,   0, 240,  17,   4,   0, 240,
+      0, 248,   0,   0,   0, 128,   0,   0,   0,   0, 255, 255, 248, 255,   0,   0,
+      0, 254, 252, 255
 };
 
 RE_UINT32 re_get_nfkd_quick_check(RE_UINT32 codepoint) {
@@ -17789,11 +18835,11 @@ static RE_UINT8 re_numeric_type_table_1[] = {
     33, 34, 35, 36, 37, 38, 39, 40, 10, 41, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 42, 43, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 44, 45, 10, 10, 46, 10, 47, 48, 49, 10, 50, 10,
-    51, 10, 52, 10, 10, 10, 10, 10, 53, 10, 54, 10, 10, 10, 55, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 56, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 44, 45, 10, 10, 46, 47, 48, 49, 50, 10, 51, 10,
+    52, 10, 53, 10, 10, 10, 10, 10, 54, 10, 55, 10, 10, 10, 56, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 57, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 57, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 58, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
@@ -17934,7 +18980,7 @@ static RE_UINT8 re_numeric_type_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,  96,   0,   0,   1,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,  97,  98,   0,   0,   0,   0,   0,   0,   1,   0,   0,   3,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  99,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,  99,   0,
      20,  20,  20, 100,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -17942,11 +18988,13 @@ static RE_UINT8 re_numeric_type_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0, 103,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,  67,   0,   0,   0,  68,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,  67,  67,   0,   0,   0,  68,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 104, 105,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,  76,   0,   0,   0,   1,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,  33,  20, 106,   0,   0, 107, 108,   0,   0,   0,   0,   0,   0,
@@ -18228,11 +19276,11 @@ static RE_UINT8 re_numeric_value_table_1[] = {
     33, 34, 35, 36, 37, 38, 39, 40, 10, 41, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 42, 43, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 44, 45, 10, 10, 46, 10, 47, 48, 49, 10, 50, 10,
-    51, 10, 52, 10, 10, 10, 10, 10, 53, 10, 54, 10, 10, 10, 55, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 56, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 44, 45, 10, 10, 46, 47, 48, 49, 50, 10, 51, 10,
+    52, 10, 53, 10, 10, 10, 10, 10, 54, 10, 55, 10, 10, 10, 56, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 57, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 57, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 58, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
@@ -18373,7 +19421,7 @@ static RE_UINT8 re_numeric_value_table_2[] = {
       0,   0,   0,   0,   0,   0,   0, 108,   0,   0,   1,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0, 109, 110,   0,   0,   0,   0,   0,   0,   1,   0,   0,   3,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 111,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0, 111,   0,
     112, 113, 114, 115,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -18381,11 +19429,13 @@ static RE_UINT8 re_numeric_value_table_2[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0, 118,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 119,   0,   0,   0, 120,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 119, 119,   0,   0,   0, 120,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 121, 122,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0, 123,   0,   0,   0,   1,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0, 124, 125, 126,   0,   0, 127, 128,   0,   0,   0,   0,   0,   0,
@@ -18793,51 +19843,51 @@ static RE_UINT8 re_other_alphabetic_table_2[] = {
       4,   0,   5,   6,   0,   0,   7,   8,   9,  10,   0,   0,   0,  11,   0,   0,
      12,  13,   0,   0,   0,   0,  14,  15,  16,  17,  18,  19,  20,  21,  22,  19,
      20,  21,  23,  24,  20,  21,  25,  26,  20,  21,  27,  19,  28,  21,  29,   0,
-     16,  21,  30,  19,  20,  21,  30,  19,  16,  21,  31,  19,  20,   0,  32,  33,
-      0,  34,  35,   0,   0,  36,  35,   0,   0,   0,   0,  37,  38,  39,   0,   0,
-      0,  40,  41,  42,  43,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     30,  21,  31,  19,  20,  21,  31,  32,  16,  21,  33,  19,  20,   0,  34,  35,
+      0,  36,  37,   0,   0,  38,  37,   0,   0,   0,   0,  39,  40,  41,   0,   0,
+      0,  42,  43,  44,  45,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,  33,  33,  33,  33,   0,  44,  45,   0,
-      0,   0,   0,   0,  46,  47,   0,   0,   0,  48,   0,   0,   0,   0,   0,   0,
-     49,   0,  50,  51,   0,  52,  53,   0,  54,  55,  16,   0,  56,  57,   0,  58,
-      0,  59,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  60,
+      0,   0,   0,   0,   0,   0,   0,   0,  35,  35,  35,  35,   0,  46,  47,   0,
+      0,   0,   0,   0,  48,  49,   0,   0,   0,  50,   0,   0,   0,   0,   0,   0,
+     51,   0,  52,  53,   0,  54,  55,   0,  30,  56,  16,   0,  57,  58,   0,  59,
+      0,  60,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  61,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,  44,  61,  62,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,  46,  62,  63,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  61,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  62,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,  63,  21,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     64,  65,   0,   0,  66,  14,  67,  52,   0,  68,  69,   0,  16,  14,   0,   1,
-      0,  70,  71,  72,   0,  73,   0,  74,   0,   0,   0,   0,   0,   0,   0,  75,
+      0,   0,   0,  64,  21,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     65,  66,   0,   0,  67,  14,  68,  54,   0,  69,  70,   0,  16,  14,   0,   1,
+      0,  71,  72,  73,   0,  74,   0,  75,   0,   0,   0,   0,   0,   0,   0,  76,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,  76,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,  77,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  77,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  78,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     78,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,  79,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,  80,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     56,  81,  82,  83,  28,  84,  28,   0,  56,  69,  46,   0,  56,  85,  86,   0,
-      0,  87,   0,   0,   0,   0,  52,  45,  16,  21,  22,  19,   0,   0,   0,   0,
-      0,  55,  88,   0,   0,  10,  66,   0,   0,   0,   0,   0,   0,  89,  90,   0,
-      0,  91,  92,   0,   0,  93,   0,   0,  94,  95,   0,   0,   0,   0,   0,   0,
-      0,  96,   0,   0,   0,   0,   0,   0,   0,  97,  98,   0,   0,   0,  99, 100,
-    101, 102, 103,   0, 104,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0, 105,   0,   0, 106, 107,   0,   0,   0, 108, 109,   0, 110,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 111,   0,   0,   0,   0,   0,   0,   0,   0,
+     79,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,  80,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,  81,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     57,  82,  83,  84,  57,  85,  28,   0,  57,  70,  48,   0,  57,  86,  87,   0,
+      0,  88,  89,   0,   0,   0,  54,  47,  16,  21,  22,  19,   0,   0,   0,   0,
+      0,  56,  90,   0,   0,  10,  67,   0,   0,   0,   0,   0,   0,  91,  92,   0,
+      0,  93,  94,   0,   0,  95,   0,   0,  96,  97,   0,   0,   0,   0,   0,   0,
+      0,  98,   0,   0,   0,   0,   0,   0,   0,  99, 100,   0,   0,   0, 101, 102,
+    103, 104, 105,   0, 106,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0, 107,   0,   0, 108, 109,   0,   0,   0, 110, 111,   0, 112,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 113, 114, 115,  94,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 112,  61, 113,   0,   0, 114,
-      0,   0,   0,   0,  76,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 116,  62, 117,   0,   0, 118,
+      0,   0,   0,   0,  77,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    115, 116,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    119, 120,   0,   0, 121,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 117,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 122,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,  10, 118, 118,  62,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,  10, 123, 123,  63,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
 
@@ -18849,29 +19899,30 @@ static RE_UINT8 re_other_alphabetic_table_3[] = {
      15,   0,   0,   0,   0,   0,   0, 204, 255, 223, 224,   0,  12,   0,   0,   0,
      14,   0,   0,   0,   0,   0,   0, 192, 159,  25, 128,   0, 135,  25,   2,   0,
       0,   0,  35,   0, 191,  27,   0,   0,  12,   0,   0,  28, 159,  25, 192,   0,
-      4,   0,   0,   0, 199,  29, 128,   0, 223,  29,  96,   0, 223,  29, 128,   0,
-      0, 128,  95, 255,   0,   0,  12,   0,   0,   0, 242,   7,   0,  32,   0,   0,
-      0,   0, 242,  27,   0,   0, 254, 255,   3, 224, 255, 254, 255, 255, 255,  31,
-      0, 248, 127, 121,   0,   0, 192, 195, 157,  63,  30,   0, 252, 191,   0,  60,
-      0,   0, 192, 255, 255,   1,   0,   0,  96,   0,   0,   0,   0,   2,   0,   0,
-    255,  15, 255,   1,   0,   0, 128,  15,   0,   0, 224, 127, 254, 255,  31,   0,
-      0,   0,   0, 128,   1, 112,   0,   0,  31,   0,   0,   0,   0,   0, 224, 255,
-      7,   0,   0,   0, 254,  51,   0,   0, 128, 255,   3,   0, 240, 255, 127,   0,
-    128, 255,  31,   0, 255, 255, 255, 255, 255,   3,   0,   0,   0,   0, 240,  15,
-      4,   8,   0,   0, 248,   0,   0,   0,   3,   0,   0,   0,  47,   0,   0,   0,
-    192,   7,   0,   0, 128, 255,   7,   0,   0, 254, 127,   0,   8,  48,   0,   0,
-      0,   0,   0,  56,   0,   0, 157,  65,   0, 248,  32,   0, 248,   7,   0,   0,
-      0,   0,   0,  64,   0,   0, 192,   7, 110, 240,   0,   0, 240,   0,   0,   0,
-      0,  24,   0,   0,   0,   0,   0, 255,  63,   0,   0,   0,   0,   0,  24,   0,
-      0,   0, 255,   1,   0,   0, 248, 255,   0, 192,   0,   0,   0, 240, 159,  64,
-     59,   0,   0,   0,   0, 128,  63, 127,   0,   0,   0,  48,   0,   0, 255, 127,
-      1,   0,   0,   0,   0, 248,  63,   0,   0,   0,   0, 224, 255,   7,   0,   0,
-      0, 240, 255,   1,   0,   0, 191,  25,   5,   0,   0,   0,   0,   0, 254, 252,
-     16,   0,   0,   0, 254,   7,   0,   0,   0,   0, 224, 123,   0,   0, 254,  15,
-      0, 252, 255,   0,   0, 128, 127, 127,   0,   0, 252, 255, 255, 254, 127,   0,
-      0,   0, 126, 180, 139,   0,   0,   0,   0, 124, 123,   0,   0,   0, 120,   0,
+      4,   0,   0,   0, 199,  29, 128,   0,  31,   0,   0,   0, 223,  29,  96,   0,
+     12,   0,   8,   0, 223,  29, 128,   0,   0, 128,  95, 255,   0,   0,  12,   0,
+      0,   0, 242,   7,   0,  32,   0,   0,   0,   0, 242,  27,   0,   0, 254, 255,
+     15, 224, 255, 254, 255, 255, 255,  31,   0, 248, 127, 121,   0,   0, 192, 195,
+    157,  63,  30,   0, 252, 191,   0,  60,   0,   0, 192, 255, 255,   1,   0,   0,
+     96,   0,   0,   0,   0,   2,   0,   0, 255,  15, 255,   1,   0,   0, 128,  15,
+      0,   0, 224, 127, 254, 255,  31,   0,   0,   0,   0, 128,   1, 112,   0,   0,
+      0,   0, 224, 255,   7,   0,   0,   0, 254,  51,   0,   0, 128, 255,   3,   0,
+    240, 255, 127,   0, 128, 255,  31,   0, 255, 255, 255, 255, 255,   3,   0,   0,
+      0,   0, 240,  15,   4,   8,   0,   0, 248,   0,   0,   0,   3,   0,   0,   0,
+     47,   0,   0,   0, 192,   7,   0,   0, 128, 255,   7,   0,   0, 254, 127,   0,
+      8,  48,   0,   0,   0,   0,   0,  56,   0,   0, 157,  65,   0, 248,  32,   0,
+    248,   7,   0,   0,   0,   0,   0,  64,   0,   0, 192,   7, 110, 240,   0,   0,
+    240,   0,   0,   0,   0,  24,   0,   0,   0,   0,   0, 255,  63,   0,   0,   0,
+      0,   0,  24,   0,   0,   0, 255,   1,   0,   0, 248, 255,   0, 192,   0,   0,
+      0, 240, 159,  64,   2,   0,   0,   0,  59,   0,   0,   0,   0, 128,  63, 127,
+      0,   0,   0,  48,   0,   0, 255, 127,   1,   0,   0,   0,   0, 248,  63,   0,
+      0,   0,   0, 224, 255,   7,   0,   0,   0, 240, 255,   1,   0,   0, 191,  25,
+      5,   0,   0,   0,   0,   0, 254, 252,  16,   0,   0,   0, 254,   7,   0,   0,
+      0,   0, 224, 123,   0,   0, 254,  15,   0, 252, 255,   0,   0, 128, 127, 127,
+      0,   0, 252, 255, 255, 254, 127,   0,   0,   0, 126, 180, 139,   0,   0,   0,
+      0, 124, 123,   0,   0,   0, 120,   0,  11,   0,   0,   0,   0,   0, 240, 199,
       0, 128, 254, 255, 255, 128,   7,   0,   0,   0,   3,   0, 127, 255, 255, 249,
-    219,   7,   0,   0, 128,   0,   0,   0, 255,   3, 255, 255
+    219,   7,   0,   0,   0, 128,   0,   0, 128,   0,   0,   0, 255,   3, 255, 255
 };
 
 RE_UINT32 re_get_other_alphabetic(RE_UINT32 codepoint) {
@@ -19166,74 +20217,74 @@ RE_UINT32 re_get_other_id_start(RE_UINT32 codepoint) {
 
 /* Other_Lowercase. */
 static RE_UINT8 re_other_lowercase_table_1[] = {
-    0, 1, 1, 1, 1, 1, 1, 2, 3, 4, 1, 5, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 7, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+     0,  1,  1,  1,  2,  1,  1,  3,  4,  5,  1,  6,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  7,  8,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1, 10,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1
 };
 
 static RE_UINT8 re_other_lowercase_table_2[] = {
@@ -19241,29 +20292,33 @@ static RE_UINT8 re_other_lowercase_table_2[] = {
      0,  0,  0,  0,  0,  2,  3,  4,  0,  0,  5,  6,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  8,  9, 10,  8,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 11, 12,  0,  0,  0,  0,  0,  0, 13,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  8,  9, 10, 11,  9,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0, 13, 14,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0, 12, 13,  0,  0,  0,  0,  0,  0, 14,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0, 14, 15,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0, 16,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0, 15,  0,  0,  0,  0,  0,  0, 16,  0,  0,  0, 17,
+     0,  0,  0,  0, 16,  0,  0,  0,  0,  0,  0, 17,  0,  0,  0, 18,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 18,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 19, 20,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 19, 20,  0,  0
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 21, 22,  0,  0,
+     0, 14,  9, 23,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
 static RE_UINT8 re_other_lowercase_table_3[] = {
       0,   0,   0,   0,   0,   4,   0,   4,   0,   0, 255,   1,   3,   0,   0,   0,
-     31,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   4,   0, 240, 255, 255,
-    255, 255, 255, 255, 255,   7,   0,   1,   0,   0,   0, 248,   0,   0,   2, 128,
-      0,   0, 255,  31,   0,   0, 255, 255, 255,   3,   0,   0,   0,   0,   0,  48,
-      0,   0,   1,   0,   0,   0,   0,   3,   0,   0,   0, 240, 185, 255, 255, 255,
-    255, 255, 253,   7
+     31,   0,   0,   0,  32,   0,   0,   0,   0,   0,   0,   4,   0,   0,   0,  16,
+      0, 240, 255, 255, 255, 255, 255, 255, 255,   7,   0,   1,   0,   0,   0, 248,
+      0,   0,   2, 128,   0,   0, 255,  31,   0,   0, 255, 255, 255,   3,   0,   0,
+      0,   0,   0,  48,   0,   0,   1,   0,   0,   0,  28,   3,   0,   0,   0, 240,
+      0,   2,   0,   0, 185, 255, 255, 255, 255, 255, 253,   7, 255,  63,   0,   0
 };
 
 RE_UINT32 re_get_other_lowercase(RE_UINT32 codepoint) {
@@ -19575,7 +20630,7 @@ static RE_UINT8 re_posix_alnum_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 47, 13, 13, 13, 48, 49, 13,
     13, 13, 13, 50, 13, 13, 13, 13, 13, 13, 51, 10, 10, 10, 52, 10,
-    13, 13, 13, 13, 53, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    13, 13, 13, 13, 53, 13, 13, 13, 54, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
@@ -19640,7 +20695,7 @@ static RE_UINT16 re_posix_alnum_table_2[] = {
      20,   5,  21,  22,   5,   5,  23,  24,  25,   5,  26,   5,   5,  27,  28,  29,
      30,  31,  32,  33,  34,   5,  35,  36,   5,  37,  38,  39,  40,  41,  42,  43,
      44,  45,  46,  47,  48,  49,  50,  51,  52,  49,  53,  54,  55,  56,  57,   0,
-     58,  59,  60,  61,  58,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72,
+     58,  59,  60,  61,  62,  63,  64,  65,  58,  66,  67,  68,  69,  70,  71,  72,
      73,  74,  75,   0,  76,  77,  78,   0,  79,   0,  80,  81,  82,  83,   0,   0,
       5,  84,  25,   5,  85,   5,  86,  87,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,  88,   5,  89,  90,  91,   5,  92,   5,  74,   0,  93,   5,   5,  94,
@@ -19682,66 +20737,68 @@ static RE_UINT16 re_posix_alnum_table_2[] = {
     193, 102,   0,  83,  83,   0,  80, 194,   5, 102, 102, 153,  27,   0,   0,   0,
       5,   5,  16,   0,   5, 153,   5, 153,   5, 150,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   5, 195,   0,   0,  83, 196, 197,  25, 198,  25, 194, 116,
-      5,   5, 197, 199, 145,  32, 200,  16,   5, 153, 201, 202,   5,   5, 203,   0,
-    204, 205,   0,   0, 206, 119,   5,  16,  40,  49, 207,  61,   0,   0,   0,   0,
+      5,   5, 197, 199,   5,  32, 200,  16,   5, 153, 201, 202,   5,   5, 203,   0,
+    204, 205, 198,   0, 206, 119,   5,  16,  40,  49, 207,  61,   0,   0,   0,   0,
       5,   5, 208, 198,   5,   5, 209,   0,   0,   0,   0,   0,   5, 210, 211,   0,
       5, 103, 212,   0,   5, 213,   0,   0,  66, 163, 214,   0,   0,   0,   0,   0,
       5,  32,   0,   0,   0,   5,   5, 215, 216, 217, 218,   0,   0, 219,  30, 220,
       5, 221,  25,   5, 222,  25,   5,  32,   0,   0,   0,   0,   0,   0,   0,   0,
     223, 224,  79, 148, 172, 225,   0,   0, 226, 227, 228, 229, 230,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 116,   0,   0,   0,   0,   0, 231,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 116, 231, 232,  79,   0,   0, 233,   0,   0,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 167,   0,   0,   0,
       5,   5,   5, 140,   5,   5,   5,   5,   5,   5,  61,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  25,   5,   5, 181,
-      5, 140,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      5,  93, 234,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5, 214,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,  32, 103,  25,   5, 103,  25, 156,   5,  93,  61, 232,  93,   0,   0,   0,
+      5,  32, 103,  25,   5, 103,  25, 156,   5,  93,  61, 235,  93,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   5,   5,   0,   0,   0,   0,   5,   5, 233,   5, 234,   0,   0, 235,
+      0,   0,   5,   5,   0,   0,   0,   0,   5,   5, 236,   5, 237,   0,   0, 238,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 236,
+      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 239,
       5,   5,   5,   5,   5,   5, 102,   0,  16,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 237,
-      5,   5,   5,   5,   5,   5,   5,   5,   5, 218, 238, 201,   5,   5,   5,   5,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 240,
+      5,   5,   5,   5,   5,   5,   5,   5,   5, 241, 242, 201,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5, 108,   0,   0,   0,   0,   0,   0,   0,   0,
-      5,   5,   5, 239, 240,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      5,   5,   5, 243, 244,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      5,   5, 241,   5, 242, 243, 244,   5, 245, 246, 247,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5, 248, 249,  87, 241, 241, 250, 250, 223, 223, 251,   0,
+      5,   5, 245,   5, 246, 247, 248,   5, 249, 250, 251,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5, 252, 253,  87, 245, 245, 254, 254, 223, 223, 255,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 103,   0,   0,   0,   0,   0,   0,   0,
-    252, 253,   0,   0,   0,   0,   0,   0,   5, 254, 255,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,  25, 156,   5, 256,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 103, 256,   0,   0,   0,   0,   0,   0,
+    257, 258,   5, 156, 135,   0,   0,   0,   5, 259, 260,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,  25, 156,   5, 261,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,  25, 261,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 262,
+      5,   5,   5,   5,   5,   5, 194,   0,   5,   5, 263,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 257,
-      5,   5,   5,   5,   5,   5, 194,   0,   5,   5, 258,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    244, 259, 260, 261, 262, 263,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    248, 264, 265, 266, 267, 268,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,  25, 162, 162, 107,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   0,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5,   5,   5,   5,   5,  32,   5,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5,   5,   5,   5,   5, 167,   5,   5,   5,   5,   5,   5,
     118,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5, 264,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5, 269,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,  79,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
     118,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
-      5,   5,   5,   5,   5,   5,   5,   5,   5,   5, 163,   0,   0,   0,   0,   0
+      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,  33,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
+      5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,  93,   0,   0
 };
 
 static RE_UINT8 re_posix_alnum_table_3[] = {
@@ -19759,13 +20816,13 @@ static RE_UINT8 re_posix_alnum_table_3[] = {
     238, 135, 249, 255, 255, 253, 109, 195, 135,  25,   2,  94,   0,   0,  63,   0,
     238, 191, 251, 255, 255, 253, 237, 227, 191,  27,   1,   0,  15,   0,   0,  30,
     238, 159, 249, 255, 159,  25, 192, 176,  15,   0,   2,   0, 236, 199,  61, 214,
-     24, 199, 255, 195, 199,  29, 129,   0, 239, 223, 253, 255, 255, 253, 255, 227,
-    223,  29,  96,  39,  15,   0,   0,   0, 255, 253, 239, 227, 223,  29,  96,  96,
-     15,   0,   6,   0, 255, 223, 253, 255, 255, 255, 255, 231, 223,  93, 240, 128,
+     24, 199, 255, 195, 199,  29, 129,   0, 255, 223, 253, 255, 255, 253, 255, 227,
+    223,  29,  96,  39,  15,   0,   0,   0, 239, 223, 253, 255, 255, 253, 239, 227,
+    223,  29,  96,  96,  15,   0,  14,   0, 255, 255, 255, 231, 223,  93, 240, 128,
      15,   0,   0, 252, 238, 255, 127, 252, 255, 255, 251,  47, 127, 128,  95, 255,
       0,   0,  12,   0, 254, 255, 255, 255, 255, 255, 255,   7, 127,  32,   0,   0,
     214, 247, 255, 255, 175, 255, 255,  59,  95,  32,   0, 240,   1,   0,   0,   0,
-    255, 254, 255, 255, 255,  31, 254, 255,   3, 255, 255, 254, 255, 255, 255,  31,
+    255, 254, 255, 255, 255,  31, 254, 255,  15, 255, 255, 254, 255, 255, 255,  31,
     255, 255, 127, 249, 255, 255,   0,  60, 191,  32, 255, 255, 255, 255, 255, 247,
     255,  61, 127,  61, 255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255,
     255, 255,  61, 255, 255, 255,   0,   0, 255, 255,  63,  63, 255, 159, 255, 255,
@@ -19796,22 +20853,23 @@ static RE_UINT8 re_posix_alnum_table_3[] = {
     255, 255, 255, 192, 111, 240, 239, 254,  31,   0,   0,   0, 255,  27,   3,   0,
     128,   0, 255, 255,  63,   0,   0,   0,   3,   0,   0,   0,   0,   0,  62,   0,
       4,   0, 255, 255, 240,   0, 255, 255, 255, 255,  71,   0,  30, 192,   0,  20,
-    255, 255, 251, 255, 255, 255, 159,  64, 127, 189, 255, 191, 159,  25, 129, 224,
+    255, 255, 251, 255, 255, 255, 159, 192, 127, 189, 255, 191, 159,  25, 129, 224,
     187,   7,   0, 128, 179,   0,   0,   0, 255, 255,  63, 127,   0,   0,   0,  63,
      17,   0,   0,   0, 255, 255,  63,   1, 127,   0,   0,   0,   0,   0,   0, 128,
     127, 242, 111, 255, 255, 255, 191, 153,   7,   0,   0,   0, 255, 252, 255, 255,
      26,   0,   0,   0, 255, 255, 231, 127, 255, 255, 255,  32, 255, 253, 255, 255,
     255, 255, 127, 127, 255, 254, 127,   0, 127, 251, 255, 255, 255, 255, 127, 180,
-    203,   0,   0,   0, 191, 253, 255, 255, 255, 127, 123,   1,   0,   0,   1,   0,
-    248, 255, 255, 224, 255, 135, 255, 255, 255, 128, 255, 255,  11,   0,   3,   0,
-    255, 255, 255,   0,   0,   0, 239, 111,   0,   0,   7,   0, 255,   7, 255,  31,
+    203,   0,   0,   0, 191, 253, 255, 255, 255, 127, 123,   1, 255, 255, 253, 255,
+    255, 255, 255, 199,   0,   0,   1,   0, 126,   0,   0,   0, 248, 255, 255, 224,
+    255, 135, 255, 255, 255, 128, 255, 255,  11,   0,   3,   0, 255, 255, 255,   0,
+      0,   0, 239, 111,   7,   0,   4,   0,   0,   0,  39,   0, 255,   7, 255,  31,
     255,   1, 255,  67, 255, 255, 223, 255, 255, 255, 255, 223, 100, 222, 255, 235,
     239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,
      63, 255, 255, 255, 253, 255, 255, 247, 255, 127, 255, 255, 247,  15,   0,   0,
-    127, 255, 255, 249, 219,   7,   0,   0, 255,  31, 128,  63,   0,  64,   0,   0,
-    255,  15,   0,   0, 127, 111, 255, 127, 143,   8,   0,   0, 150, 254, 247,  10,
-    132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,
-      3,   0, 255, 255
+    224,   7,   0,   0, 127, 255, 255, 249, 219,   7, 255, 255, 255,  31, 128,  63,
+      0,  64,   0,   0, 255,  15,   0,   0, 127, 111, 255, 127, 143,   8,   0,   0,
+    150, 254, 247,  10, 132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15,
+    238, 251, 255,  15,   3,   0, 255, 255
 };
 
 RE_UINT32 re_get_posix_alnum(RE_UINT32 codepoint) {
@@ -19965,39 +21023,39 @@ static RE_UINT8 re_posix_punct_table_2[] = {
       0,   0, 128,   0,   0,   0, 129,   0,   0,   0,   0,   0,   0,   0, 130,   0,
       0,   0, 131, 132,   0,  33,   0,   0,   0,  57,   0,   0,   0,   0,   0,   0,
       0,  43,   0,   0,   0,   0,   0,   0,   0,   0, 133,   0,   0,   0,   0,  11,
-      0,  35,  72,   0, 134, 106,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0, 135,  27,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 116,   0,   0,   0,   0,   0,   0, 136, 137,
-      0,   0,   0, 138,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,  35,  72,   0, 134, 106,   0,   0, 135,   0,   0,   0,   0,   0,   0,   0,
+      0,   0, 136,  27,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 116,   0,   0, 137,   0,   0,   0, 138, 139,
+      0,   0,   0, 140,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 139,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 141,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,  98,   0,   0,   0, 140,   0, 112, 141,   0,   0,   0,   0,   0,
+      0,   0,   0,  98,   0,   0,   0, 142,   0, 112, 143,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0, 142,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  11,
-      0,   0,   0,   0, 143,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0, 144,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  11,
+      0,   0,   0,   0, 145,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  63,  54,  54,  54,  86,   0,
-     54,  54,  54,  54,  54,  54,  54,  73,  54, 144,  54, 145, 146, 147,  54,  52,
-     54,  54, 148,   0,   0,   0,   0,   0,  54,  54,  93,   0,   0,   0,   0,   0,
+     54,  54,  54,  54,  54,  54,  54,  73,  54, 146,  54, 147, 148, 149,  54,  52,
+     54,  54, 150,   0,   0,   0,   0,   0,  54,  54,  93,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0, 149,  43, 140, 140,  32,  32, 104, 104, 150,   0,
+      0,   0,   0,   0,   0,   0, 151,  43, 142, 142,  32,  32, 104, 104, 152,   0,
      54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,
-      0, 142,   0, 151, 152,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0, 144,   0, 153, 154,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  32,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,  35,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  40,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 153,   0,   0,   0, 154,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0, 155,   0,   0,   0, 156,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,  27,   0,   0,   0,   0,   0,   0,   0,   0,
-     54, 155,  54,  54,  81, 156, 157,  73, 158, 107,  42,  42,  87,  21,   0, 159,
-    160, 161, 162, 110,   0,   0,   0,   0,  54,  54,  54,  54,  54,  54,  54,  54,
+     54, 157,  54,  54,  81, 158, 159,  73, 160, 107,  42,  42,  87,  21,   0, 161,
+    162, 163, 164, 110,   0,   0,   0,   0,  54,  54,  54,  54,  54,  54,  54,  54,
      54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,  54,
-     54,  54,  54,  54,  54,  54, 163, 164,  54,  54,  54,  81,  54,  54, 165, 166,
-    155,  54, 167,  54,  64, 168,   0,   0,  54,  54,  54,  54,  54,  54,  54,  54,
-     54,  54,  81, 169, 170, 171, 172, 173,  54,  54,  54,  54, 108,  54,  52,   0
+     54,  54,  54,  54,  54,  54, 165, 166,  54,  54,  54, 167,  54,  54, 168, 169,
+    157,  54, 170,  54,  64, 171,   0,   0,  54,  54,  54,  54,  54,  54,  54,  54,
+     54,  54,  81, 172, 173, 174, 175, 176,  54,  54,  54,  54, 108,  54,  52,   0
 };
 
 static RE_UINT8 re_posix_punct_table_3[] = {
@@ -20034,17 +21092,18 @@ static RE_UINT8 re_posix_punct_table_3[] = {
       0,  32,   0,   0,   0,   0, 224,   3, 192,   3,   0,   0, 128,  63,   0,   0,
       0,   0,   0, 216,   0,   0,  48,   0, 224,  33,   0, 232,   0,   0,   0,  63,
       0, 248,   0,  44,  64,   0,   0,   0, 254, 255, 255,   0,  14,   0,   0,   0,
-    255,  31,   0,   0, 112,   0,   0,   0,   0,   0,   0, 220,  62,   0,   0,   0,
-      0,   0, 224, 255, 255, 255,   3, 128,   0,   0,  31,   0,   0,   0,   6,   0,
-      0,   0,  32,   0,  48,   0,   0,   0,   0,   0, 128,   7,   0,   0,   0, 144,
-    127, 254, 255, 255,  31,  28,   0,   0,  24, 240, 255, 255, 255, 195, 255, 255,
-     35,   0,   0,   0,   2,   0,   0,   8,   8,   0,   0,   0,   0, 224, 223, 255,
-    239,  15,   0,   0,   0,  16,   1,   0,   0,  64,   0,   0, 255,  15, 255, 255,
-    255, 127, 254, 255, 254, 255, 254, 255,   0, 224, 255, 255, 192, 255, 255, 255,
-      7,   0, 255, 255, 255, 255, 255,  15, 255,   1,   3,   0, 255, 255, 255, 224,
-    255,  31, 255,  31, 255, 255, 255,   1, 255,  15,   1,   0, 255,   0, 255,   3,
-    255,  63,   3,   0, 255,  63,  31,  31, 127,   0, 255, 255, 255,  31, 255,   7,
-     63,   0, 255,   3, 255,   0, 127,   0
+    255,  31,   0,   0, 112,   0,   0,   0,   0,   0,   0, 220, 255,   3,   0,   0,
+     62,   0,   0,   0, 248, 255,   0,   0,   0,   0, 224, 255, 255, 255,   3, 128,
+      0,   0,  31,   0,   0,   0,   6,   0,   0,   0,  32,   0,  48,   0,   0,   0,
+      0,   0, 128,   7,   0,   0,   0, 144, 127, 254, 255, 255,  31,  28,   0,   0,
+     24, 240, 255, 255, 255, 195, 255, 255,  35,   0,   0,   0,   2,   0,   0,   8,
+      8,   0,   0,   0,   0, 224, 223, 255, 239,  15,   0,   0,   0,  16,   1,   0,
+      0,  64,   0,   0, 255,  15, 255, 255, 255, 127, 254, 255, 254, 255, 254, 255,
+      0, 224, 255, 255, 192, 255, 255, 255,   7,   0, 255, 255, 255, 255, 255,  15,
+    255,   1,   3,   0, 255, 255, 255, 240, 255,  31, 255,  31, 255, 255, 127, 248,
+    255, 255, 255,   3, 255,  15,   1,   0, 255,   0, 255,   3, 255,  63,   3,   0,
+    255,  63, 255,  31, 255,   1, 255, 255, 255, 255, 255, 191,  63, 192, 255,  15,
+    255,   1, 255,   1
 };
 
 RE_UINT32 re_get_posix_punct(RE_UINT32 codepoint) {
@@ -20112,7 +21171,7 @@ static RE_UINT8 re_print_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 52, 13, 13, 13, 53, 54, 13,
     13, 13, 13, 55, 13, 13, 13, 13, 13, 13, 56, 17, 17, 17, 57, 17,
-    13, 13, 13, 13, 58, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+    13, 13, 13, 13, 58, 13, 13, 13, 59, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
@@ -20156,18 +21215,18 @@ static RE_UINT8 re_print_table_1[] = {
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-    59, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+    60, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 60,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 61,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 60
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 61
 };
 
 static RE_UINT16 re_print_table_2[] = {
@@ -20218,78 +21277,80 @@ static RE_UINT16 re_print_table_2[] = {
     158, 159, 106,   1,   2, 160,   0, 161, 162, 163,   0,   0,   1, 164, 134,   1,
     165, 166, 167,   1,   1,   0,   1, 168,   1, 169, 170, 171, 172, 173,   0,   0,
       1,   1, 174,   0,   1, 175,   1, 176,   1, 177,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   2,   1, 178,   0,   0,   1,   9,  69, 136, 179, 136, 116,  73,
-      1,   1, 180,  72,   1,   1, 181, 182,   1,  95,   9,  73,   1,   1,   1, 183,
-    184,   2,   0,   0, 185, 150,   1, 186,  19, 187, 188, 189,   0,   0,   0,   0,
-      1,   1, 190, 191,   1,   1, 177,   0,   0,   0,   0,   0,   1, 170,  76,   0,
-      1,   1, 192, 193,   1,  69, 179,   0,  14,  82, 103,   0,   0,   0,   0,   0,
-      1,  53,   0,   0,   0,   1,   1, 194, 195, 196, 197,   0,   0,  98,   3, 198,
-      1,   1,   9,   1,   1, 199,   1,  71,   0,   0,   0,   0,   0,   0,   0,   0,
-    200, 201, 202,  88, 134, 203,   0,   0, 204, 205, 177, 206, 207, 179,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,  71,   0,   0,   0,   0,   0, 208,   1, 209,
+      0,   0,   0,   2,   1, 178,   0, 179,   1,   9,  69, 136, 180, 136, 116,  73,
+      1,   1, 181,  72,   1,   1, 182, 183,   1,  95,   9,  73,   1,   1,   1, 184,
+    185,   1, 186,   0, 187, 150,   1, 188,  19, 189, 190, 191,   0,   0,   0,   0,
+      1,   1, 192, 186,   1,   1, 177,   0,   0,   0,   0,   0,   1, 170,  76,   0,
+      1,   1, 193, 194,   1,  69, 180,   0,  14,  82, 103,   0,   0,   0,   0,   0,
+      1,  53,   0,   0,   0,   1,   1, 195, 196, 197, 198,   0,   0,  98,   3, 199,
+      1,   1,   9,   1,   1, 200,   1,  71, 180,   0,   0,   0,   0,   0,   0,   0,
+    201, 202, 203,  88, 134, 204,   0,   0, 205, 206, 177, 207, 208, 180,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,  71, 209, 210,  69,   0,   0, 211,   1, 212,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  69,   0,   0,   0,
-      1,   1,   1, 210,   1,   1,   1,   1,   1,   1, 211,   0,   0,   0,   0,   0,
+      1,   1,   1, 213,   1,   1,   1,   1,   1,   1, 214,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 136,   1,   1, 175,
-      1, 212,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,  78,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1, 103,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,  71,   2, 213,   1,   2, 150, 214,   1,   1, 215, 216, 217,   0,   0,   0,
+      1,  71,   2, 215,   1,   2, 150, 216,   1,   1, 217, 218, 219,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   1,   1,  93,   0,   0,   0,   1,   1, 218,   1, 219,   0,   0, 220,
+      0,   0,   1,   1,  93,   0,   0,   0,   1,   1, 220,   1, 221,   0,   0, 222,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 117,
       1,   1,   1,   1,   1,   1,  78,   0, 174,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 221,
-      1,   1,   1,   1,   1,   1,   1,   1,   1, 222, 223, 224,   1,   1,   1,   1,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 223,
+      1,   1,   1,   1,   1,   1,   1,   1,   1, 224, 225, 226,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,  53,   0,   0,   0,   0,   0,   0,   0,   0,
-      1,   1,   1, 225, 226, 211,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1, 227, 228, 214,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   1,  86, 115,   1,   1,   1, 211,   0,
-      1,   1,   1,   1,   1,   1,   1,  78,   1, 227,   1,   1,   1,   1,   1, 104,
-      1,   1, 228,   0,   0,   0,   0,  74,   1,   1,  73,  71,   0,   0,   0,   0,
-      1,   1,  95,   1,  60, 229, 230,   1, 231, 232, 233,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1, 234,   1,   1,   1,   1,   1,   1,   1,   1, 235,   1,
+      0,   0,   0,   0,   0,   0,   0,   0,   1,  86, 115,   1,   1,   1, 214,   0,
+      1,   1,   1,   1,   1,   1,   1,  78,   1, 229,   1,   1,   1,   1,   1, 104,
+      1,   1, 230,   0,   0,   0,  74,  74,   1,   1,  73,  71,   0,   0,   0,   0,
+      1,   1,  95,   1,  60, 231, 232,   1, 233, 234, 235,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1, 236,   1,   1,   1,   1,   1,   1,   1,   1, 237,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1, 236, 237,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1,   1, 238, 239,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,
-    238, 239,   0,   0,   0,   0,   0,   0,   1, 240, 241,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   2, 240,   0,   0,   0,   0,   0,   0,
+    241, 242,   1, 243, 244,   0,   0,   0,   1, 245, 246,   0,   0,   0,   0,   0,
       0,   0,   0,   0, 136,  87,   1, 163,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 136,  69,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 247,
+      1,   1,   1,   1,   1,   1, 248,   0,   1,   1, 249,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 242,
-      1,   1,   1,   1,   1,   1, 243,   0,   1,   1, 244,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0, 245,   1, 246,   0,   0,  51,  76,   0,   0,   0,   0,   0,   0,
-    230, 247, 248, 249, 250, 251,   0, 252,   0,   0,   0,   0,   0,   0,   0,   0,
-      1,  82,   1,   1,  74, 253, 254,  78,   1,   1,   1,   1,   1, 255,   0, 256,
-    199,  53, 257, 228,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,
+      0,   0,   0, 250,   1, 251,   0,   0,  51,  76,   0,   0,   0,   0,   0,   0,
+    232, 252, 253, 254, 255, 256,   0, 257,   0,   0,   0,   0,   0,   0,   0,   0,
+      1,  82,   1,   1,  74, 258, 259,  78,   1,   1,   1,   1,   1, 243,   0, 260,
+    200,  53, 261, 230,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1, 258, 259,   1,   1,   1,  74,   1,   1,  71, 260,
-     82,   1, 177,   1,   9, 261,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,  74, 262, 115, 263, 264, 265,   1,   1,   1,   1, 137,   1, 104, 266,
+      1,   1,   1,   1,   1,   1, 164, 262,   1,   1,   1, 263,   1,   1,  69, 264,
+     82,   1, 177,   1,   9, 265,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,  74, 266,  92, 148, 267, 167,   1,   1,   1,   1, 137,   1, 104, 268,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   0,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,  71,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,  69,   1,   1,   1,   1,   1,   1,
      76,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1, 267,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1, 269,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 146,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
      76,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 104,   0,   0,   0,   0,   0,
-    268,   1,   1,   1,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1, 217,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  17,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 219,   0,   0,
+    270,   1,   1,   1,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,   1, 219,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  76
@@ -20307,10 +21368,10 @@ static RE_UINT8 re_print_table_3[] = {
     159,  57, 224, 176, 207, 255, 255,   0, 236, 199,  61, 214,  24, 199, 255, 195,
     199,  61, 129,   0, 192, 255, 255,   7, 255, 223, 253, 255, 255, 253, 255, 243,
     223,  61,  96,  39, 207, 255, 128, 255, 255, 253, 239, 243, 223,  61,  96,  96,
-    207, 255,   6,   0, 223, 253, 240, 255, 207, 255, 255, 255, 238, 255, 127, 252,
+    207, 255,  14,   0, 223, 253, 240, 255, 207, 255, 255, 255, 238, 255, 127, 252,
     255, 255, 251,  47, 127, 132,  95, 255, 192, 255,  28,   0, 254, 255, 255, 255,
     255, 255, 255, 135, 255, 255, 255,  15, 214, 247, 255, 255, 175, 255, 255,  63,
-     95,  63, 255, 243, 255, 254, 255, 255, 255,  31, 254, 255, 255, 255, 255, 254,
+     95, 127, 255, 243, 255, 254, 255, 255, 255,  31, 254, 255, 255, 255, 255, 254,
     255, 255, 255, 223, 255, 223, 255,   7, 191,  32, 255, 255, 255,  61, 127,  61,
     255,  61, 255, 255, 255, 255,  61, 127,  61, 255, 127, 255, 255, 255,  61, 255,
     255, 255, 255,  31, 255, 255, 255,   3, 255, 255,  63,  63, 255, 255, 255,   1,
@@ -20340,30 +21401,30 @@ static RE_UINT8 re_print_table_3[] = {
     255, 255, 255, 240, 111, 240, 239, 254, 255, 255,  63, 135, 255,   1, 255,   1,
     127, 248, 127,   0, 255, 255,  63, 254, 255, 255,  63, 255, 255, 255,   7, 255,
     255, 255,   3,  30,   0, 254,   0,   0, 255,   1,   0,   0, 255, 255,   7,   0,
-    255, 255,   7, 252, 255,   0, 255,   3, 255,  59,   3,   0, 255,   3,   0,   0,
-    255,  63, 252, 255,   7,  32, 255, 255, 255,   1, 255,   3, 254, 255,  31,   0,
-    255, 255, 251, 255, 127, 189, 255, 191, 255,   7, 255,   3, 255, 253, 237, 251,
-    159,  57, 129, 224, 207,  31,  31,   0, 255, 255, 255, 239,   3,   0,   0,   0,
-     31,   0, 255,   3, 255,  31,   0,   0, 255, 255,   7, 128, 127, 242, 111, 255,
-    255, 255, 191, 249, 127,   0, 255,   3,  31,   0,   0,   0,   7,   0, 255, 255,
-    255, 253, 255, 255, 255, 255, 127, 255,  63,   0, 255, 255, 255, 254, 127,   0,
-    127, 251, 255, 255, 255, 255, 127, 180, 191, 253, 255, 255, 255, 127, 251,   1,
-      0,   0,   1,   0, 255, 255,   3, 128, 255, 127,  31,   0,  15,   0,   0,   0,
-    255, 127, 255,   1, 255, 195, 255, 255, 255,  63,  63,   0,  63,   0, 255, 251,
-    251, 255, 255, 224, 255, 255,   0,   0, 255, 135, 255, 255, 255, 128, 255, 255,
-     31,   0,   3,   0,   0,   0, 239, 111,   7,   0,   0,   0,   0,   0,   7,   0,
-    240,   0, 255, 255, 255,   7, 255,  31, 255,   1, 255, 243, 127, 254, 255, 255,
-     63,   0,   0,   0, 100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223,
-    255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 255, 207, 255, 255,
-    255,  15,   0, 248, 254, 255,   0,   0, 127, 255, 255, 249, 219,   7,   0,   0,
-    255,  31, 255,  63, 255, 195,   0,   0, 127, 111, 255, 127, 159, 255, 127,   0,
-    255,  15, 255, 195,   0,   0, 254, 255, 255, 255,  31,   0, 150, 254, 247,  10,
-    132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,
-      0,   0,   3,   0, 255, 127, 254, 255, 254, 255, 254, 255, 255,  63,   0,   0,
-    192, 255, 255, 255, 255,   1,   3,   0, 255, 255, 255, 224, 255,  31, 255,  31,
-    255,  15,   1,   0, 255,  63,   3,   0, 255,  63,  31,  31, 255,  31, 255,   7,
-     63,   0, 255,   3, 255,   0, 127,   0,   0,   0, 255,   3,   3,   0, 255, 255,
-      2,   0,   0,   0
+    255, 255,   7, 252, 255,   0, 255,   3, 255,  59,   3,   0,   0,   0,   0, 224,
+    255,   3,   0,   0, 255,  63, 252, 255,   7,  32, 255, 255, 255,   1, 255,   3,
+    254, 255,  31,   0, 255, 255, 251, 255,   3,   0,   0,   0, 127, 189, 255, 191,
+    255,   7, 255,   3, 255, 253, 237, 251, 159,  57, 129, 224, 207,  31,  31,   0,
+    255, 255, 255, 239,  31,   0, 255,   3, 255,  31,   0,   0, 255, 255,   7, 128,
+    127, 242, 111, 255, 255, 255, 191, 249, 127,   0, 255,   3,  31,   0,   0,   0,
+      7,   0, 255, 255, 255, 253, 255, 255, 255, 255, 127, 255,  63,   0, 255, 255,
+    255, 254, 127,   0, 127, 251, 255, 255, 255, 255, 127, 180, 191, 253, 255, 255,
+    255, 127, 251,   1, 255, 255, 253, 255, 255, 255, 255, 199,   0,   0,   1,   0,
+    255, 255,   3, 128, 255, 127,  31,   0,  15,   0,   0,   0, 255, 195, 255, 255,
+    255,  63,  63,   0,  63,   0, 255, 251, 251, 255, 255, 224, 255, 255,   0,   0,
+    255, 135, 255, 255, 255, 128, 255, 255,  31,   0,   3,   0,   0,   0, 239, 111,
+      7,   0,   4,   0,   0,   0,  39,   0, 240,   0, 255, 255, 255,   7, 255,  31,
+    255,   1, 255, 243, 127, 254, 255, 255,  63,   0,   0,   0, 100, 222, 255, 235,
+    239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,
+     63, 255, 255, 255, 255, 207, 255, 255, 255,  15,   0, 248, 254, 255,   0,   0,
+    224,   7,   0,   0, 127, 255, 255, 249, 219,   7, 255, 255, 255,  63,   0,   0,
+      0, 128,   0,   0, 255,  31, 255,  63, 255, 195,   0,   0, 127, 111, 255, 127,
+    159, 255, 127,   0, 255,  15, 255, 195,   0,   0, 254, 255, 255, 255,  31,   0,
+    150, 254, 247,  10, 132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15,
+    238, 251, 255,  15,   0,   0,   3,   0, 255, 127, 254, 255, 254, 255, 254, 255,
+    192, 255, 255, 255, 255,   1,   3,   0, 255,  31, 255,  31, 255, 255, 127, 248,
+    255,  15,   1,   0, 255,  63,   3,   0, 255,  63, 255,  31,  63, 192, 255,  15,
+      0,   0, 255,   3,   3,   0, 255, 255,   2,   0,   0,   0
 };
 
 RE_UINT32 re_get_print(RE_UINT32 codepoint) {
@@ -20531,7 +21592,7 @@ static RE_UINT8 re_script_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 58, 13, 13, 13, 59, 60, 13,
     13, 13, 13, 61, 13, 13, 13, 13, 13, 13, 62, 20, 20, 20, 63, 20,
-    13, 13, 13, 13, 64, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    13, 13, 13, 13, 64, 13, 13, 13, 65, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
@@ -20575,7 +21636,7 @@ static RE_UINT8 re_script_table_1[] = {
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-    65, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    66, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
@@ -20643,84 +21704,86 @@ static RE_UINT16 re_script_table_2[] = {
     308, 309, 310, 311, 312, 313,  82, 314, 315, 316,  82,  82, 317, 318, 319, 320,
     321, 322, 323, 324, 325,  82, 326, 327, 328, 329, 330, 331, 332, 333,  82,  82,
     334, 334, 335,  82, 336, 337, 336, 338, 339, 340,  82,  82,  82,  82,  82,  82,
-     82,  82,  82, 341, 342, 343,  82,  82, 344, 345, 346, 347, 348, 349, 350, 351,
-    352, 352, 353, 354, 355, 355, 356, 357, 358, 359, 360, 361, 362, 362, 362, 363,
-    364, 365,  82,  82, 366, 367, 368, 369, 370, 371, 372, 373,  82,  82,  82,  82,
-    374, 374, 375, 376, 377, 377, 378,  82,  82,  82,  82,  82, 379, 380, 381,  82,
-    382, 382, 383, 384, 385, 386, 387,  82, 388, 389, 390,  82,  82,  82,  82,  82,
-    391, 392,  82,  82,  82, 393, 393, 394, 395, 396, 397,  82,  82, 398, 399, 400,
-    401, 401, 402, 403, 403, 404, 405, 406,  82,  82,  82,  82,  82,  82,  82,  82,
-    407, 408, 409, 410, 411, 412,  82,  82, 413, 414, 415, 416, 417, 418,  82,  82,
-     82,  82,  82,  82,  82,  82,  82, 419,  82,  82,  82,  82,  82, 420, 421, 422,
-    423, 423, 423, 423, 423, 423, 423, 423, 423, 423, 423, 423, 423, 423, 423, 423,
-    423, 423, 423, 423, 423, 423, 423, 423, 423, 423, 423, 423, 424,  82,  82,  82,
-    423, 423, 423, 425, 423, 423, 423, 423, 423, 423, 426,  82,  82,  82,  82,  82,
+     82,  82,  82, 341, 342, 343,  82, 344, 345, 346, 347, 348, 349, 350, 351, 352,
+    353, 353, 354, 355, 356, 356, 357, 358, 359, 360, 361, 362, 363, 363, 363, 364,
+    365, 366, 367,  82, 368, 369, 370, 371, 372, 373, 374, 375,  82,  82,  82,  82,
+    376, 376, 377, 378, 379, 379, 380,  82,  82,  82,  82,  82, 381, 382, 383,  82,
+    384, 384, 385, 386, 387, 388, 389,  82, 390, 391, 392,  82,  82,  82,  82,  82,
+    393, 394,  82,  82,  82, 395, 395, 396, 397, 398, 399,  82,  82, 400, 401, 402,
+    403, 403, 404, 405, 405, 406, 407, 408, 409,  82,  82,  82,  82,  82,  82,  82,
+    410, 411, 412, 413, 414, 415,  82,  82, 416, 417, 418, 419, 420, 421,  82,  82,
+     82,  82,  82,  82,  82,  82,  82, 422, 423, 424, 425,  82,  82, 426, 427, 428,
+    429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429,
+    429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 430,  82,  82,  82,
+    429, 429, 429, 431, 429, 429, 429, 429, 429, 429, 432,  82,  82,  82,  82,  82,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
-     82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82, 427, 428, 428, 429,
-    430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430,
-    430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430, 430,
-    430, 431,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
+     82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82, 433, 434, 434, 435,
+    436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436,
+    436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436,
+    436, 436, 437,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
-    432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432, 432,
-    432, 432, 433,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
+    438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438, 438,
+    438, 438, 439,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
     213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213, 213,
-    213, 434, 435, 436, 437, 438, 439, 440, 441, 441, 442, 443, 444,  82,  82,  82,
+    213, 440, 441, 442, 443, 444, 445, 446, 447, 447, 448, 449, 450,  82,  82,  82,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
-     82,  82, 445, 445, 446,  82,  82,  82, 447, 447, 448, 447, 449,  82,  82, 450,
-    451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451,
-    451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451,
-    451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451,
-    451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 452,
-    451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451,
-    451, 451, 451, 451, 451, 451, 451, 451, 453, 453, 453, 453, 453, 453, 453, 453,
-    453, 453, 453, 453, 453, 453, 454,  82, 455,  82,  82,  82,  82,  82,  82,  82,
-     82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
-     82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
-     82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82, 456,
-    457, 192, 192, 192, 192, 192, 192, 192, 192, 458, 459, 460, 461, 461, 461, 461,
-    461, 461, 461, 461, 461, 461, 461, 462,  82,  82,  82,  82,  82,  82,  82,  82,
-    463, 463, 463, 464, 465, 466,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
+     82,  82, 451, 451, 452,  82,  82,  82, 453, 453, 454, 453, 455,  82,  82, 456,
+    457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457,
+    457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457,
+    457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457,
+    457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 458,
+    457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457,
+    457, 457, 457, 457, 457, 457, 457, 457, 459, 459, 459, 459, 459, 459, 459, 459,
+    459, 459, 459, 459, 459, 459, 460,  82, 461,  82,  82,  82,  82,  82,  82,  82,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
-     82,  82,  82,  82,  82,  82,  82,  82,   7, 467, 468,   0,   0,   0, 466,  82,
-      0,   0,   0,   0,   0,   0,   0, 469,   0, 470,   0, 471, 472, 473,   0, 171,
-     11,  11, 474,  82,  82,  82,  82, 475,   0,   0, 476, 477,  82,  82,  82,  82,
-      0,   0, 478,   0, 479, 480, 481,   0, 482, 483, 484,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 485,   0,   0,   0,   0,   0,   0,   0,   0, 486,   0,
-    487, 487, 487, 487, 487, 487, 487, 487, 487, 487, 487, 487, 487, 487, 487, 487,
-    487, 487, 487, 487, 488, 489,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
+     82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82, 462,
+    463, 192, 192, 192, 192, 192, 192, 192, 192, 464, 465, 466, 467, 467, 467, 467,
+    467, 467, 467, 467, 467, 467, 467, 468,  82,  82,  82,  82,  82,  82,  82,  82,
+    469, 469, 469, 470, 471, 472,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
-     82,  82,  82,  82,  82,  82,  82,  82, 490,  82,  82,  82,  82,  82,  82,  82,
-    491, 492,  82,  82,  82,  82,  82,  82, 493, 494, 495,  82,  82,  82,  82,  82,
-     82,  82,  82,  82, 496, 497, 498, 499,  82,  82,  82,  82,  82,  82,  82,  82,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
-     82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82, 500,
-    501, 501, 501, 501, 501, 501, 502,  82, 503, 503, 504,  82,  82,  82,  82,  82,
+     82,  82,  82,  82,  82,  82,  82,  82,   7, 473, 474,   0,   0,   0, 472,  82,
+      0,   0,   0,   0,   0,   0,   0, 475,   0, 476,   0, 477, 478, 479,   0, 171,
+     11,  11, 480,  82,  82,  82, 481, 481,   0,   0, 482, 483,  82,  82,  82,  82,
+      0,   0, 484,   0, 485, 486, 487,   0, 488, 489, 490,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0, 491,   0,   0,   0,   0,   0,   0,   0,   0, 492,   0,
+    493, 493, 493, 493, 493, 493, 493, 493, 493, 493, 493, 493, 493, 493, 493, 493,
+    493, 493, 493, 493, 494, 495,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
-     82,  82,  82, 505,   0, 506,  82,  82, 262, 183,  82,  82,  82,  82,  82,  82,
-    507, 508, 509, 510, 511, 512,  82, 513,  82,  82,  82,  82,  82,  82,  82,  82,
-      0, 514,   0,   0, 475, 515, 516, 469,   0,   0,   0,   0,   0, 517,  82, 518,
-    519, 520, 521, 522,  82,  82,  82,  82,   0,   0,   0,   0,   0,   0,   0,   0,
+     82,  82,  82,  82,  82,  82,  82,  82, 496, 497,  82,  82,  82,  82,  82,  82,
+    498, 499,  13, 500, 501,  82,  82,  82, 502, 503, 504,  82,  82,  82,  82,  82,
+     82,  82,  82,  82, 505, 506, 507, 508,  82,  82,  82,  82,  82,  82,  82,  82,
+     82,  82,  82,  82,  82,  82, 509, 510,  82,  82,  82,  82,  82,  82,  82,  82,
+     82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82, 511,
+    512, 512, 512, 512, 512, 512, 513,  82, 514, 514, 515,  82,  82,  82,  82,  82,
+     82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
+     82,  82,  82, 516,   0, 517,  82,  82, 262, 183,  82,  82,  82,  82,  82,  82,
+    518, 519, 520, 521, 522, 523,  82, 524,  82,  82,  82,  82,  82,  82,  82,  82,
+      0, 525,   0,   0, 481, 526, 527, 475,   0,   0,   0,   0,   0, 528,  82, 529,
+    530, 531, 532, 533,  82,  82,  82,  82,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0, 523, 524,   0,   0,   0, 475,   0,   0, 477, 525,
-    514,   0, 526,   0, 527, 528,  82,  82,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0, 475, 529, 530, 531, 532, 533,   0,   0,   0,   0, 259,   0, 171, 534,
+      0,   0,   0,   0,   0,   0, 534, 535,   0,   0,   0, 536,   0,   0, 537, 538,
+    525,   0, 539,   0, 540, 541,  82,  82,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0, 481, 542, 543, 544, 545, 546,   0,   0,   0,   0, 259,   0, 171, 547,
     185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
     185, 185, 185, 185, 185, 185, 185,  82, 185, 185, 185, 185, 185, 185, 185, 185,
     185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
-    185, 185, 185, 185, 185, 185, 185, 185, 185, 535, 185, 185, 185, 185, 185, 185,
-    536, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
+    185, 185, 185, 185, 185, 185, 185, 185, 185, 248, 185, 185, 185, 185, 185, 185,
+    548, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
     185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
     185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
-    185, 185, 185, 185, 185, 537, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
+    185, 185, 185, 185, 185, 549, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
     185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
-    185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 538,
+    185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 550,
     185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
-    536,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
+    548,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,
     185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
-    185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 539,  82,  82,  82,  82,  82,
-    540,   0,   0,   0,  82,  82,  82,  82,   7,   7,   7,   7,   7,   7,   7, 541,
+    185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 551, 185, 185, 185, 185, 185,
+    185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
+    185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185, 552,  82,  82,
+    553,   0,   0,   0,  82,  82,  82,  82,   7,   7,   7,   7,   7,   7,   7, 554,
      82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82,  82
 };
 
@@ -20866,7 +21929,7 @@ static RE_UINT8 re_script_table_3[] = {
      23,  23,  23,  23,  23,   0,  23,  23,  23,   0,  23,  23,  23,  23,   0,   0,
       0,   0,   0,   0,   0,  23,  23,   0,   0,   0,   0,   0,   0,  23,  23,   0,
      23,  23,  23,  23,   0,   0,  23,  23,  23,  23,  23,  23,  23,  23,  23,  23,
-      0,  23,  23,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,  23,  23,  23,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,   0,  24,  24,
      24,   0,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,
      24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,
@@ -20895,7 +21958,7 @@ static RE_UINT8 re_script_table_3[] = {
      27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,
      27,  27,  27,  27,   0,  27,   0,  27,  27,  27,  27,  27,  27,  27,  27,  27,
      27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,   0,   0,
-     27,  27,  27,  27,  27,   0,  27,   0,  27,  27,  27,  27,  27,  27,   0,   0,
+     27,  27,  27,  27,  27,   0,  27,   0,  27,  27,  27,  27,  27,  27,  27,   0,
      27,  27,  27,  27,  27,  27,  27,  27,  27,  27,   0,   0,  27,  27,  27,  27,
      28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,
      28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,
@@ -21413,6 +22476,8 @@ static RE_UINT8 re_script_table_3[] = {
     108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108,
     108, 108, 108, 108, 108, 108, 108, 108, 108, 108,   0, 108, 108, 108,   0,   0,
     108, 108,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  10,  10,  10,
     109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109,
     109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109,
     109, 109, 109, 109, 109, 109, 109, 109,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -21456,7 +22521,9 @@ static RE_UINT8 re_script_table_3[] = {
     120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,
     120, 120,   0, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,
     120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,
-    120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,   0,
+    120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,
+    120, 120,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     121, 121, 121, 121, 121, 121, 121,   0, 121,   0, 121, 121, 121, 121,   0, 121,
     121, 121, 121, 121, 121, 121, 121, 121, 121, 121, 121, 121, 121, 121,   0, 121,
     121, 121, 121, 121, 121, 121, 121, 121, 121, 121,   0,   0,   0,   0,   0,   0,
@@ -21539,6 +22606,8 @@ static RE_UINT8 re_script_table_3[] = {
     136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136,
     136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136,
     136, 136, 136, 136, 136, 136, 136, 136, 136,   0,   0,   0,   0,   0,   0,   0,
+     16,  16,  16,  16,  16,  16,  16,  16,  16,  16,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     137, 137, 137, 137, 137, 137, 137, 137, 137,   0, 137, 137, 137, 137, 137, 137,
     137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137,
     137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137,
@@ -21565,98 +22634,104 @@ static RE_UINT8 re_script_table_3[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141,
     141, 141, 141, 141, 141, 141, 141, 141, 141,   0,   0,   0,   0,   0,   0,   0,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
+    142,   0, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,   0,   0,   0, 142, 142,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      60,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
      21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
      21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
      21,  21,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  21,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142,   0,   0,   0,   0,   0,   0,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,   0,
-    142, 142, 142, 142, 142,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    142, 142, 142, 142,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143,   0,   0,   0,   0,   0,   0,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,   0,
+    143, 143, 143, 143, 143,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    143, 143, 143, 143,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
-    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
-    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
-    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
-    143, 143, 143,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,
     144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,
-    144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,   0,
-    144, 144, 144, 144, 144, 144, 144, 144, 144,   0,   0,   0,   0,   0,   0,   0,
+    144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,
+    144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,
+    144, 144, 144,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
     145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
-    145, 145, 145, 145, 145, 145, 145,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+    145, 145, 145, 145, 145, 145,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146,
+    146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146,
+    146, 146, 146, 146, 146, 146, 146,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,
      62,  62,  62,  62,  62,  62,  62,  62,  62,   0,   0,   0,   0,   0,   0,   0,
-    146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146,
-    146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146,   0,
-    146, 146, 146, 146, 146, 146, 146, 146, 146, 146,   0,   0,   0,   0, 146, 146,
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,
     147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,
     147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,   0,
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147,   0,   0,   0,   0,   0,   0,
+    147, 147, 147, 147, 147, 147, 147, 147, 147, 147,   0,   0,   0,   0, 147, 147,
     148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
-    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,   0,   0,
-    148, 148, 148, 148, 148, 148,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,   0,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148,   0,   0,   0,   0,   0,   0,
     149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
-    149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
+    149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,   0,   0,
     149, 149, 149, 149, 149, 149,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    149, 149, 149, 149, 149, 149, 149, 149, 149, 149,   0, 149, 149, 149, 149, 149,
-    149, 149,   0, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
-    149, 149, 149, 149, 149, 149, 149, 149,   0,   0,   0,   0,   0, 149, 149, 149,
-    149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
+    150, 150, 150, 150, 150, 150,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 150,   0, 150, 150, 150, 150, 150,
+    150, 150,   0, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
+    150, 150, 150, 150, 150, 150, 150, 150,   0,   0,   0,   0,   0, 150, 150, 150,
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,   0,   0,   0,   0,   0,
     151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,
     151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,
-    151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,   0,   0,   0,   0, 151,
     151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,
-    151, 151, 151, 151, 151, 151, 151, 151,   0,   0,   0,   0,   0,   0,   0, 151,
-    151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,
-    152, 153,  56,  56, 154,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,   0,   0,   0,   0,   0,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,   0,   0,   0,   0, 152,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
+    152, 152, 152, 152, 152, 152, 152, 152,   0,   0,   0,   0,   0,   0,   0, 152,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
+    153, 154,  56,  56, 155,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      56,  56,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
-    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
-    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
-    152, 152, 152, 152, 152, 152, 152, 152,   0,   0,   0,   0,   0,   0,   0,   0,
-    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
-    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
-    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
-    154, 154, 154, 154, 154, 154,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    152, 152, 152, 152, 152, 152, 152, 152, 152,   0,   0,   0,   0,   0,   0,   0,
+    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
+    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
+    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
+    153, 153, 153, 153, 153, 153, 153, 153,   0,   0,   0,   0,   0,   0,   0,   0,
+    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
+    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
+    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
+    155, 155, 155, 155, 155, 155,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    153, 153, 153, 153, 153, 153, 153, 153, 153,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      58,  58,  58,  58,   0,  58,  58,  58,  58,  58,  58,  58,   0,  58,  58,   0,
      58,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,
      57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,
      58,  58,  58,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,  57,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     57,  57,  57,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     57,  57,  57,   0,   0,  58,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,  58,  58,  58,  58,   0,   0,   0,   0,   0,   0,   0,   0,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,   0,   0,   0,   0,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,   0,   0,   0,   0,   0,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,   0,   0,   0,
-    155, 155, 155, 155, 155, 155, 155, 155, 155,   0,   0,   0,   0,   0,   0,   0,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155,   0,   0, 155, 155, 155, 155,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,   0,   0,   0,   0,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0,   0,   0,   0,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0,   0,
+    156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0,   0,   0,   0,   0,   0,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0, 156, 156, 156, 156,
       1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   0,   0,
@@ -21699,42 +22774,52 @@ static RE_UINT8 re_script_table_3[] = {
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
-    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
-    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 156, 156, 156, 156, 156,
-      0, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
+    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
+    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
+    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 157, 157, 157, 157, 157,
+      0, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   0,
+      0,   0,   0,   0,   0,   2,   2,   2,   2,   2,   2,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      54,  54,  54,  54,  54,  54,  54,   0,  54,  54,  54,  54,  54,  54,  54,  54,
      54,  54,  54,  54,  54,  54,  54,  54,  54,   0,   0,  54,  54,  54,  54,  54,
      54,  54,   0,  54,  54,   0,  54,  54,  54,  54,  54,   0,   0,   0,   0,   0,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,   0,   0,   0,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,   0,   0,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157,   0,   0,   0,   0, 157, 157,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   7,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,
-    158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,   0,
+    158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,
+    158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,   0,   0,   0,
+    158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,   0,   0,
+    158, 158, 158, 158, 158, 158, 158, 158, 158, 158,   0,   0,   0,   0, 158, 158,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159,
-    159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159,
-    159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159,
-    159, 159, 159, 159, 159, 159, 159, 159, 159, 159,   0,   0,   0,   0,   0, 159,
+    159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
+    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
+    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
+    160, 160, 160, 160, 160, 160, 160, 160, 160, 160,   0,   0,   0,   0,   0, 160,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,
+    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,
+    161, 161, 161, 161, 161, 161, 161, 161, 161, 161,   0,   0,   0,   0,   0,   0,
      32,  32,  32,  32,  32,  32,  32,   0,  32,  32,  32,  32,   0,  32,  32,   0,
      32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,   0,
-    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
-    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
-    160, 160, 160, 160, 160,   0,   0, 160, 160, 160, 160, 160, 160, 160, 160, 160,
-    160, 160, 160, 160, 160, 160, 160,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,
-    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,
-    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,   0,   0,   0,   0,
-    161, 161, 161, 161, 161, 161, 161, 161, 161, 161,   0,   0,   0,   0, 161, 161,
+    162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162,
+    162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162,
+    162, 162, 162, 162, 162,   0,   0, 162, 162, 162, 162, 162, 162, 162, 162, 162,
+    162, 162, 162, 162, 162, 162, 162,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163,
+    163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163,
+    163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163,   0,   0,   0,   0,
+    163, 163, 163, 163, 163, 163, 163, 163, 163, 163,   0,   0,   0,   0, 163, 163,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
@@ -21772,9 +22857,13 @@ static RE_UINT8 re_script_table_3[] = {
       1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,
       1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -21784,19 +22873,17 @@ static RE_UINT8 re_script_table_3[] = {
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,
       1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,
-      1,   1,   1,   1,   1,   0,   0,   0,   1,   1,   1,   1,   1,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   1,
+      1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,
-     56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,
-     56,  56,  56,  56,  56,  56,  56,  56,  56,   0,   0,   0,   0,   0,   0,   0,
      56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,
      56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,   0,   0,
      56,  56,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -21804,6 +22891,8 @@ static RE_UINT8 re_script_table_3[] = {
      56,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,   0,   0,   0,   0,   0,
+     56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,
+     56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -21842,7 +22931,7 @@ static RE_UINT8 script_extensions_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 58, 13, 13, 13, 59, 60, 13,
     13, 13, 13, 61, 13, 13, 13, 13, 13, 13, 62, 20, 20, 20, 63, 20,
-    13, 13, 13, 13, 64, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    13, 13, 13, 13, 64, 13, 13, 13, 65, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
@@ -21886,7 +22975,7 @@ static RE_UINT8 script_extensions_table_1[] = {
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-    65, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    66, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
@@ -21953,84 +23042,86 @@ static RE_UINT16 script_extensions_table_2[] = {
     321, 322, 323, 324, 325, 326,  83, 327, 328, 329,  83,  83, 330, 331, 332, 333,
     334, 335, 336, 337, 338,  83, 339, 340, 341, 342, 343, 344, 345, 346,  83,  83,
     347, 347, 348,  83, 349, 350, 349, 351, 352, 353,  83,  83,  83,  83,  83,  83,
-     83,  83,  83, 354, 355, 356,  83,  83, 357, 358, 359, 360, 361, 362, 363, 364,
-    365, 365, 366, 367, 368, 368, 369, 370, 371, 372, 373, 374, 375, 375, 375, 376,
-    377, 378,  83,  83, 379, 380, 381, 382, 383, 384, 385, 386,  83,  83,  83,  83,
-    387, 387, 388, 389, 390, 390, 391,  83,  83,  83,  83,  83, 392, 393, 394,  83,
-    395, 395, 396, 397, 398, 399, 400,  83, 401, 402, 403,  83,  83,  83,  83,  83,
-    404, 405,  83,  83,  83, 406, 406, 407, 408, 409, 410,  83,  83, 411, 412, 413,
-    414, 414, 415, 416, 416, 417, 418, 419,  83,  83,  83,  83,  83,  83,  83,  83,
-    420, 421, 422, 423, 424, 425,  83,  83, 426, 427, 428, 429, 430, 431,  83,  83,
-     83,  83,  83,  83,  83,  83,  83, 432,  83,  83,  83,  83,  83, 433, 434, 435,
-    436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436,
-    436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 436, 437,  83,  83,  83,
-    436, 436, 436, 438, 436, 436, 436, 436, 436, 436, 439,  83,  83,  83,  83,  83,
+     83,  83,  83, 354, 355, 356,  83, 357, 358, 359, 360, 361, 362, 363, 364, 365,
+    366, 366, 367, 368, 369, 369, 370, 371, 372, 373, 374, 375, 376, 376, 376, 377,
+    378, 379, 380,  83, 381, 382, 383, 384, 385, 386, 387, 388,  83,  83,  83,  83,
+    389, 389, 390, 391, 392, 392, 393,  83,  83,  83,  83,  83, 394, 395, 396,  83,
+    397, 397, 398, 399, 400, 401, 402,  83, 403, 404, 405,  83,  83,  83,  83,  83,
+    406, 407,  83,  83,  83, 408, 408, 409, 410, 411, 412,  83,  83, 413, 414, 415,
+    416, 416, 417, 418, 418, 419, 420, 421, 422,  83,  83,  83,  83,  83,  83,  83,
+    423, 424, 425, 426, 427, 428,  83,  83, 429, 430, 431, 432, 433, 434,  83,  83,
+     83,  83,  83,  83,  83,  83,  83, 435, 436, 437, 438,  83,  83, 439, 440, 441,
+    442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442,
+    442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 442, 443,  83,  83,  83,
+    442, 442, 442, 444, 442, 442, 442, 442, 442, 442, 445,  83,  83,  83,  83,  83,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
-     83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83, 440, 441, 441, 442,
-    443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443,
-    443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443, 443,
-    443, 444,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
+     83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83, 446, 447, 447, 448,
+    449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449,
+    449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449, 449,
+    449, 449, 450,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
-    445, 445, 445, 445, 445, 445, 445, 445, 445, 445, 445, 445, 445, 445, 445, 445,
-    445, 445, 446,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
+    451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451, 451,
+    451, 451, 452,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
     224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224,
-    224, 447, 448, 449, 450, 451, 452, 453, 454, 454, 455, 456, 457,  83,  83,  83,
+    224, 453, 454, 455, 456, 457, 458, 459, 460, 460, 461, 462, 463,  83,  83,  83,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
-     83,  83, 458, 458, 459,  83,  83,  83, 460, 460, 461, 460, 462,  83,  83, 463,
-    464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464,
-    464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464,
-    464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464,
-    464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 465,
-    464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464, 464,
-    464, 464, 464, 464, 464, 464, 464, 464, 466, 466, 466, 466, 466, 466, 466, 466,
-    466, 466, 466, 466, 466, 466, 467,  83, 468,  83,  83,  83,  83,  83,  83,  83,
-     83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
-     83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
-     83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83, 469,
-    470, 197, 197, 197, 197, 197, 197, 197, 197, 471, 472, 473, 474, 474, 474, 474,
-    474, 474, 474, 474, 474, 474, 474, 475,  83,  83,  83,  83,  83,  83,  83,  83,
-    476, 476, 476, 477, 478, 479,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
+     83,  83, 464, 464, 465,  83,  83,  83, 466, 466, 467, 466, 468,  83,  83, 469,
+    470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470,
+    470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470,
+    470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470,
+    470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 471,
+    470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470, 470,
+    470, 470, 470, 470, 470, 470, 470, 470, 472, 472, 472, 472, 472, 472, 472, 472,
+    472, 472, 472, 472, 472, 472, 473,  83, 474,  83,  83,  83,  83,  83,  83,  83,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
-     83,  83,  83,  83,  83,  83,  83,  83,   7, 480, 481,   0,   0,   0, 482,  83,
-      0,   0,   0,   0,   0,   0,   0, 483,   0, 484,   0, 485, 486, 487,   0, 176,
-     12,  12, 488,  83,  83,  83,  83, 489,   0,   0, 490, 491,  83,  83,  83,  83,
-      0,   0, 492,   0, 493, 494, 495,   0, 496, 497, 498,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0, 499,   0,   0,   0,   0,   0,   0,   0,   0, 500,   0,
-    501, 501, 501, 501, 501, 501, 501, 501, 501, 501, 501, 501, 501, 501, 501, 501,
-    501, 501, 501, 501, 502, 503,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
+     83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83, 475,
+    476, 197, 197, 197, 197, 197, 197, 197, 197, 477, 478, 479, 480, 480, 480, 480,
+    480, 480, 480, 480, 480, 480, 480, 481,  83,  83,  83,  83,  83,  83,  83,  83,
+    482, 482, 482, 483, 484, 485,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
-     83,  83,  83,  83,  83,  83,  83,  83, 504,  83,  83,  83,  83,  83,  83,  83,
-    505, 506,  83,  83,  83,  83,  83,  83, 507, 508, 509,  83,  83,  83,  83,  83,
-     83,  83,  83,  83, 510, 511, 512, 513,  83,  83,  83,  83,  83,  83,  83,  83,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
-     83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83, 514,
-    515, 515, 515, 515, 515, 515, 516,  83, 517, 517, 518,  83,  83,  83,  83,  83,
+     83,  83,  83,  83,  83,  83,  83,  83,   7, 486, 487,   0,   0,   0, 488,  83,
+      0,   0,   0,   0,   0,   0,   0, 489,   0, 490,   0, 491, 492, 493,   0, 176,
+     12,  12, 494,  83,  83,  83, 495, 495,   0,   0, 496, 497,  83,  83,  83,  83,
+      0,   0, 498,   0, 499, 500, 501,   0, 502, 503, 504,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0, 505,   0,   0,   0,   0,   0,   0,   0,   0, 506,   0,
+    507, 507, 507, 507, 507, 507, 507, 507, 507, 507, 507, 507, 507, 507, 507, 507,
+    507, 507, 507, 507, 508, 509,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
-     83,  83,  83, 519,   0, 520,  83,  83, 275, 521,  83,  83,  83,  83,  83,  83,
-    522, 523, 524, 525, 526, 527,  83, 528,  83,  83,  83,  83,  83,  83,  83,  83,
-      0, 529,   0,   0, 489, 530, 531, 483,   0,   0,   0,   0,   0, 532,  83, 533,
-    534, 535, 536, 537,  83,  83,  83,  83,   0,   0,   0,   0,   0,   0,   0,   0,
+     83,  83,  83,  83,  83,  83,  83,  83, 510, 511,  83,  83,  83,  83,  83,  83,
+    512, 513,  14, 514, 515,  83,  83,  83, 516, 517, 518,  83,  83,  83,  83,  83,
+     83,  83,  83,  83, 519, 520, 521, 522,  83,  83,  83,  83,  83,  83,  83,  83,
+     83,  83,  83,  83,  83,  83, 523, 524,  83,  83,  83,  83,  83,  83,  83,  83,
+     83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83, 525,
+    526, 526, 526, 526, 526, 526, 527,  83, 528, 528, 529,  83,  83,  83,  83,  83,
+     83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
+     83,  83,  83, 530,   0, 531,  83,  83, 275, 532,  83,  83,  83,  83,  83,  83,
+    533, 534, 535, 536, 537, 538,  83, 539,  83,  83,  83,  83,  83,  83,  83,  83,
+      0, 540,   0,   0, 495, 541, 542, 489,   0,   0,   0,   0,   0, 543,  83, 544,
+    545, 546, 547, 548,  83,  83,  83,  83,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0, 538, 539,   0,   0,   0, 489,   0,   0, 540, 541,
-    529,   0, 542,   0, 543, 544,  83,  83,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0, 489, 545, 546, 547, 548, 549,   0,   0,   0,   0, 550,   0, 176, 551,
+      0,   0,   0,   0,   0,   0, 549, 550,   0,   0,   0, 551,   0,   0, 552, 553,
+    540,   0, 554,   0, 555, 556,  83,  83,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0, 495, 557, 558, 559, 560, 561,   0,   0,   0,   0, 562,   0, 176, 563,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190,  83, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 552, 190, 190, 190, 190, 190, 190,
-    553, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 261, 190, 190, 190, 190, 190, 190,
+    564, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 554, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 565, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 555,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 566,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    553,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
+    564,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 556,  83,  83,  83,  83,  83,
-    557,   0,   0,   0,  83,  83,  83,  83,   7,   7,   7,   7,   7,   7,   7, 558,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 567, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 568,  83,  83,
+    569,   0,   0,   0,  83,  83,  83,  83,   7,   7,   7,   7,   7,   7,   7, 570,
      83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83,  83
 };
 static RE_UINT8 script_extensions_table_3[] = {
@@ -22050,9 +23141,9 @@ static RE_UINT8 script_extensions_table_3[] = {
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4, 163,   4,   4, 163,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
+      4,   4, 165,   4,   4, 165,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164, 164,
+      4,   4,   4, 166, 166, 166, 166, 166, 166, 166, 166, 166, 166, 166, 166, 166,
       5,   5,   5,   5,   1,   5,   5,   5,   0,   0,   5,   5,   5,   5,   1,   5,
       0,   0,   0,   0,   5,   1,   5,   1,   5,   5,   5,   0,   5,   0,   5,   5,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
@@ -22064,7 +23155,7 @@ static RE_UINT8 script_extensions_table_3[] = {
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7,   7, 165, 166, 167, 167, 166,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7, 167, 168, 169, 169, 168,   7,   7,   7,   7,   7,   7,   7,   7,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
       0,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,   8,
@@ -22080,16 +23171,16 @@ static RE_UINT8 script_extensions_table_3[] = {
       9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,
       9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   0,   0,   0,   0,   9,
       9,   9,   9,   9,   9,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     10,  10,  10,  10,  10,   1,  10,  10,  10,  10,  10,  10, 168,  10,  10,  10,
-     10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10, 168, 169,  10,  10, 170,
+     10,  10,  10,  10,  10,   1,  10,  10,  10,  10,  10,  10, 170,  10,  10,  10,
+     10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10, 170, 171,  10,  10, 172,
      10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
      10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
-    171,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10, 172, 172, 172, 172, 172,
-    172, 172, 172, 172, 172, 172,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
-    173, 173, 173, 173, 173, 173, 173, 173, 173, 173,  10,  10,  10,  10,  10,  10,
-    172,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
+    173,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10, 174, 174, 174, 174, 174,
+    174, 174, 174, 174, 174, 174,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
+    175, 175, 175, 175, 175, 175, 175, 175, 175, 175,  10,  10,  10,  10,  10,  10,
+    174,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
      10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
-     10,  10,  10,  10, 174,  10,  10,  10,  10,  10,  10,  10,  10,   1,  10,  10,
+     10,  10,  10,  10, 176,  10,  10,  10,  10,  10,  10,  10,  10,   1,  10,  10,
      11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,   0,  11,
      11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,
      11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,  11,
@@ -22119,8 +23210,8 @@ static RE_UINT8 script_extensions_table_3[] = {
      16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,
      16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,
      16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,
-     16, 175, 176,   4,   4,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,
-     16,  16,  16,  16, 177, 178, 179, 179, 179, 179, 179, 179, 179, 179, 179, 179,
+     16, 177, 178,   4,   4,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,
+     16,  16,  16,  16, 179, 180, 181, 181, 181, 181, 181, 181, 181, 181, 181, 181,
      16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,
      17,  17,  17,  17,   0,  17,  17,  17,  17,  17,  17,  17,  17,   0,   0,  17,
      17,   0,   0,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,
@@ -22128,7 +23219,7 @@ static RE_UINT8 script_extensions_table_3[] = {
      17,   0,  17,   0,   0,   0,  17,  17,  17,  17,   0,   0,  17,  17,  17,  17,
      17,  17,  17,  17,  17,   0,   0,  17,  17,   0,   0,  17,  17,  17,  17,   0,
       0,   0,   0,   0,   0,   0,   0,  17,   0,   0,   0,   0,  17,  17,   0,  17,
-     17,  17,  17,  17,   0,   0, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180,
+     17,  17,  17,  17,   0,   0, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182,
      17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,  17,   0,
       0,  18,  18,  18,   0,  18,  18,  18,  18,  18,  18,   0,   0,   0,   0,  18,
      18,   0,   0,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,  18,
@@ -22136,7 +23227,7 @@ static RE_UINT8 script_extensions_table_3[] = {
      18,   0,  18,  18,   0,  18,  18,   0,  18,  18,   0,   0,  18,   0,  18,  18,
      18,  18,  18,   0,   0,   0,   0,  18,  18,   0,   0,  18,  18,  18,   0,   0,
       0,  18,   0,   0,   0,   0,   0,   0,   0,  18,  18,  18,  18,   0,  18,   0,
-      0,   0,   0,   0,   0,   0, 181, 181, 181, 181, 181, 181, 181, 181, 181, 181,
+      0,   0,   0,   0,   0,   0, 183, 183, 183, 183, 183, 183, 183, 183, 183, 183,
      18,  18,  18,  18,  18,  18,  18,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,  19,  19,  19,   0,  19,  19,  19,  19,  19,  19,  19,  19,  19,   0,  19,
      19,  19,   0,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,  19,
@@ -22144,7 +23235,7 @@ static RE_UINT8 script_extensions_table_3[] = {
      19,   0,  19,  19,   0,  19,  19,  19,  19,  19,   0,   0,  19,  19,  19,  19,
      19,  19,  19,  19,  19,  19,   0,  19,  19,  19,   0,  19,  19,  19,   0,   0,
      19,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     19,  19,  19,  19,   0,   0, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182,
+     19,  19,  19,  19,   0,   0, 184, 184, 184, 184, 184, 184, 184, 184, 184, 184,
      19,  19,   0,   0,   0,   0,   0,   0,   0,  19,  19,  19,  19,  19,  19,  19,
       0,  20,  20,  20,   0,  20,  20,  20,  20,  20,  20,  20,  20,   0,   0,  20,
      20,   0,   0,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
@@ -22160,8 +23251,8 @@ static RE_UINT8 script_extensions_table_3[] = {
      21,  21,  21,  21,  21,  21,  21,  21,  21,  21,   0,   0,   0,   0,  21,  21,
      21,  21,  21,   0,   0,   0,  21,  21,  21,   0,  21,  21,  21,  21,   0,   0,
      21,   0,   0,   0,   0,   0,   0,  21,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0, 183, 183, 183, 183, 183, 183, 183, 183, 183, 183,
-    183, 183, 183, 183,  21,  21,  21,  21,  21,  21,  21,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0, 185, 185, 185, 185, 185, 185, 185, 185, 185, 185,
+    185, 185, 185, 185,  21,  21,  21,  21,  21,  21,  21,   0,   0,   0,   0,   0,
      22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,   0,  22,  22,
      22,   0,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,  22,
      22,  22,  22,  22,  22,  22,  22,  22,  22,   0,  22,  22,  22,  22,  22,  22,
@@ -22176,8 +23267,8 @@ static RE_UINT8 script_extensions_table_3[] = {
      23,  23,  23,  23,   0,  23,  23,  23,  23,  23,   0,   0,  23,  23,  23,  23,
      23,  23,  23,  23,  23,   0,  23,  23,  23,   0,  23,  23,  23,  23,   0,   0,
       0,   0,   0,   0,   0,  23,  23,   0,   0,   0,   0,   0,   0,  23,  23,   0,
-     23,  23,  23,  23,   0,   0, 184, 184, 184, 184, 184, 184, 184, 184, 184, 184,
-      0,  23,  23,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     23,  23,  23,  23,   0,   0, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186,
+      0,  23,  23,  23,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,   0,  24,  24,
      24,   0,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,
      24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,
@@ -22206,7 +23297,7 @@ static RE_UINT8 script_extensions_table_3[] = {
      27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,
      27,  27,  27,  27,   0,  27,   0,  27,  27,  27,  27,  27,  27,  27,  27,  27,
      27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,   0,   0,
-     27,  27,  27,  27,  27,   0,  27,   0,  27,  27,  27,  27,  27,  27,   0,   0,
+     27,  27,  27,  27,  27,   0,  27,   0,  27,  27,  27,  27,  27,  27,  27,   0,
      27,  27,  27,  27,  27,  27,  27,  27,  27,  27,   0,   0,  27,  27,  27,  27,
      28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,
      28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,  28,
@@ -22222,14 +23313,14 @@ static RE_UINT8 script_extensions_table_3[] = {
      28,  28,  28,  28,  28,   1,   1,   1,   1,  28,  28,   0,   0,   0,   0,   0,
      29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,
      29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,
-    185, 185, 185, 185, 185, 185, 185, 185, 185, 185,  29,  29,  29,  29,  29,  29,
+    187, 187, 187, 187, 187, 187, 187, 187, 187, 187,  29,  29,  29,  29,  29,  29,
      29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,
      30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,
      30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,
      30,  30,  30,  30,  30,  30,   0,  30,   0,   0,   0,   0,   0,  30,   0,   0,
      30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,
      30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,
-     30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30, 186,  30,  30,  30,  30,
+     30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30, 188,  30,  30,  30,  30,
      31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,
      31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,
      32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,
@@ -22265,7 +23356,7 @@ static RE_UINT8 script_extensions_table_3[] = {
      37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,  37,
      37,  37,  37,  37,  37,  37,   0,   0,   0,   0,   0,   0,   0,   0,   0,  37,
      38,  38,  38,  38,  38,  38,  38,  38,  38,  38,  38,  38,  38,  38,  38,  38,
-     38,  38,  38,  38,  38, 187, 187,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     38,  38,  38,  38,  38, 189, 189,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,  39,
      39,  39,  39,  39,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,   0,  40,  40,
@@ -22276,7 +23367,7 @@ static RE_UINT8 script_extensions_table_3[] = {
      41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,  41,   0,   0,
      41,  41,  41,  41,  41,  41,  41,  41,  41,  41,   0,   0,   0,   0,   0,   0,
      41,  41,  41,  41,  41,  41,  41,  41,  41,  41,   0,   0,   0,   0,   0,   0,
-     42,  42, 188, 188,  42, 188,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,
+     42,  42, 190, 190,  42, 190,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,
      42,  42,  42,  42,  42,  42,  42,  42,  42,  42,   0,   0,   0,   0,   0,   0,
      42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,
      42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,  42,
@@ -22339,9 +23430,9 @@ static RE_UINT8 script_extensions_table_3[] = {
      30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,
      30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,   0,   0,  30,  30,  30,
      49,  49,  49,  49,  49,  49,  49,  49,   0,   0,   0,   0,   0,   0,   0,   0,
-    189, 190, 189, 191, 190, 192, 192, 193, 192, 193, 194, 190, 193, 193, 190, 190,
-    193, 192, 190, 190, 190, 190, 190, 190, 190, 195, 192, 190, 190, 192, 190, 190,
-    190, 190, 196, 191, 197, 192, 192, 198, 191, 191, 199,   0,   0,   0,   0,   0,
+    191, 192, 191, 193, 192, 194, 194, 195, 194, 195, 196, 192, 195, 195, 192, 192,
+    195, 194, 192, 192, 192, 192, 192, 192, 192, 197, 194, 192, 192, 194, 192, 192,
+    192, 192, 198, 193, 199, 194, 194, 200, 193, 193, 201,   0,   0,   0,   0,   0,
       2,   2,   2,   2,   2,   2,   5,   5,   5,   5,   5,   7,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
@@ -22350,10 +23441,10 @@ static RE_UINT8 script_extensions_table_3[] = {
       2,   2,   2,   2,   2,   2,   2,   2,   7,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   5,
-    163, 163,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
+    165, 165,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4,   4,   4,   4, 200,   4, 201,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4, 202,   4, 203,   4,   4,   4,   4,   4,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,
       5,   5,   5,   5,   5,   5,   0,   0,   5,   5,   5,   5,   5,   5,   0,   0,
       5,   5,   5,   5,   5,   5,   0,   0,   5,   5,   5,   5,   5,   5,   0,   0,
@@ -22368,7 +23459,7 @@ static RE_UINT8 script_extensions_table_3[] = {
       0,   0,   5,   5,   5,   0,   5,   5,   5,   5,   5,   5,   5,   5,   5,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   4,   4,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 202,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 204,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   2,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,
@@ -22377,7 +23468,7 @@ static RE_UINT8 script_extensions_table_3[] = {
       1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-    203,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    205,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   5,   1,   1,   1,   2,   2,   1,   1,   1,   1,
       1,   1,   2,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,   1,
@@ -22410,7 +23501,7 @@ static RE_UINT8 script_extensions_table_3[] = {
      32,  32,  32,  32,  32,  32,  32,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      32,  32,  32,  32,  32,  32,  32,   0,  32,  32,  32,  32,  32,  32,  32,   0,
      32,  32,  32,  32,  32,  32,  32,   0,  32,  32,  32,  32,  32,  32,  32,   0,
-      1,   1,   1, 166,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1, 168,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,
      56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,
      56,  56,  56,  56,  56,  56,  56,  56,  56,  56,   0,  56,  56,  56,  56,  56,
@@ -22422,52 +23513,52 @@ static RE_UINT8 script_extensions_table_3[] = {
      56,  56,  56,  56,  56,  56,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,
-      1, 204, 204, 205,   1,  56, 206,  56, 204, 204, 204, 204, 204, 204, 204, 204,
-    204, 204,   1, 205, 204, 204, 204, 204, 204, 204, 204, 204, 205, 205, 205, 205,
-      1,  56,  56,  56,  56,  56,  56,  56,  56,  56, 207, 207, 207, 207,  31,  31,
-    205, 208, 208, 208, 208, 208,   1, 205,  56,  56,  56,  56, 209, 209, 206, 206,
+      1, 206, 206, 207,   1,  56, 208,  56, 206, 206, 206, 206, 206, 206, 206, 206,
+    206, 206,   1, 207, 206, 206, 206, 206, 206, 206, 206, 206, 207, 207, 207, 207,
+      1,  56,  56,  56,  56,  56,  56,  56,  56,  56, 209, 209, 209, 209,  31,  31,
+    207, 210, 210, 210, 210, 210,   1, 207,  56,  56,  56,  56, 211, 211, 208, 208,
       0,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,
      57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,
      57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,
      57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,
      57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,
-     57,  57,  57,  57,  57,  57,  57,   0,   0, 208, 208, 208, 208,  57,  57,  57,
-    208,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
+     57,  57,  57,  57,  57,  57,  57,   0,   0, 210, 210, 210, 210,  57,  57,  57,
+    210,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
      58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
      58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
      58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
      58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
-     58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58, 204, 208,  58,  58,  58,
+     58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58, 206, 210,  58,  58,  58,
       0,   0,   0,   0,   0,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,
       3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,
       3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,
       0,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,
      31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,   0,
-    206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
+    208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,
       3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,
       3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,
-    206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
-    206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
-    206, 206, 206, 206,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,
+    208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,
+    208, 208, 208, 208,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
      31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,
      31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,   0,
-    206, 206, 206, 206, 206, 206, 206, 206,   1,   1,   1,   1,   1,   1,   1,   1,
+    208, 208, 208, 208, 208, 208, 208, 208,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
      31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,
      31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,   1,
-    206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
-    206,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,   1,   1,   1,   1,
+    208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,
+    208,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+    208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,   1,   1,   1,   1,
      58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
      58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
-     58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58, 206,
+     58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58, 208,
      58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
-     58,  58,  58,  58,  58,  58,  58,  58, 206, 206, 206, 206, 206, 206, 206, 206,
-    206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
-    206,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 206, 206, 206, 206, 206,
-    206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
-    206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,   1,
+     58,  58,  58,  58,  58,  58,  58,  58, 208, 208, 208, 208, 208, 208, 208, 208,
+    208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,
+    208,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 208, 208, 208, 208, 208,
+    208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,
+    208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,   1,
      59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,
      59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,
      59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,  59,   0,   0,   0,
@@ -22480,13 +23571,13 @@ static RE_UINT8 script_extensions_table_3[] = {
      61,  61,  61,  61,  61,  61,  61,  61,  61,  61,  61,  61,  61,  61,  61,  61,
      61,  61,  61,  61,  61,  61,  61,  61,  61,  61,  61,  61,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 166,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 168,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
      62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,
      62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,
      62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,
      62,  62,  62,  62,  62,  62,  62,  62,   0,   0,   0,   0,   0,   0,   0,   0,
-    210, 210, 210, 210, 210, 210, 210, 210,   1,   1,   1,   1,   1,   1,   1,   1,
+    212, 212, 212, 212, 212, 212, 212, 212,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
@@ -22499,7 +23590,7 @@ static RE_UINT8 script_extensions_table_3[] = {
      63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,
      63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,
      63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,  63,   0,   0,   0,
-    211, 211, 211, 212, 212, 212, 213, 213, 213, 213,   0,   0,   0,   0,   0,   0,
+    213, 213, 213, 214, 214, 214, 215, 215, 215, 215,   0,   0,   0,   0,   0,   0,
      64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,
      64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,
      64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,  64,
@@ -22509,10 +23600,10 @@ static RE_UINT8 script_extensions_table_3[] = {
      65,  65,  65,  65,  65,  65,   0,   0,   0,   0,   0,   0,   0,   0,  65,  65,
      65,  65,  65,  65,  65,  65,  65,  65,  65,  65,   0,   0,   0,   0,   0,   0,
      16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,
-     16, 192,  16, 214,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,
+     16, 194,  16, 216,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,  16,
      66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,
      66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,
-     66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66, 215,  66,
+     66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66,  66, 217,  66,
      67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,
      67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,  67,
      67,  67,  67,  67,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  67,
@@ -22520,7 +23611,7 @@ static RE_UINT8 script_extensions_table_3[] = {
      31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,  31,   0,   0,   0,
      68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,
      68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,
-     68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,   0, 216,
+     68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,  68,   0, 218,
      68,  68,  68,  68,  68,  68,  68,  68,  68,  68,   0,   0,   0,   0,  68,  68,
      29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,
      29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,  29,   0,
@@ -22567,18 +23658,18 @@ static RE_UINT8 script_extensions_table_3[] = {
      10,  10,  10,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
      10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
-     10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10, 217, 217,
+     10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10, 219, 219,
      10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
       0,   0,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
      10,  10,  10,  10,  10,  10,  10,  10,   0,   0,   0,   0,   0,   0,   0,  10,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     10,  10, 218,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10, 218,  10,  10,
+     10,  10, 220,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10, 220,  10,  10,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   7,   7,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1, 205, 205,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1, 207, 207,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   0,   1,   1,   1,   1,   0,   0,   0,   0,
      10,  10,  10,  10,  10,   0,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,
@@ -22586,10 +23677,10 @@ static RE_UINT8 script_extensions_table_3[] = {
      10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,  10,   0,   0,   1,
       0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1, 204, 204, 204, 204, 204,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
-    208,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
+      1, 206, 206, 206, 206, 206,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
+    210,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
      58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,
-     58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58, 208, 208,
+     58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58,  58, 210, 210,
       0,   0,  31,  31,  31,  31,  31,  31,   0,   0,  31,  31,  31,  31,  31,  31,
       0,   0,  31,  31,  31,  31,  31,  31,   0,   0,  31,  31,  31,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   0,   1,   1,   1,   1,   1,   1,   1,   0,
@@ -22604,10 +23695,10 @@ static RE_UINT8 script_extensions_table_3[] = {
      72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,
      72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,
      72,  72,  72,  72,  72,  72,  72,  72,  72,  72,  72,   0,   0,   0,   0,   0,
-    219, 219, 220,   0,   0,   0,   0, 221, 221, 221, 221, 221, 221, 221, 221, 221,
-    221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221,
-    221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221, 221,
-    221, 221, 221, 221,   0,   0,   0, 220, 220, 220, 220, 220, 220, 220, 220, 220,
+    221, 221, 222,   0,   0,   0,   0, 223, 223, 223, 223, 223, 223, 223, 223, 223,
+    223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223,
+    223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223, 223,
+    223, 223, 223, 223,   0,   0,   0, 222, 222, 222, 222, 222, 222, 222, 222, 222,
       5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,
       5,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -22622,8 +23713,8 @@ static RE_UINT8 script_extensions_table_3[] = {
      74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,
      74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,  74,
      74,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222,
-    222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222, 222,   0,   0,   0,   0,
+    224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224,
+    224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224, 224,   0,   0,   0,   0,
      75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,
      75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,  75,
      75,  75,  75,  75,   0,   0,   0,   0,   0,   0,   0,   0,   0,  75,  75,  75,
@@ -22715,7 +23806,7 @@ static RE_UINT8 script_extensions_table_3[] = {
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100,   0,   0,   0,   0, 100, 100, 100, 100, 100,
-    100, 100, 223, 100, 100, 100, 100,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    100, 100, 225, 100, 100, 100, 100,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101,
     101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101,
     101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101, 101,
@@ -22748,6 +23839,8 @@ static RE_UINT8 script_extensions_table_3[] = {
     108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108, 108,
     108, 108, 108, 108, 108, 108, 108, 108, 108, 108,   0, 108, 108, 108,   0,   0,
     108, 108,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  10,  10,  10,
     109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109,
     109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109, 109,
     109, 109, 109, 109, 109, 109, 109, 109,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -22791,7 +23884,9 @@ static RE_UINT8 script_extensions_table_3[] = {
     120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,
     120, 120,   0, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,
     120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,
-    120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,   0,
+    120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,
+    120, 120,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     121, 121, 121, 121, 121, 121, 121,   0, 121,   0, 121, 121, 121, 121,   0, 121,
     121, 121, 121, 121, 121, 121, 121, 121, 121, 121, 121, 121, 121, 121,   0, 121,
     121, 121, 121, 121, 121, 121, 121, 121, 121, 121,   0,   0,   0,   0,   0,   0,
@@ -22800,10 +23895,10 @@ static RE_UINT8 script_extensions_table_3[] = {
     122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122,
     122, 122, 122, 122, 122, 122, 122, 122, 122, 122, 122,   0,   0,   0,   0,   0,
     122, 122, 122, 122, 122, 122, 122, 122, 122, 122,   0,   0,   0,   0,   0,   0,
-    123, 183, 123, 183,   0, 123, 123, 123, 123, 123, 123, 123, 123,   0,   0, 123,
+    123, 185, 123, 185,   0, 123, 123, 123, 123, 123, 123, 123, 123,   0,   0, 123,
     123,   0,   0, 123, 123, 123, 123, 123, 123, 123, 123, 123, 123, 123, 123, 123,
     123, 123, 123, 123, 123, 123, 123, 123, 123,   0, 123, 123, 123, 123, 123, 123,
-    123,   0, 123, 123,   0, 123, 123, 123, 123, 123,   0, 183, 183, 123, 123, 123,
+    123,   0, 123, 123,   0, 123, 123, 123, 123, 123,   0, 185, 185, 123, 123, 123,
     123, 123, 123, 123, 123,   0,   0, 123, 123,   0,   0, 123, 123, 123,   0,   0,
     123,   0,   0,   0,   0,   0,   0, 123,   0,   0,   0,   0,   0, 123, 123, 123,
     123, 123, 123, 123,   0,   0, 123, 123, 123, 123, 123, 123, 123,   0,   0,   0,
@@ -22874,6 +23969,8 @@ static RE_UINT8 script_extensions_table_3[] = {
     136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136,
     136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136, 136,
     136, 136, 136, 136, 136, 136, 136, 136, 136,   0,   0,   0,   0,   0,   0,   0,
+     16,  16,  16,  16,  16,  16,  16,  16,  16,  16,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     137, 137, 137, 137, 137, 137, 137, 137, 137,   0, 137, 137, 137, 137, 137, 137,
     137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137,
     137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137,
@@ -22900,99 +23997,105 @@ static RE_UINT8 script_extensions_table_3[] = {
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141,
     141, 141, 141, 141, 141, 141, 141, 141, 141,   0,   0,   0,   0,   0,   0,   0,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
+    142,   0, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,   0,   0,   0, 142, 142,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
+    142, 142, 142, 142, 142, 142, 142, 142, 142, 142,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      60,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
-    183, 183,  21, 183,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
+    185, 185,  21, 185,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
      21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,  21,
      21,  21,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  21,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142,   0,   0,   0,   0,   0,   0,
-    142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142, 142,   0,
-    142, 142, 142, 142, 142,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    142, 142, 142, 142,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143,   0,   0,   0,   0,   0,   0,
+    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,   0,
+    143, 143, 143, 143, 143,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    143, 143, 143, 143,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
-    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
-    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
-    143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143, 143,
-    143, 143, 143,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,
     144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,
-    144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,   0,
-    144, 144, 144, 144, 144, 144, 144, 144, 144,   0,   0,   0,   0,   0,   0,   0,
+    144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,
+    144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144,
+    144, 144, 144,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
     145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
-    145, 145, 145, 145, 145, 145, 145,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+    145, 145, 145, 145, 145, 145,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146,
+    146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146,
+    146, 146, 146, 146, 146, 146, 146,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,  62,
      62,  62,  62,  62,  62,  62,  62,  62,  62,   0,   0,   0,   0,   0,   0,   0,
-    146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146,
-    146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146, 146,   0,
-    146, 146, 146, 146, 146, 146, 146, 146, 146, 146,   0,   0,   0,   0, 146, 146,
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,
     147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,
     147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147, 147,   0,
-    147, 147, 147, 147, 147, 147, 147, 147, 147, 147,   0,   0,   0,   0,   0,   0,
+    147, 147, 147, 147, 147, 147, 147, 147, 147, 147,   0,   0,   0,   0, 147, 147,
     148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
-    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,   0,   0,
-    148, 148, 148, 148, 148, 148,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,   0,
+    148, 148, 148, 148, 148, 148, 148, 148, 148, 148,   0,   0,   0,   0,   0,   0,
     149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
-    149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
+    149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,   0,   0,
     149, 149, 149, 149, 149, 149,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    149, 149, 149, 149, 149, 149, 149, 149, 149, 149,   0, 149, 149, 149, 149, 149,
-    149, 149,   0, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
-    149, 149, 149, 149, 149, 149, 149, 149,   0,   0,   0,   0,   0, 149, 149, 149,
-    149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149, 149,
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
+    150, 150, 150, 150, 150, 150,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 150,   0, 150, 150, 150, 150, 150,
+    150, 150,   0, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
+    150, 150, 150, 150, 150, 150, 150, 150,   0,   0,   0,   0,   0, 150, 150, 150,
+    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,
-    150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150,   0,   0,   0,   0,   0,
     151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,
     151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,
-    151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,   0,   0,   0,   0, 151,
     151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,
-    151, 151, 151, 151, 151, 151, 151, 151,   0,   0,   0,   0,   0,   0,   0, 151,
-    151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,
-    152, 153,  56,  56, 154,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    151, 151, 151, 151, 151, 151, 151, 151, 151, 151, 151,   0,   0,   0,   0,   0,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,   0,   0,   0,   0, 152,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
+    152, 152, 152, 152, 152, 152, 152, 152,   0,   0,   0,   0,   0,   0,   0, 152,
+    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
+    153, 154,  56,  56, 155,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      56,  56,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
-    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
-    152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152, 152,
-    152, 152, 152, 152, 152, 152, 152, 152,   0,   0,   0,   0,   0,   0,   0,   0,
-    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
-    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
-    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
-    154, 154, 154, 154, 154, 154,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    152, 152, 152, 152, 152, 152, 152, 152, 152,   0,   0,   0,   0,   0,   0,   0,
+    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
+    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
+    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
+    153, 153, 153, 153, 153, 153, 153, 153,   0,   0,   0,   0,   0,   0,   0,   0,
+    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
+    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
+    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
+    155, 155, 155, 155, 155, 155,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    153, 153, 153, 153, 153, 153, 153, 153, 153,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      58,  58,  58,  58,   0,  58,  58,  58,  58,  58,  58,  58,   0,  58,  58,   0,
      58,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,
      57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,  57,
      58,  58,  58,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,  57,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-     57,  57,  57,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+     57,  57,  57,   0,   0,  58,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,  58,  58,  58,  58,   0,   0,   0,   0,   0,   0,   0,   0,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
-    153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153,   0,   0,   0,   0,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,   0,   0,   0,   0,   0,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155,   0,   0,   0,
-    155, 155, 155, 155, 155, 155, 155, 155, 155,   0,   0,   0,   0,   0,   0,   0,
-    155, 155, 155, 155, 155, 155, 155, 155, 155, 155,   0,   0, 155, 155, 155, 155,
-    224, 224, 224, 224,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,
+    154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154,   0,   0,   0,   0,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0,   0,   0,   0,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0,   0,
+    156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0,   0,   0,   0,   0,   0,
+    156, 156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0, 156, 156, 156, 156,
+    226, 226, 226, 226,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
@@ -23016,8 +24119,8 @@ static RE_UINT8 script_extensions_table_3[] = {
       1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
-    206, 206,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
+    208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208, 208,
+    208, 208,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
@@ -23036,42 +24139,52 @@ static RE_UINT8 script_extensions_table_3[] = {
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
-    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
-    156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 156, 156, 156, 156, 156,
-      0, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156, 156,
+    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
+    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
+    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 157, 157, 157, 157, 157,
+      0, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
       2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   0,
+      0,   0,   0,   0,   0,   2,   2,   2,   2,   2,   2,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      54,  54,  54,  54,  54,  54,  54,   0,  54,  54,  54,  54,  54,  54,  54,  54,
      54,  54,  54,  54,  54,  54,  54,  54,  54,   0,   0,  54,  54,  54,  54,  54,
      54,  54,   0,  54,  54,   0,  54,  54,  54,  54,  54,   0,   0,   0,   0,   0,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,   0,   0,   0,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,   0,   0,
-    157, 157, 157, 157, 157, 157, 157, 157, 157, 157,   0,   0,   0,   0, 157, 157,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   7,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,
-    158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,   0,
+    158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,
+    158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,   0,   0,   0,
+    158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158, 158,   0,   0,
+    158, 158, 158, 158, 158, 158, 158, 158, 158, 158,   0,   0,   0,   0, 158, 158,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159,
-    159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159,
-    159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159,
-    159, 159, 159, 159, 159, 159, 159, 159, 159, 159,   0,   0,   0,   0,   0, 159,
+    159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159, 159,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
+    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
+    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
+    160, 160, 160, 160, 160, 160, 160, 160, 160, 160,   0,   0,   0,   0,   0, 160,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,
+    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,
+    161, 161, 161, 161, 161, 161, 161, 161, 161, 161,   0,   0,   0,   0,   0,   0,
      32,  32,  32,  32,  32,  32,  32,   0,  32,  32,  32,  32,   0,  32,  32,   0,
      32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,   0,
-    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
-    160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160,
-    160, 160, 160, 160, 160,   0,   0, 160, 160, 160, 160, 160, 160, 160, 160, 160,
-    160, 160, 160, 160, 160, 160, 160,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,
-    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,
-    161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161, 161,   0,   0,   0,   0,
-    161, 161, 161, 161, 161, 161, 161, 161, 161, 161,   0,   0,   0,   0, 161, 161,
+    162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162,
+    162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162, 162,
+    162, 162, 162, 162, 162,   0,   0, 162, 162, 162, 162, 162, 162, 162, 162, 162,
+    162, 162, 162, 162, 162, 162, 162,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163,
+    163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163,
+    163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163, 163,   0,   0,   0,   0,
+    163, 163, 163, 163, 163, 163, 163, 163, 163, 163,   0,   0,   0,   0, 163, 163,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
@@ -23107,15 +24220,17 @@ static RE_UINT8 script_extensions_table_3[] = {
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
-    206, 206,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    208, 208,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,
       1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -23125,21 +24240,19 @@ static RE_UINT8 script_extensions_table_3[] = {
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,
       1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,
-      1,   1,   1,   1,   1,   0,   0,   0,   1,   1,   1,   1,   1,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,
-      1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   1,
+      1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       1,   1,   1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,
-     56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,
-     56,  56,  56,  56,  56,  56,  56,  56,  56,   0,   0,   0,   0,   0,   0,   0,
      56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,
      56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,   0,   0,
      56,  56,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -23147,6 +24260,8 @@ static RE_UINT8 script_extensions_table_3[] = {
      56,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
      56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,   0,   0,   0,   0,   0,
+     56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,
+     56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,  56,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -23161,8 +24276,8 @@ static RE_UINT16 script_extensions_table_4[] = {
 };
 static RE_UINT8 script_extensions_table_5[] = {
       5,   0,   2,   0,   7,  77,   0,   7,  54,   0,   7,   2,   0,  10,  13, 107,
-     11,  12, 108,   0,  10,  11,  12,   0, 161,  10,  13, 107,  11,  12, 108,   0,
-    161,  10,  15, 100, 111, 104, 107, 110,  11,   0,  10,  11,   0,  10,  12, 108,
+     11,  12, 108,   0,  10,  11,  12,   0, 163,  10,  13, 107,  11,  12, 108,   0,
+    163,  10,  15, 100, 111, 104, 107, 110,  11,   0,  10,  11,   0,  10,  12, 108,
       0,  10, 107,   0,  17,  16, 123,  19,  18,  23,   2,  24,  20, 119,  21,  22,
     125,   0,  17,  16, 123,  19,  18,  23,   2,  24,  20,  21,  22, 125,   0,  17,
      16, 130, 140, 139, 123,  19,  18,  23, 118,  24, 133,  20, 122,  25,  63, 128,
@@ -23178,8 +24293,8 @@ static RE_UINT8 script_extensions_table_5[] = {
       0,  16, 130,  19,  18, 120,  23, 115, 118,  24, 127, 133, 122, 128, 125,   0,
      16, 130,  19,  18, 120,  23, 115, 118, 127, 133, 122, 128, 125,   0,  16, 130,
      19,  18, 120, 115, 118, 127, 122, 128, 125,   0,  16,  21,   0,  66,   2,  29,
-      0,  46,  68,   0,  10,  13,   0,  10,  12,   0, 143,  88,  72,   0,  88,  72,
-      0,  88,  87,  72,   0,  10,   6,   0, 100, 111,   0, 155,   0
+      0,  46,  68,   0,  10,  13,   0,  10,  12,   0, 144,  88,  72,   0,  88,  72,
+      0,  88,  87,  72,   0,  10,   6,   0, 100, 111,   0, 156,   0
 };
 
 int re_get_script_extensions(RE_UINT32 codepoint, RE_UINT8* scripts) {
@@ -23198,13 +24313,13 @@ int re_get_script_extensions(RE_UINT32 codepoint, RE_UINT8* scripts) {
     v = script_extensions_table_2[(v << 5) | field_1];
     v = script_extensions_table_3[(v << 5) | field_0];
 
-    if (v < 163) {
+    if (v < 165) {
         scripts[0] = v;
 
         return 1;
     }
 
-    offset = script_extensions_table_4[v - 163];
+    offset = script_extensions_table_4[v - 165];
     count = 0;
 
     do {
@@ -23229,7 +24344,7 @@ static RE_UINT8 re_sentence_break_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 53, 13, 13, 13, 54, 55, 13,
     13, 13, 13, 56, 13, 13, 13, 13, 13, 13, 57, 18, 18, 18, 58, 18,
-    13, 13, 13, 13, 59, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    13, 13, 13, 13, 59, 13, 13, 13, 60, 18, 18, 18, 18, 18, 18, 18,
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
@@ -23273,7 +24388,7 @@ static RE_UINT8 re_sentence_break_table_1[] = {
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
-    60, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
+    61, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
     18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18,
@@ -23312,103 +24427,105 @@ static RE_UINT16 re_sentence_break_table_2[] = {
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
      29,  30,  18, 196,   8,   8,   8, 197,  18, 198,  40, 199, 200, 201, 201,  23,
     202, 203, 204, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    205, 206,  97,  40, 207,  97,  40, 116, 208, 209,  40,  40, 210,  40, 100, 211,
+    205, 206,  97,  40, 207,  97,  40, 208, 209, 210,  40,  40, 211,  40, 100, 212,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 100, 100,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40,  40,  40, 212, 100, 211, 213,  40,  40,  40,  40,  40,  40,  40,  40,
-    214, 215,   8, 216, 217,  40,  40, 218, 219, 220,   8, 221, 222, 223, 224, 225,
-    226, 227,  40, 228, 229, 133, 230, 231,  49, 232, 233, 234,  58, 235, 236, 237,
-     40, 238, 239, 240,  40, 241, 242, 243, 244, 245, 246, 247,  18,  18,  40, 248,
+     40,  40,  40,  40, 213, 100, 212, 214,  40,  40,  40,  40,  40,  40,  40,  40,
+    215, 216,   8, 217, 218,  40,  40, 219, 220, 221,   8, 222, 223, 224, 225, 226,
+    227, 228,  40, 229, 230, 133, 231, 232,  49, 233, 234, 235,  58, 236, 237, 238,
+     40, 239, 240, 241,  40, 242, 243, 244, 245, 246, 247, 248,  18,  18,  40, 249,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 249, 250, 251,
+     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 250, 251, 252,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40,  40, 252,  40,  40, 253, 100, 254, 255, 256,  40,  40, 257, 258,  40,
-     40,  40,  40,  40,  40,  40,  40,  40,  40, 259, 211,  40, 260,  40, 261, 262,
-    263, 264, 265, 266,  40,  40,  40, 267, 268,   2, 269, 270, 271, 141, 272, 273,
-    274, 275, 276, 100,  40,  40,  40, 277, 100, 100,  40, 278, 100, 100, 100, 279,
-    100, 100, 100, 100, 234,  40, 280, 281,  40, 282,  54, 283, 284,  40, 285, 100,
-     29, 286, 287,  40, 284, 288, 289, 290,  40, 291,  40, 292, 293, 294, 100, 100,
-     40,  40,  40,  40,  40,  40,  40,  40,  40, 200, 140, 261, 295, 296, 100, 100,
-    297, 298, 140, 200, 141, 100, 100, 299, 140, 253, 100, 100,  40, 300, 100, 100,
-    301, 302, 303, 234, 234, 100, 106, 304,  40, 140, 140, 305, 257, 100, 100, 100,
-     40,  40, 306, 100,  29, 307,  18, 308,  40, 309, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100,  40, 310, 100, 100, 234, 311, 312, 211, 313, 211, 314, 200,
-    156, 315, 316, 317, 156, 318, 319, 320, 156, 321, 322, 323, 156, 235, 324, 100,
-    325, 326, 100, 100, 327, 328, 329, 330, 331, 332, 333, 334, 100, 100, 100, 100,
-     40, 335, 336, 337,  40,  46, 338, 100, 100, 100, 100, 100,  40, 339, 340, 100,
-     40,  46, 341, 100,  40, 342, 135, 100, 122, 343, 344, 100, 100, 100, 100, 100,
-     40, 345, 100, 100, 100,  29,  18, 346, 347, 348, 349, 100, 100, 350, 351, 352,
-    353, 354, 355,  40, 356, 211,  40, 137, 100, 100, 100, 100, 100, 100, 100, 100,
-    357, 358, 359, 360, 361, 362, 100, 100, 363, 364, 365, 366, 367, 135, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 368, 100, 100, 100, 100, 100, 369, 100, 100,
+     40,  40,  40, 253,  40,  40, 254, 100, 255, 256, 257,  40,  40, 258, 259,  40,
+     40,  40,  40,  40,  40,  40,  40,  40,  40, 260, 212,  40, 261,  40, 262, 263,
+    264, 265, 266, 267,  40,  40,  40, 268, 269,   2, 270, 271, 272, 141, 273, 274,
+    275, 276, 277, 100,  40,  40,  40, 278, 100, 100,  40, 279, 100, 100, 100, 280,
+    100, 100, 100, 100, 235,  40, 281, 282,  40, 283,  54, 284, 285,  40, 286, 100,
+     29, 287, 288,  40, 285, 289, 290, 291,  40, 292,  40, 293, 294, 295, 100, 100,
+     40,  40,  40,  40,  40,  40,  40,  40,  40, 200, 140, 262, 296, 297, 100, 100,
+    298, 299, 140, 200, 141, 100, 100, 300, 140, 254, 100, 100,  40, 301, 100, 100,
+    302, 303, 304, 235, 235, 100, 106, 305,  40, 140, 140, 306, 258, 100, 100, 100,
+     40,  40, 307, 100,  29, 308,  18, 309,  40, 310, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100,  40, 311, 100, 312, 235, 313, 314, 212, 315, 212, 316, 200,
+    156, 317, 318, 319, 156, 320, 321, 322, 156, 323, 324, 325, 156, 236, 326, 100,
+    327, 328, 329, 100, 330, 331, 332, 333, 334, 335, 336, 337, 100, 100, 100, 100,
+     40, 338, 339, 340,  40,  46, 341, 100, 100, 100, 100, 100,  40, 342, 343, 100,
+     40,  46, 344, 100,  40, 345, 135, 100, 122, 346, 347, 100, 100, 100, 100, 100,
+     40, 348, 100, 100, 100,  29,  18, 349, 350, 351, 352, 100, 100, 353, 354, 355,
+    356, 357, 358,  40, 359, 212,  40, 137, 100, 100, 100, 100, 100, 100, 100, 100,
+    360, 361, 362, 363, 364, 365, 100, 100, 366, 367, 368, 369, 370, 135, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 371, 372, 373, 374, 100, 100, 375, 100, 100,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 253, 100, 100, 100,
-     40,  40,  40, 210,  40,  40,  40,  40,  40,  40, 370, 100, 100, 100, 100, 100,
+     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 254, 100, 100, 100,
+     40,  40,  40, 211,  40,  40,  40,  40,  40,  40, 376, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 211,  40,  40, 280,
-     40, 371, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 212,  40,  40, 281,
+     40, 377, 378, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40, 344, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+     40,  40, 347, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40, 137, 141, 372,  40, 141, 373, 374,  40, 375, 376, 377, 124, 100, 100, 100,
+     40, 137, 141, 379,  40, 141, 380, 381,  40, 382, 383, 384, 124, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100,  29,  18, 378, 100, 100, 100,  40,  40, 379,  23, 380, 100, 100, 381,
+    100, 100,  29,  18, 385, 100, 100, 100,  40,  40, 386,  23, 387, 100, 100, 388,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 382,
-     40,  40,  40,  40,  40,  40, 140, 100, 306, 100, 100, 100, 100, 100, 100, 100,
+     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 389,
+     40,  40,  40,  40,  40,  40, 140, 100, 307, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 383,
-     40,  40,  40,  40,  40,  40,  40,  40,  40, 384, 385, 386,  40,  40,  40,  40,
-     40,  40,  40,  40,  40,  40,  40, 251, 100, 100, 100, 100, 100, 100, 100, 100,
-     40,  40,  40, 387, 388, 389, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 390,
+     40,  40,  40,  40,  40,  40,  40,  40,  40, 391, 392, 393,  40,  40,  40,  40,
+     40,  40,  40,  40,  40,  40,  40, 252, 100, 100, 100, 100, 100, 100, 100, 100,
+     40,  40,  40, 394, 395, 396, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100,  23, 390, 391, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 392, 393, 394, 100, 100,
-    100, 100, 395, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 396, 397, 409,
-    399, 410, 411, 412, 403, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423,
+    100, 100, 100, 100, 100, 100, 100, 100,  23, 397, 398, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 399, 400, 401, 100, 100,
+    100, 100, 402, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 403, 404, 416,
+    406, 417, 418, 419, 410, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-     23, 424,  23, 425, 426, 427, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+     23, 431,  23, 432, 433, 434, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 428, 100, 100, 100, 100, 100, 100, 100,
-    429, 430, 100, 100, 100, 100, 100, 100,  40, 431, 432, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 211, 433,  40, 434, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 435,
-     40,  40,  40,  40,  40,  40, 436, 100,  29, 437, 438, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    439, 440, 441, 442, 443, 444, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 445, 446, 446, 447, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 435, 436, 100, 100, 100, 100, 100, 100,
+    437, 438,  18, 439, 440, 100, 100, 100,  40, 441, 442, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 212, 443,  40, 444, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 212, 444, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 445,
+     40,  40,  40,  40,  40,  40, 446, 100,  29, 447, 448, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 448, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    449, 450, 451, 452, 453, 454, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 455, 456, 456, 457, 100, 100, 100,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 449,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 458, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 459,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
      40,  40,  40,  40,  40,  40,  40, 100,  40,  40,  40,  40,  40,  40,  40,  40,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40,  40,  40,  40,  40,  40,  40,  40, 137,  40,  40,  40,  40,  40,  40,
-    284,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
+     40,  40,  40,  40,  40,  40,  40,  40,  40, 254,  40,  40,  40,  40,  40,  40,
+    285,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40,  40,  40,  40, 450,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
+     40,  40,  40,  40,  40, 460,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 451,
+     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 461,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-    284, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+    285, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
      40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
-     40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 452, 100, 100, 100, 100, 100,
-    453,  23,  23,  23, 100, 100, 100, 100,  23,  23,  23,  23,  23,  23,  23, 454,
+     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  54,  40,  40,  40,  40,  40,
+     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,
+     40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40, 124, 100, 100,
+    462,  23,  23,  23, 100, 100, 100, 100,  23,  23,  23,  23,  23,  23,  23, 463,
     100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100
 };
 
@@ -23590,7 +24707,7 @@ static RE_UINT8 re_sentence_break_table_3[] = {
     14, 14, 14, 14, 14,  0, 14, 14, 14,  0, 14, 14, 14, 14,  0,  0,
      0,  0,  0,  0,  0, 14, 14,  0,  0,  0,  0,  0,  0, 13, 13,  0,
     13, 13, 14, 14,  0,  0,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
-     0, 13, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 13, 13, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     14, 14, 14, 14, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 13, 13,
     13,  0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
@@ -23619,7 +24736,7 @@ static RE_UINT8 re_sentence_break_table_3[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13,  0, 13,  0, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 14, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 13,  0,  0,
-    13, 13, 13, 13, 13,  0, 13,  0, 14, 14, 14, 14, 14, 14,  0,  0,
+    13, 13, 13, 13, 13,  0, 13,  0, 14, 14, 14, 14, 14, 14, 14,  0,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  0,  0, 13, 13, 13, 13,
     13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0, 14, 14,  0,  0,  0,  0,  0,  0,
@@ -23646,7 +24763,7 @@ static RE_UINT8 re_sentence_break_table_3[] = {
      9,  9,  9,  9,  9,  9,  0,  9,  0,  0,  0,  0,  0,  9,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 10, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 13, 13, 13, 13,  0,  0,
     13, 13, 13, 13, 13, 13, 13,  0, 13,  0, 13, 13, 13, 13,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 13, 13, 13, 13,  0,  0,
@@ -23829,6 +24946,8 @@ static RE_UINT8 re_sentence_break_table_3[] = {
      0, 13, 13, 13, 13, 13,  0,  0, 13, 13, 13, 13, 13,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13,  0,  0, 14, 14,  0,  0, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 13, 13, 13, 13,
      0,  0,  0,  0,  0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
@@ -23864,7 +24983,7 @@ static RE_UINT8 re_sentence_break_table_3[] = {
      9, 10,  9, 10,  9,  9,  9,  9, 10,  9, 10,  0,  0,  0,  0,  0,
      9, 10,  0, 10,  0, 10,  9, 10,  9, 10,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0, 13, 13, 13,  9, 10, 13, 10, 10, 10, 13, 13, 13, 13, 13,
+     0,  0, 10, 10, 10,  9, 10, 13, 10, 10, 10, 13, 13, 13, 13, 13,
     13, 13, 14, 13, 13, 13, 14, 13, 13, 13, 13, 14, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 14, 14, 14, 14, 14,  0,  0,  0,  0, 14,  0,  0,  0,
@@ -23907,7 +25026,7 @@ static RE_UINT8 re_sentence_break_table_3[] = {
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0, 10, 10, 10, 10,
-    10, 10, 10, 10, 10, 10, 10, 10, 10, 13,  0,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,  0,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     13, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14,  4, 14, 14,  0,  0,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  0,  0,  0,  0,  0,  0,
@@ -24035,6 +25154,8 @@ static RE_UINT8 re_sentence_break_table_3[] = {
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 14, 14,  0,  0,  0,
     13, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 14, 14, 14,
      0,  0,  0,  0,  0,  0,  0, 13,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
@@ -24066,7 +25187,9 @@ static RE_UINT8 re_sentence_break_table_3[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13,  0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14,  4,  4,  0,  4,  4,  0, 14,  0,
+    14, 14, 14, 14, 14, 14, 14, 14,  4,  4,  0,  4,  4,  0, 14, 13,
+    13, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13,  0, 13,  0, 13, 13, 13, 13,  0, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13,  4,  0,  0,  0,  0,  0,  0,
@@ -24151,12 +25274,20 @@ static RE_UINT8 re_sentence_break_table_3[] = {
     14, 14,  0, 14, 14, 14, 14, 14, 13,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 14, 14, 14, 14,  4,  4,  0,  0,  0,  0,  0,  0,  0,
+    14, 14, 13, 14, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13,  0, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0, 14, 14,
+    14, 14, 14,  4,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,
-    12, 12, 12, 12, 12, 12, 12, 12, 12,  0,  0,  0,  0,  0,  0,  0,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+    14, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+    14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  0,  0,  0,  0,  4,  4,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  0,  0,  0,  0,  0,  0,
@@ -24182,9 +25313,9 @@ static RE_UINT8 re_sentence_break_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13,  0, 13, 13, 13, 13, 13, 13, 13,  0, 13, 13,  0,
     13, 13, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    13, 13, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    13, 13, 13,  0,  0, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0, 13, 13, 13, 13,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0,  0,  0,
@@ -24271,9 +25402,15 @@ static RE_UINT8 re_sentence_break_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 13, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,
+     0,  0,  0,  0,  0, 10, 10, 10, 10, 10, 10,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14,  0, 14, 14, 14, 14, 14, 14, 14, 14,
     14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0, 14, 14, 14, 14, 14,
     14, 14,  0, 14, 14,  0, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 14,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14, 13, 13, 13, 13, 13, 13, 13,  0,  0,
@@ -24316,8 +25453,6 @@ static RE_UINT8 re_sentence_break_table_3[] = {
     13, 13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -24454,15 +25589,15 @@ static RE_UINT8 re_sentence_terminal_table_2[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 45,  0,  0,  0,  0,  0,
      0,  0, 46,  0, 17,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0, 43,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0, 47,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0, 47,  0,  0, 48,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 25,  0,  0,  0, 48,  0, 47, 49,  0,  0,  0,  0,  0,
+     0,  0,  0, 25,  0,  0,  0, 49,  0, 47, 50,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0, 50,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0, 51,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0, 24,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0, 51,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+     0,  0,  0,  0, 52,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
 static RE_UINT8 re_sentence_terminal_table_3[] = {
@@ -24478,7 +25613,8 @@ static RE_UINT8 re_sentence_terminal_table_3[] = {
     128,   1,   0,   0,   3,   0,   0,   0,  14,   0,   0,   0,  96,  32,   0, 192,
       0,   0,   0,  27,   0,  24,   0,   0,  12, 254, 255,   0,   6,   0,   0,   0,
       0,   0,   0, 112,  80,   0,   0,   0,  12,   0,   0,   0,   0,   0, 128,   1,
-      0,   0,  32,   0,  16,   0,   0,   0,   0,   0,   0,   1,   0,   1,   0,   0
+     24,   0,   0,   0,   0,   0,  32,   0,  16,   0,   0,   0,   0,   0,   0,   1,
+      0,   1,   0,   0
 };
 
 RE_UINT32 re_get_sentence_terminal(RE_UINT32 codepoint) {
@@ -24509,7 +25645,7 @@ static RE_UINT8 re_soft_dotted_table_1[] = {
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 6, 2, 7, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 6, 2, 7, 8, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -24588,7 +25724,9 @@ static RE_UINT8 re_soft_dotted_table_2[] = {
      0, 17, 18,  0, 19, 20,  0, 21,  0, 22, 23,  0, 24,  0, 17, 18,
      0, 19, 20,  0, 21,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0,  0,  0,  0,  0
+     0,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0,  0,  0,  0,  0,
+     0,  0, 26,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
 static RE_UINT8 re_soft_dotted_table_3[] = {
@@ -24598,7 +25736,7 @@ static RE_UINT8 re_soft_dotted_table_3[] = {
       0,  32,   0,   0,   0,   8,   0,   0,   0,   0,   2,   0,   0,   3,   0,   0,
       0,   0,   0,  16,  12,   0,   0,   0,   0,   0, 192,   0,   0,  12,   0,   0,
       0,   0,   0, 192,   0,   0,  12,   0, 192,   0,   0,   0,   0,   0,   0,  12,
-      0, 192,   0,   0,   0,   0,   0,   4
+      0, 192,   0,   0,   0,   0,   0,   4,   0,  48,   0,   0
 };
 
 RE_UINT32 re_get_soft_dotted(RE_UINT32 codepoint) {
@@ -24736,17 +25874,17 @@ static RE_UINT8 re_terminal_punctuation_table_2[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 57,  0,  0,  0,  0,  0,
      0,  0, 58,  0, 59, 30,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0, 51, 60,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0, 61,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 62,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0, 61,  0,  0, 62,  0,  0,  0,  0,  0,
+     0,  0,  0, 63,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0, 34,  0,  0,  0, 63,  0, 64, 65,  0,  0,  0,  0,  0,
+     0,  0,  0, 34,  0,  0,  0, 64,  0, 65, 66,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0, 61,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0, 37,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0, 66,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+     0,  0,  0,  0, 67,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
 static RE_UINT8 re_terminal_punctuation_table_3[] = {
@@ -24765,8 +25903,8 @@ static RE_UINT8 re_terminal_punctuation_table_3[] = {
     192,   3,   0,   0, 128,  63,   0,   0,   3,   0,   0,   0,  14,   0,   0,   0,
      96,  32,   0, 192,   0,   0,   0,  31,   0,  56,   0,  12,  60, 254, 255,   0,
       0,   0,   0, 112,  80,   0,   0,   0,  12,   0,   0,   0,   0,   0,   0,  24,
-      0,   0,   2,   0,   0,   0, 128,   1,   0,   0,  31,   0,   0,   0,  32,   0,
-      0,   0, 128,   3,  16,   0,   0,   0, 128,   7,   0,   0
+      0,   0,   2,   0,   0,   0, 128,   1,  24,   0,   0,   0,   0,   0,  31,   0,
+      0,   0,  32,   0,   0,   0, 128,   3,  16,   0,   0,   0, 128,   7,   0,   0
 };
 
 RE_UINT32 re_get_terminal_punctuation(RE_UINT32 codepoint) {
@@ -24790,74 +25928,74 @@ RE_UINT32 re_get_terminal_punctuation(RE_UINT32 codepoint) {
 
 /* Unified_Ideograph. */
 static RE_UINT8 re_unified_ideograph_table_1[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
-    1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, 5, 6, 1,
-    1, 1, 1, 7, 1, 1, 1, 1, 1, 1, 8, 0, 0, 0, 0, 0,
-    1, 1, 1, 1, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,
+     1,  1,  1,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  4,  1,  1,  1,  5,  6,  1,
+     1,  1,  1,  7,  1,  1,  1,  1,  1,  1,  8,  0,  0,  0,  0,  0,
+     1,  1,  1,  1,  9,  1,  1,  1, 10,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
 static RE_UINT8 re_unified_ideograph_table_2[] = {
@@ -24880,13 +26018,15 @@ static RE_UINT8 re_unified_ideograph_table_2[] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8, 0, 0, 0, 0, 0
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 0, 0
 };
 
 static RE_UINT8 re_unified_ideograph_table_3[] = {
       0,   0,   0,   0, 255, 255, 255, 255,   0, 192,  26, 128, 154,   3,   0,   0,
-    255, 255, 255,   1, 255, 255, 255,  63,   3,   0, 255, 255,   1,   0,   0,   0,
-    255,   7,   0,   0
+    255, 255, 255,   3, 255, 255, 255,  63,   3,   0, 255, 255,   1,   0,   0,   0,
+    255,   7, 255, 255, 255, 255,   0,   0
 };
 
 RE_UINT32 re_get_unified_ideograph(RE_UINT32 codepoint) {
@@ -25208,7 +26348,7 @@ static RE_UINT8 re_word_table_1[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 51, 13, 13, 13, 52, 53, 13,
     13, 13, 13, 54, 13, 13, 13, 13, 13, 13, 55, 10, 10, 10, 56, 10,
-    13, 13, 13, 13, 57, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    13, 13, 13, 13, 57, 13, 13, 13, 58, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
@@ -25252,7 +26392,7 @@ static RE_UINT8 re_word_table_1[] = {
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-    58, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    59, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
@@ -25314,57 +26454,57 @@ static RE_UINT16 re_word_table_2[] = {
     189, 190, 100, 133, 101,   0,   0, 191, 100, 163,   0,   0,   6, 192,   0,   0,
     193, 194,   0,  76,  76,   0,  73, 195,   6, 100, 100, 196,  25,   0,   0,   0,
       6,   6, 129,   0,   6, 196,   6, 196,   6, 197,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   6, 198,   0,   0,  76, 108, 125,  23, 199,  23, 200, 133,
-      6,   6, 195, 201,   6,  66, 202, 203,   6, 204, 205, 206,   6,   6, 207,   0,
-    208, 209,   0,   0, 210, 114,   6, 211,  32, 212, 213, 214,   0,   0,   0,   0,
-      6,   6, 215, 216,   6,   6, 217,   0,   0,   0,   0,   0,   6, 218, 219,   0,
+      0,   0,   0,   0,   6, 198,   0, 199,  76, 108, 125,  23, 200,  23, 201, 133,
+      6,   6, 195, 202,   6,  66, 203, 204,   6, 205, 206, 207,   6,   6, 208,   0,
+    209, 192, 210,   0, 211, 114,   6, 212,  32, 213, 214, 215,   0,   0,   0,   0,
+      6,   6, 216, 210,   6,   6, 217,   0,   0,   0,   0,   0,   6, 218, 219,   0,
       6,   6, 220,   0,   6,  99,  97,   0,  87, 221, 195,   0,   0,   0,   0,   0,
       6,  66,   0,   0,   0,   6,   6, 222, 223, 224, 225,   0,   0, 226, 227, 228,
       6, 101, 108,   6, 229,  23,   6,  99,   0,   0,   0,   0,   0,   0,   0,   0,
     230,   5, 231, 148, 168, 232,   0,   0, 233, 234, 197, 235, 236,  97,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 133,   0,   0,   0,   0,   0, 237,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 133, 237, 238, 239,   0,   0, 240,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 163,   0,   0,   0,
-      6,   6,   6, 109,   6,   6,   6,   6,   6,   6, 238,   0,   0,   0,   0,   0,
+      6,   6,   6, 109,   6,   6,   6,   6,   6,   6, 241,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  23,   6,   6, 125,
-      6, 109,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6,  88, 100,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6, 195,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,  99, 101,  78,   6, 101,  78, 104,   6, 133, 225, 239,  88,   0,   0,   0,
+      6,  99, 101,  78,   6, 101,  78, 104,   6, 133, 225, 242,  88,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   6,   6,   0,   0,   0,   0,   6,   6, 240,   6, 241,   0,   0, 242,
+      0,   0,   6,   6,   0,   0,   0,   0,   6,   6, 243,   6, 244,   0,   0, 245,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 112,
       6,   6,   6,   6,   6,   6, 100,   0, 129,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 243,
-      6,   6,   6,   6,   6,   6,   6,   6,   6, 244, 245, 205,   6,   6,   6,   6,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 246,
+      6,   6,   6,   6,   6,   6,   6,   6,   6, 247, 248, 206,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,  28,   0,   0,   0,   0,   0,   0,   0,   0,
-      6,   6,   6, 246, 247,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6,   6,   6, 249, 250,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   6, 152, 195,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 248, 249, 250,   0,   0,
-      0,   0, 251,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      6,   6, 204,   6, 252, 253, 254,   6, 255, 256, 257,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6, 258, 259,  81, 204, 204, 260, 260, 230, 230, 261,   6,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 251, 252, 253,   0,   0,
+      0,   0, 254,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6,   6, 205,   6, 255, 256, 257,   6, 258, 259, 260,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6, 261, 262,  81, 205, 205, 263, 263, 230, 230, 264,   6,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      6, 262,   6, 263, 264, 265,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6, 265,   6, 266, 267, 268,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 101,   0,   0,   0,   0,   0,   0,   0,
-    266, 267,   0,   0,   0,   0,   0,   0,   6, 268, 269,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 101, 269,   0,   0,   0,   0,   0,   0,
+    270, 271,   6,  27, 135,   0,   0,   0,   6, 272, 273,   0,   0,   0,   0,   0,
       0,   0,   0,   0,  23, 109,   6, 163,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,  23, 163,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 274,
+      6,   6,   6,   6,   6,   6, 275,   0,   6,   6, 221,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 270,
-      6,   6,   6,   6,   6,   6, 271,   0,   6,   6, 221,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    254, 272, 273, 274, 275, 276,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    257, 276, 277, 278, 279, 280,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,  23,  78,  78,  97,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -25372,17 +26512,19 @@ static RE_UINT16 re_word_table_2[] = {
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   0,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6,   6,   6,   6,   6,  99,   6,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6,   6,   6,   6,   6, 163,   6,   6,   6,   6,   6,   6,
      79,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6, 277,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6, 281,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 179,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
      79,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 278,   0,   0,   0,   0,   0,
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  29,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  88,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   6,   6,   6,   6,  88,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
@@ -25402,10 +26544,10 @@ static RE_UINT8 re_word_table_3[] = {
     238, 159, 249, 255, 159,  57, 224, 176, 207, 255,   2,   0, 236, 199,  61, 214,
      24, 199, 255, 195, 199,  61, 129,   0, 192, 255,   0,   0, 255, 223, 253, 255,
     255, 253, 255, 243, 223,  61,  96,  39, 207, 255,   0,   0, 239, 223, 253, 255,
-    255, 253, 239, 243, 223,  61,  96,  96, 207, 255,   6,   0, 223, 125, 240, 128,
+    255, 253, 239, 243, 223,  61,  96,  96, 207, 255,  14,   0, 223, 125, 240, 128,
     207, 255,   0, 252, 238, 255, 127, 252, 255, 255, 251,  47, 127, 132,  95, 255,
     192, 255,  12,   0, 254, 255, 255, 255, 255, 255, 255,   7, 255, 127, 255,   3,
-    214, 247, 255, 255, 175, 255, 255,  63,  95,  63, 255, 243,   1,   0,   0,   3,
+    214, 247, 255, 255, 175, 255, 255,  63,  95, 127, 255, 243,   1,   0,   0,   3,
     255,   3, 160, 194, 255, 254, 255, 255, 255,  31, 254, 255, 223, 255, 255, 254,
     255, 255, 255,  31,  64,   0,   0,   0, 255,   3, 255, 255, 255, 255, 255,  63,
     191,  32, 255, 255, 255, 255, 255, 247, 255,  61, 127,  61, 255,  61, 255, 255,
@@ -25437,27 +26579,28 @@ static RE_UINT8 re_word_table_3[] = {
      15,   0, 255, 247, 255, 247, 183, 255, 251, 255, 251,  27, 191, 255, 255, 255,
     255, 255, 253,   7,  63, 253, 255, 255, 255, 255, 191, 145, 255, 255,  55,   0,
     255, 255, 255, 192, 111, 240, 239, 254, 255, 255,  63, 135, 127,   0,   0,   0,
-    255, 255,   7,   0, 255,   0, 255,   3, 255,  27,   3,   0,  63,   0,   0,   0,
-     31,   0,   0,   0, 192, 255,  63, 128,   4,   0, 255, 255, 255,   1, 255,   3,
-    255, 255, 223, 255, 240,   0, 255, 255, 255, 255,  79,   0,  31, 222, 255,  23,
-    255, 255, 251, 255, 255, 255, 255,  64, 127, 189, 255, 191, 255,   7, 255,   3,
-    255, 253, 237, 251, 159,  57, 129, 224, 207,  31,  31,   0, 255,   7, 255, 195,
-      3,   0,   0,   0, 191,   0, 255,   3, 255, 255,  63, 255,   1,   0,   0,  63,
+    255, 255,   7,   0, 255,   0, 255,   3, 255,  27,   3,   0,   0,   0,   0, 224,
+     63,   0,   0,   0,  31,   0,   0,   0, 192, 255,  63, 128,   4,   0, 255, 255,
+    255,   1, 255,   3, 255, 255, 223, 255, 240,   0, 255, 255, 255, 255,  79,   0,
+     31, 222, 255,  23, 255, 255, 251, 255,   3,   0,   0,   0, 127, 189, 255, 191,
+    255,   7, 255,   3, 255, 253, 237, 251, 159,  57, 129, 224, 207,  31,  31,   0,
+    255,   7, 255, 195, 191,   0, 255,   3, 255, 255,  63, 255,   1,   0,   0,  63,
      17,   0, 255,   3, 255,  15, 255,   3, 255,   3,   0, 128, 127, 242, 111, 255,
     255, 255, 191, 249,  15,   0, 255,   3, 255, 252, 255, 255, 255, 255, 255, 252,
      27,   0,   0,   0, 255, 255, 255,  35, 255, 253, 255, 255,   1,   0, 255,   3,
     255, 254, 127,   0, 127, 251, 255, 255, 255, 255, 127, 180, 191, 253, 255, 255,
-    255, 127, 251,   1,   0,   0,   1,   0,  15,   0,   0,   0, 248, 255, 255, 224,
-    255, 135, 255, 255, 255, 128, 255, 255,  27,   0,   3,   0,   0,   0, 239, 111,
-      7,   0,   0,   0,   0,   0,   7,   0, 255,   7, 255,  31, 255,   1, 255,  99,
-    224, 227,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0,
-    255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223,
-    255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247,
-    255, 127, 255, 255, 247, 207, 255, 255, 255, 255, 127, 248, 255,  31,  32,   0,
-     16,   0,   0, 248, 254, 255,   0,   0, 127, 255, 255, 249, 219,   7,   0,   0,
+    255, 127, 251,   1, 255, 255, 253, 255, 255, 255, 255, 199,   7,   0, 255,   3,
+      0,   0,   1,   0,  15,   0,   0,   0, 248, 255, 255, 224, 255, 135, 255, 255,
+    255, 128, 255, 255,  27,   0,   3,   0,   0,   0, 239, 111,   7,   0,   4,   0,
+      0,   0,  39,   0, 255,   7, 255,  31, 255,   1, 255,  99, 224, 227,   7, 248,
+    231,  15,   0,   0,   0,  60,   0,   0,  28,   0,   0,   0, 255, 255, 255, 223,
+    100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,
+     95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247, 255, 127, 255, 255,
+    247, 207, 255, 255, 255, 255, 127, 248, 255,  31,  32,   0,  16,   0,   0, 248,
+    254, 255,   0,   0, 224,   7,   0,   0, 127, 255, 255, 249, 219,   7, 255, 255,
     255,  31, 255,  63, 255,  67,   0,   0, 127, 111, 255, 127,  31,   0, 127,   0,
     150, 254, 247,  10, 132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15,
-    238, 251, 255,  15,   3,   0, 255, 255, 255,   7,   0,   0
+    238, 251, 255,  15,   3,   0, 255, 255
 };
 
 RE_UINT32 re_get_word(RE_UINT32 codepoint) {
@@ -25597,58 +26740,58 @@ static RE_UINT16 re_word_break_table_2[] = {
     246, 247, 119, 161, 120,  78,  78, 248, 119, 249,  78,  78,   7,   8,  78,  78,
     250, 251,  78, 192, 192,  78,  85, 252,   7, 119, 119, 253, 212,  78,  78,  78,
       7,   7, 156,  78,   7, 253,   7, 253,   7, 254,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,   7, 255,  78,  78, 192, 256, 257, 175, 258, 175, 259, 161,
-    133, 260, 261, 262, 133, 263, 264, 265, 133, 266, 267, 268, 133, 193, 269,  78,
-    270, 271,  78,  78, 272, 139, 273, 274, 275, 276, 277, 278,  78,  78,  78,  78,
-      7, 279, 280, 281,   7,  27, 282,  78,  78,  78,  78,  78,   7, 283, 284,  78,
-      7,  27, 285,  78,   7, 286, 114,  78, 287, 288,  78,  78,  78,  78,  78,  78,
-      7, 289,  78,  78,  78,   7,   7, 290, 291, 292, 293,  78,  78, 294, 295, 296,
-    297, 298, 299,   7, 300, 175,   7, 116,  78,  78,  78,  78,  78,  78,  78,  78,
-    301, 302, 303, 183, 304, 305,  78,  78, 306, 307, 308, 309, 310, 114,  78,  78,
-     78,  78,  78,  78,  78,  78,  78, 311,  78,  78,  78,  78,  78, 312,  78,  78,
+     78,  78,  78,  78,   7, 255,  78, 256, 192, 257, 258, 175, 259, 175, 260, 161,
+    133, 261, 262, 263, 133, 264, 265, 266, 133, 267, 268, 269, 133, 193, 270,  78,
+    271, 272, 273,  78, 274, 139, 275, 276, 277, 278, 279, 280,  78,  78,  78,  78,
+      7, 281, 282, 283,   7,  27, 284,  78,  78,  78,  78,  78,   7, 285, 286,  78,
+      7,  27, 287,  78,   7, 288, 114,  78, 256, 289,  78,  78,  78,  78,  78,  78,
+      7, 290,  78,  78,  78,   7,   7, 291, 292, 293, 294,  78,  78, 295, 296, 297,
+    298, 299, 300,   7, 301, 175,   7, 116,  78,  78,  78,  78,  78,  78,  78,  78,
+    302, 303, 304, 183, 305, 306,  78,  78, 307, 308, 309, 310, 311, 114,  78,  78,
+     78,  78,  78,  78,  78,  78,  78, 312, 313, 314, 315,  78,  78, 316,  78,  78,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7, 249,  78,  78,  78,
-      7,   7,   7, 170,   7,   7,   7,   7,   7,   7, 313,  78,  78,  78,  78,  78,
+      7,   7,   7, 170,   7,   7,   7,   7,   7,   7, 317,  78,  78,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 175,   7,   7, 233,
-      7, 314,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
+      7, 318, 319,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7,   7, 315,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
+      7,   7, 320,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
       7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-      7, 116, 120, 238,   7, 120, 238, 316,   7, 317, 318, 319, 102,  78,  78,  78,
+      7, 116, 120, 238,   7, 120, 238, 321,   7, 322, 323, 324, 102,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,   7,   7,  78,  78,  78,  78,   7,   7, 320,   9, 321,  78,  78, 322,
+     78,  78,   7,   7,  78,  78,  78,  78,   7,   7, 325,   9, 326,  78,  78, 327,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 323,
-    324,  78,  78,  78,  78,  78,  78,  78,  78, 325,  78, 326,  78,  78,  78,  78,
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 328,
+    329,  78,  78,  78,  78,  78,  78,  78,  78, 330, 331, 332,  78,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-      7,   7,   7, 327, 328, 329,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78,   9, 330, 261,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 331, 332, 333,  78,  78,
-     78,  78, 334,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-      7,   7, 335,   7, 336, 337, 338,   7, 339, 340, 341,   7,   7,   7,   7,   7,
-      7,   7,   7,   7,   7, 342, 343,  95, 335, 335, 344, 344, 301, 301, 345, 346,
-     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-      9, 347,   9, 348, 349, 350,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78, 120,  78,  78,  78,  78,  78,  78,  78,
-    351, 352,  78,  78,  78,  78,  78,  78,   7, 353, 354,  78,  78,  78,  78,  78,
-     78,  78,  78,  78, 175, 355,   7, 356,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 357,
-      7,   7,   7,   7,   7,   7, 358,  78,   7,   7, 359,  78,  78,  78,  78,  78,
+      7,   7,   7, 333, 334, 335,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-    338, 360, 361, 362, 363, 364,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
-     78,  78,  78,  78,  78,  78,  78,  78,  78, 175, 204, 204, 158,  78,  78, 365,
+     78,  78,  78,  78,  78,  78,  78,  78,   9, 336, 262,  78,  78,  78,  78,  78,
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 337, 338, 339,  78,  78,
+     78,  78, 340,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
+      7,   7, 341,   7, 342, 343, 344,   7, 345, 346, 347,   7,   7,   7,   7,   7,
+      7,   7,   7,   7,   7, 348, 349,  95, 341, 341, 350, 350, 302, 302, 351, 352,
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
+      9, 353,   9, 354, 355, 356,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
+     78,  78,  78,  78,  78,  78,  78,  78, 120, 357,  78,  78,  78,  78,  78,  78,
+    358, 359,   7, 360, 361,  78,  78,  78,   7, 362, 363,  78,  78,  78,  78,  78,
+     78,  78,  78,  78, 175, 364,   7, 365,  78,  78,  78,  78,  78,  78,  78,  78,
+     78,  78,  78,  78,  78,  78, 175, 365,  78,  78,  78,  78,  78,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 366,
+      7,   7,   7,   7,   7,   7, 367,  78,   7,   7, 368,  78,  78,  78,  78,  78,
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
+    344, 369, 370, 371, 372, 373,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
+     78,  78,  78,  78,  78,  78,  78,  78,  78, 175, 204, 204, 158,  78,  78, 374,
+     78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 375,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78, 122,
-    367,   9,   9,   9,  78,  78,  78,  78,   9,   9,   9,   9,   9,   9,   9, 368,
+    376,   9,   9,   9,  78,  78,  78,  78,   9,   9,   9,   9,   9,   9,   9, 377,
      78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78,  78
 };
 
@@ -25792,7 +26935,7 @@ static RE_UINT8 re_word_break_table_3[] = {
     14, 14, 14, 14, 14,  0, 14, 14, 14,  0, 14, 14, 14, 14,  0,  0,
      0,  0,  0,  0,  0, 14, 14,  0,  0,  0,  0,  0,  0, 11, 11,  0,
     11, 11, 14, 14,  0,  0,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-     0, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 11, 11, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     14, 14, 14, 14, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0, 11, 11,
     11,  0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
@@ -25817,7 +26960,7 @@ static RE_UINT8 re_word_break_table_3[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0, 14,  0,  0, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0, 14, 14, 14, 14, 14, 14,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0, 14, 14, 14, 14, 14, 14, 14,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
     11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0, 14, 14,  0,  0,  0,  0,  0,  0,
@@ -26165,6 +27308,8 @@ static RE_UINT8 re_word_break_table_3[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0, 14, 14,  0,  0,  0,
     11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 14, 14, 14,
      0,  0,  0,  0,  0,  0,  0, 11,  0,  0,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
     11, 11, 11, 11, 11, 11, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
@@ -26196,7 +27341,9 @@ static RE_UINT8 re_word_break_table_3[] = {
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
     11, 11,  0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14,
-    14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0, 14,  0,
+    14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0, 14, 11,
+    11, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11,  0, 11,  0, 11, 11, 11, 11,  0, 11,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0, 11,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
@@ -26227,8 +27374,6 @@ static RE_UINT8 re_word_break_table_3[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14, 14,
     14, 14, 14, 14, 14, 14, 14, 14, 11,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 14, 14, 14,
     14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0,  0,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14,
@@ -26277,12 +27422,20 @@ static RE_UINT8 re_word_break_table_3[] = {
     14, 14,  0, 14, 14, 14, 14, 14, 11,  0,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
     11, 11, 11, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    14, 14, 11, 14, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11,  0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 14, 14, 14, 14, 14, 14, 14,  0,  0,  0, 14, 14,
+    14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,
-    13, 13, 13, 13, 13, 13, 13, 13, 13,  0,  0,  0,  0,  0,  0,  0,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    14, 11, 11, 11, 11, 11, 11, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+    14, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0,
@@ -26305,6 +27458,8 @@ static RE_UINT8 re_word_break_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     17, 17, 17,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0, 17,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0, 17, 17, 17, 17,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,
@@ -26355,9 +27510,15 @@ static RE_UINT8 re_word_break_table_3[] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 14, 14, 14, 14, 14,
      0, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0, 11, 11, 11, 11, 11, 11,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14,  0, 14, 14, 14, 14, 14, 14, 14, 14,
     14, 14, 14, 14, 14, 14, 14, 14, 14,  0,  0, 14, 14, 14, 14, 14,
     14, 14,  0, 14, 14,  0, 14, 14, 14, 14, 14,  0,  0,  0,  0,  0,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 14,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,  0,  0,  0,
     14, 14, 14, 14, 14, 14, 14, 11, 11, 11, 11, 11, 11, 11,  0,  0,
@@ -26419,7 +27580,7 @@ static RE_UINT8 re_xdigit_table_1[] = {
      8, 12,  8, 13, 14, 15, 16, 17,  8,  8,  8,  8,  8,  8,  8,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8, 18,  8,  8,  8,  8,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
-     8,  8,  8,  8,  8, 19,  8,  8, 20,  8, 21,  8,  8,  8, 22,  8,
+     8,  8,  8,  8,  8, 19,  8,  8, 20, 21, 22,  8,  8,  8, 23,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
      8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
@@ -26518,13 +27679,15 @@ static RE_UINT8 re_xdigit_table_2[] = {
     0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 3, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 8,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -26570,7 +27733,7 @@ static RE_UINT8 re_xid_continue_table_1[] = {
     12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
     12, 12, 12, 12, 12, 12, 12, 12, 12, 49, 12, 12, 12, 50, 51, 12,
     12, 12, 12, 52, 12, 12, 12, 12, 12, 12, 53,  9,  9,  9, 54,  9,
-    12, 12, 12, 12, 55,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    12, 12, 12, 12, 55, 12, 12, 12, 56,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -26614,7 +27777,7 @@ static RE_UINT8 re_xid_continue_table_1[] = {
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
-    56,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    57,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -26674,73 +27837,75 @@ static RE_UINT16 re_xid_continue_table_2[] = {
     190, 191, 102, 134, 103,   0,   0, 192, 102, 163,   0,   0,   6, 193,   0,   0,
     194, 195,   0,  77,  77,   0,  74, 196,   6, 102, 102, 197,  26,   0,   0,   0,
       6,   6, 131,   0,   6, 197,   6, 197,   6, 198,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   6, 199,   0,   0,  77, 200, 179,  24, 201,  24, 202, 134,
-      6,   6, 196, 203,   6,  67, 204, 205,   6, 206, 207, 208,   6,   6, 209,   0,
-    210, 211,   0,   0, 212, 117,   6, 213,  33, 214, 215, 216,   0,   0,   0,   0,
-      6,   6, 217, 218,   6,   6, 219,   0,   0,   0,   0,   0,   6, 220, 221,   0,
+      0,   0,   0,   0,   6, 199,   0, 200,  77, 201, 179,  24, 202,  24, 203, 134,
+      6,   6, 196, 204,   6,  67, 205, 206,   6, 207, 208, 209,   6,   6, 210,   0,
+    211, 193, 212,   0, 213, 117,   6, 214,  33, 215, 216, 217,   0,   0,   0,   0,
+      6,   6, 218, 212,   6,   6, 219,   0,   0,   0,   0,   0,   6, 220, 221,   0,
       6,   6, 222,   0,   6, 101,  99,   0,  88, 223, 196,   0,   0,   0,   0,   0,
       6,  67,   0,   0,   0,   6,   6, 224, 225, 226, 227,   0,   0, 228, 229, 230,
-      6, 103, 200,   6, 231,  24,   6, 101,   0,   0,   0,   0,   0,   0,   0,   0,
+      6, 103, 201,   6, 231,  24,   6, 101,   0,   0,   0,   0,   0,   0,   0,   0,
     232,   5, 233, 148, 169, 234,   0,   0, 235, 236, 198, 237, 238,  99,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 134,   0,   0,   0,   0,   0, 239,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 134, 239, 240, 241,   0,   0, 242,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 163,   0,   0,   0,
-      6,   6,   6, 112,   6,   6,   6,   6,   6,   6, 240,   0,   0,   0,   0,   0,
+      6,   6,   6, 112,   6,   6,   6,   6,   6,   6, 243,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  24,   6,   6, 179,
-      6, 112,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6,  90, 102,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6, 196,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6, 101, 103,  79,   6, 103,  79, 106,   6, 134, 227, 241,  90,   0,   0,   0,
+      6, 101, 103,  79,   6, 103,  79, 106,   6, 134, 227, 244,  90,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   6,   6,   0,   0,   0,   0,   6,   6, 242,   6, 243,   0,   0, 244,
+      0,   0,   6,   6,   0,   0,   0,   0,   6,   6, 245,   6, 246,   0,   0, 247,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 115,
       6,   6,   6,   6,   6,   6, 102,   0, 131,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 245,
-      6,   6,   6,   6,   6,   6,   6,   6,   6, 246, 247, 207,   6,   6,   6,   6,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 248,
+      6,   6,   6,   6,   6,   6,   6,   6,   6, 249, 250, 208,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,  29,   0,   0,   0,   0,   0,   0,   0,   0,
-      6,   6,   6, 248, 249,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6,   6,   6, 251, 252,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   6, 152, 196,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 250, 251, 252,   0,   0,
-      0,   0, 253,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      6,   6, 206,   6, 254, 255, 256,   6, 257, 258, 259,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6, 260, 261,  82, 206, 206, 262, 262, 232, 232, 263,   6,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 253, 254, 255,   0,   0,
+      0,   0, 256,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6,   6, 207,   6, 257, 258, 259,   6, 260, 261, 262,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6, 263, 264,  82, 207, 207, 265, 265, 232, 232, 266,   6,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      6, 264,   6, 265, 266, 267,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      6, 267,   6, 268, 269, 270,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 103,   0,   0,   0,   0,   0,   0,   0,
-    268, 269,   0,   0,   0,   0,   0,   0,   6, 270, 271,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 103, 271,   0,   0,   0,   0,   0,   0,
+    272, 273,   6,  28, 274,   0,   0,   0,   6, 275, 276,   0,   0,   0,   0,   0,
       0,   0,   0,   0,  24, 112,   6, 163,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,  24, 163,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 277,
+      6,   6,   6,   6,   6,   6, 278,   0,   6,   6, 223,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 272,
-      6,   6,   6,   6,   6,   6, 273,   0,   6,   6, 223,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    256, 274, 275, 276, 277, 278,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    259, 279, 280, 281, 282, 283,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   0,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6,   6,   6,   6,   6, 101,   6,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6,   6,   6,   6,   6, 163,   6,   6,   6,   6,   6,   6,
      80,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6, 279,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6, 284,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 180,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
      80,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-      6,   6,   6,   6,   6,   6,   6,   6,   6,   6, 280,   0,   0,   0,   0,   0,
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  30,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+      6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  90,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   6,   6,   6,   6,  90,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
@@ -26760,10 +27925,10 @@ static RE_UINT8 re_xid_continue_table_3[] = {
     207, 255,   0, 254, 238, 159, 249, 255, 159,  57, 224, 176, 207, 255,   2,   0,
     236, 199,  61, 214,  24, 199, 255, 195, 199,  61, 129,   0, 192, 255,   0,   0,
     255, 223, 253, 255, 255, 253, 255, 243, 223,  61,  96,  39, 207, 255,   0,   0,
-    239, 223, 253, 255, 255, 253, 239, 243, 223,  61,  96,  96, 207, 255,   6,   0,
+    239, 223, 253, 255, 255, 253, 239, 243, 223,  61,  96,  96, 207, 255,  14,   0,
     223, 125, 240, 128, 207, 255,   0, 252, 238, 255, 127, 252, 255, 255, 251,  47,
     127, 132,  95, 255, 192, 255,  12,   0, 254, 255, 255, 255, 255, 255, 255,   7,
-    255, 127, 255,   3, 214, 247, 255, 255, 175, 255, 255,  63,  95,  63, 255, 243,
+    255, 127, 255,   3, 214, 247, 255, 255, 175, 255, 255,  63,  95, 127, 255, 243,
       1,   0,   0,   3, 255,   3, 160, 194, 255, 254, 255, 255, 255,  31, 254, 255,
     223, 255, 255, 254, 255, 255, 255,  31,  64,   0,   0,   0, 255,   3, 255, 255,
     255, 255, 255,  63, 191,  32, 255, 255, 255, 255, 255, 247, 255,  61, 127,  61,
@@ -26796,27 +27961,28 @@ static RE_UINT8 re_xid_continue_table_3[] = {
     191, 255, 255, 255, 255, 255, 253,   7,  63, 253, 255, 255, 255, 255, 191, 145,
     255, 255,  55,   0, 255, 255, 255, 192, 111, 240, 239, 254, 255, 255,  63, 135,
     127,   0,   0,   0, 255, 255,   7,   0, 255,   0, 255,   3, 255,  27,   3,   0,
-    128,   0, 255, 255,  63,   0,   0,   0,  31,   0,   0,   0, 192, 255,  63, 128,
-      4,   0, 255, 255, 255,   1, 255,   3, 255, 255, 223, 255, 240,   0, 255, 255,
-    255, 255,  79,   0,  31, 222, 255,  23, 255, 255, 251, 255, 255, 255, 255,  64,
-    127, 189, 255, 191, 255,   7, 255,   3, 255, 253, 237, 251, 159,  57, 129, 224,
-    207,  31,  31,   0, 255,   7, 255, 195,   3,   0,   0,   0, 191,   0, 255,   3,
+      0,   0,   0, 224, 128,   0, 255, 255,  63,   0,   0,   0,  31,   0,   0,   0,
+    192, 255,  63, 128,   4,   0, 255, 255, 255,   1, 255,   3, 255, 255, 223, 255,
+    240,   0, 255, 255, 255, 255,  79,   0,  31, 222, 255,  23, 255, 255, 251, 255,
+      3,   0,   0,   0, 127, 189, 255, 191, 255,   7, 255,   3, 255, 253, 237, 251,
+    159,  57, 129, 224, 207,  31,  31,   0, 255,   7, 255, 195, 191,   0, 255,   3,
     255, 255,  63, 255,   1,   0,   0,  63,  17,   0, 255,   3, 255,  15, 255,   3,
     255,   3,   0, 128, 127, 242, 111, 255, 255, 255, 191, 249,  15,   0, 255,   3,
     255, 252, 255, 255, 255, 255, 255, 252,  27,   0,   0,   0, 255, 255, 255,  35,
     255, 253, 255, 255,   1,   0, 255,   3, 255, 254, 127,   0, 127, 251, 255, 255,
-    255, 255, 127, 180, 191, 253, 255, 255, 255, 127, 251,   1,   0,   0,   1,   0,
-     15,   0,   0,   0, 248, 255, 255, 224, 255, 135, 255, 255, 255, 128, 255, 255,
-     27,   0,   3,   0,   0,   0, 239, 111,   7,   0,   0,   0,   0,   0,   7,   0,
-    255,   7, 255,  31, 255,   1, 255,  99, 224, 227,   7, 248, 231,  15,   0,   0,
-      0,  60,   0,   0,  28,   0,   0,   0, 255, 255, 255, 223, 100, 222, 255, 235,
-    239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,
-     63, 255, 255, 255, 253, 255, 255, 247, 255, 127, 255, 255, 247, 207, 255, 255,
-    255, 255, 127, 248, 255,  31,  32,   0,  16,   0,   0, 248, 254, 255,   0,   0,
-    127, 255, 255, 249, 219,   7,   0,   0, 255,  31, 255,  63, 255,  67,   0,   0,
-    127, 111, 255, 127,  31,   0, 127,   0, 150, 254, 247,  10, 132, 234, 150, 170,
-    150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,   3,   0, 255, 255,
-    255,   7,   0,   0
+    255, 255, 127, 180, 191, 253, 255, 255, 255, 127, 251,   1, 255, 255, 253, 255,
+    255, 255, 255, 199,   7,   0, 255,   3,   0,   0,   1,   0,  15,   0,   0,   0,
+    248, 255, 255, 224, 255, 135, 255, 255, 255, 128, 255, 255,  27,   0,   3,   0,
+      0,   0, 239, 111,   7,   0,   4,   0,   0,   0,  39,   0, 255,   7, 255,  31,
+    255,   1, 255,  99, 224, 227,   7, 248, 231,  15,   0,   0,   0,  60,   0,   0,
+     28,   0,   0,   0, 255, 255, 255, 223, 100, 222, 255, 235, 239, 255, 255, 255,
+    191, 231, 223, 223, 255, 255, 255, 123,  95, 252, 253, 255,  63, 255, 255, 255,
+    253, 255, 255, 247, 255, 127, 255, 255, 247, 207, 255, 255, 255, 255, 127, 248,
+    255,  31,  32,   0,  16,   0,   0, 248, 254, 255,   0,   0, 224,   7,   0,   0,
+    127, 255, 255, 249, 219,   7, 255, 255,   0, 128,   0,   0, 255,  31, 255,  63,
+    255,  67,   0,   0, 127, 111, 255, 127,  31,   0, 127,   0, 150, 254, 247,  10,
+    132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15, 238, 251, 255,  15,
+      3,   0, 255, 255
 };
 
 RE_UINT32 re_get_xid_continue(RE_UINT32 codepoint) {
@@ -26852,7 +28018,7 @@ static RE_UINT8 re_xid_start_table_1[] = {
     12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
     12, 12, 12, 12, 12, 12, 12, 12, 12, 45, 12, 12, 12, 46, 47, 12,
     12, 12, 12, 48, 12, 12, 12, 12, 12, 12, 49,  9,  9,  9, 50,  9,
-    12, 12, 12, 12, 51,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    12, 12, 12, 12, 51, 12, 12, 12, 52,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
      9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
@@ -26958,63 +28124,65 @@ static RE_UINT8 re_xid_start_table_2[] = {
       4,   4,  14,   0,   4, 146,   4, 146,   4, 111,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   4, 190,   0,   0, 145, 191, 110,  15,  57,  15, 189, 103,
     108, 192,   0, 193, 108,  22,  15,  14, 108,  68, 194, 195, 108, 146, 196,   0,
-    197, 198,   0,   0, 199, 114, 100,   0,  49,  46, 200,  57,   0,   0,   0,   0,
+    197, 198,  74,   0, 199, 114, 100,   0,  49,  46, 200,  57,   0,   0,   0,   0,
       4, 104, 201,  57,   4,  22, 202,   0,   0,   0,   0,   0,   4, 132, 203,   0,
       4,  22, 204,   0,   4, 205,   0,   0,  89,   0,  68,   0,   0,   0,   0,   0,
-      4, 198,   0,   0,   0,   4,   4, 206, 207, 208, 209,   0,   0, 210, 175, 211,
-    212, 213, 214,   4, 215,  15,   4,  29,   0,   0,   0,   0,   0,   0,   0,   0,
-    216, 132,  74, 140,  22,   0,   0,   0, 217, 175, 218, 219, 220,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0, 146,   0,   0,   0,   0,   0,  47,   0,   0,
+      4, 206,   0,   0,   0,   4,   4, 207, 208, 209, 210,   0,   0, 211, 175, 212,
+    213, 214, 215,   4, 216,  15,   4,  29,   0,   0,   0,   0,   0,   0,   0,   0,
+    217, 132,  74, 140,  22,   0,   0,   0, 218, 175, 219, 220, 221,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, 146, 222,  96,   0,   0,   0,  47,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 161,   0,   0,   0,
       4,   4,   4, 132,   4,   4,   4,   4,   4,   4, 111,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  15,   4,   4, 175,
-      4, 132,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      4,  22, 223,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,  68,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,  29, 100,  15,   4, 100,  15, 221,   4,  22, 111, 222,  22,   0,   0,   0,
+      4,  29, 100,  15,   4, 100,  15, 224,   4,  22, 111, 225,  22,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   4,   4,   0,   0,   0,   0,   4,   4, 223,   0, 165,   0,   0, 224,
+      0,   0,   4,   4,   0,   0,   0,   0,   4,   4, 226,   0, 165,   0,   0, 227,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4, 192,
       4,   4,   4,   4,   4,   4,  99,   0,  14,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 225,
-      4,   4,   4,   4,   4,   4,   4,   4,   4, 142, 226, 227,   4,   4,   4,   4,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 228,
+      4,   4,   4,   4,   4,   4,   4,   4,   4, 229, 230, 231,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4, 159,   0,   0,   0,   0,   0,   0,   0,   0,
-      4,   4,   4, 228, 229,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      4,   4,   4, 232, 233,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      4,   4, 230,   4, 231, 232, 233,   4, 234, 235, 236,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4, 237, 238,  83, 230, 230, 239, 239, 216, 216, 149,   0,
+      4,   4, 234,   4, 235, 236, 237,   4, 238, 239, 240,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4, 241, 242,  83, 234, 234, 243, 243, 217, 217, 149,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0, 100,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   4, 240, 241,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,  15, 221,   4, 198,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0, 100, 244,   0,   0,   0,   0,   0,   0,
+      0,  15,   4, 224,   0,   0,   0,   0,   4, 245, 246,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,  15, 224,   4, 206,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,  15, 206,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 247,
+      4,   4,   4,   4,   4,   4, 189,   0,   4,   4, 248,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 242,
-      4,   4,   4,   4,   4,   4, 189,   0,   4,   4, 243,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    233, 244, 245, 246, 247, 248,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    237, 249, 250, 251, 252, 253,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   0,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4,   4,   4,   4,   4,  29,   4,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4,   4, 161,   4,   4,   4,   4,   4,   4,
     113,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4, 249,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4, 254,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  74,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
     113,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
-      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  17,   0,   0,   0,   0,   0
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  30,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,
+      4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,  22,   0,   0
 };
 
 static RE_UINT8 re_xid_start_table_3[] = {
@@ -27067,20 +28235,21 @@ static RE_UINT8 re_xid_start_table_3[] = {
      63, 253, 255, 255, 255, 255, 191, 145, 255, 255,  55,   0, 255, 255, 255, 192,
       1,   0, 239, 254,  31,   0,   0,   0, 255,   3,   3,   0, 128,   0, 255, 255,
     255, 255, 255,   0,   0,   0,  38,   0, 144,   0, 255, 255, 255, 255,  71,   0,
-     30,   0,   0,  20, 255, 255, 251, 255, 255,  15,   0,   0, 127, 189, 255, 191,
+     30,   0,   0,  20, 255, 255, 251, 255, 255,  15,   0, 128, 127, 189, 255, 191,
       0,   0,   1, 224, 128,   7,   0, 128, 176,   0,   0,   0,   0,   0,   0,  15,
-     16,   0,   0,   0, 255,   7,   0,   1,   0,   0,   0, 128, 127, 242, 111, 255,
-    255, 255,   0, 128,   2,   0,   0,   0, 255, 252, 255, 255,  10,   0,   0,   0,
-      1, 248, 255, 255, 255, 255,   7,   4,   0,   0,   1, 240, 255,   3,   0,  32,
-    255, 253, 255, 255, 127, 251, 255, 255,  64,   0,   0,   0, 191, 253, 255, 255,
-    255,   3,   0,   1, 255,  63,   0,   0, 248, 255, 255, 224, 255,   7,   1,   0,
-     11,   0,   0,   0,   0,   0, 239, 111,   0,   0,   7,   0, 240,   0, 255, 255,
+     16,   0,   0,   0, 255,   7,   0,   1, 255,  15,   0,   0,   0,   0,   0, 128,
+    127, 242, 111, 255, 255, 255,   0, 128,   2,   0,   0,   0, 255, 252, 255, 255,
+     10,   0,   0,   0,   1, 248, 255, 255, 255, 255,   7,   4,   0,   0,   1, 240,
+    255,   3,   0,  32, 255, 253, 255, 255, 127, 251, 255, 255,  64,   0,   0,   0,
+    191, 253, 255, 255, 255,   3,   0,   1, 244, 255, 253, 255, 126,   0,   0,   0,
+    255,  63,   0,   0, 248, 255, 255, 224, 255,   7,   1,   0,  11,   0,   0,   0,
+      0,   0, 239, 111,   7,   0,   4,   0,   0,   0,  39,   0, 240,   0, 255, 255,
     255,   7, 255,  31, 255,   1, 255,   3, 255, 255, 223, 255, 255, 255, 255, 223,
     100, 222, 255, 235, 239, 255, 255, 255, 191, 231, 223, 223, 255, 255, 255, 123,
      95, 252, 253, 255,  63, 255, 255, 255, 253, 255, 255, 247, 255, 127, 255, 255,
-    255,  31, 128,  63,   0,  64,   0,   0, 127, 111, 255, 127,  15,   8,   0,   0,
-    150, 254, 247,  10, 132, 234, 150, 170, 150, 247, 247,  94, 255, 251, 255,  15,
-    238, 251, 255,  15,   3,   0, 255, 255
+    224,   7,   0,   0, 255,  31, 128,  63,   0,  64,   0,   0, 127, 111, 255, 127,
+     15,   8,   0,   0, 150, 254, 247,  10, 132, 234, 150, 170, 150, 247, 247,  94,
+    255, 251, 255,  15, 238, 251, 255,  15,   3,   0, 255, 255
 };
 
 RE_UINT32 re_get_xid_start(RE_UINT32 codepoint) {

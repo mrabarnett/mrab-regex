@@ -309,6 +309,9 @@ def parse_multivalue(properties, path):
             elif line.startswith('#  All code points not explicitly listed for'):
                 prop_name = line.split()[-1]
                 property = properties[munge(prop_name)]
+            elif len(line.split()) == 3 and line.endswith(' Property'):
+                prop_name = line.split()[1]
+                property = properties[munge(prop_name)]
             elif line.startswith('# @missing:'):
                 default = line.split()[-1]
                 property['default'] = munge(default)
@@ -1360,7 +1363,7 @@ def generate_code(unicode_data, tools_folder):
             else:
 
                 def make_key(value):
-                    if munge(value['names'][0]) == default:
+                    if any(munge(name) == default for name in value['names']):
                         return (0, )
 
                     if 'codepoints' not in value:
@@ -1713,7 +1716,7 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
         h_file.write('int re_get_full_case_folding(RE_UINT32 codepoint, RE_UINT32* folded);\n')
 
 # Whether to update the Unicode data files from the Unicode website.
-UNICODE_VERSION = '14.0.0'
+UNICODE_VERSION = '15.0.0'
 
 # The URL from which the Unicode data files can be obtained.
 unicode_data_base = 'http://www.unicode.org/Public/UNIDATA/'
@@ -1745,7 +1748,7 @@ extracted/DerivedEastAsianWidth.txt
 extracted/DerivedGeneralCategory.txt
 extracted/DerivedJoiningGroup.txt
 extracted/DerivedJoiningType.txt
-extracted/DerivedLineBreak.txt
+LineBreak.txt
 extracted/DerivedNumericType.txt
 HangulSyllableType.txt
 IndicPositionalCategory.txt
