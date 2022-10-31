@@ -1532,7 +1532,7 @@ Py_LOCAL_INLINE(BOOL) IS_MIDNUMLETQ(RE_UINT32 v) {
 /* Checks whether a position is on a default word boundary.
  *
  * The rules are defined here:
- * http://www.unicode.org/reports/tr29/#Default_Word_Boundaries
+ * https://www.unicode.org/reports/tr29/#Default_Word_Boundaries
  */
 static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     Py_UCS4 (*char_at)(void* text, Py_ssize_t pos);
@@ -1787,7 +1787,7 @@ static BOOL unicode_at_default_word_end(RE_State* state, Py_ssize_t text_pos) {
 /* Checks whether a position is on a grapheme boundary.
  *
  * The rules are defined here:
- * http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
+ * https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
  */
 static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
   {

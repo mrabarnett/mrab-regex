@@ -1,8 +1,11 @@
 # Automatically build binary wheels and source packages.
 name: cibuildwheel
 
-# Build on every branch push, tag push, and pull request change.
-on: [push]
+# Build on every branch push with tag.
+on:
+  push:
+    tags:
+      - '*'
 
 env:
   PYTHON_VER: '3.10'  # Python to run test/cibuildwheel

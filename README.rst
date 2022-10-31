@@ -26,7 +26,7 @@ The regex module releases the GIL during matching on instances of the built-in (
 Unicode
 -------
 
-This module supports Unicode 14.0.0. Full Unicode case-folding is supported.
+This module supports Unicode 15.0.0. Full Unicode case-folding is supported.
 
 Flags
 -----
