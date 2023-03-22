@@ -468,6 +468,9 @@ typedef struct RE_State {
     /* The slice of the string being searched. */
     Py_ssize_t slice_start;
     Py_ssize_t slice_end;
+    /* The hard limits of the string being searched. */
+    Py_ssize_t text_start;
+    Py_ssize_t text_end;
     /* Info about the capture groups. */
     RE_GroupData* groups;
     Py_ssize_t lastindex;
@@ -853,13 +856,13 @@ static BOOL ascii_has_property_wrapper(RE_LocaleInfo* locale_info, RE_CODE
 
 /* Checks whether there's a word character to the left. */
 Py_LOCAL_INLINE(BOOL) ascii_word_left(RE_State* state, Py_ssize_t text_pos) {
-    return text_pos > 0 && ascii_has_property(RE_PROP_WORD,
+    return text_pos > state->text_start && ascii_has_property(RE_PROP_WORD,
       state->char_at(state->text, text_pos - 1));
 }
 
 /* Checks whether there's a word character to the right. */
 Py_LOCAL_INLINE(BOOL) ascii_word_right(RE_State* state, Py_ssize_t text_pos) {
-    return text_pos < state->text_length && ascii_has_property(RE_PROP_WORD,
+    return text_pos < state->text_end && ascii_has_property(RE_PROP_WORD,
       state->char_at(state->text, text_pos));
 }
 
@@ -905,13 +908,13 @@ static BOOL ascii_is_line_sep(Py_UCS4 ch) {
 static BOOL ascii_at_line_start(RE_State* state, Py_ssize_t text_pos) {
     Py_UCS4 ch;
 
-    if (text_pos <= 0)
+    if (text_pos <= state->text_start)
         return TRUE;
 
     ch = state->char_at(state->text, text_pos - 1);
 
     if (ch == 0x0D) {
-        if (text_pos >= state->text_length)
+        if (text_pos >= state->text_end)
             return TRUE;
 
         /* No line break inside CRLF. */
@@ -925,13 +928,13 @@ static BOOL ascii_at_line_start(RE_State* state, Py_ssize_t text_pos) {
 static BOOL ascii_at_line_end(RE_State* state, Py_ssize_t text_pos) {
     Py_UCS4 ch;
 
-    if (text_pos >= state->text_length)
+    if (text_pos >= state->text_end)
         return TRUE;
 
     ch = state->char_at(state->text, text_pos);
 
     if (ch == 0x0A) {
-        if (text_pos <= 0)
+        if (text_pos <= state->text_start)
             return TRUE;
 
         /* No line break inside CRLF. */
@@ -1226,13 +1229,13 @@ static BOOL locale_has_property_wrapper(RE_LocaleInfo* locale_info, RE_CODE
 
 /* Checks whether there's a word character to the left. */
 Py_LOCAL_INLINE(BOOL) locale_word_left(RE_State* state, Py_ssize_t text_pos) {
-    return text_pos > 0 && locale_has_property(state->locale_info,
+    return text_pos > state->text_start && locale_has_property(state->locale_info,
       RE_PROP_WORD, state->char_at(state->text, text_pos - 1));
 }
 
 /* Checks whether there's a word character to the right. */
 Py_LOCAL_INLINE(BOOL) locale_word_right(RE_State* state, Py_ssize_t text_pos) {
-    return text_pos < state->text_length &&
+    return text_pos < state->text_end &&
       locale_has_property(state->locale_info, RE_PROP_WORD,
       state->char_at(state->text, text_pos));
 }
@@ -1451,14 +1454,14 @@ static BOOL unicode_has_property_wrapper(RE_LocaleInfo* locale_info, RE_CODE
 
 /* Checks whether there's a word character to the left. */
 Py_LOCAL_INLINE(BOOL) unicode_word_left(RE_State* state, Py_ssize_t text_pos) {
-    return text_pos > 0 && unicode_has_property(RE_PROP_WORD,
+    return text_pos > state->text_start && unicode_has_property(RE_PROP_WORD,
       state->char_at(state->text, text_pos - 1));
 }
 
 /* Checks whether there's a word character to the right. */
 Py_LOCAL_INLINE(BOOL) unicode_word_right(RE_State* state, Py_ssize_t text_pos)
   {
-    return text_pos < state->text_length && unicode_has_property(RE_PROP_WORD,
+    return text_pos < state->text_end && unicode_has_property(RE_PROP_WORD,
       state->char_at(state->text, text_pos));
 }
 
@@ -1546,8 +1549,8 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
 
     /* Break at the start and end of text, unless the text is empty. */
     /* WB1 and WB2 */
-    if (text_pos <= 0 || text_pos >= state->text_length)
-        return state->text_length > 0;
+    if (text_pos <= state->text_start || text_pos >= state->text_end)
+        return state->text_end > state->text_start;
 
     /* In this function, left_pos is inclusive, i.e. it's the index of the
      * character.
@@ -1599,7 +1602,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
 
     while (left_prop == RE_WBREAK_EXTEND || left_prop == RE_WBREAK_FORMAT ||
       left_prop == RE_WBREAK_ZWJ) {
-        if (left_pos <= 0)
+        if (left_pos <= state->text_start)
             return FALSE;
         --left_pos;
         left_char = char_at(state->text, left_pos);
@@ -1618,7 +1621,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
 
     /* Do not break letters across certain punctuation. */
     /* WB6 */
-    if (right_pos + 1 < state->text_length) {
+    if (right_pos + 1 < state->text_end) {
         Py_UCS4 right_right_char;
         RE_UINT32 right_right_prop;
 
@@ -1631,7 +1634,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     }
 
     /* WB7 */
-    if (left_pos - 1 >= 0) {
+    if (left_pos - 1 >= state->text_start) {
         Py_UCS4 left_left_char;
         RE_UINT32 left_left_prop;
 
@@ -1649,7 +1652,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
         return FALSE;
 
     /* WB7b */
-    if (right_pos + 1 < state->text_length) {
+    if (right_pos + 1 < state->text_end) {
         Py_UCS4 right_right_char;
         RE_UINT32 right_right_prop;
 
@@ -1662,7 +1665,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     }
 
     /* WB7c */
-    if (left_pos - 1 >= 0) {
+    if (left_pos - 1 >= state->text_start) {
         Py_UCS4 left_left_char;
         RE_UINT32 left_left_prop;
 
@@ -1691,7 +1694,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
 
     /* Do not break within sequences, such as "3.2" or "3,456.789". */
     /* WB11 */
-    if (left_pos - 1 >= 0) {
+    if (left_pos - 1 >= state->text_start) {
         Py_UCS4 left_left_char;
         RE_UINT32 left_left_prop;
 
@@ -1705,7 +1708,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     }
 
     /* WB12 */
-    if (right_pos + 1 < state->text_length) {
+    if (right_pos + 1 < state->text_end) {
         Py_UCS4 right_right_char;
         RE_UINT32 right_right_prop;
 
@@ -1742,7 +1745,7 @@ static BOOL unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     /* WB15 and WB16 */
     pos = left_pos;
 
-    while (pos >= 0 && re_get_word_break(char_at(state->text, pos)) ==
+    while (pos >= state->text_start && re_get_word_break(char_at(state->text, pos)) ==
       RE_WBREAK_REGIONALINDICATOR)
         --pos;
 
@@ -1802,8 +1805,8 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
 
     /* Break at the start and end of text, unless the text is empty. */
     /* GB1 and GB2 */
-    if (text_pos <= 0 || text_pos >= state->text_length)
-        return state->text_length > 0;
+    if (text_pos <= state->text_start || text_pos >= state->text_end)
+        return state->text_end > state->text_start;
 
     /* In this function, left_pos is inclusive, i.e. it's the index of the
      * character.
@@ -1874,11 +1877,11 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
       {
         pos = left_pos - 1;
 
-        while (pos >= 0 && re_get_grapheme_cluster_break(char_at(state->text,
+        while (pos >= state->text_start && re_get_grapheme_cluster_break(char_at(state->text,
           pos)) == RE_GBREAK_EXTEND)
             --pos;
 
-        if (pos >= 0 && re_get_extended_pictographic(char_at(state->text,
+        if (pos >= state->text_start && re_get_extended_pictographic(char_at(state->text,
           pos)))
             return FALSE;
     }
@@ -1892,7 +1895,7 @@ static BOOL unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
     if (right_prop == RE_GBREAK_REGIONALINDICATOR) {
         pos = left_pos;
 
-        while (pos >= 0 && re_get_grapheme_cluster_break(char_at(state->text,
+        while (pos >= state->text_start && re_get_grapheme_cluster_break(char_at(state->text,
           pos)) == RE_GBREAK_REGIONALINDICATOR)
             --pos;
 
@@ -1915,13 +1918,13 @@ static BOOL unicode_is_line_sep(Py_UCS4 ch) {
 static BOOL unicode_at_line_start(RE_State* state, Py_ssize_t text_pos) {
     Py_UCS4 ch;
 
-    if (text_pos <= 0)
+    if (text_pos <= state->text_start)
         return TRUE;
 
     ch = state->char_at(state->text, text_pos - 1);
 
     if (ch == 0x0D) {
-        if (text_pos >= state->text_length)
+        if (text_pos >= state->text_end)
             return TRUE;
 
         /* No line break inside CRLF. */
@@ -1936,13 +1939,13 @@ static BOOL unicode_at_line_start(RE_State* state, Py_ssize_t text_pos) {
 static BOOL unicode_at_line_end(RE_State* state, Py_ssize_t text_pos) {
     Py_UCS4 ch;
 
-    if (text_pos >= state->text_length)
+    if (text_pos >= state->text_end)
         return TRUE;
 
     ch = state->char_at(state->text, text_pos);
 
     if (ch == 0x0A) {
-        if (text_pos <= 0)
+        if (text_pos <= state->text_start)
             return TRUE;
 
         /* No line break inside CRLF. */
@@ -4876,14 +4879,14 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_ANY(state, node, text_pos, text_pos +
           (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
     case RE_OP_ANY_ALL:
         count = min_size_t((size_t)(state->slice_end - text_pos), max_count);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -4910,7 +4913,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_ANY_U(state, node, text_pos, text_pos +
           (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -4930,7 +4933,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_CHARACTER(state, node, text_pos, text_pos +
           (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -4940,7 +4943,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_CHARACTER_IGN(state, node, text_pos,
           text_pos + (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -4970,7 +4973,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_PROPERTY(state, node, text_pos, text_pos +
           (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -4980,7 +4983,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_PROPERTY_IGN(state, node, text_pos,
           text_pos + (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -5010,7 +5013,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_RANGE(state, node, text_pos, text_pos +
           (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -5020,7 +5023,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_RANGE_IGN(state, node, text_pos, text_pos +
           (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -5053,7 +5056,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_SET(state, node, text_pos, text_pos +
           (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -5066,7 +5069,7 @@ Py_LOCAL_INLINE(size_t) count_one(RE_State* state, RE_Node* node, Py_ssize_t
         count = (size_t)(match_many_SET_IGN(state, node, text_pos, text_pos +
           (Py_ssize_t)count, TRUE) - text_pos);
 
-        *is_partial = count == (size_t)(state->text_length - text_pos) && count
+        *is_partial = count == (size_t)(state->text_end - text_pos) && count
           < max_count && state->partial_side == RE_PARTIAL_RIGHT;
 
         return count;
@@ -6510,7 +6513,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld(RE_State* state, RE_Node* node,
         if (f_pos >= folded_len) {
             /* Fetch and casefold another character. */
             if (text_pos >= limit) {
-                if (text_pos >= state->text_length && state->partial_side ==
+                if (text_pos >= state->text_end && state->partial_side ==
                   RE_PARTIAL_RIGHT) {
                     *is_partial = TRUE;
                     return start_pos;
@@ -6584,7 +6587,7 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_fld_rev(RE_State* state, RE_Node*
         if (f_pos >= folded_len) {
             /* Fetch and casefold another character. */
             if (text_pos <= limit) {
-                if (text_pos <= 0 && state->partial_side == RE_PARTIAL_LEFT) {
+                if (text_pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT) {
                     *is_partial = TRUE;
                     return start_pos;
                 }
@@ -6758,7 +6761,7 @@ Py_LOCAL_INLINE(Py_ssize_t) possible_unfolded_length(Py_ssize_t length) {
 /* Checks whether there's any character except a newline at a position. */
 Py_LOCAL_INLINE(int) try_match_ANY(RE_State* state, RE_Node* node, Py_ssize_t
   text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -6773,7 +6776,7 @@ Py_LOCAL_INLINE(int) try_match_ANY(RE_State* state, RE_Node* node, Py_ssize_t
 /* Checks whether there's any character at all at a position. */
 Py_LOCAL_INLINE(int) try_match_ANY_ALL(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -6786,7 +6789,7 @@ Py_LOCAL_INLINE(int) try_match_ANY_ALL(RE_State* state, RE_Node* node,
 /* Checks whether there's any character at all at a position, backwards. */
 Py_LOCAL_INLINE(int) try_match_ANY_ALL_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -6801,7 +6804,7 @@ Py_LOCAL_INLINE(int) try_match_ANY_ALL_REV(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_ANY_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -6817,7 +6820,7 @@ Py_LOCAL_INLINE(int) try_match_ANY_REV(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_ANY_U(RE_State* state, RE_Node* node, Py_ssize_t
   text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -6834,7 +6837,7 @@ Py_LOCAL_INLINE(int) try_match_ANY_U(RE_State* state, RE_Node* node, Py_ssize_t
  */
 Py_LOCAL_INLINE(int) try_match_ANY_U_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -6856,7 +6859,7 @@ Py_LOCAL_INLINE(int) try_match_BOUNDARY(RE_State* state, RE_Node* node,
 /* Checks whether there's a character at a position. */
 Py_LOCAL_INLINE(int) try_match_CHARACTER(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -6871,7 +6874,7 @@ Py_LOCAL_INLINE(int) try_match_CHARACTER(RE_State* state, RE_Node* node,
 /* Checks whether there's a character at a position, ignoring case. */
 Py_LOCAL_INLINE(int) try_match_CHARACTER_IGN(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -6887,7 +6890,7 @@ Py_LOCAL_INLINE(int) try_match_CHARACTER_IGN(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_CHARACTER_IGN_REV(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -6902,7 +6905,7 @@ Py_LOCAL_INLINE(int) try_match_CHARACTER_IGN_REV(RE_State* state, RE_Node*
 /* Checks whether there's a character at a position, backwards. */
 Py_LOCAL_INLINE(int) try_match_CHARACTER_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -6951,20 +6954,20 @@ Py_LOCAL_INLINE(int) try_match_END_OF_LINE_U(RE_State* state, RE_Node* node,
 /* Checks whether a position is at the end of the string. */
 Py_LOCAL_INLINE(int) try_match_END_OF_STRING(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    return bool_as_status(text_pos >= state->text_length);
+    return bool_as_status(text_pos >= state->text_end);
 }
 
 /* Checks whether a position is at the end of a line or the string. */
 Py_LOCAL_INLINE(int) try_match_END_OF_STRING_LINE(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos) {
-    return bool_as_status(text_pos >= state->text_length || text_pos ==
+    return bool_as_status(text_pos >= state->text_end || text_pos ==
       state->final_newline);
 }
 
 /* Checks whether a position is at the end of the string. */
 Py_LOCAL_INLINE(int) try_match_END_OF_STRING_LINE_U(RE_State* state, RE_Node*
   node, Py_ssize_t text_pos) {
-    return bool_as_status(text_pos >= state->text_length || text_pos ==
+    return bool_as_status(text_pos >= state->text_end || text_pos ==
       state->final_line_sep);
 }
 
@@ -6984,7 +6987,7 @@ Py_LOCAL_INLINE(int) try_match_GRAPHEME_BOUNDARY(RE_State* state, RE_Node*
 /* Checks whether there's a character with a certain property at a position. */
 Py_LOCAL_INLINE(int) try_match_PROPERTY(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -7001,7 +7004,7 @@ Py_LOCAL_INLINE(int) try_match_PROPERTY(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_PROPERTY_IGN(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -7018,7 +7021,7 @@ Py_LOCAL_INLINE(int) try_match_PROPERTY_IGN(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_PROPERTY_IGN_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -7035,7 +7038,7 @@ Py_LOCAL_INLINE(int) try_match_PROPERTY_IGN_REV(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_PROPERTY_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -7050,7 +7053,7 @@ Py_LOCAL_INLINE(int) try_match_PROPERTY_REV(RE_State* state, RE_Node* node,
 /* Checks whether there's a character in a certain range at a position. */
 Py_LOCAL_INLINE(int) try_match_RANGE(RE_State* state, RE_Node* node, Py_ssize_t
   text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -7067,7 +7070,7 @@ Py_LOCAL_INLINE(int) try_match_RANGE(RE_State* state, RE_Node* node, Py_ssize_t
  */
 Py_LOCAL_INLINE(int) try_match_RANGE_IGN(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -7084,7 +7087,7 @@ Py_LOCAL_INLINE(int) try_match_RANGE_IGN(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_RANGE_IGN_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -7101,7 +7104,7 @@ Py_LOCAL_INLINE(int) try_match_RANGE_IGN_REV(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_RANGE_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -7122,7 +7125,7 @@ Py_LOCAL_INLINE(int) try_match_SEARCH_ANCHOR(RE_State* state, RE_Node* node,
 /* Checks whether there's a character in a certain set at a position. */
 Py_LOCAL_INLINE(int) try_match_SET(RE_State* state, RE_Node* node, Py_ssize_t
   text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -7139,7 +7142,7 @@ Py_LOCAL_INLINE(int) try_match_SET(RE_State* state, RE_Node* node, Py_ssize_t
  */
 Py_LOCAL_INLINE(int) try_match_SET_IGN(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos >= state->text_length) {
+    if (text_pos >= state->text_end) {
         if (state->partial_side == RE_PARTIAL_RIGHT)
             return RE_ERROR_PARTIAL;
 
@@ -7156,7 +7159,7 @@ Py_LOCAL_INLINE(int) try_match_SET_IGN(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_SET_IGN_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -7173,7 +7176,7 @@ Py_LOCAL_INLINE(int) try_match_SET_IGN_REV(RE_State* state, RE_Node* node,
  */
 Py_LOCAL_INLINE(int) try_match_SET_REV(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    if (text_pos <= 0) {
+    if (text_pos <= state->text_start) {
         if (state->partial_side == RE_PARTIAL_LEFT)
             return RE_ERROR_PARTIAL;
 
@@ -7188,7 +7191,7 @@ Py_LOCAL_INLINE(int) try_match_SET_REV(RE_State* state, RE_Node* node,
 /* Checks whether a position is at the start of a line. */
 Py_LOCAL_INLINE(int) try_match_START_OF_LINE(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    return bool_as_status(text_pos <= 0 || state->char_at(state->text, text_pos
+    return bool_as_status(text_pos <= state->text_start || state->char_at(state->text, text_pos
       - 1) == '\n');
 }
 
@@ -7201,7 +7204,7 @@ Py_LOCAL_INLINE(int) try_match_START_OF_LINE_U(RE_State* state, RE_Node* node,
 /* Checks whether a position is at the start of the string. */
 Py_LOCAL_INLINE(int) try_match_START_OF_STRING(RE_State* state, RE_Node* node,
   Py_ssize_t text_pos) {
-    return bool_as_status(text_pos <= 0);
+    return bool_as_status(text_pos <= state->text_start);
 }
 
 /* Checks whether a position is at the start of a word. */
@@ -7660,10 +7663,10 @@ Py_LOCAL_INLINE(int) try_match(RE_State* state, RE_NextNode* next, Py_ssize_t
         if (state->match_all) {
             /* We want to match all of the slice. */
             if (state->reverse) {
-                if (text_pos > 0)
+                if (text_pos > state->text_start)
                     return RE_ERROR_FAILURE;
             } else {
-                if (text_pos < state->text_length)
+                if (text_pos < state->text_end)
                     return RE_ERROR_FAILURE;
             }
         }
@@ -7852,7 +7855,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_END_OF_LINE(RE_State* state, RE_Node*
     *is_partial = FALSE;
 
     for (;;) {
-        if (text_pos >= state->text_length || state->char_at(state->text,
+        if (text_pos >= state->text_end || state->char_at(state->text,
           text_pos) == '\n')
             return text_pos;
 
@@ -7869,7 +7872,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_END_OF_LINE_rev(RE_State* state,
     *is_partial = FALSE;
 
     for (;;) {
-        if (text_pos >= state->text_length || state->char_at(state->text,
+        if (text_pos >= state->text_end || state->char_at(state->text,
           text_pos) == '\n')
             return text_pos;
 
@@ -7885,8 +7888,8 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_END_OF_STRING(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, BOOL* is_partial) {
     *is_partial = FALSE;
 
-    if (state->slice_end >= state->text_length)
-        return state->text_length;
+    if (state->slice_end >= state->text_end)
+        return state->text_end;
 
     return -1;
 }
@@ -7896,7 +7899,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_END_OF_STRING_rev(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, BOOL* is_partial) {
     *is_partial = FALSE;
 
-    if (text_pos >= state->text_length)
+    if (text_pos >= state->text_end)
         return text_pos;
 
     return -1;
@@ -7909,13 +7912,13 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_END_OF_STRING_LINE(RE_State* state,
 
     if (text_pos <= state->final_newline)
         text_pos = state->final_newline;
-    else if (text_pos <= state->text_length)
-        text_pos = state->text_length;
+    else if (text_pos <= state->text_end)
+        text_pos = state->text_end;
 
     if (text_pos > state->slice_end)
         return -1;
 
-    if (text_pos >= state->text_length)
+    if (text_pos >= state->text_end)
         return text_pos;
 
     return text_pos;
@@ -7926,8 +7929,8 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_END_OF_STRING_LINE_rev(RE_State*
   state, RE_Node* node, Py_ssize_t text_pos, BOOL* is_partial) {
     *is_partial = FALSE;
 
-    if (text_pos >= state->text_length)
-        text_pos = state->text_length;
+    if (text_pos >= state->text_end)
+        text_pos = state->text_end;
     else if (text_pos >= state->final_newline)
         text_pos = state->final_newline;
     else
@@ -7936,7 +7939,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_END_OF_STRING_LINE_rev(RE_State*
     if (text_pos < state->slice_start)
         return -1;
 
-    if (text_pos <= 0)
+    if (text_pos <= state->text_start)
         return text_pos;
 
     return text_pos;
@@ -8028,7 +8031,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_START_OF_LINE(RE_State* state,
     *is_partial = FALSE;
 
     for (;;) {
-        if (text_pos <= 0 || state->char_at(state->text, text_pos - 1) == '\n')
+        if (text_pos <= state->text_start || state->char_at(state->text, text_pos - 1) == '\n')
             return text_pos;
 
         if (text_pos >= state->slice_end)
@@ -8044,7 +8047,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_START_OF_LINE_rev(RE_State* state,
     *is_partial = FALSE;
 
     for (;;) {
-        if (text_pos <= 0 || state->char_at(state->text, text_pos - 1) == '\n')
+        if (text_pos <= state->text_start || state->char_at(state->text, text_pos - 1) == '\n')
             return text_pos;
 
         if (text_pos <= state->slice_start)
@@ -8059,7 +8062,7 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_START_OF_STRING(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, BOOL* is_partial) {
     *is_partial = FALSE;
 
-    if (text_pos <= 0)
+    if (text_pos <= state->text_start)
         return text_pos;
 
     return -1;
@@ -8070,8 +8073,8 @@ Py_LOCAL_INLINE(Py_ssize_t) search_start_START_OF_STRING_rev(RE_State* state,
   RE_Node* node, Py_ssize_t text_pos, BOOL* is_partial) {
     *is_partial = FALSE;
 
-    if (state->slice_start <= 0)
-        return 0;
+    if (state->slice_start <= state->text_start)
+        return state->text_start;
 
     return -1;
 }
@@ -8278,7 +8281,7 @@ again:
         start_pos = match_many_ANY(state, test, start_pos, state->slice_end,
           FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8295,7 +8298,7 @@ again:
         start_pos = match_many_ANY_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8309,7 +8312,7 @@ again:
         start_pos = match_many_ANY_U(state, test, start_pos, state->slice_end,
           FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8323,7 +8326,7 @@ again:
         start_pos = match_many_ANY_U_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8357,7 +8360,7 @@ again:
         start_pos = match_many_CHARACTER(state, test, start_pos,
           state->slice_end, FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8371,7 +8374,7 @@ again:
         start_pos = match_many_CHARACTER_IGN(state, test, start_pos,
           state->slice_end, FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8385,7 +8388,7 @@ again:
         start_pos = match_many_CHARACTER_IGN_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8399,7 +8402,7 @@ again:
         start_pos = match_many_CHARACTER_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8573,7 +8576,7 @@ again:
         start_pos = match_many_PROPERTY(state, test, start_pos,
           state->slice_end, FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8587,7 +8590,7 @@ again:
         start_pos = match_many_PROPERTY_IGN(state, test, start_pos,
           state->slice_end, FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8601,7 +8604,7 @@ again:
         start_pos = match_many_PROPERTY_IGN_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8615,7 +8618,7 @@ again:
         start_pos = match_many_PROPERTY_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8629,7 +8632,7 @@ again:
         start_pos = match_many_RANGE(state, test, start_pos, state->slice_end,
           FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8643,7 +8646,7 @@ again:
         start_pos = match_many_RANGE_IGN(state, test, start_pos,
           state->slice_end, FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8657,7 +8660,7 @@ again:
         start_pos = match_many_RANGE_IGN_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8671,7 +8674,7 @@ again:
         start_pos = match_many_RANGE_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8699,7 +8702,7 @@ again:
         start_pos = match_many_SET(state, test, start_pos, state->slice_end,
           FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8716,7 +8719,7 @@ again:
         start_pos = match_many_SET_IGN(state, test, start_pos,
           state->slice_end, FALSE);
 
-        if (start_pos >= state->text_length) {
+        if (start_pos >= state->text_end) {
             if (state->partial_side == RE_PARTIAL_RIGHT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8733,7 +8736,7 @@ again:
         start_pos = match_many_SET_IGN_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -8750,7 +8753,7 @@ again:
         start_pos = match_many_SET_REV(state, test, start_pos,
           state->slice_start, FALSE);
 
-        if (start_pos <= 0) {
+        if (start_pos <= state->text_start) {
             if (state->partial_side == RE_PARTIAL_LEFT) {
                 new_position->text_pos = start_pos;
                 return RE_ERROR_PARTIAL;
@@ -9643,11 +9646,11 @@ Py_LOCAL_INLINE(int) check_fuzzy_partial(RE_State* state, Py_ssize_t text_pos)
   {
     switch (state->partial_side) {
     case RE_PARTIAL_LEFT:
-        if (text_pos < 0)
+        if (text_pos < state->text_start)
             return RE_ERROR_PARTIAL;
         break;
     case RE_PARTIAL_RIGHT:
-        if (text_pos > state->text_length)
+        if (text_pos > state->text_end)
             return RE_ERROR_PARTIAL;
         break;
     }
@@ -10996,7 +10999,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_State* state, BOOL
         else {
             limit = state->slice_start + pattern->req_offset +
               (Py_ssize_t)pattern->req_string->value_count;
-            if (limit > state->slice_end || limit < 0)
+            if (limit > state->slice_end)
                 limit = state->slice_end;
         }
 
@@ -11041,7 +11044,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_State* state, BOOL
         else {
             limit = state->slice_start + pattern->req_offset +
               (Py_ssize_t)pattern->req_string->value_count;
-            if (limit > state->slice_end || limit < 0)
+            if (limit > state->slice_end)
                 limit = state->slice_end;
         }
 
@@ -11129,7 +11132,7 @@ Py_LOCAL_INLINE(Py_ssize_t) locate_required_string(RE_State* state, BOOL
         else {
             limit = state->slice_start + pattern->req_offset +
               (Py_ssize_t)pattern->req_string->value_count;
-            if (limit > state->slice_end || limit < 0)
+            if (limit > state->slice_end)
                 limit = state->slice_end;
         }
 
@@ -11574,7 +11577,7 @@ Py_LOCAL_INLINE(int) basic_match(RE_State* state, BOOL search) {
     case RE_OP_END_OF_STRING:
         if (state->reverse) {
             /* Searching backwards. */
-            if (state->text_pos != state->text_length)
+            if (state->text_pos != state->text_end)
                 return RE_ERROR_FAILURE;
 
             /* Don't bother to search further because it's anchored. */
@@ -11584,7 +11587,7 @@ Py_LOCAL_INLINE(int) basic_match(RE_State* state, BOOL search) {
     case RE_OP_START_OF_STRING:
         if (!state->reverse) {
             /* Searching forwards. */
-            if (state->text_pos != 0)
+            if (state->text_pos != state->text_start)
                 return RE_ERROR_FAILURE;
 
             /* Don't bother to search further because it's anchored. */
@@ -11956,7 +11959,7 @@ advance:
             TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
               node->values[0]))
 
-            if (state->text_pos >= state->text_length && state->partial_side ==
+            if (state->text_pos >= state->text_end && state->partial_side ==
               RE_PARTIAL_RIGHT)
                 return RE_ERROR_PARTIAL;
 
@@ -11979,7 +11982,7 @@ advance:
             TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
               node->values[0]))
 
-            if (state->text_pos >= state->text_length && state->partial_side ==
+            if (state->text_pos >= state->text_end && state->partial_side ==
               RE_PARTIAL_RIGHT)
                 return RE_ERROR_PARTIAL;
 
@@ -12002,7 +12005,7 @@ advance:
             TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
               node->values[0]))
 
-            if (state->text_pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+            if (state->text_pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                 return RE_ERROR_PARTIAL;
 
             if (state->text_pos > state->slice_start &&
@@ -12024,7 +12027,7 @@ advance:
             TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
               node->values[0]))
 
-            if (state->text_pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+            if (state->text_pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                 return RE_ERROR_PARTIAL;
 
             if (state->text_pos > state->slice_start &&
@@ -12078,8 +12081,8 @@ advance:
              * pstack: bstack
              */
 
-            state->slice_start = 0;
-            state->slice_end = state->text_length;
+            state->slice_start = state->text_start;
+            state->slice_end = state->text_end;
 
             node = node->next_1.node;
             break;
@@ -13623,8 +13626,8 @@ advance:
              * pstack: bstack
              */
 
-            state->slice_start = 0;
-            state->slice_end = state->text_length;
+            state->slice_start = state->text_start;
+            state->slice_end = state->text_end;
 
             node = node->next_1.node;
             break;
@@ -13633,7 +13636,7 @@ advance:
             TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
               node->values[0]))
 
-            if (state->text_pos >= state->text_length && state->partial_side ==
+            if (state->text_pos >= state->text_end && state->partial_side ==
               RE_PARTIAL_RIGHT)
                 return RE_ERROR_PARTIAL;
 
@@ -13656,7 +13659,7 @@ advance:
             TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
               node->values[0]))
 
-            if (state->text_pos >= state->text_length && state->partial_side ==
+            if (state->text_pos >= state->text_end && state->partial_side ==
               RE_PARTIAL_RIGHT)
                 return RE_ERROR_PARTIAL;
 
@@ -13679,7 +13682,7 @@ advance:
             TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
               node->values[0]))
 
-            if (state->text_pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+            if (state->text_pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                 return RE_ERROR_PARTIAL;
 
             if (state->text_pos > state->slice_start &&
@@ -13701,7 +13704,7 @@ advance:
             TRACE(("%s %d %d\n", re_op_text[node->op], node->match,
               node->values[0]))
 
-            if (state->text_pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+            if (state->text_pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                 return RE_ERROR_PARTIAL;
 
             if (state->text_pos > state->slice_start &&
@@ -13743,7 +13746,7 @@ advance:
             TRACE(("%s %d %d %d\n", re_op_text[node->op], node->match,
               node->values[0], node->values[1]))
 
-            if (state->text_pos >= state->text_length && state->partial_side ==
+            if (state->text_pos >= state->text_end && state->partial_side ==
               RE_PARTIAL_RIGHT)
                 return RE_ERROR_PARTIAL;
 
@@ -13766,7 +13769,7 @@ advance:
             TRACE(("%s %d %d %d\n", re_op_text[node->op], node->match,
               node->values[0], node->values[1]))
 
-            if (state->text_pos >= state->text_length && state->partial_side ==
+            if (state->text_pos >= state->text_end && state->partial_side ==
               RE_PARTIAL_RIGHT)
                 return RE_ERROR_PARTIAL;
 
@@ -13789,7 +13792,7 @@ advance:
             TRACE(("%s %d %d %d\n", re_op_text[node->op], node->match,
               node->values[0], node->values[1]))
 
-            if (state->text_pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+            if (state->text_pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                 return RE_ERROR_PARTIAL;
 
             if (state->text_pos > state->slice_start &&
@@ -13811,7 +13814,7 @@ advance:
             TRACE(("%s %d %d %d\n", re_op_text[node->op], node->match,
               node->values[0], node->values[1]))
 
-            if (state->text_pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+            if (state->text_pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                 return RE_ERROR_PARTIAL;
 
             if (state->text_pos > state->slice_start && matches_RANGE(encoding,
@@ -13854,7 +13857,7 @@ advance:
 
             /* Try comparing. */
             while (string_pos < span->end) {
-                if (state->text_pos >= state->text_length &&
+                if (state->text_pos >= state->text_end &&
                   state->partial_side == RE_PARTIAL_RIGHT)
                     return RE_ERROR_PARTIAL;
 
@@ -13930,7 +13933,7 @@ advance:
             while (string_pos < span->end) {
                 /* Case-fold at current position in text. */
                 if (folded_pos >= folded_len) {
-                    if (state->text_pos >= state->text_length &&
+                    if (state->text_pos >= state->text_end &&
                       state->partial_side == RE_PARTIAL_RIGHT)
                         return RE_ERROR_PARTIAL;
 
@@ -14031,7 +14034,7 @@ advance:
             while (string_pos > span->start) {
                 /* Case-fold at current position in text. */
                 if (folded_pos <= 0) {
-                    if (state->text_pos <= 0 && state->partial_side ==
+                    if (state->text_pos <= state->text_start && state->partial_side ==
                       RE_PARTIAL_LEFT)
                         return RE_ERROR_PARTIAL;
 
@@ -14112,7 +14115,7 @@ advance:
 
             /* Try comparing. */
             while (string_pos < span->end) {
-                if (state->text_pos >= state->text_length &&
+                if (state->text_pos >= state->text_end &&
                   state->partial_side == RE_PARTIAL_RIGHT)
                     return RE_ERROR_PARTIAL;
 
@@ -14168,7 +14171,7 @@ advance:
 
             /* Try comparing. */
             while (string_pos > span->start) {
-                if (state->text_pos <= 0 && state->partial_side ==
+                if (state->text_pos <= state->text_start && state->partial_side ==
                   RE_PARTIAL_LEFT)
                     return RE_ERROR_PARTIAL;
 
@@ -14225,7 +14228,7 @@ advance:
 
             /* Try comparing. */
             while (string_pos > span->start) {
-                if (state->text_pos <= 0 && state->partial_side ==
+                if (state->text_pos <= state->text_start && state->partial_side ==
                   RE_PARTIAL_LEFT)
                     return RE_ERROR_PARTIAL;
 
@@ -14277,7 +14280,7 @@ advance:
         case RE_OP_SET_UNION: /* Set union. */
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
-            if (state->text_pos >= state->text_length && state->partial_side ==
+            if (state->text_pos >= state->text_end && state->partial_side ==
               RE_PARTIAL_RIGHT)
                 return RE_ERROR_PARTIAL;
 
@@ -14302,7 +14305,7 @@ advance:
         case RE_OP_SET_UNION_IGN: /* Set union, ignoring case. */
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
-            if (state->text_pos >= state->text_length && state->partial_side ==
+            if (state->text_pos >= state->text_end && state->partial_side ==
               RE_PARTIAL_RIGHT)
                 return RE_ERROR_PARTIAL;
 
@@ -14327,7 +14330,7 @@ advance:
         case RE_OP_SET_UNION_IGN_REV: /* Set union, ignoring case. */
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
-            if (state->text_pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+            if (state->text_pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                 return RE_ERROR_PARTIAL;
 
             if (state->text_pos > state->slice_start &&
@@ -14351,7 +14354,7 @@ advance:
         case RE_OP_SET_UNION_REV: /* Set union. */
             TRACE(("%s %d\n", re_op_text[node->op], node->match))
 
-            if (state->text_pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+            if (state->text_pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                 return RE_ERROR_PARTIAL;
 
             if (state->text_pos > state->slice_start && matches_SET(encoding,
@@ -14563,7 +14566,7 @@ advance:
 
                 /* Try comparing. */
                 while (string_pos < length) {
-                    if (state->text_pos >= state->text_length &&
+                    if (state->text_pos >= state->text_end &&
                       state->partial_side == RE_PARTIAL_RIGHT)
                         return RE_ERROR_PARTIAL;
 
@@ -14641,7 +14644,7 @@ advance:
                 /* Try comparing. */
                 while (string_pos < length) {
                     if (folded_pos >= folded_len) {
-                        if (state->text_pos >= state->text_length &&
+                        if (state->text_pos >= state->text_end &&
                           state->partial_side == RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
@@ -14747,7 +14750,7 @@ advance:
                 /* Try comparing. */
                 while (string_pos > 0) {
                     if (folded_pos <= 0) {
-                        if (state->text_pos <= 0 && state->partial_side ==
+                        if (state->text_pos <= state->text_start && state->partial_side ==
                           RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
@@ -14833,7 +14836,7 @@ advance:
 
                 /* Try comparing. */
                 while (string_pos < length) {
-                    if (state->text_pos >= state->text_length &&
+                    if (state->text_pos >= state->text_end &&
                       state->partial_side == RE_PARTIAL_RIGHT)
                         return RE_ERROR_PARTIAL;
 
@@ -14890,7 +14893,7 @@ advance:
 
                 /* Try comparing. */
                 while (string_pos > 0) {
-                    if (state->text_pos <= 0 && state->partial_side ==
+                    if (state->text_pos <= state->text_start && state->partial_side ==
                       RE_PARTIAL_LEFT)
                         return RE_ERROR_PARTIAL;
 
@@ -14947,7 +14950,7 @@ advance:
 
                 /* Try comparing. */
                 while (string_pos > 0) {
-                    if (state->text_pos <= 0 && state->partial_side ==
+                    if (state->text_pos <= state->text_start && state->partial_side ==
                       RE_PARTIAL_LEFT)
                         return RE_ERROR_PARTIAL;
 
@@ -16342,7 +16345,7 @@ backtrack:
                     limit = min_ssize_t(limit, state->slice_end - 1);
 
                     for (;;) {
-                        if (pos + 1 >= state->text_length &&
+                        if (pos + 1 >= state->text_end &&
                           state->partial_side == RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
@@ -16379,7 +16382,7 @@ backtrack:
                     limit = min_ssize_t(limit, state->slice_end - 1);
 
                     for (;;) {
-                        if (pos + 1 >= state->text_length &&
+                        if (pos + 1 >= state->text_end &&
                           state->partial_side == RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
@@ -16417,7 +16420,7 @@ backtrack:
                     limit = max_ssize_t(limit, state->slice_start + 1);
 
                     for (;;) {
-                        if (pos - 1 <= 0 && state->partial_side ==
+                        if (pos - 1 <= state->text_start && state->partial_side ==
                           RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
@@ -16455,7 +16458,7 @@ backtrack:
                     limit = max_ssize_t(limit, state->slice_start + 1);
 
                     for (;;) {
-                        if (pos - 1 <= 0 && state->partial_side ==
+                        if (pos - 1 <= state->text_start && state->partial_side ==
                           RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
@@ -16495,7 +16498,7 @@ backtrack:
                         Py_ssize_t found;
                         BOOL is_partial;
 
-                        if (pos >= state->text_length && state->partial_side ==
+                        if (pos >= state->text_end && state->partial_side ==
                           RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
@@ -16553,7 +16556,7 @@ backtrack:
                         Py_ssize_t new_pos;
                         BOOL is_partial;
 
-                        if (pos >= state->text_length && state->partial_side ==
+                        if (pos >= state->text_end && state->partial_side ==
                           RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
@@ -16612,7 +16615,7 @@ backtrack:
                         Py_ssize_t new_pos;
                         BOOL is_partial;
 
-                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+                        if (pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)
@@ -16673,7 +16676,7 @@ backtrack:
                         Py_ssize_t found;
                         BOOL is_partial;
 
-                        if (pos >= state->text_length && state->partial_side ==
+                        if (pos >= state->text_end && state->partial_side ==
                           RE_PARTIAL_RIGHT)
                             return RE_ERROR_PARTIAL;
 
@@ -16734,7 +16737,7 @@ backtrack:
                         Py_ssize_t found;
                         BOOL is_partial;
 
-                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+                        if (pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)
@@ -16794,7 +16797,7 @@ backtrack:
                         Py_ssize_t found;
                         BOOL is_partial;
 
-                        if (pos <= 0 && state->partial_side == RE_PARTIAL_LEFT)
+                        if (pos <= state->text_start && state->partial_side == RE_PARTIAL_LEFT)
                             return RE_ERROR_PARTIAL;
 
                         if (pos <= limit)
@@ -18228,7 +18231,14 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
      * the string.
      */
     state->text = str_info->characters;
-    state->text_length = end;
+    state->text_length = str_info->length;
+
+    /* Open start and closed end bounds, like in re module. */
+    state->text_start = 0;
+    state->text_end = end;
+
+    state->slice_start = start;
+    state->slice_end = end;
 
     state->reverse = (pattern->flags & RE_FLAG_REVERSE) != 0;
     if (partial)
@@ -18237,8 +18247,6 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
     else
         state->partial_side = RE_PARTIAL_NONE;
 
-    state->slice_start = start;
-    state->slice_end = state->text_length;
     state->text_pos = state->reverse ? state->slice_end : state->slice_start;
 
     /* Point to the final newline and line separator if it's at the end of the
@@ -18246,7 +18254,7 @@ Py_LOCAL_INLINE(BOOL) state_init_2(RE_State* state, PatternObject* pattern,
      */
     state->final_newline = -1;
     state->final_line_sep = -1;
-    final_pos = state->text_length - 1;
+    final_pos = state->text_end - 1;
     if (final_pos >= 0) {
         Py_UCS4 ch;
 
@@ -23631,7 +23639,7 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     /* Add position guards for repeat bodies containing a reference to a group
      * or repeat tails followed at some point by a reference to a group.
      */
-    add_repeat_guards(pattern, pattern->start_node);
+    //add_repeat_guards(pattern, pattern->start_node);
 
     /* Record the index of repeats and fuzzy sections within the body of atomic
      * and lookaround nodes.
@@ -26199,11 +26207,27 @@ static PyMethodDef _functions[] = {
     {NULL, NULL}
 };
 
+/* Munges the name of a property or value. */
+void munge_name(char* name, char* munged) {
+    if (*name == '-')
+        *munged++ = *name++;
+
+    while (*name) {
+        if (*name == ' ' || *name == '_' || *name == '-')
+            ++name;
+        else;
+            *munged++ = toupper(*name++);
+    }
+
+    *munged = '\0';
+}
+
 /* Initialises the property dictionary. */
 Py_LOCAL_INLINE(BOOL) init_property_dict(void) {
     size_t value_set_count;
     size_t i;
     PyObject** value_dicts;
+    char munged[256];
 
     property_dict = NULL;
 
@@ -26245,8 +26269,9 @@ Py_LOCAL_INLINE(BOOL) init_property_dict(void) {
         if (!v)
             goto error;
 
+        munge_name(re_strings[value->name], munged);
         status = PyDict_SetItemString(value_dicts[value->value_set],
-          re_strings[value->name], v);
+          munged, v);
         Py_DECREF(v);
         if (status < 0)
             goto error;
@@ -26268,8 +26293,9 @@ Py_LOCAL_INLINE(BOOL) init_property_dict(void) {
         if (!v)
             goto error;
 
+        munge_name(re_strings[property->name], munged);
         status = PyDict_SetItemString(property_dict,
-          re_strings[property->name], v);
+          munged, v);
         Py_DECREF(v);
         if (status < 0)
             goto error;

@@ -4329,6 +4329,9 @@ thing
         self.assertEqual(regex.match(r'(?(?<=A)|(?(?![^B])C|D))', 'A'), None)
         self.assertEqual(regex.search(r'(?(?<=A)|(?(?![^B])C|D))', 'A').span(), (1, 1))
 
+        # Git issue 494: Backtracking failure matching regex ^a?(a?)b?c\1$ against string abca
+        self.assertEqual(regex.search(r"^a?(a?)b?c\1$", "abca").span(), (0, 4))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
