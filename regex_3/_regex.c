@@ -23178,7 +23178,10 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                       RE_STATUS_REF);
 
                     repeat_info = &pattern->repeat_info[node->values[0]];
-                    repeat_info->status |= RE_STATUS_BODY;
+                    /* Removing guard here to fix issue 494 and prevent
+                     * regression of issue 495. 
+                     */
+                    /* repeat_info->status |= RE_STATUS_BODY; */
 
                     if (tail_result != RE_STATUS_REF)
                         repeat_info->status |= RE_STATUS_TAIL;
@@ -23639,7 +23642,7 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     /* Add position guards for repeat bodies containing a reference to a group
      * or repeat tails followed at some point by a reference to a group.
      */
-    //add_repeat_guards(pattern, pattern->start_node);
+    add_repeat_guards(pattern, pattern->start_node);
 
     /* Record the index of repeats and fuzzy sections within the body of atomic
      * and lookaround nodes.
