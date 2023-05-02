@@ -1,0 +1,1313 @@
+Version: 2023.5.3
+
+    pyproject.toml was missing.
+
+Version: 2023.5.2
+
+    Added pyproject.toml.
+
+Version: 2023.3.23
+
+    Git issue 495: Running time for failing fullmatch increases rapidly with input length
+    Re-enabled modified repeat guards due to regression in speed caused by excessive backtracking.
+
+Version: 2023.3.22
+
+    Git issue 494: Backtracking failure matching regex `^a?(a?)b?c\1$` against string `abca`
+    Disabled repeat guards. They keep causing issues, and it's just simpler to rely on timeouts.
+
+Version: 2022.10.31
+
+    Updated text for supported Unicode and Python versions.
+
+Version: 2022.9.13
+
+    Updated to Unicode 15.0.0.
+
+Version: 2022.9.11
+
+    Updated version.
+
+Version: 2022.8.17
+
+    Git issue 477: \v for vertical spacing
+
+    Added \p{HorizSpace} (\p{H}) and \p{VertSpace} (\p{V}).
+
+Version: 2022.7.25
+
+    Git issue 475: 2022.7.24 improperly released
+
+    The file https://pypi.org/pypi/regex/2022.7.24/json was missing references to most of the wheels, so this is a new release in the hope that it was just a glitch in GitHub Actions.
+
+Version: 2022.7.24
+
+    Git issue 474: regex has no equivalent to re.Match.groups() for captures
+
+    Added 'allcaptures' and 'allspans' methods to match objects.
+
+    Fixed bug where compiling a pattern didn't always check for unused arguments.
+
+Version: 2022.7.9
+
+    Git issue 473: Emoji classified as letter
+
+    The values for GC:Assigned and GC:LC were flipped.
+
+Version: 2022.6.2
+
+    Git issue 472: Revisit compilation flag to prevent adding a single explicitly compiled regex to the cache
+
+    Added 'cache_pattern' parameter to 'compile' function to improve use of the cache.
+
+Version: 2022.4.24
+
+    Git issue 467: Scoped inline flags 'a', 'u' and 'L' affect global flags
+
+    Those flags scan now be scoped.
+
+Version: 2022.3.15
+
+    Git issue 457: Difference with `re`, when repl returns None
+
+    Make regex consistent with re by treating a replacement template of None as ''.
+
+    Also, now rejects invalid ASCII escapes like re module does.
+
+Version: 2022.3.2
+
+    Git issue 453: Document last supported python2 version
+
+        Added a brief reference to the last version to support Python 2 in README.rst.
+
+    Git issue 456: RegexFlag exists in re, but not regex
+
+        Updated the flags to use enum now that regex supports only Python 3.6+.
+
+Version: 2022.1.21
+
+    Added 'python_requires' to setup.py now that Python 2 no longer supported.
+
+Version: 2022.1.18
+
+    Updated version for new release.
+
+Version: 2022.1.18
+
+    * Dropped support for Python 2 and remove all references to Python <3.6, the earliest supported version.
+
+    Removed Features.rst, which was just a duplicate of README.rst.
+
+Version: 2021.11.9
+
+    Git issue 443: 2021.11.9 source release is missing C headers
+
+    Updated version.
+
+Version: 2021.11.9
+
+    Git issue 442: Fuzzy regex matching doesn't seem to test insertions correctly
+
+Version: 2021.11.2
+
+    Git issue 435: Unmatched groups: sub vs subf
+
+    A similar fix also applies to expandf: unmatched groups should expand to an empty string.
+
+Version: 2021.11.2
+
+    Removed unused functions.
+
+    Added long description type to setup.py.
+
+Version: 2021.11.1
+
+    Further changes for migration to Github.
+
+Version: 2021.10.23
+
+    Git issue 433: Disagreement between fuzzy_counts and fuzzy_changes
+
+    Fuzzy changes were sometimes not removed when backtracking.
+
+Version: 2021.10.21
+
+    Removed Apple Silicon build from .travis.yml because it's not currently codesigned by Travis CI.
+
+Version: 2021.10.8
+
+    Git issue 428: match hangs on the following example - possible infinite loop?
+
+    Fixed miscalculation of total error count when there's more than one fuzzy term.
+
+Version: 2021.9.30
+
+    Git issue 427: Possible bug with BESTMATCH
+
+Version: 2021.9.24
+
+    Updated to Unicode 14.0.0.
+
+Version: 2021.8.27
+
+    Git issue 421: 2021.8.27 results in "Fatal Python error: Segmentation fault"
+
+    Fixed problems with use of fast searching tables in opposite direction.
+
+Version: 2021.8.27
+
+    Git issue 420: segmentation fault in finditer (maybe others)
+
+    Fixed a bugs in fast searches in reverse direction.
+
+Version: 2021.8.21
+
+    Updated version.
+
+Version: 2021.8.3
+
+    Forgot to update version!
+
+Version: 2021.7.6
+
+    Additional fix for Git issue 415.
+
+Version: 2021.7.5
+
+    Git issue 415: Fuzzy character restrictions don't apply to insertions at "right edge"
+
+Version: 2021.7.1
+
+    Git issue 407: API is not a drop-in replacement for python's re when it comes to typing
+
+    Now exports Match object as well as Pattern object.
+
+    Git issue 414: Memory optimization questions
+
+    sys.getsizeof returns a more accurate size of a pattern object. It includes the size of internal data, but, as is the norm, does not include the size of public objects.
+
+Version: 2021.4.4
+
+    Git issue 408: regex fails with a quantified backreference but succeeds with repeated backref
+    Git issue 407: API is not a drop-in replacement for python's re when it comes to typing
+
+Version: 2021.3.17
+
+    Git issue 403: Fuzzy matching with wrong distance (unnecessary substitutions)
+
+    Reworked the fuzzy matching code.
+
+Version: 2020.11.13
+
+    Git issue 394: Unexpected behaviour in fuzzy matching with limited character set with IGNORECASE flag
+
+Version: 2020.11.11
+
+    Update version.
+
+Version: 2020.11.2
+
+    Updated list of supported Python versions.
+
+    Added .travis.yml file.
+
+Version: 2020.10.28
+
+    Git issue 362: Any LICENSE work for this project?
+
+    Changed licence to Apache 2.0 and added licence file.
+
+Version: 2020.10.23
+
+    Git issue 387: Compilaton flag to avoid storing compiled regexp in internal cache
+
+    Slight reversion/revision. You can prevent explicitly-compiled patterns from being cached by using "cache_all(False)".
+
+Version: 2020.10.22
+
+    Git issue 387: Compilaton flag to avoid storing compiled regexp in internal cache
+
+    No longer caches patterns that are compiled explicitly.
+
+Version: 2020.10.15
+
+    Git issue 386: GCC 10 warnings
+
+    Fixed bugs in fuzzy_match_string_fld and fuzzy_match_group_fld.
+
+    Added more braces around data in some Unicode tables.
+
+Version: 2020.10.11
+
+    Git issue 385: Comments in expressions
+
+    Didn't parse regex comments property when in VERBOSE mode.
+
+Version: 2020.9.27
+
+    Git issue 383: Memory Error - regex.findall
+
+    The problem was caused by a lazy repeat looping forever, growing the backtracking stack. Greedy repeats were OK.
+
+Version: 2020.7.14
+
+    Git issue 377: request: \h for horizontal space
+
+    Added \h as an alias to [[:blank:]].
+
+Version: 2020.6.7
+
+    Git issue 376: Is the \L option as efficient as it can be?
+
+    Improved performance of string sets.
+
+Version: 2020.6.7
+
+    Git issue 376: Is the \L option as efficient as it can be?
+
+    Switched StringSet to use fallback method due to inefficiencies in the engine. Needs more investigation.
+
+Version: 2020.5.14
+
+    Git issue 372: Regression from 2020.4.4 -> 2020.5.7 in non-fuzzy matching pattern
+
+    Changed the 'state' member that's tested in is_repeat_guarded for a fuzzy match. The previously-used member wasn't initialised in a non-fuzzy match. The new test is a better one to use anyway.
+
+Version: 2020.5.13
+
+    Git issue 371: Specifying character set when fuzzy-matching allows characters not in the set
+
+    fuzzy_ext_match and fuzzy_ext_match_group_fld didn't support sets!
+
+Version: 2020.5.7
+
+    Git issue 370: Confusions about Fuzzy matching behavior (prob a bug?)
+
+Version: 2020.4.4
+
+    Updated to Unicode 13.0.0.
+
+Version: 2020.2.20
+
+    Git issue 365: Memory leak occurs in fuzzy match at some substitution use cases
+
+Version: 2020.2.18
+
+    Git issue #364: Contradictory values in fuzzy_counts and fuzzy_changes
+
+Version: 2020.1.7
+
+    Issue 357: New exception "ValueError: unused keyword argument" breaks use case
+
+    Added ignore_unused keyword argument.
+
+    Issue 359: 2020.1.7 source distribution release contains \r\n line endings
+
+    Fixed line endings for source distribution.
+
+    Issue 360: Invalid modeline in `_regex.c`
+
+    Removed vim modeline.
+
+Version: 2020.1.7
+
+    Fix to previous change.
+
+Version: 2019.12.21
+
+    Hg issue 353: fuzzy changes negative indexes
+
+    Fuzzy change positions were off by 1 for deletions.
+
+Version: 2019.12.18
+
+    Another complaint from Linux.
+
+Version: 2019.12.17
+
+    New release and upload because of problem with source distribution.
+
+Version: 2019.12.17
+
+    New release and upload because of previous issues.
+
+Version: 2019.12.17
+
+    Make changes to setup.py.
+
+Version: 2019.12.16
+
+    Discarded changes for Linux.
+
+Version: 2019.12.16
+
+    Backed out changeset: f57e64d2085b
+
+Version: 2019.12.15
+
+    add bdist_wheel command to setup.py
+
+Version: 2019.12.9
+
+    Hg issue 348: '\X' (extended grapheme cluster) can't pass Unicode's GraphemeBreakTest (12.1.0)
+
+    Fixed a couple of bugs in unicode_at_grapheme_boundary.
+
+Version: 2019.10.31
+
+    Made "Additional Features" linkable.
+
+    Updated setup.
+
+    Minor bug fix.
+
+Version: 2019.8.19
+
+    Hg issue 338: specifying allowed characters when fuzzy-matching
+
+    Added character testing to a fuzzy constraint.
+
+Version: 2019.6.8
+
+    Hg issue 333: error when installing regex on PyPy2.7 v7.1.1 on Windows
+
+    PyPy isn't officially supported, but this might fix it!
+
+Version: 2019.6.5
+
+    Updated for Python 3.8.
+
+Version: 2019.6.2
+
+    Updated to Unicode 12.1.0.
+
+Version: 2019.5.25
+
+    Hg issue 329: Wrong group matches when question mark quantifier is used within a look behind
+
+    REPEAT_ONE was backtracking in the wrong direction, so it never hit the limit.
+
+Version: 2019.4.14
+
+    Hg issue 327: .fullmatch() causes MemoryError
+
+    For fullmatch, added check for end/start of string for RE_OP_SUCCESS in try_match.
+
+Version: 2019.4.12
+
+    Missing brace in 'state_fini'.
+
+Version: 2019.4.10
+
+    Hg issue 325: module docstring not accessible
+
+    Additional fix for regex_3/regex.py.
+
+    Hg issue 326: Version is out of sync with PyPI
+
+Version: 2019.3.12
+
+    Hg issue 319: Support for a timespan parameter
+
+    Added timeout parameter in Python 3. TimeoutError was added in Python 3.3, and as Python 2.7 will soon reach EOL, I'm not bothered about supporting timeouts for Python 2.
+
+Version: 2019.3.9
+
+    Hg issue 320: Abnormal performance
+
+    Forgot about negative lookarounds! Previous change now applies only to positive lookarounds.
+
+Version: 2019.3.8
+
+    Hg issue 320: Abnormal performance
+
+    Included firstset from lookaround, where appropriate.
+
+Version: 2019.2.21
+
+    Hg issue 316: __version__ no longer accessible via regex.__version__
+
+Version: 2019.2.20
+
+    Hg issue 314: Import error: "No module named regex._regex_core"
+
+    Was OK for wheels, but not for setup.py.
+
+Version: 2019.2.19
+
+    Hg issue 313: test_regex.py ends up in site-packages/test_regex.py
+
+    Tidied files away into subfolder in site-packages.
+
+Version: 2019.2.18
+
+    Fixed bug in unicode_at_grapheme_boundary.
+
+Version: 2019.2.7
+
+    Moved some StateData declarations to make the code conform to the C89 standard.
+
+Version: 2019.2.6
+
+    Lookarounds no longer save the repeat data. Lookarounds no longer saves captures if they don't contain any groups.
+
+Version: 2019.2.5
+
+    Atomic groups no longer save the repeat data; that proved to be unnecessary.
+
+Version: 2019.2.3
+
+    Further improvements to the new code.
+
+Version: 2019.1.24
+
+    Hg issue 308: infinite search
+
+    Fixed a re-allocation bug.
+
+Version: 2019.1.23
+
+    Major overhaul of code to use simpler stacks. The result is now much easier to understand and maintain!
+
+Version: 2018.11.22
+
+    Hg issue 304: Unreasonable edge case that used to work
+
+    Now moves the minimum number of repeats out of a repeat if it contains a repeat. This allows a repeat guard to be put back, which reduces the chance of catastrophic backtracking.
+
+Version: 2018.11.7
+
+    Hg issue 301: TypeError: character mapping must return integer, None or unicode
+
+    Fixed bug introduced by broken workflow.
+
+Version: 2018.11.6
+
+    Hg issue 300: segmentation fault
+
+    Fixed a problem with not recording all fuzzy changes.
+
+    Also fixed the check for prefix/suffix in branches: when fuzzy subpatterns were compared, their constraints weren't compared.
+
+Version: 2018.11.3
+
+    Hg issue 299
+
+    Reworked the fix to perform a normal match and then fall back to a partial match if that was originally requested.
+
+Version: 2018.11.2
+
+    Hg issue 299: Partial gives misleading results with "open ended" regexp
+
+    Added checks for end of text at start and end of repeats.
+
+Version: 2018.8.29
+
+    Hg issue 293: scx (Script Extensions) property currently matches incorrectly
+
+    One of the tables for Script Extensions was partly incorrectly ordered.
+
+Version: 2018.8.17
+
+    Hg issue 291: Include Script Extensions as a supported Unicode property
+
+    Added the Unicode Script Extensions property.
+
+Version: 2018.7.11
+
+    Hg issue #289: Regex and Python typing
+
+    Added types for Pattern and Match.
+
+    Hg issue #290: Turkish locale causes import of regex to fail
+
+    str (bytestring) in Python 2 is locale-sensitive. Added a function to uppercase ASCII-range letters in a locale-insensitive way.
+
+Version: 2018.6.21
+
+    Hg issue 286: Regex matches with `re` but not with `regex` module
+
+Version: 2018.6.20
+
+    The reported positions of fuzzy changes were sometimes incorrect.
+
+Version: 2018.6.9
+
+    Updated Unicode word and grapheme boundaries for Unicode 11.0.0, which I had overlooked... :-(
+
+Version: 2018.6.6
+
+    Correction to filenames.
+
+Version: 2018.6.5
+
+    Updated to Unicode 11.0.0.
+
+Version: 2018.2.21
+
+    Hg issue 276: Partial Matches yield incorrect matches and bounds
+
+    Fixed an off-by-one bug where a lazy repeat is followed by a character (quick check).
+
+Version: 2018.2.8
+
+    Hg issue 273: Missing unicode normalization quick check properties
+
+    The Unicode normalization quick check properties weren't handled correctly.
+
+Version: 2018.2.3
+
+    Hg issue 271: Comment logic different between Re and Regex
+    Hg issue 273: Missing unicode normalization quick check properties
+
+    Made comments consistent with re module.
+
+    Added more Unicode properties.
+
+Version: 2018.1.10
+
+    Further changes to match re module's behaviour on zero-width matching for Python 3.7.
+
+    Changes to the locations of the source files.
+
+Version: 2017.12.12
+
+    Hg issue 268: Update the escape() documentation
+
+    Added documentation for escape.
+
+    Hg issue 269: Building a bdist using setuptools throws an error.
+
+    Moved source files from subfolders to main folders for Python versions.
+
+Version: 2017.12.9
+
+    Further changes to match re module's behaviour on zero-width matching for Python 3.7.
+
+Version: 2017.12.5
+
+    Hg issue 266: fuzzy match alignment recovery
+
+    Added 'fuzzy_changes' attribute to match object to indicate positions of changes in fuzzy match.
+
+    Stopped supporting Python 2.5 and Python 3.1-3.2.
+
+    Made changes to zero-width matching for Python 3.7.
+
+Version: 2017.11.9
+
+    Hg issue 264: Failure to import regex in pypy3-5.8.0
+
+Version: 2017.11.8
+
+    Hg issue 264: Failure to import regex in pypy3-5.8.0
+    Hg issue 265: Invalid pointer in munmap_chunk (core dump) for specific inputs
+
+Version: 2017.9.23
+
+    Hg issue 253: Run into error under PyPy 5.8.0
+
+Version: 2017.8.1
+
+    Hg issue #240: Unable to build the project from source on OSX with PyPy3.5-5.7.1-beta
+
+    Needed to compensate for the differences between CPython and PyPy.
+
+Version: 2017.4.6
+
+    Added setup.py for building from the Hg working directory.
+
+Version: 2017.4.6
+
+    Hg issue 236: Incorrect references to bugs.python.org issues
+
+Version: 2017.2.8
+
+    Failed to build on AIX using xlc because FALSE and TRUE were already #define'd. Replaced enum {FALSE, TRUE} with #define's.
+
+Version: 2017.1.17
+
+    Hg issue 230: Is it a bug of (?(DEFINE)...)
+
+    Capture groups in (?(DEFINE)...) shouldn't be treated as 'visible' capture groups by .findall.
+
+Version: 2017.1.14
+
+    Hg issue 227: Performance trap of (?V1i) flags
+
+    Further improvements. It now tries to split full case-folded literals into simple and full case-folded literals where full case-folding isn't needed because simple case-folding is faster.
+
+Version: 2017.1.13
+
+    Hg issue 227: Performance trap of (?V1i) flags
+
+Version: 2016.12.27
+
+    Hg issue 227: Incorrect behavior for ? operator with UNICODE + IGNORECASE
+
+    'end_pos' wasn't always initialised in 'locate_required_string'.
+
+Version: 2016.11.21
+
+    Hg issue 226: Error matching at start of string
+
+    Fuzzy matching of zero-width items wasn't quite right.
+
+Version: 2016.11.18
+
+    Hg issue 225: BESTMATCH in fuzzy match not working
+
+Version: 2016.10.22
+
+    Hg issue 221: Got an exception using PyPy
+
+    pypy2-v5.4.1 appears not to support the buffer protocol on bytestrings (str in Python 2), so added code to handle them analogously to how unicode strings are handled.
+
+Version: 2016.10.20
+
+    Make setup use setuptools if it's available.
+
+Version: 2016.10.12
+
+    Hg issue 221: Got an exception using PyPy
+
+    Added check for error in fold_case which, I hope, will reveal the exception that it's not reporting.
+
+Version: 2016.9.22
+
+    Hg issue 220: Misbehavior of group capture with OR operand
+
+    Repeats should not be factored out of branches because a branch should be exhausted before trying the next one.
+
+Version: 2016.9.13
+
+    Also supported on Python 3.6.
+
+Version: 2016.8.27
+
+    Hg issue 219: Unicode word boundries
+
+    For a Unicode word boundary (UAX #29), apostrophe in rule WB5a should include both U+0027 (APOSTROPHE) and U+2019 (RIGHT SINGLE QUOTATION MARK /
+     * curly apostrophe).
+
+Version: 2016.7.21
+
+    Hg issue 217: Core dump in conditional ahead match and matching \! character
+
+    Fixed bug where it incorrectly tried to restore saved groups when none saved.
+
+Version: 2016.7.14
+
+    Hg Issue 216: Invalid match when using negative lookbehind and pipe
+
+    The creation and position of a branch firstset wasn't always correct.
+
+Version: 2016.6.25
+
+    Updated to support Unicode 9.0.0.
+
+Version: 2016.6.19
+
+    Hg issue 214: tests failure when using python debug flavor
+
+    Further tweaks re error handling.
+
+Version: 2016.6.14
+
+    Hg issue 213: Segmentation Fault
+
+    Info about atomic groups wasn't pushed properly.
+
+Version: 2016.6.5
+
+    Hg issue 212: Unexpected matching difference with .*? between re and regex
+
+    In 'add_repeat_guards', it wasn't propagating the status from the tail back towards the head across default nodes, so the guards weren't always correct.
+
+Version: 2016.6.2
+
+    Hg issue 211: Segmentation fault with recursive matches and atomic groups
+
+    It wasn't saving the call frame and then restoring it when backtracking out of atomic groups.
+
+Version: 2016.5.23
+
+    Hg issue 206: Incompatible with re if single { in the pattern
+
+    Brought the regex module's handling more in line with the re module. It now more readily treats an invalid fuzzy constraint as a literal.
+
+Version: 2016.5.15
+
+    Hg issue 208: Named list, (?ri) flags, Backreference
+
+    Fixed more issues with the alignment of text in a buffer when using named lists.
+
+    Also changed how a compiled regex is pickled to use a bytestring for the packed code list. (It was actually pickling an unpacked list of ints.)
+
+Version: 2016.5.14
+
+    Hg issue 205: Named list and (?ri) flags
+
+    string_set_match_ign_fwdrev wasn't taking into account that it fills the folded buffer from the end when searching in reverse.
+
+Version: 2016.5.13
+
+    Hg issue 204: confusion of (?aif) flags
+
+    The FULLCASE flag is now ignored if the ASCII flag is turned on.
+
+Version: 2016.4.25
+
+    Hg issue 203: partial matching bug
+
+    The text position wasn't always set correctly before returning the status.
+
+Version: 2016.4.16
+
+    Hg issue 201: ENHANCEMATCH crashes interpreter
+
+    Fixed an issue with restoring group captures.
+
+Version: 2016.4.7
+
+    Hg issue 199: Segfault in re.compile
+
+    Removed copies of groups that weren't called.
+
+Version: 2016.4.3
+
+    Hg issue 197: ValueError in regex.compile
+    Hg issue 198: ValueError in regex.compile
+
+    It wasn't catching ValueError and then raising regex.error.
+
+Version: 2016.4.2
+
+    Hg issue 196: Fuzzy matching on repeated regex not working as expected
+
+    Also reduced memory usage of pickle data.
+
+Version: 2016.3.31
+
+    # Hg issue #194: .FULLCASE and Backreference
+
+    Capture groups failed to match when using full case folding because of a bug in the handling of "I", which needs to be treated specially to cope with the Turkic I).
+
+Version: 2016.3.26
+
+    Hg issue #193: Alternation and .REVERSE flag.
+
+    The firstset before a branch was at the wrong end for a reverse pattern.
+
+    Added back some tests that were accidentally omitted.
+
+Version: 2016.3.24
+
+    Hg issue 192: Named lists reverse matching doesn't work with IGNORECASE and V1
+
+    string_set_match_fld_fwdrev wasn't taking into account that it fills the folded buffer from the end when searching in reverse.
+
+Version: 2016.3.2
+
+    Hg issue 190: Regression? Neverending regexp when upgrading to latest version.
+
+    The fix for Hg issue 187 wasn't quite right. Managed to remove recursion entirely from 'add_repeat_guards'.
+
+Version: 2016.2.25
+
+    Hg issue 188: Crash during search
+
+    Stopped calling 'try_match' recursively when the tail of a branch is a branch. Increasing alternatives to 40000 caused the stack to overflow.
+
+Version: 2016.2.24
+
+    Hg issue 187: Crash on Anaconda Python if large number of pattern
+
+    Remove the recursion in 'use_nodes'. Increasing alternatives to 50000 caused the stack to overflow.
+
+Version: 2016.2.23
+
+    Hg issue 187: Crash on Anaconda Python if large number of pattern
+
+    Reduced the amount of recursion in 'add_repeat_guards'. The large number of alternatives (25154) caused the stack to overflow.
+
+Version: 2016.1.10
+
+    Hg issue 177: Build fails on pypy (OS X 10.11, clang)
+
+    Stripped out the #if...#endif that was added for Hg issue 135, which is no longer needed by more recent versions of PyPy.
+
+Version: 2015.11.22
+
+    Hg issue 180: bug of POSIX matching
+
+    Fixed bug where the groups aren't always correct with POSIX matching.
+
+Version: 2015.11.14
+
+    Hg issue 172: Performance of V1 mode
+
+    Fixed bug where RE_FLAG_FULLCASE not turned off when RE_FLAG_IGNORECASE turned off, leading to omission of first set.
+
+Version: 2015.11.12
+
+    Hg issue 171: Weird performance of V1 mode
+
+    Fixed bug where RE_FLAG_FULLCASE not turned off when RE_FLAG_IGNORECASE turned off for required string, leading to required string not being used.
+
+Version: 2015.11.9
+
+    Hg issue 169: Performance
+
+    Further tweaks to fuzzy matching.
+
+Version: 2015.11.8
+
+    Hg issue 167: Performance of Backreference
+
+    No longer saves/restores groups or repeats around a lookaround if it doesn't contain any.
+
+Version: 2015.11.7
+
+    Hg issue 166: Performance
+
+    Improved the performance of fuzzy matching.
+
+Version: 2015.11.5
+
+    Hg issue 165: Performance / hung search
+
+    Made changes to fuzzy matching code, including refactoring different kind of fuzzy matching (exact/simple/enhanced/best).
+
+Version: 2015.10.28
+
+    Hg issue 163: allow lookarounds in conditionals
+
+    Added support for a lookaround in a conditional pattern, e.g. r'(?(?=\d)\d+\b|\w+)'.
+
+Version: 2015.10.22
+
+     Hg issue 161: Unexpected fuzzy match results
+
+     Fixed the bug and did some related tidying up.
+
+Version: 2015.10.5
+
+    Hg issue 158: Group issue with (?(DEFINE)...)
+
+    The groups and repeats weren't restored properly when a lookaround completed and it contained a group call.
+
+Version: 2015.10.1
+
+    Hg issue 157: regression: segfault on complex lookaround
+
+    Nested lookarounds/atomic groups didn't restore state correctly.
+
+Version: 2015.9.28
+
+    Hg issue 156: regression on atomic grouping
+
+    It didn't initialise min_width when building the atomic group.
+
+Version: 2015.9.23
+
+    Hg issue 154: Segmentation fault 11 when working with an atomic group
+
+Version: 2015.9.15
+
+    Hg issue 150: Have an option for POSIX-compatible longest match of alternates
+
+    Added POSIX matching (leftmost longest).
+
+Version: 2015.7.20
+
+    Hg issue #147: Fuzzy match can return match points beyond buffer end
+
+    It wasn't checking for the edge of the text when case-folding and it was also advancing even when case-folding had failed.
+
+Version: 2015.7.12
+
+    Hg issue #146: Forced-fail (?!) works improperly in conditional
+
+    Empty negative lookarounds weren't optimised correctly.
+
+    The capture groups weren't being cleared before retrying after failure.
+
+Version: 2015.6.24
+
+    Hg issue #144: Latest version problem with matching 'R|R'
+
+    The prefix of a set of branches was omitted.
+
+Version: 2015.6.21
+
+    Hg issue #143: Partial matches have incorrect span if prefix is '.' wildcard
+
+    Didn't set state->match_pos if search_start returned a partial match status.
+
+Version: 2015.6.19
+
+    Updated to Unicode 8.0.
+
+    Some performance tweaks.
+
+Version: 2015.6.15
+
+    Removed a few lines that should've been removed in the previous fix!
+
+Version: 2015.6.14
+
+    Fixed a bug where it could sometimes search for the same required string multiple times.
+
+Version: 2015.6.10
+
+    Hg issue #141: Crash on a certain partial match
+
+    It didn't check the result of 'try_match' correctly in certain places (the status returned isn't limited to success and failure).
+
+Version: 2015.6.9
+
+    Hg issue #140: Replace with REVERSE and groups has unexpected behavior
+
+    subx needed to add the template items to the list in reverse order when searching backwards because the list will be reversed after completion.
+
+Version: 2015.6.4
+
+    Hg issue #98: regex module is not thread safe because of _cache
+
+    Now iterates over a snapshot of the cache keys in case the dict resizes.
+
+Version: 2015.6.2
+
+    Hg issue #139: Regular expression with multiple wildcards where first should match empty string does not always work
+
+    The problem was caused by a negative-character in the firstset, eg "[^a]".
+
+    Fixed.
+
+Version: 2015.5.28
+
+    Hg issue #137: Posix character class :punct: does not seem to be supported
+
+    It _is_ supported.
+
+    Corrected Posix-style properties for 'alnum', 'digit', 'punct' and 'xdigit' which are different from that of Unicode. Now also available as \p[posix_alnum}, etc.
+
+    Hg issue  #138: grapheme anchored search not working properly
+
+    Fixed.
+
+Version: 2015.5.10
+
+    Hg issue #136: Use a DFA when possible
+
+    Made a slight tweak so that it now treats an optional subpattern like a repeated subpattern (e.g. "(?:xyz)?" -> "(?:xyz){0,1}") to make use of the repeat guards.
+
+    The advantage over DFA is that it'll work even for those patterns that aren't compatible with DFA.
+
+Version: 2015.5.7
+
+    Hg issue 135: PyPy Support (with patch)
+
+    It should now build on PyPy.
+
+Version: 2015.3.18
+
+    Hg issue 133: support for captures() in expandf().
+
+    Now supported in expandf and subf.
+
+    Issue 23692: Undocumented feature prevents re module from finding certain matches
+
+    This also applied to regex which failed to take into account group references by group capture testa, e.g. "(?(1)...|...)", when guarding against excessive repeats.
+
+Version: 2014.12.24
+
+    Hg issue 132: index out of range on null property \p{}
+
+    It's now reported as an unknown property.
+
+Version: 2014.12.15
+
+    Hg issue 131: nested sets behaviour
+
+    The set difference operator '--' wasn't handled correctly after an implicit set union.
+
+Version: 2014.11.14
+
+    Unreported issue: no such builtin as 'ascii' in Python 2. Fixed.
+
+Version: 2014.11.13
+
+    Hg issue 127: Infinite loop is found
+
+    Not an infinite loop, but slow because of repeated backtracking on a very long chunk of text.
+
+    This fix reduces the amount of backtracking and re-matching.
+
+Version: 2014.11.3
+
+    Hg issue 125: Reference to entire match (\g<0>) in Pattern.sub() doesn't work as of 2014.09.22 release.
+
+Version: 2014.10.24
+
+    Reverted licence.
+
+Version: 2014.10.23
+
+    Fixed bug in determining line number in regex.
+
+    Changed licence to Apache License 2.0 and included copy in release.
+
+Version: 2014.10.9
+
+    Issue 22578: Add additional attributes to re.error
+
+    Added the attributes .msg, .pattern, .pos, .lineno and .colno to the regex error class.
+
+Version: 2014.10.7
+
+    Fixed bug in partial matching when required string occurs after repeat.
+
+Version: 2014.9.22
+
+    Issue #22437: Added support for referring to a group by number using (?P=...). This is in addition to the existing \g<...>.
+
+    Fixed bug in handling of cache for locale-sensitive patterns.
+
+Version: 2014.9.18
+
+    Adjusted line-endings in PKG-INFO.
+
+Version: 2014.8.15
+
+    Hg issue 115: Infinite loop when processing backreferences
+
+Version: 2014.6.28
+
+    Updated to Unicode 7.0.
+
+Version: 2014.5.23
+
+    Fixed fuzzy counts that were wrong when using BESTMATCH or ENHANCEMATCH flags.
+
+Version: 2014.5.17
+
+    Hg issue 112 in mrab-regex-hg: re: OK, but regex: SystemError
+
+Version: 2014.4.10
+
+    Hg issue 102: Partial matches
+    Hg issue 109: Edit distance of fuzzy match
+
+    Added partial matches.
+    Added .fuzzy_counts attribute to match objects.
+
+Version: 2014.2.19
+
+    Unicode properties sometimes failed to match when the IGNORECASE flag was set.
+
+Version: 2014.2.16
+
+    Hg issue 108: Fails to build from source on s390x
+
+Version: 2014.1.30
+
+    Hg issue 106: * operator not working correctly with sub()
+
+    Made to conform more to re module in version 0 behaviour.
+
+Version: 2014.1.20
+
+    Hg issue 105: FAIL: test_case_folding (__main__.RegexTests) with py2.7
+
+    data.fold_len wasn't initialised.
+
+    Also, deleted some unused functions.
+
+Version: 2014.1.10
+
+    Issue #17087: Improve the repr for regular expression match objects
+
+Version: 2013.12.31
+
+    Hg issue 101: findall() broken (seems like memory corruption)
+
+    state->req_pos wasn't initialised when the required string is an initial string.
+
+Version: 2013.11.29
+
+    Hg issue 100: strange results from regex.search
+
+Version: 2013.10.25
+
+    Hg issue 98: regex module is not thread safe because of _cache
+
+Version: 2013.10.24
+
+    Further fixes for Hg issue 96.
+
+    It should now use correctly use sets for named lists, except when there's fuzzy matching.
+
+Version: 2013.10.23
+
+    Hg issue 96: compile '\L<...>' with 'i' flag was very slow
+
+Version: 2013.10.22
+
+    Hg issue 95: 'pos' for regex.error
+
+Version: 2013.10.21
+
+    Python crashes when executing regex updates pattern.findall
+
+Version: 2013.10.12
+
+    Updated to Unicode 6.3.
+
+Version: 2013.10.4
+
+    Issue #18468: re.group() should never return a bytearray
+
+    Applies to Python 3.4 and later for compatibility with the re module.
+
+    Also, some performance improvements.
+
+Version: 2013.8.4
+
+    Update for Python 3.4a1 release.
+
+Version: 2013.6.26
+
+    Performance improvements.
+
+Version: 2013.6.5
+
+    Hg issue 92: running the following regex causes a segfault
+
+Version: 2013.5.21
+
+    Hg issue 91: match.expand is extremely slow
+
+    Also tidied up code.
+
+Version: 2013.3.11
+
+    Hg issue 89: Certain regexes extremely slow compared to re module
+
+    Disabled one of the optimisations that appears to cause performance problems.
+
+Version: 2013.2.22
+
+    Fixed issue with LOCALE flag not working properly.
+
+Version: 2013.2.16
+
+    Fixed a locale-specific test. Whether b'\xE0' is a word character depends on the locale.
+
+Version: 2013.1.26
+
+    Another fix for Hg issue 87: Allow duplicate names of groups
+    It didn't correctly handle a name group within a group of the same name.
+
+Version: 2013.1.25
+
+    Second attempt to fix
+
+Version: 2013.1.24
+
+    Hg issue 86: Enhance API of captures() to enable retrieval of ALL groups at once, as a dictionary
+            Added capturesdict() method to match object.
+
+    Hg issue 87: Allow duplicate names of groups
+            Now allowed.
+
+    Hg issue 88: regex.match() hangs
+            Fixed.
+
+Version: 2013.1.20
+
+    Hg issue 85: Non-conformance to Unicode UAX#29 re: ZWJ / ZWNJ
+
+Version: 2012.12.16
+
+    Hg issue 83: slash handling in presence of a quantifier
+
+    The bug was not limited just slash!
+
+Version: 2012.11.20
+
+    Updated to Unicode 6.2.
+
+Version: 2012.11.13
+
+    Issue 16443: Add docstrings to regular expression match objects
+
+Version: 2012.11.5
+
+    Further performance improvements.
+
+Version: 2012.10.31
+
+    Performance improvements.
+
+Version: 2012.10.17
+
+    Added "fullmatch" method (issue #16203).
+
+    Fixed bug (Hg issue #80). Now raises the correct error.
+
+Version: 2012.10.8
+
+    Added subf, subfn and expandf methods.
+
+    Performed some refactoring.
+
+Version: 2012.9.4
+
+    Hg issue 78: "Captures" doesn't work for recursive calls
+
+Version: 2012.8.25
+
+    Added 'detach_string' method to match object.
+
+    Made objects copyable.
+
+Version: 2012.8.3
+
+    Speed improvements.
+
+Version: 2012.7.10
+
+    Fixed bug in debug output in Python 2 version.
+
+    Also expanded fuzzy info in debug output.
+
+Version: 2012.7.9
+
+    Hg issue 75: DEBUG flag
+
+    Also made the debug output a little more readable by showing string literals and property names/values.
+
+Version: 2012.7.8
+
+    Hg issue 73: conditional patterns
+
+Version: 2012.7.5
+
+    Hg issue 71: non-greedy quantifier in lookbehind
+
+Version: 2012.6.13
+
+    Hg issue 69: Changing DEFAULT_VERSION does not actually work.
+
+    DEFAULT_VERSION isn't part of the public API, but changing it should now work as expected.
+
+Version: 2011.5.14
+
+    Fixed bug in case-insensitive set.
+
+Version: 2011.3.15
+
+    Shared iterators now work in both Python 3 and Python 2.
+
