@@ -1,34 +1,3 @@
-[project]
-name = "regex"
-version = "2023.5.2"
-authors = [
-    {name="Matthew Barnett", email="regex@mrabarnett.plus.com"},
-]
-description = "Alternative regular expression module, to replace re."
-readme = "README.rst"
-requires-python = ">=3.6"
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Topic :: Scientific/Engineering :: Information Analysis",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Text Processing",
-    "Topic :: Text Processing :: General",
-]
-license = {file = "LICENSE.txt"}
-
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
-
-[project.urls]
-"Homepage" = "https://github.com/mrabarnett/mrab-regex"
-"Bug Tracker" = "https://github.com/mrabarnett/mrab-regex/issues"
