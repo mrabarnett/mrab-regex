@@ -4,3 +4,4 @@ include regex_3/*.py
 include docs/*.*
 include tools/*.py
 include LICENSE.txt
+include pyproject.toml

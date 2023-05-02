@@ -30,7 +30,7 @@ jobs:
 
       - name: Run test
         run: |
-          python setup.py install
+          python -m pip install -vv .
           python -m unittest -v regex.test_regex
 
   # Build Linux/macOS/Windows wheels.
