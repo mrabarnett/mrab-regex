@@ -23179,7 +23179,7 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
 
                     repeat_info = &pattern->repeat_info[node->values[0]];
                     /* Removing guard here to fix issue 494 and prevent
-                     * regression of issue 495. 
+                     * regression of issue 495.
                      */
                     /* repeat_info->status |= RE_STATUS_BODY; */
 
@@ -26218,7 +26218,7 @@ void munge_name(char* name, char* munged) {
     while (*name) {
         if (*name == ' ' || *name == '_' || *name == '-')
             ++name;
-        else;
+        else
             *munged++ = toupper(*name++);
     }
 

@@ -1,3 +1,7 @@
+Version: 2023.5.5
+
+    Removed semicolon after 'else' in 'munge_name'.
+
 Version: 2023.5.4
 
     Fixed pyproject.toml and setup.py.
