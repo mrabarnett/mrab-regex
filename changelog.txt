@@ -1,3 +1,8 @@
+Version: 2023.6.3
+
+    # Git issue 498: Conditional negative lookahead inside positive lookahead fails to match
+    Conditional node needed an additional member that points to the true branch.
+
 Version: 2023.5.5
 
     Removed semicolon after 'else' in 'munge_name'.
@@ -86,11 +91,11 @@ Version: 2022.3.2
 
     Git issue 453: Document last supported python2 version
 
-        Added a brief reference to the last version to support Python 2 in README.rst.
+    Added a brief reference to the last version to support Python 2 in README.rst.
 
     Git issue 456: RegexFlag exists in re, but not regex
 
-        Updated the flags to use enum now that regex supports only Python 3.6+.
+    Updated the flags to use enum now that regex supports only Python 3.6+.
 
 Version: 2022.1.21
 
@@ -1225,13 +1230,13 @@ Version: 2013.1.25
 Version: 2013.1.24
 
     Hg issue 86: Enhance API of captures() to enable retrieval of ALL groups at once, as a dictionary
-            Added capturesdict() method to match object.
+        Added capturesdict() method to match object.
 
     Hg issue 87: Allow duplicate names of groups
-            Now allowed.
+        Now allowed.
 
     Hg issue 88: regex.match() hangs
-            Fixed.
+        Fixed.
 
 Version: 2013.1.20
 

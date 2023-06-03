@@ -291,6 +291,7 @@ typedef struct RE_Node {
     union {
         struct {
             RE_NextNode next_2;
+            struct RE_Node* true_node; /* Used by a CONDITIONAL node. */
         } nonstring;
         struct {
             /* Used only if (node->status & RE_STATUS_STRING) is true. */
@@ -15272,7 +15273,7 @@ backtrack:
                 /* It's a negative lookaround that's failed. Go to the 'true'
                  * branch.
                  */
-                node = conditional->next_1.node;
+                node = conditional->nonstring.true_node;
 
             goto advance;
         }
@@ -16990,7 +16991,6 @@ backtrack:
 
             if (!lookaround->match) {
                 /* It's a negative lookaround that's failed. */
-
                 node = lookaround->nonstring.next_2.node;
                 goto advance;
             }
@@ -22986,6 +22986,14 @@ Py_LOCAL_INLINE(void) skip_one_way_branches(PatternObject* pattern) {
                 node->nonstring.next_2.node = next->next_1.node;
                 modified = TRUE;
             }
+
+            /* Check the true branch for CONDITIONAL. */
+            next = node->nonstring.true_node;
+            if (next && next->op == RE_OP_BRANCH &&
+              !next->nonstring.true_node) {
+                node->nonstring.true_node = next->next_1.node;
+                modified = TRUE;
+            }
         }
     } while (modified);
 
@@ -24443,6 +24451,7 @@ Py_LOCAL_INLINE(int) build_CONDITIONAL(RE_CompileArgs* args) {
     /* end test node -> true branch -> end node */
     add_node(end_test_node, subargs.start);
     add_node(subargs.end, end_node);
+    test_node->nonstring.true_node = subargs.start;
 
     if (args->code[0] == RE_OP_NEXT) {
         /* There's a false branch. */
