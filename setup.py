@@ -21,7 +21,6 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -32,11 +31,11 @@ setup(
         'Topic :: Text Processing',
         'Topic :: Text Processing :: General',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 
     package_dir={'regex': 'regex_3'},
     py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core',
-     'regex.test_regex'],
+                'regex.test_regex'],
     ext_modules=[Extension('regex._regex', [join('regex_3', '_regex.c'),
-      join('regex_3', '_regex_unicode.c')])],
+                                            join('regex_3', '_regex_unicode.c')])],
 )
