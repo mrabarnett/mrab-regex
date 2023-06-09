@@ -8,7 +8,6 @@ on:
       - '*'
 
 env:
-  PYTHON_VER: '3.10'  # Python to run test/cibuildwheel
   CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-* cp311-*
   CIBW_TEST_COMMAND: python -m unittest regex.test_regex
 
@@ -25,8 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VER }}
 
       - name: Run test
         run: |
@@ -46,12 +43,12 @@ jobs:
     env:
       # macOS archs
       CIBW_ARCHS_MACOS: "x86_64 arm64"
+      # Already included in manylinux_2_28: cp310-manylinux_2_17_x86_64.manylinux2014_x86_64 and cp310-musllinux_1_1_x86_64
+      CIBW_SKIP: cp31*-{many,musl}linux_*_x86_64*
 
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VER }}
 
       - name: Install cibuildwheel & build wheels
         run: |
@@ -85,15 +82,13 @@ jobs:
       # manylinux2014  >=19.3   3.7.8+, 3.8.4+, 3.9.0+    2.17 (2012-12-25)
       # manylinux_x_y  >=20.3   3.8.10+, 3.9.5+, 3.10.0+  x.y
       # manylinux2010 images EOL on 2022-08-01, it doesn't support cp311.
-      CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-*
+      CIBW_BUILD: cp36-* cp37-* cp38-* cp39-*
       CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
       CIBW_ARCHS_LINUX: x86_64
 
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VER }}
 
       - name: Build source distribution & wheels
         run: |
@@ -111,6 +106,33 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: regex-files
+          path: wheelhouse/*.whl
+
+  build_manylinux_2_28:
+    name: Build manylinux_2_28 wheels (cp310 311 312)
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    env:
+      CIBW_BUILD: cp310-* cp311-* cp312-*
+      CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+      CIBW_ARCHS_LINUX: x86_64
+      CIBW_PRERELEASE_PYTHONS: 1
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+
+      - name: cibuildwheel depends on pipx
+        run: pip install pipx
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.13.0
+
+      - name: Upload manylinux_2_28 wheels
+        uses: actions/upload-artifact@v3
+        with:
           path: wheelhouse/*.whl
 
   # Build and upload aarch64/ppc64le/s390x wheels.
@@ -132,8 +154,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VER }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -152,7 +172,7 @@ jobs:
   # Upload to PyPI
   upload_pypi:
     name: Publish to PyPI
-    needs: [build_wheels, build_in_manylinux2010, build_arch_wheels]
+    needs: [build_wheels, build_in_manylinux2010, build_manylinux_2_28, build_arch_wheels]
     runs-on: ubuntu-latest
 
     steps:
