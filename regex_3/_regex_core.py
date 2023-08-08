@@ -3000,18 +3000,19 @@ class Group(RegexBase):
     def _compile(self, reverse, fuzzy):
         code = []
 
-        key = self.group, reverse, fuzzy
-        ref = self.info.call_refs.get(key)
-        if ref is not None:
-            code += [(OP.CALL_REF, ref)]
-
         public_group = private_group = self.group
         if private_group < 0:
             public_group = self.info.private_groups[private_group]
             private_group = self.info.group_count - private_group
 
-        code += ([(OP.GROUP, int(not reverse), private_group, public_group)] +
-          self.subpattern.compile(reverse, fuzzy) + [(OP.END, )])
+        key = self.group, reverse, fuzzy
+        ref = self.info.call_refs.get(key)
+        if ref is not None:
+            code += [(OP.CALL_REF, ref)]
+
+        code += [(OP.GROUP, int(not reverse), private_group, public_group)]
+        code += self.subpattern.compile(reverse, fuzzy)
+        code += [(OP.END, )]
 
         if ref is not None:
             code += [(OP.END, )]

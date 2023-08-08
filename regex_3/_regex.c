@@ -18706,8 +18706,8 @@ static PyObject* match_get_starts_by_index(MatchObject* self, Py_ssize_t index)
         if (!item)
             goto error;
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(result, 0, item);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(result, 0, item);
 
         return result;
     }
@@ -18726,8 +18726,8 @@ static PyObject* match_get_starts_by_index(MatchObject* self, Py_ssize_t index)
         if (!item)
             goto error;
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(result, i, item);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(result, i, item);
     }
 
     return result;
@@ -18786,8 +18786,8 @@ static PyObject* match_get_ends_by_index(MatchObject* self, Py_ssize_t index) {
         if (!item)
             goto error;
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(result, 0, item);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(result, 0, item);
 
         return result;
     }
@@ -18806,8 +18806,8 @@ static PyObject* match_get_ends_by_index(MatchObject* self, Py_ssize_t index) {
         if (!item)
             goto error;
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(result, i, item);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(result, i, item);
     }
 
     return result;
@@ -18867,8 +18867,8 @@ static PyObject* match_get_spans_by_index(MatchObject* self, Py_ssize_t index)
         if (!item)
             goto error;
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(result, 0, item);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(result, 0, item);
 
         return result;
     }
@@ -18888,8 +18888,8 @@ static PyObject* match_get_spans_by_index(MatchObject* self, Py_ssize_t index)
         if (!item)
             goto error;
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(result, i, item);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(result, i, item);
     }
 
     return result;
@@ -18923,8 +18923,8 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         if (!slice)
             goto error;
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(result, 0, slice);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(result, 0, slice);
 
         return result;
     }
@@ -18945,8 +18945,8 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         if (!slice)
             goto error;
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(result, i, slice);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(result, i, slice);
     }
 
     return result;
@@ -19282,13 +19282,13 @@ static PyObject* match_groupdict(MatchObject* self, PyObject* args, PyObject*
     if (!keys)
         goto failed;
 
-    for (g = 0; g < PyList_GET_SIZE(keys); g++) {
+    for (g = 0; g < PyList_Size(keys); g++) {
         PyObject* key;
         PyObject* value;
         int status;
 
-        /* PyList_GET_ITEM borrows a reference. */
-        key = PyList_GET_ITEM(keys, g);
+        /* PyList_GetItem borrows a reference. */
+        key = PyList_GetItem(keys, g);
         if (!key)
             goto failed;
 
@@ -19326,14 +19326,14 @@ static PyObject* match_capturesdict(MatchObject* self) {
     if (!keys)
         goto failed;
 
-    for (g = 0; g < PyList_GET_SIZE(keys); g++) {
+    for (g = 0; g < PyList_Size(keys); g++) {
         PyObject* key;
         Py_ssize_t group;
         PyObject* captures;
         int status;
 
-        /* PyList_GET_ITEM borrows a reference. */
-        key = PyList_GET_ITEM(keys, g);
+        /* PyList_GetItem borrows a reference. */
+        key = PyList_GetItem(keys, g);
         if (!key)
             goto failed;
 
@@ -19509,12 +19509,12 @@ Py_LOCAL_INLINE(int) add_to_join_list(RE_JoinInfo* join_info, PyObject* item) {
             goto error;
         }
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(join_info->list, 0, join_info->item);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(join_info->list, 0, join_info->item);
         join_info->item = NULL;
 
-        /* PyList_SET_ITEM borrows the reference. */
-        PyList_SET_ITEM(join_info->list, 1, new_item);
+        /* PyList_SetItem borrows the reference. */
+        PyList_SetItem(join_info->list, 1, new_item);
         return 0;
     }
 
@@ -19535,38 +19535,78 @@ Py_LOCAL_INLINE(void) clear_join_list(RE_JoinInfo* join_info) {
     Py_XDECREF(join_info->item);
 }
 
+/* Joins a list of bytestrings. */
+Py_LOCAL_INLINE(PyObject*) join_bytestrings(PyObject* list) {
+    Py_ssize_t count;
+    Py_ssize_t length;
+    Py_ssize_t i;
+    PyObject *result;
+    char* to_bytes;
+
+    count = PyList_Size(list);
+
+    /* How long will the result be? */
+    length = 0;
+
+    for (i = 0; i < count; i++)
+        length += PyBytes_Size(PyList_GetItem(list, i));
+
+    /* Create the resulting bytestring, but uninitialised. */
+    result = PyBytes_FromStringAndSize(NULL, length);
+    if (!result)
+        return NULL;
+
+    /* Fill the resulting bytestring. */
+    to_bytes = PyBytes_AsString(result);
+    length = 0;
+
+    for (i = 0; i < count; i++) {
+        PyObject* bytestring;
+        char* from_bytes;
+        Py_ssize_t from_length;
+
+        bytestring = PyList_GetItem(list, i);
+        from_bytes = PyBytes_AsString(bytestring);
+        from_length = PyBytes_Size(bytestring);
+        memmove(to_bytes + length, from_bytes, from_length);
+        length += from_length;
+    }
+
+    return result;
+}
+
+/* Joins a list of strings. */
+Py_LOCAL_INLINE(PyObject*) join_strings(PyObject* list) {
+    PyObject* joiner;
+    PyObject* result;
+
+    joiner = PyUnicode_FromString("");
+    if (!joiner)
+        return NULL;
+
+    result = PyUnicode_Join(joiner, list);
+    Py_DECREF(joiner);
+
+    return result;
+}
+
 /* Joins together a list of strings for pattern_subx. */
 Py_LOCAL_INLINE(PyObject*) join_list_info(RE_JoinInfo* join_info) {
     /* If the list already exists then just do the join. */
     if (join_info->list) {
-        PyObject* joiner;
         PyObject* result;
 
         if (join_info->reversed)
             /* The list needs to be reversed before being joined. */
             PyList_Reverse(join_info->list);
 
-        if (join_info->is_unicode) {
+        if (join_info->is_unicode)
             /* Concatenate the Unicode strings. */
-            joiner = PyUnicode_New(0, 0);
-            if (!joiner) {
-                clear_join_list(join_info);
-                return NULL;
-            }
-
-            result = PyUnicode_Join(joiner, join_info->list);
-        } else {
-            joiner = PyBytes_FromString("");
-            if (!joiner) {
-                clear_join_list(join_info);
-                return NULL;
-            }
-
+            result = join_strings(join_info->list);
+        else
             /* Concatenate the bytestrings. */
-            result = _PyBytes_Join(joiner, join_info->list);
-        }
+            result = join_bytestrings(join_info->list);
 
-        Py_DECREF(joiner);
         clear_join_list(join_info);
 
         return result;
@@ -19651,13 +19691,13 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     init_join_list(&join_info, FALSE, PyUnicode_Check(self->string));
 
     /* Add each part of the template to the list. */
-    size = PyList_GET_SIZE(replacement);
+    size = PyList_Size(replacement);
     for (i = 0; i < size; i++) {
         PyObject* item;
         PyObject* str_item;
 
-        /* PyList_GET_ITEM borrows a reference. */
-        item = PyList_GET_ITEM(replacement, i);
+        /* PyList_GetItem borrows a reference. */
+        item = PyList_GetItem(replacement, i);
         str_item = get_match_replacement(self, item, self->group_count);
         if (!str_item)
             goto error;
@@ -19727,19 +19767,19 @@ Py_LOCAL_INLINE(PyObject*) make_capture_dict(MatchObject* match, MatchObject**
     if (!values)
         goto failed;
 
-    for (g = 0; g < PyList_GET_SIZE(keys); g++) {
+    for (g = 0; g < PyList_Size(keys); g++) {
         PyObject* key;
         PyObject* value;
         Py_ssize_t v;
         int status;
 
-        /* PyList_GET_ITEM borrows a reference. */
-        key = PyList_GET_ITEM(keys, g);
+        /* PyList_GetItem borrows a reference. */
+        key = PyList_GetItem(keys, g);
         if (!key)
             goto failed;
 
-        /* PyList_GET_ITEM borrows a reference. */
-        value = PyList_GET_ITEM(values, g);
+        /* PyList_GetItem borrows a reference. */
+        value = PyList_GetItem(values, g);
         if (!value)
             goto failed;
 
@@ -21742,7 +21782,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             Py_ssize_t step;
 
             /* Add each part of the template to the list. */
-            count = PyList_GET_SIZE(replacement);
+            count = PyList_Size(replacement);
             if (join_info.reversed) {
                 /* We're searching backwards, so we'll be reversing the list
                  * when it's complete. Therefore, we need to add the items of
@@ -21761,8 +21801,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                 PyObject* item;
                 PyObject* str_item;
 
-                /* PyList_GET_ITEM borrows a reference. */
-                item = PyList_GET_ITEM(replacement, index);
+                /* PyList_GetItem borrows a reference. */
+                item = PyList_GetItem(replacement, index);
                 str_item = get_sub_replacement(item, string, &state,
                   self->public_group_count);
                 if (!str_item)
@@ -25719,7 +25759,7 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
         unpacked = FALSE;
 
     /* Read the regex code. */
-    code_len = PyList_GET_SIZE(code_list);
+    code_len = PyList_Size(code_list);
     code = (RE_CODE*)re_alloc((size_t)code_len * sizeof(RE_CODE));
     if (!code) {
         if (unpacked) {
@@ -25733,8 +25773,8 @@ static PyObject* re_compile(PyObject* self_, PyObject* args) {
         PyObject* o;
         size_t value;
 
-        /* PyList_GET_ITEM borrows a reference. */
-        o = PyList_GET_ITEM(code_list, i);
+        /* PyList_GetItem borrows a reference. */
+        o = PyList_GetItem(code_list, i);
 
         value = PyLong_AsUnsignedLong(o);
         if ((Py_ssize_t)value == -1 && PyErr_Occurred())

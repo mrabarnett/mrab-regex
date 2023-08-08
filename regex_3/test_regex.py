@@ -3289,7 +3289,7 @@ xyzabc
           "female: her dog; male: his cat. asdsasda")], ['female: her dog',
           'male: his cat'])
 
-        # Hg issue 78: "Captures"doesn't work for recursive calls
+        # Hg issue 78: "Captures" doesn't work for recursive calls
         self.assertEqual(regex.search(r'(?<rec>\((?:[^()]++|(?&rec))*\))',
           'aaa(((1+0)+1)+1)bbb').captures('rec'), ['(1+0)', '((1+0)+1)',
           '(((1+0)+1)+1)'])
@@ -3623,6 +3623,9 @@ xyzabc
         # Hg issue 152: Request: Request: (?(DEFINE)...).
         self.assertEqual(regex.search(r'(?(DEFINE)(?<quant>\d+)(?<item>\w+))(?&quant) (?&item)',
           '5 elephants')[0], '5 elephants')
+
+        self.assertEqual(regex.search(r'(?&routine)(?(DEFINE)(?<routine>.))', 'a').group('routine'), None)
+        self.assertEqual(regex.search(r'(?&routine)(?(DEFINE)(?<routine>.))', 'a').captures('routine'), ['a'])
 
         # Hg issue 153: Request: (*SKIP).
         self.assertEqual(regex.search(r'12(*FAIL)|3', '123')[0], '3')
