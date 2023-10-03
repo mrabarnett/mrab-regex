@@ -2,12 +2,12 @@
 from setuptools import setup, Extension
 from os.path import join
 
-with open('README.rst') as file:
+with open('README.rst', encoding='utf-8') as file:
     long_description = file.read()
 
 setup(
     name='regex',
-    version='2023.8.8',
+    version='2023.10.3',
     description='Alternative regular expression module, to replace re.',
     long_description=long_description,
     long_description_content_type='text/x-rst',
@@ -21,7 +21,6 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -33,7 +32,7 @@ setup(
         'Topic :: Text Processing',
         'Topic :: Text Processing :: General',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 
     package_dir={'regex': 'regex_3'},
     py_modules=['regex.__init__', 'regex.regex', 'regex._regex_core',

@@ -1,40 +1,42 @@
-#! python3.9
+#! python3.11
 # -*- coding: utf-8 -*-
 #
-# This Python script parses the Unicode data files and generates the C files
-# for the regex module.
+# This Python script parses the Unicode data files in the UCD.zip file and
+# generates the C files for the regex module.
 #
 # Written by MRAB.
 #
-from contextlib import suppress
+from contextlib import contextmanager, suppress
+from io import TextIOWrapper
 from itertools import chain
 from os import listdir, mkdir
 from os.path import basename, dirname, exists, join, normpath
+from time import time
 from urllib.parse import urljoin
 from urllib.request import urlretrieve
-from time import time
+from zipfile import ZipFile
+import re
 
 import codecs
 import sys
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
 
-class Timed:
-    def __init__(self, message=None):
-        self._message = message
+@contextmanager
+def UCDSubfile(zip_path, subfile_name):
+    with ZipFile(ucd_zip_path) as ucd_zip_file:
+        with ucd_zip_file.open(subfile_name) as bin_file:
+            with TextIOWrapper(bin_file, encoding='utf-8') as file:
+                yield file
 
-    def __enter__(self):
-        self._start = time()
+def have_ucd_version(ucd_zip_path, desired_version):
+    with UCDSubfile(ucd_zip_path, 'ReadMe.txt') as file:
+        for line in file:
+            m = re.search(r'(?i)Version (\d+\.\d+\.\d+)', line)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        finish = time()
-        elapsed = finish - self._start
+            if m and m[1] == desired_version:
+                return True
 
-        if self._message is None:
-            print(f'Took {elapsed:0.2f} secs')
-        else:
-            print(f'{self._message} took {elapsed:0.2f} secs')
-
-        return False
+    return False
 
 def unique(iterable, key=None):
 
@@ -192,12 +194,10 @@ def download_unicode_files(unicode_data_base, data_files, data_folder):
                   flush=True)
                 urlretrieve(url, path)
 
-def parse_property_aliases(data_folder):
+def parse_property_aliases(ucd_zip_path):
     properties = {}
 
-    path = join(data_folder, 'PropertyAliases.txt')
-
-    with open(path, encoding='utf-8') as file:
+    with UCDSubfile(ucd_zip_path, 'PropertyAliases.txt') as file:
         for line in file:
             line = line.strip()
 
@@ -214,10 +214,8 @@ def parse_property_aliases(data_folder):
 
     return properties
 
-def parse_value_aliases(data_folder, properties):
-    path = join(data_folder, 'PropertyValueAliases.txt')
-
-    with open(path, encoding='utf-8') as file:
+def parse_value_aliases(ucd_zip_path, properties):
+    with UCDSubfile(ucd_zip_path, 'PropertyValueAliases.txt') as file:
         for line in file:
             line = line.strip()
 
@@ -236,10 +234,20 @@ def parse_value_aliases(data_folder, properties):
             for name in value['names']:
                 values[munge(name)] = value
 
-def parse_binary(properties, path):
-    with open(path, encoding='utf-8') as file:
+    binary_values = {'N', 'YES', 'TRUE', 'FALSE', 'T', 'Y', 'NO', 'F'}
+
+    for property in properties.values():
+        property['is_binary'] = set(property.get('values', [])) == binary_values
+
+def parse_binary(properties, subpath):
+    print('Parsing %s' % subpath, flush=True)
+
+    with UCDSubfile(ucd_zip_path, subpath) as file:
         for line in file:
             line = line.strip()
+
+            if line.startswith('# @missing:'):
+                default = line.split(';')[-1].strip()
 
             if not line or line.startswith('#'):
                 continue
@@ -249,13 +257,24 @@ def parse_binary(properties, path):
             codepoints = [int(part, 16) for part in fields[0].split('..')]
             prop_name = fields[1]
             property = properties[munge(prop_name)]
-            property.setdefault('default', munge('No'))
-            value = property['values'][munge('Yes')]
-            value.setdefault('codepoints', Ranges()).add(codepoints[0],
-              codepoints[-1])
 
-def parse_emoji(properties, path):
-    with open(path, encoding='utf-8') as file:
+            if property['is_binary']:
+                property.setdefault('default', munge('No'))
+                value = property['values'][munge('Yes')]
+                value.setdefault('codepoints', Ranges()).add(codepoints[0],
+                  codepoints[-1])
+            else:
+                # Not a binary property!
+                property.setdefault('default', munge(default))
+                val_name = fields[2]
+                value = property['values'][munge(val_name)]
+                value.setdefault('codepoints', Ranges()).add(codepoints[0],
+                  codepoints[-1])
+
+def parse_emoji(properties, subpath):
+    print('Parsing %s' % subpath, flush=True)
+
+    with UCDSubfile(ucd_zip_path, subpath) as file:
         for line in file:
             line = line.strip()
 
@@ -295,8 +314,10 @@ def parse_emoji(properties, path):
                 value.setdefault('codepoints', Ranges()).add(codepoints[0],
                   codepoints[-1])
 
-def parse_multivalue(properties, path):
-    with open(path, encoding='utf-8') as file:
+def parse_multivalue(properties, subpath):
+    print('Parsing %s' % subpath, flush=True)
+
+    with UCDSubfile(ucd_zip_path, subpath) as file:
         for line in file:
             line = line.strip()
 
@@ -324,10 +345,12 @@ def parse_multivalue(properties, path):
                 value.setdefault('codepoints', Ranges()).add(codepoints[0],
                   codepoints[-1])
 
-def parse_normalisation(properties, path):
+def parse_normalisation(properties, subpath):
+    print('Parsing %s' % subpath, flush=True)
+
     property = None
 
-    with open(path, encoding='utf-8') as file:
+    with UCDSubfile(ucd_zip_path, subpath) as file:
         for line in file:
             line = line.strip()
 
@@ -354,8 +377,10 @@ def parse_normalisation(properties, path):
                     value.setdefault('codepoints', Ranges()).add(codepoints[0],
                       codepoints[-1])
 
-def parse_numeric_values(properties, path):
-    with open(path, encoding='utf-8') as file:
+def parse_numeric_values(properties, subpath):
+    print('Parsing %s' % subpath, flush=True)
+
+    with UCDSubfile(ucd_zip_path, subpath) as file:
         for line in file:
             line = line.strip()
 
@@ -386,8 +411,10 @@ def parse_numeric_values(properties, path):
                 value.setdefault('codepoints', Ranges()).add(codepoints[0],
                   codepoints[-1])
 
-def parse_script_extensions(properties, path):
-    with open(path, encoding='utf-8') as file:
+def parse_script_extensions(properties, subpath):
+    print('Parsing %s' % subpath, flush=True)
+
+    with UCDSubfile(ucd_zip_path, subpath) as file:
         for line in file:
             line = line.strip()
 
@@ -413,12 +440,14 @@ def parse_script_extensions(properties, path):
 
                 value['codepoints'].add(codepoints[0], codepoints[-1])
 
-def parse_case_folding(properties, path):
+def parse_case_folding(properties, subpath):
+    print('Parsing %s' % subpath, flush=True)
+
     simple_folding = {}
     full_folding = {}
     turkic_set = set()
 
-    with open(path, encoding='utf-8') as file:
+    with UCDSubfile(ucd_zip_path, subpath) as file:
         for line in file:
             line = line.strip()
 
@@ -451,32 +480,41 @@ def parse_case_folding(properties, path):
     properties['simple_folding'] = simple_folding
     properties['full_folding'] = full_folding
 
-def parse_unicode_files(data_files, data_folder):
-    properties = parse_property_aliases(data_folder)
-    parse_value_aliases(data_folder, properties)
+def parse_unicode_data_files(ucd_zip_path):
+    properties = parse_property_aliases(ucd_zip_path)
+    parse_value_aliases(ucd_zip_path, properties)
 
-    def ignore(*args):
-        pass
+    parse_binary(properties, 'PropList.txt')
+    parse_binary(properties, 'extracted/DerivedBinaryProperties.txt')
+    parse_binary(properties, 'DerivedCoreProperties.txt')
 
-    parsers = {
-        'aliases': ignore,
-        'binary': parse_binary,
-        'emoji': parse_emoji,
-        'multivalue': parse_multivalue,
-        'normalisation': parse_normalisation,
-        'numeric_values': parse_numeric_values,
-        'script_extensions': parse_script_extensions,
-        'case_folding': parse_case_folding,
-    }
+    parse_emoji(properties, 'emoji/emoji-data.txt')
 
-    for section, rel_paths in data_files.items():
-        parse = parsers[section]
+    parse_normalisation(properties, 'DerivedNormalizationProps.txt')
 
-        for rel_path in rel_paths:
-            data_file = basename(rel_path)
+    parse_multivalue(properties, 'auxiliary/GraphemeBreakProperty.txt')
+    parse_multivalue(properties, 'auxiliary/SentenceBreakProperty.txt')
+    parse_multivalue(properties, 'auxiliary/WordBreakProperty.txt')
+    parse_multivalue(properties, 'Blocks.txt')
+    parse_multivalue(properties, 'extracted/DerivedBidiClass.txt')
+    parse_multivalue(properties, 'extracted/DerivedCombiningClass.txt')
+    parse_multivalue(properties, 'extracted/DerivedDecompositionType.txt')
+    parse_multivalue(properties, 'extracted/DerivedEastAsianWidth.txt')
+    parse_multivalue(properties, 'extracted/DerivedGeneralCategory.txt')
+    parse_multivalue(properties, 'extracted/DerivedJoiningGroup.txt')
+    parse_multivalue(properties, 'extracted/DerivedJoiningType.txt')
+    parse_multivalue(properties, 'LineBreak.txt')
+    parse_multivalue(properties, 'extracted/DerivedNumericType.txt')
+    parse_multivalue(properties, 'HangulSyllableType.txt')
+    parse_multivalue(properties, 'IndicPositionalCategory.txt')
+    parse_multivalue(properties, 'IndicSyllabicCategory.txt')
+    parse_multivalue(properties, 'Scripts.txt')
 
-            print('Parsing {}'.format(data_file), flush=True)
-            parse(properties, join(data_folder, data_file))
+    parse_numeric_values(properties, 'extracted/DerivedNumericValues.txt')
+
+    parse_script_extensions(properties, 'ScriptExtensions.txt')
+
+    parse_case_folding(properties, 'CaseFolding.txt')
 
     unicode_data = {'properties': {}}
 
@@ -641,15 +679,15 @@ def has_codepoints(property):
 
     return any('codepoints' in value for value in property['values'].values())
 
-def write_summary(unicode_data, tools_folder):
+def write_summary(unicode_data, unicode_version, tools_folder):
     print('Writing summary')
 
     properties = unicode_data['properties']
 
-    path = join(tools_folder, 'Unicode.txt')
+    path = join(tools_folder, 'Unicode %s.txt' % unicode_version)
 
     with open(path, 'w', encoding='ascii') as file:
-        file.write('Version {}\n'.format(UNICODE_VERSION))
+        file.write('Version {}\n'.format(unicode_version))
 
         for property in sorted(unique(properties.values(), key=id),
           key=preferred):
@@ -1308,7 +1346,7 @@ int re_get_full_case_folding(RE_UINT32 codepoint, RE_UINT32* folded) {
 }
 ''')
 
-def generate_code(unicode_data, tools_folder):
+def generate_code(unicode_data, unicode_version, output_folder):
     print('Generating code')
 
     # Codepoints that expand on full casefolding.
@@ -1422,8 +1460,8 @@ def generate_code(unicode_data, tools_folder):
 
     strings = collect_strings(properties)
 
-    c_path = join(tools_folder, 'unicode.c')
-    h_path = join(tools_folder, 'unicode.h')
+    c_path = join(output_folder, '_regex_unicode.c')
+    h_path = join(output_folder, '_regex_unicode.h')
 
     with open(c_path, 'w', newline='\n', encoding='ascii') as c_file:
         c_file.write('''\
@@ -1450,7 +1488,7 @@ typedef struct {{
 
 /* Strings. */
 char* re_strings[] = {{
-'''.format(UNICODE_VERSION))
+'''.format(unicode_version))
 
         lines = []
 
@@ -1715,79 +1753,32 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
         h_file.write('RE_UINT32 re_get_simple_case_folding(RE_UINT32 codepoint);\n')
         h_file.write('int re_get_full_case_folding(RE_UINT32 codepoint, RE_UINT32* folded);\n')
 
-# Whether to update the Unicode data files from the Unicode website.
-UNICODE_VERSION = '15.0.0'
+# The Unicode version.
+UNICODE_VERSION = '15.1.0'
 
-# The URL from which the Unicode data files can be obtained.
-unicode_data_base = 'http://www.unicode.org/Public/UNIDATA/'
+this_folder = dirname(__file__)
+
+# The URL from which the Unicode data can be obtained.
+ucd_zip_url = 'https://www.unicode.org/Public/zipped/%s/UCD.zip' % UNICODE_VERSION
+
+ucd_zip_path = join(this_folder, 'UCD.zip')
+
+if not have_ucd_version(ucd_zip_path, UNICODE_VERSION):
+    # Download the zipped Unicode data.
+    print('Downloading UCD.zip for Unicode %s' % UNICODE_VERSION, flush=True)
+    urlretrieve(ucd_zip_url, ucd_zip_path)
 
 NUM_CODEPOINTS = 0x110000
-
-# The Unicode data files. The file names are relative to the website URL.
-unicode_data_files = '''
-[aliases]
-PropertyAliases.txt
-PropertyValueAliases.txt
-[binary]
-PropList.txt
-extracted/DerivedBinaryProperties.txt
-DerivedCoreProperties.txt
-[emoji]
-emoji/emoji-data.txt
-[normalisation]
-DerivedNormalizationProps.txt
-[multivalue]
-auxiliary/GraphemeBreakProperty.txt
-auxiliary/SentenceBreakProperty.txt
-auxiliary/WordBreakProperty.txt
-Blocks.txt
-extracted/DerivedBidiClass.txt
-extracted/DerivedCombiningClass.txt
-extracted/DerivedDecompositionType.txt
-extracted/DerivedEastAsianWidth.txt
-extracted/DerivedGeneralCategory.txt
-extracted/DerivedJoiningGroup.txt
-extracted/DerivedJoiningType.txt
-LineBreak.txt
-extracted/DerivedNumericType.txt
-HangulSyllableType.txt
-IndicPositionalCategory.txt
-IndicSyllabicCategory.txt
-Scripts.txt
-[numeric_values]
-extracted/DerivedNumericValues.txt
-[case_folding]
-CaseFolding.txt
-[script_extensions]
-ScriptExtensions.txt
-'''
-
-data_files = {}
-section = ''
-
-for line in unicode_data_files.splitlines():
-    if line[ : 1] + line[-1 : ] == '[]':
-        section = line[1 : -1]
-    elif line:
-        data_files.setdefault(section, []).append(line)
 
 # The generated C files will be written into this folder.
 tools_folder = dirname(__file__)
 
-# The local folder in which the Unicode data files are stored.
-data_folder = join(tools_folder, 'unicode_data')
-
-with suppress(FileExistsError):
-    mkdir(data_folder)
-
-download_unicode_files(unicode_data_base, data_files, data_folder)
-
-unicode_data = parse_unicode_files(data_files, data_folder)
+unicode_data = parse_unicode_data_files(ucd_zip_path)
 make_additional_properties(unicode_data)
-write_summary(unicode_data, tools_folder)
+write_summary(unicode_data, UNICODE_VERSION, this_folder)
 
 binary_dict = make_binary_dict()
 
-generate_code(unicode_data, tools_folder)
+generate_code(unicode_data, UNICODE_VERSION, this_folder)
 
-print('\nFinished!')
+print('\nSuccessfully generated _reges_unicode.h and _reges_unicode.c in %s' % tools_folder)
