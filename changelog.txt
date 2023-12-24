@@ -1,3 +1,7 @@
+Version: 2023.12.25
+
+    Further fixes in main.yml.
+
 Version: 2023.12.24
 
     Fixed invalid main.yml.
