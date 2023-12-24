@@ -1,6 +1,6 @@
 Version: 2023.12.25
 
-    Further fixes in main.yml.
+    Cannot get release notification action in main.yml to work. Commenting it out for now.
 
 Version: 2023.12.24
 
