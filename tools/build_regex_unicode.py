@@ -1781,4 +1781,4 @@ binary_dict = make_binary_dict()
 
 generate_code(unicode_data, UNICODE_VERSION, this_folder)
 
-print('\nSuccessfully generated _reges_unicode.h and _reges_unicode.c in %s' % tools_folder)
+print('\nSuccessfully generated _regex_unicode.h and _regex_unicode.c in %s' % tools_folder)

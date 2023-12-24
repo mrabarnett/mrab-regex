@@ -1,3 +1,11 @@
+Version: 2023.12.23
+
+    The escape function no longer escapes \x00. It's not necessary.
+
+    Inline flags can now be turned off and apply to what follows.
+
+    Added \R to match line endings.
+
 Version: 2023.10.3
 
     Updated to Unicode 15.1.0.

@@ -45,7 +45,7 @@ jobs:
 
     env:
       # macOS archs
-      CIBW_ARCHS_MACOS: "x86_64 arm64"
+      CIBW_ARCHS_MACOS: "x86_64 arm64 universal2"
 
     steps:
       - uses: actions/checkout@v3
@@ -63,6 +63,14 @@ jobs:
         with:
           name: regex-files
           path: wheelhouse/*.whl
+
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          with:
+            tag_name: ${{ github.ref }}
+            title: Release ${{ github.ref }}
 
   # Build source distribution & manylinux1_x86_64 wheels
   # These two jobs build:
