@@ -48,7 +48,7 @@ class error(Exception):
             self.lineno = pattern.count(newline, 0, pos) + 1
             self.colno = pos - pattern.rfind(newline, 0, pos)
 
-            message = "{} at position {}".format(message, pos)
+            message = f"{message} at position {pos}"
 
             if newline in pattern:
                 message += " (line {}, column {})".format(self.lineno,
@@ -1318,7 +1318,7 @@ def parse_hex_escape(source, info, esc, expected_len, in_set, type):
     for i in range(expected_len):
         ch = source.get()
         if ch not in HEX_DIGITS:
-            raise error("incomplete escape \\%s%s" % (type, ''.join(digits)),
+            raise error("incomplete escape \\{}{}".format(type, ''.join(digits)),
               source.string, saved_pos)
         digits.append(ch)
 
@@ -1331,7 +1331,7 @@ def parse_hex_escape(source, info, esc, expected_len, in_set, type):
             return make_character(info, value, in_set)
 
     # Bad hex escape.
-    raise error("bad hex escape \\%s%s" % (esc, ''.join(digits)),
+    raise error("bad hex escape \\{}{}".format(esc, ''.join(digits)),
       source.string, saved_pos)
 
 def parse_group_ref(source, info):
@@ -1617,7 +1617,7 @@ def numeric_to_rational(numeric):
     else:
         raise ValueError()
 
-    result = "{}{}/{}".format(sign, num, den)
+    result = f"{sign}{num}/{den}"
     if result.endswith("/1"):
         return result[ : -2]
 
@@ -1782,7 +1782,7 @@ def parse_repl_hex_escape(source, expected_len, type):
     for i in range(expected_len):
         ch = source.get()
         if ch not in HEX_DIGITS:
-            raise error("incomplete escape \\%s%s" % (type, ''.join(digits)),
+            raise error("incomplete escape \\{}{}".format(type, ''.join(digits)),
               source.string, source.pos)
         digits.append(ch)
 
@@ -1921,7 +1921,7 @@ class ZeroWidthBase(RegexBase):
         self._key = self.__class__, self.positive
 
     def get_firstset(self, reverse):
-        return set([None])
+        return {None}
 
     def _compile(self, reverse, fuzzy):
         flags = 0
@@ -1954,7 +1954,7 @@ class Any(RegexBase):
         return [(self._opcode[reverse], flags)]
 
     def dump(self, indent, reverse):
-        print("{}{}".format(INDENT * indent, self._op_name))
+        print(f"{INDENT * indent}{self._op_name}")
 
     def max_width(self):
         return 1
@@ -2007,7 +2007,7 @@ class Atomic(RegexBase):
           [(OP.END, )])
 
     def dump(self, indent, reverse):
-        print("{}ATOMIC".format(INDENT * indent))
+        print(f"{INDENT * indent}ATOMIC")
         self.subpattern.dump(indent + 1, reverse)
 
     def is_empty(self):
@@ -2108,7 +2108,7 @@ class Branch(RegexBase):
         for b in self.branches:
             fs |= b.get_firstset(reverse)
 
-        return fs or set([None])
+        return fs or {None}
 
     def _compile(self, reverse, fuzzy):
         if not self.branches:
@@ -2124,10 +2124,10 @@ class Branch(RegexBase):
         return code
 
     def dump(self, indent, reverse):
-        print("{}BRANCH".format(INDENT * indent))
+        print(f"{INDENT * indent}BRANCH")
         self.branches[0].dump(indent + 1, reverse)
         for b in self.branches[1 : ]:
-            print("{}OR".format(INDENT * indent))
+            print(f"{INDENT * indent}OR")
             b.dump(indent + 1, reverse)
 
     @staticmethod
@@ -2454,7 +2454,7 @@ class CallGroup(RegexBase):
         return [(OP.GROUP_CALL, self.call_ref)]
 
     def dump(self, indent, reverse):
-        print("{}GROUP_CALL {}".format(INDENT * indent, self.group))
+        print(f"{INDENT * indent}GROUP_CALL {self.group}")
 
     def __eq__(self, other):
         return type(self) is type(other) and self.group == other.group
@@ -2505,7 +2505,7 @@ class Character(RegexBase):
         return self
 
     def get_firstset(self, reverse):
-        return set([self])
+        return {self}
 
     def has_simple_start(self):
         return True
@@ -2618,10 +2618,10 @@ class Conditional(RegexBase):
         return code
 
     def dump(self, indent, reverse):
-        print("{}GROUP_EXISTS {}".format(INDENT * indent, self.group))
+        print(f"{INDENT * indent}GROUP_EXISTS {self.group}")
         self.yes_item.dump(indent + 1, reverse)
         if not self.no_item.is_empty():
-            print("{}OR".format(INDENT * indent))
+            print(f"{INDENT * indent}OR")
             self.no_item.dump(indent + 1, reverse)
 
     def is_empty(self):
@@ -2766,7 +2766,7 @@ class Fuzzy(RegexBase):
         constraints = self._constraints_to_string()
         if constraints:
             constraints = " " + constraints
-        print("{}FUZZY{}".format(INDENT * indent, constraints))
+        print(f"{INDENT * indent}FUZZY{constraints}")
         self.subpattern.dump(indent + 1, reverse)
 
     def is_empty(self):
@@ -2790,12 +2790,12 @@ class Fuzzy(RegexBase):
             con = ""
 
             if min > 0:
-                con = "{}<=".format(min)
+                con = f"{min}<="
 
             con += name
 
             if max is not None:
-                con += "<={}".format(max)
+                con += f"<={max}"
 
             constraints.append(con)
 
@@ -2803,7 +2803,7 @@ class Fuzzy(RegexBase):
         for name in "ids":
             coeff = self.constraints["cost"][name]
             if coeff > 0:
-                cost.append("{}{}".format(coeff, name))
+                cost.append(f"{coeff}{name}")
 
         limit = self.constraints["cost"]["max"]
         if limit is not None and limit > 0:
@@ -2822,7 +2822,7 @@ class Grapheme(RegexBase):
         return grapheme_matcher.compile(reverse, fuzzy)
 
     def dump(self, indent, reverse):
-        print("{}GRAPHEME".format(INDENT * indent))
+        print(f"{INDENT * indent}GRAPHEME")
 
     def max_width(self):
         return UNLIMITED
@@ -2942,7 +2942,7 @@ class PossessiveRepeat(GreedyRepeat):
           (OP.END, )])
 
     def dump(self, indent, reverse):
-        print("{}ATOMIC".format(INDENT * indent))
+        print(f"{INDENT * indent}ATOMIC")
 
         if self.max_count is None:
             limit = "INF"
@@ -3019,7 +3019,7 @@ class Group(RegexBase):
         group = self.group
         if group < 0:
             group = private_groups[group]
-        print("{}GROUP {}".format(INDENT * indent, group))
+        print(f"{INDENT * indent}GROUP {group}")
         self.subpattern.dump(indent + 1, reverse)
 
     def __eq__(self, other):
@@ -3082,7 +3082,7 @@ class LookAround(RegexBase):
         if self.positive and self.behind == reverse:
             return self.subpattern.get_firstset(reverse)
 
-        return set([None])
+        return {None}
 
     def _compile(self, reverse, fuzzy):
         flags = 0
@@ -3176,10 +3176,10 @@ class LookAroundConditional(RegexBase):
         print("{}CONDITIONAL {} {}".format(INDENT * indent,
           self._dir_text[self.behind], POS_TEXT[self.positive]))
         self.subpattern.dump(indent + 1, self.behind)
-        print("{}EITHER".format(INDENT * indent))
+        print(f"{INDENT * indent}EITHER")
         self.yes_item.dump(indent + 1, reverse)
         if not self.no_item.is_empty():
-            print("{}OR".format(INDENT * indent))
+            print(f"{INDENT * indent}OR")
             self.no_item.dump(indent + 1, reverse)
 
     def is_empty(self):
@@ -3228,7 +3228,7 @@ class Property(RegexBase):
         return self
 
     def get_firstset(self, reverse):
-        return set([self])
+        return {self}
 
     def has_simple_start(self):
         return True
@@ -3477,7 +3477,7 @@ class Sequence(RegexBase):
                 return fs
             fs.discard(None)
 
-        return fs | set([None])
+        return fs | {None}
 
     def has_simple_start(self):
         return bool(self.items) and self.items[0].has_simple_start()
@@ -3624,7 +3624,7 @@ class SetBase(RegexBase):
           zerowidth).optimise(self.info, False)
 
     def get_firstset(self, reverse):
-        return set([self])
+        return {self}
 
     def has_simple_start(self):
         return True
@@ -3913,8 +3913,8 @@ class String(RegexBase):
             pos = -1
         else:
             pos = 0
-        return set([Character(self.characters[pos],
-          case_flags=self.case_flags)])
+        return {Character(self.characters[pos],
+          case_flags=self.case_flags)}
 
     def has_simple_start(self):
         return True
@@ -4185,7 +4185,7 @@ class Source:
 
     def expect(self, substring):
         if not self.match(substring):
-            raise error("missing {}".format(substring), self.string, self.pos)
+            raise error(f"missing {substring}", self.string, self.pos)
 
     def at_end(self):
         string = self.string

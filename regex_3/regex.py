@@ -476,7 +476,7 @@ def _compile(pattern, flags, ignore_unused, kwargs, cache_it):
         unused_kwargs = set(kwargs) - {k for k, v in args_needed}
         if unused_kwargs:
             any_one = next(iter(unused_kwargs))
-            raise ValueError('unused keyword argument {!a}'.format(any_one))
+            raise ValueError(f'unused keyword argument {any_one!a}')
 
     if cache_it:
         try:
@@ -491,7 +491,7 @@ def _compile(pattern, flags, ignore_unused, kwargs, cache_it):
                     try:
                         args_supplied.add((k, frozenset(kwargs[k])))
                     except KeyError:
-                        raise error("missing named list: {!r}".format(k))
+                        raise error(f"missing named list: {k!r}")
 
             complain_unused_args()
 
@@ -639,7 +639,7 @@ def _compile(pattern, flags, ignore_unused, kwargs, cache_it):
             pass
 
     # The named capture groups.
-    index_group = dict((v, n) for n, v in info.group_index.items())
+    index_group = {v: n for n, v in info.group_index.items()}
 
     # Create the PatternObject.
     #

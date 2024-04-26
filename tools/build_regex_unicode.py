@@ -1,5 +1,4 @@
 #! python3.11
-# -*- coding: utf-8 -*-
 #
 # This Python script parses the Unicode data files in the UCD.zip file and
 # generates the C files for the regex module.
@@ -147,7 +146,7 @@ class Ranges:
     def __repr__(self):
         self._normalise()
 
-        return 'Ranges({!r})'.format(self._ranges)
+        return f'Ranges({self._ranges!r})'
 
     def _normalise(self):
         if self._is_normalised:
@@ -190,7 +189,7 @@ def download_unicode_files(unicode_data_base, data_files, data_folder):
 
             if not exists(path):
                 url = urljoin(unicode_data_base, rel_path)
-                print('Downloading {} from {}'.format(rel_path, url),
+                print(f'Downloading {rel_path} from {url}',
                   flush=True)
                 urlretrieve(url, path)
 
@@ -687,7 +686,7 @@ def write_summary(unicode_data, unicode_version, tools_folder):
     path = join(tools_folder, 'Unicode %s.txt' % unicode_version)
 
     with open(path, 'w', encoding='ascii') as file:
-        file.write('Version {}\n'.format(unicode_version))
+        file.write(f'Version {unicode_version}\n')
 
         for property in sorted(unique(properties.values(), key=id),
           key=preferred):
@@ -706,9 +705,9 @@ def write_summary(unicode_data, unicode_version, tools_folder):
 
                     for lower, upper in value.get('codepoints', []):
                         if lower == upper:
-                            file.write('{:04X}\n'.format(lower))
+                            file.write(f'{lower:04X}\n')
                         else:
-                            file.write('{:04X}..{:04X}\n'.format(lower, upper))
+                            file.write(f'{lower:04X}..{upper:04X}\n')
             else:
                 if 'default' in property:
                     default = values[property['default']]
@@ -720,32 +719,32 @@ def write_summary(unicode_data, unicode_version, tools_folder):
 
                     for lower, upper in value.get('codepoints', []):
                         if lower == upper:
-                            file.write('{:04X}\n'.format(lower))
+                            file.write(f'{lower:04X}\n')
                         else:
-                            file.write('{:04X}..{:04X}\n'.format(lower, upper))
+                            file.write(f'{lower:04X}..{upper:04X}\n')
 
         file.write('SimpleFolding\n')
 
         for delta, ranges in unicode_data['simple_folding'].items():
-            file.write('Value {:04X}\n'.format(delta))
+            file.write(f'Value {delta:04X}\n')
 
             for lower, upper in ranges:
                 if lower == upper:
-                    file.write('{:04X}\n'.format(lower))
+                    file.write(f'{lower:04X}\n')
                 else:
-                    file.write('{:04X}..{:04X}\n'.format(lower, upper))
+                    file.write(f'{lower:04X}..{upper:04X}\n')
 
         file.write('FullFolding\n')
 
         for key, ranges in unicode_data['full_folding'].items():
-            file.write('Value {}\n'.format(' '.join('{:04X}'.format(value) for
+            file.write('Value {}\n'.format(' '.join(f'{value:04X}' for
               value in key)))
 
             for lower, upper in ranges:
                 if lower == upper:
-                    file.write('{:04X}\n'.format(lower))
+                    file.write(f'{lower:04X}\n')
                 else:
-                    file.write('{:04X}..{:04X}\n'.format(lower, upper))
+                    file.write(f'{lower:04X}..{upper:04X}\n')
 
 def make_binary_dict():
     binary_dict = {}
@@ -768,7 +767,7 @@ def collect_strings(properties):
         except KeyError:
             pass
 
-    return sorted(set(munge(string) for string in strings))
+    return sorted({munge(string) for string in strings})
 
 def chunked(iterable, chunk_size):
     sequence = iterable
@@ -787,7 +786,7 @@ def determine_entry_type(iterable):
     if 0 <= lower <= upper <= 0xFFFF:
         return 'RE_UINT16'
 
-    raise ValueError('cannot determine C type for {}..{}'.format(lower, upper))
+    raise ValueError(f'cannot determine C type for {lower}..{upper}')
 
 def is_binary(property):
     return sum(1 for val in val_list if val['id'] != 0) == 1
@@ -819,7 +818,7 @@ RE_UINT32 re_get_{}(RE_UINT32 codepoint) {{
                 ranges.append((lower, upper, val_id))
 
     if len(ranges) == 1 and ranges[0][ : 2] == (0, NUM_CODEPOINTS - 1):
-        c_file.write('    return {};\n}}\n'.format(ranges[0][2]))
+        c_file.write(f'    return {ranges[0][2]};\n}}\n')
     else:
         for lower, upper, val_id in ranges:
             width = 2 if upper <= 0xFF else 4 if upper <= 0xFFFF else 6
@@ -835,15 +834,15 @@ RE_UINT32 re_get_{}(RE_UINT32 codepoint) {{
         return {};
 '''.format(lower, upper, val_id, width=width))
 
-        c_file.write('\n    return {};\n}}\n'.format(default_id))
+        c_file.write(f'\n    return {default_id};\n}}\n')
 
 def generate_table(table_name, values, c_file, max_columns=16, public=False):
     entry_type = determine_entry_type(values)
 
     if public:
-        c_file.write('{} {}[] = {{\n'.format(entry_type, table_name))
+        c_file.write(f'{entry_type} {table_name}[] = {{\n')
     else:
-        c_file.write('static {} {}[] = {{\n'.format(entry_type, table_name))
+        c_file.write(f'static {entry_type} {table_name}[] = {{\n')
 
     entries = [str(value) for value in values]
     max_width = max(len(entry) for entry in entries)
@@ -911,7 +910,7 @@ def generate_lookup(property, c_file):
         if i > 0:
             c_file.write('\n')
 
-        generate_table('re_{}_table_{}'.format(prop_name, 1 + i), table,
+        generate_table(f're_{prop_name}_table_{1 + i}', table,
           c_file)
 
     if binary:
@@ -1005,7 +1004,7 @@ def generate_script_extensions_lookup(properties, property, c_file):
     prop_name = property['names'][0].lower()
 
     for i, table in enumerate([table_0, table_1, table_2]):
-        generate_table('{}_table_{}'.format(prop_name, 1 + i), table, c_file)
+        generate_table(f'{prop_name}_table_{1 + i}', table, c_file)
 
     script_values = properties[munge('Script')]['values']
     ext_dict = {}
@@ -1021,9 +1020,9 @@ def generate_script_extensions_lookup(properties, property, c_file):
         offsets.append(len(entries))
         entries.extend(value + [0])
 
-    generate_table('{}_table_4'.format(prop_name), offsets, c_file)
+    generate_table(f'{prop_name}_table_4', offsets, c_file)
 
-    generate_table('{}_table_5'.format(prop_name), entries, c_file)
+    generate_table(f'{prop_name}_table_5', entries, c_file)
 
     c_file.write('''
 int re_get_{0}(RE_UINT32 codepoint, RE_UINT8* scripts) {{
@@ -1121,7 +1120,7 @@ def generate_all_cases(unicode_data, c_file):
         if i > 0:
             c_file.write('\n')
 
-        generate_table('re_all_cases_table_{}'.format(1 + i), table, c_file)
+        generate_table(f're_all_cases_table_{1 + i}', table, c_file)
 
     c_file.write('\nstatic RE_AllCases re_all_cases_table_4[] = {\n')
 
@@ -1219,7 +1218,7 @@ def generate_simple_case_folding(unicode_data, c_file):
         if i > 0:
             c_file.write('\n')
 
-        generate_table('re_simple_folding_table_{}'.format(1 + i), table, c_file)
+        generate_table(f're_simple_folding_table_{1 + i}', table, c_file)
 
     c_file.write('\nstatic RE_UINT16 re_simple_folding_table_4[] = {\n')
 
@@ -1292,7 +1291,7 @@ def generate_full_case_folding(unicode_data, c_file):
         if i > 0:
             c_file.write('\n')
 
-        generate_table('re_full_folding_table_{}'.format(1 + i), table, c_file)
+        generate_table(f're_full_folding_table_{1 + i}', table, c_file)
 
     c_file.write('\nstatic RE_FullCaseFolding re_full_folding_table_4[] = {\n')
 
@@ -1493,7 +1492,7 @@ char* re_strings[] = {{
         lines = []
 
         for string in strings:
-            lines.append('    "{}",\n'.format(string))
+            lines.append(f'    "{string}",\n')
 
         strings_dict = {string: i for i, string in enumerate(strings)}
 
@@ -1580,7 +1579,7 @@ RE_GetPropertyFunc re_get_property[] = {
             if prop_name == 'script_extensions':
                 lines.append('    0,\n')
             else:
-                lines.append('    re_get_{},\n'.format(prop_name))
+                lines.append(f'    re_get_{prop_name},\n')
 
         lines[-1] = lines[-1].rstrip(',\n') + '\n'
 
@@ -1646,7 +1645,7 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
         gc_values = properties[munge('General_Category')]['values']
         group_names = set('C L M N P S Z Assigned Cased_Letter'.split())
 
-        names = set(gc_values) & set(munge(name) for name in group_names)
+        names = set(gc_values) & {munge(name) for name in group_names}
 
         for name in sorted(names, key=lambda name: gc_values[name]['id']):
             h_file.write('#define RE_PROP_{} {}\n'.format(name,
@@ -1670,7 +1669,7 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
             masks[name[0]] |= 1 << val_id
 
         for val_id, name in sorted(val_list):
-            h_file.write('#define RE_PROP_{} {}\n'.format(name, val_id))
+            h_file.write(f'#define RE_PROP_{name} {val_id}\n')
 
         h_file.write('\n')
 
@@ -1745,9 +1744,9 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
             prop_name = property['names'][0]
 
             if prop_name == 'Script_Extensions':
-                h_file.write('int re_get_{}(RE_UINT32 codepoint, RE_UINT8* scripts);\n'.format(prop_name.lower()))
+                h_file.write(f'int re_get_{prop_name.lower()}(RE_UINT32 codepoint, RE_UINT8* scripts);\n')
             else:
-                h_file.write('RE_UINT32 re_get_{}(RE_UINT32 codepoint);\n'.format(prop_name.lower()))
+                h_file.write(f'RE_UINT32 re_get_{prop_name.lower()}(RE_UINT32 codepoint);\n')
 
         h_file.write('int re_get_all_cases(RE_UINT32 codepoint, RE_UINT32* cases);\n')
         h_file.write('RE_UINT32 re_get_simple_case_folding(RE_UINT32 codepoint);\n')
