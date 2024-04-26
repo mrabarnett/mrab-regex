@@ -3,7 +3,6 @@ import copy
 import pickle
 import regex
 import string
-import sys
 import unittest
 
 # String subclasses for issue 18468.

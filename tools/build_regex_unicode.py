@@ -5,12 +5,10 @@
 #
 # Written by MRAB.
 #
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
 from io import TextIOWrapper
 from itertools import chain
-from os import listdir, mkdir
 from os.path import basename, dirname, exists, join, normpath
-from time import time
 from urllib.parse import urljoin
 from urllib.request import urlretrieve
 from zipfile import ZipFile
