@@ -4267,6 +4267,10 @@ thing
         # Git issue 525: segfault when fuzzy matching empty list
         self.assertEqual(regex.match(r"(\L<foo>){e<=5}", "blah", foo=[]).span(), (0, 0))
 
+        # Git issue 527: `VERBOSE`/`X` flag breaks `\N` escapes
+        self.assertEqual(regex.compile(r'\N{LATIN SMALL LETTER A}').match('a').span(), (0, 1))
+        self.assertEqual(regex.compile(r'\N{LATIN SMALL LETTER A}', flags=regex.X).match('a').span(), (0, 1))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

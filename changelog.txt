@@ -1,3 +1,7 @@
+Version: 2024.4.28
+
+    Git issue 527: `VERBOSE`/`X` flag breaks `\N` escapes
+
 Version: 2024.4.16
 
     Git issue 525: segfault when fuzzy matching empty list

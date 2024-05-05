@@ -1359,7 +1359,7 @@ def parse_named_char(source, info, in_set):
     "Parses a named character."
     saved_pos = source.pos
     if source.match("{"):
-        name = source.get_while(NAMED_CHAR_PART)
+        name = source.get_while(NAMED_CHAR_PART, keep_spaces=True)
         if source.match("}"):
             try:
                 value = unicodedata.lookup(name)
@@ -4067,11 +4067,11 @@ class Source:
             self.pos = len(string)
             return "".join(substring)
 
-    def get_while(self, test_set, include=True):
+    def get_while(self, test_set, include=True, keep_spaces=False):
         string = self.string
         pos = self.pos
 
-        if self.ignore_space:
+        if self.ignore_space and not keep_spaces:
             try:
                 substring = []
 
