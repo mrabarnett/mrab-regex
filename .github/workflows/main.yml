@@ -4,12 +4,15 @@ name: cibuildwheel
 # Build on every branch push with tag.
 on:
   push:
-    tags:
-      - '*'
+    # tags:
+    #   - '*'
 
 env:
   PYTHON_VER: '3.10'  # Python to run test/cibuildwheel
-  CIBW_BUILD: cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*
+  CIBW_BUILD: cp38-* cp39-* cp310-* cp311-* cp312-* cp313-* cp313t-*
+  CIBW_FREE_THREADED_SUPPORT: 1
+  CIBW_PRERELEASE_PYTHONS: 1
+  CIBW_SKIP: '*t-win*'
   CIBW_TEST_COMMAND: python -m unittest regex.test_regex
 
 jobs:
@@ -159,22 +162,22 @@ jobs:
           path: wheelhouse/*.whl
 
   # Upload to PyPI
-  upload_pypi:
-    name: Publish to PyPI
-    needs: [build_wheels, build_in_manylinux2010, build_arch_wheels]
-    runs-on: ubuntu-latest
+  # upload_pypi:
+  #   name: Publish to PyPI
+  #   needs: [build_wheels, build_in_manylinux2010, build_arch_wheels]
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: regex-files
-          path: dist
+  #   steps:
+  #     - uses: actions/download-artifact@v3
+  #       with:
+  #         name: regex-files
+  #         path: dist
 
-      - name: Upload to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_TOKEN }}
-          skip_existing: true
-          verbose: true
-          print_hash: true
+  #     - name: Upload to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         user: __token__
+  #         password: ${{ secrets.PYPI_TOKEN }}
+  #         skip_existing: true
+  #         verbose: true
+  #         print_hash: true
