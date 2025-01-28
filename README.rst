@@ -925,8 +925,8 @@ A short form starting with ``Is`` indicates a script or binary property:
 A short form starting with ``In`` indicates a block property:
 
 * ``InBasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
-(`Hg issue 102 <https://github.com/mrabarnett/mrab-regex/issues/102>`_)
-There is a list of (`Unicode properties <https://www.unicode.org/Public/16.0.0/ucd/PropList.txt>`_) lists properties and the characters that have them, plus additional (`unicode documentation <https://www.unicode.org/Public/16.0.0/ucd/>`_) such as documentation of (`scripts <https://www.unicode.org/Public/16.0.0/ucd/Scripts.txt>`_) and (`blocks <https://www.unicode.org/Public/16.0.0/ucd/Blocks.txt>`_).
+
+The  (`Unicode properties <https://www.unicode.org/Public/16.0.0/ucd/PropList.txt>`_), (`scripts <https://www.unicode.org/Public/16.0.0/ucd/Scripts.txt>`_), and (`blocks <https://www.unicode.org/Public/16.0.0/ucd/Blocks.txt>`_) documentation lists properties that you can use with this syntax and the characters that have them.
 
 POSIX character classes
 ^^^^^^^^^^^^^^^^^^^^^^^
