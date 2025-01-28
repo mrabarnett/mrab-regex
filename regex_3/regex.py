@@ -144,7 +144,8 @@ second character.
     \n              Matches the newline character.
     \N{name}        Matches the named character.
     \p{name=value}  Matches the character if its property has the specified
-                    value.
+                    value.  A list of unicode properties and the characters that 
+                    have them is available here:  https://www.unicode.org/Public/16.0.0/ucd/PropList.txt
     \P{name=value}  Matches the character if its property hasn't the specified
                     value.
     \r              Matches the carriage-return character.
