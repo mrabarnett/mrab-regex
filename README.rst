@@ -144,7 +144,7 @@ The issue numbers relate to the Python bug tracker, except where listed otherwis
 Added ``\p{Horiz_Space}`` and ``\p{Vert_Space}`` (`GitHub issue 477 <https://github.com/mrabarnett/mrab-regex/issues/477#issuecomment-1216779547>`_)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``\p{Horiz_Space}`` or ``\p{H}`` matches horizontal whitespace and ``\p{Vert_Space}`` or ``\p{V}`` matches vertical whitespace.  
+``\p{Horiz_Space}`` or ``\p{H}`` matches horizontal whitespace and ``\p{Vert_Space}`` or ``\p{V}`` matches vertical whitespace.
 
 Added support for lookaround in conditional pattern (`Hg issue 163 <https://github.com/mrabarnett/mrab-regex/issues/163>`_)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
