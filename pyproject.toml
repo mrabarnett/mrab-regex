@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "regex"
-version = "2024.11.6"
+version = "2025.2.13"
 description = "Alternative regular expression module, to replace re."
 readme = "README.rst"
 authors = [
