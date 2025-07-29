@@ -142,7 +142,7 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.1.2
-        with:
+        env:
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           # Building in QEMU is very slow, so parallelize the tasks.
           CIBW_SKIP: "*musllinux* *manylinux*"
