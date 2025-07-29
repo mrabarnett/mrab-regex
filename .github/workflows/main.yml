@@ -132,7 +132,6 @@ jobs:
     env:
       CIBW_ARCHS_LINUX: ${{ matrix.arch }}
       # Building in QEMU is very slow, so parallelize the tasks.
-      CIBW_SKIP: "*musllinux*"
 
     steps:
       - uses: actions/checkout@v3
