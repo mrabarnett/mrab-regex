@@ -4405,6 +4405,9 @@ thing
         # Git issue 584: AttributeError: 'AnyAll' object has no attribute 'positive'
         self.assertEqual(bool(regex.compile('(\\s|\\S)')), True)
 
+        # AttributeError: 'AnyAll' object has no attribute '_key'
+        self.assertEqual(bool(regex.compile('(?:[\\S\\s]|[A-D][M-Z])')), True)
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

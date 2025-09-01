@@ -1997,6 +1997,7 @@ class AnyAll(Any):
     _op_name = "ANY_ALL"
 
     def __init__(self):
+      Any.__init__(self)
       self.positive = True
       self.zerowidth = False
       self.case_flags = 0
