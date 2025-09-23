@@ -926,6 +926,8 @@ A short form starting with ``In`` indicates a block property:
 
 * ``InBasicLatin``, the 'BasicLatin' block (``Block=BasicLatin``).
 
+The  (`Unicode properties <https://www.unicode.org/Public/16.0.0/ucd/PropList.txt>`_), (`scripts <https://www.unicode.org/Public/16.0.0/ucd/Scripts.txt>`_), and (`blocks <https://www.unicode.org/Public/16.0.0/ucd/Blocks.txt>`_) documentation lists properties that you can use with this syntax and the characters that have them.
+
 POSIX character classes
 ^^^^^^^^^^^^^^^^^^^^^^^
 
