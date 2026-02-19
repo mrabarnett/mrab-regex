@@ -166,7 +166,8 @@ second character.
     \W              Matches the complement of \w; equivalent to [^\w].
     \xXX            Matches the character with 2-digit hex code XX.
     \X              Matches a grapheme.
-    \Z              Matches only at the end of the string.
+    \z              Matches only at the end of the string.
+    \Z              The same as \z. For compatibility with old Python versions.
     \\              Matches a literal backslash.
 
 This module exports the following functions:

@@ -4640,6 +4640,7 @@ POSITION_ESCAPES = {
     "K": Keep(),
     "m": StartOfWord(),
     "M": EndOfWord(),
+    "z": EndOfString(),
     "Z": EndOfString(),
 }
 ASCII_POSITION_ESCAPES = dict(POSITION_ESCAPES)
