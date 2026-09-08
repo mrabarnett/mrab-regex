@@ -20279,14 +20279,15 @@ static PyObject* match_detach_string(MatchObject* self, PyObject* unused) {
         determine_target_substring(self, &start, &end);
 
         substring = get_slice(self->string, start, end);
-        if (substring) {
-            Py_XDECREF(self->substring);
-            self->substring = substring;
-            self->substring_offset = start;
+        if (!substring)
+            return NULL;
 
-            Py_DECREF(self->string);
-            self->string = NULL;
-        }
+        Py_XDECREF(self->substring);
+        self->substring = substring;
+        self->substring_offset = start;
+
+        Py_DECREF(self->string);
+        self->string = NULL;
     }
 
     Py_RETURN_NONE;
@@ -21454,6 +21455,9 @@ static PyObject* capture_str(PyObject* self_) {
     match = *self->match_indirect;
 
     default_value = PySequence_GetSlice(match->string, 0, 0);
+    if (!default_value)
+        return NULL;
+
     result = match_get_group_by_index(match, self->group_index, default_value);
     Py_DECREF(default_value);
 
