@@ -1,3 +1,7 @@
+Version: 2026.9.10
+
+    Fixed version.
+
 Version: 2026.9.9
 
     PR #615: Fix Python API error propagation in match helpers
