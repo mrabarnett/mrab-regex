@@ -20919,9 +20919,12 @@ Py_LOCAL_INLINE(PyObject*) scanner_search_or_match(ScannerObject* self, BOOL
         } else
             /* Don't allow 2 contiguous zero-width matches. */
             state->must_advance = state->text_pos == state->match_pos;
-    } else
+    } else {
         /* Internal error. */
+        if (!PyErr_Occurred())
+            set_error(self->status, NULL);
         match = NULL;
+    }
 
     /* Release the state lock. */
     release_state_lock((PyObject*)self, state);
@@ -20953,6 +20956,9 @@ static PyObject* scanner_iternext(PyObject* self) {
     PyObject* match;
 
     match = scanner_search((ScannerObject*)self, NULL);
+
+    if (!match)
+        return NULL;
 
     if (match == Py_None) {
         /* No match. */
