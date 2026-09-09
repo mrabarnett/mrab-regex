@@ -26401,8 +26401,8 @@ static PyObject* get_all_cases(PyObject* self_, PyObject* args) {
     if ((flags & RE_FULL_CASE_FOLDING) == RE_FULL_CASE_FOLDING) {
         count = encoding->full_case_fold(&locale_info, (Py_UCS4)character,
           folded);
-        if (count > 1)
-            PyList_Append(result, Py_None);
+                if (count > 1 && PyList_Append(result, Py_None) < 0)
+                        goto error;
     }
 
     return result;
