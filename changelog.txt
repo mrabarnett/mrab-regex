@@ -1,3 +1,13 @@
+Version: 2026.9.9
+
+    PR #615: Fix Python API error propagation in match helpers
+
+    PR #616: Preserve Python Exceptions in Input Decoding and String Detachment
+
+    PR #617: Prevent Invalid Pointer Use and Exception State Corruption in Byte String Joining
+
+    PR #618: Propagate Allocation and Internal Errors During Pattern Compilation and Scanner Execution
+
 Version: 2026.9.3
 
     New version of cibuildwheel no longer supports building for free-threaded Python 3.13.
