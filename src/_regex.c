@@ -18245,10 +18245,8 @@ Py_LOCAL_INLINE(BOOL) get_string(PyObject* string, RE_StringInfo* str_info) {
     }
 
     /* Get pointer to string buffer. */
-    if (PyObject_GetBuffer(string, &str_info->view, PyBUF_SIMPLE) != 0) {
-        PyErr_SetString(PyExc_TypeError, "expected string or buffer");
+    if (PyObject_GetBuffer(string, &str_info->view, PyBUF_SIMPLE) != 0)
         return FALSE;
-    }
 
     if (!str_info->view.buf) {
         PyBuffer_Release(&str_info->view);
@@ -21044,7 +21042,7 @@ Py_LOCAL_INLINE(int) decode_concurrent(PyObject* concurrent) {
 }
 
 /* Decodes a 'partial' argument. */
-Py_LOCAL_INLINE(BOOL) decode_partial(PyObject* partial) {
+Py_LOCAL_INLINE(int) decode_partial(PyObject* partial) {
     Py_ssize_t value;
 
     if (partial == Py_False)
@@ -21054,10 +21052,8 @@ Py_LOCAL_INLINE(BOOL) decode_partial(PyObject* partial) {
         return TRUE;
 
     value = PyLong_AsLong(partial);
-    if (value == -1 && PyErr_Occurred()) {
-        PyErr_Clear();
-        return TRUE;
-    }
+    if (value == -1 && PyErr_Occurred())
+        return -1;
 
     return value != 0;
 }
@@ -21087,7 +21083,7 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
     Py_ssize_t end;
     int conc;
     Py_ssize_t tim;
-    BOOL part;
+    int part;
 
     PyObject* string;
     PyObject* pos = Py_None;
@@ -21119,6 +21115,8 @@ static PyObject* pattern_scanner(PatternObject* pattern, PyObject* args,
         return NULL;
 
     part = decode_partial(partial);
+    if (part < 0)
+        return NULL;
 
     /* Create a scanner object. */
     self = PyObject_NEW(ScannerObject, &Scanner_Type);
@@ -21536,7 +21534,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_search_or_match(PatternObject* self,
     Py_ssize_t end;
     int conc;
     Py_ssize_t tim;
-    BOOL part;
+    int part;
     RE_State state;
     int status;
     PyObject* match;
@@ -21593,6 +21591,8 @@ Py_LOCAL_INLINE(PyObject*) pattern_search_or_match(PatternObject* self,
         return NULL;
 
     part = decode_partial(partial);
+    if (part < 0)
+        return NULL;
 
     /* The MatchObject, and therefore repeated captures, will be visible. */
     if (!state_init(&state, self, string, start, end, FALSE, conc, part, FALSE,
