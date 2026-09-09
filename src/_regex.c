@@ -19016,8 +19016,11 @@ static PyObject* match_get_ends_by_index(MatchObject* self, Py_ssize_t index) {
         if (!item)
             goto error;
 
-        /* PyList_SetItem borrows the reference. */
-        PyList_SetItem(result, 0, item);
+        /* PyList_SetItem steals the reference on success. */
+        if (PyList_SetItem(result, 0, item) < 0) {
+            Py_DECREF(item);
+            goto error;
+        }
 
         return result;
     }
@@ -19036,8 +19039,11 @@ static PyObject* match_get_ends_by_index(MatchObject* self, Py_ssize_t index) {
         if (!item)
             goto error;
 
-        /* PyList_SetItem borrows the reference. */
-        PyList_SetItem(result, i, item);
+        /* PyList_SetItem steals the reference on success. */
+        if (PyList_SetItem(result, i, item) < 0) {
+            Py_DECREF(item);
+            goto error;
+        }
     }
 
     return result;
@@ -19153,8 +19159,11 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         if (!slice)
             goto error;
 
-        /* PyList_SetItem borrows the reference. */
-        PyList_SetItem(result, 0, slice);
+        /* PyList_SetItem steals the reference on success. */
+        if (PyList_SetItem(result, 0, slice) < 0) {
+            Py_DECREF(slice);
+            goto error;
+        }
 
         return result;
     }
@@ -19175,8 +19184,11 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         if (!slice)
             goto error;
 
-        /* PyList_SetItem borrows the reference. */
-        PyList_SetItem(result, i, slice);
+        /* PyList_SetItem steals the reference on success. */
+        if (PyList_SetItem(result, i, slice) < 0) {
+            Py_DECREF(slice);
+            goto error;
+        }
     }
 
     return result;
@@ -21344,6 +21356,9 @@ Py_LOCAL_INLINE(Py_ssize_t) index_to_integer(PyObject* item) {
         PyObject* int_obj;
 
         characters = PyBytes_AsString(item);
+        if (!characters)
+            return -1;
+
         int_obj = PyLong_FromString(characters, NULL, 0);
         if (!int_obj)
             goto error;
