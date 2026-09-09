@@ -19016,8 +19016,11 @@ static PyObject* match_get_ends_by_index(MatchObject* self, Py_ssize_t index) {
         if (!item)
             goto error;
 
-        /* PyList_SetItem borrows the reference. */
-        PyList_SetItem(result, 0, item);
+        /* PyList_SetItem steals the reference on success. */
+        if (PyList_SetItem(result, 0, item) < 0) {
+            Py_DECREF(item);
+            goto error;
+        }
 
         return result;
     }
@@ -19036,8 +19039,11 @@ static PyObject* match_get_ends_by_index(MatchObject* self, Py_ssize_t index) {
         if (!item)
             goto error;
 
-        /* PyList_SetItem borrows the reference. */
-        PyList_SetItem(result, i, item);
+        /* PyList_SetItem steals the reference on success. */
+        if (PyList_SetItem(result, i, item) < 0) {
+            Py_DECREF(item);
+            goto error;
+        }
     }
 
     return result;
@@ -19153,8 +19159,11 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         if (!slice)
             goto error;
 
-        /* PyList_SetItem borrows the reference. */
-        PyList_SetItem(result, 0, slice);
+        /* PyList_SetItem steals the reference on success. */
+        if (PyList_SetItem(result, 0, slice) < 0) {
+            Py_DECREF(slice);
+            goto error;
+        }
 
         return result;
     }
@@ -19175,8 +19184,11 @@ static PyObject* match_get_captures_by_index(MatchObject* self, Py_ssize_t
         if (!slice)
             goto error;
 
-        /* PyList_SetItem borrows the reference. */
-        PyList_SetItem(result, i, slice);
+        /* PyList_SetItem steals the reference on success. */
+        if (PyList_SetItem(result, i, slice) < 0) {
+            Py_DECREF(slice);
+            goto error;
+        }
     }
 
     return result;
@@ -20279,14 +20291,15 @@ static PyObject* match_detach_string(MatchObject* self, PyObject* unused) {
         determine_target_substring(self, &start, &end);
 
         substring = get_slice(self->string, start, end);
-        if (substring) {
-            Py_XDECREF(self->substring);
-            self->substring = substring;
-            self->substring_offset = start;
+        if (!substring)
+            return NULL;
 
-            Py_DECREF(self->string);
-            self->string = NULL;
-        }
+        Py_XDECREF(self->substring);
+        self->substring = substring;
+        self->substring_offset = start;
+
+        Py_DECREF(self->string);
+        self->string = NULL;
     }
 
     Py_RETURN_NONE;
@@ -21343,6 +21356,9 @@ Py_LOCAL_INLINE(Py_ssize_t) index_to_integer(PyObject* item) {
         PyObject* int_obj;
 
         characters = PyBytes_AsString(item);
+        if (!characters)
+            return -1;
+
         int_obj = PyLong_FromString(characters, NULL, 0);
         if (!int_obj)
             goto error;
@@ -21454,6 +21470,9 @@ static PyObject* capture_str(PyObject* self_) {
     match = *self->match_indirect;
 
     default_value = PySequence_GetSlice(match->string, 0, 0);
+    if (!default_value)
+        return NULL;
+
     result = match_get_group_by_index(match, self->group_index, default_value);
     Py_DECREF(default_value);
 
