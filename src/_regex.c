@@ -23223,8 +23223,10 @@ Py_LOCAL_INLINE(BOOL) CheckStack_push(RE_CheckStack* stack, RE_Node* node,
 
         new_items = (RE_Check*)PyMem_Realloc(stack->items, new_capacity *
           sizeof(RE_Check));
-        if (!new_items)
+        if (!new_items) {
+            PyErr_NoMemory();
             return FALSE;
+        }
 
         stack->capacity = new_capacity;
         stack->items = new_items;
@@ -23243,13 +23245,14 @@ Py_LOCAL_INLINE(RE_Check*) CheckStack_pop(RE_CheckStack* stack) {
 }
 
 /* Adds guards to repeats which are followed by a reference to a group. */
-Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
+Py_LOCAL_INLINE(BOOL) add_repeat_guards(PatternObject* pattern, RE_Node*
   start_node) {
     RE_CheckStack stack;
 
     CheckStack_init(&stack);
 
-    CheckStack_push(&stack, start_node, RE_STATUS_NEITHER);
+    if (!CheckStack_push(&stack, start_node, RE_STATUS_NEITHER))
+        goto error;
 
     for (;;) {
         RE_Check* check;
@@ -23290,11 +23293,16 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                     node->status |= RE_STATUS_VISITED_AG | max_status_3(result,
                       branch_1_result, branch_2_result);
                 } else {
-                    CheckStack_push(&stack, node, result);
+                                        if (!CheckStack_push(&stack, node, result))
+                                                goto error;
                     if (!visited_branch_2)
-                        CheckStack_push(&stack, branch_2, RE_STATUS_NEITHER);
+                                                if (!CheckStack_push(&stack, branch_2,
+                                                    RE_STATUS_NEITHER))
+                                                        goto error;
                     if (!visited_branch_1)
-                        CheckStack_push(&stack, branch_1, RE_STATUS_NEITHER);
+                                                if (!CheckStack_push(&stack, branch_1,
+                                                    RE_STATUS_NEITHER))
+                                                        goto error;
                 }
                 break;
             }
@@ -23341,15 +23349,20 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                     node->status |= RE_STATUS_VISITED_AG | max_status_3(result,
                       body_result, tail_result);
                 } else {
-                    CheckStack_push(&stack, node, result);
+                                        if (!CheckStack_push(&stack, node, result))
+                                                goto error;
                     if (!visited_tail)
-                        CheckStack_push(&stack, tail, RE_STATUS_NEITHER);
+                                                if (!CheckStack_push(&stack, tail,
+                                                    RE_STATUS_NEITHER))
+                                                        goto error;
                     if (!visited_body) {
                         if (limited)
                             body->status |= RE_STATUS_VISITED_AG |
                               RE_STATUS_LIMITED;
                         else
-                            CheckStack_push(&stack, body, RE_STATUS_NEITHER);
+                                                        if (!CheckStack_push(&stack, body,
+                                                            RE_STATUS_NEITHER))
+                                                                goto error;
                     }
                 }
                 break;
@@ -23389,8 +23402,10 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                     node->status |= RE_STATUS_VISITED_AG | max_status_3(result,
                       RE_STATUS_REPEAT, tail_result);
                 } else {
-                    CheckStack_push(&stack, node, result);
-                    CheckStack_push(&stack, tail, RE_STATUS_NEITHER);
+                    if (!CheckStack_push(&stack, node, result))
+                        goto error;
+                    if (!CheckStack_push(&stack, tail, RE_STATUS_NEITHER))
+                        goto error;
                 }
                 break;
             }
@@ -23418,11 +23433,16 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                     node->status |= RE_STATUS_VISITED_AG | max_status_4(result,
                       branch_1_result, branch_2_result, RE_STATUS_REF);
                 } else {
-                    CheckStack_push(&stack, node, result);
+                                        if (!CheckStack_push(&stack, node, result))
+                                                goto error;
                     if (!visited_branch_2)
-                        CheckStack_push(&stack, branch_2, RE_STATUS_NEITHER);
+                                                if (!CheckStack_push(&stack, branch_2,
+                                                    RE_STATUS_NEITHER))
+                                                        goto error;
                     if (!visited_branch_1)
-                        CheckStack_push(&stack, branch_1, RE_STATUS_NEITHER);
+                                                if (!CheckStack_push(&stack, branch_1,
+                                                    RE_STATUS_NEITHER))
+                                                        goto error;
                 }
                 break;
             }
@@ -23442,8 +23462,10 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                 if (visited_tail)
                     node->status |= RE_STATUS_VISITED_AG | RE_STATUS_REF;
                 else {
-                    CheckStack_push(&stack, node, result);
-                    CheckStack_push(&stack, tail, RE_STATUS_NEITHER);
+                    if (!CheckStack_push(&stack, node, result))
+                        goto error;
+                    if (!CheckStack_push(&stack, tail, RE_STATUS_NEITHER))
+                        goto error;
                 }
                 break;
             }
@@ -23470,8 +23492,10 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
                       RE_STATUS_REF);
                     node->status |= RE_STATUS_VISITED_AG | tail_result;
                 } else {
-                    CheckStack_push(&stack, node, result);
-                    CheckStack_push(&stack, node->next_1.node, result);
+                    if (!CheckStack_push(&stack, node, result))
+                        goto error;
+                    if (!CheckStack_push(&stack, node->next_1.node, result))
+                        goto error;
                 }
                 break;
             }
@@ -23481,7 +23505,11 @@ Py_LOCAL_INLINE(RE_STATUS_T) add_repeat_guards(PatternObject* pattern, RE_Node*
 
     CheckStack_fini(&stack);
 
-    return start_node->status & (RE_STATUS_REPEAT | RE_STATUS_REF);
+    return TRUE;
+
+error:
+    CheckStack_fini(&stack);
+    return FALSE;
 }
 
 /* Adds an index to a node's values unless it's already present.
@@ -23838,7 +23866,8 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     /* Add position guards for repeat bodies containing a reference to a group
      * or repeat tails followed at some point by a reference to a group.
      */
-    add_repeat_guards(pattern, pattern->start_node);
+    if (!add_repeat_guards(pattern, pattern->start_node))
+        return FALSE;
 
     /* Record the index of repeats and fuzzy sections within the body of atomic
      * and lookaround nodes.
