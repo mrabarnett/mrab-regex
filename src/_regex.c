@@ -20279,14 +20279,15 @@ static PyObject* match_detach_string(MatchObject* self, PyObject* unused) {
         determine_target_substring(self, &start, &end);
 
         substring = get_slice(self->string, start, end);
-        if (substring) {
-            Py_XDECREF(self->substring);
-            self->substring = substring;
-            self->substring_offset = start;
+        if (!substring)
+            return NULL;
 
-            Py_DECREF(self->string);
-            self->string = NULL;
-        }
+        Py_XDECREF(self->substring);
+        self->substring = substring;
+        self->substring_offset = start;
+
+        Py_DECREF(self->string);
+        self->string = NULL;
     }
 
     Py_RETURN_NONE;
