@@ -23633,8 +23633,10 @@ Py_LOCAL_INLINE(BOOL) NodeStack_push(RE_NodeStack* stack, RE_Node* node) {
 
         new_items = (RE_Node**)PyMem_Realloc(stack->items, new_capacity *
           sizeof(RE_Node*));
-        if (!new_items)
+        if (!new_items) {
+            PyErr_NoMemory();
             return FALSE;
+        }
 
         stack->capacity = new_capacity;
         stack->items = new_items;
@@ -23651,7 +23653,7 @@ Py_LOCAL_INLINE(RE_Node*) NodeStack_pop(RE_NodeStack* stack) {
 }
 
 /* Marks nodes which are being used as used. */
-Py_LOCAL_INLINE(void) use_nodes(RE_Node* node) {
+Py_LOCAL_INLINE(BOOL) use_nodes(RE_Node* node) {
     RE_NodeStack stack;
 
     NodeStack_init(&stack);
@@ -23661,7 +23663,8 @@ Py_LOCAL_INLINE(void) use_nodes(RE_Node* node) {
             node->status |= RE_STATUS_USED;
             if (!(node->status & RE_STATUS_STRING)) {
                 if (node->nonstring.next_2.node)
-                    NodeStack_push(&stack, node->nonstring.next_2.node);
+                    if (!NodeStack_push(&stack, node->nonstring.next_2.node))
+                        goto error;
             }
             node = node->next_1.node;
         }
@@ -23669,21 +23672,28 @@ Py_LOCAL_INLINE(void) use_nodes(RE_Node* node) {
     }
 
     NodeStack_fini(&stack);
+    return TRUE;
+
+error:
+    NodeStack_fini(&stack);
+    return FALSE;
 }
 
 /* Discards any unused nodes.
  *
  * Optimising the nodes might result in some nodes no longer being used.
  */
-Py_LOCAL_INLINE(void) discard_unused_nodes(PatternObject* pattern) {
+Py_LOCAL_INLINE(BOOL) discard_unused_nodes(PatternObject* pattern) {
     size_t i;
     size_t new_count;
 
     /* Mark the nodes which are being used. */
-    use_nodes(pattern->start_node);
+    if (!use_nodes(pattern->start_node))
+        return FALSE;
 
     for (i = 0; i < pattern->call_ref_info_capacity; i++)
-        use_nodes(pattern->call_ref_info[i].node);
+        if (!use_nodes(pattern->call_ref_info[i].node))
+            return FALSE;
 
     new_count = 0;
     for (i = 0; i < pattern->node_count; i++) {
@@ -23703,6 +23713,7 @@ Py_LOCAL_INLINE(void) discard_unused_nodes(PatternObject* pattern) {
     }
 
     pattern->node_count = new_count;
+    return TRUE;
 }
 
 /* Marks all the group which are named. Returns FALSE if there's an error. */
@@ -23886,7 +23897,8 @@ Py_LOCAL_INLINE(BOOL) optimise_pattern(PatternObject* pattern) {
     }
 
     /* Discard any unused nodes. */
-    discard_unused_nodes(pattern);
+    if (!discard_unused_nodes(pattern))
+        return FALSE;
 
     /* Set the test nodes. */
     set_test_nodes(pattern);
