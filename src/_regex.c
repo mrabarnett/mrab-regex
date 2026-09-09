@@ -19785,12 +19785,26 @@ Py_LOCAL_INLINE(PyObject*) join_bytestrings(PyObject* list) {
     char* to_bytes;
 
     count = PyList_Size(list);
+    if (count < 0)
+        return NULL;
 
     /* How long will the result be? */
     length = 0;
 
-    for (i = 0; i < count; i++)
-        length += PyBytes_Size(PyList_GetItem(list, i));
+    for (i = 0; i < count; i++) {
+        PyObject* bytestring;
+        Py_ssize_t bytes_length;
+
+        bytestring = PyList_GetItem(list, i);
+        if (!bytestring)
+            return NULL;
+
+        bytes_length = PyBytes_Size(bytestring);
+        if (bytes_length < 0)
+            return NULL;
+
+        length += bytes_length;
+    }
 
     /* Create the resulting bytestring, but uninitialised. */
     result = PyBytes_FromStringAndSize(NULL, length);
@@ -19799,6 +19813,9 @@ Py_LOCAL_INLINE(PyObject*) join_bytestrings(PyObject* list) {
 
     /* Fill the resulting bytestring. */
     to_bytes = PyBytes_AsString(result);
+    if (!to_bytes)
+        goto error;
+
     length = 0;
 
     for (i = 0; i < count; i++) {
@@ -19807,13 +19824,26 @@ Py_LOCAL_INLINE(PyObject*) join_bytestrings(PyObject* list) {
         Py_ssize_t from_length;
 
         bytestring = PyList_GetItem(list, i);
+        if (!bytestring)
+            goto error;
+
         from_bytes = PyBytes_AsString(bytestring);
+        if (!from_bytes)
+            goto error;
+
         from_length = PyBytes_Size(bytestring);
+        if (from_length < 0)
+            goto error;
+
         memmove(to_bytes + length, from_bytes, from_length);
         length += from_length;
     }
 
     return result;
+
+error:
+    Py_DECREF(result);
+    return NULL;
 }
 
 /* Joins a list of strings. */
