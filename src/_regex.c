@@ -19939,7 +19939,7 @@ static PyObject* match_expand(MatchObject* self, PyObject* str_template) {
     if (!replacement)
         return NULL;
 
-    init_join_list(&join_info, FALSE, PyUnicode_Check(self->string));
+    init_join_list(&join_info, FALSE, PyUnicode_Check(self->substring));
 
     /* Add each part of the template to the list. */
     size = PyList_Size(replacement);
@@ -21473,7 +21473,7 @@ static PyObject* capture_str(PyObject* self_) {
     self = (CaptureObject*)self_;
     match = *self->match_indirect;
 
-    default_value = PySequence_GetSlice(match->string, 0, 0);
+    default_value = PySequence_GetSlice(match->substring, 0, 0);
     if (!default_value)
         return NULL;
 

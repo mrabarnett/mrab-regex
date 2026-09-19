@@ -1,3 +1,7 @@
+Version: 2026.9.19
+
+    Git issue 619: `Match.expand()` segfaults after `detach_string()` when the template references a group
+
 Version: 2026.9.10
 
     Fixed version.
