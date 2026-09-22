@@ -3,6 +3,13 @@ Introduction
 
 This regex implementation is backwards-compatible with the standard 're' module, but offers additional functionality.
 
+Installation
+------------
+
+Install the ``regex`` package from PyPI using pip::
+
+    python -m pip install regex
+
 Python 2
 --------
 
