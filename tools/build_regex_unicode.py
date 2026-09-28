@@ -773,12 +773,12 @@ def determine_entry_type(iterable):
     lower, upper = min(iterable), max(iterable)
 
     if 0 <= lower <= upper <= 0xFF:
-        return 'RE_UINT8'
+        return 'uint8_t'
 
     if 0 <= lower <= upper <= 0xFFFF:
-        return 'RE_UINT16'
+        return 'uint16_t'
 
-    raise ValueError('cannot determine C type for {}..{}'.format(lower, upper))
+    return 'uint32_t'
 
 def count_ranges(property):
     count = 0
@@ -793,7 +793,7 @@ def count_ranges(property):
 def generate_small_lookup(property, c_file):
     c_file.write('''
 /* {}. */
-RE_UINT32 re_get_{}(RE_UINT32 codepoint) {{
+uint32_t re_get_{}(uint32_t codepoint) {{
 '''.format(property['names'][0], property['names'][0].lower()))
 
     default_id = property['values'][munge(property['default'])]['id']
@@ -904,12 +904,12 @@ def generate_lookup(property, c_file):
 
     if binary:
         c_file.write('''
-RE_UINT32 re_get_{0}(RE_UINT32 codepoint) {{
-    RE_UINT32 field_2;
-    RE_UINT32 field_1;
-    RE_UINT32 field_0;
-    RE_UINT32 offset;
-    RE_UINT32 v;
+uint32_t re_get_{0}(uint32_t codepoint) {{
+    uint32_t field_2;
+    uint32_t field_1;
+    uint32_t field_0;
+    uint32_t offset;
+    uint32_t v;
 
     field_2 = codepoint >> 10;
     field_1 = (codepoint >> 5) & 0x1F;
@@ -925,11 +925,11 @@ RE_UINT32 re_get_{0}(RE_UINT32 codepoint) {{
 '''.format(prop_name))
     else:
         c_file.write('''
-RE_UINT32 re_get_{0}(RE_UINT32 codepoint) {{
-    RE_UINT32 field_2;
-    RE_UINT32 field_1;
-    RE_UINT32 field_0;
-    RE_UINT32 v;
+uint32_t re_get_{0}(uint32_t codepoint) {{
+    uint32_t field_2;
+    uint32_t field_1;
+    uint32_t field_0;
+    uint32_t v;
 
     field_2 = codepoint >> 10;
     field_1 = (codepoint >> 5) & 0x1F;
@@ -1014,11 +1014,11 @@ def generate_script_extensions_lookup(properties, property, c_file):
     generate_table('{}_table_5'.format(prop_name), entries, c_file)
 
     c_file.write('''
-int re_get_{0}(RE_UINT32 codepoint, RE_UINT8* scripts) {{
-    RE_UINT32 field_2;
-    RE_UINT32 field_1;
-    RE_UINT32 field_0;
-    RE_UINT32 v;
+int re_get_{0}(uint32_t codepoint, uint8_t* scripts) {{
+    uint32_t field_2;
+    uint32_t field_1;
+    uint32_t field_0;
+    uint32_t v;
     int offset;
     int count;
 
@@ -1132,11 +1132,11 @@ def generate_all_cases(unicode_data, c_file):
     c_file.write('};\n')
 
     c_file.write('''
-int re_get_all_cases(RE_UINT32 codepoint, RE_UINT32* cases) {
-    RE_UINT32 field_2;
-    RE_UINT32 field_1;
-    RE_UINT32 field_0;
-    RE_UINT32 v;
+int re_get_all_cases(uint32_t codepoint, uint32_t* cases) {
+    uint32_t field_2;
+    uint32_t field_1;
+    uint32_t field_0;
+    uint32_t v;
 
     field_2 = codepoint >> 10;
     field_1 = (codepoint >> 5) & 0x1F;
@@ -1209,7 +1209,7 @@ def generate_simple_case_folding(unicode_data, c_file):
 
         generate_table('re_simple_folding_table_{}'.format(1 + i), table, c_file)
 
-    c_file.write('\nstatic RE_UINT16 re_simple_folding_table_4[] = {\n')
+    c_file.write('\nstatic uint32_t re_simple_folding_table_4[] = {\n')
 
     entries = [str(value) for value in sorted(value_dict, key=value_dict.get)]
     max_width = max(len(entry) for entry in entries)
@@ -1222,11 +1222,11 @@ def generate_simple_case_folding(unicode_data, c_file):
     c_file.write('};\n')
 
     c_file.write('''
-RE_UINT32 re_get_simple_case_folding(RE_UINT32 codepoint) {
-    RE_UINT32 field_2;
-    RE_UINT32 field_1;
-    RE_UINT32 field_0;
-    RE_UINT32 v;
+uint32_t re_get_simple_case_folding(uint32_t codepoint) {
+    uint32_t field_2;
+    uint32_t field_1;
+    uint32_t field_0;
+    uint32_t v;
 
     field_2 = codepoint >> 10;
     field_1 = (codepoint >> 5) & 0x1F;
@@ -1302,12 +1302,12 @@ def generate_full_case_folding(unicode_data, c_file):
     c_file.write('};\n')
 
     c_file.write('''
-int re_get_full_case_folding(RE_UINT32 codepoint, RE_UINT32* folded) {
-    RE_UINT32 field_2;
-    RE_UINT32 field_1;
-    RE_UINT32 field_0;
-    RE_UINT32 v;
-    RE_UINT16* data;
+int re_get_full_case_folding(uint32_t codepoint, uint32_t* folded) {
+    uint32_t field_2;
+    uint32_t field_1;
+    uint32_t field_0;
+    uint32_t v;
+    uint32_t* data;
 
     field_2 = codepoint >> 10;
     field_1 = (codepoint >> 5) & 0x1F;
@@ -1460,16 +1460,16 @@ def generate_code(unicode_data, unicode_version, output_folder):
 #define RE_WORD_MASK (RE_PROP_M_MASK | (1 << RE_PROP_ND) | (1 << RE_PROP_PC))
 
 typedef struct {
-    RE_UINT8 scripts[RE_MAX_SCX];
+    uint8_t scripts[RE_MAX_SCX];
 } RE_ScriptExt;
 
 typedef struct {
-    RE_UINT32 delta;
-    RE_UINT16 others[RE_MAX_CASES - 1];
+    uint32_t delta;
+    uint32_t others[RE_MAX_CASES - 1];
 } RE_AllCases;
 
 typedef struct {
-    RE_UINT16 data[RE_MAX_FOLDED];
+    uint32_t data[RE_MAX_FOLDED];
 } RE_FullCaseFolding;
 
 /* Strings. */
@@ -1579,20 +1579,10 @@ RE_GetPropertyFunc re_get_property[] = {
         max_scx = max(len(key) for key in property['values'])
 
         h_file.write('''\
+#include <stdbool.h>
+#include <stdint.h>
+
 #define RE_UNICODE_VERSION "{}"
-
-typedef unsigned char RE_UINT8;
-typedef signed char RE_INT8;
-typedef unsigned short RE_UINT16;
-typedef signed short RE_INT16;
-typedef unsigned int RE_UINT32;
-typedef signed int RE_INT32;
-
-typedef unsigned char BOOL;
-#if !defined(FALSE) || !defined(TRUE)
-#define FALSE 0
-#define TRUE 1
-#endif
 
 #define RE_ASCII_MAX 0x7F
 #define RE_LOCALE_MAX 0xFF
@@ -1602,18 +1592,18 @@ typedef unsigned char BOOL;
 #define RE_MAX_SCX {}
 
 typedef struct RE_Property {{
-    RE_UINT16 name;
-    RE_UINT8 id;
-    RE_UINT8 value_set;
+    uint16_t name;
+    uint8_t id;
+    uint8_t value_set;
 }} RE_Property;
 
 typedef struct RE_PropertyValue {{
-    RE_UINT16 name;
-    RE_UINT8 value_set;
-    RE_UINT16 id;
+    uint16_t name;
+    uint8_t value_set;
+    uint16_t id;
 }} RE_PropertyValue;
 
-typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
+typedef uint32_t (*RE_GetPropertyFunc)(uint32_t codepoint);
 '''.format(UNICODE_VERSION, max_scx))
 
         gc_id = properties[munge('General_Category')]['id']
@@ -1734,7 +1724,7 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
         h_file.write('extern char* re_strings[{}];\n'.format(unicode_data['string_count']))
         h_file.write('extern RE_Property re_properties[{}];\n'.format(unicode_data['property_table_count']))
         h_file.write('extern RE_PropertyValue re_property_values[{}];\n'.format(unicode_data['valueset_table_count']))
-        h_file.write('extern RE_UINT16 re_expand_on_folding[{}];\n'.format(unicode_data['expanded_count']))
+        h_file.write('extern uint32_t re_expand_on_folding[{}];\n'.format(unicode_data['expanded_count']))
         h_file.write('extern RE_GetPropertyFunc re_get_property[{}];\n'.format(unicode_data['property_count']))
 
         h_file.write('\n')
@@ -1743,16 +1733,16 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
             prop_name = property['names'][0]
 
             if prop_name == 'Script_Extensions':
-                h_file.write('int re_get_{}(RE_UINT32 codepoint, RE_UINT8* scripts);\n'.format(prop_name.lower()))
+                h_file.write('int re_get_{}(uint32_t codepoint, uint8_t* scripts);\n'.format(prop_name.lower()))
             else:
-                h_file.write('RE_UINT32 re_get_{}(RE_UINT32 codepoint);\n'.format(prop_name.lower()))
+                h_file.write('uint32_t re_get_{}(uint32_t codepoint);\n'.format(prop_name.lower()))
 
-        h_file.write('int re_get_all_cases(RE_UINT32 codepoint, RE_UINT32* cases);\n')
-        h_file.write('RE_UINT32 re_get_simple_case_folding(RE_UINT32 codepoint);\n')
-        h_file.write('int re_get_full_case_folding(RE_UINT32 codepoint, RE_UINT32* folded);\n')
+        h_file.write('int re_get_all_cases(uint32_t codepoint, uint32_t* cases);\n')
+        h_file.write('uint32_t re_get_simple_case_folding(uint32_t codepoint);\n')
+        h_file.write('int re_get_full_case_folding(uint32_t codepoint, uint32_t* folded);\n')
 
 # The Unicode version.
-UNICODE_VERSION = '17.0.0'
+UNICODE_VERSION = '18.0.0'
 
 this_folder = dirname(__file__)
 

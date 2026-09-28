@@ -1,17 +1,7 @@
-#define RE_UNICODE_VERSION "17.0.0"
+#include <stdbool.h>
+#include <stdint.h>
 
-typedef unsigned char RE_UINT8;
-typedef signed char RE_INT8;
-typedef unsigned short RE_UINT16;
-typedef signed short RE_INT16;
-typedef unsigned int RE_UINT32;
-typedef signed int RE_INT32;
-
-typedef unsigned char BOOL;
-#if !defined(FALSE) || !defined(TRUE)
-#define FALSE 0
-#define TRUE 1
-#endif
+#define RE_UNICODE_VERSION "18.0.0"
 
 #define RE_ASCII_MAX 0x7F
 #define RE_LOCALE_MAX 0xFF
@@ -21,18 +11,18 @@ typedef unsigned char BOOL;
 #define RE_MAX_SCX 23
 
 typedef struct RE_Property {
-    RE_UINT16 name;
-    RE_UINT8 id;
-    RE_UINT8 value_set;
+    uint16_t name;
+    uint8_t id;
+    uint8_t value_set;
 } RE_Property;
 
 typedef struct RE_PropertyValue {
-    RE_UINT16 name;
-    RE_UINT8 value_set;
-    RE_UINT16 id;
+    uint16_t name;
+    uint8_t value_set;
+    uint16_t id;
 } RE_PropertyValue;
 
-typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
+typedef uint32_t (*RE_GetPropertyFunc)(uint32_t codepoint);
 
 #define RE_PROP_GC 0x1E
 #define RE_PROP_CASED 0xA
@@ -173,8 +163,8 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
 #define RE_LBREAK_NEXTLINE 19
 #define RE_LBREAK_GLUE 20
 #define RE_LBREAK_AMBIGUOUS 21
-#define RE_LBREAK_BREAKBEFORE 22
-#define RE_LBREAK_UNAMBIGUOUSHYPHEN 23
+#define RE_LBREAK_UNAMBIGUOUSHYPHEN 22
+#define RE_LBREAK_BREAKBEFORE 23
 #define RE_LBREAK_HEBREWLETTER 24
 #define RE_LBREAK_COMPLEXCONTEXT 25
 #define RE_LBREAK_JL 26
@@ -206,113 +196,113 @@ typedef RE_UINT32 (*RE_GetPropertyFunc)(RE_UINT32 codepoint);
 #define RE_INCB_CONSONANT 2
 #define RE_INCB_LINKER 3
 
-extern char* re_strings[1549];
+extern char* re_strings[1572];
 extern RE_Property re_properties[185];
-extern RE_PropertyValue re_property_values[1704];
-extern RE_UINT16 re_expand_on_folding[104];
+extern RE_PropertyValue re_property_values[1729];
+extern uint32_t re_expand_on_folding[105];
 extern RE_GetPropertyFunc re_get_property[101];
 
-RE_UINT32 re_get_alphabetic(RE_UINT32 codepoint);
-RE_UINT32 re_get_alphanumeric(RE_UINT32 codepoint);
-RE_UINT32 re_get_any(RE_UINT32 codepoint);
-RE_UINT32 re_get_ascii_hex_digit(RE_UINT32 codepoint);
-RE_UINT32 re_get_bidi_class(RE_UINT32 codepoint);
-RE_UINT32 re_get_bidi_control(RE_UINT32 codepoint);
-RE_UINT32 re_get_bidi_mirrored(RE_UINT32 codepoint);
-RE_UINT32 re_get_blank(RE_UINT32 codepoint);
-RE_UINT32 re_get_block(RE_UINT32 codepoint);
-RE_UINT32 re_get_canonical_combining_class(RE_UINT32 codepoint);
-RE_UINT32 re_get_cased(RE_UINT32 codepoint);
-RE_UINT32 re_get_case_ignorable(RE_UINT32 codepoint);
-RE_UINT32 re_get_changes_when_casefolded(RE_UINT32 codepoint);
-RE_UINT32 re_get_changes_when_casemapped(RE_UINT32 codepoint);
-RE_UINT32 re_get_changes_when_lowercased(RE_UINT32 codepoint);
-RE_UINT32 re_get_changes_when_titlecased(RE_UINT32 codepoint);
-RE_UINT32 re_get_changes_when_uppercased(RE_UINT32 codepoint);
-RE_UINT32 re_get_dash(RE_UINT32 codepoint);
-RE_UINT32 re_get_decomposition_type(RE_UINT32 codepoint);
-RE_UINT32 re_get_default_ignorable_code_point(RE_UINT32 codepoint);
-RE_UINT32 re_get_deprecated(RE_UINT32 codepoint);
-RE_UINT32 re_get_diacritic(RE_UINT32 codepoint);
-RE_UINT32 re_get_east_asian_width(RE_UINT32 codepoint);
-RE_UINT32 re_get_emoji(RE_UINT32 codepoint);
-RE_UINT32 re_get_emoji_component(RE_UINT32 codepoint);
-RE_UINT32 re_get_emoji_modifier(RE_UINT32 codepoint);
-RE_UINT32 re_get_emoji_modifier_base(RE_UINT32 codepoint);
-RE_UINT32 re_get_emoji_presentation(RE_UINT32 codepoint);
-RE_UINT32 re_get_extended_pictographic(RE_UINT32 codepoint);
-RE_UINT32 re_get_extender(RE_UINT32 codepoint);
-RE_UINT32 re_get_general_category(RE_UINT32 codepoint);
-RE_UINT32 re_get_graph(RE_UINT32 codepoint);
-RE_UINT32 re_get_grapheme_base(RE_UINT32 codepoint);
-RE_UINT32 re_get_grapheme_cluster_break(RE_UINT32 codepoint);
-RE_UINT32 re_get_grapheme_extend(RE_UINT32 codepoint);
-RE_UINT32 re_get_grapheme_link(RE_UINT32 codepoint);
-RE_UINT32 re_get_hangul_syllable_type(RE_UINT32 codepoint);
-RE_UINT32 re_get_hex_digit(RE_UINT32 codepoint);
-RE_UINT32 re_get_horiz_space(RE_UINT32 codepoint);
-RE_UINT32 re_get_hyphen(RE_UINT32 codepoint);
-RE_UINT32 re_get_id_compat_math_continue(RE_UINT32 codepoint);
-RE_UINT32 re_get_id_compat_math_start(RE_UINT32 codepoint);
-RE_UINT32 re_get_id_continue(RE_UINT32 codepoint);
-RE_UINT32 re_get_ideographic(RE_UINT32 codepoint);
-RE_UINT32 re_get_ids_binary_operator(RE_UINT32 codepoint);
-RE_UINT32 re_get_id_start(RE_UINT32 codepoint);
-RE_UINT32 re_get_ids_trinary_operator(RE_UINT32 codepoint);
-RE_UINT32 re_get_ids_unary_operator(RE_UINT32 codepoint);
-RE_UINT32 re_get_indic_conjunct_break(RE_UINT32 codepoint);
-RE_UINT32 re_get_indic_positional_category(RE_UINT32 codepoint);
-RE_UINT32 re_get_indic_syllabic_category(RE_UINT32 codepoint);
-RE_UINT32 re_get_join_control(RE_UINT32 codepoint);
-RE_UINT32 re_get_joining_group(RE_UINT32 codepoint);
-RE_UINT32 re_get_joining_type(RE_UINT32 codepoint);
-RE_UINT32 re_get_line_break(RE_UINT32 codepoint);
-RE_UINT32 re_get_logical_order_exception(RE_UINT32 codepoint);
-RE_UINT32 re_get_lowercase(RE_UINT32 codepoint);
-RE_UINT32 re_get_math(RE_UINT32 codepoint);
-RE_UINT32 re_get_modifier_combining_mark(RE_UINT32 codepoint);
-RE_UINT32 re_get_nfc_quick_check(RE_UINT32 codepoint);
-RE_UINT32 re_get_nfd_quick_check(RE_UINT32 codepoint);
-RE_UINT32 re_get_nfkc_quick_check(RE_UINT32 codepoint);
-RE_UINT32 re_get_nfkd_quick_check(RE_UINT32 codepoint);
-RE_UINT32 re_get_noncharacter_code_point(RE_UINT32 codepoint);
-RE_UINT32 re_get_numeric_type(RE_UINT32 codepoint);
-RE_UINT32 re_get_numeric_value(RE_UINT32 codepoint);
-RE_UINT32 re_get_other_alphabetic(RE_UINT32 codepoint);
-RE_UINT32 re_get_other_default_ignorable_code_point(RE_UINT32 codepoint);
-RE_UINT32 re_get_other_grapheme_extend(RE_UINT32 codepoint);
-RE_UINT32 re_get_other_id_continue(RE_UINT32 codepoint);
-RE_UINT32 re_get_other_id_start(RE_UINT32 codepoint);
-RE_UINT32 re_get_other_lowercase(RE_UINT32 codepoint);
-RE_UINT32 re_get_other_math(RE_UINT32 codepoint);
-RE_UINT32 re_get_other_uppercase(RE_UINT32 codepoint);
-RE_UINT32 re_get_pattern_syntax(RE_UINT32 codepoint);
-RE_UINT32 re_get_pattern_white_space(RE_UINT32 codepoint);
-RE_UINT32 re_get_posix_alnum(RE_UINT32 codepoint);
-RE_UINT32 re_get_posix_digit(RE_UINT32 codepoint);
-RE_UINT32 re_get_posix_punct(RE_UINT32 codepoint);
-RE_UINT32 re_get_posix_xdigit(RE_UINT32 codepoint);
-RE_UINT32 re_get_prepended_concatenation_mark(RE_UINT32 codepoint);
-RE_UINT32 re_get_print(RE_UINT32 codepoint);
-RE_UINT32 re_get_quotation_mark(RE_UINT32 codepoint);
-RE_UINT32 re_get_radical(RE_UINT32 codepoint);
-RE_UINT32 re_get_regional_indicator(RE_UINT32 codepoint);
-RE_UINT32 re_get_script(RE_UINT32 codepoint);
-int re_get_script_extensions(RE_UINT32 codepoint, RE_UINT8* scripts);
-RE_UINT32 re_get_sentence_break(RE_UINT32 codepoint);
-RE_UINT32 re_get_sentence_terminal(RE_UINT32 codepoint);
-RE_UINT32 re_get_soft_dotted(RE_UINT32 codepoint);
-RE_UINT32 re_get_terminal_punctuation(RE_UINT32 codepoint);
-RE_UINT32 re_get_unified_ideograph(RE_UINT32 codepoint);
-RE_UINT32 re_get_uppercase(RE_UINT32 codepoint);
-RE_UINT32 re_get_variation_selector(RE_UINT32 codepoint);
-RE_UINT32 re_get_vert_space(RE_UINT32 codepoint);
-RE_UINT32 re_get_white_space(RE_UINT32 codepoint);
-RE_UINT32 re_get_word(RE_UINT32 codepoint);
-RE_UINT32 re_get_word_break(RE_UINT32 codepoint);
-RE_UINT32 re_get_xdigit(RE_UINT32 codepoint);
-RE_UINT32 re_get_xid_continue(RE_UINT32 codepoint);
-RE_UINT32 re_get_xid_start(RE_UINT32 codepoint);
-int re_get_all_cases(RE_UINT32 codepoint, RE_UINT32* cases);
-RE_UINT32 re_get_simple_case_folding(RE_UINT32 codepoint);
-int re_get_full_case_folding(RE_UINT32 codepoint, RE_UINT32* folded);
+uint32_t re_get_alphabetic(uint32_t codepoint);
+uint32_t re_get_alphanumeric(uint32_t codepoint);
+uint32_t re_get_any(uint32_t codepoint);
+uint32_t re_get_ascii_hex_digit(uint32_t codepoint);
+uint32_t re_get_bidi_class(uint32_t codepoint);
+uint32_t re_get_bidi_control(uint32_t codepoint);
+uint32_t re_get_bidi_mirrored(uint32_t codepoint);
+uint32_t re_get_blank(uint32_t codepoint);
+uint32_t re_get_block(uint32_t codepoint);
+uint32_t re_get_canonical_combining_class(uint32_t codepoint);
+uint32_t re_get_cased(uint32_t codepoint);
+uint32_t re_get_case_ignorable(uint32_t codepoint);
+uint32_t re_get_changes_when_casefolded(uint32_t codepoint);
+uint32_t re_get_changes_when_casemapped(uint32_t codepoint);
+uint32_t re_get_changes_when_lowercased(uint32_t codepoint);
+uint32_t re_get_changes_when_titlecased(uint32_t codepoint);
+uint32_t re_get_changes_when_uppercased(uint32_t codepoint);
+uint32_t re_get_dash(uint32_t codepoint);
+uint32_t re_get_decomposition_type(uint32_t codepoint);
+uint32_t re_get_default_ignorable_code_point(uint32_t codepoint);
+uint32_t re_get_deprecated(uint32_t codepoint);
+uint32_t re_get_diacritic(uint32_t codepoint);
+uint32_t re_get_east_asian_width(uint32_t codepoint);
+uint32_t re_get_emoji(uint32_t codepoint);
+uint32_t re_get_emoji_component(uint32_t codepoint);
+uint32_t re_get_emoji_modifier(uint32_t codepoint);
+uint32_t re_get_emoji_modifier_base(uint32_t codepoint);
+uint32_t re_get_emoji_presentation(uint32_t codepoint);
+uint32_t re_get_extended_pictographic(uint32_t codepoint);
+uint32_t re_get_extender(uint32_t codepoint);
+uint32_t re_get_general_category(uint32_t codepoint);
+uint32_t re_get_graph(uint32_t codepoint);
+uint32_t re_get_grapheme_base(uint32_t codepoint);
+uint32_t re_get_grapheme_cluster_break(uint32_t codepoint);
+uint32_t re_get_grapheme_extend(uint32_t codepoint);
+uint32_t re_get_grapheme_link(uint32_t codepoint);
+uint32_t re_get_hangul_syllable_type(uint32_t codepoint);
+uint32_t re_get_hex_digit(uint32_t codepoint);
+uint32_t re_get_horiz_space(uint32_t codepoint);
+uint32_t re_get_hyphen(uint32_t codepoint);
+uint32_t re_get_id_compat_math_continue(uint32_t codepoint);
+uint32_t re_get_id_compat_math_start(uint32_t codepoint);
+uint32_t re_get_id_continue(uint32_t codepoint);
+uint32_t re_get_ideographic(uint32_t codepoint);
+uint32_t re_get_ids_binary_operator(uint32_t codepoint);
+uint32_t re_get_id_start(uint32_t codepoint);
+uint32_t re_get_ids_trinary_operator(uint32_t codepoint);
+uint32_t re_get_ids_unary_operator(uint32_t codepoint);
+uint32_t re_get_indic_conjunct_break(uint32_t codepoint);
+uint32_t re_get_indic_positional_category(uint32_t codepoint);
+uint32_t re_get_indic_syllabic_category(uint32_t codepoint);
+uint32_t re_get_join_control(uint32_t codepoint);
+uint32_t re_get_joining_group(uint32_t codepoint);
+uint32_t re_get_joining_type(uint32_t codepoint);
+uint32_t re_get_line_break(uint32_t codepoint);
+uint32_t re_get_logical_order_exception(uint32_t codepoint);
+uint32_t re_get_lowercase(uint32_t codepoint);
+uint32_t re_get_math(uint32_t codepoint);
+uint32_t re_get_modifier_combining_mark(uint32_t codepoint);
+uint32_t re_get_nfc_quick_check(uint32_t codepoint);
+uint32_t re_get_nfd_quick_check(uint32_t codepoint);
+uint32_t re_get_nfkc_quick_check(uint32_t codepoint);
+uint32_t re_get_nfkd_quick_check(uint32_t codepoint);
+uint32_t re_get_noncharacter_code_point(uint32_t codepoint);
+uint32_t re_get_numeric_type(uint32_t codepoint);
+uint32_t re_get_numeric_value(uint32_t codepoint);
+uint32_t re_get_other_alphabetic(uint32_t codepoint);
+uint32_t re_get_other_default_ignorable_code_point(uint32_t codepoint);
+uint32_t re_get_other_grapheme_extend(uint32_t codepoint);
+uint32_t re_get_other_id_continue(uint32_t codepoint);
+uint32_t re_get_other_id_start(uint32_t codepoint);
+uint32_t re_get_other_lowercase(uint32_t codepoint);
+uint32_t re_get_other_math(uint32_t codepoint);
+uint32_t re_get_other_uppercase(uint32_t codepoint);
+uint32_t re_get_pattern_syntax(uint32_t codepoint);
+uint32_t re_get_pattern_white_space(uint32_t codepoint);
+uint32_t re_get_posix_alnum(uint32_t codepoint);
+uint32_t re_get_posix_digit(uint32_t codepoint);
+uint32_t re_get_posix_punct(uint32_t codepoint);
+uint32_t re_get_posix_xdigit(uint32_t codepoint);
+uint32_t re_get_prepended_concatenation_mark(uint32_t codepoint);
+uint32_t re_get_print(uint32_t codepoint);
+uint32_t re_get_quotation_mark(uint32_t codepoint);
+uint32_t re_get_radical(uint32_t codepoint);
+uint32_t re_get_regional_indicator(uint32_t codepoint);
+uint32_t re_get_script(uint32_t codepoint);
+int re_get_script_extensions(uint32_t codepoint, uint8_t* scripts);
+uint32_t re_get_sentence_break(uint32_t codepoint);
+uint32_t re_get_sentence_terminal(uint32_t codepoint);
+uint32_t re_get_soft_dotted(uint32_t codepoint);
+uint32_t re_get_terminal_punctuation(uint32_t codepoint);
+uint32_t re_get_unified_ideograph(uint32_t codepoint);
+uint32_t re_get_uppercase(uint32_t codepoint);
+uint32_t re_get_variation_selector(uint32_t codepoint);
+uint32_t re_get_vert_space(uint32_t codepoint);
+uint32_t re_get_white_space(uint32_t codepoint);
+uint32_t re_get_word(uint32_t codepoint);
+uint32_t re_get_word_break(uint32_t codepoint);
+uint32_t re_get_xdigit(uint32_t codepoint);
+uint32_t re_get_xid_continue(uint32_t codepoint);
+uint32_t re_get_xid_start(uint32_t codepoint);
+int re_get_all_cases(uint32_t codepoint, uint32_t* cases);
+uint32_t re_get_simple_case_folding(uint32_t codepoint);
+int re_get_full_case_folding(uint32_t codepoint, uint32_t* folded);

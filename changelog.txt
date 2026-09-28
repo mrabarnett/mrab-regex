@@ -1,3 +1,9 @@
+Version: 2026.9.29
+
+    Updated to Unicode 18.0.0.
+
+    Switched to using stdbool.h and stdint.h.
+
 Version: 2026.9.19
 
     Git issue 619: `Match.expand()` segfaults after `detach_string()` when the template references a group
