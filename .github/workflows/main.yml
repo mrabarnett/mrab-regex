@@ -86,7 +86,7 @@ jobs:
           python-version: ${{ env.PYTHON_VER }}
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.2.0
+        uses: pypa/cibuildwheel@v4.3.1
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -135,7 +135,7 @@ jobs:
           python-version: ${{ env.PYTHON_VER }}
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.2.0
+        uses: pypa/cibuildwheel@v4.3.1
 
       - name: Upload manylinux1_x86_64 wheels
         uses: actions/upload-artifact@v4
@@ -168,7 +168,7 @@ jobs:
           platforms: ${{ matrix.arch }}
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.2.0
+        uses: pypa/cibuildwheel@v4.3.1
 
       - name: Upload ${{ matrix.arch }} wheels
         uses: actions/upload-artifact@v4
@@ -176,10 +176,33 @@ jobs:
           name: regex-files-arch-${{ matrix.arch }}
           path: wheelhouse/*.whl
 
+  build_pyemscripten_wheels:
+    name: Build pyemscripten wheels
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    env:
+      CIBW_PLATFORM: pyodide
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v4.3.1
+
+      - name: Upload Pyodide wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: regex-files-pyodide
+          path: wheelhouse/*.whl
+
   # Upload to PyPI
   upload_pypi:
     name: Publish to PyPI
-    needs: [run_test, build_source, build_wheels, build_in_manylinux2014, build_arch_wheels]
+    needs: [run_test, build_source, build_wheels, build_in_manylinux2014, build_arch_wheels, build_pyodide_wheels]
     runs-on: ubuntu-latest
 
     steps:
