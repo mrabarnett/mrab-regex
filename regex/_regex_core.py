@@ -4356,6 +4356,9 @@ class Info:
     "Info about the regular expression."
 
     def __init__(self, flags=0, char_type=None, kwargs={}):
+        if (flags & _ALL_VERSIONS) == _ALL_VERSIONS:
+            raise ValueError("VERSION0 and VERSION1 flags are mutually incompatible")
+
         flags |= DEFAULT_FLAGS[(flags & _ALL_VERSIONS) or DEFAULT_VERSION]
         self.flags = flags
         self.global_flags = flags
