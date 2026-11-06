@@ -1792,7 +1792,6 @@ static bool unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
     Py_UCS4 right_char;
     uint32_t left_prop;
     uint32_t right_prop;
-    uint32_t prop;
     Py_ssize_t pos;
 
     /* Break at the start and end of text, unless the text is empty. */
@@ -1868,33 +1867,16 @@ static bool unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
      */
     /* GB9c	*/
     if (re_get_indic_conjunct_break(right_char) == RE_INCB_CONSONANT) {
-        bool has_linker;
-
-        has_linker = false;
         pos = left_pos;
 
-        do {
-            prop = re_get_indic_conjunct_break(char_at(state->text, pos));
-
-            switch (prop) {
-            case RE_INCB_LINKER:
-                has_linker = true;
-                break;
-            case RE_INCB_EXTEND:
-                break;
-            case RE_INCB_CONSONANT:
-                if (has_linker)
-                    return false;
-                goto end_GB9c;
-            default:
-                goto end_GB9c;
-            }
-
+        while (pos >= state->text_start && re_get_indic_conjunct_break(char_at(state->text, pos)) == RE_INCB_EXTEND) {
             --pos;
-        } while (pos >= state->text_start);
+        }
+
+        if (pos >= state->text_start && re_get_indic_conjunct_break(char_at(state->text, pos)) == RE_INCB_EXTEND)
+            return false;
     }
 
-end_GB9c:
     /* Do not break within emoji modifier sequences or emoji zwj sequences. */
     /* GB11 */
     if (left_prop == RE_GBREAK_ZWJ && re_get_extended_pictographic(right_char))
