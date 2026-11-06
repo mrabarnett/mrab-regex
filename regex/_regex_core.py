@@ -4356,7 +4356,11 @@ class Info:
     "Info about the regular expression."
 
     def __init__(self, flags=0, char_type=None, kwargs={}):
-        flags |= DEFAULT_FLAGS[(flags & _ALL_VERSIONS) or DEFAULT_VERSION]
+        version = (flags & _ALL_VERSIONS) or DEFAULT_VERSION
+        if version == _ALL_VERSIONS:
+            raise ValueError("VERSION0 and VERSION1 flags are mutually incompatible")
+
+        flags |= DEFAULT_FLAGS[version]
         self.flags = flags
         self.global_flags = flags
         self.inline_locale = False
@@ -4536,10 +4540,7 @@ class Scanner:
             except _FirstSetError:
                 pass
 
-        # Check the global flags for conflicts.
         version = (info.flags & _ALL_VERSIONS) or DEFAULT_VERSION
-        if version not in (0, VERSION0, VERSION1):
-            raise ValueError("VERSION0 and VERSION1 flags are mutually incompatible")
 
         # Create the PatternObject.
         #
