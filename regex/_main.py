@@ -244,7 +244,7 @@ __all__ = ["cache_all", "compile", "DEFAULT_VERSION", "escape", "findall",
   "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex", "__version__",
   "__doc__", "RegexFlag"]
 
-__version__ = "2026.9.29"
+__version__ = "2026.11.7"
 
 # --------------------------------------------------------------------
 # Public interface.
@@ -556,7 +556,10 @@ def _compile(pattern, flags, ignore_unused, kwargs, cache_it):
     if not source.at_end():
         raise error("unbalanced parenthesis", pattern, source.pos)
 
+    # Check the global flags for conflicts.
     version = (info.flags & _ALL_VERSIONS) or DEFAULT_VERSION
+    if version not in (0, VERSION0, VERSION1):
+        raise ValueError("VERSION0 and VERSION1 flags are mutually incompatible")
 
     if (info.flags & _ALL_ENCODINGS) not in (0, ASCII, LOCALE, UNICODE):
         raise ValueError("ASCII, LOCALE and UNICODE flags are mutually incompatible")

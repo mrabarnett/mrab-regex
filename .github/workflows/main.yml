@@ -9,7 +9,7 @@ on:
 
 env:
   PYTHON_VER: '3.11'  # Python to run test/cibuildwheel
-  CIBW_BUILD: cp310-* cp311-* cp312-* cp313-* cp314-* cp314t-* cp315-* cp315t-*
+  CIBW_BUILD: cp311-* cp312-* cp313-* cp314-* cp314t-* cp315-* cp315t-*
   CIBW_TEST_COMMAND: python -m unittest regex.tests.test_regex
 
 jobs:
@@ -124,7 +124,7 @@ jobs:
       # manylinux2014  >=19.3   3.7.8+, 3.8.4+, 3.9.0+    2.17 (2012-12-25)
       # manylinux_x_y  >=20.3   3.8.10+, 3.9.5+, 3.10.0+  x.y
       # manylinux2010 images EOL on 2022-08-01, it doesn't support cp311.
-      CIBW_BUILD: cp310-*
+      CIBW_BUILD: cp311-*
       CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
       CIBW_ARCHS_LINUX: x86_64
 
