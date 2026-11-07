@@ -1862,21 +1862,19 @@ static bool unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
     if (left_prop == RE_GBREAK_PREPEND)
         return false;
 
-    /* GB9c (Unicode 18.0): Do not break between an InCB=Linker followed by
-     * zero or more InCB=Extend characters and an InCB=Consonant.
+    /* The GB9c rule only applies to extended grapheme clusters: Do not break
+     * within certain combinations with Indic_Conjunct_Break (InCB)=Linker.
      */
+    /* GB9c	*/
     if (re_get_indic_conjunct_break(right_char) == RE_INCB_CONSONANT) {
-        for (pos = left_pos; pos >= state->text_start; --pos) {
-            uint32_t prop;
+        pos = left_pos;
 
-            prop = re_get_indic_conjunct_break(char_at(state->text, pos));
-
-            if (prop == RE_INCB_LINKER)
-                return false;
-
-            if (prop != RE_INCB_EXTEND)
-                break;
+        while (pos >= state->text_start && re_get_indic_conjunct_break(char_at(state->text, pos)) == RE_INCB_EXTEND) {
+            --pos;
         }
+
+        if (pos >= state->text_start && re_get_indic_conjunct_break(char_at(state->text, pos)) == RE_INCB_LINKER)
+            return false;
     }
 
     /* Do not break within emoji modifier sequences or emoji zwj sequences. */

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "regex"
-version = "2026.9.29"
+version = "2026.11.7"
 description = "Alternative regular expression module, to replace re."
 readme = "README.rst"
 authors = [
@@ -17,7 +17,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -29,7 +28,7 @@ classifiers = [
     "Topic :: Text Processing :: General",
 ]
 
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 
 [project.urls]
 Homepage = "https://github.com/mrabarnett/mrab-regex"
