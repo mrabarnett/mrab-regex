@@ -4411,6 +4411,9 @@ thing
         # Git issue 629: SEGV (NULL pointer dereference) in Match.fuzzy_changes with POSIX+ASCII+IGNORECASE flags
         self.assertEqual(regex.match("..{e}", "a", flags=regex.POSIX | regex.ASCII | regex.IGNORECASE).fuzzy_changes, ([], [], [1]))
 
+        # Git issue 630: RuntimeError: invalid RE code for a fuzzy limit of 2**32 or more
+        self.assertRaises(regex.error, lambda: regex.compile("a{e<=4294967296}"))
+
         # Git issue 631: RuntimeError: invalid RE code when searching with (?r:(())a\G){i<2}
         self.assertEqual(regex.search(r"(?r:\Ga){i<2}", "The quick brown fox"), None)
         self.assertEqual(regex.search(r"(?r:a\G){i<2}", "The quick brown fox"), None)

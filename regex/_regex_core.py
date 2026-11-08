@@ -708,7 +708,7 @@ def parse_cost_constraint(source, constraints):
             if not max_inc:
                 max_cost -= 1
 
-            if max_cost < 0:
+            if not 0 <= max_cost <= 0xFFFFFFFF:
                 raise error("bad fuzzy cost limit", source.string, cost_pos)
 
             constraints[constraint] = 0, max_cost
@@ -798,7 +798,7 @@ def parse_cost_equation(source, constraints):
     if not max_inc:
         max_cost -= 1
 
-    if max_cost < 0:
+    if not 0 <= max_cost <= 0xFFFFFFFF:
         raise error("bad fuzzy cost limit", source.string, source.pos)
 
     cost["max"] = max_cost
