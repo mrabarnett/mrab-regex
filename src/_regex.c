@@ -15335,6 +15335,7 @@ backtrack:
         case RE_OP_END_OF_STRING_LINE_U: /* At the end of string or final newline. */
         case RE_OP_END_OF_WORD: /* At the end of a word. */
         case RE_OP_GRAPHEME_BOUNDARY: /* On a grapheme boundary. */
+        case RE_OP_SEARCH_ANCHOR: /* At the start of the search. */
         case RE_OP_START_OF_LINE: /* At the start of a line. */
         case RE_OP_START_OF_LINE_U: /* At the start of a line. */
         case RE_OP_START_OF_STRING: /* At the start of the string. */
