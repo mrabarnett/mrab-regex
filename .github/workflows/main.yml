@@ -13,6 +13,21 @@ env:
   CIBW_TEST_COMMAND: python -m unittest regex.tests.test_regex
 
 jobs:
+  # Stop before PyPI when the tag and the version in the files disagree.
+  check_version:
+    name: Check tag matches version
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Tag, pyproject.toml and regex/_main.py name one version
+        run: |
+          toml=$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)
+          code=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' regex/_main.py)
+          echo "tag=$GITHUB_REF_NAME pyproject.toml=$toml regex/_main.py=$code"
+          test "$GITHUB_REF_NAME" = "$toml" && test "$GITHUB_REF_NAME" = "$code"
+
   # Build source distribution
   build_source:
     name: Build Source
@@ -179,7 +194,7 @@ jobs:
   # Upload to PyPI
   upload_pypi:
     name: Publish to PyPI
-    needs: [run_test, build_source, build_wheels, build_in_manylinux2014, build_arch_wheels]
+    needs: [check_version, run_test, build_source, build_wheels, build_in_manylinux2014, build_arch_wheels]
     runs-on: ubuntu-latest
 
     steps:
