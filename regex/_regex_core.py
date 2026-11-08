@@ -2075,6 +2075,9 @@ class AnyAll(Any):
             new.zerowidth = zerowidth
         return new
 
+    def optimise(self, info, reverse, in_set=False):
+        return self
+
 class AnyU(Any):
     _opcode = {False: OP.ANY_U, True: OP.ANY_U_REV}
     _op_name = "ANY_U"

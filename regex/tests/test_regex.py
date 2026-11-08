@@ -4421,6 +4421,10 @@ thing
         # Git issue 632: AttributeError: 'AnyAll' object has no attribute 'rebuild' for [^\d\D] with IGNORECASE
         self.assertEqual(bool(regex.compile(r"(?i)[^\d\D]")), True)
 
+        # Git issue 633: TypeError from optimise() (unexpected keyword 'in_set') for (?V1)[a&&[\PL\pL]] with IGNORECASE
+        self.assertEqual(bool(regex.compile(r"(?V1)[a&&[\PL\pL]]")), True)
+        self.assertEqual(bool(regex.compile(r"(?V1)[a&&[\PL\pL]]", regex.IGNORECASE)), True)
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
