@@ -2067,6 +2067,14 @@ class AnyAll(Any):
 
         self._key = self.__class__, self.positive
 
+    def with_flags(self, positive=None, case_flags=None, zerowidth=None):
+        new = AnyAll()
+        if positive is not None:
+            new.positive = positive
+        if zerowidth is not None:
+            new.zerowidth = zerowidth
+        return new
+
 class AnyU(Any):
     _opcode = {False: OP.ANY_U, True: OP.ANY_U_REV}
     _op_name = "ANY_U"

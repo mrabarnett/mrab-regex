@@ -4418,6 +4418,9 @@ thing
         self.assertEqual(regex.search(r"(?r:\Ga){i<2}", "The quick brown fox"), None)
         self.assertEqual(regex.search(r"(?r:a\G){i<2}", "The quick brown fox"), None)
 
+        # Git issue 632: AttributeError: 'AnyAll' object has no attribute 'rebuild' for [^\d\D] with IGNORECASE
+        self.assertEqual(bool(regex.compile(r"(?i)[^\d\D]")), True)
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
