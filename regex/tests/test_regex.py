@@ -4408,6 +4408,9 @@ thing
         # Git PR 585: Fix AttributeError: 'AnyAll' object has no attribute '_key'
         self.assertEqual(bool(regex.compile('(?:[\\S\\s]|[A-D][M-Z])')), True)
 
+        # Git issue 629: SEGV (NULL pointer dereference) in Match.fuzzy_changes with POSIX+ASCII+IGNORECASE flags
+        self.assertEqual(regex.match("..{e}", "a", flags=regex.POSIX | regex.ASCII | regex.IGNORECASE).fuzzy_changes, ([], [], [1]))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

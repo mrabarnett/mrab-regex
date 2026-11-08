@@ -512,6 +512,7 @@ typedef struct RE_State {
     /* The group call guards. */
     RE_GuardList* group_call_guard_list;
     RE_FuzzyChangesList fuzzy_changes;
+    RE_FuzzyChangesList best_fuzzy_changes;
     RE_SearchPosition search_positions[MAX_SEARCH_POSITIONS]; /* Where the search matches next. */
     size_t capture_change; /* Incremented every time a captive group changes. */
     Py_ssize_t req_pos; /* The position where the required string matched. */
@@ -3403,6 +3404,7 @@ Py_LOCAL_INLINE(void) init_match(RE_State* state) {
         memset(state->fuzzy_counts, 0, sizeof(state->fuzzy_counts));
         state->fuzzy_node = NULL;
         state->fuzzy_changes.count = 0;
+        state->best_fuzzy_changes.count = 0;
     }
 
     state->total_errors = 0;
@@ -11471,6 +11473,18 @@ Py_LOCAL_INLINE(bool) equivalent_nodes(RE_Node* node_1, RE_Node* node_2) {
     return false;
 }
 
+/* Saves the fuzzy counts. */
+Py_LOCAL_INLINE(void) save_fuzzy_counts(RE_State* state, size_t* fuzzy_counts)
+  {
+    Py_MEMCPY(fuzzy_counts, state->fuzzy_counts, sizeof(state->fuzzy_counts));
+}
+
+/* Restores the fuzzy counts. */
+Py_LOCAL_INLINE(void) restore_fuzzy_counts(RE_State* state, size_t*
+  fuzzy_counts) {
+    Py_MEMCPY(state->fuzzy_counts, fuzzy_counts, sizeof(state->fuzzy_counts));
+}
+
 /* Saves the match as the best POSIX match (leftmost longest) found so far. */
 Py_LOCAL_INLINE(bool) save_best_match(RE_State* state) {
     size_t group_count;
@@ -11480,8 +11494,9 @@ Py_LOCAL_INLINE(bool) save_best_match(RE_State* state) {
     state->best_text_pos = state->text_pos;
     state->found_match = true;
 
-    Py_MEMCPY(state->best_fuzzy_counts, state->fuzzy_counts,
-      sizeof(state->fuzzy_counts));
+    save_fuzzy_counts(state, state->best_fuzzy_counts);
+    if (!save_fuzzy_changes(state, &state->best_fuzzy_changes))
+        return false;
 
     group_count = state->pattern->true_group_count;
     if (group_count == 0)
@@ -11554,8 +11569,8 @@ Py_LOCAL_INLINE(void) restore_best_match(RE_State* state) {
     state->match_pos = state->best_match_pos;
     state->text_pos = state->best_text_pos;
 
-    Py_MEMCPY(state->fuzzy_counts, state->best_fuzzy_counts,
-      sizeof(state->fuzzy_counts));
+    restore_fuzzy_counts(state, state->best_fuzzy_counts);
+    restore_fuzzy_changes(state, &state->best_fuzzy_changes);
 
     group_count = state->pattern->true_group_count;
     if (group_count == 0)
@@ -17504,18 +17519,6 @@ Py_LOCAL_INLINE(void) discard_groups(RE_State* state, RE_GroupData*
     release_GIL(state);
 }
 
-/* Saves the fuzzy counts. */
-Py_LOCAL_INLINE(void) save_fuzzy_counts(RE_State* state, size_t* fuzzy_counts)
-  {
-    Py_MEMCPY(fuzzy_counts, state->fuzzy_counts, sizeof(state->fuzzy_counts));
-}
-
-/* Restores the fuzzy counts. */
-Py_LOCAL_INLINE(void) restore_fuzzy_counts(RE_State* state, size_t*
-  fuzzy_counts) {
-    Py_MEMCPY(state->fuzzy_counts, fuzzy_counts, sizeof(state->fuzzy_counts));
-}
-
 /* Initialises the list of best matches found so far. */
 Py_LOCAL_INLINE(void) init_best_list(RE_BestList* best_list) {
     best_list->capacity = 0;
@@ -18513,6 +18516,10 @@ Py_LOCAL_INLINE(bool) state_init_2(RE_State* state, PatternObject* pattern,
     state->fuzzy_changes.count = 0;
     state->fuzzy_changes.items = NULL;
 
+    state->best_fuzzy_changes.capacity = 0;
+    state->best_fuzzy_changes.count = 0;
+    state->best_fuzzy_changes.items = NULL;
+
     Py_INCREF(state->pattern);
     Py_INCREF(state->string);
 
@@ -18714,6 +18721,7 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
         dealloc_fuzzy_guards(state->fuzzy_guards, pattern->fuzzy_count);
 
     re_dealloc(state->fuzzy_changes.items);
+    re_dealloc(state->best_fuzzy_changes.items);
 
     Py_DECREF(state->pattern);
     Py_DECREF(state->string);
