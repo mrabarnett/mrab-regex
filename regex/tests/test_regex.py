@@ -1541,6 +1541,20 @@ class RegexTests(unittest.TestCase):
         self.assertEqual(regex.findall(r"\X", "\r\r\n\u0301A\u0301"),
           ['\r', '\r\n', '\u0301', 'A\u0301'])
 
+    def test_grapheme_indic_linker(self):
+        cases = [
+            ("\u094D\u0915", ["\u094D\u0915"]),
+            ("\u1CF5\u0308\u0915", ["\u1CF5\u0308\u0915"]),
+            ("a\u094D\u0924", ["a\u094D\u0924"]),
+            ("\U00011A3A\U00011A0B", ["\U00011A3A\U00011A0B"]),
+            ("\u0915\u0308\u0924", ["\u0915\u0308", "\u0924"]),
+            ("\u094D\na\u0308\u0915", ["\u094D", "\n", "a\u0308",
+              "\u0915"]),
+        ]
+        for text, clusters in cases:
+            with self.subTest(text=text):
+                self.assertEqual(regex.findall(r"\X", text), clusters)
+
     def test_word_boundary(self):
         text = 'The quick ("brown") fox can\'t jump 32.3 feet, right?'
         self.assertEqual(regex.split(r'(?V1)\b', text), ['', 'The', ' ',
