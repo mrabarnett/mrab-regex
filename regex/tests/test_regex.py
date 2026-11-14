@@ -4425,6 +4425,14 @@ thing
         self.assertEqual(bool(regex.compile(r"(?V1)[a&&[\PL\pL]]")), True)
         self.assertEqual(bool(regex.compile(r"(?V1)[a&&[\PL\pL]]", regex.IGNORECASE)), True)
 
+        # Out-of-bounds read in the partial-match string search when the required string is longer than the text
+        self.assertEqual(regex.search("abcde" * 5, "xy", partial=True).span(), (2, 2))
+        self.assertEqual(regex.search("(?i)" + "abcde" * 5, "xy", partial=True).span(), (2, 2))
+        self.assertEqual(regex.search("(?r)" + "abcde" * 5, "xy", partial=True).span(), (0, 0))
+        self.assertEqual(regex.search("(?ri)" + "abcde" * 5, "xy", partial=True).span(), (0, 0))
+        self.assertEqual(regex.search("abcde" * 5, "zzabc", partial=True).span(), (2, 5))
+        self.assertEqual(regex.search("(?r)" + "abcde" * 5, "cdezz", partial=True).span(), (0, 3))
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
