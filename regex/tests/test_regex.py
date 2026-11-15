@@ -4425,6 +4425,9 @@ thing
         self.assertEqual(bool(regex.compile(r"(?V1)[a&&[\PL\pL]]")), True)
         self.assertEqual(bool(regex.compile(r"(?V1)[a&&[\PL\pL]]", regex.IGNORECASE)), True)
 
+        # Git issue 636: \X splits Indic conjuncts since 2026.11.7 (GB9c never applies)
+        self.assertEqual([m for m in regex.findall(r"\X", "\u0915\u094D\u0937")], ["\u0915\u094D\u0937"])
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

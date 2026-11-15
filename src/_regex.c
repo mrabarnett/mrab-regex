@@ -1874,7 +1874,7 @@ static bool unicode_at_grapheme_boundary(RE_State* state, Py_ssize_t text_pos)
             --pos;
         }
 
-        if (pos >= state->text_start && re_get_indic_conjunct_break(char_at(state->text, pos)) == RE_INCB_EXTEND)
+        if (pos >= state->text_start && re_get_indic_conjunct_break(char_at(state->text, pos)) == RE_INCB_LINKER)
             return false;
     }
 
