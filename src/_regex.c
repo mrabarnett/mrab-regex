@@ -6604,12 +6604,15 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search(RE_State* state, RE_Node* node,
          * (i.e. not truncated).
          */
         found_pos = fast_string_search(state, node, text_pos, limit);
-        if (found_pos < 0 && state->partial_side == RE_PARTIAL_RIGHT)
+        if (found_pos < 0 && state->partial_side == RE_PARTIAL_RIGHT) {
+            Py_ssize_t start_pos;
+
             /* We didn't find the string, but it could've been truncated, so
              * try again, starting close to the end.
              */
-            found_pos = simple_string_search(state, node, limit -
-              (Py_ssize_t)(node->value_count - 1), limit, is_partial);
+            start_pos = max_ssize_t(limit - (Py_ssize_t)(node->value_count - 1), text_pos);
+            found_pos = simple_string_search(state, node, start_pos, limit, is_partial);
+        }
     } else
         found_pos = simple_string_search(state, node, text_pos, limit,
           is_partial);
@@ -6792,12 +6795,15 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign(RE_State* state, RE_Node* node,
          * (i.e. not truncated).
          */
         found_pos = fast_string_search_ign(state, node, text_pos, limit);
-        if (found_pos < 0 && state->partial_side == RE_PARTIAL_RIGHT)
+        if (found_pos < 0 && state->partial_side == RE_PARTIAL_RIGHT) {
+            Py_ssize_t start_pos;
+
             /* We didn't find the string, but it could've been truncated, so
              * try again, starting close to the end.
              */
-            found_pos = simple_string_search_ign(state, node, limit -
-              (Py_ssize_t)(node->value_count - 1), limit, is_partial);
+            start_pos = max_ssize_t(limit - (Py_ssize_t)(node->value_count - 1), text_pos);
+            found_pos = simple_string_search_ign(state, node, start_pos, limit, is_partial);
+        }
     } else
         found_pos = simple_string_search_ign(state, node, text_pos, limit,
           is_partial);
@@ -6834,12 +6840,15 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_ign_rev(RE_State* state, RE_Node*
          * (i.e. not truncated).
          */
         found_pos = fast_string_search_ign_rev(state, node, text_pos, limit);
-        if (found_pos < 0 && state->partial_side == RE_PARTIAL_LEFT)
+        if (found_pos < 0 && state->partial_side == RE_PARTIAL_LEFT) {
+            Py_ssize_t start_pos;
+
             /* We didn't find the string, but it could've been truncated, so
              * try again, starting close to the end.
              */
-            found_pos = simple_string_search_ign_rev(state, node, limit +
-              (Py_ssize_t)(node->value_count - 1), limit, is_partial);
+            start_pos = min_ssize_t(limit + (Py_ssize_t)(node->value_count - 1), text_pos);
+            found_pos = simple_string_search_ign_rev(state, node, start_pos, limit, is_partial);
+        }
     } else
         found_pos = simple_string_search_ign_rev(state, node, text_pos, limit,
           is_partial);
@@ -6875,12 +6884,15 @@ Py_LOCAL_INLINE(Py_ssize_t) string_search_rev(RE_State* state, RE_Node* node,
          * (i.e. not truncated).
          */
         found_pos = fast_string_search_rev(state, node, text_pos, limit);
-        if (found_pos < 0 && state->partial_side == RE_PARTIAL_LEFT)
+        if (found_pos < 0 && state->partial_side == RE_PARTIAL_LEFT) {
+            Py_ssize_t start_pos;
+
             /* We didn't find the string, but it could've been truncated, so
              * try again, starting close to the end.
              */
-            found_pos = simple_string_search_rev(state, node, limit +
-              (Py_ssize_t)(node->value_count - 1), limit, is_partial);
+            start_pos = min_ssize_t(limit + (Py_ssize_t)(node->value_count - 1), text_pos);
+            found_pos = simple_string_search_rev(state, node, start_pos, limit, is_partial);
+        }
     } else
         found_pos = simple_string_search_rev(state, node, text_pos, limit,
           is_partial);

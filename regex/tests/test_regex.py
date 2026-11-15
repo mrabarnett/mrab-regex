@@ -4425,6 +4425,14 @@ thing
         self.assertEqual(bool(regex.compile(r"(?V1)[a&&[\PL\pL]]")), True)
         self.assertEqual(bool(regex.compile(r"(?V1)[a&&[\PL\pL]]", regex.IGNORECASE)), True)
 
+        # PR 635: Fix out-of-bounds read in the partial-match string search
+        self.assertEqual(regex.search("abcde" * 5, "xy", partial=True).span(), (2, 2))
+        self.assertEqual(regex.search("(?i)" + "abcde" * 5, "xy", partial=True).span(), (2, 2))
+        self.assertEqual(regex.search("(?r)" + "abcde" * 5, "xy", partial=True).span(), (0, 0))
+        self.assertEqual(regex.search("(?ri)" + "abcde" * 5, "xy", partial=True).span(), (0, 0))
+        self.assertEqual(regex.search("abcde" * 5, "zzabc", partial=True).span(), (2, 5))
+        self.assertEqual(regex.search("(?r)" + "abcde" * 5, "cdezz", partial=True).span(), (0, 3))
+
         # Git issue 636: \X splits Indic conjuncts since 2026.11.7 (GB9c never applies)
         self.assertEqual([m for m in regex.findall(r"\X", "\u0915\u094D\u0937")], ["\u0915\u094D\u0937"])
 
