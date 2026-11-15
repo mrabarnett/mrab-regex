@@ -2930,6 +2930,28 @@ xyzabc
         self.assertEqual(regex.match(r"(\w+) (\w+)",
           "foo bar").expandf("{0} => {2} {1}"), "foo bar => bar foo")
 
+        # Capture objects passed to 'format' must still be usable after the
+        # call has returned.
+        saved = []
+
+        class Template(str):
+            def format(self, *args, **kwargs):
+                saved.append((args, kwargs))
+                return str.format(self, *args, **kwargs)
+
+        m = regex.match(r"(?P<x>a)(b)", "ab")
+        self.assertEqual(m.expandf(Template("{1}{2}")), "ab")
+        del m
+        args, kwargs = saved.pop()
+        self.assertEqual((str(args[1]), args[2][0], str(kwargs["x"])), ("a",
+          "b", "a"))
+
+        self.assertEqual(regex.subf(r"(?P<x>a)", Template("<{1}>"), "xax"),
+          "x<a>x")
+        args, kwargs = saved.pop()
+        self.assertEqual((str(args[0]), args[1][0], str(kwargs["x"])), ("a",
+          "a", "a"))
+
     def test_fullmatch(self):
         self.assertEqual(bool(regex.fullmatch(r"abc", "abc")), True)
         self.assertEqual(bool(regex.fullmatch(r"abc", "abcx")), False)
