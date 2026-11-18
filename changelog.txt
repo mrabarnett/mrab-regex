@@ -1,3 +1,33 @@
+Version 2026.11.18:
+
+    Git issue 637: regex.WORD \b does not follow Unicode 17 default word boundaries
+
+Version 2026.11.15:
+
+    Git issue 636: \X splits Indic conjuncts since 2026.11.7 (GB9c never applies)
+
+    PR 635: Fix out-of-bounds read in the partial-match string search
+
+Version 2026.11.9:
+
+    Git issue 632: AttributeError: 'AnyAll' object has no attribute 'rebuild' for [^\d\D] with IGNORECASE
+
+    Git issue 633: TypeError from optimise() (unexpected keyword 'in_set') for (?V1)[a&&[\PL\pL]] with IGNORECASE
+
+Version 2026.11.8:
+
+    Git issue 625: KeyError instead of ValueError when both VERSION0 and VERSION1 flags are given
+
+    Git issue 626: \X does not apply Unicode 18.0.0's changed GB9c (10 GraphemeBreakTest-18.0.0 cases fail)
+
+    Updated main.yml to build manylinux2014 wheels on Python 3.11.
+
+    Git issue 629: SEGV (NULL pointer dereference) in Match.fuzzy_changes with POSIX+ASCII+IGNORECASE flags
+
+    Git issue 631: RuntimeError: invalid RE code when searching with (?r:(())a\G){i<2}
+
+    Git issue 630: RuntimeError: invalid RE code for a fuzzy limit of 2**32 or more
+
 Version: 2026.9.29
 
     Updated to Unicode 18.0.0.

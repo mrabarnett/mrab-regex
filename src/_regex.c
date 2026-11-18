@@ -1489,6 +1489,8 @@ static bool unicode_at_word_end(RE_State* state, Py_ssize_t text_pos) {
 
     return left && !right;
 }
+#if 0
+/* Not currently used. See rule WB5a of 'unicode_at_default_boundary' below. */
 
 /* Checks whether a character is a Unicode vowel.
  *
@@ -1515,6 +1517,7 @@ Py_LOCAL_INLINE(bool) is_unicode_vowel(Py_UCS4 ch) {
 static bool is_unicode_apostrophe(Py_UCS4 ch) {
     return ch == 0x27 || ch == 0x2019;
 }
+#endif
 
 Py_LOCAL_INLINE(bool) IS_AHLETTER(uint32_t v) {
     return v == RE_WBREAK_ALETTER || v == RE_WBREAK_HEBREWLETTER;
@@ -1522,6 +1525,11 @@ Py_LOCAL_INLINE(bool) IS_AHLETTER(uint32_t v) {
 
 Py_LOCAL_INLINE(bool) IS_MIDNUMLETQ(uint32_t v) {
     return v == RE_WBREAK_MIDNUMLET || v == RE_WBREAK_SINGLEQUOTE;
+}
+
+Py_LOCAL_INLINE(bool) IS_EXTEND_FORMAT_ZWJ(uint32_t v) {
+    return v == RE_WBREAK_EXTEND || v == RE_WBREAK_FORMAT ||
+      v == RE_WBREAK_ZWJ;
 }
 
 /* Checks whether a position is on a default word boundary.
@@ -1537,7 +1545,6 @@ static bool unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     Py_UCS4 right_char;
     uint32_t left_prop;
     uint32_t right_prop;
-    Py_ssize_t pos;
 
     /* Break at the start and end of text, unless the text is empty. */
     /* WB1 and WB2 */
@@ -1588,17 +1595,12 @@ static bool unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
      * Newline. This also has the effect of: Any x (Format || Extend || ZWJ)
      */
     /* WB4 */
-    if (right_prop == RE_WBREAK_EXTEND || right_prop == RE_WBREAK_FORMAT ||
-      right_prop == RE_WBREAK_ZWJ)
+    if (IS_EXTEND_FORMAT_ZWJ(right_prop))
         return false;
 
-    while (left_prop == RE_WBREAK_EXTEND || left_prop == RE_WBREAK_FORMAT ||
-      left_prop == RE_WBREAK_ZWJ) {
-        if (left_pos <= state->text_start)
-            return false;
+    while (IS_EXTEND_FORMAT_ZWJ(left_prop)) {
         --left_pos;
-        left_char = char_at(state->text, left_pos);
-        left_prop = re_get_word_break(left_char);
+        left_prop = left_pos >= state->text_start ? re_get_word_break(char_at(state->text, left_pos)) : 0xFFFF;
     }
 
     /* Do not break between most letters. */
@@ -1606,66 +1608,87 @@ static bool unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
     if (IS_AHLETTER(left_prop) && IS_AHLETTER(right_prop))
         return false;
 
+#if 0
+    /* Disregard rule WB5a. It's too specific, correct for some languages but
+     * not for some others.
+     *
+     * Also, it was broken, so fixing it might break existing code, but I've
+     * fixed it here just in case it's needed in the future.
+     */
+
     /* Break between apostrophe and vowels (French, Italian). */
     /* WB5a */
     if (is_unicode_apostrophe(left_char) && is_unicode_vowel(right_char))
-        return false;
+        return true;
+#endif
 
     /* Do not break letters across certain punctuation. */
     /* WB6 */
-    if (right_pos + 1 < state->text_end) {
-        Py_UCS4 right_right_char;
-        uint32_t right_right_prop;
+    if (IS_AHLETTER(left_prop) && (right_prop == RE_WBREAK_MIDLETTER || IS_MIDNUMLETQ(right_prop))) {
+        Py_ssize_t pos;
+        uint32_t prop;
 
-        right_right_char = char_at(state->text, right_pos + 1);
-        right_right_prop = re_get_word_break(right_right_char);
+        pos = right_pos;
 
-        if (IS_AHLETTER(left_prop) && (right_prop == RE_WBREAK_MIDLETTER ||
-          IS_MIDNUMLETQ(right_prop)) && IS_AHLETTER(right_right_prop))
+        do {
+            ++pos;
+            prop = pos < state->text_end ? re_get_word_break(char_at(state->text, pos)) : 0xFFFF;
+        } while (IS_EXTEND_FORMAT_ZWJ(prop));
+
+        if (IS_AHLETTER(prop))
             return false;
     }
 
     /* WB7 */
-    if (left_pos - 1 >= state->text_start) {
-        Py_UCS4 left_left_char;
-        uint32_t left_left_prop;
+    if ((left_prop == RE_WBREAK_MIDLETTER || IS_MIDNUMLETQ(left_prop)) &&
+      IS_AHLETTER(right_prop)) {
+        Py_ssize_t pos;
+        uint32_t prop;
 
-        left_left_char = char_at(state->text, left_pos - 1);
-        left_left_prop = re_get_word_break(left_left_char);
+        pos = left_pos;
 
-        if (IS_AHLETTER(left_left_prop) && (left_prop == RE_WBREAK_MIDLETTER ||
-          IS_MIDNUMLETQ(left_prop)) && IS_AHLETTER(right_prop))
+        do {
+            --pos;
+            prop = pos >= state->text_start ? re_get_word_break(char_at(state->text, pos)) : 0xFFFF;
+        } while (IS_EXTEND_FORMAT_ZWJ(prop));
+
+        if (IS_AHLETTER(prop))
             return false;
     }
 
     /* WB7a */
-    if (left_prop == RE_WBREAK_HEBREWLETTER && right_prop ==
-      RE_WBREAK_SINGLEQUOTE)
+    if (left_prop == RE_WBREAK_HEBREWLETTER && right_prop == RE_WBREAK_SINGLEQUOTE)
         return false;
 
     /* WB7b */
-    if (right_pos + 1 < state->text_end) {
-        Py_UCS4 right_right_char;
-        uint32_t right_right_prop;
+    if (left_prop == RE_WBREAK_HEBREWLETTER && right_prop == RE_WBREAK_DOUBLEQUOTE) {
+        Py_ssize_t pos;
+        uint32_t prop;
 
-        right_right_char = char_at(state->text, right_pos + 1);
-        right_right_prop = re_get_word_break(right_right_char);
+        pos = right_pos;
 
-        if (left_prop == RE_WBREAK_HEBREWLETTER && right_prop ==
-          RE_WBREAK_DOUBLEQUOTE && right_right_prop == RE_WBREAK_HEBREWLETTER)
+        do {
+            ++pos;
+            prop = pos < state->text_end ? re_get_word_break(char_at(state->text, pos)) : 0xFFFF;
+        } while (IS_EXTEND_FORMAT_ZWJ(prop));
+
+        if (prop == RE_WBREAK_HEBREWLETTER)
             return false;
     }
 
     /* WB7c */
-    if (left_pos - 1 >= state->text_start) {
-        Py_UCS4 left_left_char;
-        uint32_t left_left_prop;
+    if (left_prop == RE_WBREAK_DOUBLEQUOTE && right_prop == RE_WBREAK_HEBREWLETTER) {
+        Py_ssize_t pos;
+        uint32_t prop;
 
-        left_left_char = char_at(state->text, left_pos - 1);
-        left_left_prop = re_get_word_break(left_left_char);
+        pos = left_pos;
 
-        if (left_left_prop == RE_WBREAK_HEBREWLETTER && left_prop ==
-          RE_WBREAK_DOUBLEQUOTE && right_prop == RE_WBREAK_HEBREWLETTER)
+        do {
+            --pos;
+            prop = pos >= state->text_start ? re_get_word_break(char_at(state->text, pos)) : 0xFFFF;
+        } while (IS_EXTEND_FORMAT_ZWJ(prop));
+
+        if (prop == RE_WBREAK_HEBREWLETTER)
             return false;
     }
 
@@ -1673,11 +1696,8 @@ static bool unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
      * ("3a", or "A3").
      */
     /* WB8 */
-    if (left_prop == RE_WBREAK_NUMERIC && right_prop == RE_WBREAK_NUMERIC)
-        return false;
-
     /* WB9 */
-    if (IS_AHLETTER(left_prop) && right_prop == RE_WBREAK_NUMERIC)
+    if ((left_prop == RE_WBREAK_NUMERIC || IS_AHLETTER(left_prop)) && right_prop == RE_WBREAK_NUMERIC)
         return false;
 
     /* WB10 */
@@ -1686,30 +1706,35 @@ static bool unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
 
     /* Do not break within sequences, such as "3.2" or "3,456.789". */
     /* WB11 */
-    if (left_pos - 1 >= state->text_start) {
-        Py_UCS4 left_left_char;
-        uint32_t left_left_prop;
+    if ((left_prop == RE_WBREAK_MIDNUM || IS_MIDNUMLETQ(left_prop)) &&
+      right_prop == RE_WBREAK_NUMERIC) {
+        Py_ssize_t pos;
+        uint32_t prop;
 
-        left_left_char = char_at(state->text, left_pos - 1);
-        left_left_prop = re_get_word_break(left_left_char);
+        pos = left_pos;
 
-        if (left_left_prop == RE_WBREAK_NUMERIC && (left_prop ==
-          RE_WBREAK_MIDNUM || IS_MIDNUMLETQ(left_prop)) && right_prop ==
-          RE_WBREAK_NUMERIC)
+        do {
+            --pos;
+            prop = pos >= state->text_start ? re_get_word_break(char_at(state->text, pos)) : 0xFFFF;
+        } while (IS_EXTEND_FORMAT_ZWJ(prop));
+
+        if (prop == RE_WBREAK_NUMERIC)
             return false;
     }
 
     /* WB12 */
-    if (right_pos + 1 < state->text_end) {
-        Py_UCS4 right_right_char;
-        uint32_t right_right_prop;
+    if (left_prop == RE_WBREAK_NUMERIC && (right_prop == RE_WBREAK_MIDNUM || IS_MIDNUMLETQ(right_prop))) {
+        Py_ssize_t pos;
+        uint32_t prop;
 
-        right_right_char = char_at(state->text, right_pos + 1);
-        right_right_prop = re_get_word_break(right_right_char);
+        pos = right_pos;
 
-        if (left_prop == RE_WBREAK_NUMERIC && (right_prop == RE_WBREAK_MIDNUM
-          || IS_MIDNUMLETQ(right_prop)) && right_right_prop ==
-          RE_WBREAK_NUMERIC)
+        do {
+            ++pos;
+            prop = pos < state->text_end ? re_get_word_break(char_at(state->text, pos)) : 0xFFFF;
+        } while (IS_EXTEND_FORMAT_ZWJ(prop));
+
+        if (prop == RE_WBREAK_NUMERIC)
             return false;
     }
 
@@ -1735,14 +1760,31 @@ static bool unicode_at_default_boundary(RE_State* state, Py_ssize_t text_pos) {
      * characters before the break point.
      */
     /* WB15 and WB16 */
-    pos = left_pos;
+    if (right_prop == RE_WBREAK_REGIONALINDICATOR) {
+        Py_ssize_t pos;
+        uint32_t prop;
+        bool pair;
 
-    while (pos >= state->text_start && re_get_word_break(char_at(state->text, pos)) ==
-      RE_WBREAK_REGIONALINDICATOR)
-        --pos;
+        pos = left_pos;
+        prop = left_prop;
+        pair = true;
 
-    if ((left_pos - pos) % 2 == 1)
-        return false;
+        for (;;) {
+            if (prop == RE_WBREAK_REGIONALINDICATOR)
+                pair = !pair;
+            else if (!IS_EXTEND_FORMAT_ZWJ(prop))
+                break;
+
+            if (pos <= state->text_start)
+                break;
+
+            --pos;
+            prop = re_get_word_break(char_at(state->text, pos));
+        }
+
+        if (!pair)
+            return false;
+    }
 
     /* Otherwise, break everywhere (including around ideographs). */
     /* WB999 */
