@@ -244,7 +244,7 @@ __all__ = ["cache_all", "compile", "DEFAULT_VERSION", "escape", "findall",
   "VERSION1", "X", "VERBOSE", "W", "WORD", "error", "Regex", "__version__",
   "__doc__", "RegexFlag"]
 
-__version__ = "2026.11.18"
+__version__ = "2026.11.19"
 
 # --------------------------------------------------------------------
 # Public interface.

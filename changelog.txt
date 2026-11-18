@@ -1,3 +1,7 @@
+Version 2026.11.19:
+
+    PR 638: findall: return strings for a single group that repeats
+
 Version 2026.11.18:
 
     Git issue 637: regex.WORD \b does not follow Unicode 17 default word boundaries
