@@ -18599,9 +18599,14 @@ Py_LOCAL_INLINE(bool) state_init_2(RE_State* state, PatternObject* pattern,
 
     /* A state struct can sometimes be shared across threads. In such
      * instances, if multithreading is enabled we need to protect the state
-     * with a lock (mutex) during matching.
+     * with a lock (mutex) during matching. Without the GIL, the state always
+     * needs protecting.
      */
+#if defined(Py_GIL_DISABLED)
+    if (use_lock)
+#else
     if (state->is_multithreaded && use_lock)
+#endif
         state->lock = PyThread_allocate_lock();
 
     for (p = 0; p < MAX_SEARCH_POSITIONS; p++)
@@ -20913,12 +20918,15 @@ Py_LOCAL_INLINE(void) acquire_state_lock(PyObject* owner, RE_State* state) {
     if (state->lock) {
         /* In order to avoid deadlock we need to release the GIL while trying
          * to acquire the lock.
+         *
+         * Don't use release_GIL/acquire_GIL here: state->thread_state belongs
+         * to the thread that's currently holding the lock.
          */
         Py_INCREF(owner);
         if (!PyThread_acquire_lock(state->lock, 0)) {
-            release_GIL(state);
+            Py_BEGIN_ALLOW_THREADS
             PyThread_acquire_lock(state->lock, 1);
-            acquire_GIL(state);
+            Py_END_ALLOW_THREADS
         }
     }
 }

@@ -4569,6 +4569,42 @@ thing
         self.assertEqual(regex.findall(r"(a|b)+", "ab"), ['b'])
         self.assertEqual(regex.findall(r"(a)+(b)", "ab"), [('a', 'b')])
 
+    def test_shared_iterators(self):
+        # A scanner or splitter can be shared across threads.
+        import threading
+
+        def consume(it, results):
+            for item in it:
+                results.append(item)
+
+        def run(make_iter):
+            it = make_iter()
+            results = []
+
+            threads = [threading.Thread(target=consume, args=(it, results))
+              for _ in range(8)]
+
+            for t in threads:
+                t.start()
+
+            for t in threads:
+                t.join()
+
+            return results
+
+        for text in [("abcdefghij" * 40 + ";") * 200,
+          bytearray(b"abcdefghij" * 40 + b";") * 200]:
+            pattern = r"(\w)+;" if isinstance(text, str) else br"(\w)+;"
+            sep = ";" if isinstance(text, str) else b";"
+            expected = [m.span() for m in regex.finditer(pattern, text)]
+
+            for _ in range(10):
+                results = run(lambda: regex.finditer(pattern, text))
+                self.assertEqual(sorted(m.span() for m in results), expected)
+
+                results = run(lambda: regex.splititer(sep, text))
+                self.assertEqual(len(results), 201)
+
 def test_main():
     unittest.main(verbosity=2)
 
