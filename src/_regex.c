@@ -22449,6 +22449,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     Py_ssize_t b;
     Py_ssize_t e;
     size_t g;
+    size_t visible_count;
 
     PyObject* string;
     PyObject* pos = Py_None;
@@ -22461,6 +22462,13 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOnOO:findall", kwlist,
       &string, &pos, &endpos, &overlapped, &concurrent, &timeout))
         return NULL;
+
+    /* The body of a repeat with a minimum count above 1 is built once per
+     * guaranteed repetition, so a capture group in it is counted more than
+     * once. There can never be more visible groups than public ones.
+     */
+    visible_count = min_size_t(self->visible_capture_count,
+      self->public_group_count);
 
     start = as_string_index(pos, 0);
     if (start == -1 && PyErr_Occurred())
@@ -22503,7 +22511,7 @@ static PyObject* pattern_findall(PatternObject* self, PyObject* args, PyObject*
             break;
 
         /* Don't bother to build a MatchObject. */
-        switch (self->visible_capture_count) {
+        switch (visible_count) {
         case 0:
             if (state.reverse) {
                 b = state.text_pos;

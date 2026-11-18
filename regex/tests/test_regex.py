@@ -4561,6 +4561,14 @@ thing
       self.assertEqual(regex.findall(br'\R', b'\r\n\n\x0B\f\r\x85'), [b'\r\n',
         b'\n', b'\x0B', b'\f', b'\r'])
 
+    def test_findall_repeated_group(self):
+        self.assertEqual(regex.findall(r"(a)+", "aa"), ['a'])
+        self.assertEqual(regex.findall(r"(a)+?", "aa"), ['a', 'a'])
+        self.assertEqual(regex.findall(r"(a){2}", "aa"), ['a'])
+        self.assertEqual(regex.findall(r"(a){1,2}", "aa"), ['a'])
+        self.assertEqual(regex.findall(r"(a|b)+", "ab"), ['b'])
+        self.assertEqual(regex.findall(r"(a)+(b)", "ab"), [('a', 'b')])
+
 def test_main():
     unittest.main(verbosity=2)
 
