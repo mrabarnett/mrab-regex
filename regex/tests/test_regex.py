@@ -812,6 +812,22 @@ class RegexTests(unittest.TestCase):
         self.assertEqual(scanner.scan("sum = 3*foo + 312.50 + bar"), (['sum',
           'op=', 3, 'op*', 'foo', 'op+', 312.5, 'op+', 'bar'], ''))
 
+    def test_conflicting_version_flags(self):
+        flags = regex.V0 | regex.V1
+        message = "VERSION0 and VERSION1 flags are mutually incompatible"
+
+        for pattern, compile_flags in (("a", flags), ("(?V0)(?V1)a", 0),
+          ("(?V1)a", regex.V0)):
+            with self.subTest(pattern=pattern, flags=compile_flags):
+                with self.assertRaisesRegex(ValueError, message):
+                    regex.compile(pattern, compile_flags)
+
+        with self.assertRaisesRegex(ValueError, message):
+            regex.search("a", "a", flags)
+
+        with self.assertRaisesRegex(ValueError, message):
+            regex.Scanner([("a", None)], flags)
+
     def test_bug_448951(self):
         # Bug 448951 (similar to 429357, but with single char match).
         # (Also test greedy matches.)
