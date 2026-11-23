@@ -4605,6 +4605,22 @@ thing
                 results = run(lambda: regex.splititer(sep, text))
                 self.assertEqual(len(results), 201)
 
+    def test_union_of_negated_sets(self):
+        self.assertEqual(regex.findall(r"[^a]|[^b]", "ab"), ['a', 'b'])
+        self.assertEqual(regex.findall(r"(?:[^,]|[^;])+", "a,b;c"),
+          ['a,b;c'])
+        self.assertEqual(regex.findall(r"(?i)(?:[^a]|[^b])+", "AbBa"),
+          ['AbBa'])
+        self.assertEqual(regex.findall(r"(?V1)[[^a][^b]]", "ab"), ['a', 'b'])
+        self.assertEqual(regex.findall(r"(?V1)[[^a]||[^b]]", "ab"), ['a', 'b'])
+
+    def test_firstset_with_mixed_case_flags(self):
+        self.assertEqual(regex.findall(r"(?:[^ab]\d|(?i:e)\d)", "A1"),
+          ['A1'])
+        self.assertEqual(regex.findall(r"(?:(?i:e)|[^b]|\d)", "B"), ['B'])
+        self.assertEqual(regex.findall(r"(?:(?i:e)|P|[^b])", "B"), ['B'])
+        self.assertEqual(regex.findall(r"(?i:e)?[^ab]", "A"), ['A'])
+
 def test_main():
     unittest.main(verbosity=2)
 

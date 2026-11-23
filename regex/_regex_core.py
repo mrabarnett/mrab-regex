@@ -382,6 +382,10 @@ def _check_firstset(info, reverse, fs):
     if not fs or None in fs:
         return None
 
+    # A firstset can't mix case-sensitive and case-insensitive members.
+    if len({i.case_flags for i in fs}) > 1:
+        return None
+
     # If we ignore the case, for simplicity we won't build a firstset.
     members = set()
     case_flags = NOCASE
@@ -3967,7 +3971,7 @@ class SetUnion(SetBase):
 
         characters, others = defaultdict(list), []
         for m in self.items:
-            if isinstance(m, Character):
+            if isinstance(m, Character) and m.positive:
                 characters[m.positive].append(m.value)
             else:
                 others.append(m)
