@@ -34,6 +34,8 @@ The global flags are: ``BESTMATCH (?b)``, ``ENHANCEMATCH (?e)``, ``POSIX (?p)``,
 
 If neither the ``ASCII``, ``LOCALE`` nor ``UNICODE`` flag is specified, it will default to ``UNICODE`` if the regex pattern is a Unicode string and ``ASCII`` if it's a bytestring.
 
+Unlike ``re``, ``regex`` accepts the ``LOCALE`` flag with ``str`` patterns as well as bytestring patterns. With ``str`` patterns, character classes such as ``\w`` and case-insensitive matching use the locale's single-byte character rules instead of Unicode rules. For example, in the ``C.UTF-8`` locale, ``regex.fullmatch(r"\w", "é")`` matches, whereas ``regex.fullmatch(r"\w", "é", regex.LOCALE)`` returns ``None``.
+
 The ``ENHANCEMATCH`` flag makes fuzzy matching attempt to improve the fit of the next match that it finds.
 
 The ``BESTMATCH`` flag makes fuzzy matching search for the best match instead of the next match.
