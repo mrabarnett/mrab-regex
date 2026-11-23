@@ -11625,6 +11625,7 @@ Py_LOCAL_INLINE(void) restore_best_match(RE_State* state) {
 
     restore_fuzzy_counts(state, state->best_fuzzy_counts);
     restore_fuzzy_changes(state, &state->best_fuzzy_changes);
+    state->total_errors = total_errors(state->fuzzy_counts);
 
     group_count = state->pattern->true_group_count;
     if (group_count == 0)

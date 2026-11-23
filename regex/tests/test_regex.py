@@ -4436,6 +4436,24 @@ thing
         # Git issue 636: \X splits Indic conjuncts since 2026.11.7 (GB9c never applies)
         self.assertEqual([m for m in regex.findall(r"\X", "\u0915\u094D\u0937")], ["\u0915\u094D\u0937"])
 
+        # Git issue 642: `[^a]|[^b]` matches like `[^ab]`, and negated sets miss matches next to `(?i:...)`
+        self.assertEqual(regex.findall(r'[^a]|[^b]', 'ab'), ['a', 'b'])
+        self.assertEqual(regex.findall(r'(?:[^,]|[^;])+', 'a,b;c'), ['a,b;c'])
+        self.assertEqual(regex.findall(r'(?i)(?:[^a]|[^b])+', 'AbBa'), ['AbBa'])
+        self.assertEqual(regex.findall(r'(?V1)[[^a][^b]]', 'ab'), ['a', 'b'])
+        self.assertEqual(regex.findall(r'(?V1)[[^a]||[^b]]', 'ab'), ['a', 'b'])
+        self.assertEqual(regex.findall(r'(?:[^ab]\d|(?i:e)\d)', 'A1'), ['A1'])
+        self.assertEqual(regex.findall(r'(?:(?i:e)|[^b]|\d)', 'B'), ['B'])
+        self.assertEqual(regex.findall(r'(?i:e)?[^ab]', 'A'), ['A'])
+
+        # PR 644: SEGV in Match.fuzzy_changes with BESTMATCH+POSIX: restore_best_match didn't restore total_errors
+        m = regex.search(r"(?:x*){e<=1}", "", flags=regex.BESTMATCH | regex.POSIX)
+        self.assertEqual((m.fuzzy_counts, m.fuzzy_changes), ((0, 0, 0), ([], [], [])))
+        self.assertEqual([(m.span(), m.fuzzy_counts, m.fuzzy_changes) for m in
+          regex.finditer(r"(?:x*){e<=2}", "aa", flags=regex.BESTMATCH | regex.POSIX,
+          overlapped=True)], [((0, 0), (0, 0, 0), ([], [], [])), ((1, 1), (0, 0, 0),
+          ([], [], [])), ((2, 2), (0, 0, 0), ([], [], []))])
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)

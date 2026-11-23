@@ -385,20 +385,19 @@ def _check_firstset(info, reverse, fs):
     # If we ignore the case, for simplicity we won't build a firstset.
     members = set()
     case_flags = NOCASE
+    case_set = set()
+
     for i in fs:
         if isinstance(i, Character) and not i.positive:
             return None
 
-#        if i.case_flags:
-#            if isinstance(i, Character):
-#                if is_cased_i(info, i.value):
-#                    return []
-#            elif isinstance(i, SetBase):
-#                return []
+        if isinstance(i, (Character, SetBase)):
+            case_set.add(i.case_flags)
+
         case_flags |= i.case_flags
         members.add(i.with_flags(case_flags=NOCASE))
 
-    if case_flags == (FULLCASE | IGNORECASE):
+    if len(case_set) > 1:
         return None
 
     # Build the firstset.
@@ -2017,7 +2016,7 @@ class ZeroWidthBase(RegexBase):
         self._key = self.__class__, self.positive
 
     def get_firstset(self, reverse):
-        return set([None])
+        return {None}
 
     def _compile(self, reverse, fuzzy):
         flags = 0
@@ -2223,7 +2222,7 @@ class Branch(RegexBase):
         for b in self.branches:
             fs |= b.get_firstset(reverse)
 
-        return fs or set([None])
+        return fs or {None}
 
     def _compile(self, reverse, fuzzy):
         if not self.branches:
@@ -2432,6 +2431,9 @@ class Branch(RegexBase):
         items = set()
         case_flags = NOCASE
         for b in branches:
+            if isinstance(b, (Character, SetBase)) and not b.positive:
+                return branches
+
             if isinstance(b, (Character, Property, SetBase)):
                 # Branch starts with a single character.
                 if b.case_flags != case_flags:
@@ -2620,7 +2622,10 @@ class Character(RegexBase):
         return self
 
     def get_firstset(self, reverse):
-        return set([self])
+        if (self.case_flags & FULLIGNORECASE) == FULLIGNORECASE:
+            raise _FirstSetError()
+
+        return {self}
 
     def has_simple_start(self):
         return True
@@ -3197,7 +3202,7 @@ class LookAround(RegexBase):
         if self.positive and self.behind == reverse:
             return self.subpattern.get_firstset(reverse)
 
-        return set([None])
+        return {None}
 
     def _compile(self, reverse, fuzzy):
         flags = 0
@@ -3344,7 +3349,7 @@ class Property(RegexBase):
         return self
 
     def get_firstset(self, reverse):
-        return set([self])
+        return {self}
 
     def has_simple_start(self):
         return True
@@ -3595,7 +3600,7 @@ class Sequence(RegexBase):
                 return fs
             fs.discard(None)
 
-        return fs | set([None])
+        return fs | {None}
 
     def has_simple_start(self):
         return bool(self.items) and self.items[0].has_simple_start()
@@ -3742,7 +3747,7 @@ class SetBase(RegexBase):
           zerowidth).optimise(self.info, False)
 
     def get_firstset(self, reverse):
-        return set([self])
+        return {self}
 
     def has_simple_start(self):
         return True
@@ -3938,12 +3943,17 @@ class SetUnion(SetBase):
 
         # Are there complementary properties?
         properties = (set(), set())
+        nonmatch_characters = set()
 
         for m in items:
             if isinstance(m, Property):
                 properties[m.positive].add((m.value, m.case_flags, m.zerowidth))
+            elif isinstance(m, Character) and not m.positive:
+                nonmatch_characters.add(m.value)
 
         if properties[0] & properties[1]:
+            return AnyAll()
+        if len(nonmatch_characters) > 1:
             return AnyAll()
 
         if len(items) == 1:
@@ -4039,6 +4049,9 @@ class String(RegexBase):
         self._key = self.__class__, self.characters, self.case_flags
 
     def get_firstset(self, reverse):
+        if (self.case_flags & FULLIGNORECASE) == FULLIGNORECASE:
+            raise _FirstSetError()
+
         if reverse:
             pos = -1
         else:

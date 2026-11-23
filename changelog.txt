@@ -1,3 +1,9 @@
+Version 2026.11.23:
+
+    Git issue 642: `[^a]|[^b]` matches like `[^ab]`, and negated sets miss matches next to `(?i:...)`
+
+    PR 644: SEGV in Match.fuzzy_changes with BESTMATCH+POSIX: restore_best_match didn't restore total_errors
+
 Version 2026.11.19:
 
     PR 638: findall: return strings for a single group that repeats
