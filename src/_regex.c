@@ -637,7 +637,7 @@ typedef struct SplitterObject {
 typedef struct CaptureObject {
     PyObject_HEAD
     Py_ssize_t group_index;
-    MatchObject** match_indirect;
+    MatchObject* match;
 } CaptureObject;
 
 /* Info used when compiling a pattern to nodes. */
@@ -20035,7 +20035,7 @@ static PyTypeObject Capture_Type = {
 };
 
 /* Creates a new CaptureObject. */
-Py_LOCAL_INLINE(PyObject*) make_capture_object(MatchObject** match_indirect,
+Py_LOCAL_INLINE(PyObject*) make_capture_object(MatchObject* match,
   Py_ssize_t index) {
     CaptureObject* capture;
 
@@ -20044,14 +20044,14 @@ Py_LOCAL_INLINE(PyObject*) make_capture_object(MatchObject** match_indirect,
         return NULL;
 
     capture->group_index = index;
-    capture->match_indirect = match_indirect;
+    capture->match = match;
+    Py_INCREF(capture->match);
 
     return (PyObject*)capture;
 }
 
 /* Makes a MatchObject's capture dictionary. */
-Py_LOCAL_INLINE(PyObject*) make_capture_dict(MatchObject* match, MatchObject**
-  match_indirect) {
+Py_LOCAL_INLINE(PyObject*) make_capture_dict(MatchObject* match) {
     PyObject* result;
     PyObject* keys;
     PyObject* values = NULL;
@@ -20089,7 +20089,7 @@ Py_LOCAL_INLINE(PyObject*) make_capture_dict(MatchObject* match, MatchObject**
         if (v == -1 && PyErr_Occurred())
             goto failed;
 
-        value = make_capture_object(match_indirect, v);
+        value = make_capture_object(match, v);
         if (!value)
             goto failed;
 
@@ -20109,6 +20109,15 @@ failed:
     Py_XDECREF(keys);
     Py_DECREF(result);
     return NULL;
+}
+
+/* Sets the match object for a capture object. */
+Py_LOCAL_INLINE(void) set_capture_match(PyObject* capture_, MatchObject* match) {
+    CaptureObject* capture;
+
+    capture = (CaptureObject*)capture_;
+    Py_INCREF(match);
+    Py_SETREF(capture->match, match);
 }
 
 /* MatchObject's 'expandf' method. */
@@ -20132,7 +20141,7 @@ static PyObject* match_expandf(MatchObject* self, PyObject* str_template) {
         PyObject* item;
         int status;
 
-        item = make_capture_object(&self, (Py_ssize_t)g);
+        item = make_capture_object(self, (Py_ssize_t)g);
         if (!item)
             goto error;
 
@@ -20147,7 +20156,7 @@ static PyObject* match_expandf(MatchObject* self, PyObject* str_template) {
     if (!args)
         goto error;
 
-    kwargs = make_capture_dict(self, &self);
+    kwargs = make_capture_dict(self);
     if (!kwargs)
         goto error;
 
@@ -21443,7 +21452,7 @@ Py_LOCAL_INLINE(Py_ssize_t) capture_length(CaptureObject* self) {
     if (self->group_index == 0)
         return 1;
 
-    match = *self->match_indirect;
+    match = self->match;
     group = &match->groups[self->group_index - 1];
 
     return (Py_ssize_t)group->count;
@@ -21460,7 +21469,7 @@ static PyObject* capture_getitem(CaptureObject* self, PyObject* item) {
     if (index == -1 && PyErr_Occurred())
         return NULL;
 
-    match = *self->match_indirect;
+    match = self->match;
 
     if (self->group_index == 0) {
         if (index < 0)
@@ -21514,6 +21523,7 @@ static void capture_dealloc(PyObject* self_) {
     CaptureObject* self;
 
     self = (CaptureObject*)self_;
+    Py_DECREF(self->match);
     PyObject_DEL(self);
 }
 
@@ -21525,7 +21535,7 @@ static PyObject* capture_str(PyObject* self_) {
     PyObject* result;
 
     self = (CaptureObject*)self_;
-    match = *self->match_indirect;
+    match = self->match;
 
     default_value = PySequence_GetSlice(match->substring, 0, 0);
     if (!default_value)
@@ -21987,12 +21997,21 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
             if (!match)
                 goto error;
 
-            /* We'll build the args and kwargs the first time. They'll be using
-             * capture objects which refer to the match object indirectly; this
-             * means that args and kwargs can be reused with different match
-             * objects.
+            /* We'll build the args and kwargs the first time. They'll contain
+             * capture objects that refer to the match object; this means that
+             * args and kwargs can be reused with different match objects.
              */
-            if (!built_capture) {
+            if (built_capture) {
+                Py_ssize_t i;
+                PyObject* value;
+
+                for (i = 0; i < PyTuple_GET_SIZE(args); i++)
+                    set_capture_match(PyTuple_GetItem(args, i), match);
+
+                i = 0;
+                while (PyDict_Next(kwargs, &i, NULL, &value))
+                    set_capture_match(value, match);
+            } else {
                 PyObject* list;
 
                 list = PyList_New(0);
@@ -22005,7 +22024,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                     PyObject* capture;
                     int status;
 
-                    capture = make_capture_object(&match, (Py_ssize_t)g);
+                    capture = make_capture_object(match, (Py_ssize_t)g);
                     if (!capture) {
                         Py_DECREF(list);
                         Py_DECREF(match);
@@ -22029,7 +22048,7 @@ Py_LOCAL_INLINE(PyObject*) pattern_subx(PatternObject* self, PyObject*
                 }
 
                 /* The kwargs are a dict of the named capture group matches. */
-                kwargs = make_capture_dict(match, &match);
+                kwargs = make_capture_dict(match);
                 if (!kwargs) {
                     Py_DECREF(args);
                     Py_DECREF(match);
