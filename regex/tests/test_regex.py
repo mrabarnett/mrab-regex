@@ -4645,6 +4645,63 @@ thing
                 results = run(lambda: regex.splititer(sep, text))
                 self.assertEqual(len(results), 201)
 
+    def test_sparse_repeat_checkpoints_define_and_reuse(self):
+        # Exercise sparse active-repeat checkpoints with many dormant repeats in
+        # (?(DEFINE)...), nested subroutine calls, backtracking, guard resets,
+        # (*PRUNE), reverse matching, and cached RE_State.repeats reuse.
+        unused_defs = "".join(f"(?<u{i}>(?:a+|b*){{1,3}})" for i in range(600))
+        pattern_src = (
+            f"(?(DEFINE){unused_defs}"
+            r"(?<word>[a-z]+)"
+            r"(?<item>(?&word)(?:-(?&word))*)"
+            r"(?<nested>\((?:[^()]+|(?&nested))*\))"
+            r")"
+            r"(?P<head>(?&item))(?:\s+(?P<group>(?&nested))|\s+(?P<tail>(?:x+|y+){1,4})z)"
+        )
+        pat = regex.compile(pattern_src)
+
+        samples = [
+            "alpha-beta (one (two three) four)",
+            "gamma-delta xxxyyz",
+            "no-match-here " + ("plain " * 40),
+            "epsilon-zeta ((a)(b-c)) trailing",
+            "theta xxyz",
+        ]
+        for _ in range(3):
+            results = [
+                [(m.span(), m.group("head"), m.group("group"), m.group("tail")) for m in pat.finditer(s)]
+                for s in samples
+            ]
+            self.assertEqual(
+                results,
+                [
+                    [((0, 33), "alpha-beta", "(one (two three) four)", None)],
+                    [((0, 18), "gamma-delta", None, "xxxyy")],
+                    [],
+                    [((0, 23), "epsilon-zeta", "((a)(b-c))", None)],
+                    [((0, 10), "theta", None, "xxy")],
+                ],
+            )
+
+        guard_pat = regex.compile(
+            f"(?(DEFINE){unused_defs}"
+            r"(?<opt>(?:a?)*)"
+            r"(?<rec>(?:b+(?&rec)?|c+))"
+            r")"
+            r"(?P<g1>(?&opt))(?P<g2>(?&rec))(?:\s+(*PRUNE)(?P<g3>(?&rec))|d)"
+        )
+        m = guard_pat.search("aabbb ccc")
+        self.assertIsNotNone(m)
+        self.assertEqual((m.group("g1"), m.group("g2"), m.group("g3")), ("aa", "bbb", "ccc"))
+        m2 = guard_pat.search("aabbd")
+        self.assertIsNotNone(m2)
+        self.assertEqual((m2.group("g1"), m2.group("g2"), m2.group("g3")), ("aa", "bb", None))
+
+        rev_pat = regex.compile(
+            f"(?r)(?(DEFINE){unused_defs}(?<num>[0-9]+(?:\.[0-9]+)*))(?P<n>(?&num))"
+        )
+        self.assertEqual([m.group("n") for m in rev_pat.finditer("a 1.2 b 34.56 c")], ["34.56", "1.2"])
+
 def test_main():
     unittest.main(verbosity=2)
 
