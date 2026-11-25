@@ -340,6 +340,7 @@ typedef struct RE_RepeatData {
     size_t count;
     Py_ssize_t start;
     size_t capture_change;
+    bool active;
 } RE_RepeatData;
 
 /* Guards for fuzzy sections. */
@@ -480,6 +481,8 @@ typedef struct RE_State {
     Py_ssize_t lastgroup;
     /* Info about the repeats. */
     RE_RepeatData* repeats;
+    size_t active_repeat_count;
+    size_t* active_repeat_indexes;
     Py_ssize_t search_anchor; /* Where the last match finished. */
     Py_ssize_t match_pos; /* The start position of the match. */
     Py_ssize_t text_pos; /* The current position of the match. */
@@ -2591,24 +2594,52 @@ Py_LOCAL_INLINE(bool) push_repeat_data(RE_State* state, ByteStack* stack,
     return true;
 }
 
-/* Pushes the repeats onto the stack. */
+/* Records every accessed repeat, including reads that can update guard caches.
+ * The inventory is monotonic for the lifetime of the matching state. A repeat
+ * outside it has the implicit default state and cannot have changed guards.
+ */
+Py_LOCAL_INLINE(RE_RepeatData*) get_repeat_data(RE_State* state, size_t index) {
+    RE_RepeatData* repeat;
+
+    repeat = &state->repeats[index];
+    if (!repeat->active) {
+        repeat->active = true;
+        state->active_repeat_indexes[state->active_repeat_count++] = index;
+    }
+    return repeat;
+}
+
+Py_LOCAL_INLINE(bool) repeat_is_default(RE_RepeatData* repeat) {
+    return repeat->count == 0 && repeat->start == 0 &&
+      repeat->capture_change == 0 && repeat->body_guard_list.count == 0 &&
+      repeat->tail_guard_list.count == 0;
+}
+
+/* Pushes non-default repeat states over an implicit all-default base. */
 Py_LOCAL_INLINE(bool) push_repeats(RE_State* state, ByteStack* stack) {
-    PatternObject* pattern;
-    Py_ssize_t repeat_count;
-    Py_ssize_t r;
+    size_t count;
+    size_t r;
 
-    pattern = state->pattern;
-
-    repeat_count = (Py_ssize_t)pattern->repeat_count;
-    if (repeat_count == 0)
+    if (state->pattern->repeat_count == 0)
         return true;
 
-    for (r = 0; r < repeat_count; r++) {
-        if (!push_repeat_data(state, stack, &state->repeats[r]))
+    count = 0;
+    for (r = 0; r < state->active_repeat_count; r++) {
+        size_t index;
+        RE_RepeatData* repeat;
+
+        index = state->active_repeat_indexes[r];
+        repeat = &state->repeats[index];
+        if (repeat_is_default(repeat))
+            continue;
+        if (!push_repeat_data(state, stack, repeat))
             return false;
+        if (!push_size(state, stack, index))
+            return false;
+        ++count;
     }
 
-    return true;
+    return push_size(state, stack, count);
 }
 
 /* Pushes the bstack count onto the pstack. */
@@ -2767,18 +2798,37 @@ Py_LOCAL_INLINE(bool) pop_repeat_data(RE_State* state, ByteStack* stack,
 
 /* Pops the repeats off the stack. */
 Py_LOCAL_INLINE(bool) pop_repeats(RE_State* state, ByteStack* stack) {
-    PatternObject* pattern;
-    Py_ssize_t repeat_count;
-    Py_ssize_t r;
+    size_t count;
+    size_t r;
 
-    pattern = state->pattern;
-
-    repeat_count = (Py_ssize_t)pattern->repeat_count;
-    if (repeat_count == 0)
+    if (state->pattern->repeat_count == 0)
         return true;
 
-    for (r = repeat_count - 1; r >= 0; r--) {
-        if (!pop_repeat_data(state, stack, &state->repeats[r]))
+    if (!pop_size(state, stack, &count))
+        return false;
+
+    /* Changes after this checkpoint may have activated more slots. Reset all
+     * of them before restoring the checkpoint's non-default overrides.
+     */
+    for (r = 0; r < state->active_repeat_count; r++) {
+        RE_RepeatData* repeat;
+
+        repeat = &state->repeats[state->active_repeat_indexes[r]];
+        repeat->count = 0;
+        repeat->start = 0;
+        repeat->capture_change = 0;
+        repeat->body_guard_list.count = 0;
+        repeat->body_guard_list.last_text_pos = -1;
+        repeat->tail_guard_list.count = 0;
+        repeat->tail_guard_list.last_text_pos = -1;
+    }
+
+    for (r = 0; r < count; r++) {
+        size_t index;
+
+        if (!pop_size(state, stack, &index))
+            return false;
+        if (!pop_repeat_data(state, stack, get_repeat_data(state, index)))
             return false;
     }
 
@@ -3409,9 +3459,12 @@ Py_LOCAL_INLINE(void) reset_guards(RE_State* state) {
     size_t i;
 
     /* Reset the guards for the repeats. */
-    for (i = 0; i < state->pattern->repeat_count; i++) {
-        reset_guard_list(&state->repeats[i].body_guard_list);
-        reset_guard_list(&state->repeats[i].tail_guard_list);
+    for (i = 0; i < state->active_repeat_count; i++) {
+        RE_RepeatData* repeat;
+
+        repeat = &state->repeats[state->active_repeat_indexes[i]];
+        reset_guard_list(&repeat->body_guard_list);
+        reset_guard_list(&repeat->tail_guard_list);
     }
 
     /* Reset the guards for the fuzzy sections. */
@@ -9491,9 +9544,9 @@ Py_LOCAL_INLINE(bool) guard_repeat(RE_State* state, size_t index, Py_ssize_t
 
     /* Which guard list? */
     if (guard_type & RE_STATUS_BODY)
-        guard_list = &state->repeats[index].body_guard_list;
+        guard_list = &get_repeat_data(state, index)->body_guard_list;
     else
-        guard_list = &state->repeats[index].tail_guard_list;
+        guard_list = &get_repeat_data(state, index)->tail_guard_list;
 
     return guard(state, guard_list, text_pos, protect);
 }
@@ -9579,9 +9632,9 @@ Py_LOCAL_INLINE(bool) guard_repeat_range(RE_State* state, size_t index,
 
     /* Which guard list? */
     if (guard_type & RE_STATUS_BODY)
-        guard_list = &state->repeats[index].body_guard_list;
+        guard_list = &get_repeat_data(state, index)->body_guard_list;
     else
-        guard_list = &state->repeats[index].tail_guard_list;
+        guard_list = &get_repeat_data(state, index)->tail_guard_list;
 
     while (lo_pos <= hi_pos) {
         lo_pos = guard_range(state, guard_list, lo_pos, hi_pos, protect);
@@ -9605,9 +9658,9 @@ Py_LOCAL_INLINE(bool) is_repeat_guarded(RE_State* state, size_t index,
 
     /* Which guard list? */
     if (guard_type == RE_STATUS_BODY)
-        guard_list = &state->repeats[index].body_guard_list;
+        guard_list = &get_repeat_data(state, index)->body_guard_list;
     else
-        guard_list = &state->repeats[index].tail_guard_list;
+        guard_list = &get_repeat_data(state, index)->tail_guard_list;
 
     return is_guarded(guard_list, text_pos);
 }
@@ -12590,7 +12643,7 @@ advance:
 
             /* Repeat indexes are 0-based. */
             index = node->values[0];
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* The body has matched successfully at this position. */
             if (!guard_repeat(state, index, rp_data->start, RE_STATUS_BODY,
@@ -12825,7 +12878,7 @@ advance:
 
             /* Repeat indexes are 0-based. */
             index = node->values[0];
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* The body has matched successfully at this position. */
             if (!guard_repeat(state, index, rp_data->start, RE_STATUS_BODY,
@@ -13240,7 +13293,7 @@ advance:
 
             /* Repeat indexes are 0-based. */
             index = node->values[0];
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* We might need to backtrack into the head, so save the current
              * repeat.
@@ -13373,7 +13426,7 @@ advance:
 
             /* Repeat indexes are 0-based. */
             index = node->values[0];
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             if (is_repeat_guarded(state, index, state->text_pos,
               RE_STATUS_BODY))
@@ -13473,10 +13526,10 @@ advance:
             /* Clear the repeat guards for the group call. They'll be restored
              * on return.
              */
-            for (r = 0; r < state->pattern->repeat_count; r++) {
+            for (r = 0; r < state->active_repeat_count; r++) {
                 RE_RepeatData* repeat;
 
-                repeat = &state->repeats[r];
+                repeat = &state->repeats[state->active_repeat_indexes[r]];
                 repeat->body_guard_list.count = 0;
                 repeat->body_guard_list.last_text_pos = -1;
                 repeat->tail_guard_list.count = 0;
@@ -13621,7 +13674,7 @@ advance:
 
             /* Repeat indexes are 0-based. */
             index = node->values[0];
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* We might need to backtrack into the head, so save the current
              * repeat.
@@ -13752,7 +13805,7 @@ advance:
 
             /* Repeat indexes are 0-based. */
             index = node->values[0];
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             if (is_repeat_guarded(state, index, state->text_pos,
               RE_STATUS_BODY))
@@ -13796,7 +13849,7 @@ advance:
                 /* bstack: count start node index LAZY_REPEAT_ONE */
 
                 /* Get the offset to the repeat values in the context. */
-                rp_data = &state->repeats[index];
+                rp_data = get_repeat_data(state, index);
 
                 rp_data->start = state->text_pos;
                 rp_data->count = count;
@@ -15353,7 +15406,7 @@ backtrack:
             TRACE(("%s %u\n", re_op_text[op], (unsigned int)index))
 
             /* We're backtracking into the body. */
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* Restore the repeat info. */
             rp_data->count = count;
@@ -15853,7 +15906,7 @@ backtrack:
             count = data_r.count;
 
             /* The repeat failed to match. */
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* The body may have failed to match at this position. */
             if (!guard_repeat(state, index, text_pos, RE_STATUS_BODY, true))
@@ -15892,7 +15945,7 @@ backtrack:
             start = data_ro.start;
             saved_count = data_ro.count;
 
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* Unmatch one character at a time until the tail could match or we
              * have reached the minimum.
@@ -16532,7 +16585,7 @@ backtrack:
             start = data.start;
             saved_count = data.count;
 
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* Match one character at a time until the tail could match or we
              * have reached the maximum.
@@ -17257,7 +17310,7 @@ backtrack:
             TRACE(("%s %u\n", re_op_text[op], (unsigned int)index))
 
             /* We want to match the body. */
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* Restore the repeat info. */
             rp_data->count = count;
@@ -17303,7 +17356,7 @@ backtrack:
             TRACE(("%s %u\n", re_op_text[op], (unsigned int)index))
 
             /* We want to match the tail. */
-            rp_data = &state->repeats[index];
+            rp_data = get_repeat_data(state, index);
 
             /* Restore the repeat info. */
             rp_data->count = count;
@@ -18319,6 +18372,8 @@ Py_LOCAL_INLINE(void) dealloc_groups(RE_GroupData* groups, size_t group_count)
     re_dealloc(groups);
 }
 
+Py_LOCAL_INLINE(void) dealloc_repeats(RE_RepeatData* repeats, size_t repeat_count);
+
 /* Initialises a state object. */
 Py_LOCAL_INLINE(bool) state_init_2(RE_State* state, PatternObject* pattern,
   PyObject* string, RE_StringInfo* str_info, Py_ssize_t start, Py_ssize_t end,
@@ -18352,6 +18407,8 @@ Py_LOCAL_INLINE(bool) state_init_2(RE_State* state, PatternObject* pattern,
     state->groups = NULL;
     state->best_match_groups = NULL;
     state->repeats = NULL;
+    state->active_repeat_count = 0;
+    state->active_repeat_indexes = NULL;
     state->visible_captures = visible_captures;
     state->match_all = match_all;
     state->lock = NULL;
@@ -18402,14 +18459,8 @@ Py_LOCAL_INLINE(bool) state_init_2(RE_State* state, PatternObject* pattern,
                 RE_GroupSpan* captures;
 
                 captures = (RE_GroupSpan*)re_alloc(sizeof(RE_GroupSpan));
-                if (!captures) {
-                    size_t i;
-
-                    for (i = 0; i < g; i++)
-                        re_dealloc(state->groups[i].captures);
-
+                if (!captures)
                     goto error;
-                }
 
                 state->groups[g].captures = captures;
                 state->groups[g].capacity = 1;
@@ -18534,6 +18585,12 @@ Py_LOCAL_INLINE(bool) state_init_2(RE_State* state, PatternObject* pattern,
     state->string = string;
 
     if (pattern->repeat_count) {
+        size_t r;
+
+        state->active_repeat_indexes = (size_t*)re_alloc(pattern->repeat_count * sizeof(size_t));
+        if (!state->active_repeat_indexes)
+            goto error;
+
         #if defined(Py_GIL_DISABLED)
         PyMutex_Lock(&pattern->mutex);
         #endif
@@ -18556,6 +18613,20 @@ Py_LOCAL_INLINE(bool) state_init_2(RE_State* state, PatternObject* pattern,
                 goto error;
             memset(state->repeats, 0, pattern->repeat_count *
               sizeof(RE_RepeatData));
+        }
+
+        /* Cached storage can contain non-default state from a prior operation.
+         * Seed once; subsequent snapshots and guard resets visit accessed slots.
+         */
+        for (r = 0; r < pattern->repeat_count; r++) {
+            RE_RepeatData* repeat;
+
+            repeat = &state->repeats[r];
+            repeat->active = false;
+            repeat->body_guard_list.last_text_pos = -1;
+            repeat->tail_guard_list.last_text_pos = -1;
+            if (!repeat_is_default(repeat))
+                get_repeat_data(state, r);
         }
     }
 
@@ -18616,8 +18687,12 @@ Py_LOCAL_INLINE(bool) state_init_2(RE_State* state, PatternObject* pattern,
     return true;
 
 error:
+    ByteStack_fini(state, &state->sstack);
+    ByteStack_fini(state, &state->bstack);
+    ByteStack_fini(state, &state->pstack);
+    re_dealloc(state->active_repeat_indexes);
     re_dealloc(state->group_call_guard_list);
-    re_dealloc(state->repeats);
+    dealloc_repeats(state->repeats, pattern->repeat_count);
     dealloc_groups(state->groups, pattern->true_group_count);
     re_dealloc(state->fuzzy_guards);
     state->repeats = NULL;
@@ -18725,6 +18800,7 @@ Py_LOCAL_INLINE(void) state_fini(RE_State* state) {
         PyThread_free_lock(state->lock);
 
     pattern = state->pattern;
+    re_dealloc(state->active_repeat_indexes);
 
     #if defined(Py_GIL_DISABLED)
     PyMutex_Lock(&pattern->mutex);
