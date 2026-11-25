@@ -24595,7 +24595,7 @@ Py_LOCAL_INLINE(int) build_BRANCH(RE_CompileArgs* args) {
 }
 
 /* Builds a CALL_REF node. */
-Py_LOCAL_INLINE(int) build_CALL_REF(RE_CompileArgs* args) {
+Py_LOCAL_INLINE(int) build_CALL_REF(RE_CompileArgs* args, bool after_success) {
     RE_CODE call_ref;
     RE_Node* start_node;
     RE_Node* end_node;
@@ -24630,7 +24630,8 @@ Py_LOCAL_INLINE(int) build_CALL_REF(RE_CompileArgs* args) {
         return RE_ERROR_ILLEGAL;
 
     args->code = subargs.code;
-    args->min_width += subargs.min_width;
+    if (!after_success)
+        args->min_width += subargs.min_width;
     args->has_captures |= subargs.has_captures;
     args->is_fuzzy |= subargs.is_fuzzy;
     args->has_groups |= subargs.has_groups;
@@ -25643,6 +25644,7 @@ Py_LOCAL_INLINE(int) build_charset_equiv(RE_CompileArgs* args) {
 /* Builds a sequence of nodes from regular expression code. */
 Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
     int status;
+    bool after_success = false;
 
     /* Guarantee that there's something to attach to. */
     args->start = create_node(args->pattern, RE_OP_BRANCH, 0, 0, 0);
@@ -25700,7 +25702,7 @@ Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
             break;
         case RE_OP_CALL_REF:
             /* A group call ref. */
-            status = build_CALL_REF(args);
+            status = build_CALL_REF(args, after_success);
             if (status != RE_ERROR_SUCCESS)
                 return status;
             break;
@@ -25737,9 +25739,12 @@ Py_LOCAL_INLINE(int) build_sequence(RE_CompileArgs* args) {
             if (status != RE_ERROR_SUCCESS)
                 return status;
             break;
+        case RE_OP_SUCCESS:
+            /* Only out-of-line call targets follow the end of the pattern. */
+            after_success = true;
+            /* Fall through. */
         case RE_OP_FAILURE:
         case RE_OP_PRUNE:
-        case RE_OP_SUCCESS:
             status = build_SUCCESS(args);
             if (status != RE_ERROR_SUCCESS)
                 return status;
@@ -25858,7 +25863,8 @@ Py_LOCAL_INLINE(bool) compile_to_nodes(RE_CODE* code, RE_CODE* end_code,
     int status;
 
     /* Compile a regex sequence and then check that we've reached the end
-     * correctly. (The last opcode should be 'SUCCESS'.)
+     * correctly. The main sequence ends with 'SUCCESS' and may be followed
+     * by additional call targets.
      *
      * If successful, 'start' and 'end' will point to the start and end nodes
      * of the compiled sequence.

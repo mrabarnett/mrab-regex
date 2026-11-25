@@ -2802,6 +2802,24 @@ xyzabc
         self.assertEqual(bool(regex.match('(?:fo){e<=1}|(?:fo){e<=2}', 'FO')),
           True)
 
+    def test_call_target_width(self):
+        for prefix, assertion in (("", "?<="), ("(?r)", "?=")):
+            with self.subTest(prefix=prefix):
+                # Neither auxiliary target consumes any of the main match.
+                pattern = regex.compile(prefix + r"(?(DEFINE)(?<a>(" +
+                  assertion + r"(?&b)(?&c)))(?<b>.{4})(?<c>.{8}))(?<n>\d+)")
+                self.assertEqual(pattern.fullmatch("5").group("n"), "5")
+                self.assertEqual(pattern.search("x5x", 1, 2).span(), (1, 2))
+
+        # The whole pattern can also have an out-of-line copy.
+        self.assertEqual(regex.findall(r"(?:(?<=(?R))x|ab)", "abx"), ["ab", "x"])
+
+        # Calling the auxiliary target still records its captures. findall
+        # must keep the public group numbering when the definition comes first.
+        pattern = regex.compile(r"(?<=(?&g))(?(DEFINE)(?<g>a))(?<x>b)")
+        self.assertEqual(pattern.search("ab").captures("g"), ["a"])
+        self.assertEqual(pattern.findall("ab ab"), [("", "b"), ("", "b")])
+
     def test_recursive(self):
         self.assertEqual(regex.search(r"(\w)(?:(?R)|(\w?))\1", "xx")[ : ],
           ("xx", "x", ""))
