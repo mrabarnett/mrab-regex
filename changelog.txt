@@ -1,3 +1,9 @@
+Version 2026.11.25:
+
+    PR 647: Use sparse active-repeat checkpoints in push_repeats/pop_repeats and guard resets
+
+    PR 648: Do not add out-of-line CALL_REF widths after SUCCESS to enclosing min_width
+
 Version 2026.11.24:
 
     PR 646: Fix use-after-free of Capture objects kept past expandf/subf
