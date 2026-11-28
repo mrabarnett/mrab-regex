@@ -4494,6 +4494,12 @@ thing
           overlapped=True)], [((0, 0), (0, 0, 0), ([], [], [])), ((1, 1), (0, 0, 0),
           ([], [], [])), ((2, 2), (0, 0, 0), ([], [], []))])
 
+        # Git issue 650: IGNORECASE alternation like `<sc|\{\*` has no firstset since 2026.11.23, 3-4x slower
+        self.assertEqual(regex.findall(r'(?i)<sc|\{\*', '<SC {* <sC <x {x'), ['<SC', '{*', '<sC'])
+        self.assertEqual(regex.findall(r'(?i:a)|\{\*', 'A a {* b'), ['A', 'a', '{*'])
+        self.assertEqual(regex.findall(r'a|(?i:\{x)', 'A a {X {x'), ['a', '{X', '{x'])
+        self.assertEqual(regex.findall('(?i)\u212A|\\{\\*', 'k K \u212A {*'), ['k', 'K', '\u212A', '{*'])
+
     def test_fuzzy_ext(self):
         self.assertEqual(bool(regex.fullmatch(r'(?r)(?:a){e<=1:[a-z]}', 'e')),
           True)
