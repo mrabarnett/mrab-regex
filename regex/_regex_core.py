@@ -391,7 +391,9 @@ def _check_firstset(info, reverse, fs):
         if isinstance(i, Character) and not i.positive:
             return None
 
-        if isinstance(i, (Character, SetBase)):
+        # The case flags of an uncased character don't change what it matches.
+        if isinstance(i, SetBase) or (isinstance(i, Character) and
+          is_cased_i(info, i.value)):
             case_set.add(i.case_flags)
 
         case_flags |= i.case_flags
